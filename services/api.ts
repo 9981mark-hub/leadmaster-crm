@@ -360,3 +360,10 @@ export const fetchCaseStatusLogs = async (caseId: string): Promise<CaseStatusLog
 export const fetchNewLeads = async (): Promise<Case[]> => {
   return [];
 };
+
+export const batchCreateCases = async (cases: Partial<Case>[]): Promise<void> => {
+  for (const c of cases) {
+    await createCase(c);
+  }
+};
+
