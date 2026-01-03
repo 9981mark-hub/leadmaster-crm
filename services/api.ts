@@ -1,95 +1,226 @@
 
 import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
-import { DEFAULT_STATUS_LIST } from '../constants'; // Import Default
+import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
 
-let localCases = [...MOCK_CASES];
-let localPartners = [...MOCK_PARTNERS];
-let localLogs = [...MOCK_LOGS];
-let localInboundPaths = [...MOCK_INBOUND_PATHS];
-let localStatuses = [...DEFAULT_STATUS_LIST]; // Initialize with default
+// --- CONFIGURATION ---
+// Replace this with the user's deployed Web App URL
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwD5zk784sBuSLnpkRa9oL3YWB66-Ypu4rDnv_f3POOlLeomNiU8rImyXf8baPHtJITPg/exec";
+
+// --- LOCAL CACHE (Optimistic UI) ---
+let localCases: Case[] = [];
+let localPartners: Partner[] = [];
+let localLogs: CaseStatusLog[] = [...MOCK_LOGS]; // Logs are currently local-only in this version
+let localInboundPaths: string[] = [];
+let localStatuses: CaseStatus[] = [];
+let isInitialized = false;
 
 // ------------------------------------------------------------------
-// Status Management API
+// DATA SYNC CORE
 // ------------------------------------------------------------------
 
+// POST Helper (Fire & Forget, No-CORS)
+const syncToSheet = async (payload: any) => {
+  if (!GOOGLE_SCRIPT_URL) return;
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.error("Sync Failed:", error);
+  }
+};
+
+// GET Helper
+const fetchFromSheet = async (target: 'leads' | 'settings') => {
+  if (!GOOGLE_SCRIPT_URL) return null;
+  try {
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}?target=${target}`);
+    if (!response.ok) throw new Error('Network error');
+    return await response.json();
+  } catch (error) {
+    console.error(`Fetch ${target} failed:`, error);
+    return null;
+  }
+};
+
+// Initial Data Load
+export const initializeData = async () => {
+  if (isInitialized) return;
+
+  // 1. Fetch Settings
+  const settingsData = await fetchFromSheet('settings');
+  if (settingsData) {
+    if (settingsData.partners) localPartners = settingsData.partners;
+    else localPartners = [...MOCK_PARTNERS];
+
+    if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
+    else localInboundPaths = [...MOCK_INBOUND_PATHS];
+
+    if (settingsData.statuses) localStatuses = settingsData.statuses;
+    else localStatuses = [...DEFAULT_STATUS_LIST];
+
+    if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
+  } else {
+    console.warn("Using mock settings data (Fetch failed or empty)");
+    localPartners = [...MOCK_PARTNERS];
+    localInboundPaths = [...MOCK_INBOUND_PATHS];
+    localStatuses = [...DEFAULT_STATUS_LIST];
+  }
+
+  // 2. Fetch Cases
+  const casesData = await fetchFromSheet('leads');
+  if (casesData && Array.isArray(casesData)) {
+    localCases = casesData.map(processIncomingCase);
+  } else {
+    console.warn("Using mock case data (Fetch failed or empty)");
+    localCases = [...MOCK_CASES];
+  }
+
+  isInitialized = true;
+};
+
+// Helper: Ensure imported data types are correct
+const processIncomingCase = (c: any): Case => {
+  // Ensure arrays/objects are parsed if they came as strings (double safety)
+  if (typeof c.jobTypes === 'string') c.jobTypes = [c.jobTypes];
+
+  return {
+    ...c,
+    assets: c.assets || [],
+    creditLoan: c.creditLoan || [],
+    specialMemo: c.specialMemo || [],
+    reminders: c.reminders || [],
+    recordings: c.recordings || [],
+    jobTypes: c.jobTypes || [],
+    incomeDetails: c.incomeDetails || {},
+    depositHistory: c.depositHistory || [],
+    // Number safety
+    incomeNet: Number(c.incomeNet) || 0,
+    loanMonthlyPay: Number(c.loanMonthlyPay) || 0,
+    deposit: Number(c.deposit) || 0,
+    rent: Number(c.rent) || 0,
+    contractFee: Number(c.contractFee) || 0,
+    childrenCount: Number(c.childrenCount) || 0,
+    ownHousePrice: Number(c.ownHousePrice) || 0,
+    ownHouseLoan: Number(c.ownHouseLoan) || 0,
+    depositLoanAmount: Number(c.depositLoanAmount) || 0,
+    creditCardAmount: Number(c.creditCardAmount) || 0,
+  };
+};
+
+
+// ------------------------------------------------------------------
+// API EXPORTS
+// ------------------------------------------------------------------
+
+// --- Statuses ---
 export const fetchStatuses = async (): Promise<CaseStatus[]> => {
-  // Simulate API delay
-  return new Promise(resolve => setTimeout(() => resolve([...localStatuses]), 200));
+  if (!isInitialized) await initializeData();
+  return [...localStatuses];
 };
 
 export const addStatus = async (status: string): Promise<CaseStatus[]> => {
   if (!localStatuses.includes(status)) {
     localStatuses.push(status);
+    syncToSheet({ target: 'settings', action: 'update', key: 'statuses', value: localStatuses });
   }
-  return Promise.resolve([...localStatuses]);
+  return [...localStatuses];
 };
 
 export const deleteStatus = async (status: string, migrateTo?: string): Promise<CaseStatus[]> => {
-  // 1. Check if status is in use
-  const affectedCases = localCases.filter(c => c.status === status);
-
-  // 2. If in use and no migration target provided, throw error (should be handled by UI)
-  if (affectedCases.length > 0 && !migrateTo) {
-    throw new Error(`STATUS_IN_USE:${affectedCases.length}`); // Custom error code
-  }
-
-  // 3. Migrate cases if target provided
-  if (affectedCases.length > 0 && migrateTo) {
+  if (migrateTo) {
     localCases = localCases.map(c => {
       if (c.status === status) {
-        return { ...c, status: migrateTo, updatedAt: new Date().toISOString() };
+        const updated = { ...c, status: migrateTo, updatedAt: new Date().toISOString() };
+        updateCase(c.caseId, { status: migrateTo });
+        return updated;
       }
       return c;
     });
   }
-
-  // 4. Delete status
   localStatuses = localStatuses.filter(s => s !== status);
-  return Promise.resolve([...localStatuses]);
+  syncToSheet({ target: 'settings', action: 'update', key: 'statuses', value: localStatuses });
+  return [...localStatuses];
 };
 
 export const updateStatusOrder = async (newOrder: CaseStatus[]): Promise<CaseStatus[]> => {
   localStatuses = newOrder;
-  return Promise.resolve([...localStatuses]);
+  syncToSheet({ target: 'settings', action: 'update', key: 'statuses', value: localStatuses });
+  return [...localStatuses];
 }
 
-// ------------------------------------------------------------------
-// Case Management API
-// ------------------------------------------------------------------
 
-export const fetchCases = async (): Promise<Case[]> => {
-  return new Promise(resolve => setTimeout(() => resolve([...localCases]), 300));
+// --- Inbound Paths ---
+export const fetchInboundPaths = async (): Promise<string[]> => {
+  if (!isInitialized) await initializeData();
+  return [...localInboundPaths];
 };
 
+export const addInboundPath = async (path: string): Promise<string[]> => {
+  if (!localInboundPaths.includes(path)) {
+    localInboundPaths.push(path);
+    syncToSheet({ target: 'settings', action: 'update', key: 'inboundPaths', value: localInboundPaths });
+  }
+  return [...localInboundPaths];
+};
+
+export const deleteInboundPath = async (path: string, migrateTo?: string): Promise<string[]> => {
+  if (migrateTo) {
+    localCases = localCases.map(c => {
+      if (c.inboundPath === path) {
+        updateCase(c.caseId, { inboundPath: migrateTo });
+        return { ...c, inboundPath: migrateTo, updatedAt: new Date().toISOString() };
+      }
+      return c;
+    });
+  }
+  localInboundPaths = localInboundPaths.filter(p => p !== path);
+  syncToSheet({ target: 'settings', action: 'update', key: 'inboundPaths', value: localInboundPaths });
+  return [...localInboundPaths];
+};
+
+
+// --- Partners ---
 export const fetchPartners = async (): Promise<Partner[]> => {
-  return new Promise(resolve => setTimeout(() => resolve([...localPartners]), 300));
+  if (!isInitialized) await initializeData();
+  return [...localPartners];
 };
 
 export const savePartner = async (partner: Partner): Promise<Partner[]> => {
   const idx = localPartners.findIndex(p => p.partnerId === partner.partnerId);
-  if (idx > -1) {
-    localPartners[idx] = partner;
-  } else {
-    localPartners.push(partner);
-  }
-  return Promise.resolve([...localPartners]);
+  if (idx > -1) localPartners[idx] = partner;
+  else localPartners.push(partner);
+
+  syncToSheet({ target: 'settings', action: 'update', key: 'partners', value: localPartners });
+  return [...localPartners];
 };
 
-// Added missing function deletePartner to fix error in Settings.tsx
 export const deletePartner = async (partnerId: string): Promise<Partner[]> => {
   localPartners = localPartners.filter(p => p.partnerId !== partnerId);
-  return Promise.resolve([...localPartners]);
+  syncToSheet({ target: 'settings', action: 'update', key: 'partners', value: localPartners });
+  return [...localPartners];
 };
 
+
+// --- Cases ---
+export const fetchCases = async (): Promise<Case[]> => {
+  if (!isInitialized) await initializeData();
+  return [...localCases];
+};
+
+// Helper to create a new case object locally
 export const createCaseHelper = (newCase: Partial<Case>): Case => {
   const managerName = localStorage.getItem('managerName') || 'Mark';
   const now = new Date().toISOString();
-  // Ensure we default to 0 if not provided, avoiding NaN
-  const incomeDetails = newCase.incomeDetails || {};
-  const incomeNet = newCase.incomeNet || 0;
-  const loanMonthlyPay = newCase.loanMonthlyPay || 0;
+
+  // Get Summary Template from Partner to generate "CopySummary"
+  // Note: We can't generate the full summary here easily because we need the Full Case Object first. 
+  // We will generate it just before saving.
 
   return {
     ...newCase,
@@ -114,72 +245,35 @@ export const createCaseHelper = (newCase: Partial<Case>): Case => {
     specialMemo: newCase.specialMemo || [],
     recordings: [],
     reminders: [],
-    // Ensure numeric fields are numbers
-    incomeDetails,
-    incomeNet,
-    loanMonthlyPay
+    depositHistory: [],
+    incomeDetails: newCase.incomeDetails || {},
+    incomeNet: newCase.incomeNet || 0,
+    loanMonthlyPay: newCase.loanMonthlyPay || 0,
+    deposit: newCase.deposit || 0,
+    rent: newCase.rent || 0
   } as Case;
-};
-
-// --- Google Sheets Sync Helper ---
-const syncToSheet = async (action: 'create' | 'update' | 'delete', data: any) => {
-  if (!GOOGLE_SCRIPT_URL) return;
-
-  // Optimistic UI update is already handled by the caller modifying localCases
-  // This sends the change to the "Database" in the background
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors', // Important for GAS
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ action, data }),
-    });
-  } catch (error) {
-    console.error(`Failed to sync ${action} to Google Sheet:`, error);
-    // In a real app, you might want to rollback the local change or show an error toast
-  }
 };
 
 export const createCase = async (newCase: Partial<Case>): Promise<Case> => {
   const c = createCaseHelper(newCase);
-  localCases.unshift(c); // Add to top for immediate UI feedback
+  localCases.unshift(c); // Optimistic UI
 
   // Sync to Sheet
-  const sheetRow = {
-    id: c.caseId,
-    name: c.customerName,
-    phone: c.phone,
-    source: c.inboundPath,
-    note: c.preInfo,
-    status: c.status
+  // Note: We rely on the Sheet Script's "parseJSON" logic, so we can send the object as is.
+  // Exception: We need to generate 'formattedSummary' if we want it in column AS.
+  // We'll import the generator helper.
+  const { generateSummary } = await import('../utils');
+  const partner = localPartners.find(p => p.partnerId === c.partnerId);
+  const formattedSummary = generateSummary(c, partner?.summaryTemplate);
+
+  const payload = {
+    ...c,
+    formattedSummary // Add this extra field
   };
 
-  // Fire and forget (or await if you want strict consistency)
-  syncToSheet('create', sheetRow);
+  syncToSheet({ target: 'leads', action: 'create', data: payload });
 
-  return Promise.resolve(c);
-};
-
-export const batchCreateCases = async (newCases: Partial<Case>[]): Promise<Case[]> => {
-  const createdCases = newCases.map(nc => createCaseHelper(nc));
-  localCases.unshift(...createdCases);
-
-  // Sync each one (Naive approach, acceptable for small batch)
-  for (const c of createdCases) {
-    const sheetRow = {
-      id: c.caseId,
-      name: c.customerName,
-      phone: c.phone,
-      source: c.inboundPath,
-      note: c.preInfo,
-      status: c.status
-    };
-    syncToSheet('create', sheetRow);
-  }
-
-  return Promise.resolve(createdCases);
+  return c;
 };
 
 export const updateCase = async (caseId: string, updates: Partial<Case>): Promise<Case> => {
@@ -193,268 +287,76 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
   };
   localCases[idx] = updated;
 
-  // Sync to Sheet
-  // We only send fields that the sheet cares about (Status, Note, etc)
-  // If mapped fields changed
-  const sheetUpdate = {
-    id: caseId,
-    status: updated.status,
-    note: updated.specialMemo // Mapping specialMemo to Note column might be tricky if it's an array. 
-    // For now, let's just sync Status and Basic Info updates if they changed.
-    // Ideally, the Sheet logic on 'update' handles partial updates.
+  // Sync
+  const { generateSummary } = await import('../utils');
+  const partner = localPartners.find(p => p.partnerId === updated.partnerId);
+  const formattedSummary = generateSummary(updated, partner?.summaryTemplate);
+
+  const payload = {
+    ...updated,
+    formattedSummary // Add this extra field
   };
 
-  syncToSheet('update', sheetUpdate);
+  syncToSheet({ target: 'leads', action: 'update', data: payload });
 
-  return Promise.resolve(updated);
+  return updated;
 };
 
 export const deleteCase = async (caseId: string): Promise<Case[]> => {
   localCases = localCases.filter(c => c.caseId !== caseId);
+  syncToSheet({ target: 'leads', action: 'delete', data: { id: caseId } });
+  return [...localCases];
+};
 
-  syncToSheet('delete', { id: caseId });
+// --- Sub-Item Manipulators (Memos, Status Logs, etc) ---
 
-  return Promise.resolve([...localCases]);
+export const changeStatus = async (caseId: string, newStatus: CaseStatus, memo: string): Promise<Case> => {
+  const now = new Date().toISOString();
+
+  // Log locally
+  const log: CaseStatusLog = {
+    logId: uuidv4(),
+    caseId,
+    changedAt: now,
+    changedBy: 'Mark',
+    fromStatus: '',
+    toStatus: newStatus,
+    memo
+  };
+
+  // Update Case
+  const c = await updateCase(caseId, { status: newStatus, statusUpdatedAt: now });
+  localLogs.push(log);
+
+  return c;
 };
 
 export const addMemo = async (caseId: string, content: string): Promise<Case> => {
-  const idx = localCases.findIndex(c => c.caseId === caseId);
-  if (idx === -1) throw new Error('Case not found');
+  const c = localCases.find(x => x.caseId === caseId);
+  if (!c) throw new Error('Case not found');
 
   const newMemo: MemoItem = {
     id: uuidv4(),
     createdAt: new Date().toISOString(),
     content
   };
-
-  localCases[idx].specialMemo = [newMemo, ...(localCases[idx].specialMemo || [])];
-  localCases[idx].updatedAt = new Date().toISOString();
-  return Promise.resolve(localCases[idx]);
+  const updatedMemos = [newMemo, ...(c.specialMemo || [])];
+  return updateCase(caseId, { specialMemo: updatedMemos });
 };
 
 export const deleteMemo = async (caseId: string, memoId: string): Promise<Case> => {
-  const idx = localCases.findIndex(c => c.caseId === caseId);
-  if (idx === -1) throw new Error('Case not found');
+  const c = localCases.find(x => x.caseId === caseId);
+  if (!c) throw new Error('Case not found');
 
-  localCases[idx].specialMemo = (localCases[idx].specialMemo || []).filter(m => m.id !== memoId);
-  return Promise.resolve(localCases[idx]);
-};
-
-export const addRecording = async (caseId: string, recording: RecordingItem): Promise<Case> => {
-  const idx = localCases.findIndex(c => c.caseId === caseId);
-  if (idx === -1) throw new Error('Case not found');
-
-  localCases[idx].recordings = [recording, ...(localCases[idx].recordings || [])];
-  return Promise.resolve(localCases[idx]);
-};
-
-export const changeStatus = async (caseId: string, newStatus: CaseStatus, memo: string): Promise<Case> => {
-  const idx = localCases.findIndex(c => c.caseId === caseId);
-  if (idx === -1) throw new Error('Case not found');
-
-  const oldStatus = localCases[idx].status;
-  const now = new Date().toISOString();
-
-  localCases[idx] = {
-    ...localCases[idx],
-    status: newStatus,
-    statusUpdatedAt: now,
-    updatedAt: now
-  };
-
-  const log: CaseStatusLog = {
-    logId: uuidv4(),
-    caseId,
-    changedAt: now,
-    changedBy: 'Mark',
-    fromStatus: oldStatus,
-    toStatus: newStatus,
-    memo
-  };
-  localLogs.push(log);
-
-  return Promise.resolve(localCases[idx]);
+  const updatedMemos = (c.specialMemo || []).filter(m => m.id !== memoId);
+  return updateCase(caseId, { specialMemo: updatedMemos });
 };
 
 export const fetchCaseStatusLogs = async (caseId: string): Promise<CaseStatusLog[]> => {
-  const logs = localLogs.filter(l => l.caseId === caseId).sort((a, b) => b.changedAt.localeCompare(a.changedAt));
-  return Promise.resolve(logs);
+  return localLogs.filter(l => l.caseId === caseId).sort((a, b) => b.changedAt.localeCompare(a.changedAt));
 };
 
-export const fetchInboundPaths = async (): Promise<string[]> => {
-  return Promise.resolve([...localInboundPaths]);
-};
-
-// Added missing function addInboundPath to fix error in Settings.tsx
-export const addInboundPath = async (path: string): Promise<string[]> => {
-  if (!localInboundPaths.includes(path)) {
-    localInboundPaths.push(path);
-  }
-  return Promise.resolve([...localInboundPaths]);
-};
-
-// Added missing function deleteInboundPath to fix error in Settings.tsx
-export const deleteInboundPath = async (path: string, migrateTo?: string): Promise<string[]> => {
-  // Migrate cases if target provided
-  if (migrateTo) {
-    localCases = localCases.map(c => {
-      if (c.inboundPath === path) {
-        return { ...c, inboundPath: migrateTo, updatedAt: new Date().toISOString() };
-      }
-      return c;
-    });
-  }
-
-  localInboundPaths = localInboundPaths.filter(p => p !== path);
-  return Promise.resolve([...localInboundPaths]);
-};
-
-// --- Lead Integration (Google Sheets) ---
-
-// Replace this with the URL provided by the user
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwD5zk784sBuSLnpkRa9oL3YWB66-Ypu4rDnv_f3POOlLeomNiU8rImyXf8baPHtJITPg/exec";
-
-// Simulate external data source (Google Sheet Rows)
-interface ExternalLeadRow {
-  name: string;
-  phone: string;
-  pageTitle: string; // Used as Inbound Path
-  extraInfo: string;
-  timestamp: string;
-}
-
-const MOCK_EXTERNAL_LEADS: ExternalLeadRow[] = [
-  { name: '김신규', phone: '010-9999-1111', pageTitle: '파산면책 이벤트A', extraInfo: '부채 5천만원, 직장인', timestamp: new Date().toISOString() },
-  { name: '이초기', phone: '010-8888-2222', pageTitle: '개인회생 상담신청', extraInfo: '서울 거주, 자영업', timestamp: new Date().toISOString() },
-  { name: '박테스트', phone: '010-7777-3333', pageTitle: '새출발기금 문의', extraInfo: '기존 대출 3건', timestamp: new Date().toISOString() }
-];
-
+// Backwards compatibility / Polling disabled for now to prevent spam
 export const fetchNewLeads = async (): Promise<Case[]> => {
-  // If no URL configured, use mock data (Demo Mode)
-  if (!GOOGLE_SCRIPT_URL) {
-    return fetchMockLeads();
-  }
-
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL);
-    if (!response.ok) throw new Error('Network response was not ok');
-
-    // Expected format: [{id: "uuid", timestamp: "...", name: "...", phone: "...", source: "...", note: "...", status: "..."}]
-    const data = await response.json();
-
-    // Filter out leads that already exist locally (by ID or Phone)
-    const newLeads = data.filter((row: any) => !localCases.some(c => c.caseId === row.id || c.phone === row.phone));
-
-    if (newLeads.length === 0) return [];
-
-    const newCases: Case[] = [];
-    const now = new Date().toISOString();
-
-    for (const lead of newLeads) {
-      if (!lead.id) continue; // Skip if no ID
-
-      // Auto-add Inbound Path
-      if (lead.source && !localInboundPaths.includes(lead.source)) {
-        localInboundPaths.push(lead.source);
-      }
-
-      const newCase: Case = {
-        caseId: lead.id, // Use ID from Sheet
-        customerName: lead.name,
-        phone: lead.phone,
-        inboundPath: lead.source || '',
-        preInfo: lead.note || '',
-        status: lead.status || '신규접수',
-        isNew: true,
-
-        // Defaults
-        partnerId: localPartners[0]?.partnerId || '',
-        createdAt: lead.timestamp || now,
-        updatedAt: now,
-        statusUpdatedAt: now,
-        managerName: 'System',
-        gender: '남',
-        jobTypes: [],
-        incomeDetails: {},
-        incomeNet: 0,
-        loanMonthlyPay: 0,
-        housingType: '월세',
-        housingDetail: '기타',
-        deposit: 0,
-        rent: 0,
-        assets: [],
-        insurance4: '미가입',
-        maritalStatus: '미혼',
-      } as Case;
-
-      newCases.push(newCase);
-    }
-
-    localCases.unshift(...newCases);
-    return newCases;
-
-  } catch (error) {
-    console.warn("Failed to fetch from Google Sheet, falling back to mock data for demo", error);
-    return fetchMockLeads();
-  }
-};
-
-const fetchMockLeads = async (): Promise<Case[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-
-  // 1. Randomly decide if there are new leads (30% chance)
-  const shouldHaveNewLeads = Math.random() < 0.3;
-
-  // For demo purposes, if total cases are small, force adding some
-  if (!shouldHaveNewLeads && localCases.length > 20) return [];
-
-  // 2. Pick a random lead from mock source
-  const randomLead = MOCK_EXTERNAL_LEADS[Math.floor(Math.random() * MOCK_EXTERNAL_LEADS.length)];
-
-  // 3. Check for duplicates (Phone number check)
-  const exists = localCases.some(c => c.phone === randomLead.phone);
-  if (exists) return [];
-
-  // 4. Auto-add Inbound Path if not exists
-  if (!localInboundPaths.includes(randomLead.pageTitle)) {
-    localInboundPaths.push(randomLead.pageTitle);
-  }
-
-  // 5. Create new Case
-  const newCaseId = uuidv4().slice(0, 8);
-  const now = new Date().toISOString();
-
-  const newCase: Case = {
-    caseId: newCaseId,
-    customerName: randomLead.name,
-    phone: randomLead.phone,
-    inboundPath: randomLead.pageTitle,
-    preInfo: randomLead.extraInfo,
-    status: '신규접수',
-    isNew: true, // Flag as new
-
-    // Defaults
-    partnerId: localPartners[0]?.partnerId || '',
-    createdAt: now,
-    updatedAt: now,
-    statusUpdatedAt: now,
-    managerName: 'System', // Imported by System
-    gender: '남',
-    jobTypes: [],
-    incomeDetails: {},
-    incomeNet: 0,
-    loanMonthlyPay: 0,
-    housingType: '월세',
-    housingDetail: '기타',
-    deposit: 0,
-    rent: 0,
-    assets: [],
-    insurance4: '미가입',
-    maritalStatus: '미혼',
-
-  } as Case;
-
-  localCases.unshift(newCase); // Add to top
-  return [newCase];
+  return [];
 };

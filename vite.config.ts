@@ -12,8 +12,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react()],
     define: {
-      'process.env.API_KEY': JSON.stringify("AIzaSyAF2SafVgWNz00d0UpkD-eeIqSOCmOtK4g"),
-      'process.env.GEMINI_API_KEY': JSON.stringify("AIzaSyAF2SafVgWNz00d0UpkD-eeIqSOCmOtK4g")
+      // Keys should be loaded from .env via VITE_ prefix
     },
     resolve: {
       alias: {

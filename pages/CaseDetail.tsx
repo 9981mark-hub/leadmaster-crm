@@ -376,15 +376,12 @@ export default function CaseDetail() {
 
         // Use current file or try to fetch from latest recording if exists
         let fileToProcess = currentAudioFile;
-        // In a real scenario, we'd need to fetch the blob from the URL if currentAudioFile is null but c.recordings has items.
-        // For this client-side demo, we rely on the user having just selected the file or re-uploading.
 
         if (!fileToProcess && (!c.recordings || c.recordings.length === 0)) {
             showToast("분석할 통화 녹음 파일이 없습니다.", 'error');
             return;
         }
 
-        // If no current file selected but we have recordings, we might prompt user (or just use current logic requiring explicit upload for analysis)
         if (!fileToProcess) {
             showToast("분석을 위해 파일을 선택해주세요.", 'error');
             triggerAudioInput();
@@ -396,7 +393,13 @@ export default function CaseDetail() {
 
         setIsAiLoading(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process.env as any).GEMINI_API_KEY;
+
+            if (!apiKey) {
+                throw new Error("API Key is missing. Check VITE_GEMINI_API_KEY in .env file.");
+            }
+
+            const ai = new GoogleGenAI({ apiKey });
 
             const contextText = "\n[기본 정보]\n고객명: " + c.customerName + "\n연락처: " + c.phone + "\n직업: " + (c.jobTypes?.join(', ')) + "\n\n[기존 상담 이력]\n" + (c.specialMemo?.map(m => m.content).join('\n') || '없음') + "\n\n[사전 정보]\n" + (c.preInfo || '없음') + "\n";
 
@@ -423,7 +426,7 @@ export default function CaseDetail() {
                 contents: { parts }
             });
 
-            const summary = response.text;
+            const summary = response.text; // Access as property based on installed SDK version (likely @google/genai)
 
             if (summary) {
                 setAiSummaryText(summary);
@@ -433,9 +436,9 @@ export default function CaseDetail() {
                 showToast('AI 요약 내용이 비어있습니다.', 'error');
             }
 
-        } catch (e) {
-            console.error(e);
-            showToast('AI 요약 생성 중 오류가 발생했습니다. API Key를 확인해주세요.', 'error');
+        } catch (e: any) {
+            console.error("AI Generation Error:", e);
+            showToast('오류: ' + (e.message || "AI 요약 생성 실패"), 'error');
         } finally {
             setIsAiLoading(false);
         }
