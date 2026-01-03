@@ -30,7 +30,7 @@ export const useAuth = () => {
 };
 
 // 기본 관리자 이메일
-const DEFAULT_ALLOWED_EMAILS = ['2882a@naver.com'];
+const DEFAULT_ALLOWED_EMAILS = ['9981mark@gmail.com', '2882a@naver.com'];
 
 export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -44,26 +44,26 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
   // 동적 이메일 리스트 관리
   const [allowedEmails, setAllowedEmails] = useState<string[]>(() => {
-      const stored = localStorage.getItem('allowedEmails');
-      return stored ? JSON.parse(stored) : DEFAULT_ALLOWED_EMAILS;
+    const stored = localStorage.getItem('allowedEmails');
+    return stored ? JSON.parse(stored) : DEFAULT_ALLOWED_EMAILS;
   });
 
   const updateAllowedEmails = (newList: string[]) => {
-      setAllowedEmails(newList);
-      localStorage.setItem('allowedEmails', JSON.stringify(newList));
+    setAllowedEmails(newList);
+    localStorage.setItem('allowedEmails', JSON.stringify(newList));
   };
 
   const addAllowedEmail = (email: string) => {
-      if(!allowedEmails.includes(email)) {
-          updateAllowedEmails([...allowedEmails, email]);
-      }
+    if (!allowedEmails.includes(email)) {
+      updateAllowedEmails([...allowedEmails, email]);
+    }
   };
 
   const removeAllowedEmail = (email: string) => {
-      const newList = allowedEmails.filter(e => e !== email);
-      updateAllowedEmails(newList);
+    const newList = allowedEmails.filter(e => e !== email);
+    updateAllowedEmails(newList);
   };
-  
+
   const AuthProviderInternal = ({ children }: { children?: ReactNode }) => {
     const navigate = useNavigate();
 
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
         // 3. 로그인 성공 처리
         const userProfile = { email, name, picture };
-        
+
         localStorage.setItem('authToken', credential);
         localStorage.setItem('userProfile', JSON.stringify(userProfile));
         localStorage.setItem('managerName', name);
@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         setIsAuthenticated(true);
         setUser(userProfile);
         navigate('/');
-        
+
       } catch (error) {
         console.error('Login Failed', error);
         alert('로그인 처리 중 오류가 발생했습니다.');
@@ -98,18 +98,18 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
     // 개발자용 임시 로그인 함수
     const loginAsDev = () => {
-        const devUser = {
-            email: 'dev@test.com',
-            name: '개발자(Test)',
-            picture: ''
-        };
-        localStorage.setItem('authToken', 'dev-token-bypass');
-        localStorage.setItem('userProfile', JSON.stringify(devUser));
-        localStorage.setItem('managerName', devUser.name);
+      const devUser = {
+        email: 'dev@test.com',
+        name: '개발자(Test)',
+        picture: ''
+      };
+      localStorage.setItem('authToken', 'dev-token-bypass');
+      localStorage.setItem('userProfile', JSON.stringify(devUser));
+      localStorage.setItem('managerName', devUser.name);
 
-        setIsAuthenticated(true);
-        setUser(devUser);
-        navigate('/');
+      setIsAuthenticated(true);
+      setUser(devUser);
+      navigate('/');
     };
 
     const logout = () => {
