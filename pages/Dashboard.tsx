@@ -4,7 +4,7 @@ import { Case, Partner, ReminderItem } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement } from '../utils';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet } from 'lucide-react';
-import { STATUS_LIST } from '../constants';
+import { DEFAULT_STATUS_LIST } from '../constants';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
 import { useTheme } from '../contexts/ThemeContext';

@@ -228,7 +228,17 @@ export const addInboundPath = async (path: string): Promise<string[]> => {
 };
 
 // Added missing function deleteInboundPath to fix error in Settings.tsx
-export const deleteInboundPath = async (path: string): Promise<string[]> => {
+export const deleteInboundPath = async (path: string, migrateTo?: string): Promise<string[]> => {
+  // Migrate cases if target provided
+  if (migrateTo) {
+    localCases = localCases.map(c => {
+      if (c.inboundPath === path) {
+        return { ...c, inboundPath: migrateTo, updatedAt: new Date().toISOString() };
+      }
+      return c;
+    });
+  }
+
   localInboundPaths = localInboundPaths.filter(p => p !== path);
   return Promise.resolve([...localInboundPaths]);
 };

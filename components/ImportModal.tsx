@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, Check, Loader2, List, Sparkles } from 'lucide-react';
 import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase } from '../services/api';
 import { Partner, Case } from '../types';
@@ -139,7 +139,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 throw new Error("Google API Key Missing");
             }
 
-            const client = new GoogleGenAI({ apiKey });
+            const client = new GoogleGenerativeAI(apiKey);
             const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const selectedPartner = partners.find(p => p.partnerId === ocrPartnerId);
