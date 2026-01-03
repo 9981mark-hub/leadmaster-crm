@@ -121,15 +121,64 @@ export const createCaseHelper = (newCase: Partial<Case>): Case => {
   } as Case;
 };
 
+// --- Google Sheets Sync Helper ---
+const syncToSheet = async (action: 'create' | 'update' | 'delete', data: any) => {
+  if (!GOOGLE_SCRIPT_URL) return;
+
+  // Optimistic UI update is already handled by the caller modifying localCases
+  // This sends the change to the "Database" in the background
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors', // Important for GAS
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action, data }),
+    });
+  } catch (error) {
+    console.error(`Failed to sync ${action} to Google Sheet:`, error);
+    // In a real app, you might want to rollback the local change or show an error toast
+  }
+};
+
 export const createCase = async (newCase: Partial<Case>): Promise<Case> => {
   const c = createCaseHelper(newCase);
-  localCases.push(c);
+  localCases.unshift(c); // Add to top for immediate UI feedback
+
+  // Sync to Sheet
+  const sheetRow = {
+    id: c.caseId,
+    name: c.customerName,
+    phone: c.phone,
+    source: c.inboundPath,
+    note: c.preInfo,
+    status: c.status
+  };
+
+  // Fire and forget (or await if you want strict consistency)
+  syncToSheet('create', sheetRow);
+
   return Promise.resolve(c);
 };
 
 export const batchCreateCases = async (newCases: Partial<Case>[]): Promise<Case[]> => {
   const createdCases = newCases.map(nc => createCaseHelper(nc));
-  localCases.push(...createdCases);
+  localCases.unshift(...createdCases);
+
+  // Sync each one (Naive approach, acceptable for small batch)
+  for (const c of createdCases) {
+    const sheetRow = {
+      id: c.caseId,
+      name: c.customerName,
+      phone: c.phone,
+      source: c.inboundPath,
+      note: c.preInfo,
+      status: c.status
+    };
+    syncToSheet('create', sheetRow);
+  }
+
   return Promise.resolve(createdCases);
 };
 
@@ -143,11 +192,28 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
     updatedAt: new Date().toISOString()
   };
   localCases[idx] = updated;
+
+  // Sync to Sheet
+  // We only send fields that the sheet cares about (Status, Note, etc)
+  // If mapped fields changed
+  const sheetUpdate = {
+    id: caseId,
+    status: updated.status,
+    note: updated.specialMemo // Mapping specialMemo to Note column might be tricky if it's an array. 
+    // For now, let's just sync Status and Basic Info updates if they changed.
+    // Ideally, the Sheet logic on 'update' handles partial updates.
+  };
+
+  syncToSheet('update', sheetUpdate);
+
   return Promise.resolve(updated);
 };
 
 export const deleteCase = async (caseId: string): Promise<Case[]> => {
   localCases = localCases.filter(c => c.caseId !== caseId);
+
+  syncToSheet('delete', { id: caseId });
+
   return Promise.resolve([...localCases]);
 };
 
@@ -273,11 +339,11 @@ export const fetchNewLeads = async (): Promise<Case[]> => {
     const response = await fetch(GOOGLE_SCRIPT_URL);
     if (!response.ok) throw new Error('Network response was not ok');
 
-    // Expected format from GAS: [{rowIndex: 2, timestamp: "...", name: "...", phone: "...", pageTitle: "...", extraInfo: "..."}]
+    // Expected format: [{id: "uuid", timestamp: "...", name: "...", phone: "...", source: "...", note: "...", status: "..."}]
     const data = await response.json();
 
-    // Filter out leads that already exist locally
-    const newLeads = data.filter((row: any) => !localCases.some(c => c.phone === row.phone));
+    // Filter out leads that already exist locally (by ID or Phone)
+    const newLeads = data.filter((row: any) => !localCases.some(c => c.caseId === row.id || c.phone === row.phone));
 
     if (newLeads.length === 0) return [];
 
@@ -285,23 +351,25 @@ export const fetchNewLeads = async (): Promise<Case[]> => {
     const now = new Date().toISOString();
 
     for (const lead of newLeads) {
+      if (!lead.id) continue; // Skip if no ID
+
       // Auto-add Inbound Path
-      if (!localInboundPaths.includes(lead.pageTitle)) {
-        localInboundPaths.push(lead.pageTitle);
+      if (lead.source && !localInboundPaths.includes(lead.source)) {
+        localInboundPaths.push(lead.source);
       }
 
       const newCase: Case = {
-        caseId: uuidv4().slice(0, 8),
+        caseId: lead.id, // Use ID from Sheet
         customerName: lead.name,
         phone: lead.phone,
-        inboundPath: lead.pageTitle,
-        preInfo: lead.extraInfo,
-        status: '신규접수',
+        inboundPath: lead.source || '',
+        preInfo: lead.note || '',
+        status: lead.status || '신규접수',
         isNew: true,
 
         // Defaults
         partnerId: localPartners[0]?.partnerId || '',
-        createdAt: now,
+        createdAt: lead.timestamp || now,
         updatedAt: now,
         statusUpdatedAt: now,
         managerName: 'System',
