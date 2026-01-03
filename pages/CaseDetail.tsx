@@ -396,7 +396,7 @@ export default function CaseDetail() {
 
         setIsAiLoading(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
             const contextText = "\n[기본 정보]\n고객명: " + c.customerName + "\n연락처: " + c.phone + "\n직업: " + (c.jobTypes?.join(', ')) + "\n\n[기존 상담 이력]\n" + (c.specialMemo?.map(m => m.content).join('\n') || '없음') + "\n\n[사전 정보]\n" + (c.preInfo || '없음') + "\n";
 
