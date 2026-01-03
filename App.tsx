@@ -18,7 +18,7 @@ import { fetchNewLeads } from './services/api'; // Import api
 
 // *** 중요: Google Cloud Console에서 발급받은 실제 Client ID로 교체해야 합니다 ***
 // 예: "1234567890-abcdefg.apps.googleusercontent.com"
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE";
+const GOOGLE_CLIENT_ID = "703402707746-b3dia8784s2k1g5nfm6dpps2r75hukms.apps.googleusercontent.com";
 
 const NavItem = ({ to, icon: Icon, label, active, badge }: any) => (
   <Link to={to} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${active ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
