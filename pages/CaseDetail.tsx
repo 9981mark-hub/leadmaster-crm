@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { formatPhone, MANAGER_NAME, CASE_TYPES, JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_OWNERS, ASSET_TYPES, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS, AVAILABLE_FIELDS_CONFIG, formatMoney, DEFAULT_AI_PROMPT } from '../constants';
 import { useToast } from '../contexts/ToastContext';
 import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64 } from '../utils';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from 'uuid';
 
 // Reusable Components within CaseDetail
@@ -399,7 +399,8 @@ export default function CaseDetail() {
                 throw new Error("API Key is missing. Check VITE_GEMINI_API_KEY in .env file.");
             }
 
-            const ai = new GoogleGenAI({ apiKey });
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const contextText = "\n[기본 정보]\n고객명: " + c.customerName + "\n연락처: " + c.phone + "\n직업: " + (c.jobTypes?.join(', ')) + "\n\n[기존 상담 이력]\n" + (c.specialMemo?.map(m => m.content).join('\n') || '없음') + "\n\n[사전 정보]\n" + (c.preInfo || '없음') + "\n";
 
@@ -408,10 +409,13 @@ export default function CaseDetail() {
             // Add Audio
             if (fileToProcess) {
                 const base64Audio = await fileToBase64(fileToProcess);
+                // Remove header if present (data:audio/...)
+                const base64Content = base64Audio.split(',')[1];
+
                 parts.push({
                     inlineData: {
                         mimeType: fileToProcess.type,
-                        data: base64Audio
+                        data: base64Content
                     }
                 });
             }
@@ -421,12 +425,9 @@ export default function CaseDetail() {
                 text: promptTemplate + "\n\n" + contextText
             });
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-pro',
-                contents: { parts }
-            });
-
-            const summary = response.text; // Access as property based on installed SDK version (likely @google/genai)
+            const result = await model.generateContent(parts);
+            const response = await result.response;
+            const summary = response.text();
 
             if (summary) {
                 setAiSummaryText(summary);
