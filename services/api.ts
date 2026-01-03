@@ -243,7 +243,10 @@ export const deleteInboundPath = async (path: string, migrateTo?: string): Promi
   return Promise.resolve([...localInboundPaths]);
 };
 
-// --- Lead Integration (Mock) ---
+// --- Lead Integration (Google Sheets) ---
+
+// Replace this with the URL provided by the user
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwD5zk784sBuSLnpkRa9oL3YWB66-Ypu4rDnv_f3POOlLeomNiU8rImyXf8baPHtJITPg/exec";
 
 // Simulate external data source (Google Sheet Rows)
 interface ExternalLeadRow {
@@ -260,10 +263,75 @@ const MOCK_EXTERNAL_LEADS: ExternalLeadRow[] = [
   { name: '박테스트', phone: '010-7777-3333', pageTitle: '새출발기금 문의', extraInfo: '기존 대출 3건', timestamp: new Date().toISOString() }
 ];
 
-// Keep track of last fetched time to simulate "New" leads
-let lastFetchTime = new Date().toISOString();
-
 export const fetchNewLeads = async (): Promise<Case[]> => {
+  // If no URL configured, use mock data (Demo Mode)
+  if (!GOOGLE_SCRIPT_URL) {
+    return fetchMockLeads();
+  }
+
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL);
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    // Expected format from GAS: [{rowIndex: 2, timestamp: "...", name: "...", phone: "...", pageTitle: "...", extraInfo: "..."}]
+    const data = await response.json();
+
+    // Filter out leads that already exist locally
+    const newLeads = data.filter((row: any) => !localCases.some(c => c.phone === row.phone));
+
+    if (newLeads.length === 0) return [];
+
+    const newCases: Case[] = [];
+    const now = new Date().toISOString();
+
+    for (const lead of newLeads) {
+      // Auto-add Inbound Path
+      if (!localInboundPaths.includes(lead.pageTitle)) {
+        localInboundPaths.push(lead.pageTitle);
+      }
+
+      const newCase: Case = {
+        caseId: uuidv4().slice(0, 8),
+        customerName: lead.name,
+        phone: lead.phone,
+        inboundPath: lead.pageTitle,
+        preInfo: lead.extraInfo,
+        status: '신규접수',
+        isNew: true,
+
+        // Defaults
+        partnerId: localPartners[0]?.partnerId || '',
+        createdAt: now,
+        updatedAt: now,
+        statusUpdatedAt: now,
+        managerName: 'System',
+        gender: '남',
+        jobTypes: [],
+        incomeDetails: {},
+        incomeNet: 0,
+        loanMonthlyPay: 0,
+        housingType: '월세',
+        housingDetail: '기타',
+        deposit: 0,
+        rent: 0,
+        assets: [],
+        insurance4: '미가입',
+        maritalStatus: '미혼',
+      } as Case;
+
+      newCases.push(newCase);
+    }
+
+    localCases.unshift(...newCases);
+    return newCases;
+
+  } catch (error) {
+    console.warn("Failed to fetch from Google Sheet, falling back to mock data for demo", error);
+    return fetchMockLeads();
+  }
+};
+
+const fetchMockLeads = async (): Promise<Case[]> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 800));
 
