@@ -422,7 +422,7 @@ export default function CaseDetail() {
             });
 
             const response = await ai.models.generateContent({
-                model: 'gemini-1.5-flash-001',
+                model: 'gemini-pro',
                 contents: { parts }
             });
 

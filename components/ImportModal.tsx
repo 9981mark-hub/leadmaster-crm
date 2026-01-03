@@ -140,7 +140,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
             }
 
             const client = new GoogleGenerativeAI(apiKey);
-            const model = client.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+            const model = client.getGenerativeModel({ model: "gemini-pro" });
 
             const selectedPartner = partners.find(p => p.partnerId === ocrPartnerId);
             const prompt = selectedPartner?.ocrPromptTemplate || `
