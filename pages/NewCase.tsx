@@ -12,27 +12,27 @@ import { useToast } from '../contexts/ToastContext';
 const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "" }: any) => {
   const displayValue = type === 'number' && value === 0 ? '' : value;
   return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="mb-5">
+      <label className="block text-base font-semibold text-gray-700 mb-2">{label}</label>
       <div className="relative">
         <input
           type={type}
-          className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow bg-white hover:border-gray-400"
           value={displayValue}
           onChange={e => onChange(type === 'number' ? Number(e.target.value) || 0 : e.target.value)}
           onBlur={onBlur}
           placeholder={placeholder}
         />
-        {suffix && <span className="absolute right-3 top-2 text-gray-500 text-sm">{suffix}</span>}
+        {suffix && <span className="absolute right-4 top-3.5 text-gray-500 font-medium">{suffix}</span>}
       </div>
     </div>
   );
 };
 
 const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    <div className="flex gap-2 flex-wrap">
+  <div className="mb-6">
+    <label className="block text-base font-semibold text-gray-700 mb-2">{label}</label>
+    <div className="flex gap-3 flex-wrap">
       {options.map((opt: string) => {
         const isSelected = isMulti ? value?.includes(opt) : value === opt;
         return (
@@ -40,7 +40,10 @@ const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`px - 3 py - 2 text - sm rounded - md border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'} `}
+            className={`px-5 py-3 text-base font-medium rounded-xl border transition-all duration-200 ${isSelected
+                ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-[1.02]'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-400'
+              }`}
           >
             {opt}
           </button>
