@@ -302,7 +302,7 @@ export default function NewCase() {
                   사전 고객 정보 (리드 수집 정보)
                 </label>
                 <div className="w-full p-3 border border-indigo-100 rounded-lg text-sm bg-indigo-50 text-gray-700 whitespace-pre-wrap leading-relaxed shadow-sm">
-                  {formData.preInfo.split('\n').filter((line: string) => {
+                  {formData.preInfo.split(/\s\/\s|\n/).filter((line: string) => {
                     // Filter out technical/consent fields
                     const lower = line.toLowerCase();
                     return !lower.includes('[referrer]') &&

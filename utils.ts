@@ -283,29 +283,27 @@ export const getReminderStatus = (dateStr?: string) => {
 export const parseGenericDate = (dateStr: string | undefined | null): Date | null => {
   if (!dateStr) return null;
 
-  // 1. Try ISO
+  // 1. Try ISO (Standard)
   const d1 = new Date(dateStr);
-  if (isValid(d1) && dateStr.includes('-')) return d1; // ISO likely contains hyphens
+  if (isValid(d1) && dateStr.includes('-') && !isNaN(d1.getTime())) return d1;
 
   // 2. Try Korean Format "2024. 1. 4. 오후 6:30:00" or similar
-  // Remove "오전", "오후" and handle 12h time manually if needed, or simple replace
-  let cleanStr = dateStr.replace(/\./g, '-').replace('오전', 'AM').replace('오후', 'PM').trim();
-  // Some browsers parse "YYYY- M- D- AM h:mm:ss" well, others don't.
-  // Let's rely on date-fns `parse` if possible or manual regex.
+  // Normalize: remove dots, spaces, handle AM/PM
+  const cleanStr = dateStr.trim();
 
-  // Regex for "2024. 1. 4. 오후 6:30:00" -> yyyy, M, d, ampm, h, m, s
-  // Matches: 2024. 1. 4. or 2024. 01. 04.
-  const koRegex = /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?\s*(오전|오후)?\s*(\d{1,2}):(\d{1,2}):?(\d{1,2})?/;
-  const match = dateStr.match(koRegex);
+  // Regex for Full DateTime: 2024. 1. 4. 오후 6:30:00
+  // Optional seconds, optional dots at end of numbers
+  const koFullRegex = /(\d{4})[\.\-]\s*(\d{1,2})[\.\-]\s*(\d{1,2})[\.]?\s*(오전|오후)?\s*(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/;
+  const matchFull = cleanStr.match(koFullRegex);
 
-  if (match) {
-    const year = parseInt(match[1]);
-    const month = parseInt(match[2]) - 1;
-    const day = parseInt(match[3]);
-    const ampm = match[4];
-    let hour = parseInt(match[5]);
-    const minute = parseInt(match[6]);
-    const second = match[7] ? parseInt(match[7]) : 0;
+  if (matchFull) {
+    const year = parseInt(matchFull[1]);
+    const month = parseInt(matchFull[2]) - 1;
+    const day = parseInt(matchFull[3]);
+    const ampm = matchFull[4];
+    let hour = parseInt(matchFull[5]);
+    const minute = parseInt(matchFull[6]);
+    const second = matchFull[7] ? parseInt(matchFull[7]) : 0;
 
     if (ampm === '오후' && hour < 12) hour += 12;
     if (ampm === '오전' && hour === 12) hour = 0;
@@ -314,9 +312,21 @@ export const parseGenericDate = (dateStr: string | undefined | null): Date | nul
     if (isValid(d2)) return d2;
   }
 
-  // 3. Fallback: try removing dots and standard parse
-  const d3 = new Date(dateStr.replace(/\./g, '-'));
-  if (isValid(d3)) return d3;
+  // 3. Try Date Only: "2024. 1. 4"
+  const koDateRegex = /(\d{4})[\.\-]\s*(\d{1,2})[\.\-]\s*(\d{1,2})/;
+  const matchDate = cleanStr.match(koDateRegex);
+
+  if (matchDate) {
+    const year = parseInt(matchDate[1]);
+    const month = parseInt(matchDate[2]) - 1;
+    const day = parseInt(matchDate[3]);
+    const d3 = new Date(year, month, day);
+    if (isValid(d3)) return d3;
+  }
+
+  // 4. Fallback: naive replacement of dots to hyphens
+  const d4 = new Date(dateStr.replace(/\./g, '-'));
+  if (isValid(d4) && !isNaN(d4.getTime())) return d4;
 
   return null;
 };
