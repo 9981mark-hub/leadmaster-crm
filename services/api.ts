@@ -133,6 +133,9 @@ const processIncomingCase = (c: any): Case => {
     ownHousePrice: Number(c.ownHousePrice || c.OwnHousePrice) || 0,
     ownHouseLoan: Number(c.ownHouseLoan || c.OwnHouseLoan) || 0,
     childrenCount: Number(c.childrenCount || c.ChildrenCount) || 0,
+
+    // DEBUG: Attach Raw Data
+    _raw: c
   };
 
   return {

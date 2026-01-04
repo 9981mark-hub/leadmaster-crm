@@ -47,6 +47,7 @@ export interface Case {
   statusUpdatedAt: string; // ISO
   managerName: string;
   isNew?: boolean; // Added: Flag for new leads from landing pages
+  _raw?: any; // DEBUG
 
   // New Fields (Request)
   caseType?: string; // '개인회생' | '파산' | '새출발기금' | '신용회복'

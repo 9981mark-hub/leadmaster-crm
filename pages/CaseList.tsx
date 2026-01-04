@@ -469,8 +469,8 @@ export default function CaseList() {
                 <p>Status: {debugLog}</p>
                 {lastRawItem && (
                     <div className="mt-2">
-                        <p>Last Item Raw Data:</p>
-                        <pre>{JSON.stringify(lastRawItem, null, 2)}</pre>
+                        <p>Last Item Raw Data (Source):</p>
+                        <pre>{JSON.stringify(lastRawItem._raw || lastRawItem, null, 2)}</pre>
                     </div>
                 )}
             </div>
