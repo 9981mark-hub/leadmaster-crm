@@ -90,7 +90,7 @@ export const initializeData = async () => {
 };
 
 // Helper: Ensure imported data types are correct
-const processIncomingCase = (c: any): Case => {
+export const processIncomingCase = (c: any): Case => {
   // Ensure arrays/objects are parsed if they came as strings (double safety)
   if (typeof c.jobTypes === 'string') c.jobTypes = [c.jobTypes];
 

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder } from '../utils';
 import { Link } from 'react-router-dom';
