@@ -221,8 +221,12 @@ export const processIncomingCase = (c: any): Case => {
     managerName: c.managerName || c.ManagerName || '진성훈', // Default from screenshot context
     partnerId: c.partnerId || c.PartnerId || 'P001',       // Default from screenshot context
     // [Status Logic]
-    // isNew depends on status being '신규접수' AND not being marked as seen locally.
-    isNew: (c.status || c.Status || '신규접수') === '신규접수' && !isCaseSeen(c.caseId || c.CaseID || c.id),
+    // [Status Logic]
+    // isNew depends on status being '신규접수' AND (No Manager Assigned) AND (Not marked seen locally)
+    // Presence of managerName (locally or from DB) implies it has been handled/created manually.
+    isNew: (c.status || c.Status || '신규접수') === '신규접수'
+      && !(c.managerName || c.ManagerName)
+      && !isCaseSeen(c.caseId || c.CaseID || c.id),
 
     // [Personal]
     customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',

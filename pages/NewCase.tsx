@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createCase, updateCase, fetchCases, fetchInboundPaths, fetchPartners, markCaseAsSeen } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { formatPhone, CASE_TYPES } from '../constants';
+import { formatPhone, CASE_TYPES, MANAGER_NAME } from '../constants';
 import { ChevronRight, ChevronLeft, Save, Plus, Trash2, Building } from 'lucide-react';
 import { JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_TYPES, ASSET_OWNERS, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS } from '../constants';
 import { normalizeBirthYear } from '../utils';
@@ -221,11 +221,12 @@ export default function NewCase() {
         showToast('케이스가 정식 등록되었습니다.');
       } else {
         // Create new
-        // Create new
-        savedCase = await createCase({
+        const newCasePayload = {
           ...payload,
-          isNew: false // Manual creation is never 'New' (unseen)
-        });
+          managerName: MANAGER_NAME, // Explicitly set manager to mark as handled
+          isNew: false // Local flag
+        };
+        savedCase = await createCase(newCasePayload);
         showToast('신규 케이스가 등록되었습니다.');
       }
 
