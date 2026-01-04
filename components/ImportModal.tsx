@@ -140,7 +140,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
             }
 
             const client = new GoogleGenerativeAI(apiKey);
-            const model = client.getGenerativeModel({ model: "gemini-2.0-flash-001" });
+            const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
 
             const selectedPartner = partners.find(p => p.partnerId === ocrPartnerId);
             const prompt = selectedPartner?.ocrPromptTemplate || `
@@ -154,12 +154,31 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         If a field is not found, use empty string.
       `;
 
-            const result = await model.generateContent([
-                { inlineData: { mimeType, data: base64Content } },
-                prompt
-            ]);
+            // Retry Logic with Exponential Backoff
+            let attempt = 0;
+            const maxRetries = 3;
+            let responseText = "";
 
-            const responseText = result.response.text();
+            while (attempt < maxRetries) {
+                try {
+                    const result = await model.generateContent([
+                        { inlineData: { mimeType, data: base64Content } },
+                        prompt
+                    ]);
+                    responseText = result.response.text();
+                    break; // Success
+                } catch (err: any) {
+                    attempt++;
+                    console.warn(`OCR Attempt ${attempt} failed:`, err);
+
+                    if ((err.message?.includes('429') || err.message?.includes('503')) && attempt < maxRetries) {
+                        const waitTime = Math.pow(2, attempt) * 1000 + Math.random() * 500;
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        continue;
+                    }
+                    throw err;
+                }
+            }
             // Clean up markdown if present
             const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             const parsed = JSON.parse(jsonStr);

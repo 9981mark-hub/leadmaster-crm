@@ -400,7 +400,8 @@ export default function CaseDetail() {
             }
 
             const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
+            // using 'gemini-flash-latest' for better stability and free tier limits
+            const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
             const contextText = "\n[기본 정보]\n고객명: " + c.customerName + "\n연락처: " + c.phone + "\n직업: " + (c.jobTypes?.join(', ')) + "\n\n[기존 상담 이력]\n" + (c.specialMemo?.map(m => m.content).join('\n') || '없음') + "\n\n[사전 정보]\n" + (c.preInfo || '없음') + "\n";
 
@@ -425,9 +426,30 @@ export default function CaseDetail() {
                 text: promptTemplate + "\n\n" + contextText
             });
 
-            const result = await model.generateContent(parts);
-            const response = await result.response;
-            const summary = response.text();
+            // Retry Logic with Exponential Backoff
+            let attempt = 0;
+            const maxRetries = 3;
+            let summary = "";
+
+            while (attempt < maxRetries) {
+                try {
+                    const result = await model.generateContent(parts);
+                    const response = await result.response;
+                    summary = response.text();
+                    break; // Success
+                } catch (err: any) {
+                    attempt++;
+                    console.warn(`AI Attempt ${attempt} failed:`, err);
+
+                    // Check for 429 or 503 errors and retry
+                    if ((err.message?.includes('429') || err.message?.includes('503')) && attempt < maxRetries) {
+                        const waitTime = Math.pow(2, attempt) * 1000 + Math.random() * 500; // Exponential backoff + Jitter
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        continue;
+                    }
+                    throw err; // Re-throw if not retryable or max retries reached
+                }
+            }
 
             if (summary) {
                 setAiSummaryText(summary);
@@ -439,7 +461,11 @@ export default function CaseDetail() {
 
         } catch (e: any) {
             console.error("AI Generation Error:", e);
-            showToast('오류: ' + (e.message || "AI 요약 생성 실패"), 'error');
+            if (e.message?.includes('429')) {
+                showToast('사용량이 많아 지연되고 있습니다. 잠시 후 다시 시도해주세요.', 'error');
+            } else {
+                showToast('오류: ' + (e.message || "AI 요약 생성 실패"), 'error');
+            }
         } finally {
             setIsAiLoading(false);
         }
