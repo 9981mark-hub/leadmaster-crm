@@ -533,15 +533,15 @@ export default function CaseDetail() {
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-0 z-10">
                 <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                     <div>
-                        <div className="flex items-center gap-2">
-                            <span className={"px-2 py-0.5 rounded text-xs font-bold text-white " + (['개인회생', '파산'].includes(c.caseType || '') ? 'bg-indigo-500' : 'bg-gray-500')}>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={"px-2 py-0.5 rounded text-xs font-bold text-white whitespace-nowrap " + (['개인회생', '파산'].includes(c.caseType || '') ? 'bg-indigo-500' : 'bg-gray-500')}>
                                 {c.caseType}
                             </span>
-                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-bold border border-gray-200">
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-bold border border-gray-200 whitespace-nowrap">
                                 {currentPartner?.name || '거래처 미정'}
                             </span>
-                            <h1 className="text-2xl font-bold text-gray-900">{c.customerName}</h1>
-                            <span className="text-gray-500">{c.phone}</span>
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-900 whitespace-nowrap">{c.customerName}</h1>
+                            <span className="text-gray-500 whitespace-nowrap">{c.phone}</span>
                         </div>
                         {warnings.length > 0 && (
                             <div className="flex gap-2 mt-2">
