@@ -472,73 +472,133 @@ export default function SettingsPage() {
                                 <CalendarCheck className="mr-2 text-blue-600" size={20} /> 정산 스케줄 설정
                             </h3>
                             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 space-y-4">
-                                <div className="flex flex-col md:flex-row items-center gap-2 text-sm text-gray-700">
-                                    <span className="font-bold">마감: 매주</span>
-                                    <select
-                                        className="p-1 border rounded"
-                                        value={editingPartner.settlementConfig.cutoffDay}
-                                        onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, cutoffDay: Number(e.target.value) } })}
-                                    >
-                                        {[0, 1, 2, 3, 4, 5, 6].map(d => <option key={d} value={d}>{getDayName(d)}요일</option>)}
-                                    </select>
+                                {/* Timing Settings */}
+                                <div>
+                                    <h4 className="text-sm font-bold text-blue-800 mb-2">📅 정산 주기</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div className="bg-white p-3 rounded border border-blue-200">
+                                            <span className="text-xs text-gray-500 block mb-1">마감 요일</span>
+                                            <select
+                                                className="w-full text-sm font-bold bg-transparent outline-none"
+                                                value={editingPartner.settlementConfig.cutoffDay}
+                                                onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, cutoffDay: Number(e.target.value) } })}
+                                            >
+                                                {[0, 1, 2, 3, 4, 5, 6].map(d => <option key={d} value={d}>{getDayName(d)}요일</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border border-blue-200">
+                                            <span className="text-xs text-gray-500 block mb-1">지급 시기</span>
+                                            <select
+                                                className="w-full text-sm font-bold bg-transparent outline-none"
+                                                value={editingPartner.settlementConfig.payoutWeekDelay}
+                                                onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, payoutWeekDelay: Number(e.target.value) } })}
+                                            >
+                                                <option value={0}>이번 주 (금주)</option>
+                                                <option value={1}>다음 주 (차주)</option>
+                                            </select>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border border-blue-200">
+                                            <span className="text-xs text-gray-500 block mb-1">지급 요일</span>
+                                            <select
+                                                className="w-full text-sm font-bold bg-transparent outline-none"
+                                                value={editingPartner.settlementConfig.payoutDay}
+                                                onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, payoutDay: Number(e.target.value) } })}
+                                            >
+                                                {[0, 1, 2, 3, 4, 5, 6].map(d => <option key={d} value={d}>{getDayName(d)}요일</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col md:flex-row items-center gap-2 text-sm text-gray-700">
-                                    <span className="font-bold">지급:</span>
-                                    <select
-                                        className="p-1 border rounded"
-                                        value={editingPartner.settlementConfig.payoutWeekDelay}
-                                        onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, payoutWeekDelay: Number(e.target.value) } })}
-                                    >
-                                        <option value={0}>금주</option>
-                                        <option value={1}>차주</option>
-                                    </select>
-                                    <select
-                                        className="p-1 border rounded"
-                                        value={editingPartner.settlementConfig.payoutDay}
-                                        onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, payoutDay: Number(e.target.value) } })}
-                                    >
-                                        {[0, 1, 2, 3, 4, 5, 6].map(d => <option key={d} value={d}>{getDayName(d)}요일</option>)}
-                                    </select>
-                                </div>
+
                                 <hr className="border-blue-200" />
-                                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
-                                    <span>계약금(</span>
-                                    <input
-                                        type="number" className="w-12 p-1 border rounded text-center"
-                                        value={editingPartner.settlementConfig.downPaymentPercentage}
-                                        onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, downPaymentPercentage: Number(e.target.value) } })}
-                                    />
-                                    <span>%) 입금 시, 수당 </span>
-                                    <input
-                                        type="number" className="w-12 p-1 border rounded text-center"
-                                        value={editingPartner.settlementConfig.firstPayoutPercentage}
-                                        onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, firstPayoutPercentage: Number(e.target.value) } })}
-                                    />
-                                    <span>% 선지급</span>
+
+                                {/* Rate Settings */}
+                                <div>
+                                    <h4 className="text-sm font-bold text-blue-800 mb-2">💸 지급 비율</h4>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <div className="flex-1 bg-white p-3 rounded border border-blue-200 flex items-center justify-between">
+                                            <span className="text-xs text-gray-500">계약금 비율</span>
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="number" className="w-12 text-right font-bold outline-none border-b border-gray-300 focus:border-blue-500 mr-1"
+                                                    value={editingPartner.settlementConfig.downPaymentPercentage}
+                                                    onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, downPaymentPercentage: Number(e.target.value) } })}
+                                                />
+                                                <span className="text-sm">%</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 bg-white p-3 rounded border border-blue-200 flex items-center justify-between">
+                                            <span className="text-xs text-gray-500">선지급 비율</span>
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="number" className="w-12 text-right font-bold outline-none border-b border-gray-300 focus:border-blue-500 mr-1"
+                                                    value={editingPartner.settlementConfig.firstPayoutPercentage}
+                                                    onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, firstPayoutPercentage: Number(e.target.value) } })}
+                                                />
+                                                <span className="text-sm">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-blue-600 mt-2 ml-1">
+                                        * 계약금이 설정된 비율 이상 입금되면 수당의 일부를 선지급합니다.
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4">수당 계산 룰</h3>
-                            <div className="flex flex-wrap gap-2 mb-4 items-end p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <label className="text-[10px] block">최소</label>
-                                    <input type="number" className="p-1 border rounded w-16 text-sm" value={newRule.minFee} onChange={e => setNewRule({ ...newRule, minFee: Number(e.target.value) })} />
+                            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                                <h4 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">새로운 규칙 추가</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    <div>
+                                        <label className="text-[10px] text-gray-500 block mb-1">최소 금액</label>
+                                        <input
+                                            type="number"
+                                            className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder="0"
+                                            value={newRule.minFee}
+                                            onChange={e => setNewRule({ ...newRule, minFee: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-gray-500 block mb-1">최대 (0=무제한)</label>
+                                        <input
+                                            type="number"
+                                            className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder="0"
+                                            value={newRule.maxFee}
+                                            onChange={e => setNewRule({ ...newRule, maxFee: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-green-700 font-bold block mb-1">지급 수당</label>
+                                        <input
+                                            type="number"
+                                            className="w-full p-2 border border-green-200 bg-green-50 rounded text-sm font-bold text-green-800 focus:ring-2 focus:ring-green-500 outline-none"
+                                            placeholder="0"
+                                            value={newRule.commission}
+                                            onChange={e => setNewRule({ ...newRule, commission: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-blue-700 font-bold block mb-1">완납 기준</label>
+                                        <input
+                                            type="number"
+                                            className="w-full p-2 border border-blue-200 bg-blue-50 rounded text-sm font-bold text-blue-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder="0"
+                                            value={newRule.fullPayoutThreshold}
+                                            onChange={e => setNewRule({ ...newRule, fullPayoutThreshold: Number(e.target.value) })}
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="text-[10px] block">최대(0=∞)</label>
-                                    <input type="number" className="p-1 border rounded w-16 text-sm" value={newRule.maxFee} onChange={e => setNewRule({ ...newRule, maxFee: Number(e.target.value) })} />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] block font-bold text-green-700">수당</label>
-                                    <input type="number" className="p-1 border rounded w-16 text-sm" value={newRule.commission} onChange={e => setNewRule({ ...newRule, commission: Number(e.target.value) })} />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] block text-blue-700">완납기준</label>
-                                    <input type="number" className="p-1 border rounded w-16 text-sm" value={newRule.fullPayoutThreshold} onChange={e => setNewRule({ ...newRule, fullPayoutThreshold: Number(e.target.value) })} />
-                                </div>
-                                <button type="button" onClick={handleAddRule} className="bg-blue-600 text-white p-1 rounded hover:bg-blue-700"><Plus size={20} /></button>
+                                <button
+                                    type="button"
+                                    onClick={handleAddRule}
+                                    className="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Plus size={16} /> 규칙 추가하기
+                                </button>
                             </div>
                             <div className="max-h-40 overflow-y-auto overflow-x-auto border rounded">
                                 <table className="w-full text-xs text-left min-w-[300px]">
