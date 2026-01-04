@@ -400,7 +400,7 @@ export default function CaseDetail() {
             }
 
             const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
 
             const contextText = "\n[기본 정보]\n고객명: " + c.customerName + "\n연락처: " + c.phone + "\n직업: " + (c.jobTypes?.join(', ')) + "\n\n[기존 상담 이력]\n" + (c.specialMemo?.map(m => m.content).join('\n') || '없음') + "\n\n[사전 정보]\n" + (c.preInfo || '없음') + "\n";
 
