@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
 import { Link } from 'react-router-dom';
@@ -50,7 +50,7 @@ export default function CaseList() {
         let isMounted = true;
         const intervalId = setInterval(() => {
             if (document.visibilityState === 'visible') {
-                loadData(true); // silent refresh
+                refreshData(); // Trigger actual background fetch
             }
         }, 30000); // 30s
 

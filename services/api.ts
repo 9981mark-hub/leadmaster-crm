@@ -136,6 +136,10 @@ export const initializeData = async () => {
   performBackgroundFetch();
 };
 
+export const refreshData = async () => {
+  return performBackgroundFetch();
+}
+
 const performBackgroundFetch = async () => {
   try {
     // Parallel Fetch
