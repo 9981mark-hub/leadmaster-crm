@@ -41,14 +41,36 @@ export default function CaseList() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    // DEBUG STATE
+    const [debugLog, setDebugLog] = useState<string>("Initializing...");
+    const [lastRawItem, setLastRawItem] = useState<any>(null);
+
     useEffect(() => {
-        Promise.all([fetchCases(), fetchPartners(), fetchInboundPaths(), fetchStatuses()]).then(([data, partnerData, pathData, statusData]) => {
-            setCases(data);
-            setPartners(partnerData);
-            setInboundPaths(pathData);
-            setStatuses(statusData);
-            setLoading(false);
-        });
+        const loadData = async () => {
+            try {
+                setDebugLog("Fetching data...");
+                const [data, partnerData, pathData, statusData] = await Promise.all([
+                    fetchCases(),
+                    fetchPartners(),
+                    fetchInboundPaths(),
+                    fetchStatuses()
+                ]);
+
+                setCases(data);
+                setPartners(partnerData);
+                setInboundPaths(pathData);
+                setStatuses(statusData);
+                setLoading(false);
+
+                setDebugLog(`Success! Loaded ${data.length} cases. First Item: ${data[0]?.customerName}, Last Item: ${data[data.length - 1]?.customerName}`);
+                if (data.length > 0) setLastRawItem(data[data.length - 1]); // Capture last item to check mapping
+            } catch (err: any) {
+                console.error(err);
+                setDebugLog(`Error: ${err.toString()}`);
+                setLoading(false);
+            }
+        };
+        loadData();
     }, []);
 
     // Reset page when filters change
@@ -437,6 +459,18 @@ export default function CaseList() {
                                 ) : null
                             ))}
                         </div>
+                    </div>
+                )}
+            </div>
+
+            {/* DEBUG PANEL */}
+            <div className="mt-8 p-4 bg-gray-900 text-green-400 font-mono text-xs rounded-lg overflow-x-auto">
+                <h4 className="font-bold mb-2">🔍 DEBUG INFO (개발자용)</h4>
+                <p>Status: {debugLog}</p>
+                {lastRawItem && (
+                    <div className="mt-2">
+                        <p>Last Item Raw Data:</p>
+                        <pre>{JSON.stringify(lastRawItem, null, 2)}</pre>
                     </div>
                 )}
             </div>
