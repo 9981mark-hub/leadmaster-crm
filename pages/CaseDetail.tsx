@@ -409,13 +409,13 @@ export default function CaseDetail() {
 
             // Add Audio
             if (fileToProcess) {
-                const base64Audio = await fileToBase64(fileToProcess);
-                // Remove header if present (data:audio/...)
-                const base64Content = base64Audio.split(',')[1];
+                const base64Content = await fileToBase64(fileToProcess); // utils already removes the header
+                // Fallback mime type if file.type is empty (common with some audio recordings)
+                const mimeType = fileToProcess.type || 'audio/mp3';
 
                 parts.push({
                     inlineData: {
-                        mimeType: fileToProcess.type,
+                        mimeType: mimeType,
                         data: base64Content
                     }
                 });

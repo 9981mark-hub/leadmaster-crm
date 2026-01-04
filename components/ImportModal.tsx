@@ -126,10 +126,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         if (!ocrFile) return;
         setIsLoading(true);
         try {
-            const base64Data = await fileToBase64(ocrFile);
-            // Remove header (data:image/png;base64,)
-            const base64Content = base64Data.split(',')[1];
-            const mimeType = ocrFile.type;
+            const base64Content = await fileToBase64(ocrFile); // utils already removes the header
+            const mimeType = ocrFile.type || 'image/png';
 
             // Note: You need a valid API key in environment variables or hardcoded constants for demo
             // Assuming GOOGLE_API_KEY is available via import.meta.env or similar, or prompt user.
