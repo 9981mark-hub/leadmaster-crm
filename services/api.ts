@@ -38,8 +38,13 @@ const syncToSheet = async (payload: any) => {
 // GET Helper
 const fetchFromSheet = async (target: 'leads' | 'settings') => {
   if (!GOOGLE_SCRIPT_URL) return null;
+
+  // Map 'target' to Apps Script 'type'
+  // 'leads' -> 'leads', 'settings' -> 'configs'
+  const apiType = target === 'settings' ? 'configs' : target;
+
   try {
-    const response = await fetch(`${GOOGLE_SCRIPT_URL}?target=${target}`);
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}`);
     if (!response.ok) throw new Error('Network error');
     return await response.json();
   } catch (error) {
@@ -84,33 +89,60 @@ export const initializeData = async () => {
   isInitialized = true;
 };
 
-// Helper: Ensure imported data types are correct
-const processIncomingCase = (c: any): Case => {
-  // Ensure arrays/objects are parsed if they came as strings (double safety)
-  if (typeof c.jobTypes === 'string') c.jobTypes = [c.jobTypes];
+// Map Backend Keys (Sheet Headers: TitleCase) to Frontend Keys (React: camelCase)
+const mappedCase: any = {
+  ...c,
+  // [ID & System]
+  caseId: c.caseId || c.CaseID || c.id || uuidv4(),
+  updatedAt: c.updatedAt || c.UpdatedAt || c.statusUpdatedAt || new Date().toISOString(),
+  createdAt: c.createdAt || c.CreatedAt || c.Timestamp || new Date().toISOString(),
+  status: c.status || c.Status || '신규접수',
+  managerName: c.managerName || c.ManagerName || '진성훈', // Default from screenshot context
+  partnerId: c.partnerId || c.PartnerId || 'P001',       // Default from screenshot context
+  isNew: c.isNew !== undefined ? c.isNew : true,
 
-  return {
-    ...c,
-    assets: c.assets || [],
-    creditLoan: c.creditLoan || [],
-    specialMemo: c.specialMemo || [],
-    reminders: c.reminders || [],
-    recordings: c.recordings || [],
-    jobTypes: c.jobTypes || [],
-    incomeDetails: c.incomeDetails || {},
-    depositHistory: c.depositHistory || [],
-    // Number safety
-    incomeNet: Number(c.incomeNet) || 0,
-    loanMonthlyPay: Number(c.loanMonthlyPay) || 0,
-    deposit: Number(c.deposit) || 0,
-    rent: Number(c.rent) || 0,
-    contractFee: Number(c.contractFee) || 0,
-    childrenCount: Number(c.childrenCount) || 0,
-    ownHousePrice: Number(c.ownHousePrice) || 0,
-    ownHouseLoan: Number(c.ownHouseLoan) || 0,
-    depositLoanAmount: Number(c.depositLoanAmount) || 0,
-    creditCardAmount: Number(c.creditCardAmount) || 0,
-  };
+  // [Personal]
+  customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
+  phone: c.phone || c.Phone || c['전화번호'] || '',
+  birth: c.birth || c.Birth || '',
+  gender: c.gender || c.Gender || '남',
+  region: c.region || c.Region || '',
+
+  // [Case Info]
+  caseType: c.caseType || c.CaseType || '개인회생',
+  inboundPath: c.inboundPath || c.InboundPath || c.inbound_path || c['Landing ID'] || 'Landing Page',
+  historyType: c.historyType || c.HistoryType || '없음',
+  preInfo: c.preInfo || c.PreInfo || '',
+
+  // [Job & Income]
+  jobTypes: typeof c.jobTypes === 'string' ? [c.jobTypes] : (c.JobTypes || c.jobTypes || []),
+  incomeNet: Number(c.incomeNet || c.IncomeNet) || 0,
+
+  // [Housing]
+  housingType: c.housingType || c.HousingType || '월세',
+  housingDetail: c.housingDetail || c.HousingDetail || '기타',
+  deposit: Number(c.deposit || c.Deposit) || 0,
+  rent: Number(c.rent || c.Rent) || 0,
+
+  // [Assets & Loans]
+  ownHousePrice: Number(c.ownHousePrice || c.OwnHousePrice) || 0,
+  ownHouseLoan: Number(c.ownHouseLoan || c.OwnHouseLoan) || 0,
+  childrenCount: Number(c.childrenCount || c.ChildrenCount) || 0,
+};
+
+return {
+  ...mappedCase,
+  assets: mappedCase.assets || [],
+  creditLoan: mappedCase.creditLoan || [],
+  specialMemo: mappedCase.specialMemo || [],
+  reminders: mappedCase.reminders || [],
+  recordings: mappedCase.recordings || [],
+  incomeDetails: mappedCase.incomeDetails || {},
+  depositHistory: mappedCase.depositHistory || [],
+  // Number safety for remaining fields
+  loanMonthlyPay: Number(mappedCase.loanMonthlyPay || c.LoanMonthlyPay) || 0,
+  contractFee: Number(mappedCase.contractFee || c.ContractFee) || 0,
+};
 };
 
 
