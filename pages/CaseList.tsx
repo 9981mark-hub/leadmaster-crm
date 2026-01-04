@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
 import { Link } from 'react-router-dom';
@@ -90,9 +90,15 @@ export default function CaseList() {
 
         loadData(); // Initial load
 
+        // Subscribe to API updates (SWR)
+        const unsubscribe = subscribe(() => {
+            if (isMounted) loadData(true);
+        });
+
         return () => {
             isMounted = false;
             clearInterval(intervalId);
+            unsubscribe();
         };
     }, [showToast]);
 

@@ -8,13 +8,60 @@ import { v4 as uuidv4 } from 'uuid';
 // Replace this with the user's deployed Web App URL
 export const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwD5zk784sBuSLnpkRa9oL3YWB66-Ypu4rDnv_f3POOlLeomNiU8rImyXf8baPHtJITPg/exec";
 
-// --- LOCAL CACHE (Optimistic UI) ---
+// --- LOCAL CACHE & STATE MANAGEMENT ---
 let localCases: Case[] = [];
 let localPartners: Partner[] = [];
-let localLogs: CaseStatusLog[] = [...MOCK_LOGS]; // Logs are currently local-only in this version
+let localLogs: CaseStatusLog[] = [...MOCK_LOGS];
 let localInboundPaths: string[] = [];
 let localStatuses: CaseStatus[] = [];
 let isInitialized = false;
+
+// Event Listeners for Real-time Updates
+const listeners: Set<() => void> = new Set();
+
+export const subscribe = (callback: () => void) => {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+};
+
+const notifyListeners = () => {
+  listeners.forEach(cb => cb());
+};
+
+// LocalStorage Helpers
+const CACHE_KEYS = {
+  PARTNERS: 'lm_partners',
+  CASES: 'lm_cases',
+  PATHS: 'lm_paths',
+  STATUSES: 'lm_statuses'
+};
+
+const loadFromStorage = () => {
+  try {
+    const storedPartners = localStorage.getItem(CACHE_KEYS.PARTNERS);
+    const storedCases = localStorage.getItem(CACHE_KEYS.CASES);
+    const storedPaths = localStorage.getItem(CACHE_KEYS.PATHS);
+    const storedStatuses = localStorage.getItem(CACHE_KEYS.STATUSES);
+
+    if (storedPartners) localPartners = JSON.parse(storedPartners);
+    if (storedCases) localCases = JSON.parse(storedCases);
+    if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
+    if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
+  } catch (e) {
+    console.error("Failed to load from cache", e);
+  }
+};
+
+const saveToStorage = () => {
+  try {
+    localStorage.setItem(CACHE_KEYS.PARTNERS, JSON.stringify(localPartners));
+    localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(localCases));
+    localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
+    localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
+  } catch (e) {
+    console.error("Failed to save to cache", e);
+  }
+};
 
 // ------------------------------------------------------------------
 // DATA SYNC CORE
@@ -38,13 +85,9 @@ const syncToSheet = async (payload: any) => {
 // GET Helper
 const fetchFromSheet = async (target: 'leads' | 'settings') => {
   if (!GOOGLE_SCRIPT_URL) return null;
-
-  // [Fix] Map 'target' to proper Apps Script request type
-  // Frontend: 'settings' -> Backend: 'settings'
   const apiType = target;
-
   try {
-    const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}&_t=${Date.now()}`); // Cache busting
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}&_t=${Date.now()}`);
     if (!response.ok) throw new Error('Network error');
     return await response.json();
   } catch (error) {
@@ -53,47 +96,49 @@ const fetchFromSheet = async (target: 'leads' | 'settings') => {
   }
 };
 
-// [NEW] Helper to Auto-Sync Inbound Paths from Leads to Settings
+// [NEW] Helper to Auto-Sync Inbound Paths
 const syncInboundPaths = async (cases: Case[]) => {
   if (!cases || cases.length === 0) return;
-
-  // 1. Extract unique paths from all cases
   const pathsData = new Set<string>();
   cases.forEach(c => {
     if (c.inboundPath) pathsData.add(c.inboundPath.trim());
   });
-
-  // 2. Compare with existing local paths
   const newPaths: string[] = [];
   pathsData.forEach(p => {
     if (p && !localInboundPaths.includes(p)) {
       newPaths.push(p);
     }
   });
-
-  // 3. If new paths found, sync to backend (Fire & Forget)
   if (newPaths.length > 0) {
     console.log("Found new inbound paths, syncing...", newPaths);
     const updatedPaths = [...localInboundPaths, ...newPaths].sort();
-
-    // Update local first
     localInboundPaths = updatedPaths;
-
-    // Sync to sheet
+    localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths)); // Save immediately
     await syncToSheet({
       target: 'settings',
-      key: 'inboundPaths', // Must match Key in Settings Sheet
+      key: 'inboundPaths',
       value: updatedPaths
     });
+    notifyListeners();
   }
 };
 
-// Initial Data Load (Optimized)
+// Initial Data Load (SWR Pattern)
 export const initializeData = async () => {
-  if (isInitialized) return;
+  // 1. Load from Cache FIRST (Instant)
+  loadFromStorage();
 
+  // 2. Mark initialized immediately so app can boot
+  isInitialized = true;
+
+  // 3. Trigger Background Fetch (Revalidate)
+  // We don't await this, ensuring the UI renders immediately with cached data
+  performBackgroundFetch();
+};
+
+const performBackgroundFetch = async () => {
   try {
-    // Parallel Fetch: Settings & Cases
+    // Parallel Fetch
     const [settingsData, casesData] = await Promise.all([
       fetchFromSheet('settings'),
       fetchFromSheet('leads')
@@ -102,39 +147,35 @@ export const initializeData = async () => {
     // 1. Process Settings
     if (settingsData) {
       if (settingsData.partners) localPartners = settingsData.partners;
-      else localPartners = [...MOCK_PARTNERS];
+      else if (localPartners.length === 0) localPartners = [...MOCK_PARTNERS]; // Fallback only if empty
 
       if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
-      else localInboundPaths = [...MOCK_INBOUND_PATHS];
+      else if (localInboundPaths.length === 0) localInboundPaths = [...MOCK_INBOUND_PATHS];
 
       if (settingsData.statuses) localStatuses = settingsData.statuses;
-      else localStatuses = [...DEFAULT_STATUS_LIST];
+      else if (localStatuses.length === 0) localStatuses = [...DEFAULT_STATUS_LIST];
 
       if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
-    } else {
-      console.warn("Using mock settings data (Fetch failed or empty)");
-      localPartners = [...MOCK_PARTNERS];
-      localInboundPaths = [...MOCK_INBOUND_PATHS];
-      localStatuses = [...DEFAULT_STATUS_LIST];
     }
 
     // 2. Process Cases
     if (casesData && Array.isArray(casesData)) {
       localCases = casesData.map(processIncomingCase);
-      // [NEW] Auto-Sync Inbound Paths after loading cases
       syncInboundPaths(localCases);
-    } else {
-      console.warn("Using mock case data (Fetch failed or empty)");
+    } else if (localCases.length === 0) {
       localCases = [...MOCK_CASES];
     }
 
-    isInitialized = true;
+    // 3. Save to Cache & Notify UI
+    saveToStorage();
+    notifyListeners();
+    console.log("Data revalidated and UI notified.");
+
   } catch (error) {
-    console.error("Initialization failed", error);
-    // Fallback to mocks if critical failure
-    localPartners = [...MOCK_PARTNERS];
-    localCases = [...MOCK_CASES];
-    isInitialized = true; // Prevent retry loops
+    console.error("Background fetch failed", error);
+    // If cache was empty, maybe load mocks? 
+    // But loadFromStorage should have handled it or left it empty.
+    // We leave it as is to avoid overwriting cache with mocks on offline error.
   }
 };
 
