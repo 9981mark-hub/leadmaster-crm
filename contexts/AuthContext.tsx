@@ -13,7 +13,7 @@ interface AuthContextType {
   user: UserProfile | null;
   allowedEmails: string[];
   loginWithGoogle: (credential: string) => void;
-  loginAsDev: () => void;
+
   logout: () => void;
   addAllowedEmail: (email: string) => void;
   removeAllowedEmail: (email: string) => void;
@@ -96,21 +96,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       }
     };
 
-    // 개발자용 임시 로그인 함수
-    const loginAsDev = () => {
-      const devUser = {
-        email: 'dev@test.com',
-        name: '개발자(Test)',
-        picture: ''
-      };
-      localStorage.setItem('authToken', 'dev-token-bypass');
-      localStorage.setItem('userProfile', JSON.stringify(devUser));
-      localStorage.setItem('managerName', devUser.name);
 
-      setIsAuthenticated(true);
-      setUser(devUser);
-      navigate('/');
-    };
 
     const logout = () => {
       localStorage.removeItem('authToken');
@@ -122,7 +108,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     };
 
     return (
-      <AuthContext.Provider value={{ isAuthenticated, user, allowedEmails, loginWithGoogle, loginAsDev, logout, addAllowedEmail, removeAllowedEmail }}>
+      <AuthContext.Provider value={{ isAuthenticated, user, allowedEmails, loginWithGoogle, logout, addAllowedEmail, removeAllowedEmail }}>
         {children}
       </AuthContext.Provider>
     );

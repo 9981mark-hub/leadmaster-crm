@@ -1,10 +1,9 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
-import { Wrench } from 'lucide-react';
 
 export default function LoginPage() {
-    const { loginWithGoogle, loginAsDev } = useAuth();
+    const { loginWithGoogle } = useAuth();
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -45,16 +44,7 @@ export default function LoginPage() {
                     />
                 </div>
 
-                {/* 개발자용 임시 로그인 버튼 */}
-                <div className="pt-6 border-t border-gray-100">
-                    <button
-                        onClick={loginAsDev}
-                        className="flex items-center justify-center w-full px-4 py-2 text-sm text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 hover:text-gray-700 transition-colors"
-                    >
-                        <Wrench size={14} className="mr-2" />
-                        (개발용) 설정 없이 임시 로그인
-                    </button>
-                </div>
+
 
                 <p className="text-xs text-gray-400 mt-4">
                     &copy; {new Date().getFullYear()} LeadMaster CRM. All rights reserved.
