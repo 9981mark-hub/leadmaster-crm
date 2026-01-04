@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder } from '../utils';
 import { Link } from 'react-router-dom';
@@ -48,9 +48,24 @@ export default function CaseList() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                setDebugLog("Fetching data...");
+                setDebugLog(`API Response Check...`);
+
+                // 1. Direct Fetch for Debugging (Bypass all service logic)
+                const rawRes = await fetch(`${GOOGLE_SCRIPT_URL}?type=leads&_t=${Date.now()}`);
+                const rawJson = await rawRes.json();
+
+                // Show RAW ID list and First Item Keys
+                setDebugLog(`Loaded ${rawJson.length} items. IDs: ${rawJson.map((x: any) => x.caseId || x.CaseID || x.id || '?').join(', ')}`);
+
+                if (rawJson.length > 0) {
+                    // Force attach RAW object to the first item for display
+                    setLastRawItem({ ...rawJson[rawJson.length - 1], _raw: rawJson[rawJson.length - 1] });
+                }
+
+                // 2. Normal Flow
                 const [data, partnerData, pathData, statusData] = await Promise.all([
-                    fetchCases(),
+                    // Use the rawJson we just fetched to populate data, to avoid double fetch
+                    Promise.resolve(rawJson.map(processIncomingCase)),
                     fetchPartners(),
                     fetchInboundPaths(),
                     fetchStatuses()

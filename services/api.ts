@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // --- CONFIGURATION ---
 // Replace this with the user's deployed Web App URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwD5zk784sBuSLnpkRa9oL3YWB66-Ypu4rDnv_f3POOlLeomNiU8rImyXf8baPHtJITPg/exec";
+export const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwD5zk784sBuSLnpkRa9oL3YWB66-Ypu4rDnv_f3POOlLeomNiU8rImyXf8baPHtJITPg/exec";
 
 // --- LOCAL CACHE (Optimistic UI) ---
 let localCases: Case[] = [];
@@ -44,7 +44,7 @@ const fetchFromSheet = async (target: 'leads' | 'settings') => {
   const apiType = target === 'settings' ? 'configs' : target;
 
   try {
-    const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}`);
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}&_t=${Date.now()}`); // Cache busting
     if (!response.ok) throw new Error('Network error');
     return await response.json();
   } catch (error) {
