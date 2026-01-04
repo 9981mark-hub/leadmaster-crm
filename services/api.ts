@@ -89,60 +89,65 @@ export const initializeData = async () => {
   isInitialized = true;
 };
 
-// Map Backend Keys (Sheet Headers: TitleCase) to Frontend Keys (React: camelCase)
-const mappedCase: any = {
-  ...c,
-  // [ID & System]
-  caseId: c.caseId || c.CaseID || c.id || uuidv4(),
-  updatedAt: c.updatedAt || c.UpdatedAt || c.statusUpdatedAt || new Date().toISOString(),
-  createdAt: c.createdAt || c.CreatedAt || c.Timestamp || new Date().toISOString(),
-  status: c.status || c.Status || '신규접수',
-  managerName: c.managerName || c.ManagerName || '진성훈', // Default from screenshot context
-  partnerId: c.partnerId || c.PartnerId || 'P001',       // Default from screenshot context
-  isNew: c.isNew !== undefined ? c.isNew : true,
+// Helper: Ensure imported data types are correct
+const processIncomingCase = (c: any): Case => {
+  // Ensure arrays/objects are parsed if they came as strings (double safety)
+  if (typeof c.jobTypes === 'string') c.jobTypes = [c.jobTypes];
 
-  // [Personal]
-  customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
-  phone: c.phone || c.Phone || c['전화번호'] || '',
-  birth: c.birth || c.Birth || '',
-  gender: c.gender || c.Gender || '남',
-  region: c.region || c.Region || '',
+  // Map Backend Keys (Sheet Headers: TitleCase) to Frontend Keys (React: camelCase)
+  const mappedCase: any = {
+    ...c,
+    // [ID & System]
+    caseId: c.caseId || c.CaseID || c.id || uuidv4(),
+    updatedAt: c.updatedAt || c.UpdatedAt || c.statusUpdatedAt || new Date().toISOString(),
+    createdAt: c.createdAt || c.CreatedAt || c.Timestamp || new Date().toISOString(),
+    status: c.status || c.Status || '신규접수',
+    managerName: c.managerName || c.ManagerName || '진성훈', // Default from screenshot context
+    partnerId: c.partnerId || c.PartnerId || 'P001',       // Default from screenshot context
+    isNew: c.isNew !== undefined ? c.isNew : true,
 
-  // [Case Info]
-  caseType: c.caseType || c.CaseType || '개인회생',
-  inboundPath: c.inboundPath || c.InboundPath || c.inbound_path || c['Landing ID'] || 'Landing Page',
-  historyType: c.historyType || c.HistoryType || '없음',
-  preInfo: c.preInfo || c.PreInfo || '',
+    // [Personal]
+    customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
+    phone: c.phone || c.Phone || c['전화번호'] || '',
+    birth: c.birth || c.Birth || '',
+    gender: c.gender || c.Gender || '남',
+    region: c.region || c.Region || '',
 
-  // [Job & Income]
-  jobTypes: typeof c.jobTypes === 'string' ? [c.jobTypes] : (c.JobTypes || c.jobTypes || []),
-  incomeNet: Number(c.incomeNet || c.IncomeNet) || 0,
+    // [Case Info]
+    caseType: c.caseType || c.CaseType || '개인회생',
+    inboundPath: c.inboundPath || c.InboundPath || c.inbound_path || c['Landing ID'] || 'Landing Page',
+    historyType: c.historyType || c.HistoryType || '없음',
+    preInfo: c.preInfo || c.PreInfo || '',
 
-  // [Housing]
-  housingType: c.housingType || c.HousingType || '월세',
-  housingDetail: c.housingDetail || c.HousingDetail || '기타',
-  deposit: Number(c.deposit || c.Deposit) || 0,
-  rent: Number(c.rent || c.Rent) || 0,
+    // [Job & Income]
+    jobTypes: typeof c.jobTypes === 'string' ? [c.jobTypes] : (c.JobTypes || c.jobTypes || []),
+    incomeNet: Number(c.incomeNet || c.IncomeNet) || 0,
 
-  // [Assets & Loans]
-  ownHousePrice: Number(c.ownHousePrice || c.OwnHousePrice) || 0,
-  ownHouseLoan: Number(c.ownHouseLoan || c.OwnHouseLoan) || 0,
-  childrenCount: Number(c.childrenCount || c.ChildrenCount) || 0,
-};
+    // [Housing]
+    housingType: c.housingType || c.HousingType || '월세',
+    housingDetail: c.housingDetail || c.HousingDetail || '기타',
+    deposit: Number(c.deposit || c.Deposit) || 0,
+    rent: Number(c.rent || c.Rent) || 0,
 
-return {
-  ...mappedCase,
-  assets: mappedCase.assets || [],
-  creditLoan: mappedCase.creditLoan || [],
-  specialMemo: mappedCase.specialMemo || [],
-  reminders: mappedCase.reminders || [],
-  recordings: mappedCase.recordings || [],
-  incomeDetails: mappedCase.incomeDetails || {},
-  depositHistory: mappedCase.depositHistory || [],
-  // Number safety for remaining fields
-  loanMonthlyPay: Number(mappedCase.loanMonthlyPay || c.LoanMonthlyPay) || 0,
-  contractFee: Number(mappedCase.contractFee || c.ContractFee) || 0,
-};
+    // [Assets & Loans]
+    ownHousePrice: Number(c.ownHousePrice || c.OwnHousePrice) || 0,
+    ownHouseLoan: Number(c.ownHouseLoan || c.OwnHouseLoan) || 0,
+    childrenCount: Number(c.childrenCount || c.ChildrenCount) || 0,
+  };
+
+  return {
+    ...mappedCase,
+    assets: mappedCase.assets || [],
+    creditLoan: mappedCase.creditLoan || [],
+    specialMemo: mappedCase.specialMemo || [],
+    reminders: mappedCase.reminders || [],
+    recordings: mappedCase.recordings || [],
+    incomeDetails: mappedCase.incomeDetails || {},
+    depositHistory: mappedCase.depositHistory || [],
+    // Number safety for remaining fields
+    loanMonthlyPay: Number(mappedCase.loanMonthlyPay || c.LoanMonthlyPay) || 0,
+    contractFee: Number(mappedCase.contractFee || c.ContractFee) || 0,
+  };
 };
 
 
