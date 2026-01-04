@@ -450,7 +450,7 @@ export default function SettingsPage() {
                                     <label className="text-xs text-gray-500 block mb-1">거래처명</label>
                                     <input
                                         type="text"
-                                        className="text-xl font-bold text-gray-800 border-b border-gray-300 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        className="text-xl font-bold text-gray-800 border-b border-gray-300 focus:border-blue-500 outline-none pb-1 bg-transparent w-full"
                                         value={editingPartner.name}
                                         onChange={e => setEditingPartner({ ...editingPartner, name: e.target.value })}
                                     />
@@ -475,7 +475,7 @@ export default function SettingsPage() {
                                 {/* Timing Settings */}
                                 <div>
                                     <h4 className="text-sm font-bold text-blue-800 mb-2">📅 정산 주기</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                         <div className="bg-white p-3 rounded border border-blue-200">
                                             <span className="text-xs text-gray-500 block mb-1">마감 요일</span>
                                             <select
@@ -515,8 +515,8 @@ export default function SettingsPage() {
                                 {/* Rate Settings */}
                                 <div>
                                     <h4 className="text-sm font-bold text-blue-800 mb-2">💸 지급 비율</h4>
-                                    <div className="flex flex-col sm:flex-row gap-3">
-                                        <div className="flex-1 bg-white p-3 rounded border border-blue-200 flex items-center justify-between">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <div className="bg-white p-3 rounded border border-blue-200 flex items-center justify-between">
                                             <span className="text-xs text-gray-500">계약금 비율</span>
                                             <div className="flex items-center">
                                                 <input
@@ -527,7 +527,7 @@ export default function SettingsPage() {
                                                 <span className="text-sm">%</span>
                                             </div>
                                         </div>
-                                        <div className="flex-1 bg-white p-3 rounded border border-blue-200 flex items-center justify-between">
+                                        <div className="bg-white p-3 rounded border border-blue-200 flex items-center justify-between">
                                             <span className="text-xs text-gray-500">선지급 비율</span>
                                             <div className="flex items-center">
                                                 <input
@@ -550,7 +550,7 @@ export default function SettingsPage() {
                             <h3 className="text-lg font-bold text-gray-700 mb-4">수당 계산 룰</h3>
                             <div className="bg-gray-50 p-4 rounded-lg mb-4">
                                 <h4 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">새로운 규칙 추가</h4>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                                     <div>
                                         <label className="text-[10px] text-gray-500 block mb-1">최소 금액</label>
                                         <input
@@ -600,23 +600,58 @@ export default function SettingsPage() {
                                     <Plus size={16} /> 규칙 추가하기
                                 </button>
                             </div>
-                            <div className="max-h-40 overflow-y-auto overflow-x-auto border rounded">
-                                <table className="w-full text-xs text-left min-w-[300px]">
+
+                            {/* Mobile Card List for Rules */}
+                            <div className="md:hidden space-y-2">
+                                {editingPartner.commissionRules.map(r => (
+                                    <div key={r.ruleId} className="bg-white border rounded-lg p-3 flex justify-between items-center shadow-sm">
+                                        <div className="flex-1">
+                                            <div className="text-xs text-gray-500 mb-1">
+                                                {r.minFee.toLocaleString()} ~ {r.maxFee ? r.maxFee.toLocaleString() : '무제한'}
+                                            </div>
+                                            <div className="font-bold text-green-700 flex items-center gap-2">
+                                                <span>수당: {r.commission.toLocaleString()}만원</span>
+                                            </div>
+                                            <div className="text-xs text-blue-600 mt-1">
+                                                완납기준: {r.fullPayoutThreshold.toLocaleString()}만원
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeleteRule(r.ruleId)}
+                                            className="p-2 text-red-500 hover:bg-red-50 rounded ml-2"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {editingPartner.commissionRules.length === 0 && (
+                                    <p className="text-center text-gray-400 py-4 text-sm">등록된 규칙이 없습니다.</p>
+                                )}
+                            </div>
+
+                            {/* Desktop Table for Rules */}
+                            <div className="hidden md:block max-h-40 overflow-y-auto border rounded">
+                                <table className="w-full text-xs text-left">
                                     <thead className="bg-gray-100 sticky top-0">
                                         <tr>
-                                            <th className="p-2">구간</th>
-                                            <th className="p-2">수당</th>
-                                            <th className="p-2">완납기준</th>
-                                            <th className="p-2">삭제</th>
+                                            <th className="p-2">구간 (만원)</th>
+                                            <th className="p-2">지급 수당</th>
+                                            <th className="p-2">완납 기준</th>
+                                            <th className="p-2 text-center">관리</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {editingPartner.commissionRules.map(r => (
-                                            <tr key={r.ruleId} className="border-b">
-                                                <td className="p-2">{r.minFee}~{r.maxFee || '∞'}</td>
-                                                <td className="p-2 font-bold">{r.commission}</td>
-                                                <td className="p-2">{r.fullPayoutThreshold}</td>
-                                                <td className="p-2"><button type="button" onClick={() => handleDeleteRule(r.ruleId)} className="text-red-500"><Trash2 size={14} /></button></td>
+                                            <tr key={r.ruleId} className="border-b hover:bg-gray-50 transition-colors">
+                                                <td className="p-2 font-medium">{r.minFee.toLocaleString()} ~ {r.maxFee ? r.maxFee.toLocaleString() : '∞'}</td>
+                                                <td className="p-2 font-bold text-green-700">{r.commission.toLocaleString()}만원</td>
+                                                <td className="p-2 text-blue-600 font-medium">{r.fullPayoutThreshold.toLocaleString()}만원</td>
+                                                <td className="p-2 text-center">
+                                                    <button type="button" onClick={() => handleDeleteRule(r.ruleId)} className="text-red-500 hover:text-red-700">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -892,6 +927,6 @@ export default function SettingsPage() {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 }
