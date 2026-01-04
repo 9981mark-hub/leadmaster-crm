@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { createCase, updateCase, fetchCases, fetchInboundPaths, fetchPartners } from '../services/api';
+import { createCase, updateCase, fetchCases, fetchInboundPaths, fetchPartners, markCaseAsSeen } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { formatPhone, CASE_TYPES } from '../constants';
 import { ChevronRight, ChevronLeft, Save, Plus, Trash2, Building } from 'lucide-react';
@@ -40,7 +40,7 @@ const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`px-3 py-2 text-sm rounded-md border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+            className={`px - 3 py - 2 text - sm rounded - md border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'} `}
           >
             {opt}
           </button>
@@ -227,6 +227,11 @@ export default function NewCase() {
           isNew: false // Manual creation is never 'New' (unseen)
         });
         showToast('신규 케이스가 등록되었습니다.');
+      }
+
+      // [Fix] Mark as seen immediately so it doesn't appear as NEW when re-fetched
+      if (savedCase?.caseId) {
+        markCaseAsSeen(savedCase.caseId);
       }
 
       navigate(`/case/${savedCase.caseId}`);

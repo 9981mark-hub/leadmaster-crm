@@ -63,6 +63,28 @@ const saveToStorage = () => {
   }
 };
 
+
+// --- READ/SEEN MANAGEMENT ---
+const SEEN_KEY = 'lm_seen_cases';
+let seenCases: Set<string> = new Set();
+try {
+  const stored = localStorage.getItem(SEEN_KEY);
+  if (stored) seenCases = new Set(JSON.parse(stored));
+} catch (e) { }
+
+export const markCaseAsSeen = (caseId: string) => {
+  if (!caseId) return;
+  if (!seenCases.has(caseId)) {
+    seenCases.add(caseId);
+    localStorage.setItem(SEEN_KEY, JSON.stringify([...seenCases]));
+  }
+};
+
+export const isCaseSeen = (caseId: string): boolean => {
+  if (!caseId) return false;
+  return seenCases.has(caseId);
+};
+
 // ------------------------------------------------------------------
 // DATA SYNC CORE
 // ------------------------------------------------------------------
@@ -199,9 +221,8 @@ export const processIncomingCase = (c: any): Case => {
     managerName: c.managerName || c.ManagerName || '진성훈', // Default from screenshot context
     partnerId: c.partnerId || c.PartnerId || 'P001',       // Default from screenshot context
     // [Status Logic]
-    // isNew depends on status being '신규접수' (New Registration)
-    // If status changes (e.g. to '부재중', '상담진행'), isNew becomes false.
-    isNew: (c.status || c.Status || '신규접수') === '신규접수',
+    // isNew depends on status being '신규접수' AND not being marked as seen locally.
+    isNew: (c.status || c.Status || '신규접수') === '신규접수' && !isCaseSeen(c.caseId || c.CaseID || c.id),
 
     // [Personal]
     customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',

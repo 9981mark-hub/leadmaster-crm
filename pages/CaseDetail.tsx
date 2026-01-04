@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+﻿
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchCases, fetchPartners, updateCase, addMemo, deleteMemo, fetchCaseStatusLogs, fetchInboundPaths, fetchStatuses, changeStatus } from '../services/api';
+import { fetchCases, fetchPartners, updateCase, addMemo, deleteMemo, fetchCaseStatusLogs, fetchInboundPaths, fetchStatuses, changeStatus, markCaseAsSeen } from '../services/api';
 import { Case, Partner, MemoItem, CaseStatusLog, CaseStatus, AssetItem, CreditLoanItem, ReminderItem, RecordingItem } from '../types';
 import { ChevronLeft, Save, Plus, Trash2, Phone, MessageSquare, AlertTriangle, CalendarClock, Send, Play, Pause, Download, Volume2, Mic, Clock, FileText, Archive, PlayCircle, X, Edit2, Sparkles, Check, Copy } from 'lucide-react';
 import { format } from 'date-fns';
@@ -112,8 +113,10 @@ export default function CaseDetail() {
                     if (!foundCase.incomeDetails) foundCase.incomeDetails = {};
                     if (!foundCase.reminders) foundCase.reminders = [];
                     if (!foundCase.recordings) foundCase.recordings = [];
+
+                    setCase(foundCase);
+                    markCaseAsSeen(foundCase.caseId);
                 }
-                setCase(foundCase);
                 setPartners(partnerData);
                 setInboundPaths(pathData);
                 setStatuses(statusData); // Added this line
@@ -439,7 +442,7 @@ export default function CaseDetail() {
                     break; // Success
                 } catch (err: any) {
                     attempt++;
-                    console.warn(`AI Attempt ${attempt} failed:`, err);
+                    console.warn(`AI Attempt ${attempt} failed: `, err);
 
                     // Check for 429 or 503 errors and retry
                     if ((err.message?.includes('429') || err.message?.includes('503')) && attempt < maxRetries) {
@@ -1256,7 +1259,7 @@ export default function CaseDetail() {
                                             {!c.useCapital && <option value="완납">완납</option>}
                                             {Array.from({ length: 8 }, (_, i) => i + 1).map(num => (
                                                 (c.useCapital || num >= 2) ? (
-                                                    <option key={num} value={`${num}개월`}>{num}개월</option>
+                                                    <option key={num} value={`${num} 개월`}>{num}개월</option>
                                                 ) : null
                                             ))}
                                         </select>
