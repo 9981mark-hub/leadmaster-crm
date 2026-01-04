@@ -755,7 +755,11 @@ export default function CaseDetail() {
                         <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
                             <div className="flex justify-between items-center mb-3">
                                 <h3 className="font-bold text-purple-800 flex items-center gap-2">
-                                    <Sparkles size={18} /> AI 상담 요약 & 녹음
+                                    <Sparkles size={18} className="flex-shrink-0" />
+                                    <div className="flex flex-col leading-none">
+                                        <span>AI 상담 요약</span>
+                                        <span>& 녹음</span>
+                                    </div>
                                 </h3>
 
                                 <div className="flex items-center gap-2">
@@ -770,7 +774,10 @@ export default function CaseDetail() {
                                         onClick={triggerAudioInput}
                                         className={"flex items-center gap-1 text-xs px-2 py-1.5 rounded border " + (currentAudioFile ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-600 border-gray-300')}
                                     >
-                                        <Mic size={14} /> {currentAudioFile ? '파일 변경' : '녹음파일 업로드'}
+                                        <Mic size={14} className="flex-shrink-0" />
+                                        <span className="text-center leading-tight">
+                                            {currentAudioFile ? '파일 변경' : <>녹음파일<br />업로드</>}
+                                        </span>
                                     </button>
 
                                     <button
@@ -778,7 +785,7 @@ export default function CaseDetail() {
                                         disabled={isAiLoading}
                                         className="flex items-center gap-1 text-xs bg-purple-600 text-white px-3 py-1.5 rounded font-bold hover:bg-purple-700 disabled:opacity-50 transition-colors shadow-sm"
                                     >
-                                        {isAiLoading ? '분석 중...' : '요약 실행'}
+                                        {isAiLoading ? '분석 중...' : <span className="text-center leading-tight">요약<br />실행</span>}
                                     </button>
                                 </div>
                             </div>
