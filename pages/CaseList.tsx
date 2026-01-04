@@ -169,17 +169,21 @@ export default function CaseList() {
         let dateA, dateB;
 
         if (key === 'lastConsultation') {
-            dateA = new Date(getLastConsultationDate(a));
-            dateB = new Date(getLastConsultationDate(b));
+            dateA = new Date(getLastConsultationDate(a)).getTime();
+            dateB = new Date(getLastConsultationDate(b)).getTime();
         } else { // createdAt
-            dateA = new Date(a.createdAt || 0);
-            dateB = new Date(b.createdAt || 0);
+            // Fix: Handle potentially minimal string formats or undefined
+            // If date is invalid, treat as very old (0)
+            dateA = new Date(a.createdAt || 0).getTime();
+            dateB = new Date(b.createdAt || 0).getTime();
+            if (isNaN(dateA)) dateA = 0;
+            if (isNaN(dateB)) dateB = 0;
         }
 
         if (direction === 'desc') {
-            return dateB.getTime() - dateA.getTime();
+            return dateB - dateA; // Newest first (Descending)
         } else {
-            return dateA.getTime() - dateB.getTime();
+            return dateA - dateB; // Oldest first (Ascending)
         }
     });
 
