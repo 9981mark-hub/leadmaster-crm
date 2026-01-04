@@ -160,7 +160,7 @@ export default function CaseList() {
         return sortedMemos[0].createdAt;
     };
 
-    const sortedCases = [...filteredCases].sort((a, b) => {
+    const sortedCases = [...filteredCases].map((c, index) => ({ ...c, _originalIndex: index })).sort((a, b) => {
         if (sortOrder === 'inboundPath_asc') {
             return (a.inboundPath || '').localeCompare(b.inboundPath || '');
         }
@@ -169,6 +169,7 @@ export default function CaseList() {
         if (sortOrder === 'createdAt_desc') {
             if (a.isNew && !b.isNew) return -1;
             if (!a.isNew && b.isNew) return 1;
+            // If both are New, fallback to standard date sort below (and then index)
         }
 
         const [key, direction] = sortOrder.split('_');
@@ -178,18 +179,31 @@ export default function CaseList() {
             dateA = new Date(getLastConsultationDate(a)).getTime();
             dateB = new Date(getLastConsultationDate(b)).getTime();
         } else { // createdAt
-            // Fix: Use parseGenericDate for Korean/Variable format support
             const dA = parseGenericDate(a.createdAt);
             const dB = parseGenericDate(b.createdAt);
             dateA = dA ? dA.getTime() : 0;
             dateB = dB ? dB.getTime() : 0;
         }
 
-        if (direction === 'desc') {
-            return dateB - dateA; // Newest first (Descending)
-        } else {
-            return dateA - dateB; // Oldest first (Ascending)
+        // Standard Date Comparison
+        if (dateA !== dateB) {
+            if (direction === 'desc') {
+                return dateB - dateA;
+            } else {
+                return dateA - dateB;
+            }
         }
+
+        // [Tie-Breaker] Use original index if dates are identical
+        // For 'desc' (Newest first), we want HIGHER index (later in list) to come FIRST.
+        if (direction === 'desc') {
+            return b._originalIndex - a._originalIndex;
+        } else {
+            return a._originalIndex - b._originalIndex;
+        }
+    }).map(item => {
+        const { _originalIndex, ...rest } = item;
+        return rest as Case;
     });
 
     // Pagination Logic
