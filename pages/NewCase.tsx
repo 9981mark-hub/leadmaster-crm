@@ -295,6 +295,26 @@ export default function NewCase() {
 
             <hr className="my-4 border-gray-100" />
 
+            {/* [ADDED] Pre-customer Information (Lead Info) with Filtering */}
+            {formData.preInfo && (
+              <div className="mb-4 animate-fade-in">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  사전 고객 정보 (리드 수집 정보)
+                </label>
+                <div className="w-full p-3 border border-indigo-100 rounded-lg text-sm bg-indigo-50 text-gray-700 whitespace-pre-wrap leading-relaxed shadow-sm">
+                  {formData.preInfo.split('\n').filter((line: string) => {
+                    // Filter out technical/consent fields
+                    const lower = line.toLowerCase();
+                    return !lower.includes('[referrer]') &&
+                      !lower.includes('[marketing_consent]') &&
+                      !lower.includes('[third_party_consent]') &&
+                      !lower.includes('[user_agent]') &&
+                      line.trim() !== '';
+                  }).join('\n') || <span className="text-gray-400 italic">표시할 추가 정보가 없습니다. (기술 정보 제외됨)</span>}
+                </div>
+              </div>
+            )}
+
             <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
             <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="01012345678" />
             <div className="grid grid-cols-2 gap-4">
