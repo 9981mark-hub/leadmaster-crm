@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun } from 'lucide-react';
-import Dashboard from './pages/Dashboard';
-import CaseList from './pages/CaseList';
-import NewCase from './pages/NewCase';
-import CaseDetail from './pages/CaseDetail';
-import Settlement from './pages/Settlement';
-import SettingsPage from './pages/Settings';
-import MyPage from './pages/MyPage';
-import LoginPage from './pages/LoginPage';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2 } from 'lucide-react';
+// Lazy Load Pages
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const CaseList = lazy(() => import('./pages/CaseList'));
+const NewCase = lazy(() => import('./pages/NewCase'));
+const CaseDetail = lazy(() => import('./pages/CaseDetail'));
+const Settlement = lazy(() => import('./pages/Settlement'));
+const SettingsPage = lazy(() => import('./pages/Settings'));
+const MyPage = lazy(() => import('./pages/MyPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -145,10 +146,16 @@ export default function App() {
         <ToastProvider>
           <ThemeProvider>
             <AuthProvider>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/*" element={<ProtectedRoutes />} />
-              </Routes>
+              <Suspense fallback={
+                <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+                  <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                </div>
+              }>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/*" element={<ProtectedRoutes />} />
+                </Routes>
+              </Suspense>
             </AuthProvider>
           </ThemeProvider>
         </ToastProvider>

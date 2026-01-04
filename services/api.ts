@@ -88,43 +88,54 @@ const syncInboundPaths = async (cases: Case[]) => {
   }
 };
 
-// Initial Data Load
+// Initial Data Load (Optimized)
 export const initializeData = async () => {
   if (isInitialized) return;
 
-  // 1. Fetch Settings
-  const settingsData = await fetchFromSheet('settings');
-  if (settingsData) {
-    if (settingsData.partners) localPartners = settingsData.partners;
-    else localPartners = [...MOCK_PARTNERS];
+  try {
+    // Parallel Fetch: Settings & Cases
+    const [settingsData, casesData] = await Promise.all([
+      fetchFromSheet('settings'),
+      fetchFromSheet('leads')
+    ]);
 
-    if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
-    else localInboundPaths = [...MOCK_INBOUND_PATHS];
+    // 1. Process Settings
+    if (settingsData) {
+      if (settingsData.partners) localPartners = settingsData.partners;
+      else localPartners = [...MOCK_PARTNERS];
 
-    if (settingsData.statuses) localStatuses = settingsData.statuses;
-    else localStatuses = [...DEFAULT_STATUS_LIST];
+      if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
+      else localInboundPaths = [...MOCK_INBOUND_PATHS];
 
-    if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
-  } else {
-    console.warn("Using mock settings data (Fetch failed or empty)");
+      if (settingsData.statuses) localStatuses = settingsData.statuses;
+      else localStatuses = [...DEFAULT_STATUS_LIST];
+
+      if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
+    } else {
+      console.warn("Using mock settings data (Fetch failed or empty)");
+      localPartners = [...MOCK_PARTNERS];
+      localInboundPaths = [...MOCK_INBOUND_PATHS];
+      localStatuses = [...DEFAULT_STATUS_LIST];
+    }
+
+    // 2. Process Cases
+    if (casesData && Array.isArray(casesData)) {
+      localCases = casesData.map(processIncomingCase);
+      // [NEW] Auto-Sync Inbound Paths after loading cases
+      syncInboundPaths(localCases);
+    } else {
+      console.warn("Using mock case data (Fetch failed or empty)");
+      localCases = [...MOCK_CASES];
+    }
+
+    isInitialized = true;
+  } catch (error) {
+    console.error("Initialization failed", error);
+    // Fallback to mocks if critical failure
     localPartners = [...MOCK_PARTNERS];
-    localInboundPaths = [...MOCK_INBOUND_PATHS];
-    localStatuses = [...DEFAULT_STATUS_LIST];
-  }
-
-  // 2. Fetch Cases
-  const casesData = await fetchFromSheet('leads');
-  if (casesData && Array.isArray(casesData)) {
-    localCases = casesData.map(processIncomingCase);
-
-    // [NEW] Auto-Sync Inbound Paths after loading cases
-    syncInboundPaths(localCases);
-  } else {
-    console.warn("Using mock case data (Fetch failed or empty)");
     localCases = [...MOCK_CASES];
+    isInitialized = true; // Prevent retry loops
   }
-
-  isInitialized = true;
 };
 
 // Helper: Ensure imported data types are correct
