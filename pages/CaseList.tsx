@@ -165,6 +165,12 @@ export default function CaseList() {
             return (a.inboundPath || '').localeCompare(b.inboundPath || '');
         }
 
+        // [Fix] Force 'isNew' items to the top if sorting by newest registration
+        if (sortOrder === 'createdAt_desc') {
+            if (a.isNew && !b.isNew) return -1;
+            if (!a.isNew && b.isNew) return 1;
+        }
+
         const [key, direction] = sortOrder.split('_');
         let dateA, dateB;
 
