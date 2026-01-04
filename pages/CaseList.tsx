@@ -62,7 +62,7 @@ export default function CaseList() {
                 setStatuses(statusData);
                 setLoading(false);
 
-                setDebugLog(`Success! Loaded ${data.length} cases. First Item: ${data[0]?.customerName}, Last Item: ${data[data.length - 1]?.customerName}`);
+                setDebugLog(`Success! Loaded ${data.length} cases. IDs: [${data.map(c => c.caseId).join(', ')}]`);
                 if (data.length > 0) setLastRawItem(data[data.length - 1]); // Capture last item to check mapping
             } catch (err: any) {
                 console.error(err);
