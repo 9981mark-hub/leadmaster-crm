@@ -35,6 +35,8 @@ export default function CaseList() {
     const [statusFilter, setStatusFilter] = useState('');
     const [inboundPathFilter, setInboundPathFilter] = useState('');
     const [partnerFilter, setPartnerFilter] = useState('');
+    const [dateFilterStart, setDateFilterStart] = useState('');
+    const [dateFilterEnd, setDateFilterEnd] = useState('');
     const [sortOrder, setSortOrder] = useState<'createdAt_desc' | 'createdAt_asc' | 'lastConsultation_desc' | 'lastConsultation_asc' | 'inboundPath_asc'>('createdAt_desc');
 
     // Pagination
@@ -142,7 +144,21 @@ export default function CaseList() {
         const matchesStatus = statusFilter === '' || c.status === statusFilter;
         const matchesPath = inboundPathFilter === '' || c.inboundPath === inboundPathFilter;
         const matchesPartner = partnerFilter === '' || c.partnerId === partnerFilter;
-        return matchesSearch && matchesStatus && matchesPath && matchesPartner;
+
+        // Date Filter
+        let matchesDate = true;
+        if (dateFilterStart || dateFilterEnd) {
+            const caseDate = parseGenericDate(c.createdAt);
+            if (caseDate) {
+                const dateStr = format(caseDate, 'yyyy-MM-dd');
+                if (dateFilterStart && dateStr < dateFilterStart) matchesDate = false;
+                if (dateFilterEnd && dateStr > dateFilterEnd) matchesDate = false;
+            } else {
+                if (dateFilterStart || dateFilterEnd) matchesDate = false;
+            }
+        }
+
+        return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate;
     });
 
     const getLastConsultationDate = (c: Case): string => {
@@ -260,7 +276,23 @@ export default function CaseList() {
                     />
                 </div>
 
-                <div className="flex flex-wrap gap-2 w-full xl:w-auto">
+                <div className="flex flex-wrap gap-2 w-full xl:w-auto items-center">
+                    {/* Date Filter */}
+                    <div className="flex items-center bg-gray-50 border rounded-lg p-1 dark:bg-gray-700 dark:border-gray-600">
+                        <input
+                            type="date"
+                            className="bg-transparent text-sm p-1 outline-none text-gray-600 dark:text-white"
+                            value={dateFilterStart}
+                            onChange={(e) => setDateFilterStart(e.target.value)}
+                        />
+                        <span className="text-gray-400 mx-1">~</span>
+                        <input
+                            type="date"
+                            className="bg-transparent text-sm p-1 outline-none text-gray-600 dark:text-white"
+                            value={dateFilterEnd}
+                            onChange={(e) => setDateFilterEnd(e.target.value)}
+                        />
+                    </div>
                     <div className="relative flex-1 min-w-[140px]">
                         <Building className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                         <select
