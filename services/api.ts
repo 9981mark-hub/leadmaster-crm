@@ -39,9 +39,9 @@ const syncToSheet = async (payload: any) => {
 const fetchFromSheet = async (target: 'leads' | 'settings') => {
   if (!GOOGLE_SCRIPT_URL) return null;
 
-  // Map 'target' to Apps Script 'type'
-  // 'leads' -> 'leads', 'settings' -> 'configs'
-  const apiType = target === 'settings' ? 'configs' : target;
+  // [Fix] Map 'target' to proper Apps Script request type
+  // Frontend: 'settings' -> Backend: 'settings'
+  const apiType = target;
 
   try {
     const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}&_t=${Date.now()}`); // Cache busting
@@ -50,6 +50,41 @@ const fetchFromSheet = async (target: 'leads' | 'settings') => {
   } catch (error) {
     console.error(`Fetch ${target} failed:`, error);
     return null;
+  }
+};
+
+// [NEW] Helper to Auto-Sync Inbound Paths from Leads to Settings
+const syncInboundPaths = async (cases: Case[]) => {
+  if (!cases || cases.length === 0) return;
+
+  // 1. Extract unique paths from all cases
+  const pathsData = new Set<string>();
+  cases.forEach(c => {
+    if (c.inboundPath) pathsData.add(c.inboundPath.trim());
+  });
+
+  // 2. Compare with existing local paths
+  const newPaths: string[] = [];
+  pathsData.forEach(p => {
+    if (p && !localInboundPaths.includes(p)) {
+      newPaths.push(p);
+    }
+  });
+
+  // 3. If new paths found, sync to backend (Fire & Forget)
+  if (newPaths.length > 0) {
+    console.log("Found new inbound paths, syncing...", newPaths);
+    const updatedPaths = [...localInboundPaths, ...newPaths].sort();
+
+    // Update local first
+    localInboundPaths = updatedPaths;
+
+    // Sync to sheet
+    await syncToSheet({
+      target: 'settings',
+      key: 'inboundPaths', // Must match Key in Settings Sheet
+      value: updatedPaths
+    });
   }
 };
 
@@ -81,6 +116,9 @@ export const initializeData = async () => {
   const casesData = await fetchFromSheet('leads');
   if (casesData && Array.isArray(casesData)) {
     localCases = casesData.map(processIncomingCase);
+
+    // [NEW] Auto-Sync Inbound Paths after loading cases
+    syncInboundPaths(localCases);
   } else {
     console.warn("Using mock case data (Fetch failed or empty)");
     localCases = [...MOCK_CASES];
