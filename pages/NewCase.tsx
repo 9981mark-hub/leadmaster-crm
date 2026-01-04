@@ -215,12 +215,17 @@ export default function NewCase() {
         // We assume "saving" a new lead means consultation has started.
         savedCase = await updateCase(leadId, {
           ...payload,
+          isNew: false, // Explicitly remove new badge
           status: payload.status === '신규접수' ? '상담진행' : payload.status
         });
         showToast('케이스가 정식 등록되었습니다.');
       } else {
         // Create new
-        savedCase = await createCase(payload);
+        // Create new
+        savedCase = await createCase({
+          ...payload,
+          isNew: false // Manual creation is never 'New' (unseen)
+        });
         showToast('신규 케이스가 등록되었습니다.');
       }
 
