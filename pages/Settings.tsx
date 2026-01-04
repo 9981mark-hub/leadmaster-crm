@@ -304,7 +304,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Global Settings */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                     <User className="mr-2 text-gray-600" size={20} /> 공통 설정
                 </h3>
@@ -328,7 +328,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                     <Megaphone className="mr-2 text-purple-600" size={20} /> 유입 경로 설정
                 </h3>
@@ -359,7 +359,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                     <ListChecks className="mr-2 text-green-600" size={20} /> 상태 관리
                 </h3>
@@ -467,7 +467,7 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Sections */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                                 <CalendarCheck className="mr-2 text-blue-600" size={20} /> 정산 스케줄 설정
                             </h3>
@@ -519,7 +519,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4">수당 계산 룰</h3>
                             <div className="flex flex-wrap gap-2 mb-4 items-end p-3 bg-gray-50 rounded-lg">
                                 <div>
@@ -540,8 +540,8 @@ export default function SettingsPage() {
                                 </div>
                                 <button type="button" onClick={handleAddRule} className="bg-blue-600 text-white p-1 rounded hover:bg-blue-700"><Plus size={20} /></button>
                             </div>
-                            <div className="max-h-40 overflow-y-auto border rounded">
-                                <table className="w-full text-xs text-left">
+                            <div className="max-h-40 overflow-y-auto overflow-x-auto border rounded">
+                                <table className="w-full text-xs text-left min-w-[300px]">
                                     <thead className="bg-gray-100 sticky top-0">
                                         <tr>
                                             <th className="p-2">구간</th>
@@ -564,7 +564,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                                 <Edit3 className="mr-2 text-indigo-600" size={20} /> 입력 항목 설정
                             </h3>
@@ -584,7 +584,7 @@ export default function SettingsPage() {
                         </div>
 
                         {/* AI Prompt Settings */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                                 <Sparkles className="mr-2 text-purple-600" size={20} /> AI 요약 프롬프트 설정
                             </h3>
@@ -598,7 +598,7 @@ export default function SettingsPage() {
                         </div>
 
                         {/* OCR Prompt Settings */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                                 <Sparkles className="mr-2 text-pink-600" size={20} /> OCR 인식 프롬프트 설정 (Gemini)
                             </h3>
@@ -611,7 +611,7 @@ export default function SettingsPage() {
                             />
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                                 <Info className="mr-2 text-orange-600" size={20} /> 요약문 양식
                             </h3>
