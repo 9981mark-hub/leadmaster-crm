@@ -18,7 +18,7 @@ export const getMatchingRule = (fee: number, rules: CommissionRule[]): Commissio
     if (b.minFee !== a.minFee) return b.minFee - a.minFee; // Larger minFee first (Specific)
     if (b.priority !== a.priority) return b.priority - a.priority; // Higher priority
     // Date string comparison (ISO)
-    if (b.updatedAt !== a.updatedAt) return b.updatedAt.localeCompare(a.updatedAt); 
+    if (b.updatedAt !== a.updatedAt) return b.updatedAt.localeCompare(a.updatedAt);
     return b.ruleId.localeCompare(a.ruleId);
   });
 
@@ -34,33 +34,33 @@ export const calculateCommission = (fee: number, rules: CommissionRule[]): numbe
 
 // Calculate Payable Commission based on Deposit Amount
 export const calculatePayableCommission = (c: Case, rules: CommissionRule[], config?: SettlementConfig): { payable: number, total: number, isPartial: boolean, rule?: CommissionRule } => {
-    if (!c.contractFee) return { payable: 0, total: 0, isPartial: false };
-    
-    const rule = getMatchingRule(c.contractFee, rules);
-    if (!rule) return { payable: 0, total: 0, isPartial: false };
+  if (!c.contractFee) return { payable: 0, total: 0, isPartial: false };
 
-    const totalDeposit = (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
-    const threshold = rule.fullPayoutThreshold || 0;
-    
-    const downPaymentRate = config ? config.downPaymentPercentage / 100 : 0.1; // Default 10%
-    const firstPayoutRate = config ? config.firstPayoutPercentage / 100 : 0.5; // Default 50%
+  const rule = getMatchingRule(c.contractFee, rules);
+  if (!rule) return { payable: 0, total: 0, isPartial: false };
 
-    // 1. Full Payout Condition (Deposit >= Threshold)
-    if (threshold > 0 && totalDeposit >= threshold) {
-        return { payable: rule.commission, total: rule.commission, isPartial: false, rule };
-    }
+  const totalDeposit = (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
+  const threshold = rule.fullPayoutThreshold || 0;
 
-    // 2. Partial Payout Condition (Deposit >= Down Payment % of Fee)
-    if (totalDeposit >= (c.contractFee * downPaymentRate)) {
-        return { payable: rule.commission * firstPayoutRate, total: rule.commission, isPartial: true, rule };
-    }
+  const downPaymentRate = config ? config.downPaymentPercentage / 100 : 0.1; // Default 10%
+  const firstPayoutRate = config ? config.firstPayoutPercentage / 100 : 0.5; // Default 50%
 
-    return { payable: 0, total: rule.commission, isPartial: false, rule };
+  // 1. Full Payout Condition (Deposit >= Threshold)
+  if (threshold > 0 && totalDeposit >= threshold) {
+    return { payable: rule.commission, total: rule.commission, isPartial: false, rule };
+  }
+
+  // 2. Partial Payout Condition (Deposit >= Down Payment % of Fee)
+  if (totalDeposit >= (c.contractFee * downPaymentRate)) {
+    return { payable: rule.commission * firstPayoutRate, total: rule.commission, isPartial: true, rule };
+  }
+
+  return { payable: 0, total: rule.commission, isPartial: false, rule };
 };
 
 export const getCaseWarnings = (c: Case, partner?: Partner) => {
   const warnings: string[] = [];
-  
+
   // 1. Reminder Missing
   if (REMINDER_REQUIRED_STATUSES.includes(c.status) && (!c.reminders || c.reminders.length === 0)) {
     warnings.push('리마인더 없음');
@@ -90,15 +90,15 @@ export const getCaseWarnings = (c: Case, partner?: Partner) => {
 // --- Birth Year Normalizer: "77" -> "1977", "00" -> "2000" ---
 export const normalizeBirthYear = (input: string): string => {
   const clean = input.replace(/[^\d]/g, '');
-  
+
   // If user enters 2 digits, convert to 4 digits
   if (clean.length === 2) {
-      const val = parseInt(clean, 10);
-      // Pivot at 30: 00-30 -> 2000s, 31-99 -> 1900s
-      // e.g. 25 -> 2025 (likely not target for debt relief but consistent), 99 -> 1999
-      return val <= 30 ? `20${clean}` : `19${clean}`;
+    const val = parseInt(clean, 10);
+    // Pivot at 30: 00-30 -> 2000s, 31-99 -> 1900s
+    // e.g. 25 -> 2025 (likely not target for debt relief but consistent), 99 -> 1999
+    return val <= 30 ? `20${clean}` : `19${clean}`;
   }
-  
+
   return clean;
 };
 
@@ -133,25 +133,25 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
   // 1. Prepare Data map
   const depositRentStrParts = [];
   if (c.housingType === '자가') {
-      if(c.ownHousePrice) depositRentStrParts.push(`집 시세 ${formatKoreanMoney(c.ownHousePrice)}`);
-      if(c.ownHouseLoan) depositRentStrParts.push(`(집 담보대출 ${formatKoreanMoney(c.ownHouseLoan)})`);
-      if(c.ownHouseOwner) depositRentStrParts.push(`[명의: ${c.ownHouseOwner}]`);
+    if (c.ownHousePrice) depositRentStrParts.push(`집 시세 ${formatKoreanMoney(c.ownHousePrice)}`);
+    if (c.ownHouseLoan) depositRentStrParts.push(`(집 담보대출 ${formatKoreanMoney(c.ownHouseLoan)})`);
+    if (c.ownHouseOwner) depositRentStrParts.push(`[명의: ${c.ownHouseOwner}]`);
   } else if (c.housingType === '무상거주') {
-      depositRentStrParts.push(`무상거주`);
-      if(c.freeHousingOwner) depositRentStrParts.push(`[명의: ${c.freeHousingOwner}]`);
+    depositRentStrParts.push(`무상거주`);
+    if (c.freeHousingOwner) depositRentStrParts.push(`[명의: ${c.freeHousingOwner}]`);
   } else {
-      if(c.deposit) depositRentStrParts.push(`보증금 ${formatKoreanMoney(c.deposit)}`);
-      if(c.rent) depositRentStrParts.push(`월세 ${formatKoreanMoney(c.rent)}`);
-      if(c.depositLoanAmount) depositRentStrParts.push(`(보증금 대출: ${formatKoreanMoney(c.depositLoanAmount)})`);
-      if(c.rentContractor) depositRentStrParts.push(`[계약자: ${c.rentContractor}]`);
+    if (c.deposit) depositRentStrParts.push(`보증금 ${formatKoreanMoney(c.deposit)}`);
+    if (c.rent) depositRentStrParts.push(`월세 ${formatKoreanMoney(c.rent)}`);
+    if (c.depositLoanAmount) depositRentStrParts.push(`(보증금 대출: ${formatKoreanMoney(c.depositLoanAmount)})`);
+    if (c.rentContractor) depositRentStrParts.push(`[계약자: ${c.rentContractor}]`);
   }
   const depositRentStr = depositRentStrParts.length > 0 ? depositRentStrParts.join(' ') : '정보 없음';
 
   // Assets with Details (No Total Sum)
-  const assetsList = c.assets && c.assets.length > 0 
+  const assetsList = c.assets && c.assets.length > 0
     ? c.assets.map(a => {
-        const descInfo = a.desc ? `(${a.desc})` : '';
-        return `(${a.owner}/${a.type}${descInfo} 시세 ${formatKoreanMoney(a.amount)}${a.loanAmount ? `/담보${formatKoreanMoney(a.loanAmount)}` : ''})`;
+      const descInfo = a.desc ? `(${a.desc})` : '';
+      return `(${a.owner}/${a.type}${descInfo} 시세 ${formatKoreanMoney(a.amount)}${a.loanAmount ? `/담보${formatKoreanMoney(a.loanAmount)}` : ''})`;
     })
     : [];
   let assetsStr = assetsList.length > 0 ? assetsList.join(' ') : '없음';
@@ -162,58 +162,58 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
 
   // 1. 보증금 대출 (자가/무상거주 아닐 때)
   if (c.housingType !== '자가' && c.housingType !== '무상거주' && c.depositLoanAmount) {
-      collateralParts.push(`보증금 대출(${formatKoreanMoney(c.depositLoanAmount)})`);
-      totalCollateralAmount += c.depositLoanAmount;
+    collateralParts.push(`보증금 대출(${formatKoreanMoney(c.depositLoanAmount)})`);
+    totalCollateralAmount += c.depositLoanAmount;
   }
   // 2. 집 담보 대출 (자가일 때만)
   if (c.housingType === '자가' && c.ownHouseLoan) {
-      collateralParts.push(`집 담보 대출(${formatKoreanMoney(c.ownHouseLoan)})`);
-      totalCollateralAmount += c.ownHouseLoan;
+    collateralParts.push(`집 담보 대출(${formatKoreanMoney(c.ownHouseLoan)})`);
+    totalCollateralAmount += c.ownHouseLoan;
   }
   // 3. 자산 내 담보
   if (c.assets) {
-      c.assets.filter(a => a.loanAmount > 0).forEach(a => {
-          collateralParts.push(`${a.type} 담보(${formatKoreanMoney(a.loanAmount)})`);
-          totalCollateralAmount += a.loanAmount;
-      });
+    c.assets.filter(a => a.loanAmount > 0).forEach(a => {
+      collateralParts.push(`${a.type} 담보(${formatKoreanMoney(a.loanAmount)})`);
+      totalCollateralAmount += a.loanAmount;
+    });
   }
   if (c.collateralLoanMemo) collateralParts.push(c.collateralLoanMemo);
 
   let collateralStr = collateralParts.length > 0 ? collateralParts.join(', ') : '없음';
   if (totalCollateralAmount > 0) {
-      collateralStr += ` [총 합계: ${formatKoreanMoney(totalCollateralAmount)}]`;
+    collateralStr += ` [총 합계: ${formatKoreanMoney(totalCollateralAmount)}]`;
   }
 
   // Credit Loans with Total
   let totalCreditLoanAmount = 0;
   const creditLoanList = c.creditLoan && c.creditLoan.length > 0
     ? c.creditLoan.map(l => {
-        totalCreditLoanAmount += (l.amount || 0);
-        return `${l.desc} ${formatKoreanMoney(l.amount)}`;
+      totalCreditLoanAmount += (l.amount || 0);
+      return `${l.desc} ${formatKoreanMoney(l.amount)}`;
     })
     : [];
-  
+
   // ADDED: Include Credit Card Amount in Credit Loans
   if (c.creditCardUse === '사용' && c.creditCardAmount) {
-      totalCreditLoanAmount += c.creditCardAmount;
-      creditLoanList.push(`신용카드 ${formatKoreanMoney(c.creditCardAmount)}`);
+    totalCreditLoanAmount += c.creditCardAmount;
+    creditLoanList.push(`신용카드 ${formatKoreanMoney(c.creditCardAmount)}`);
   }
 
   let creditLoanStr = creditLoanList.length > 0 ? creditLoanList.join(', ') : '없음';
   if (totalCreditLoanAmount > 0) {
-      creditLoanStr += ` [총 합계: ${formatKoreanMoney(totalCreditLoanAmount)}]`;
+    creditLoanStr += ` [총 합계: ${formatKoreanMoney(totalCreditLoanAmount)}]`;
   }
 
   let historyStr = c.historyType || '없음';
   if (c.historyType && c.historyType !== '없음' && c.historyMemo) {
-      historyStr += ` (${c.historyMemo})`;
+    historyStr += ` (${c.historyMemo})`;
   }
 
   const sortedMemos = c.specialMemo ? [...c.specialMemo].sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [];
-  const allMemosContent = sortedMemos.length > 0 
+  const allMemosContent = sortedMemos.length > 0
     ? sortedMemos.map(memo => `[${format(new Date(memo.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}]\n${memo.content}`).join('\n\n')
     : '없음';
-  
+
   const jobTypesStr = c.jobTypes && c.jobTypes.length > 0 ? c.jobTypes.join(', ') : '정보 없음';
 
   const incomeParts = [];
@@ -228,36 +228,36 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
   }
 
   const dataMap: any = {
-      managerName: c.managerName,
-      customerName: c.customerName,
-      phone: c.phone,
-      birth: c.birth ? c.birth + '년생' : '-',
-      gender: c.gender,
-      region: c.region,
-      jobTypes: jobTypesStr,
-      insurance4: c.insurance4,
-      maritalStatus: c.maritalStatus,
-      childrenCount: c.childrenCount !== undefined ? c.childrenCount + '명' : '-',
-      incomeDetails: incomeDetailsStr,
-      loanMonthlyPay: formatKoreanMoney(c.loanMonthlyPay),
-      housingType: c.housingType,
-      housingDetail: c.housingDetail,
-      depositRentStr: depositRentStr,
-      assetsStr: assetsStr,
-      creditLoanStr: creditLoanStr,
-      collateralStr: collateralStr,
-      creditCardUse: c.creditCardUse || '미사용',
-      creditCardAmountStr: c.creditCardUse === '사용' && c.creditCardAmount ? formatKoreanMoney(c.creditCardAmount) : '없음',
-      historyStr: historyStr,
-      specialMemo: allMemosContent
+    managerName: c.managerName,
+    customerName: c.customerName,
+    phone: c.phone,
+    birth: c.birth ? c.birth + '년생' : '-',
+    gender: c.gender,
+    region: c.region,
+    jobTypes: jobTypesStr,
+    insurance4: c.insurance4,
+    maritalStatus: c.maritalStatus,
+    childrenCount: c.childrenCount !== undefined ? c.childrenCount + '명' : '-',
+    incomeDetails: incomeDetailsStr,
+    loanMonthlyPay: formatKoreanMoney(c.loanMonthlyPay),
+    housingType: c.housingType,
+    housingDetail: c.housingDetail,
+    depositRentStr: depositRentStr,
+    assetsStr: assetsStr,
+    creditLoanStr: creditLoanStr,
+    collateralStr: collateralStr,
+    creditCardUse: c.creditCardUse || '미사용',
+    creditCardAmountStr: c.creditCardUse === '사용' && c.creditCardAmount ? formatKoreanMoney(c.creditCardAmount) : '없음',
+    historyStr: historyStr,
+    specialMemo: allMemosContent
   };
 
   // 2. Replace placeholders in template
   let result = processedTemplate;
   for (const key in dataMap) {
-      // replace all occurrences of {{key}}
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      result = result.replace(regex, dataMap[key] || '');
+    // replace all occurrences of {{key}}
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    result = result.replace(regex, dataMap[key] || '');
   }
 
   return result.trim();
@@ -279,63 +279,105 @@ export const getReminderStatus = (dateStr?: string) => {
   return 'future';
 };
 
+// [NEW] Robust Date Parser for Korean/Unknown formats
+export const parseGenericDate = (dateStr: string | undefined | null): Date | null => {
+  if (!dateStr) return null;
+
+  // 1. Try ISO
+  const d1 = new Date(dateStr);
+  if (isValid(d1) && dateStr.includes('-')) return d1; // ISO likely contains hyphens
+
+  // 2. Try Korean Format "2024. 1. 4. 오후 6:30:00" or similar
+  // Remove "오전", "오후" and handle 12h time manually if needed, or simple replace
+  let cleanStr = dateStr.replace(/\./g, '-').replace('오전', 'AM').replace('오후', 'PM').trim();
+  // Some browsers parse "YYYY- M- D- AM h:mm:ss" well, others don't.
+  // Let's rely on date-fns `parse` if possible or manual regex.
+
+  // Regex for "2024. 1. 4. 오후 6:30:00" -> yyyy, M, d, ampm, h, m, s
+  // Matches: 2024. 1. 4. or 2024. 01. 04.
+  const koRegex = /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?\s*(오전|오후)?\s*(\d{1,2}):(\d{1,2}):?(\d{1,2})?/;
+  const match = dateStr.match(koRegex);
+
+  if (match) {
+    const year = parseInt(match[1]);
+    const month = parseInt(match[2]) - 1;
+    const day = parseInt(match[3]);
+    const ampm = match[4];
+    let hour = parseInt(match[5]);
+    const minute = parseInt(match[6]);
+    const second = match[7] ? parseInt(match[7]) : 0;
+
+    if (ampm === '오후' && hour < 12) hour += 12;
+    if (ampm === '오전' && hour === 12) hour = 0;
+
+    const d2 = new Date(year, month, day, hour, minute, second);
+    if (isValid(d2)) return d2;
+  }
+
+  // 3. Fallback: try removing dots and standard parse
+  const d3 = new Date(dateStr.replace(/\./g, '-'));
+  if (isValid(d3)) return d3;
+
+  return null;
+};
+
 // Settlement Helpers
 export const getDayName = (dayIdx: number) => {
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
-    return days[dayIdx] || '';
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  return days[dayIdx] || '';
 };
 
 // Now calculate for a specific Partner's context
 export const calculateNextSettlement = (cases: Case[], partner: Partner) => {
-    const rules = partner.commissionRules;
-    const config = partner.settlementConfig;
+  const rules = partner.commissionRules;
+  const config = partner.settlementConfig;
 
-    // 1. Calculate Eligible Pending Amount based on Rules
-    // Filter cases for this partner
-    const eligibleCases = cases.filter(c => 
-        c.partnerId === partner.partnerId &&
-        ['1차 입금완료', '2차 입금완료', '계약 완료'].includes(c.status) && c.contractFee
-    );
+  // 1. Calculate Eligible Pending Amount based on Rules
+  // Filter cases for this partner
+  const eligibleCases = cases.filter(c =>
+    c.partnerId === partner.partnerId &&
+    ['1차 입금완료', '2차 입금완료', '계약 완료'].includes(c.status) && c.contractFee
+  );
 
-    let currentTotalDeposit = 0; // Total Deposit from customers (Informational)
-    let expectedCommission = 0; // Payable commission to manager
+  let currentTotalDeposit = 0; // Total Deposit from customers (Informational)
+  let expectedCommission = 0; // Payable commission to manager
 
-    eligibleCases.forEach(c => {
-        const deposit = (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
-        currentTotalDeposit += deposit;
-        const { payable } = calculatePayableCommission(c, rules, config);
-        expectedCommission += payable;
-    });
+  eligibleCases.forEach(c => {
+    const deposit = (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
+    currentTotalDeposit += deposit;
+    const { payable } = calculatePayableCommission(c, rules, config);
+    expectedCommission += payable;
+  });
 
-    // 2. Determine Dates
-    const today = new Date();
-    // Logic: Find the next occurrence of cutoffDay (e.g., Sunday)
-    // If today IS the cutoff day, we consider today as the cutoff.
-    let cutoffDate = setDay(today, config.cutoffDay, { weekStartsOn: 0 }); // 0 is Sunday
-    if (isBefore(cutoffDate, today) && !isToday(cutoffDate)) {
-        cutoffDate = nextDay(today, config.cutoffDay as any);
-    }
-    
-    // Payout Date: cutoffDate + delay
-    let payoutDate = setDay(cutoffDate, config.payoutDay, { weekStartsOn: 0 });
-    // If payout day is <= cutoff day (e.g. cutoff Sun, payout Tue), it must be next week
-    if (config.payoutDay <= config.cutoffDay) {
-         payoutDate = addWeeks(payoutDate, 1);
-    }
-    if (config.payoutWeekDelay > 0) {
-        payoutDate = addWeeks(payoutDate, config.payoutWeekDelay);
-    }
+  // 2. Determine Dates
+  const today = new Date();
+  // Logic: Find the next occurrence of cutoffDay (e.g., Sunday)
+  // If today IS the cutoff day, we consider today as the cutoff.
+  let cutoffDate = setDay(today, config.cutoffDay, { weekStartsOn: 0 }); // 0 is Sunday
+  if (isBefore(cutoffDate, today) && !isToday(cutoffDate)) {
+    cutoffDate = nextDay(today, config.cutoffDay as any);
+  }
 
-    return {
-        cutoffDate: format(cutoffDate, 'yyyy-MM-dd'),
-        payoutDate: format(payoutDate, 'yyyy-MM-dd'),
-        currentTotalDeposit,
-        expectedCommission,
-        threshold: 0, 
-        isEligible: expectedCommission > 0, 
-        cutoffDayName: getDayName(config.cutoffDay),
-        payoutDayName: getDayName(config.payoutDay)
-    };
+  // Payout Date: cutoffDate + delay
+  let payoutDate = setDay(cutoffDate, config.payoutDay, { weekStartsOn: 0 });
+  // If payout day is <= cutoff day (e.g. cutoff Sun, payout Tue), it must be next week
+  if (config.payoutDay <= config.cutoffDay) {
+    payoutDate = addWeeks(payoutDate, 1);
+  }
+  if (config.payoutWeekDelay > 0) {
+    payoutDate = addWeeks(payoutDate, config.payoutWeekDelay);
+  }
+
+  return {
+    cutoffDate: format(cutoffDate, 'yyyy-MM-dd'),
+    payoutDate: format(payoutDate, 'yyyy-MM-dd'),
+    currentTotalDeposit,
+    expectedCommission,
+    threshold: 0,
+    isEligible: expectedCommission > 0,
+    cutoffDayName: getDayName(config.cutoffDay),
+    payoutDayName: getDayName(config.payoutDay)
+  };
 };
 
 export const fileToBase64 = (file: File): Promise<string> => {

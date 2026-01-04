@@ -1,8 +1,8 @@
-
+```
 import React, { useEffect, useState } from 'react';
 import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
-import { getCaseWarnings, parseReminder } from '../utils';
+import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
 import { Link } from 'react-router-dom';
 import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
@@ -60,10 +60,10 @@ export default function CaseList() {
                 if (!silent) setDebugLog(`API Response Check...`);
 
                 // 1. Direct Fetch for Debugging
-                const rawRes = await fetch(`${GOOGLE_SCRIPT_URL}?type=leads&_t=${Date.now()}`);
+                const rawRes = await fetch(`${ GOOGLE_SCRIPT_URL }?type = leads & _t=${ Date.now() } `);
                 const rawJson = await rawRes.json();
 
-                if (!silent) setDebugLog(`Loaded ${rawJson.length} items. IDs: ${rawJson.map((x: any) => x.caseId || x.CaseID || x.id || '?').join(', ')}`);
+                if (!silent) setDebugLog(`Loaded ${ rawJson.length } items.IDs: ${ rawJson.map((x: any) => x.caseId || x.CaseID || x.id || '?').join(', ') } `);
 
                 if (rawJson.length > 0) {
                     setLastRawItem({ ...rawJson[rawJson.length - 1], _raw: rawJson[rawJson.length - 1] });
@@ -82,7 +82,7 @@ export default function CaseList() {
                     setCases(prev => {
                         if (prev.length > 0 && data.length > prev.length) {
                             const diff = data.length - prev.length;
-                            showToast(`${diff}건의 새로운 접수가 도착했습니다!`, 'success');
+                            showToast(`${ diff }건의 새로운 접수가 도착했습니다!`, 'success');
                         }
                         return data;
                     });
@@ -91,12 +91,12 @@ export default function CaseList() {
                     setInboundPaths(pathData);
                     setStatuses(statusData);
                     if (!silent) setLoading(false);
-                    if (!silent) setDebugLog(`Success! Loaded ${data.length} cases. IDs: [${data.map((c: any) => c.caseId).join(', ')}]`);
+                    if (!silent) setDebugLog(`Success! Loaded ${ data.length } cases.IDs: [${ data.map((c: any) => c.caseId).join(', ') }]`);
                 }
             } catch (err: any) {
                 console.error(err);
                 if (isMounted && !silent) {
-                    setDebugLog(`Error: ${err.toString()}`);
+                    setDebugLog(`Error: ${ err.toString() } `);
                     setLoading(false);
                 }
             }
@@ -172,12 +172,11 @@ export default function CaseList() {
             dateA = new Date(getLastConsultationDate(a)).getTime();
             dateB = new Date(getLastConsultationDate(b)).getTime();
         } else { // createdAt
-            // Fix: Handle potentially minimal string formats or undefined
-            // If date is invalid, treat as very old (0)
-            dateA = new Date(a.createdAt || 0).getTime();
-            dateB = new Date(b.createdAt || 0).getTime();
-            if (isNaN(dateA)) dateA = 0;
-            if (isNaN(dateB)) dateB = 0;
+            // Fix: Use parseGenericDate for Korean/Variable format support
+            const dA = parseGenericDate(a.createdAt);
+            const dB = parseGenericDate(b.createdAt);
+            dateA = dA ? dA.getTime() : 0;
+            dateB = dB ? dB.getTime() : 0;
         }
 
         if (direction === 'desc') {
@@ -340,182 +339,190 @@ export default function CaseList() {
                                 <div className="flex justify-between items-start pr-10">
                                     <div className="flex-1">
                                         <Link
-                                            to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
-                                            className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2"
-                                        >
-                                            {c.customerName}
-                                            {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
-                                        </Link>
+                                            to={c.isNew ? `/ new? leadId = ${ c.caseId } ` : ` /case/${c.caseId}`}
+className = "font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2"
+    >
+    { c.customerName }
+{ c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span> }
+                                        </Link >
                                         <p className="text-sm text-gray-500 dark:text-gray-400">{(c.jobTypes || []).join(', ')} / {c.region}</p>
                                         <div className="flex flex-wrap items-center gap-1 mt-1">
                                             <span className="text-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 rounded">{c.caseType || '-'}</span>
                                             <span className="text-[10px] bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 px-1.5 py-0.5 rounded">{c.inboundPath || '-'}</span>
                                             <span className="text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded">{partner?.name || '-'}</span>
                                         </div>
-                                    </div>
-                                    <div className="flex flex-col items-end gap-1">
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300`}>
-                                            {c.status}
-                                        </span>
-                                        <span className="text-[10px] text-gray-400">
-                                            {c.createdAt ? format(new Date(c.createdAt), 'yy.MM.dd') : ''}
-                                        </span>
-                                    </div>
-                                </div>
+                                    </div >
+    <div className="flex flex-col items-end gap-1">
+        <span className={`px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300`}>
+            {c.status}
+        </span>
+        <span className="text-[10px] text-gray-400">
+            {c.createdAt ? format(new Date(c.createdAt), 'yy.MM.dd') : ''}
+        </span>
+    </div>
+                                </div >
 
-                                <div className="mt-3 flex items-center justify-between">
-                                    <a href={`tel:${c.phone}`} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
-                                        <Phone size={14} className="mr-1" /> {c.phone}
-                                    </a>
-                                    {nextReminder && <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">📞 {nextReminder.datetime.split(' ')[0]}</span>}
-                                </div>
+    <div className="mt-3 flex items-center justify-between">
+        <a href={`tel:${c.phone}`} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
+            <Phone size={14} className="mr-1" /> {c.phone}
+        </a>
+        {nextReminder && <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">📞 {nextReminder.datetime.split(' ')[0]}</span>}
+    </div>
 
-                                {warnings.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1">
-                                        {warnings.map(w => (
-                                            <span key={w} className="flex items-center text-[10px] bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded">
-                                                <AlertTriangle size={10} className="mr-1" /> {w}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+{
+    warnings.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+            {warnings.map(w => (
+                <span key={w} className="flex items-center text-[10px] bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded">
+                    <AlertTriangle size={10} className="mr-1" /> {w}
+                </span>
+            ))}
+        </div>
+    )
+}
+                            </div >
                         );
                     })}
-                </div>
+                </div >
 
-                {/* Desktop View (Table) */}
-                <div className="hidden md:block flex-1">
-                    <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300">
-                        <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
-                            <tr>
-                                <th className="px-4 py-3">유형/경로/거래처</th>
-                                <th className="px-4 py-3">고객명</th>
-                                <th className="px-4 py-3">연락처</th>
-                                <th className="px-4 py-3">상태</th>
-                                <th className="px-4 py-3">등록일</th>
-                                <th className="px-4 py-3">최종상담일</th>
-                                <th className="px-4 py-3">리마인더</th>
-                                <th className="px-4 py-3 text-center">삭제</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentCases.map(c => {
-                                const partner = partners.find(p => p.partnerId === c.partnerId);
-                                const warnings = getCaseWarnings(c, partner);
-                                const lastConsultDate = getLastConsultationDate(c);
-                                const nextReminder = getNextUpcomingReminder(c.reminders);
+    {/* Desktop View (Table) */ }
+    < div className = "hidden md:block flex-1" >
+        <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300">
+            <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
+                <tr>
+                    <th className="px-4 py-3">유형/경로/거래처</th>
+                    <th className="px-4 py-3">고객명</th>
+                    <th className="px-4 py-3">연락처</th>
+                    <th className="px-4 py-3">상태</th>
+                    <th className="px-4 py-3">등록일</th>
+                    <th className="px-4 py-3">최종상담일</th>
+                    <th className="px-4 py-3">리마인더</th>
+                    <th className="px-4 py-3 text-center">삭제</th>
+                </tr>
+            </thead>
+            <tbody>
+                {currentCases.map(c => {
+                    const partner = partners.find(p => p.partnerId === c.partnerId);
+                    const warnings = getCaseWarnings(c, partner);
+                    const lastConsultDate = getLastConsultationDate(c);
+                    const nextReminder = getNextUpcomingReminder(c.reminders);
 
-                                return (
-                                    <tr key={c.caseId} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                        <td className="px-4 py-3">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
-                                                <span className="text-[10px] text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
-                                                <span className="text-[10px] text-gray-400 dark:text-gray-500">{partner?.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <Link
-                                                to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
-                                                className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                                            >
-                                                {c.customerName}
-                                                {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
-                                            </Link>
-                                            {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs">⚠</span>}
-                                        </td>
-                                        <td className="px-4 py-3">{c.phone}</td>
-                                        <td className="px-4 py-3">
-                                            <span className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-xs">{c.status}</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">
-                                            {c.createdAt ? format(new Date(c.createdAt), 'yyyy-MM-dd') : '-'}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">
-                                            {lastConsultDate ? format(new Date(lastConsultDate), 'yyyy-MM-dd') : '-'}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs">
-                                            {nextReminder ? (
-                                                <>
-                                                    <span>{nextReminder.datetime}</span>
-                                                    {(c.reminders?.length || 0) > 1 && <span className="ml-1 text-gray-400">외 {(c.reminders?.length || 0) - 1}건</span>}
-                                                </>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                            <button
-                                                onClick={(e) => handleDelete(c.caseId, e)}
-                                                className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                title="삭제"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                    return (
+                        <tr key={c.caseId} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td className="px-4 py-3">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
+                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
+                                    <span className="text-[10px] text-gray-400 dark:text-gray-500">{partner?.name}</span>
+                                </div>
+                            </td>
+                            <td className="px-4 py-3">
+                                <Link
+                                    to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
+                                    className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                >
+                                    {c.customerName}
+                                    {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
+                                </Link>
+                                {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs">⚠</span>}
+                            </td>
+                            <td className="px-4 py-3">{c.phone}</td>
+                            <td className="px-4 py-3">
+                                <span className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-xs">{c.status}</span>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-500">
+                                {c.createdAt ? format(new Date(c.createdAt), 'yyyy-MM-dd') : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-500">
+                                {lastConsultDate ? format(new Date(lastConsultDate), 'yyyy-MM-dd') : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-xs">
+                                {nextReminder ? (
+                                    <>
+                                        <span>{nextReminder.datetime}</span>
+                                        {(c.reminders?.length || 0) > 1 && <span className="ml-1 text-gray-400">외 {(c.reminders?.length || 0) - 1}건</span>}
+                                    </>
+                                ) : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                                <button
+                                    onClick={(e) => handleDelete(c.caseId, e)}
+                                    className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    title="삭제"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </td>
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
+                </div >
 
-                {sortedCases.length === 0 && (
-                    <div className="p-8 text-center text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>
-                )}
+{
+    sortedCases.length === 0 && (
+        <div className="p-8 text-center text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>
+    )
+}
 
-                {/* Pagination Footer */}
-                {totalPages > 0 && (
-                    <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-                            <span className="text-sm font-medium text-gray-700">
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
-                        <div className="hidden sm:flex gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-                                // Only show first, last, current, and surrounding pages
-                                (pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1) ? (
-                                    <button
-                                        key={pageNum}
-                                        onClick={() => handlePageChange(pageNum)}
-                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium border ${currentPage === pageNum ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                ) : (pageNum === 2 && currentPage > 3) || (pageNum === totalPages - 1 && currentPage < totalPages - 2) ? (
-                                    <span key={pageNum} className="w-8 h-8 flex items-center justify-center text-gray-400">...</span>
-                                ) : null
-                            ))}
-                        </div>
-                    </div>
-                )}
+{/* Pagination Footer */ }
+{
+    totalPages > 0 && (
+        <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                    <ChevronLeft size={16} />
+                </button>
+                <span className="text-sm font-medium text-gray-700">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                    <ChevronRight size={16} />
+                </button>
             </div>
-
-            {/* DEBUG PANEL */}
-            <div className="mt-8 p-4 bg-gray-900 text-green-400 font-mono text-xs rounded-lg overflow-x-auto">
-                <h4 className="font-bold mb-2">🔍 DEBUG INFO (개발자용)</h4>
-                <p>Status: {debugLog}</p>
-                {lastRawItem && (
-                    <div className="mt-2">
-                        <p>Last Item Raw Data (Source):</p>
-                        <pre>{JSON.stringify(lastRawItem._raw || lastRawItem, null, 2)}</pre>
-                    </div>
-                )}
+            <div className="hidden sm:flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                    // Only show first, last, current, and surrounding pages
+                    (pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1) ? (
+                        <button
+                            key={pageNum}
+                            onClick={() => handlePageChange(pageNum)}
+                            className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium border ${currentPage === pageNum ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        >
+                            {pageNum}
+                        </button>
+                    ) : (pageNum === 2 && currentPage > 3) || (pageNum === totalPages - 1 && currentPage < totalPages - 2) ? (
+                        <span key={pageNum} className="w-8 h-8 flex items-center justify-center text-gray-400">...</span>
+                    ) : null
+                ))}
             </div>
         </div>
+    )
+}
+            </div >
+
+    {/* DEBUG PANEL */ }
+    < div className = "mt-8 p-4 bg-gray-900 text-green-400 font-mono text-xs rounded-lg overflow-x-auto" >
+                <h4 className="font-bold mb-2">🔍 DEBUG INFO (개발자용)</h4>
+                <p>Status: {debugLog}</p>
+{
+    lastRawItem && (
+        <div className="mt-2">
+            <p>Last Item Raw Data (Source):</p>
+            <pre>{JSON.stringify(lastRawItem._raw || lastRawItem, null, 2)}</pre>
+        </div>
+    )
+}
+            </div >
+        </div >
     );
 }
