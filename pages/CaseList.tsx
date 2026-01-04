@@ -45,47 +45,70 @@ export default function CaseList() {
     const [debugLog, setDebugLog] = useState<string>("Initializing...");
     const [lastRawItem, setLastRawItem] = useState<any>(null);
 
+    // [POLLING] Auto-refresh every 30 seconds
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                setDebugLog(`API Response Check...`);
+        let isMounted = true;
+        const intervalId = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadData(true); // silent refresh
+            }
+        }, 30000); // 30s
 
-                // 1. Direct Fetch for Debugging (Bypass all service logic)
+        const loadData = async (silent = false) => {
+            try {
+                if (!silent) setLoading(true); // Only show spinner on initial load
+                if (!silent) setDebugLog(`API Response Check...`);
+
+                // 1. Direct Fetch for Debugging
                 const rawRes = await fetch(`${GOOGLE_SCRIPT_URL}?type=leads&_t=${Date.now()}`);
                 const rawJson = await rawRes.json();
 
-                // Show RAW ID list and First Item Keys
-                setDebugLog(`Loaded ${rawJson.length} items. IDs: ${rawJson.map((x: any) => x.caseId || x.CaseID || x.id || '?').join(', ')}`);
+                if (!silent) setDebugLog(`Loaded ${rawJson.length} items. IDs: ${rawJson.map((x: any) => x.caseId || x.CaseID || x.id || '?').join(', ')}`);
 
                 if (rawJson.length > 0) {
-                    // Force attach RAW object to the first item for display
                     setLastRawItem({ ...rawJson[rawJson.length - 1], _raw: rawJson[rawJson.length - 1] });
                 }
 
                 // 2. Normal Flow
                 const [data, partnerData, pathData, statusData] = await Promise.all([
-                    // Use the rawJson we just fetched to populate data, to avoid double fetch
                     Promise.resolve(rawJson.map(processIncomingCase)),
                     fetchPartners(),
                     fetchInboundPaths(),
                     fetchStatuses()
                 ]);
 
-                setCases(data);
-                setPartners(partnerData);
-                setInboundPaths(pathData);
-                setStatuses(statusData);
-                setLoading(false);
+                if (isMounted) {
+                    // Check if new items arrived (Simple length check for notification)
+                    setCases(prev => {
+                        if (prev.length > 0 && data.length > prev.length) {
+                            const diff = data.length - prev.length;
+                            showToast(`${diff}건의 새로운 접수가 도착했습니다!`, 'success');
+                        }
+                        return data;
+                    });
 
-                setDebugLog(`Success! Loaded ${data.length} cases. IDs: [${data.map(c => c.caseId).join(', ')}]`);
-                if (data.length > 0) setLastRawItem(data[data.length - 1]); // Capture last item to check mapping
+                    setPartners(partnerData);
+                    setInboundPaths(pathData);
+                    setStatuses(statusData);
+                    if (!silent) setLoading(false);
+                    if (!silent) setDebugLog(`Success! Loaded ${data.length} cases. IDs: [${data.map((c: any) => c.caseId).join(', ')}]`);
+                }
             } catch (err: any) {
                 console.error(err);
-                setDebugLog(`Error: ${err.toString()}`);
-                setLoading(false);
+                if (isMounted && !silent) {
+                    setDebugLog(`Error: ${err.toString()}`);
+                    setLoading(false);
+                }
             }
         };
+
+        // Initial Load
         loadData();
+
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+        };
     }, []);
 
     // Reset page when filters change
