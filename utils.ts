@@ -220,7 +220,11 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
     historyStr += ` (${c.historyMemo})`;
   }
 
-  const sortedMemos = c.specialMemo ? [...c.specialMemo].sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [];
+  const sortedMemos = c.specialMemo
+    ? [...c.specialMemo]
+      .filter(m => !m.content.startsWith('[상태변경]')) // Filter out status changes
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    : [];
   const allMemosContent = sortedMemos.length > 0
     ? sortedMemos.map(memo => `[${format(new Date(memo.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}]\n${memo.content}`).join('\n\n')
     : '없음';
