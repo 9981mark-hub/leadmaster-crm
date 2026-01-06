@@ -69,7 +69,21 @@ export default function CaseDetail() {
     const [newMemoContent, setNewMemoContent] = useState('');
 
     // Reminder State
+    // Split Date/Time state for custom UI
+    const [remDate, setRemDate] = useState('');
+    const [remHour, setRemHour] = useState('09');
+    const [remMinute, setRemMinute] = useState('00');
+    // Derived Full DateTime for API (kept for compatibility)
     const [newReminderDateTime, setNewReminderDateTime] = useState('');
+
+    // Effect to sync separate fields to full datetime string
+    useEffect(() => {
+        if (remDate && remHour && remMinute) {
+            setNewReminderDateTime(`${remDate} ${remHour}:${remMinute}`);
+        } else {
+            setNewReminderDateTime('');
+        }
+    }, [remDate, remHour, remMinute]);
     const [newReminderType, setNewReminderType] = useState<ReminderType>('통화');
     const [newReminderContent, setNewReminderContent] = useState('');
     const [confirmingDeleteReminderId, setConfirmingDeleteReminderId] = useState<string | null>(null);
@@ -317,6 +331,11 @@ export default function CaseDetail() {
         };
         const updatedReminders = [...c.reminders, newReminder];
         handleUpdate('reminders', updatedReminders);
+
+        // Reset fields
+        setRemDate('');
+        setRemHour('09');
+        setRemMinute('00');
         setNewReminderDateTime('');
         setNewReminderContent('');
         setNewReminderType('통화');
@@ -635,35 +654,41 @@ export default function CaseDetail() {
                                 {/* Reminder Settings */}
                                 <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
                                     <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/5)</label>
-                                    <div className="flex flex-col gap-2 mb-3">
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="datetime-local"
-                                                className="flex-1 p-2 border border-gray-300 rounded text-sm disabled:bg-gray-100"
-                                                value={newReminderDateTime}
-                                                onChange={e => setNewReminderDateTime(e.target.value)}
-                                                disabled={(c.reminders?.length || 0) >= 5}
-                                                step={600} // 10 minutes
-                                                onBlur={(e) => {
-                                                    const val = e.target.value;
-                                                    if (val) {
-                                                        const date = new Date(val);
-                                                        const minutes = date.getMinutes();
-                                                        const roundedMinutes = Math.round(minutes / 10) * 10;
-                                                        date.setMinutes(roundedMinutes);
-                                                        date.setSeconds(0);
-                                                        // Offset for local timezone (ISOString defaults to UTC)
-                                                        // Simple format: YYYY-MM-DDThh:mm
-                                                        const pad = (n: number) => n < 10 ? '0' + n : n;
-                                                        const localIso = date.getFullYear() + '-' +
-                                                            pad(date.getMonth() + 1) + '-' +
-                                                            pad(date.getDate()) + 'T' +
-                                                            pad(date.getHours()) + ':' +
-                                                            pad(date.getMinutes());
-                                                        setNewReminderDateTime(localIso);
-                                                    }
-                                                }}
-                                            />
+                                    <div className="flex flex-col md:flex-row gap-2 mb-3">
+                                        <div className="flex gap-2 flex-[2]">
+                                            <div className="flex gap-1 items-center flex-1">
+                                                {/* Date Picker */}
+                                                <input
+                                                    type="date"
+                                                    className="flex-[2] p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                                                    value={remDate}
+                                                    onChange={e => setRemDate(e.target.value)}
+                                                    disabled={(c.reminders?.length || 0) >= 5}
+                                                />
+                                                {/* Hour Select */}
+                                                <select
+                                                    className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                                                    value={remHour}
+                                                    onChange={e => setRemHour(e.target.value)}
+                                                    disabled={(c.reminders?.length || 0) >= 5}
+                                                >
+                                                    {Array.from({ length: 24 }).map((_, i) => {
+                                                        const h = i.toString().padStart(2, '0');
+                                                        return <option key={h} value={h}>{h}시</option>;
+                                                    })}
+                                                </select>
+                                                {/* Minute Select (10-min intervals) */}
+                                                <select
+                                                    className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                                                    value={remMinute}
+                                                    onChange={e => setRemMinute(e.target.value)}
+                                                    disabled={(c.reminders?.length || 0) >= 5}
+                                                >
+                                                    {['00', '10', '20', '30', '40', '50'].map(m => (
+                                                        <option key={m} value={m}>{m}분</option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                             <select
                                                 className="p-2 border border-gray-300 rounded text-sm min-w-[80px]"
                                                 value={newReminderType}
@@ -675,23 +700,24 @@ export default function CaseDetail() {
                                                 <option value="기타">기타</option>
                                             </select>
                                         </div>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                className="flex-1 p-2 border border-gray-300 rounded text-sm"
-                                                placeholder={newReminderType === '기타' ? "일정 내용을 입력하세요" : "메모 (선택사항)"}
-                                                value={newReminderContent}
-                                                onChange={e => setNewReminderContent(e.target.value)}
-                                            />
-                                            <button
-                                                onClick={handleAddReminder}
-                                                disabled={(c.reminders?.length || 0) >= 5}
-                                                className="bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 whitespace-nowrap disabled:bg-gray-400"
-                                            >
-                                                추가
-                                            </button>
-                                        </div>
                                     </div>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            className="flex-1 p-2 border border-gray-300 rounded text-sm"
+                                            placeholder={newReminderType === '기타' ? "일정 내용을 입력하세요" : "메모 (선택사항)"}
+                                            value={newReminderContent}
+                                            onChange={e => setNewReminderContent(e.target.value)}
+                                        />
+                                        <button
+                                            onClick={handleAddReminder}
+                                            disabled={(c.reminders?.length || 0) >= 5}
+                                            className="bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 whitespace-nowrap disabled:bg-gray-400"
+                                        >
+                                            추가
+                                        </button>
+                                    </div>
+
                                     <div className="space-y-2">
                                         {sortedReminders.length === 0 ? (
                                             <div className="text-center py-2 text-xs text-gray-400 bg-gray-50 rounded border border-gray-100 border-dashed">
@@ -1429,7 +1455,7 @@ export default function CaseDetail() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
 
