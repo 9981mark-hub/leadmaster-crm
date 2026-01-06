@@ -726,9 +726,18 @@ export default function CaseDetail() {
                                         ) : (
                                             sortedReminders.map(reminder => (
                                                 <div key={reminder.id} className="bg-blue-50 border border-blue-100 rounded p-2 flex justify-between items-center">
-                                                    <div className="flex items-center gap-2">
-                                                        <CalendarClock size={16} className="text-blue-600" />
-                                                        <span className="text-sm font-bold text-gray-800">{reminder.datetime}</span>
+                                                    <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                                        <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
+                                                        <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
+                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
+                                                                reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
+                                                                    'bg-blue-100 text-blue-700'
+                                                            }`}>
+                                                            {reminder.type || '통화'}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 truncate" title={reminder.content}>
+                                                            {reminder.content || ''}
+                                                        </span>
                                                     </div>
                                                     {confirmingDeleteReminderId === reminder.id ? (
                                                         <div className="flex gap-2">

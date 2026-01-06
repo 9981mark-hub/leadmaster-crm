@@ -33,7 +33,8 @@ const CACHE_KEYS = {
   PARTNERS: 'lm_partners',
   CASES: 'lm_cases',
   PATHS: 'lm_paths',
-  STATUSES: 'lm_statuses'
+  STATUSES: 'lm_statuses',
+  LOGS: 'lm_logs'
 };
 
 const loadFromStorage = () => {
@@ -42,11 +43,13 @@ const loadFromStorage = () => {
     const storedCases = localStorage.getItem(CACHE_KEYS.CASES);
     const storedPaths = localStorage.getItem(CACHE_KEYS.PATHS);
     const storedStatuses = localStorage.getItem(CACHE_KEYS.STATUSES);
+    const storedLogs = localStorage.getItem(CACHE_KEYS.LOGS);
 
     if (storedPartners) localPartners = JSON.parse(storedPartners);
     if (storedCases) localCases = JSON.parse(storedCases);
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
     if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
+    if (storedLogs) localLogs = JSON.parse(storedLogs);
   } catch (e) {
     console.error("Failed to load from cache", e);
   }
@@ -58,6 +61,7 @@ const saveToStorage = () => {
     localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(localCases));
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
+    localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs));
   } catch (e) {
     console.error("Failed to save to cache", e);
   }
@@ -489,6 +493,7 @@ export const changeStatus = async (caseId: string, newStatus: CaseStatus, memo: 
   // Update Case
   const c = await updateCase(caseId, { status: newStatus, statusUpdatedAt: now });
   localLogs.push(log);
+  saveToStorage(); // Ensure logs are saved immediately
 
   return c;
 };
