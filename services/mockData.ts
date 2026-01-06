@@ -95,6 +95,7 @@ export const MOCK_CASES: Case[] = [
     ],
     creditLoan: [{ id: 'cl-1', amount: 1000, desc: '햇살론' }],
     historyType: '없음',
+    depositHistory: [],
     reminders: [{
       id: 'reminder-1',
       datetime: format(addDays(new Date(), 0), 'yyyy-MM-dd 14:00'),
@@ -145,6 +146,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [],
     historyType: '없음',
     specialMemo: [],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -180,6 +182,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-2', amount: 3000, desc: '카드론' }],
     historyType: '없음',
     specialMemo: [],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -215,6 +218,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-3', amount: 5000, desc: '사업자대출' }],
     historyType: '없음',
     specialMemo: [],
+    depositHistory: [],
     reminders: [{ id: 'rm-1004', datetime: format(addDays(new Date(), 1), 'yyyy-MM-dd 10:00'), type: '통화' }],
     recordings: []
   },
@@ -248,6 +252,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-4', amount: 1500, desc: '저축은행' }],
     historyType: '없음',
     specialMemo: [{ id: 'm-1005', createdAt: subDays(new Date(), 2).toISOString(), content: '워크아웃과 회생 비교 중' }],
+    depositHistory: [],
     reminders: [{ id: 'rm-1005', datetime: format(addDays(new Date(), 2), 'yyyy-MM-dd 14:00'), type: '통화' }],
     recordings: []
   },
@@ -287,6 +292,7 @@ export const MOCK_CASES: Case[] = [
     contractAt: format(subDays(new Date(), 0), 'yyyy-MM-dd'),
     contractFee: 200,
     specialMemo: [],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -325,6 +331,7 @@ export const MOCK_CASES: Case[] = [
     deposit1Amount: 100,
     deposit1Date: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
     specialMemo: [{ id: 'm-1007', createdAt: subDays(new Date(), 7).toISOString(), content: '고령으로 인한 소득 활동 불가' }],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -360,6 +367,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [],
     historyType: '없음',
     specialMemo: [{ id: 'm-1008', createdAt: subDays(new Date(), 10).toISOString(), content: '자산 과다로 진행 불가 안내함' }],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -395,6 +403,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-7', amount: 15000, desc: '사업자 신용' }],
     historyType: '없음',
     specialMemo: [],
+    depositHistory: [],
     reminders: [{ id: 'rm-1009', datetime: format(addDays(new Date(), 3), 'yyyy-MM-dd 11:00'), type: '통화' }],
     recordings: []
   },
@@ -435,6 +444,7 @@ export const MOCK_CASES: Case[] = [
     deposit2Amount: 110,
     deposit2Date: format(subDays(new Date(), 2), 'yyyy-MM-dd'),
     specialMemo: [],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -471,6 +481,7 @@ export const MOCK_CASES: Case[] = [
     historyType: '개인회생',
     historyMemo: '5년 전 폐지됨',
     specialMemo: [{ id: 'm-1011', createdAt: subDays(new Date(), 20).toISOString(), content: '재신청 문의. 비용 마련 후 진행하기로 함' }],
+    depositHistory: [],
     reminders: [{ id: 'rm-1011', datetime: format(addDays(new Date(), 15), 'yyyy-MM-dd 10:00'), type: '통화' }],
     recordings: []
   },
@@ -505,6 +516,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-10', amount: 6000, desc: '은행 및 저축은행' }],
     historyType: '없음',
     specialMemo: [],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -538,6 +550,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-11', amount: 2500, desc: '생활비 대출' }],
     historyType: '없음',
     specialMemo: [{ id: 'm-1013', createdAt: new Date().toISOString(), content: '취업 예정이라고 함' }],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -573,6 +586,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-12', amount: 20000, desc: '법인 연대보증' }],
     historyType: '없음',
     specialMemo: [],
+    depositHistory: [],
     reminders: [{ id: 'rm-1014', datetime: format(addDays(new Date(), 0), 'yyyy-MM-dd 16:00'), type: '통화' }],
     recordings: []
   },
@@ -607,6 +621,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-13', amount: 3500, desc: '학자금 및 생활비' }],
     historyType: '없음',
     specialMemo: [],
+    depositHistory: [],
     reminders: [{ id: 'rm-1015', datetime: format(addDays(new Date(), 1), 'yyyy-MM-dd 09:30'), type: '통화' }],
     recordings: []
   },
@@ -641,6 +656,7 @@ export const MOCK_CASES: Case[] = [
     creditLoan: [{ id: 'cl-14', amount: 5000, desc: '은행' }],
     historyType: '없음',
     specialMemo: [{ id: 'm-1016', createdAt: subDays(new Date(), 6).toISOString(), content: '가족 도움으로 해결한다고 함' }],
+    depositHistory: [],
     reminders: [],
     recordings: []
   },
@@ -678,6 +694,7 @@ export const MOCK_CASES: Case[] = [
     contractAt: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
     contractFee: 250,
     specialMemo: [],
+    depositHistory: [],
     reminders: [],
     recordings: []
   }

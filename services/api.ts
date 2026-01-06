@@ -49,7 +49,6 @@ const loadFromStorage = () => {
     if (storedCases) localCases = JSON.parse(storedCases);
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
     if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
-    if (storedLogs) localLogs = JSON.parse(storedLogs);
   } catch (e) {
     console.error("Failed to load from cache", e);
   }
@@ -61,7 +60,7 @@ const saveToStorage = () => {
     localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(localCases));
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
-    localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs));
+    // localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs)); // Deprecated: Logs are inside Case
   } catch (e) {
     console.error("Failed to save to cache", e);
   }
@@ -273,6 +272,7 @@ export const processIncomingCase = (c: any): Case => {
     recordings: mappedCase.recordings || [],
     incomeDetails: mappedCase.incomeDetails || {},
     depositHistory: mappedCase.depositHistory || [],
+    statusLogs: mappedCase.statusLogs || [], // [NEW] Map Status Logs
     // Number safety for remaining fields
     loanMonthlyPay: Number(mappedCase.loanMonthlyPay || c.LoanMonthlyPay) || 0,
     contractFee: Number(mappedCase.contractFee || c.ContractFee) || 0,
@@ -491,9 +491,18 @@ export const changeStatus = async (caseId: string, newStatus: CaseStatus, memo: 
   };
 
   // Update Case
-  const c = await updateCase(caseId, { status: newStatus, statusUpdatedAt: now });
-  localLogs.push(log);
-  saveToStorage(); // Ensure logs are saved immediately
+  // We must fetch the latest case first to append the log
+  const currentCase = localCases.find(c => c.caseId === caseId);
+  if (!currentCase) throw new Error("Case not found");
+
+  const updatedLogs = [log, ...(currentCase.statusLogs || [])];
+
+  // Note: We are updating 'status' AND 'statusLogs' together
+  const c = await updateCase(caseId, {
+    status: newStatus,
+    statusUpdatedAt: now,
+    statusLogs: updatedLogs
+  });
 
   return c;
 };
@@ -520,7 +529,10 @@ export const deleteMemo = async (caseId: string, memoId: string): Promise<Case> 
 };
 
 export const fetchCaseStatusLogs = async (caseId: string): Promise<CaseStatusLog[]> => {
-  return localLogs.filter(l => l.caseId === caseId).sort((a, b) => b.changedAt.localeCompare(a.changedAt));
+  const c = localCases.find(x => x.caseId === caseId);
+  if (!c) return [];
+  // Logs are stored in the case now.
+  return (c.statusLogs || []).sort((a, b) => b.changedAt.localeCompare(a.changedAt));
 };
 
 // Backwards compatibility / Polling disabled for now to prevent spam

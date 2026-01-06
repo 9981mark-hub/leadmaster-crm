@@ -98,25 +98,25 @@ export interface Case {
   ownHouseOwner?: '본인' | '배우자'; // 집 명의
 
   // 5-3. Free Housing (New)
+  rentFreeType?: '관사' | '본가' | '지인' | '기타';
   freeHousingOwner?: string; // 부모님, 형제, 자녀, 지인, 기타
 
-  // 6. Assets (Consolidated)
-  assets: AssetItem[]; // Changed: List of assets
+  // 6. Collections
+  assets: AssetItem[];
+  creditLoan: CreditLoanItem[];
+  specialMemo: MemoItem[];
+  statusLogs?: CaseStatusLog[]; // [NEW] Sync Status History
 
-  // 7. Debts & Memos
-  creditLoan?: CreditLoanItem[]; // Manwon
+  // 7. Debts & Memos (Remaining fields from original 7, 8, 9, 10)
   collateralLoanMemo?: string; // 담보 대출 (Manual Additional Memo)
   creditCardUse?: '사용' | '미사용'; // Changed from 'O' | 'X'
   creditCardAmount?: number; // Added: Credit Card Usage Amount
   historyType?: string; // Added: Selection for history
   historyMemo?: string; // 개인회생/파산/회복 이력 (Detail)
-  specialMemo?: MemoItem[]; // 특이사항
-
-  // 8. Reminder
-  reminders?: ReminderItem[]; // Changed from nextCallAt
+  reminders: ReminderItem[]; // Changed from nextCallAt
 
   // 9. Recordings (New)
-  recordings?: RecordingItem[];
+  recordings: RecordingItem[];
 
   // 10. Settlement (Critical)
   contractAt?: string; // "YYYY-MM-DD"
@@ -133,7 +133,7 @@ export interface Case {
   deposit2Date?: string;
 
   // New: Dynamic Deposit History
-  depositHistory?: {
+  depositHistory: {
     date: string;
     amount: number;
     memo?: string;
