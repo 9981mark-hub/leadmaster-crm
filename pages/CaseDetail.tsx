@@ -643,7 +643,26 @@ export default function CaseDetail() {
                                                 value={newReminderDateTime}
                                                 onChange={e => setNewReminderDateTime(e.target.value)}
                                                 disabled={(c.reminders?.length || 0) >= 5}
-                                                step="600" // 10 minutes
+                                                step={600} // 10 minutes
+                                                onBlur={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val) {
+                                                        const date = new Date(val);
+                                                        const minutes = date.getMinutes();
+                                                        const roundedMinutes = Math.round(minutes / 10) * 10;
+                                                        date.setMinutes(roundedMinutes);
+                                                        date.setSeconds(0);
+                                                        // Offset for local timezone (ISOString defaults to UTC)
+                                                        // Simple format: YYYY-MM-DDThh:mm
+                                                        const pad = (n: number) => n < 10 ? '0' + n : n;
+                                                        const localIso = date.getFullYear() + '-' +
+                                                            pad(date.getMonth() + 1) + '-' +
+                                                            pad(date.getDate()) + 'T' +
+                                                            pad(date.getHours()) + ':' +
+                                                            pad(date.getMinutes());
+                                                        setNewReminderDateTime(localIso);
+                                                    }
+                                                }}
                                             />
                                             <select
                                                 className="p-2 border border-gray-300 rounded text-sm min-w-[80px]"

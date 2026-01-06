@@ -177,21 +177,29 @@ export default function Dashboard() {
                     key={item.reminder.id}
                     className="block group bg-gray-50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-indigo-200 rounded-lg p-3 transition-all shadow-sm hover:shadow-md"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor}`}>{type}</span>
-                            <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
-                          </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {item.reminder.content || '내용 없음'}
-                          </p>
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                      {/* Time & Badge */}
+                      <div className="flex items-center justify-between md:justify-start gap-3 md:w-auto">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
                         </div>
+                        {/* Mobile Only: Detail Arrow */}
+                        <span className="md:hidden text-xs text-gray-400">상세보기 →</span>
                       </div>
-                      <div className="text-right">
-                        <span className="text-xs text-gray-400 group-hover:text-indigo-500 font-medium">상세보기 →</span>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+                        <span className="font-bold text-gray-800 dark:text-white whitespace-nowrap">{item.caseData.customerName}</span>
+                        <span className="hidden md:inline text-gray-300">|</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate block w-full">
+                          {item.reminder.content || '내용 없음'}
+                        </span>
+                      </div>
+
+                      {/* Desktop Only: Detail Arrow */}
+                      <div className="hidden md:block text-right whitespace-nowrap">
+                        <span className="text-xs text-gray-400 group-hover:text-indigo-500 font-medium transition-colors">상세보기 →</span>
                       </div>
                     </div>
                   </Link>
