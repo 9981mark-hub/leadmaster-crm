@@ -12,50 +12,50 @@ const DEFAULT_RULES: CommissionRule[] = [
 const DEFAULT_CONFIG: SettlementConfig = {
   cutoffDay: 0, // Sun
   payoutDay: 2, // Tue
-  payoutWeekDelay: 0, 
+  payoutWeekDelay: 0,
   downPaymentPercentage: 10,
-  firstPayoutPercentage: 50 
+  firstPayoutPercentage: 50
 };
 
 export const MOCK_PARTNERS: Partner[] = [
-    {
-        partnerId: 'P001',
-        name: '태산 법률사무소',
-        active: true,
-        settlementConfig: { ...DEFAULT_CONFIG },
-        commissionRules: JSON.parse(JSON.stringify(DEFAULT_RULES)), // Deep copy for mock
-        summaryTemplate: DEFAULT_SUMMARY_TEMPLATE,
-        aiPromptTemplate: DEFAULT_AI_PROMPT,
-        requiredFields: ['childrenCount', 'depositLoan', 'spouseAssets', 'creditCard', 'history', 'assets']
+  {
+    partnerId: 'P001',
+    name: '태산 법률사무소',
+    active: true,
+    settlementConfig: { ...DEFAULT_CONFIG },
+    commissionRules: JSON.parse(JSON.stringify(DEFAULT_RULES)), // Deep copy for mock
+    summaryTemplate: DEFAULT_SUMMARY_TEMPLATE,
+    aiPromptTemplate: DEFAULT_AI_PROMPT,
+    requiredFields: ['childrenCount', 'depositLoan', 'spouseAssets', 'creditCard', 'history', 'assets']
+  },
+  {
+    partnerId: 'P002',
+    name: '율도 법무법인',
+    active: true,
+    settlementConfig: {
+      cutoffDay: 5, // Fri
+      payoutDay: 1, // Mon
+      payoutWeekDelay: 1, // Next week
+      downPaymentPercentage: 20,
+      firstPayoutPercentage: 40
     },
-    {
-        partnerId: 'P002',
-        name: '율도 법무법인',
-        active: true,
-        settlementConfig: { 
-            cutoffDay: 5, // Fri
-            payoutDay: 1, // Mon
-            payoutWeekDelay: 1, // Next week
-            downPaymentPercentage: 20,
-            firstPayoutPercentage: 40
-        },
-        commissionRules: [
-             { ruleId: '10', minFee: 300, maxFee: 0, commission: 80, fullPayoutThreshold: 100, priority: 1, active: true, updatedAt: '2024-02-01' }
-        ],
-        summaryTemplate: `[율도 접수]\n고객명: {{customerName}}\n전화: {{phone}}\n특이사항: {{specialMemo}}`,
-        aiPromptTemplate: DEFAULT_AI_PROMPT,
-        requiredFields: [] // Minimal fields
-    },
-    {
-        partnerId: 'P003',
-        name: '화려 법률사무소',
-        active: true,
-        settlementConfig: { ...DEFAULT_CONFIG },
-        commissionRules: JSON.parse(JSON.stringify(DEFAULT_RULES)),
-        summaryTemplate: DEFAULT_SUMMARY_TEMPLATE,
-        aiPromptTemplate: DEFAULT_AI_PROMPT,
-        requiredFields: ['childrenCount', 'depositLoan', 'spouseAssets', 'creditCard', 'history', 'assets']
-    }
+    commissionRules: [
+      { ruleId: '10', minFee: 300, maxFee: 0, commission: 80, fullPayoutThreshold: 100, priority: 1, active: true, updatedAt: '2024-02-01' }
+    ],
+    summaryTemplate: `[율도 접수]\n고객명: {{customerName}}\n전화: {{phone}}\n특이사항: {{specialMemo}}`,
+    aiPromptTemplate: DEFAULT_AI_PROMPT,
+    requiredFields: [] // Minimal fields
+  },
+  {
+    partnerId: 'P003',
+    name: '화려 법률사무소',
+    active: true,
+    settlementConfig: { ...DEFAULT_CONFIG },
+    commissionRules: JSON.parse(JSON.stringify(DEFAULT_RULES)),
+    summaryTemplate: DEFAULT_SUMMARY_TEMPLATE,
+    aiPromptTemplate: DEFAULT_AI_PROMPT,
+    requiredFields: ['childrenCount', 'depositLoan', 'spouseAssets', 'creditCard', 'history', 'assets']
+  }
 ];
 
 export const MOCK_INBOUND_PATHS = ['틱톡 광고', '메타 광고', '지인 소개', '블로그', '유튜브', '구글 검색'];
@@ -91,23 +91,24 @@ export const MOCK_CASES: Case[] = [
     rent: 0,
     rentContractor: '본인',
     assets: [
-        { id: '1', owner: '본인', type: '자동차', amount: 2000, loanAmount: 500, desc: '소나타' }
+      { id: '1', owner: '본인', type: '자동차', amount: 2000, loanAmount: 500, desc: '소나타' }
     ],
-    creditLoan: [{id: 'cl-1', amount: 1000, desc: '햇살론'}],
+    creditLoan: [{ id: 'cl-1', amount: 1000, desc: '햇살론' }],
     historyType: '없음',
     reminders: [{
-        id: 'reminder-1',
-        datetime: format(addDays(new Date(), 0), 'yyyy-MM-dd 14:00'),
+      id: 'reminder-1',
+      datetime: format(addDays(new Date(), 0), 'yyyy-MM-dd 14:00'),
+      type: '통화'
     }],
     specialMemo: [{
-        id: 'memo-1001-1',
-        createdAt: subDays(new Date(), 1).toISOString(),
-        content: '부인 몰래 진행 원함'
+      id: 'memo-1001-1',
+      createdAt: subDays(new Date(), 1).toISOString(),
+      content: '부인 몰래 진행 원함'
     },
     {
-        id: 'memo-1001-2',
-        createdAt: subDays(new Date(), 5).toISOString(),
-        content: '5일 전 통화: 서류 준비 요청'
+      id: 'memo-1001-2',
+      createdAt: subDays(new Date(), 5).toISOString(),
+      content: '5일 전 통화: 서류 준비 요청'
     }],
     recordings: []
   },
@@ -176,7 +177,7 @@ export const MOCK_CASES: Case[] = [
     rent: 60,
     rentContractor: '본인',
     assets: [],
-    creditLoan: [{id: 'cl-2', amount: 3000, desc: '카드론'}],
+    creditLoan: [{ id: 'cl-2', amount: 3000, desc: '카드론' }],
     historyType: '없음',
     specialMemo: [],
     reminders: [],
@@ -210,11 +211,11 @@ export const MOCK_CASES: Case[] = [
     ownHouseLoan: 20000,
     ownHouseOwner: '본인',
     deposit: 0, rent: 0,
-    assets: [{id: '2', owner: '본인', type: '자동차', amount: 3000, loanAmount: 0, desc: '그랜저'}],
-    creditLoan: [{id: 'cl-3', amount: 5000, desc: '사업자대출'}],
+    assets: [{ id: '2', owner: '본인', type: '자동차', amount: 3000, loanAmount: 0, desc: '그랜저' }],
+    creditLoan: [{ id: 'cl-3', amount: 5000, desc: '사업자대출' }],
     historyType: '없음',
     specialMemo: [],
-    reminders: [{id: 'rm-1004', datetime: format(addDays(new Date(), 1), 'yyyy-MM-dd 10:00')}],
+    reminders: [{ id: 'rm-1004', datetime: format(addDays(new Date(), 1), 'yyyy-MM-dd 10:00'), type: '통화' }],
     recordings: []
   },
   {
@@ -244,10 +245,10 @@ export const MOCK_CASES: Case[] = [
     freeHousingOwner: '부모님',
     deposit: 0, rent: 0,
     assets: [],
-    creditLoan: [{id: 'cl-4', amount: 1500, desc: '저축은행'}],
+    creditLoan: [{ id: 'cl-4', amount: 1500, desc: '저축은행' }],
     historyType: '없음',
-    specialMemo: [{id: 'm-1005', createdAt: subDays(new Date(), 2).toISOString(), content: '워크아웃과 회생 비교 중'}],
-    reminders: [{id: 'rm-1005', datetime: format(addDays(new Date(), 2), 'yyyy-MM-dd 14:00')}],
+    specialMemo: [{ id: 'm-1005', createdAt: subDays(new Date(), 2).toISOString(), content: '워크아웃과 회생 비교 중' }],
+    reminders: [{ id: 'rm-1005', datetime: format(addDays(new Date(), 2), 'yyyy-MM-dd 14:00'), type: '통화' }],
     recordings: []
   },
   {
@@ -279,7 +280,7 @@ export const MOCK_CASES: Case[] = [
     rentContractor: '본인',
     depositLoanAmount: 10000,
     assets: [],
-    creditLoan: [{id: 'cl-5', amount: 8000, desc: '은행신용'}],
+    creditLoan: [{ id: 'cl-5', amount: 8000, desc: '은행신용' }],
     creditCardUse: '사용',
     creditCardAmount: 2000,
     historyType: '없음',
@@ -317,13 +318,13 @@ export const MOCK_CASES: Case[] = [
     rent: 30,
     rentContractor: '배우자',
     assets: [],
-    creditLoan: [{id: 'cl-6', amount: 4000, desc: '대부업체'}],
+    creditLoan: [{ id: 'cl-6', amount: 4000, desc: '대부업체' }],
     historyType: '없음',
     contractAt: format(subDays(new Date(), 5), 'yyyy-MM-dd'),
     contractFee: 180,
     deposit1Amount: 100,
     deposit1Date: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
-    specialMemo: [{id: 'm-1007', createdAt: subDays(new Date(), 7).toISOString(), content: '고령으로 인한 소득 활동 불가'}],
+    specialMemo: [{ id: 'm-1007', createdAt: subDays(new Date(), 7).toISOString(), content: '고령으로 인한 소득 활동 불가' }],
     reminders: [],
     recordings: []
   },
@@ -358,7 +359,7 @@ export const MOCK_CASES: Case[] = [
     assets: [],
     creditLoan: [],
     historyType: '없음',
-    specialMemo: [{id: 'm-1008', createdAt: subDays(new Date(), 10).toISOString(), content: '자산 과다로 진행 불가 안내함'}],
+    specialMemo: [{ id: 'm-1008', createdAt: subDays(new Date(), 10).toISOString(), content: '자산 과다로 진행 불가 안내함' }],
     reminders: [],
     recordings: []
   },
@@ -390,11 +391,11 @@ export const MOCK_CASES: Case[] = [
     rent: 0,
     rentContractor: '본인',
     depositLoanAmount: 20000,
-    assets: [{id: '3', owner: '배우자', type: '자동차', amount: 4000, loanAmount: 1000, desc: '카니발'}],
-    creditLoan: [{id: 'cl-7', amount: 15000, desc: '사업자 신용'}],
+    assets: [{ id: '3', owner: '배우자', type: '자동차', amount: 4000, loanAmount: 1000, desc: '카니발' }],
+    creditLoan: [{ id: 'cl-7', amount: 15000, desc: '사업자 신용' }],
     historyType: '없음',
     specialMemo: [],
-    reminders: [{id: 'rm-1009', datetime: format(addDays(new Date(), 3), 'yyyy-MM-dd 11:00')}],
+    reminders: [{ id: 'rm-1009', datetime: format(addDays(new Date(), 3), 'yyyy-MM-dd 11:00'), type: '통화' }],
     recordings: []
   },
   {
@@ -425,7 +426,7 @@ export const MOCK_CASES: Case[] = [
     rent: 80,
     rentContractor: '본인',
     assets: [],
-    creditLoan: [{id: 'cl-8', amount: 4500, desc: '카드론 및 현금서비스'}],
+    creditLoan: [{ id: 'cl-8', amount: 4500, desc: '카드론 및 현금서비스' }],
     historyType: '없음',
     contractAt: format(subDays(new Date(), 10), 'yyyy-MM-dd'),
     contractFee: 220,
@@ -466,11 +467,11 @@ export const MOCK_CASES: Case[] = [
     ownHouseOwner: '본인',
     deposit: 0, rent: 0,
     assets: [],
-    creditLoan: [{id: 'cl-9', amount: 3000, desc: '캐피탈'}],
+    creditLoan: [{ id: 'cl-9', amount: 3000, desc: '캐피탈' }],
     historyType: '개인회생',
     historyMemo: '5년 전 폐지됨',
-    specialMemo: [{id: 'm-1011', createdAt: subDays(new Date(), 20).toISOString(), content: '재신청 문의. 비용 마련 후 진행하기로 함'}],
-    reminders: [{id: 'rm-1011', datetime: format(addDays(new Date(), 15), 'yyyy-MM-dd 10:00')}],
+    specialMemo: [{ id: 'm-1011', createdAt: subDays(new Date(), 20).toISOString(), content: '재신청 문의. 비용 마련 후 진행하기로 함' }],
+    reminders: [{ id: 'rm-1011', datetime: format(addDays(new Date(), 15), 'yyyy-MM-dd 10:00'), type: '통화' }],
     recordings: []
   },
   {
@@ -500,8 +501,8 @@ export const MOCK_CASES: Case[] = [
     deposit: 12000,
     rent: 0,
     rentContractor: '본인',
-    assets: [{id: '4', owner: '본인', type: '주식/가상화폐', amount: 500, loanAmount: 0, desc: '코인 손실'}],
-    creditLoan: [{id: 'cl-10', amount: 6000, desc: '은행 및 저축은행'}],
+    assets: [{ id: '4', owner: '본인', type: '주식/가상화폐', amount: 500, loanAmount: 0, desc: '코인 손실' }],
+    creditLoan: [{ id: 'cl-10', amount: 6000, desc: '은행 및 저축은행' }],
     historyType: '없음',
     specialMemo: [],
     reminders: [],
@@ -534,9 +535,9 @@ export const MOCK_CASES: Case[] = [
     freeHousingOwner: '지인',
     deposit: 0, rent: 0,
     assets: [],
-    creditLoan: [{id: 'cl-11', amount: 2500, desc: '생활비 대출'}],
+    creditLoan: [{ id: 'cl-11', amount: 2500, desc: '생활비 대출' }],
     historyType: '없음',
-    specialMemo: [{id: 'm-1013', createdAt: new Date().toISOString(), content: '취업 예정이라고 함'}],
+    specialMemo: [{ id: 'm-1013', createdAt: new Date().toISOString(), content: '취업 예정이라고 함' }],
     reminders: [],
     recordings: []
   },
@@ -568,11 +569,11 @@ export const MOCK_CASES: Case[] = [
     ownHouseLoan: 80000,
     ownHouseOwner: '본인',
     deposit: 0, rent: 0,
-    assets: [{id: '5', owner: '본인', type: '자동차', amount: 8000, loanAmount: 0, desc: '벤츠'}],
-    creditLoan: [{id: 'cl-12', amount: 20000, desc: '법인 연대보증'}],
+    assets: [{ id: '5', owner: '본인', type: '자동차', amount: 8000, loanAmount: 0, desc: '벤츠' }],
+    creditLoan: [{ id: 'cl-12', amount: 20000, desc: '법인 연대보증' }],
     historyType: '없음',
     specialMemo: [],
-    reminders: [{id: 'rm-1014', datetime: format(addDays(new Date(), 0), 'yyyy-MM-dd 16:00')}],
+    reminders: [{ id: 'rm-1014', datetime: format(addDays(new Date(), 0), 'yyyy-MM-dd 16:00'), type: '통화' }],
     recordings: []
   },
   {
@@ -603,10 +604,10 @@ export const MOCK_CASES: Case[] = [
     rent: 55,
     rentContractor: '본인',
     assets: [],
-    creditLoan: [{id: 'cl-13', amount: 3500, desc: '학자금 및 생활비'}],
+    creditLoan: [{ id: 'cl-13', amount: 3500, desc: '학자금 및 생활비' }],
     historyType: '없음',
     specialMemo: [],
-    reminders: [{id: 'rm-1015', datetime: format(addDays(new Date(), 1), 'yyyy-MM-dd 09:30')}],
+    reminders: [{ id: 'rm-1015', datetime: format(addDays(new Date(), 1), 'yyyy-MM-dd 09:30'), type: '통화' }],
     recordings: []
   },
   {
@@ -637,9 +638,9 @@ export const MOCK_CASES: Case[] = [
     rent: 0,
     rentContractor: '본인',
     assets: [],
-    creditLoan: [{id: 'cl-14', amount: 5000, desc: '은행'}],
+    creditLoan: [{ id: 'cl-14', amount: 5000, desc: '은행' }],
     historyType: '없음',
-    specialMemo: [{id: 'm-1016', createdAt: subDays(new Date(), 6).toISOString(), content: '가족 도움으로 해결한다고 함'}],
+    specialMemo: [{ id: 'm-1016', createdAt: subDays(new Date(), 6).toISOString(), content: '가족 도움으로 해결한다고 함' }],
     reminders: [],
     recordings: []
   },
@@ -672,7 +673,7 @@ export const MOCK_CASES: Case[] = [
     ownHouseOwner: '본인',
     deposit: 0, rent: 0,
     assets: [],
-    creditLoan: [{id: 'cl-15', amount: 6000, desc: '2금융권'}],
+    creditLoan: [{ id: 'cl-15', amount: 6000, desc: '2금융권' }],
     historyType: '없음',
     contractAt: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
     contractFee: 250,

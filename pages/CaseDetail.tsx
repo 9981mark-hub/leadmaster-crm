@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchCases, fetchPartners, updateCase, addMemo, deleteMemo, fetchCaseStatusLogs, fetchInboundPaths, fetchStatuses, changeStatus, markCaseAsSeen } from '../services/api';
-import { Case, Partner, MemoItem, CaseStatusLog, CaseStatus, AssetItem, CreditLoanItem, ReminderItem, RecordingItem } from '../types';
+import { Case, Partner, MemoItem, CaseStatusLog, CaseStatus, AssetItem, CreditLoanItem, ReminderItem, RecordingItem, ReminderType } from '../types';
 import { ChevronLeft, Save, Plus, Trash2, Phone, MessageSquare, AlertTriangle, CalendarClock, Send, Play, Pause, Download, Volume2, Mic, Clock, FileText, Archive, PlayCircle, X, Edit2, Sparkles, Check, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatPhone, MANAGER_NAME, CASE_TYPES, JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_OWNERS, ASSET_TYPES, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS, AVAILABLE_FIELDS_CONFIG, formatMoney, DEFAULT_AI_PROMPT, STATUS_COLOR_MAP } from '../constants';
@@ -70,6 +70,8 @@ export default function CaseDetail() {
 
     // Reminder State
     const [newReminderDateTime, setNewReminderDateTime] = useState('');
+    const [newReminderType, setNewReminderType] = useState<ReminderType>('통화');
+    const [newReminderContent, setNewReminderContent] = useState('');
     const [confirmingDeleteReminderId, setConfirmingDeleteReminderId] = useState<string | null>(null);
 
     // Memo Edit State
@@ -310,11 +312,15 @@ export default function CaseDetail() {
         const newReminder: ReminderItem = {
             id: Date.now().toString(),
             datetime: newReminderDateTime.replace('T', ' '),
+            type: newReminderType,
+            content: newReminderContent
         };
         const updatedReminders = [...c.reminders, newReminder];
         handleUpdate('reminders', updatedReminders);
         setNewReminderDateTime('');
-        showToast('다음 통화 일정이 추가되었습니다.');
+        setNewReminderContent('');
+        setNewReminderType('통화');
+        showToast('다음 일정이 추가되었습니다.');
     };
 
     const handleDeleteReminder = (id: string) => {
@@ -628,22 +634,44 @@ export default function CaseDetail() {
                             <div className="grid md:grid-cols-2 gap-4">
                                 {/* Reminder Settings */}
                                 <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
-                                    <label className="block text-xs font-bold text-yellow-800 mb-2">다음 통화 예정일 ({sortedReminders.length}/5)</label>
-                                    <div className="flex gap-2 mb-3">
-                                        <input
-                                            type="datetime-local"
-                                            className="flex-1 p-2 border border-gray-300 rounded text-sm disabled:bg-gray-100"
-                                            value={newReminderDateTime}
-                                            onChange={e => setNewReminderDateTime(e.target.value)}
-                                            disabled={(c.reminders?.length || 0) >= 5}
-                                        />
-                                        <button
-                                            onClick={handleAddReminder}
-                                            disabled={(c.reminders?.length || 0) >= 5}
-                                            className="bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 whitespace-nowrap disabled:bg-gray-400"
-                                        >
-                                            추가
-                                        </button>
+                                    <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/5)</label>
+                                    <div className="flex flex-col gap-2 mb-3">
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="datetime-local"
+                                                className="flex-1 p-2 border border-gray-300 rounded text-sm disabled:bg-gray-100"
+                                                value={newReminderDateTime}
+                                                onChange={e => setNewReminderDateTime(e.target.value)}
+                                                disabled={(c.reminders?.length || 0) >= 5}
+                                                step="600" // 10 minutes
+                                            />
+                                            <select
+                                                className="p-2 border border-gray-300 rounded text-sm min-w-[80px]"
+                                                value={newReminderType}
+                                                onChange={e => setNewReminderType(e.target.value as any)}
+                                            >
+                                                <option value="통화">통화</option>
+                                                <option value="출장미팅">출장미팅</option>
+                                                <option value="방문미팅">방문미팅</option>
+                                                <option value="기타">기타</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                className="flex-1 p-2 border border-gray-300 rounded text-sm"
+                                                placeholder={newReminderType === '기타' ? "일정 내용을 입력하세요" : "메모 (선택사항)"}
+                                                value={newReminderContent}
+                                                onChange={e => setNewReminderContent(e.target.value)}
+                                            />
+                                            <button
+                                                onClick={handleAddReminder}
+                                                disabled={(c.reminders?.length || 0) >= 5}
+                                                className="bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 whitespace-nowrap disabled:bg-gray-400"
+                                            >
+                                                추가
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         {sortedReminders.length === 0 ? (

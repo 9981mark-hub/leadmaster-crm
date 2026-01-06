@@ -66,6 +66,9 @@ export default function Dashboard() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /* New: Dashboard State for Calendar Interactivity */
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
   useEffect(() => {
     Promise.all([fetchCases(), fetchPartners()]).then(([data, partnerData]) => {
       setCases(data);
@@ -76,7 +79,7 @@ export default function Dashboard() {
 
   if (loading) return <div className="p-10 text-center text-gray-500">로딩중...</div>;
 
-  // KPIs
+  // KPIs (Summary)
   const allRemindersWithCase = cases.flatMap(c =>
     (c.reminders || []).map(r => ({ reminder: r, caseData: c }))
   );
@@ -95,6 +98,18 @@ export default function Dashboard() {
   if (partners.length > 0) {
     settlementInfo = calculateNextSettlement(cases, partners[0]);
   }
+
+  // Determine events for Selected Date
+  const selectedDateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
+  const selectedDayEvents = allRemindersWithCase.filter(item => {
+    if (!item.reminder.datetime) return false;
+    return item.reminder.datetime.startsWith(selectedDateStr);
+  }).sort((a, b) => a.reminder.datetime.localeCompare(b.reminder.datetime));
+
+  const formatDateTitle = (d: Date) => {
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]}) 일정`;
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -124,57 +139,73 @@ export default function Dashboard() {
         <StatusPieChart cases={cases} isDark={theme === 'dark'} />
       </div>
 
-      {/* List Section (Today, Overdue, Warnings) */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Today's Calls */}
-        {/* Today's Calls */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-blue-50 dark:bg-blue-900/20">
-            <h3 className="font-semibold text-blue-800 flex items-center gap-2">
-              <PhoneCall size={18} /> 오늘 연락 예정
-            </h3>
-            <span className="text-xs bg-white text-blue-600 px-2 py-0.5 rounded-full font-bold">{todayReminders.length}</span>
-          </div>
-          <div className="p-2">
-            {todayReminders.length === 0 ? <p className="text-center text-gray-400 py-4 text-sm">일정이 없습니다.</p> :
-              todayReminders.map(item => <CaseListItem key={item.reminder.id} c={item.caseData} reminder={item.reminder} type="today" />)}
-          </div>
+      {/* NEW: Today's Schedule Box (Replaces 3 Lists) */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-indigo-50 dark:bg-indigo-900/20 flex justify-between items-center">
+          <h3 className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
+            <Calendar size={20} />
+            {formatDateTitle(selectedDate)}
+          </h3>
+          <span className="text-xs bg-white text-indigo-600 px-3 py-1 rounded-full font-bold shadow-sm">
+            {selectedDayEvents.length}건
+          </span>
         </div>
 
-        {/* Overdue Calls */}
-        {/* Overdue Calls */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-red-50 dark:bg-red-900/20">
-            <h3 className="font-semibold text-red-800 flex items-center gap-2">
-              <Clock size={18} /> 오버듀 (연락지연)
-            </h3>
-            <span className="text-xs bg-white text-red-600 px-2 py-0.5 rounded-full font-bold">{overdueReminders.length}</span>
-          </div>
-          <div className="p-2">
-            {overdueReminders.length === 0 ? <p className="text-center text-gray-400 py-4 text-sm">지연된 건이 없습니다.</p> :
-              overdueReminders.map(item => <CaseListItem key={item.reminder.id} c={item.caseData} reminder={item.reminder} type="overdue" />)}
-          </div>
-        </div>
+        <div className="p-4 min-h-[150px] max-h-[300px] overflow-y-auto">
+          {selectedDayEvents.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-24 text-gray-400">
+              <p>등록된 일정이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {selectedDayEvents.map((item, idx) => {
+                const timeStr = item.reminder.datetime.split(' ')[1];
+                const type = item.reminder.type || '통화'; // Fallback
+                // Color coding based on Type
+                let typeColor = 'bg-gray-100 text-gray-600';
+                if (type === '통화') typeColor = 'bg-green-100 text-green-700';
+                if (type === '출장미팅') typeColor = 'bg-blue-100 text-blue-700';
+                if (type === '방문미팅') typeColor = 'bg-purple-100 text-purple-700';
+                if (type === '기타') typeColor = 'bg-yellow-100 text-yellow-700';
 
-        {/* Missing Info / Warnings */}
-        {/* Missing Info / Warnings */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-yellow-50 dark:bg-yellow-900/20">
-            <h3 className="font-semibold text-yellow-800 flex items-center gap-2">
-              <AlertCircle size={18} /> 누락/경고
-            </h3>
-            <span className="text-xs bg-white text-yellow-600 px-2 py-0.5 rounded-full font-bold">{warningCases.length}</span>
-          </div>
-          <div className="p-2 max-h-80 overflow-y-auto no-scrollbar">
-            {warningCases.length === 0 ? <p className="text-center text-gray-400 py-4 text-sm">완벽합니다!</p> :
-              warningCases.map(c => <CaseListItem key={c.caseId} c={c} type="warning" />)}
-          </div>
+                return (
+                  <Link
+                    to={`/case/${item.caseData.caseId}`}
+                    key={item.reminder.id}
+                    className="block group bg-gray-50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-indigo-200 rounded-lg p-3 transition-all shadow-sm hover:shadow-md"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor}`}>{type}</span>
+                            <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {item.reminder.content || '내용 없음'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs text-gray-400 group-hover:text-indigo-500 font-medium">상세보기 →</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Calendar Section */}
+      {/* Calendar Section - Connected */}
       <div>
-        <CalendarWidget cases={cases} />
+        <CalendarWidget
+          cases={cases}
+          selectedDate={selectedDate}
+          onDateSelect={setSelectedDate}
+        />
       </div>
     </div >
   );

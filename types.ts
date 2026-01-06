@@ -23,9 +23,14 @@ export interface MemoItem {
   content: string;
 }
 
+export type ReminderType = '통화' | '출장미팅' | '방문미팅' | '기타';
+
 export interface ReminderItem {
   id: string;
   datetime: string; // "YYYY-MM-DD HH:mm"
+  type: ReminderType;
+  content?: string;
+  isCompleted?: boolean;
 }
 
 export interface RecordingItem {

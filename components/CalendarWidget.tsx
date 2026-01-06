@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  format, addMonths, subMonths, startOfMonth, endOfMonth, 
-  startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
-  eachDayOfInterval, parse, isToday 
+import {
+  format, addMonths, subMonths, startOfMonth, endOfMonth,
+  startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays,
+  eachDayOfInterval, parse, isToday
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Phone, User } from 'lucide-react';
@@ -11,9 +11,11 @@ import { Link } from 'react-router-dom';
 
 interface CalendarWidgetProps {
   cases: Case[];
+  onDateSelect?: (date: Date) => void;
+  selectedDate?: Date;
 }
 
-export default function CalendarWidget({ cases }: CalendarWidgetProps) {
+export default function CalendarWidget({ cases, onDateSelect, selectedDate }: CalendarWidgetProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -81,42 +83,47 @@ export default function CalendarWidget({ cases }: CalendarWidgetProps) {
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isTodayDate = isToday(day);
 
+          const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
+
           return (
-            <div 
-              key={day.toISOString()} 
-              className={`min-h-[100px] bg-white p-2 flex flex-col gap-1 ${!isCurrentMonth ? 'bg-gray-50' : ''}`}
+            <div
+              key={day.toISOString()}
+              onClick={() => onDateSelect && onDateSelect(day)}
+              className={`min-h-[100px] p-2 flex flex-col gap-1 cursor-pointer transition-colors
+                ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset z-10' : (!isCurrentMonth ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-50')}
+              `}
             >
               <div className="flex justify-between items-start">
-                <span 
-                  className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full 
-                    ${isTodayDate ? 'bg-blue-600 text-white' : isCurrentMonth ? 'text-gray-700' : 'text-gray-400'}`}
+                <span
+                  className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full
+                    ${isTodayDate ? 'bg-blue-600 text-white' : (isSelected ? 'text-blue-700 font-bold' : (isCurrentMonth ? 'text-gray-700' : 'text-gray-400'))}`}
                 >
                   {format(day, 'd')}
                 </span>
                 {dayEvents.length > 0 && (
-                   <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 rounded font-bold">
-                     {dayEvents.length}건
-                   </span>
+                  <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 rounded font-bold">
+                    {dayEvents.length}건
+                  </span>
                 )}
               </div>
-              
+
               <div className="flex-1 overflow-y-auto no-scrollbar space-y-1 mt-1">
                 {dayEvents.map((ev, index) => {
-                    const timeStr = ev.datetime?.split(' ')[1] || ''; // HH:mm
-                    return (
-                        <Link 
-                            key={`${ev.caseId}-${index}`} 
-                            to={`/case/${ev.caseId}`}
-                            className={`block text-[10px] p-1 rounded border truncate hover:opacity-80 transition-opacity
+                  const timeStr = ev.datetime?.split(' ')[1] || ''; // HH:mm
+                  return (
+                    <Link
+                      key={`${ev.caseId}-${index}`}
+                      to={`/case/${ev.caseId}`}
+                      className={`block text-[10px] p-1 rounded border truncate hover:opacity-80 transition-opacity
                                 ${isTodayDate ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-gray-50 border-gray-100 text-gray-600'}
                             `}
-                        >
-                            <div className="flex items-center gap-1">
-                                <span className="font-mono font-bold text-gray-500">{timeStr}</span>
-                                <span className="font-semibold">{ev.customerName}</span>
-                            </div>
-                        </Link>
-                    );
+                    >
+                      <div className="flex items-center gap-1">
+                        <span className="font-mono font-bold text-gray-500">{timeStr}</span>
+                        <span className="font-semibold">{ev.customerName}</span>
+                      </div>
+                    </Link>
+                  );
                 })}
               </div>
             </div>
