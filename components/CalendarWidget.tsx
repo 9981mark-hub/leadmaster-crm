@@ -103,7 +103,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                 </span>
                 {dayEvents.length > 0 && (
                   <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 rounded font-bold">
-                    {dayEvents.length}건
+                    {dayEvents.length}
                   </span>
                 )}
               </div>
@@ -114,8 +114,8 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                   <div
                     key={i}
                     className={`w-1.5 h-1.5 rounded-full ${ev.type === '방문미팅' ? 'bg-purple-500' :
-                        ev.type === '출장미팅' ? 'bg-green-500' :
-                          'bg-blue-500'
+                      ev.type === '출장미팅' ? 'bg-green-500' :
+                        'bg-blue-500'
                       }`}
                   />
                 ))}

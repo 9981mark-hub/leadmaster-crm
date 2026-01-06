@@ -149,7 +149,7 @@ export default function Dashboard() {
             {formatDateTitle(selectedDate)}
           </h3>
           <span className="text-xs bg-white text-indigo-600 px-3 py-1 rounded-full font-bold shadow-sm">
-            {selectedDayEvents.length}건
+            {selectedDayEvents.length}
           </span>
         </div>
 
@@ -177,25 +177,27 @@ export default function Dashboard() {
                     key={item.reminder.id}
                     className="block group bg-gray-50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-indigo-200 rounded-lg p-3 transition-all shadow-sm hover:shadow-md"
                   >
-                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                      {/* Time & Badge */}
-                      <div className="flex items-center justify-between md:justify-start gap-2 md:gap-3 md:w-auto">
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
-                        </div>
-                        {/* Mobile Only: Detail Arrow */}
-                        <span className="md:hidden text-xs text-gray-400">상세보기 →</span>
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                      {/* Mobile Row 1: Time, Badge, Name */}
+                      <div className="flex md:hidden items-center gap-2 flex-wrap mb-1">
+                        <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
+                        <span className="font-bold text-gray-800 dark:text-white truncate flex-1">{item.caseData.customerName}</span>
                       </div>
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
-                        <div className="flex md:hidden items-center gap-2">
-                          <span className="font-bold text-gray-800 dark:text-white truncate">{item.caseData.customerName}</span>
+                      {/* Desktop Row: Standard Layout */}
+                      <div className="hidden md:flex items-center justify-between md:justify-start gap-3 md:w-auto">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
                         </div>
+                      </div>
+
+                      {/* Content Row (Mobile: Row 2, Desktop: Inline) */}
+                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
                         <span className="hidden md:inline font-bold text-gray-800 dark:text-white whitespace-nowrap">{item.caseData.customerName}</span>
                         <span className="hidden md:inline text-gray-300">|</span>
-                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate block w-full">
+                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate block w-full pl-0 md:pl-0">
                           {item.reminder.content || '내용 없음'}
                         </span>
                       </div>
