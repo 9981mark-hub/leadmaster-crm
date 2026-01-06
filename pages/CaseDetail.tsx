@@ -5,7 +5,7 @@ import { fetchCases, fetchPartners, updateCase, addMemo, deleteMemo, fetchCaseSt
 import { Case, Partner, MemoItem, CaseStatusLog, CaseStatus, AssetItem, CreditLoanItem, ReminderItem, RecordingItem } from '../types';
 import { ChevronLeft, Save, Plus, Trash2, Phone, MessageSquare, AlertTriangle, CalendarClock, Send, Play, Pause, Download, Volume2, Mic, Clock, FileText, Archive, PlayCircle, X, Edit2, Sparkles, Check, Copy } from 'lucide-react';
 import { format } from 'date-fns';
-import { formatPhone, MANAGER_NAME, CASE_TYPES, JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_OWNERS, ASSET_TYPES, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS, AVAILABLE_FIELDS_CONFIG, formatMoney, DEFAULT_AI_PROMPT } from '../constants';
+import { formatPhone, MANAGER_NAME, CASE_TYPES, JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_OWNERS, ASSET_TYPES, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS, AVAILABLE_FIELDS_CONFIG, formatMoney, DEFAULT_AI_PROMPT, STATUS_COLOR_MAP } from '../constants';
 import { useToast } from '../contexts/ToastContext';
 import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64 } from '../utils';
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -557,7 +557,7 @@ export default function CaseDetail() {
                     <div className="flex flex-col gap-2 min-w-[200px]">
                         <label className="text-xs text-gray-400 font-medium">현재 상태 변경</label>
                         <select
-                            className="p-2 border border-gray-300 rounded font-semibold bg-blue-50 text-blue-800"
+                            className={"p-2 border border-gray-300 rounded font-semibold outline-none " + (STATUS_COLOR_MAP[c.status] || 'bg-blue-50 text-blue-800')}
                             value={c.status}
                             onChange={handleStatusChange}
                         >

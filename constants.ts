@@ -9,6 +9,21 @@ export const DEFAULT_STATUS_LIST: CaseStatus[] = [
   '1차 입금완료', '2차 입금완료'
 ];
 
+export const STATUS_COLOR_MAP: Record<string, string> = {
+  '신규접수': 'bg-blue-100 text-blue-800',
+  '광고유입': 'bg-blue-100 text-blue-800', // Assuming similar to New
+  '부재': 'bg-orange-100 text-orange-800',
+  '재통화 예정': 'bg-yellow-100 text-yellow-800',
+  '진행불가': 'bg-gray-200 text-gray-700',
+  '고객취소': 'bg-gray-200 text-gray-700',
+  '장기관리중': 'bg-purple-100 text-purple-800',
+  '상담중': 'bg-indigo-100 text-indigo-800',
+  '사무장 접수': 'bg-teal-100 text-teal-800',
+  '계약 완료': 'bg-green-100 text-green-800',
+  '1차 입금완료': 'bg-green-200 text-green-900',
+  '2차 입금완료': 'bg-green-300 text-green-900'
+};
+
 export const MANAGER_NAME = "Mark";
 
 export const CASE_TYPES = ['개인회생', '파산', '새출발기금', '신용회복'];

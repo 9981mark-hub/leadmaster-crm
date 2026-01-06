@@ -130,6 +130,17 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
     processedTemplate = processedTemplate.replace(/^\* 미성년 자녀 수 : .*\r?\n?/gm, '');
   }
 
+  // [NEW] Remove Credit Card Amount if Unused
+  if (c.creditCardUse === '미사용') {
+    processedTemplate = processedTemplate.replace(/^\* 신용카드 사용금액 : .*\r?\n?/gm, '');
+  }
+
+  // [NEW] Remove 4 Major Insurance if '무직' is the ONLY job type
+  // Note: jobTypes is an array. We check if it has length 1 and that one item is '무직'.
+  if (c.jobTypes && c.jobTypes.length === 1 && c.jobTypes[0] === '무직') {
+    processedTemplate = processedTemplate.replace(/^\* 4대보험 가입유무 : .*\r?\n?/gm, '');
+  }
+
   // 1. Prepare Data map
   const depositRentStrParts = [];
   if (c.housingType === '자가') {
