@@ -479,29 +479,29 @@ export const deleteCase = async (caseId: string): Promise<Case[]> => {
 export const changeStatus = async (caseId: string, newStatus: CaseStatus, memo: string): Promise<Case> => {
   const now = new Date().toISOString();
 
-  // Log locally
-  const log: CaseStatusLog = {
-    logId: uuidv4(),
-    caseId,
-    changedAt: now,
-    changedBy: 'Mark',
-    fromStatus: '',
-    toStatus: newStatus,
-    memo
-  };
-
-  // Update Case
-  // We must fetch the latest case first to append the log
+  // We must fetch the latest case first to get the current status
   const currentCase = localCases.find(c => c.caseId === caseId);
   if (!currentCase) throw new Error("Case not found");
 
-  const updatedLogs = [log, ...(currentCase.statusLogs || [])];
+  const fromStatus = currentCase.status || '신규'; // Get current status for 'from'
 
-  // Note: We are updating 'status' AND 'statusLogs' together
+  // We utilize 'specialMemo' to store status logs for robust syncing with Google Sheets
+  // Format: [상태변경] From -> To | Memo
+  const logContent = `[상태변경] ${fromStatus} -> ${newStatus}${memo ? ` | ${memo}` : ''}`;
+
+  // Create new memo
+  const newMemo: MemoItem = {
+    id: uuidv4(),
+    createdAt: now,
+    content: logContent
+  };
+
+  const updatedMemos = [newMemo, ...(currentCase.specialMemo || [])];
+
   const c = await updateCase(caseId, {
     status: newStatus,
     statusUpdatedAt: now,
-    statusLogs: updatedLogs
+    specialMemo: updatedMemos
   });
 
   return c;
@@ -531,8 +531,29 @@ export const deleteMemo = async (caseId: string, memoId: string): Promise<Case> 
 export const fetchCaseStatusLogs = async (caseId: string): Promise<CaseStatusLog[]> => {
   const c = localCases.find(x => x.caseId === caseId);
   if (!c) return [];
-  // Logs are stored in the case now.
-  return (c.statusLogs || []).sort((a, b) => b.changedAt.localeCompare(a.changedAt));
+
+  // Parse logs from specialMemo
+  const memoLogs: CaseStatusLog[] = (c.specialMemo || [])
+    .filter(m => m.content.startsWith('[상태변경]'))
+    .map(m => {
+      // Format: [상태변경] From -> To | Memo
+      const content = m.content.replace('[상태변경] ', '');
+      const [statusPart, memoPart] = content.split(' | ');
+      const [from, to] = statusPart.split(' -> ').map(s => s.trim());
+
+      return {
+        logId: m.id,
+        caseId: c.caseId,
+        changedAt: m.createdAt,
+        changedBy: 'Mark',
+        fromStatus: from,
+        toStatus: to,
+        memo: memoPart || ''
+      };
+    });
+
+  // Merge with legacy localLogs (if any) or statusLogs (if any) to be safe, but preference is memo
+  return memoLogs.sort((a, b) => b.changedAt.localeCompare(a.changedAt));
 };
 
 // Backwards compatibility / Polling disabled for now to prevent spam
