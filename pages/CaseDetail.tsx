@@ -1158,7 +1158,7 @@ export default function CaseDetail() {
                                                     <span className="font-semibold mr-2">{asset.type}</span>
                                                     <span className="text-gray-800 mr-2">시세 {asset.amount > 0 ? (asset.amount.toLocaleString() + " 만원") : '0원'}</span>
                                                     {asset.loanAmount > 0 && <span className="text-red-500 mr-2">담보 {asset.loanAmount.toLocaleString()}만원</span>}
-                                                    {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-green-600 mr-2">보증금 {asset.rentDeposit.toLocaleString()}만원</span>}
+                                                    {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-green-600 mr-2">전세 {asset.rentDeposit.toLocaleString()}만원</span>}
                                                     {asset.desc && <span className="text-gray-500">({asset.desc})</span>}
                                                 </div>
                                                 <button onClick={() => handleRemoveAsset(asset.id)} className="text-red-500 p-1">
@@ -1205,7 +1205,7 @@ export default function CaseDetail() {
                                         <div className="mb-2">
                                             <input
                                                 type="number"
-                                                placeholder="임대차 보증금 (만원, 전/월세 시)"
+                                                placeholder="전세금액 (만원)"
                                                 className="w-full p-1.5 border rounded text-xs bg-green-50 focus:bg-white"
                                                 value={newAsset.rentDeposit || ''}
                                                 onChange={e => setNewAsset({ ...newAsset, rentDeposit: Number(e.target.value) })}
