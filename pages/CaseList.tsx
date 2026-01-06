@@ -432,13 +432,16 @@ export default function CaseList() {
                                                 content={
                                                     <div className="space-y-1">
                                                         <p className="font-bold text-gray-300 border-b border-gray-600 pb-1 mb-1">최근 상담 내역</p>
-                                                        {c.specialMemo && c.specialMemo.length > 0 ? (
-                                                            c.specialMemo.slice(0, 2).map((m, i) => (
-                                                                <div key={i} className="mb-1 last:mb-0">
-                                                                    <span className="text-[10px] text-gray-400 block">{m.createdAt.split('T')[0]}</span>
-                                                                    <span className="block">{m.content}</span>
-                                                                </div>
-                                                            ))
+                                                        {c.specialMemo && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                            c.specialMemo
+                                                                .filter(m => !m.content.startsWith('[상태변경]'))
+                                                                .slice(0, 2)
+                                                                .map((m, i) => (
+                                                                    <div key={i} className="mb-1 last:mb-0">
+                                                                        <span className="text-[10px] text-gray-400 block">{m.createdAt.split('T')[0]}</span>
+                                                                        <span className="block">{m.content}</span>
+                                                                    </div>
+                                                                ))
                                                         ) : (
                                                             <span className="text-gray-500 italic">상담 내역이 없습니다.</span>
                                                         )}
@@ -455,6 +458,7 @@ export default function CaseList() {
                                     </div >
                                     <div className="flex flex-col items-end gap-1">
                                         <HoverCheckTooltip
+                                            mobileAlign="right"
                                             trigger={
                                                 <span className={`px-2 py-1 rounded text-xs font-semibold cursor-help ${c.status === '진행불가' || c.status === '고객취소'
                                                     ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
@@ -545,13 +549,16 @@ export default function CaseList() {
                                                     content={
                                                         <div className="space-y-2">
                                                             <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
-                                                            {c.specialMemo && c.specialMemo.length > 0 ? (
-                                                                c.specialMemo.slice(0, 3).map((m, i) => (
-                                                                    <div key={i} className="text-[11px] leading-relaxed">
-                                                                        <span className="text-blue-300 mr-1">[{m.createdAt.split('T')[0]}]</span>
-                                                                        {m.content}
-                                                                    </div>
-                                                                ))
+                                                            {c.specialMemo && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                                c.specialMemo
+                                                                    .filter(m => !m.content.startsWith('[상태변경]'))
+                                                                    .slice(0, 3)
+                                                                    .map((m, i) => (
+                                                                        <div key={i} className="text-[11px] leading-relaxed">
+                                                                            <span className="text-blue-300 mr-1">[{m.createdAt.split('T')[0]}]</span>
+                                                                            {m.content}
+                                                                        </div>
+                                                                    ))
                                                             ) : (
                                                                 <span className="text-gray-500 italic">내역 없음</span>
                                                             )}

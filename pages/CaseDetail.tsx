@@ -59,6 +59,7 @@ export default function CaseDetail() {
     const { caseId } = useParams();
     const { showToast } = useToast();
     const [c, setCase] = useState<Case | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [partners, setPartners] = useState<Partner[]>([]);
     const [inboundPaths, setInboundPaths] = useState<string[]>([]);
     const [statuses, setStatuses] = useState<CaseStatus[]>([]);
@@ -139,7 +140,7 @@ export default function CaseDetail() {
                 if (foundCase?.aiSummary) {
                     setAiSummaryText(foundCase.aiSummary);
                 }
-            });
+            }).finally(() => setIsLoading(false));
             fetchCaseStatusLogs(caseId).then(setStatusLogs);
         }
         return () => {
@@ -147,7 +148,8 @@ export default function CaseDetail() {
         };
     }, [caseId]);
 
-    if (!c) return <div className="p-8 text-center text-gray-500">로딩중...</div>;
+    if (isLoading) return <div className="p-8 text-center text-gray-500">로딩중...</div>;
+    if (!c) return <div className="p-8 text-center text-gray-500">데이터를 찾을 수 없습니다.</div>;
 
     const currentPartner = partners.find(p => p.partnerId === c.partnerId);
     const rules = currentPartner ? currentPartner.commissionRules : [];
@@ -656,7 +658,7 @@ export default function CaseDetail() {
                                     <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/5)</label>
                                     <div className="flex flex-col md:flex-row gap-2 mb-3">
                                         <div className="flex flex-wrap gap-2 flex-[2]">
-                                            <div className="flex flex-wrap gap-1 items-center flex-1 min-w-[200px]">
+                                            <div className="flex flex-wrap gap-1 items-center flex-1 min-w-[150px]">
                                                 {/* Date Picker */}
                                                 <input
                                                     type="date"
@@ -730,8 +732,8 @@ export default function CaseDetail() {
                                                         <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
                                                         <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
                                                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
-                                                                reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
-                                                                    'bg-blue-100 text-blue-700'
+                                                            reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
+                                                                'bg-blue-100 text-blue-700'
                                                             }`}>
                                                             {reminder.type || '통화'}
                                                         </span>
