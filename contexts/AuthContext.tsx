@@ -1,6 +1,12 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import {
+  fetchAllowedEmails,
+  addAllowedEmail as addAllowedEmailApi,
+  removeAllowedEmail as removeAllowedEmailApi,
+  subscribe
+} from '../services/api';
 
 interface UserProfile {
   email: string;
@@ -42,26 +48,28 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  // 동적 이메일 리스트 관리
-  const [allowedEmails, setAllowedEmails] = useState<string[]>(() => {
-    const stored = localStorage.getItem('allowedEmails');
-    return stored ? JSON.parse(stored) : DEFAULT_ALLOWED_EMAILS;
-  });
+  // 동적 이메일 리스트 관리 (API 연동)
+  const [allowedEmails, setAllowedEmails] = useState<string[]>([]);
 
-  const updateAllowedEmails = (newList: string[]) => {
+  useEffect(() => {
+    // 초기 로드: 로컬 캐시 또는 API에서 가져오기
+    fetchAllowedEmails().then(setAllowedEmails);
+
+    // 실시간 업데이트 구독 (다른 탭/기기 동기화)
+    const unsubscribe = subscribe(() => {
+      fetchAllowedEmails().then(setAllowedEmails);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const addAllowedEmail = async (email: string) => {
+    const newList = await addAllowedEmailApi(email);
     setAllowedEmails(newList);
-    localStorage.setItem('allowedEmails', JSON.stringify(newList));
   };
 
-  const addAllowedEmail = (email: string) => {
-    if (!allowedEmails.includes(email)) {
-      updateAllowedEmails([...allowedEmails, email]);
-    }
-  };
-
-  const removeAllowedEmail = (email: string) => {
-    const newList = allowedEmails.filter(e => e !== email);
-    updateAllowedEmails(newList);
+  const removeAllowedEmail = async (email: string) => {
+    const newList = await removeAllowedEmailApi(email);
+    setAllowedEmails(newList);
   };
 
   const AuthProviderInternal = ({ children }: { children?: ReactNode }) => {

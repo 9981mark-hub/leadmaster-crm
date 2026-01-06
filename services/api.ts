@@ -14,6 +14,7 @@ let localPartners: Partner[] = [];
 let localLogs: CaseStatusLog[] = [...MOCK_LOGS];
 let localInboundPaths: string[] = [];
 let localStatuses: CaseStatus[] = [];
+let localAllowedEmails: string[] = ['9981mark@gmail.com', '2882a@naver.com']; // Default
 let isInitialized = false;
 
 // Event Listeners for Real-time Updates
@@ -34,6 +35,7 @@ const CACHE_KEYS = {
   CASES: 'lm_cases',
   PATHS: 'lm_paths',
   STATUSES: 'lm_statuses',
+  EMAILS: 'lm_allowed_emails',
   LOGS: 'lm_logs'
 };
 
@@ -43,12 +45,14 @@ const loadFromStorage = () => {
     const storedCases = localStorage.getItem(CACHE_KEYS.CASES);
     const storedPaths = localStorage.getItem(CACHE_KEYS.PATHS);
     const storedStatuses = localStorage.getItem(CACHE_KEYS.STATUSES);
+    const storedEmails = localStorage.getItem(CACHE_KEYS.EMAILS);
     const storedLogs = localStorage.getItem(CACHE_KEYS.LOGS);
 
     if (storedPartners) localPartners = JSON.parse(storedPartners);
     if (storedCases) localCases = JSON.parse(storedCases);
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
     if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
+    if (storedEmails) localAllowedEmails = JSON.parse(storedEmails);
   } catch (e) {
     console.error("Failed to load from cache", e);
   }
@@ -60,6 +64,7 @@ const saveToStorage = () => {
     localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(localCases));
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
+    localStorage.setItem(CACHE_KEYS.EMAILS, JSON.stringify(localAllowedEmails));
     // localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs)); // Deprecated: Logs are inside Case
   } catch (e) {
     console.error("Failed to save to cache", e);
@@ -183,6 +188,8 @@ const performBackgroundFetch = async () => {
 
       if (settingsData.statuses) localStatuses = settingsData.statuses;
       else if (localStatuses.length === 0) localStatuses = [...DEFAULT_STATUS_LIST];
+
+      if (settingsData.allowedEmails) localAllowedEmails = settingsData.allowedEmails;
 
       if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
     }
@@ -348,6 +355,27 @@ export const deleteInboundPath = async (path: string, migrateTo?: string): Promi
   localInboundPaths = localInboundPaths.filter(p => p !== path);
   syncToSheet({ target: 'settings', action: 'update', key: 'inboundPaths', value: localInboundPaths });
   return [...localInboundPaths];
+};
+
+
+// --- Allowed Emails ---
+export const fetchAllowedEmails = async (): Promise<string[]> => {
+  if (!isInitialized) await initializeData();
+  return [...localAllowedEmails];
+};
+
+export const addAllowedEmail = async (email: string): Promise<string[]> => {
+  if (!localAllowedEmails.includes(email)) {
+    localAllowedEmails.push(email);
+    syncToSheet({ target: 'settings', action: 'update', key: 'allowedEmails', value: localAllowedEmails });
+  }
+  return [...localAllowedEmails];
+};
+
+export const removeAllowedEmail = async (email: string): Promise<string[]> => {
+  localAllowedEmails = localAllowedEmails.filter(e => e !== email);
+  syncToSheet({ target: 'settings', action: 'update', key: 'allowedEmails', value: localAllowedEmails });
+  return [...localAllowedEmails];
 };
 
 
