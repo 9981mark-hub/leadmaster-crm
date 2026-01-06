@@ -655,8 +655,8 @@ export default function CaseDetail() {
                                 <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
                                     <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/5)</label>
                                     <div className="flex flex-col md:flex-row gap-2 mb-3">
-                                        <div className="flex gap-2 flex-[2]">
-                                            <div className="flex gap-1 items-center flex-1">
+                                        <div className="flex flex-wrap gap-2 flex-[2]">
+                                            <div className="flex flex-wrap gap-1 items-center flex-1 min-w-[200px]">
                                                 {/* Date Picker */}
                                                 <input
                                                     type="date"
