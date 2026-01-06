@@ -4,10 +4,14 @@ import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
 import { Link } from 'react-router-dom';
-import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles } from 'lucide-react';
+import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 import ImportModal from '../components/ImportModal';
+import HoverCheckTooltip from '../components/HoverCheckTooltip';
+import { fetchCaseStatusLogs } from '../services/api';
+import { STATUS_COLOR_MAP } from '../constants';
+import { MemoItem, CaseStatusLog } from '../types';
 
 const getNextUpcomingReminder = (reminders?: ReminderItem[]): ReminderItem | null => {
     if (!reminders || reminders.length === 0) return null;
@@ -19,6 +23,34 @@ const getNextUpcomingReminder = (reminders?: ReminderItem[]): ReminderItem | nul
         .sort((a, b) => a.dateObj!.getTime() - b.dateObj!.getTime());
 
     return upcoming.length > 0 ? upcoming[0] : null;
+};
+
+// Sub-component for async fetching of status history in tooltip
+const StatusHistoryTooltipContent = ({ caseId }: { caseId: string }) => {
+    const [logs, setLogs] = useState<CaseStatusLog[] | null>(null);
+
+    useEffect(() => {
+        // Fetch on mount (when tooltip is shown)
+        fetchCaseStatusLogs(caseId).then(setLogs);
+    }, [caseId]);
+
+    if (!logs) return <span>로딩중...</span>;
+    if (logs.length === 0) return <span>이력이 없습니다.</span>;
+
+    return (
+        <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+            <p className="font-bold text-gray-300 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">상태 변경 이력</p>
+            {logs.map((log, i) => (
+                <div key={i} className="text-[11px] border-b border-gray-700 last:border-0 pb-1 mb-1">
+                    <div className="flex justify-between text-gray-400 mb-0.5">
+                        <span>{log.fromStatus || '신규'} → <span className="text-blue-300">{log.toStatus}</span></span>
+                        <span className="text-[10px]">{log.changedAt.split('T')[0]}</span>
+                    </div>
+                    {log.memo && <div className="text-gray-300 pl-1 border-l-2 border-gray-600">{log.memo}</div>}
+                </div>
+            ))}
+        </div>
+    );
 };
 
 export default function CaseList() {
@@ -390,6 +422,30 @@ export default function CaseList() {
                                             {c.customerName}
                                             {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
                                         </Link >
+                                        <div className="mt-1">
+                                            <HoverCheckTooltip
+                                                trigger={
+                                                    <span className="text-xs text-blue-500 cursor-help border-b border-dashed border-blue-300">
+                                                        최근 상담 내역 확인
+                                                    </span>
+                                                }
+                                                content={
+                                                    <div className="space-y-1">
+                                                        <p className="font-bold text-gray-300 border-b border-gray-600 pb-1 mb-1">최근 상담 내역</p>
+                                                        {c.specialMemo && c.specialMemo.length > 0 ? (
+                                                            c.specialMemo.slice(0, 2).map((m, i) => (
+                                                                <div key={i} className="mb-1 last:mb-0">
+                                                                    <span className="text-[10px] text-gray-400 block">{m.createdAt.split('T')[0]}</span>
+                                                                    <span className="block">{m.content}</span>
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-gray-500 italic">상담 내역이 없습니다.</span>
+                                                        )}
+                                                    </div>
+                                                }
+                                            />
+                                        </div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">{(c.jobTypes || []).join(', ')} / {c.region}</p>
                                         <div className="flex flex-wrap items-center gap-1 mt-1">
                                             <span className="text-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 rounded">{c.caseType || '-'}</span>
@@ -398,9 +454,19 @@ export default function CaseList() {
                                         </div>
                                     </div >
                                     <div className="flex flex-col items-end gap-1">
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300`}>
-                                            {c.status}
-                                        </span>
+                                        <HoverCheckTooltip
+                                            trigger={
+                                                <span className={`px-2 py-1 rounded text-xs font-semibold cursor-help ${c.status === '진행불가' || c.status === '고객취소'
+                                                    ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                                                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                                                    }`}>
+                                                    {c.status}
+                                                </span>
+                                            }
+                                            content={
+                                                <StatusHistoryTooltipContent caseId={c.caseId} />
+                                            }
+                                        />
                                         <span className="text-[10px] text-gray-400">
                                             {c.createdAt ? format(new Date(c.createdAt), 'yy.MM.dd') : ''}
                                         </span>
@@ -469,11 +535,50 @@ export default function CaseList() {
                                                 {c.customerName}
                                                 {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
                                             </Link>
+
+                                            {/* Hover Tooltip for Quick Memo View */}
+                                            <div className="ml-1 inline-block">
+                                                <HoverCheckTooltip
+                                                    trigger={
+                                                        <MessageSquare size={14} className="text-gray-300 hover:text-blue-500 transition-colors" />
+                                                    }
+                                                    content={
+                                                        <div className="space-y-2">
+                                                            <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
+                                                            {c.specialMemo && c.specialMemo.length > 0 ? (
+                                                                c.specialMemo.slice(0, 3).map((m, i) => (
+                                                                    <div key={i} className="text-[11px] leading-relaxed">
+                                                                        <span className="text-blue-300 mr-1">[{m.createdAt.split('T')[0]}]</span>
+                                                                        {m.content}
+                                                                    </div>
+                                                                ))
+                                                            ) : (
+                                                                <span className="text-gray-500 italic">내역 없음</span>
+                                                            )}
+                                                        </div>
+                                                    }
+                                                />
+                                            </div>
+
                                             {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs">⚠</span>}
                                         </td>
-                                        <td className="px-4 py-3">{c.phone}</td>
+                                        <td className={`px-4 py-3 font-medium ${c.status === '진행불가' || c.status === '고객취소'
+                                            ? 'text-red-600 dark:text-red-400'
+                                            : ''
+                                            }`}>{c.phone}</td>
                                         <td className="px-4 py-3">
-                                            <span className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-xs">{c.status}</span>
+                                            <HoverCheckTooltip
+                                                trigger={
+                                                    <span className={`px-2 py-1 rounded text-xs cursor-help ${STATUS_COLOR_MAP[c.status]
+                                                        ? STATUS_COLOR_MAP[c.status].replace('bg-blue-50', 'bg-blue-100') // darkened for visibility 
+                                                        : 'bg-gray-100 dark:bg-gray-700'
+                                                        } ${c.status === '진행불가' || c.status === '고객취소' ? 'text-red-700 bg-red-100' : ''
+                                                        }`}>
+                                                        {c.status}
+                                                    </span>
+                                                }
+                                                content={<StatusHistoryTooltipContent caseId={c.caseId} />}
+                                            />
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-500">
                                             {c.createdAt ? format(new Date(c.createdAt), 'yyyy-MM-dd') : '-'}
