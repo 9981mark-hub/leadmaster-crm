@@ -477,7 +477,7 @@ export default function CaseList() {
                                     </div>
                                 </div >
 
-                                <div className="mt-3 flex items-center justify-between">
+                                <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2">
                                     <a href={`tel:${c.phone}`} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
                                         <Phone size={14} className="mr-1" /> {c.phone}
                                     </a>

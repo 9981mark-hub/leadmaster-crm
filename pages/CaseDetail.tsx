@@ -657,16 +657,17 @@ export default function CaseDetail() {
                                 <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
                                     <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/5)</label>
                                     <div className="flex flex-col md:flex-row gap-2 mb-3">
-                                        <div className="flex flex-wrap gap-2 flex-[2]">
-                                            <div className="flex flex-wrap gap-1 items-center flex-1 min-w-[150px]">
-                                                {/* Date Picker */}
-                                                <input
-                                                    type="date"
-                                                    className="flex-[2] p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
-                                                    value={remDate}
-                                                    onChange={e => setRemDate(e.target.value)}
-                                                    disabled={(c.reminders?.length || 0) >= 5}
-                                                />
+                                        <div className="flex flex-col gap-2 flex-[2]">
+                                            {/* Date Picker (Full Width on Mobile) */}
+                                            <input
+                                                type="date"
+                                                className="w-full p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                                                value={remDate}
+                                                onChange={e => setRemDate(e.target.value)}
+                                                disabled={(c.reminders?.length || 0) >= 5}
+                                            />
+                                            {/* Time & Type (Row on Mobile) */}
+                                            <div className="flex gap-1">
                                                 {/* Hour Select */}
                                                 <select
                                                     className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
@@ -679,7 +680,7 @@ export default function CaseDetail() {
                                                         return <option key={h} value={h}>{h}시</option>;
                                                     })}
                                                 </select>
-                                                {/* Minute Select (10-min intervals) */}
+                                                {/* Minute Select */}
                                                 <select
                                                     className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                                     value={remMinute}
@@ -690,17 +691,17 @@ export default function CaseDetail() {
                                                         <option key={m} value={m}>{m}분</option>
                                                     ))}
                                                 </select>
+                                                <select
+                                                    className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500 min-w-[60px]"
+                                                    value={newReminderType}
+                                                    onChange={e => setNewReminderType(e.target.value as any)}
+                                                >
+                                                    <option value="통화">통화</option>
+                                                    <option value="출장미팅">출장미팅</option>
+                                                    <option value="방문미팅">방문미팅</option>
+                                                    <option value="기타">기타</option>
+                                                </select>
                                             </div>
-                                            <select
-                                                className="p-2 border border-gray-300 rounded text-sm min-w-[80px]"
-                                                value={newReminderType}
-                                                onChange={e => setNewReminderType(e.target.value as any)}
-                                            >
-                                                <option value="통화">통화</option>
-                                                <option value="출장미팅">출장미팅</option>
-                                                <option value="방문미팅">방문미팅</option>
-                                                <option value="기타">기타</option>
-                                            </select>
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
