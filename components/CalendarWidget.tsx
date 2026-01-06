@@ -90,7 +90,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
             <div
               key={day.toISOString()}
               onClick={() => onDateSelect && onDateSelect(day)}
-              className={`p-2 flex flex-col gap-1 cursor-pointer transition-colors h-[140px] border border-gray-100
+              className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors h-[80px] md:h-[140px] border border-gray-100
                 ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset z-10' : (!isCurrentMonth ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-50')}
               `}
             >
@@ -108,8 +108,22 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                 )}
               </div>
 
-              {/* Event List: Fixed height for 4 items (~24px per item * 4 = 96px) + some buffer */}
-              <div className="h-[96px] overflow-y-auto no-scrollbar space-y-1 mt-1">
+              {/* Mobile: Dot View */}
+              <div className="md:hidden flex flex-wrap gap-1 content-end mt-auto px-1 pb-1">
+                {dayEvents.slice(0, 5).map((ev, i) => (
+                  <div
+                    key={i}
+                    className={`w-1.5 h-1.5 rounded-full ${ev.type === '방문미팅' ? 'bg-purple-500' :
+                        ev.type === '출장미팅' ? 'bg-green-500' :
+                          'bg-blue-500'
+                      }`}
+                  />
+                ))}
+                {dayEvents.length > 5 && <span className="text-[8px] text-gray-400 text-xs">+</span>}
+              </div>
+
+              {/* Desktop: Event List (Fixed height) */}
+              <div className="hidden md:block h-[96px] overflow-y-auto no-scrollbar space-y-1 mt-1">
                 {dayEvents.map((ev, index) => {
                   const timeStr = ev.datetime?.split(' ')[1] || ''; // HH:mm
                   // Truncate name to 4 chars
@@ -129,8 +143,8 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                       <div className="flex items-center gap-1 w-full">
                         <span className="font-mono font-bold text-gray-500 whitespace-nowrap">{timeStr}</span>
                         <span className={`font-bold whitespace-nowrap ${ev.type === '방문미팅' ? 'text-purple-600' :
-                            ev.type === '출장미팅' ? 'text-green-600' :
-                              'text-blue-600'
+                          ev.type === '출장미팅' ? 'text-green-600' :
+                            'text-blue-600'
                           }`}>[{ev.type}]</span>
                         <span className="font-medium truncate flex-1 text-left">{truncatedName}</span>
                       </div>
@@ -141,7 +155,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
             </div>
           );
         })}
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

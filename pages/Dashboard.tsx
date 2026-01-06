@@ -179,20 +179,23 @@ export default function Dashboard() {
                   >
                     <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                       {/* Time & Badge */}
-                      <div className="flex items-center justify-between md:justify-start gap-3 md:w-auto">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between md:justify-start gap-2 md:gap-3 md:w-auto">
+                        <div className="flex items-center gap-2 md:gap-3">
                           <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
                         </div>
                         {/* Mobile Only: Detail Arrow */}
                         <span className="md:hidden text-xs text-gray-400">상세보기 →</span>
                       </div>
 
                       {/* Content */}
-                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
-                        <span className="font-bold text-gray-800 dark:text-white whitespace-nowrap">{item.caseData.customerName}</span>
+                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
+                        <div className="flex md:hidden items-center gap-2">
+                          <span className="font-bold text-gray-800 dark:text-white truncate">{item.caseData.customerName}</span>
+                        </div>
+                        <span className="hidden md:inline font-bold text-gray-800 dark:text-white whitespace-nowrap">{item.caseData.customerName}</span>
                         <span className="hidden md:inline text-gray-300">|</span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate block w-full">
+                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate block w-full">
                           {item.reminder.content || '내용 없음'}
                         </span>
                       </div>
