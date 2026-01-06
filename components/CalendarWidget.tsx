@@ -34,6 +34,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
       caseId: c.caseId,
       customerName: c.customerName,
       datetime: r.datetime,
+      type: r.type || '통화', // Default to '통화' if undefined
     }))
   );
 
@@ -89,7 +90,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
             <div
               key={day.toISOString()}
               onClick={() => onDateSelect && onDateSelect(day)}
-              className={`min-h-[100px] p-2 flex flex-col gap-1 cursor-pointer transition-colors
+              className={`p-2 flex flex-col gap-1 cursor-pointer transition-colors h-[140px] border border-gray-100
                 ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset z-10' : (!isCurrentMonth ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-50')}
               `}
             >
@@ -107,20 +108,31 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                 )}
               </div>
 
-              <div className="flex-1 overflow-y-auto no-scrollbar space-y-1 mt-1">
+              {/* Event List: Fixed height for 4 items (~24px per item * 4 = 96px) + some buffer */}
+              <div className="h-[96px] overflow-y-auto no-scrollbar space-y-1 mt-1">
                 {dayEvents.map((ev, index) => {
                   const timeStr = ev.datetime?.split(' ')[1] || ''; // HH:mm
+                  // Truncate name to 4 chars
+                  const truncatedName = ev.customerName.length > 4
+                    ? ev.customerName.substring(0, 4) + '...'
+                    : ev.customerName;
+
                   return (
                     <Link
                       key={`${ev.caseId}-${index}`}
                       to={`/case/${ev.caseId}`}
-                      className={`block text-[10px] p-1 rounded border truncate hover:opacity-80 transition-opacity
-                                ${isTodayDate ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-gray-50 border-gray-100 text-gray-600'}
+                      className={`block text-[10px] px-1 py-0.5 rounded border border-transparent hover:border-blue-200 transition-colors truncate
+                                ${isTodayDate ? 'bg-blue-50 text-blue-700' : 'bg-white hover:bg-gray-50 text-gray-600'}
                             `}
+                      title={`${timeStr} [${ev.type}] ${ev.customerName}`}
                     >
-                      <div className="flex items-center gap-1">
-                        <span className="font-mono font-bold text-gray-500">{timeStr}</span>
-                        <span className="font-semibold">{ev.customerName}</span>
+                      <div className="flex items-center gap-1 w-full">
+                        <span className="font-mono font-bold text-gray-500 whitespace-nowrap">{timeStr}</span>
+                        <span className={`font-bold whitespace-nowrap ${ev.type === '방문미팅' ? 'text-purple-600' :
+                            ev.type === '출장미팅' ? 'text-green-600' :
+                              'text-blue-600'
+                          }`}>[{ev.type}]</span>
+                        <span className="font-medium truncate flex-1 text-left">{truncatedName}</span>
                       </div>
                     </Link>
                   );
