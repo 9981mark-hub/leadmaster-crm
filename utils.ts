@@ -162,7 +162,8 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
   const assetsList = c.assets && c.assets.length > 0
     ? c.assets.map(a => {
       const descInfo = a.desc ? `(${a.desc})` : '';
-      return `(${a.owner}/${a.type}${descInfo} 시세 ${formatKoreanMoney(a.amount)}${a.loanAmount ? `/담보${formatKoreanMoney(a.loanAmount)}` : ''})`;
+      const depositInfo = a.rentDeposit ? `/보증금${formatKoreanMoney(a.rentDeposit)}` : '';
+      return `(${a.owner}/${a.type}${descInfo} 시세 ${formatKoreanMoney(a.amount)}${a.loanAmount ? `/담보${formatKoreanMoney(a.loanAmount)}` : ''}${depositInfo})`;
     })
     : [];
   let assetsStr = assetsList.length > 0 ? assetsList.join(' ') : '없음';

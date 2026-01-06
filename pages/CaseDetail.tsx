@@ -65,7 +65,7 @@ export default function CaseDetail() {
     const [statuses, setStatuses] = useState<CaseStatus[]>([]);
     const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement'>('info');
 
-    const [newAsset, setNewAsset] = useState<Partial<AssetItem>>({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, desc: '' });
+    const [newAsset, setNewAsset] = useState<Partial<AssetItem>>({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, rentDeposit: 0, desc: '' });
     const [newCreditLoan, setNewCreditLoan] = useState<Partial<CreditLoanItem>>({ amount: 0, desc: '' });
     const [newMemoContent, setNewMemoContent] = useState('');
 
@@ -247,11 +247,12 @@ export default function CaseDetail() {
             type: newAsset.type || '기타',
             amount: newAsset.amount || 0,
             loanAmount: newAsset.loanAmount || 0,
+            rentDeposit: newAsset.rentDeposit || 0,
             desc: newAsset.desc || ''
         };
         const updatedAssets = c.assets ? [...c.assets, asset] : [asset];
         handleUpdate('assets', updatedAssets);
-        setNewAsset({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, desc: '' }); // Reset
+        setNewAsset({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, rentDeposit: 0, desc: '' }); // Reset
     };
 
     const handleAddCreditLoan = () => {
@@ -1157,6 +1158,7 @@ export default function CaseDetail() {
                                                     <span className="font-semibold mr-2">{asset.type}</span>
                                                     <span className="text-gray-800 mr-2">시세 {asset.amount > 0 ? (asset.amount.toLocaleString() + " 만원") : '0원'}</span>
                                                     {asset.loanAmount > 0 && <span className="text-red-500 mr-2">담보 {asset.loanAmount.toLocaleString()}만원</span>}
+                                                    {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-green-600 mr-2">보증금 {asset.rentDeposit.toLocaleString()}만원</span>}
                                                     {asset.desc && <span className="text-gray-500">({asset.desc})</span>}
                                                 </div>
                                                 <button onClick={() => handleRemoveAsset(asset.id)} className="text-red-500 p-1">
@@ -1199,6 +1201,17 @@ export default function CaseDetail() {
                                             onChange={e => setNewAsset({ ...newAsset, loanAmount: Number(e.target.value) })}
                                         />
                                     </div>
+                                    {['부동산', '토지'].includes(newAsset.type || '') && (
+                                        <div className="mb-2">
+                                            <input
+                                                type="number"
+                                                placeholder="임대차 보증금 (만원, 전/월세 시)"
+                                                className="w-full p-1.5 border rounded text-xs bg-green-50 focus:bg-white"
+                                                value={newAsset.rentDeposit || ''}
+                                                onChange={e => setNewAsset({ ...newAsset, rentDeposit: Number(e.target.value) })}
+                                            />
+                                        </div>
+                                    )}
                                     <div className="flex gap-2 mb-2">
                                         <input
                                             type="text"

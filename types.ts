@@ -8,6 +8,7 @@ export interface AssetItem {
   type: string; // '자가', '자동차', '부동산', ...
   amount: number; // Manwon (Market Value)
   loanAmount: number; // Manwon (Collateral Loan)
+  rentDeposit?: number; // Manwon (Jeonse/Rent Deposit for Real Estate)
   desc: string; // Detail
 }
 
