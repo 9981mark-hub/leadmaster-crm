@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { fetchCases, fetchPartners } from '../services/api';
 import { Case, Partner, ReminderItem } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement } from '../utils';
@@ -100,7 +101,8 @@ export default function Dashboard() {
   }
 
   // Determine events for Selected Date
-  const selectedDateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
+  // FIX: Use date-fns format to keep local date instead of UTC from toISOString()
+  const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   const selectedDayEvents = allRemindersWithCase.filter(item => {
     if (!item.reminder.datetime) return false;
     return item.reminder.datetime.startsWith(selectedDateStr);
@@ -161,12 +163,13 @@ export default function Dashboard() {
               {selectedDayEvents.map((item, idx) => {
                 const timeStr = item.reminder.datetime.split(' ')[1];
                 const type = item.reminder.type || '통화'; // Fallback
+
                 // Color coding based on Type
                 let typeColor = 'bg-gray-100 text-gray-600';
                 if (type === '통화') typeColor = 'bg-green-100 text-green-700';
-                if (type === '출장미팅') typeColor = 'bg-blue-100 text-blue-700';
-                if (type === '방문미팅') typeColor = 'bg-purple-100 text-purple-700';
-                if (type === '기타') typeColor = 'bg-yellow-100 text-yellow-700';
+                else if (type === '출장미팅') typeColor = 'bg-blue-100 text-blue-700';
+                else if (type === '방문미팅') typeColor = 'bg-purple-100 text-purple-700';
+                else if (type === '기타') typeColor = 'bg-yellow-100 text-yellow-700';
 
                 return (
                   <Link
