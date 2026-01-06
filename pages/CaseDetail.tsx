@@ -157,9 +157,14 @@ export default function CaseDetail() {
     const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newStatus = e.target.value as CaseStatus;
         setPendingStatus(newStatus);
-        setIsStatusModalOpen(true);
+        // Delay modal slightly to allow native mobile picker to close cleanly
+        setTimeout(() => {
+            setIsStatusModalOpen(true);
+        }, 100);
         setStatusChangeReason('');
     };
+
+
 
     const confirmStatusChange = async () => {
         if (!caseId || !pendingStatus) return;
@@ -585,7 +590,7 @@ export default function CaseDetail() {
                         <label className="text-xs text-gray-400 font-medium">현재 상태 변경</label>
                         <select
                             className={"p-2 border border-gray-300 rounded font-semibold outline-none " + (STATUS_COLOR_MAP[c.status] || 'bg-blue-50 text-blue-800')}
-                            value={c.status}
+                            value={pendingStatus || c.status}
                             onChange={handleStatusChange}
                         >
                             {statuses.map(s => <option key={s} value={s}>{s}</option>)}
