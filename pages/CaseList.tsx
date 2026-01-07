@@ -397,10 +397,9 @@ export default function CaseList() {
 
                 <button
                     onClick={() => setIsImportModalOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
+                    className="flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                 >
                     <Upload size={18} />
-                    <span className="hidden sm:block text-xs leading-tight text-center">업로드<br />등록</span>
                 </button>
             </div>
 
