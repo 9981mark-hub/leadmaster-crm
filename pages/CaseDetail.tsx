@@ -10,6 +10,7 @@ import { useToast } from '../contexts/ToastContext';
 import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64, convertToPlayableUrl, convertToPreviewUrl } from '../utils';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from 'uuid';
+import { CustomAudioPlayer } from '../components/CustomAudioPlayer';
 
 // Reusable Components within CaseDetail
 const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "", readOnly = false }: any) => {
@@ -917,30 +918,13 @@ export default function CaseDetail() {
                             </div>
 
                             {/* Audio Player for Current or Selected */}
-                            <div className="mb-4 bg-white p-3 rounded-lg border border-purple-100">
-                                {audioUrl && audioUrl.includes('drive.google.com') ? (
-                                    <div className="flex flex-col gap-2">
-                                        <iframe
-                                            src={convertToPreviewUrl(audioUrl)}
-                                            className="w-full h-[100px] border-none rounded overflow-hidden"
-                                            title="Audio Preview"
-                                            allow="autoplay"
-                                        />
-                                        <div className="flex justify-end">
-                                            <a
-                                                href={audioUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-xs text-blue-500 hover:underline flex items-center gap-1"
-                                            >
-                                                <Download size={12} /> 원본 다운로드/열기
-                                            </a>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <audio ref={audioPlayerRef} controls className="w-full h-8 mb-2" src={audioUrl || ''} onError={() => showToast('재생할 수 없는 파일 형식입니다.', 'error')} />
+                            <div className="mb-4">
+                                {(audioUrl || currentAudioFile) && (
+                                    <CustomAudioPlayer
+                                        src={audioUrl && audioUrl.includes('drive.google.com') ? convertToPlayableUrl(audioUrl) : (audioUrl || '')}
+                                        fileName={currentAudioFile ? currentAudioFile.name : `녹음 파일 (ID: ${c.recordings?.find(r => r.url === audioUrl)?.id.substring(0, 8)}...)`}
+                                    />
                                 )}
-                                {currentAudioFile && <p className="text-xs text-gray-500 mt-1">현재 선택된 파일: {currentAudioFile.name}</p>}
                             </div>
 
                             {/* Recording List (Archive) */}
