@@ -32,12 +32,12 @@ export const JOB_TYPES = ['직장인', '개인사업자', '법인사업자', '�
 export const HOUSING_TYPES = ['자가', '전세', '월세', '무상거주'];
 export const HOUSING_DETAILS = ['아파트', '빌라', '단독주택', '오피스텔', '기타'];
 
-export const ASSET_OWNERS = ['본인', '배우자'];
+export const ASSET_OWNERS = ['본인', '배우자', '배우자 공동명의'];
 export const RENT_CONTRACTORS = ['본인', '배우자'];
 export const FREE_HOUSING_OWNERS = ['부모님', '형제', '자녀', '지인', '기타'];
 
 export const ASSET_TYPES = [
-  '자가', '자동차', '부동산', '토지', '예금/적금',
+  '자동차', '부동산', '토지', '예금/적금',
   '주식/가상화폐', '영업용 차량', '영업용 차량 면허',
   '사업장 보증금', '사업장 권리금', '사업장 시설금', '기타'
 ];

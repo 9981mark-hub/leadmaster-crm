@@ -189,10 +189,11 @@ export default function NewCase() {
       type: newAsset.type || '기타',
       amount: newAsset.amount || 0,
       loanAmount: newAsset.loanAmount || 0,
+      rentDeposit: newAsset.rentDeposit || 0,
       desc: newAsset.desc || ''
     };
     handleChange('assets', [...formData.assets, asset]);
-    setNewAsset({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, desc: '' });
+    setNewAsset({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, rentDeposit: 0, desc: '' });
   };
 
   const handleAddCreditLoan = () => {
@@ -277,6 +278,7 @@ export default function NewCase() {
     if (formData.ownHouseLoan > 0) parts.push(`집 담보 대출 ${formData.ownHouseLoan}만원`);
     formData.assets.forEach((a: AssetItem) => {
       if (a.loanAmount > 0) parts.push(`${a.type} 담보 ${a.loanAmount}만원`);
+      if (a.rentDeposit && a.rentDeposit > 0) parts.push(`${a.type} 임대보증금(채무) ${a.rentDeposit}만원`);
     });
     return parts.length > 0 ? parts.join(' + ') : '없음';
   };
@@ -438,7 +440,7 @@ export default function NewCase() {
                   <Input label="집 시세" value={formData.ownHousePrice} onChange={(v: any) => handleChange('ownHousePrice', v)} type="number" suffix="만원" />
                   <Input label="집 담보 대출" value={formData.ownHouseLoan} onChange={(v: any) => handleChange('ownHouseLoan', v)} type="number" suffix="만원" />
                 </div>
-                <Select label="집 명의자" value={formData.ownHouseOwner} onChange={(v: any) => handleChange('ownHouseOwner', v)} options={['본인', '배우자']} />
+                <Select label="집 명의자" value={formData.ownHouseOwner} onChange={(v: any) => handleChange('ownHouseOwner', v)} options={['본인', '배우자', '배우자 공동명의']} />
               </>
             ) : formData.housingType === '무상거주' ? (
               <>
@@ -495,6 +497,7 @@ export default function NewCase() {
                         <span className="font-semibold mr-2">{asset.type}</span>
                         <span className="text-gray-800 mr-2">시세 {asset.amount > 0 ? `${asset.amount.toLocaleString()}만원` : '0원'}</span>
                         {asset.loanAmount > 0 && <span className="text-red-500 mr-2">담보 {asset.loanAmount.toLocaleString()}만원</span>}
+                        {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-orange-600 mr-2">전세금 {asset.rentDeposit.toLocaleString()}만원</span>}
                       </div>
                       <button type="button" onClick={() => handleRemoveAsset(asset.id)} className="text-red-500 p-1">
                         <Trash2 size={16} />
@@ -545,6 +548,22 @@ export default function NewCase() {
                     }}
                   />
                 </div>
+                {['부동산', '토지'].includes(newAsset.type || '') && (
+                  <div className="mb-2">
+                    <input
+                      type="text"
+                      placeholder="임대보증금 (전세/월세 보증금 - 채무성격) (만원)"
+                      className="w-full p-2 border rounded text-sm bg-orange-50 border-orange-200"
+                      value={newAsset.rentDeposit === 0 ? '' : newAsset.rentDeposit}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val === '' || /^[0-9]+$/.test(val)) {
+                          setNewAsset({ ...newAsset, rentDeposit: Number(val) || 0 });
+                        }
+                      }}
+                    />
+                  </div>
+                )}
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"

@@ -4,7 +4,7 @@ export type CaseStatus = string;
 
 export interface AssetItem {
   id: string;
-  owner: '본인' | '배우자';
+  owner: '본인' | '배우자' | '배우자 공동명의';
   type: string; // '자가', '자동차', '부동산', ...
   amount: number; // Manwon (Market Value)
   loanAmount: number; // Manwon (Collateral Loan)
@@ -99,7 +99,7 @@ export interface Case {
   // 5-2. Self-Owned Fields (New)
   ownHousePrice?: number; // 집 시세
   ownHouseLoan?: number; // 집 담보 대출
-  ownHouseOwner?: '본인' | '배우자'; // 집 명의
+  ownHouseOwner?: '본인' | '배우자' | '배우자 공동명의'; // 집 명의
 
   // 5-3. Free Housing (New)
   rentFreeType?: '관사' | '본가' | '지인' | '기타';
