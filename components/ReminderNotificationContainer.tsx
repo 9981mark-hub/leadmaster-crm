@@ -14,7 +14,7 @@ const ReminderNotificationContainer: React.FC = () => {
             {notifications.map((n) => (
                 <div
                     key={n.id}
-                    className="bg-white dark:bg-gray-800 border-l-4 border-yellow-500 shadow-xl rounded-lg p-4 animate-slide-in-right relative"
+                    className="bg-amber-50 dark:bg-gray-800 border-l-4 border-amber-500 shadow-xl rounded-lg p-4 animate-slide-in-right relative"
                 >
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-500 font-bold">
