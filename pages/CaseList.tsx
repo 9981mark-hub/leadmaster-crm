@@ -83,6 +83,7 @@ export default function CaseList() {
     // [Polling State]
     const [pendingCases, setPendingCases] = useState<Case[] | null>(null);
     const [updateAvailable, setUpdateAvailable] = useState(false);
+    const [newLeadsCount, setNewLeadsCount] = useState(0);
     // Keep track of current cases for diffing in the effect closure
     const casesRef = React.useRef(cases);
 
@@ -131,9 +132,11 @@ export default function CaseList() {
                             setPendingCases(data);
                             setUpdateAvailable(true);
 
-                            // For new leads count toast - optional, maybe keep it
-                            if (data.length > casesRef.current.length) {
-                                showToast(`${data.length - casesRef.current.length}건의 새로운 접수가 감지되었습니다.`, 'info');
+                            // Calculate new leads count
+                            const diff = data.length - casesRef.current.length;
+                            if (diff > 0) {
+                                setNewLeadsCount(diff);
+                                // Optional: Play sound or show browser notification here if needed
                             }
                         }
 
@@ -169,6 +172,7 @@ export default function CaseList() {
         if (pendingCases) {
             setCases(pendingCases);
             setUpdateAvailable(false);
+            setNewLeadsCount(0);
             setPendingCases(null);
             showToast("리스트가 최신 상태로 업데이트되었습니다.", 'success');
             // Re-fetch others to be safe? 
@@ -347,20 +351,21 @@ export default function CaseList() {
 
             {/* Manual Refresh Notification */}
             {updateAvailable && (
-                <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg animate-fade-in shadow-sm">
+                <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg animate-fade-in shadow-sm cursor-pointer hover:bg-blue-100 transition-colors" onClick={handleManualRefresh}>
                     <div className="flex items-center gap-2">
                         <div className="bg-blue-100 p-1.5 rounded-full">
                             <ArrowUpDown className="text-blue-600 animate-bounce" size={16} />
                         </div>
                         <span className="text-sm font-bold text-blue-800">
-                            새로운 데이터가 감지되었습니다.
+                            {newLeadsCount > 0
+                                ? `🔄 새 접수 ${newLeadsCount}건 도착 (눌러서 새로고침)`
+                                : '새로운 데이터가 감지되었습니다. (눌러서 새로고침)'}
                         </span>
                     </div>
                     <button
-                        onClick={handleManualRefresh}
                         className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm transition-colors"
                     >
-                        리스트 새로고침
+                        새로고침
                     </button>
                 </div>
             )}
