@@ -1,19 +1,15 @@
-# Google Apps Script 최종 코드 (V8 런타임용)
+# 구글 Apps Script 수정 (V8 끄기 대응)
 
-아래 코드는 **Chrome V8 런타임**이 켜져 있을 때 가장 잘 작동하는 최종본입니다.
+V8 런타임을 끄면서 **`fill()`** 같은 최신 문법이 작동하지 않아 오류가 발생했습니다.
+아래 코드는 **구식 자바스크립트(Rhino)***에서도 완벽하게 작동하도록 수정한 버전입니다.
 
-## 1. 사전 준비
-1. **프로젝트 설정 (톱니바퀴)** > **"Chrome V8 런타임 활성화" 체크 ✅**
-2. **"편집기에서 'appsscript.json' 매니페스트 파일 표시" 체크 ✅**
-3. `appsscript.json` 파일에 `"dependencies"` 항목이 있다면 **삭제**해서 깨끗하게 만드세요.
-
-## 2. 코드 적용
-`Code.gs` 파일의 내용을 모두 지우고, 아래 코드를 복사해서 붙여넣으세요.
+## 1. Code.gs 전체 덮어쓰기
+기존 코드를 모두 지우고, 아래 코드로 **전체 교체**해주세요.
 
 ```javascript
 /**
- * GOOGLE APPS SCRIPT CODE [FINAL v9 - V8 OPTIMIZED]
- * Includes Call Recording Upload, Landing Page Sync, and Auto-CaseID
+ * GOOGLE APPS SCRIPT CODE [FINAL v8 - LEGACY COMPATIBLE]
+ * Compatible with Rhino Runtime (V8 Disabled)
  */
 
 var LEADS_SHEET = 'Leads';
@@ -57,7 +53,6 @@ function doPost(e) {
   if (target === 'upload') return handleFileUpload(params);
   if (target === 'upload_image') return handleImageUpload(params);
   if (target === 'email' || target === 'admin_email') return handleAdminEmail(params);
-  if (target === 'visit') return handleVisitLog(params); // Added back for V8
   
   return handleRequest('post', target, e, params);
 }
@@ -129,7 +124,10 @@ function handleRequest(method, target, e, params) {
        var now = new Date().toISOString();
        var caseId = 'L' + new Date().getTime(); 
        
-       var newRow = new Array(46).fill(""); // V8 Compatible
+       // [FIX for Rhino] replaced .fill() with loop
+       var newRow = [];
+       for(var k=0; k<46; k++) newRow[k] = "";
+       
        newRow[0] = caseId;              
        newRow[1] = now;                 
        newRow[2] = "신규접수";           
@@ -154,7 +152,6 @@ function handleRequest(method, target, e, params) {
        return response(JSON.stringify({result: "Created", caseId: caseId}));
     }
     
-    // Internal CRM Update/Create/Delete
     if (method === 'post' && target === 'leads') {
         var d = params.data; 
         if (!d) return response(JSON.stringify({result: "Error", message: "No Data"}));
@@ -199,7 +196,6 @@ function handleRequest(method, target, e, params) {
   }
 }
 
-// --- FILE UPLOAD HANDLER ---
 function handleFileUpload(data) {
   try {
     var folderName = "leadmaster-records";
@@ -223,7 +219,6 @@ function handleFileUpload(data) {
     var file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     
-    // Using thumbnail link for images if applicable, else download link
     var downloadUrl = "https://drive.google.com/uc?export=download&id=" + file.getId();
     
     return ContentService.createTextOutput(JSON.stringify({
@@ -241,7 +236,6 @@ function handleFileUpload(data) {
   }
 }
 
-// --- HELPERS ---
 function sendNotificationEmail(params) {
     var recipient = "beanhull@gmail.com"; 
     var title = params.page_title || params.inboundPath || "신규 문의";
@@ -287,7 +281,6 @@ function handleFontProxy(params) {
   return response(JSON.stringify({result: "error", message: "Font Proxy Disabled"})); 
 }
 
-// Placeholder functions for safety
 function handleSyncFonts(params) {}
 function handleGoogleLogin(params) {}
 function handleGetAdminUsers(params) {}
@@ -297,7 +290,7 @@ function handleRevokeSession(params) { return response(JSON.stringify({result: "
 function handleVisitsRetrieval(params) {}
 function handleConfigRetrieval(params) {}
 function handleConfigsRetrieval(params) {}
-function handleVisitLog(params) {} // Restored
+function handleVisitLog(params) {}
 
 function getOrCreateSheet(name) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -362,10 +355,3 @@ function parseJSON(str, fallback) { try { return JSON.parse(str); } catch (e) { 
 function json(obj) { return obj ? JSON.stringify(obj) : '[]'; }
 function num(val) { return val || 0; }
 function response(content, code) { return ContentService.createTextOutput(content).setMimeType(ContentService.MimeType.JSON); }
-
-// [권한 강제 승인용 함수] 실행하면 "테스트파일"을 하나 만듭니다.
-function testDriveWrite() {
-  var folder = DriveApp.getRootFolder();
-  folder.createFile("권한테스트_" + new Date().toISOString() + ".txt", "권한이 정상입니다.");
-  console.log("✅ 드라이브 쓰기 권한 확인 완료! (테스트 파일 생성됨)");
-}

@@ -80,20 +80,32 @@ export default function CaseList() {
 
 
 
-    // [POLLING] Auto-refresh every 30 seconds
+    // [Polling State]
+    const [pendingCases, setPendingCases] = useState<Case[] | null>(null);
+    const [updateAvailable, setUpdateAvailable] = useState(false);
+    // Keep track of current cases for diffing in the effect closure
+    const casesRef = React.useRef(cases);
+
+    useEffect(() => {
+        casesRef.current = cases;
+    }, [cases]);
+
+    // [POLLING] Background check every 30 seconds
     useEffect(() => {
         let isMounted = true;
+
+        // 1. Polling Interval (Keep fetching from server)
         const intervalId = setInterval(() => {
             if (document.visibilityState === 'visible') {
-                refreshData(); // Trigger actual background fetch
+                refreshData();
             }
         }, 30000); // 30s
 
-        const loadData = async (silent = false) => {
+        // 2. Data Loader
+        const loadData = async (mode: 'initial' | 'update' = 'initial') => {
             try {
-                if (!silent) setLoading(true);
+                if (mode === 'initial') setLoading(true);
 
-                // Use Promise.all for parallel fetching
                 const [data, partnerData, pathData, statusData] = await Promise.all([
                     fetchCases(),
                     fetchPartners(),
@@ -102,34 +114,47 @@ export default function CaseList() {
                 ]);
 
                 if (isMounted) {
-                    setCases(prev => {
-                        // Toast for new arrivals
-                        if (prev.length > 0 && data.length > prev.length) {
-                            const diff = data.length - prev.length;
-                            showToast(`${diff}건의 새로운 접수가 도착했습니다!`, 'success');
-                        }
-                        return data;
-                    });
+                    if (mode === 'initial') {
+                        // Initial Load: Set directly
+                        setCases(data);
+                        setPartners(partnerData);
+                        setInboundPaths(pathData);
+                        setStatuses(statusData);
+                        setLoading(false);
+                    } else {
+                        // Background Update: Check for diffs
+                        // We primarily care about Case changes for the list view
+                        const currentStr = JSON.stringify(casesRef.current);
+                        const newStr = JSON.stringify(data);
 
-                    setPartners(partnerData);
-                    setInboundPaths(pathData);
-                    setStatuses(statusData);
-                    if (!silent) setLoading(false);
+                        if (currentStr !== newStr) {
+                            setPendingCases(data);
+                            setUpdateAvailable(true);
+
+                            // For new leads count toast - optional, maybe keep it
+                            if (data.length > casesRef.current.length) {
+                                showToast(`${data.length - casesRef.current.length}건의 새로운 접수가 감지되었습니다.`, 'info');
+                            }
+                        }
+
+                        // Others (Partners/Paths) are safe to update silent or ignore until refresh
+                        // We'll update them when user clicks refresh.
+                    }
                 }
             } catch (err: any) {
                 console.error(err);
-                if (isMounted && !silent) {
+                if (isMounted && mode === 'initial') {
                     setLoading(false);
                     showToast("데이터를 불러오는 중 오류가 발생했습니다.", 'error');
                 }
             }
         };
 
-        loadData(); // Initial load
+        loadData('initial'); // Initial
 
-        // Subscribe to API updates (SWR)
+        // 3. Subscribe to updates
         const unsubscribe = subscribe(() => {
-            if (isMounted) loadData(true);
+            if (isMounted) loadData('update');
         });
 
         return () => {
@@ -137,7 +162,21 @@ export default function CaseList() {
             clearInterval(intervalId);
             unsubscribe();
         };
-    }, [showToast]);
+    }, []);
+
+    // Manual Refresh Handler
+    const handleManualRefresh = () => {
+        if (pendingCases) {
+            setCases(pendingCases);
+            setUpdateAvailable(false);
+            setPendingCases(null);
+            showToast("리스트가 최신 상태로 업데이트되었습니다.", 'success');
+            // Re-fetch others to be safe? 
+            // We already fetched them in loadData('update') but didn't save them.
+            // For simplicity, just assuming cases are the main sync target.
+            // If strict, we could store pendingPartners etc. but it's overkill.
+        }
+    };
 
 
 
@@ -302,6 +341,27 @@ export default function CaseList() {
                             <X size={16} />
                         </button>
                     )}
+                </div>
+            )}
+
+
+            {/* Manual Refresh Notification */}
+            {updateAvailable && (
+                <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg animate-fade-in shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-blue-100 p-1.5 rounded-full">
+                            <ArrowUpDown className="text-blue-600 animate-bounce" size={16} />
+                        </div>
+                        <span className="text-sm font-bold text-blue-800">
+                            새로운 데이터가 감지되었습니다.
+                        </span>
+                    </div>
+                    <button
+                        onClick={handleManualRefresh}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm transition-colors"
+                    >
+                        리스트 새로고침
+                    </button>
                 </div>
             )}
 

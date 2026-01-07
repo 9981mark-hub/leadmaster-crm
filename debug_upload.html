@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Google Apps Script Upload Debugger</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>📂 파일 업로드 디버깅</h1>
+    <p>아래 버튼을 눌러 테스트용 텍스트 파일을 전송하고, 결과창에 뜨는 메시지를 알려주세요.</p>
+
+    <div class="box">
+        <button id="btnUpload" onclick="testUpload()">테스트 파일 업로드 시작</button>
+        <div id="status" style="margin-top: 10px;">대기 중...</div>
+    </div>
+
+    <div class="box">
+        <h3>📄 서버 응답 결과 (이 내용을 알려주세요)</h3>
+        <pre id="console">결과가 여기에 표시됩니다.</pre>
+    </div>
+
+    <script>
+        // 최종 배포된 URL (Step 685)
+        const URL = "https://script.google.com/macros/s/AKfycbx3goZ3k9nBvs3EMUq5nAglTv_-JKa1cY7h8wfx1AncxRTP7egaX814GCgIyJSiHgXkpA/exec";
+
+        async function testUpload() {
+            const btn = document.getElementById('btnUpload');
+            const status = document.getElementById('status');
+            const consoleOut = document.getElementById('console');
+
+            btn.disabled = true;
+            status.innerText = "업로드 중... (서버 연결 시도)";
+            consoleOut.innerText = "요청 보내는 중...";
+
+            try {
+                // 간단한 텍스트 데이터 (Base64)
+                const dummyData = {
+                    target: 'upload',
+                    filename: 'debug_test.txt',
+                    mimeType: 'text/plain',
+                    data: 'SGVsbG8gV29ybGQh' // "Hello World!"
+                };
+
+                // fetch 요청 (no-cors 아님)
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // GAS는 text/plain 선호
+                    body: JSON.stringify(dummyData)
+                });
+
+                const text = await response.text();
+
+                try {
+                    const json = JSON.parse(text);
+                    if (json.status === 'success') {
+                        status.innerHTML = "<span class='success'>✅ 성공!</span>";
+                        consoleOut.innerHTML = JSON.stringify(json, null, 2);
+                    } else {
+                        status.innerHTML = "<span class='error'>❌ 실패 (서버 에러)</span>";
+                        consoleOut.innerHTML = "에러 메시지:\n" + JSON.stringify(json, null, 2);
+                    }
+                } catch (e) {
+                    status.innerHTML = "<span class='error'>⚠️ 응답 파싱 실패</span>";
+                    consoleOut.innerText = "서버가 JSON이 아닌 HTML을 보냈을 수 있습니다:\n\n" + text;
+                }
+
+            } catch (err) {
+                status.innerHTML = "<span class='error'>🚫 네트워크/CORS 에러</span>";
+                consoleOut.innerText = "브라우저 차단 또는 네트워크 오류:\n" + err.toString();
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

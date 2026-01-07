@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h1>Read-Only Permission Check</h1>
+    <button onclick="check()">Check Permission</button>
+    <div id="result"></div>
+    <script>
+        // Final URL
+        const URL = "https://script.google.com/macros/s/AKfycbzmaTyt0NmK1p5WICQr7qnMuFxNEy-HrkjAIGFGvEdsNPI9Eaum6NtRNjz_kuxDL9RtNg/exec";
+
+        async function check() {
+            const div = document.getElementById('result');
+            div.innerHTML = "Checking...";
+            try {
+                // 'leads' is a GET request, usually requires simpler permissions (spreadsheets only, not drive)
+                const res = await fetch(URL + "?target=leads");
+                const text = await res.text();
+                div.innerHTML = "<b>Status:</b> " + res.status + "<br><b>Response:</b> " + text.substring(0, 200);
+            } catch (e) {
+                div.innerHTML = "Error: " + e.message;
+            }
+        }
+    </script>
+</body>
+
+</html>
