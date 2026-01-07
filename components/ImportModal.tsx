@@ -101,6 +101,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                         inboundPath: row['inboundPath'] || row['유입경로'] || '', // Fixed mapping
                         preInfo: row['preInfo'] || row['사전정보'] || '',
                         isNew: true,
+                        isViewed: false, // Ensure it is explicitly unviewed
                         duplicateInfo: duplicate
                     };
                 });
@@ -201,6 +202,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 phone: parsed.phone,
                 preInfo: parsed.summary,
                 isNew: true,
+                isViewed: false,
                 caseType: '개인회생', // Default
                 inboundPath: 'OCR업로드',
                 partnerId: ocrPartnerId
@@ -253,7 +255,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         }
         setIsLoading(true);
         try {
-            await createCase({ ...manualForm, isNew: true });
+            await createCase({ ...manualForm, isNew: true, isViewed: false });
             showToast('케이스가 등록되었습니다.');
             onSuccess();
             onClose();

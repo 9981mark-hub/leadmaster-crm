@@ -52,7 +52,8 @@ export interface Case {
   status: CaseStatus;
   statusUpdatedAt: string; // ISO
   managerName: string;
-  isNew?: boolean; // Added: Flag for new leads from landing pages
+  isNew?: boolean; // Computed local flag
+  isViewed?: boolean; // Added: Syncable flag for "Seen" status across devices
   _raw?: any; // DEBUG
 
   // New Fields (Request)

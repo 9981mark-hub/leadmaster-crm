@@ -72,25 +72,28 @@ const saveToStorage = () => {
 };
 
 
-// --- READ/SEEN MANAGEMENT ---
-const SEEN_KEY = 'lm_seen_cases';
-let seenCases: Set<string> = new Set();
-try {
-  const stored = localStorage.getItem(SEEN_KEY);
-  if (stored) seenCases = new Set(JSON.parse(stored));
-} catch (e) { }
-
-export const markCaseAsSeen = (caseId: string) => {
+// --- READ/SEEN MANAGEMENT (Server Side) ---
+export const markCaseAsSeen = async (caseId: string) => {
   if (!caseId) return;
-  if (!seenCases.has(caseId)) {
-    seenCases.add(caseId);
-    localStorage.setItem(SEEN_KEY, JSON.stringify([...seenCases]));
+  const c = localCases.find(x => x.caseId === caseId);
+  if (c && !c.isViewed) {
+    // Optimistic Update
+    c.isViewed = true;
+    c.isNew = false;
+
+    // Sync to Server
+    // We update just this field. Note: In a real DB we would patch. 
+    // Here we use updateCase which sends the full object, which is fine.
+    await updateCase(caseId, { isViewed: true });
+    notifyListeners();
   }
 };
 
 export const isCaseSeen = (caseId: string): boolean => {
-  if (!caseId) return false;
-  return seenCases.has(caseId);
+  // Deprecated usage, but kept for compatibility if needed.
+  // Now we rely on case.isViewed directly.
+  const c = localCases.find(x => x.caseId === caseId);
+  return c ? !!c.isViewed : false;
 };
 
 // ------------------------------------------------------------------
@@ -233,8 +236,9 @@ export const processIncomingCase = (c: any): Case => {
     // [Status Logic]
     // [Status Logic]
     // [Status Logic]
-    // isNew depends on status being '신규접수' AND Not marked seen locally
-    isNew: (c.status || c.Status || '신규접수') === '신규접수' && !isCaseSeen(c.caseId || c.CaseID || c.id),
+    isViewed: !!(c.isViewed || c.IsViewed || c.is_viewed), // Map from server/sheet
+    // isNew now depends on status and the server-synced isViewed flag
+    isNew: (c.status || c.Status || '신규접수') === '신규접수' && !(c.isViewed || c.IsViewed || c.is_viewed),
 
     // [Personal]
     customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
