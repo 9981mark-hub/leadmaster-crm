@@ -769,34 +769,84 @@ export default function CaseDetail() {
                                             </div>
                                         ) : (
                                             sortedReminders.map(reminder => (
-                                                <div key={reminder.id} className="bg-blue-50 border border-blue-100 rounded p-2 flex justify-between items-center">
-                                                    <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                                        <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
-                                                        <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
-                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
-                                                            reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
-                                                                'bg-blue-100 text-blue-700'
-                                                            }`}>
-                                                            {reminder.type || '통화'}
-                                                        </span>
-                                                        <span className="text-xs text-gray-500 truncate" title={reminder.content}>
-                                                            {reminder.content || ''}
-                                                        </span>
-                                                    </div>
-                                                    {confirmingDeleteReminderId === reminder.id ? (
-                                                        <div className="flex gap-2">
-                                                            <button onClick={() => handleDeleteReminder(reminder.id)} className="text-green-600 text-xs font-bold">확인</button>
-                                                            <button onClick={() => setConfirmingDeleteReminderId(null)} className="text-red-500 text-xs">취소</button>
+                                                <div key={reminder.id} className="bg-blue-50 border border-blue-100 rounded p-2 flex flex-col gap-2">
+                                                    <div className="flex justify-between items-center w-full">
+                                                        <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                                            <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
+                                                            <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
+                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
+                                                                reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
+                                                                    'bg-blue-100 text-blue-700'
+                                                                }`}>
+                                                                {reminder.type || '통화'}
+                                                            </span>
+                                                            <span className="text-xs text-gray-500 truncate" title={reminder.content}>
+                                                                {reminder.content || ''}
+                                                            </span>
                                                         </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => setConfirmingDeleteReminderId(reminder.id)}
-                                                            className="text-red-500 p-1 hover:bg-red-50 rounded"
-                                                            title="일정 삭제"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    )}
+                                                        {confirmingDeleteReminderId === reminder.id ? (
+                                                            <div className="flex gap-2">
+                                                                <button onClick={() => handleDeleteReminder(reminder.id)} className="text-green-600 text-xs font-bold">확인</button>
+                                                                <button onClick={() => setConfirmingDeleteReminderId(null)} className="text-red-500 text-xs">취소</button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => setConfirmingDeleteReminderId(reminder.id)}
+                                                                className="text-red-500 p-1 hover:bg-red-50 rounded"
+                                                                title="일정 삭제"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Result Action Area */}
+                                                    <div className="pt-2 border-t border-blue-100 w-full">
+                                                        {reminder.resultStatus ? (
+                                                            <div className="flex justify-between items-center text-xs">
+                                                                <span className={`font-bold px-2 py-0.5 rounded ${reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
+                                                                    reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
+                                                                        reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
+                                                                            'bg-gray-100 text-gray-700'
+                                                                    }`}>
+                                                                    {reminder.resultStatus}
+                                                                </span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-gray-500 truncate max-w-[150px]">{reminder.resultNote}</span>
+                                                                    <button onClick={() => {
+                                                                        const newReminders = c.reminders.map(r => r.id === reminder.id ? { ...r, resultStatus: undefined, resultNote: undefined } : r);
+                                                                        handleUpdate('reminders', newReminders);
+                                                                    }} className="text-gray-400 hover:text-gray-600 underline whitespace-nowrap">수정</button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                                                                <span className="text-xs text-blue-400 font-bold flex-shrink-0">결과:</span>
+                                                                {['완료', '미연결', '재예약', '취소'].map((status) => (
+                                                                    <button
+                                                                        key={status}
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const note = prompt(`${status} 처리에 대한 메모를 남겨주세요 (선택):`);
+                                                                            const newReminders = c.reminders.map(r => r.id === reminder.id ? { ...r, resultStatus: status, resultNote: note || '' } : r);
+                                                                            handleUpdate('reminders', newReminders);
+
+                                                                            if (status === '재예약') {
+                                                                                // Optional: Trigger focus to date input or show toast
+                                                                            }
+                                                                        }}
+                                                                        className={`text-[10px] px-2 py-1 rounded border flex-shrink-0 transition-colors ${status === '완료' ? 'border-green-200 text-green-700 hover:bg-green-50' :
+                                                                            status === '미연결' ? 'border-red-200 text-red-700 hover:bg-red-50' :
+                                                                                status === '재예약' ? 'border-blue-200 text-blue-700 hover:bg-blue-50' :
+                                                                                    'border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                                            }`}
+                                                                    >
+                                                                        {status}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             ))
                                         )}
