@@ -177,60 +177,56 @@ export default function Dashboard() {
                     key={item.reminder.id}
                     className="block group bg-gray-50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-indigo-200 rounded-lg p-3 transition-all shadow-sm hover:shadow-md"
                   >
-                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
-                      {/* Mobile Row 1: Time, Badge, Name */}
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                      {/* Mobile Row 1: Time, Badge */}
                       <div className="flex md:hidden items-center gap-2 flex-wrap mb-1">
                         <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
-                        <span className="font-bold text-gray-800 dark:text-white truncate flex-1">{item.caseData.customerName}</span>
                       </div>
 
                       {/* Desktop Row: Standard Layout */}
-                      <div className="hidden md:flex items-center justify-between md:justify-start gap-3 md:w-auto">
-                        <div className="flex items-center gap-3">
-                          <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
-                        </div>
+                      <div className="hidden md:flex items-center gap-3 md:w-auto flex-shrink-0">
+                        <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
                       </div>
 
-                      {/* Content Row (Mobile: Row 2, Desktop: Inline) */}
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="flex md:items-center flex-col md:flex-row gap-0.5 md:gap-3">
-                          <span className={`font-bold whitespace-nowrap ${item.reminder.resultStatus === '완료' ? 'text-gray-400 line-through' : 'text-gray-800 dark:text-white'}`}>
-                            {item.caseData.customerName}
-                          </span>
-                          <span className="hidden md:inline text-gray-300">|</span>
-                          <span className={`text-xs md:text-sm truncate block w-full md:w-auto ${item.reminder.resultStatus === '완료' ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                            {item.reminder.content || '내용 없음'}
-                          </span>
-                        </div>
-                        {/* Result & Note Display */}
-                        {(item.reminder.resultStatus || item.reminder.resultNote) && (
-                          <div className="mt-1 flex items-center gap-2 text-xs">
-                            {item.reminder.resultStatus && (
-                              <span className={`px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${item.reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
-                                  item.reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
-                                    item.reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
-                                      'bg-gray-100 text-gray-600'
-                                }`}>
-                                {item.reminder.resultStatus === '완료' && "✅ "}
-                                {item.reminder.resultStatus === '미연결' && "📞 "}
-                                {item.reminder.resultStatus === '재예약' && "🔄 "}
-                                {item.reminder.resultStatus}
-                              </span>
-                            )}
-                            {item.reminder.resultNote && (
-                              <span className="text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 truncate max-w-[200px] md:max-w-[400px]">
-                                User Note: {item.reminder.resultNote}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                      {/* Content Row (Name & Content) */}
+                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
+                        <span className={`font-bold whitespace-nowrap ${item.reminder.resultStatus === '완료' ? 'text-gray-400 line-through' : 'text-gray-800 dark:text-white'}`}>
+                          {item.caseData.customerName}
+                        </span>
+                        <span className="hidden md:inline text-gray-300">|</span>
+                        <span className={`text-xs md:text-sm truncate block w-full md:w-auto ${item.reminder.resultStatus === '완료' ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                          {item.reminder.content || '내용 없음'}
+                        </span>
                       </div>
+
+                      {/* Result & Note Display (Right on Desktop, Row 3 on Mobile) */}
+                      {(item.reminder.resultStatus || item.reminder.resultNote) && (
+                        <div className="md:ml-auto flex items-center gap-2 text-xs mt-1 md:mt-0 flex-shrink-0">
+                          {item.reminder.resultStatus && (
+                            <span className={`px-2 py-1 rounded font-bold whitespace-nowrap shadow-sm ${item.reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
+                                item.reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
+                                  item.reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-gray-100 text-gray-600'
+                              }`}>
+                              {item.reminder.resultStatus === '완료' && "✅ "}
+                              {item.reminder.resultStatus === '미연결' && "📞 "}
+                              {item.reminder.resultStatus === '재예약' && "🔄 "}
+                              {item.reminder.resultStatus}
+                            </span>
+                          )}
+                          {item.reminder.resultNote && (
+                            <span className="text-gray-600 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-gray-200 dark:border-gray-600 truncate max-w-[200px] md:max-w-[300px]" title={item.reminder.resultNote}>
+                              {item.reminder.resultNote}
+                            </span>
+                          )}
+                        </div>
+                      )}
 
                       {/* Desktop Only: Detail Arrow */}
-                      <div className="hidden md:block text-right whitespace-nowrap self-center">
-                        <span className="text-xs text-gray-400 group-hover:text-indigo-500 font-medium transition-colors">상세보기 →</span>
+                      <div className="hidden md:block text-right whitespace-nowrap flex-shrink-0">
+                        <span className="text-xs text-gray-400 group-hover:text-indigo-500 font-medium transition-colors">→</span>
                       </div>
                     </div>
                   </Link>
