@@ -35,6 +35,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
       customerName: c.customerName,
       datetime: r.datetime,
       type: r.type || '통화', // Default to '통화' if undefined
+      resultStatus: r.resultStatus // Added: Pass result status
     }))
   );
 
@@ -146,7 +147,12 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                           ev.type === '출장미팅' ? 'text-green-600' :
                             'text-blue-600'
                           }`}>[{ev.type}]</span>
-                        <span className="font-medium truncate flex-1 text-left">{truncatedName}</span>
+                        <span className={`font-medium truncate flex-1 text-left ${ev.resultStatus === '완료' ? 'text-gray-400 line-through' : ''}`}>
+                          {ev.resultStatus === '완료' && "✅ "}
+                          {ev.resultStatus === '미연결' && "📞 "}
+                          {ev.resultStatus === '재예약' && "🔄 "}
+                          {truncatedName}
+                        </span>
                       </div>
                     </Link>
                   );

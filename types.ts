@@ -32,6 +32,8 @@ export interface ReminderItem {
   type: ReminderType;
   content?: string;
   isCompleted?: boolean;
+  resultStatus?: '완료' | '미연결' | '재예약' | '부재중' | '취소'; // Added: Result Tracking
+  resultNote?: string; // Added: Result Note
 }
 
 export interface RecordingItem {
