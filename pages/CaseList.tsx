@@ -4,7 +4,7 @@ import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
 import { Link } from 'react-router-dom';
-import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare } from 'lucide-react';
+import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 import ImportModal from '../components/ImportModal';
@@ -70,6 +70,9 @@ export default function CaseList() {
     const [dateFilterStart, setDateFilterStart] = useState('');
     const [dateFilterEnd, setDateFilterEnd] = useState('');
     const [sortOrder, setSortOrder] = useState<'createdAt_desc' | 'createdAt_asc' | 'lastConsultation_desc' | 'lastConsultation_asc' | 'inboundPath_asc'>('createdAt_desc');
+
+    // Quick Filter for "New" cases
+    const [showNewOnly, setShowNewOnly] = useState(false);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -141,7 +144,7 @@ export default function CaseList() {
     // Reset page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [search, statusFilter, inboundPathFilter, partnerFilter]);
+    }, [search, statusFilter, inboundPathFilter, partnerFilter, showNewOnly]);
 
     const handleDelete = async (caseId: string, e?: React.MouseEvent) => {
         // 이벤트 전파 방지 (카드 클릭 등으로 인한 페이지 이동 방지)
@@ -176,6 +179,7 @@ export default function CaseList() {
         const matchesStatus = statusFilter === '' || c.status === statusFilter;
         const matchesPath = inboundPathFilter === '' || c.inboundPath === inboundPathFilter;
         const matchesPartner = partnerFilter === '' || c.partnerId === partnerFilter;
+        const matchesNew = showNewOnly ? c.isNew : true;
 
         // Date Filter
         let matchesDate = true;
@@ -190,7 +194,7 @@ export default function CaseList() {
             }
         }
 
-        return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate;
+        return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew;
     });
 
     const getLastConsultationDate = (c: Case): string => {
@@ -280,19 +284,36 @@ export default function CaseList() {
                     </div>
                     <button
                         onClick={() => {
-                            // Filter specifically for "new" cases (requires adding logic or just scrolling)
-                            // For now, simpler: Scroll to top where "NEW" badges are visible
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            setShowNewOnly(true);
                         }}
-                        className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                        className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap md:whitespace-normal"
                     >
-                        확인하기
+                        <span className="hidden md:inline">확인하기</span>
+                        <span className="md:hidden flex flex-col items-center leading-tight">
+                            <span>확인</span>
+                            <span>하기</span>
+                        </span>
                     </button>
+                    {showNewOnly && (
+                        <button
+                            onClick={() => setShowNewOnly(false)}
+                            className="absolute top-2 right-2 text-red-400 hover:text-red-600"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
                 </div>
             )}
 
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">케이스 관리</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    케이스 관리
+                    {showNewOnly && (
+                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200 cursor-pointer hover:bg-red-200" onClick={() => setShowNewOnly(false)}>
+                            필터링됨: 신규 접수 건 <span className="ml-1 font-bold">×</span>
+                        </span>
+                    )}
+                </h2>
                 <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">총 {totalItems}건</span>
             </div>
 
