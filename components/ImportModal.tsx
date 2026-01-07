@@ -2,11 +2,11 @@ import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, Check, Loader2, List, Sparkles } from 'lucide-react';
-import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase } from '../services/api';
+import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase, fetchCases } from '../services/api';
 import { Partner, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
 import { ASSET_TYPES, JOB_TYPES } from '../constants';
-import { fileToBase64, formatPhoneNumber } from '../utils';
+import { fileToBase64, formatPhoneNumber, checkIsDuplicate } from '../utils';
 
 interface ImportModalProps {
     isOpen: boolean;
@@ -23,8 +23,17 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     const [activeTab, setActiveTab] = useState<ImportTab>('excel');
     const [isLoading, setIsLoading] = useState(false);
 
+    // [Added] Load all cases for global duplicate check
+    const [existingCases, setExistingCases] = useState<Case[]>([]);
+
+    React.useEffect(() => {
+        if (isOpen) {
+            fetchCases().then(setExistingCases);
+        }
+    }, [isOpen]);
+
     // Excel State
-    const [excelPreview, setExcelPreview] = useState<Partial<Case>[]>([]);
+    const [excelPreview, setExcelPreview] = useState<(Partial<Case> & { duplicateInfo?: Case })[]>([]);
     const excelInputRef = useRef<HTMLInputElement>(null);
 
     // OCR State
@@ -81,14 +90,20 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 const ws = wb.Sheets[wsname];
                 const data = XLSX.utils.sheet_to_json(ws);
 
-                const parsedCases: Partial<Case>[] = data.map((row: any) => ({
-                    customerName: row['customerName'] || row['고객명'],
-                    phone: formatPhoneNumber(row['phone'] || row['연락처'] || ''),
-                    caseType: row['caseType'] || row['유형'] || '개인회생',
-                    inboundPath: row['inboundPath'] || row['유입경로'] || '', // Fixed mapping
-                    preInfo: row['preInfo'] || row['사전정보'] || '',
-                    isNew: true
-                }));
+                const parsedCases = data.map((row: any) => {
+                    const phone = formatPhoneNumber(row['phone'] || row['연락처'] || '');
+                    const duplicate = checkIsDuplicate(phone, existingCases);
+
+                    return {
+                        customerName: row['customerName'] || row['고객명'],
+                        phone: phone,
+                        caseType: row['caseType'] || row['유형'] || '개인회생',
+                        inboundPath: row['inboundPath'] || row['유입경로'] || '', // Fixed mapping
+                        preInfo: row['preInfo'] || row['사전정보'] || '',
+                        isNew: true,
+                        duplicateInfo: duplicate
+                    };
+                });
 
                 setExcelPreview(parsedCases);
             } catch (err) {
@@ -220,7 +235,14 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
 
     // --- Manual Logic ---
+    const [manualDuplicate, setManualDuplicate] = useState<Case | undefined>(undefined);
+
     const handleManualChange = (field: string, value: string) => {
+        if (field === 'phone') {
+            value = formatPhoneNumber(value);
+            const dup = checkIsDuplicate(value, existingCases);
+            setManualDuplicate(dup);
+        }
         setManualForm(prev => ({ ...prev, [field]: value }));
     };
 
@@ -336,9 +358,21 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                             </thead>
                                             <tbody className="divide-y">
                                                 {excelPreview.map((item, idx) => (
-                                                    <tr key={idx}>
-                                                        <td className="p-2">{item.customerName}</td>
-                                                        <td className="p-2 text-gray-500">{item.phone}</td>
+                                                    <tr key={idx} className={item.duplicateInfo ? 'bg-red-50' : ''}>
+                                                        <td className="p-2">
+                                                            {item.customerName}
+                                                            {item.duplicateInfo && <span className="text-red-600 text-xs ml-1 font-bold">(중복)</span>}
+                                                        </td>
+                                                        <td className="p-2 text-gray-500">
+                                                            <div className="flex flex-col">
+                                                                <span>{item.phone}</span>
+                                                                {item.duplicateInfo && (
+                                                                    <span className="text-[10px] text-red-500">
+                                                                        기존: {item.duplicateInfo.managerName} ({item.duplicateInfo.status})
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
                                                         <td className="p-2 text-xs">{item.caseType}</td>
                                                     </tr>
                                                 ))}
@@ -500,6 +534,11 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         value={manualForm.phone}
                                         onChange={e => handleManualChange('phone', e.target.value)}
                                     />
+                                    {manualDuplicate && (
+                                        <div className="text-xs text-red-600 mt-1 bg-red-50 p-1 rounded font-medium">
+                                            ⚠️ 중복: {manualDuplicate.customerName} ({manualDuplicate.managerName}/{manualDuplicate.status})
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

@@ -103,10 +103,12 @@ export const normalizeBirthYear = (input: string): string => {
 };
 
 // --- Phone Number Formatter: 01012345678 -> 010-1234-5678 ---
+export const normalizePhone = (phone: string) => phone.replace(/[^0-9]/g, '');
+
 export const formatPhoneNumber = (phone: string): string => {
   if (!phone) return '';
-  const clean = phone.replace(/[^0-9]/g, '');
-
+  const clean = normalizePhone(phone);
+  // ... rest of format logic
   if (clean.length === 11) {
     // 010-1234-5678
     return clean.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
@@ -126,6 +128,13 @@ export const formatPhoneNumber = (phone: string): string => {
   }
   // Fallback: Just return original if it doesn't match standard patterns
   return phone;
+};
+
+// --- Duplicate Checker ---
+export const checkIsDuplicate = (phone: string, cases: Case[]): Case | undefined => {
+  const target = normalizePhone(phone);
+  if (target.length < 9) return undefined; // Too short to be valid
+  return cases.find(c => normalizePhone(c.phone) === target);
 };
 
 // --- Money Formatter: 25000 -> 2억 5,000만원 ---

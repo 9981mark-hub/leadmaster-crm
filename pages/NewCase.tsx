@@ -5,8 +5,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { formatPhone, CASE_TYPES, MANAGER_NAME } from '../constants';
 import { ChevronRight, ChevronLeft, Save, Plus, Trash2, Building } from 'lucide-react';
 import { JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_TYPES, ASSET_OWNERS, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS } from '../constants';
-import { normalizeBirthYear } from '../utils';
-import { AssetItem, Partner, CreditLoanItem } from '../types';
+import { normalizeBirthYear, checkIsDuplicate } from '../utils';
+import { AssetItem, Partner, CreditLoanItem, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
 
 const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "" }: any) => {
@@ -77,14 +77,19 @@ export default function NewCase() {
   const [newAsset, setNewAsset] = useState<Partial<AssetItem>>({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, desc: '' });
   const [newCreditLoan, setNewCreditLoan] = useState<Partial<CreditLoanItem>>({ amount: 0, desc: '' });
 
+  // [Added] Duplicate Check State
+  const [allCases, setAllCases] = useState<Case[]>([]);
+  const [duplicateCase, setDuplicateCase] = useState<Case | undefined>(undefined);
+
   useEffect(() => {
     const init = async () => {
-      const [paths, partnerData, allCases] = await Promise.all([
+      const [paths, partnerData, cases] = await Promise.all([
         fetchInboundPaths(),
         fetchPartners(),
-        leadId ? fetchCases() : Promise.resolve([])
+        fetchCases() // Always fetch all for dup check
       ]);
 
+      setAllCases(cases);
       setInboundPaths(paths);
       setPartners(partnerData);
 
@@ -94,7 +99,7 @@ export default function NewCase() {
 
       // If leadId provided, find and populate
       if (leadId) {
-        const lead = allCases.find((c: any) => c.caseId === leadId);
+        const lead = cases.find((c: any) => c.caseId === leadId);
         if (lead) {
           // Merge lead data into formData
           setFormData((prev: any) => ({
@@ -110,7 +115,17 @@ export default function NewCase() {
   }, [leadId]);
 
   const handleChange = (field: string, value: any) => {
-    if (field === 'phone') value = formatPhone(value);
+    if (field === 'phone') {
+      value = formatPhone(value);
+      // Real-time Duplicate Check
+      const dup = checkIsDuplicate(value, allCases);
+      // Don't flag itself if editing existing
+      if (dup && dup.caseId !== leadId) {
+        setDuplicateCase(dup);
+      } else {
+        setDuplicateCase(undefined);
+      }
+    }
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
@@ -327,7 +342,24 @@ export default function NewCase() {
             )}
 
             <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
-            <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="01012345678" />
+            <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
+            <div>
+              <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="01012345678" />
+              {duplicateCase && (
+                <div className="mb-4 -mt-3 animate-pulse">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm flex flex-col gap-1">
+                    <div className="flex items-center gap-2 text-red-700 font-bold">
+                      <span className="text-lg">⚠️</span> 이미 등록된 연락처입니다!
+                    </div>
+                    <div className="text-gray-600 pl-7 text-xs">
+                      <p>등록된 고객명: <b>{duplicateCase.customerName}</b></p>
+                      <p>담당자: <b>{duplicateCase.managerName}</b></p>
+                      <p>현재 상태: <span className="font-medium text-red-600">{duplicateCase.status}</span></p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="출생년도 (2자리)"
