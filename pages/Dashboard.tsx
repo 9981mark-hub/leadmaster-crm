@@ -194,16 +194,42 @@ export default function Dashboard() {
                       </div>
 
                       {/* Content Row (Mobile: Row 2, Desktop: Inline) */}
-                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
-                        <span className="hidden md:inline font-bold text-gray-800 dark:text-white whitespace-nowrap">{item.caseData.customerName}</span>
-                        <span className="hidden md:inline text-gray-300">|</span>
-                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate block w-full pl-0 md:pl-0">
-                          {item.reminder.content || '내용 없음'}
-                        </span>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <div className="flex md:items-center flex-col md:flex-row gap-0.5 md:gap-3">
+                          <span className={`font-bold whitespace-nowrap ${item.reminder.resultStatus === '완료' ? 'text-gray-400 line-through' : 'text-gray-800 dark:text-white'}`}>
+                            {item.caseData.customerName}
+                          </span>
+                          <span className="hidden md:inline text-gray-300">|</span>
+                          <span className={`text-xs md:text-sm truncate block w-full md:w-auto ${item.reminder.resultStatus === '완료' ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                            {item.reminder.content || '내용 없음'}
+                          </span>
+                        </div>
+                        {/* Result & Note Display */}
+                        {(item.reminder.resultStatus || item.reminder.resultNote) && (
+                          <div className="mt-1 flex items-center gap-2 text-xs">
+                            {item.reminder.resultStatus && (
+                              <span className={`px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${item.reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
+                                  item.reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
+                                    item.reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
+                                      'bg-gray-100 text-gray-600'
+                                }`}>
+                                {item.reminder.resultStatus === '완료' && "✅ "}
+                                {item.reminder.resultStatus === '미연결' && "📞 "}
+                                {item.reminder.resultStatus === '재예약' && "🔄 "}
+                                {item.reminder.resultStatus}
+                              </span>
+                            )}
+                            {item.reminder.resultNote && (
+                              <span className="text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 truncate max-w-[200px] md:max-w-[400px]">
+                                User Note: {item.reminder.resultNote}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* Desktop Only: Detail Arrow */}
-                      <div className="hidden md:block text-right whitespace-nowrap">
+                      <div className="hidden md:block text-right whitespace-nowrap self-center">
                         <span className="text-xs text-gray-400 group-hover:text-indigo-500 font-medium transition-colors">상세보기 →</span>
                       </div>
                     </div>
