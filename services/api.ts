@@ -427,6 +427,7 @@ export const createCaseHelper = (newCase: Partial<Case>): Case => {
     statusUpdatedAt: now,
     managerName: managerName,
     partnerId: newCase.partnerId || (localPartners[0]?.partnerId || ''),
+    isViewed: true, // [Fix] Locally created cases are always "seen" by definition
     insurance4: newCase.insurance4 || '미가입',
     maritalStatus: newCase.maritalStatus || '미혼',
     childrenCount: newCase.childrenCount || 0,

@@ -258,7 +258,8 @@ export default function NewCase() {
         const newCasePayload = {
           ...payload,
           managerName: MANAGER_NAME, // Explicitly set manager to mark as handled
-          isNew: false // Local flag
+          isNew: false, // Local flag
+          isViewed: true // [Fix] Explicitly mark as viewed so it doesn't trigger "New Case" notification
         };
         savedCase = await createCase(newCasePayload);
         showToast('신규 케이스가 등록되었습니다.');
