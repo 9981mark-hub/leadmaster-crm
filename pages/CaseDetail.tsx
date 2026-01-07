@@ -100,6 +100,7 @@ export default function CaseDetail() {
     const [aiSummaryText, setAiSummaryText] = useState('');
     const [currentAudioFile, setCurrentAudioFile] = useState<File | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    const [isFileUploading, setIsFileUploading] = useState(false); // [NEW] Upload State
     const audioInputRef = useRef<HTMLInputElement>(null);
     const audioPlayerRef = useRef<HTMLAudioElement>(null);
 
@@ -359,30 +360,63 @@ export default function CaseDetail() {
     };
 
     // --- Audio & AI Summary Logic ---
-    const handleAudioFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAudioFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 20 * 1024 * 1024) { // 20MB limit for demo
+            // 20MB Limit check
+            if (file.size > 20 * 1024 * 1024) {
                 showToast('파일 크기는 20MB를 초과할 수 없습니다.', 'error');
                 return;
             }
+
             setCurrentAudioFile(file);
-            const url = URL.createObjectURL(file);
-            setAudioUrl(url);
-            showToast("'" + file.name + "' 파일이 준비되었습니다.");
 
-            // Auto add to recording list (simulate save)
-            const newRecording: RecordingItem = {
-                id: uuidv4(),
-                filename: file.name,
-                uploadDate: new Date().toISOString(),
-                url: url, // In a real app, this would be a server URL
-                mimeType: file.type
-            };
+            // 1. Temporary Local Playback
+            const localUrl = URL.createObjectURL(file);
+            setAudioUrl(localUrl);
 
-            if (c) {
-                const updatedRecordings = [newRecording, ...(c.recordings || [])];
-                handleUpdate('recordings', updatedRecordings);
+            // 2. Upload to Server (Google Drive)
+            try {
+                setIsFileUploading(true);
+                showToast("클라우드(구글 드라이브)에 업로드 중입니다... 잠시만 기다려주세요.");
+
+                // Dynamic Import to avoid cycle if any, though api is already imported
+                const { uploadRecording } = await import('../services/api');
+                const { url: serverUrl, id: fileId } = await uploadRecording(file);
+
+                showToast("업로드가 완료되었습니다. 이제 어디서든 듣기가 가능합니다!", 'success');
+
+                const newRecording: RecordingItem = {
+                    id: fileId || uuidv4(),
+                    filename: file.name,
+                    uploadDate: new Date().toISOString(),
+                    url: serverUrl, // Persistent Drive URL
+                    mimeType: file.type
+                };
+
+                if (c) {
+                    const updatedRecordings = [newRecording, ...(c.recordings || [])];
+                    handleUpdate('recordings', updatedRecordings);
+                }
+
+            } catch (error) {
+                console.error("Upload failed", error);
+                showToast('업로드 실패: 로컬에서만 재생 가능합니다.', 'error');
+
+                // Fallback: Save with Local URL (Will expire) - Better than nothing?
+                // Or maybe just fail. Let's add it locally with a warning.
+                const fallbackRecording: RecordingItem = {
+                    id: uuidv4(),
+                    filename: file.name + " (미동기화)",
+                    uploadDate: new Date().toISOString(),
+                    url: localUrl,
+                    mimeType: file.type
+                };
+                if (c) {
+                    handleUpdate('recordings', [fallbackRecording, ...(c.recordings || [])]);
+                }
+            } finally {
+                setIsFileUploading(false);
             }
         }
     };
@@ -863,11 +897,12 @@ export default function CaseDetail() {
                                     />
                                     <button
                                         onClick={triggerAudioInput}
-                                        className={"flex items-center gap-1 text-xs px-2 py-1.5 rounded border " + (currentAudioFile ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-600 border-gray-300')}
+                                        disabled={isFileUploading}
+                                        className={"flex items-center gap-1 text-xs px-2 py-1.5 rounded border " + (currentAudioFile ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-600 border-gray-300') + (isFileUploading ? ' opacity-50 cursor-not-allowed' : '')}
                                     >
                                         <Mic size={14} className="flex-shrink-0" />
                                         <span className="text-center leading-tight">
-                                            {currentAudioFile ? '파일 변경' : <>녹음파일<br />업로드</>}
+                                            {isFileUploading ? '업로드중...' : (currentAudioFile ? '파일 변경' : <>녹음파일<br />업로드</>)}
                                         </span>
                                     </button>
 

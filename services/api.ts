@@ -634,3 +634,45 @@ export const batchCreateCases = async (cases: Partial<Case>[]): Promise<void> =>
   syncAll().catch(err => console.error("Batch sync failed", err));
 };
 
+
+// --- File Upload ---
+export const uploadRecording = async (file: File): Promise<{ url: string, id: string }> => {
+  const { fileToBase64 } = await import('../utils');
+  const base64Data = await fileToBase64(file);
+
+  // Send to GAS
+  // Note: We use fetch explicitly here to await the response (unlike syncToSheet which is largely fire-and-forget)
+  // However, since we are likely in a no-cors scenario for pure GET/POST triggers if not configured carefully.
+  // Actually, for a file upload we need the RESPONSE url. 
+  // Standard GAS Web App `doPost` returns JSON. We need to handle CORS.
+  // Using 'no-cors' means we CANNOT read the response. 
+  // To get a response, the backend must support CORS (return appropriate headers).
+  // Assuming the user's GAS script handles CORS properly (options/headers).
+
+  if (!GOOGLE_SCRIPT_URL) throw new Error("Backend URL missing");
+
+  const response = await fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    // We try simple POST first. If 'no-cors' is forced by browser, we can't get the generated URL.
+    // Ideally GAS serves CORS headers.
+    headers: { 'Content-Type': 'text/plain' }, // GAS prefers text/plain to avoid preflight issues sometimes, but application/json is standard.
+    body: JSON.stringify({
+      target: 'upload',
+      filename: file.name,
+      mimeType: file.type,
+      data: base64Data
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  if (result.status === 'error') throw new Error(result.message);
+
+  return {
+    url: result.url,
+    id: result.id
+  };
+};
