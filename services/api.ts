@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // --- CONFIGURATION ---
 // Replace this with the user's deployed Web App URL
-export const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykR5IcbHJrbVprABpTTHvDJz4uBgg0qzPIdHaQKBmrakpSU37VxXKYY9VME8ZaTofa7Q/exec";
+export const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3goZ3k9nBvs3EMUq5nAglTv_-JKa1cY7h8wfx1AncxRTP7egaX814GCgIyJSiHgXkpA/exec";
 
 // --- LOCAL CACHE & STATE MANAGEMENT ---
 let localCases: Case[] = [];
