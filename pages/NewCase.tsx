@@ -30,7 +30,6 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
       <div className="relative">
         <input
           type={type === 'number' ? 'text' : type}
-          inputMode={type === 'number' ? 'numeric' : undefined}
           className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={displayValue}
           onChange={handleInputChange}
@@ -523,7 +522,6 @@ export default function NewCase() {
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   <input
                     type="text"
-                    inputMode="numeric"
                     placeholder="시세 (만원)"
                     className="w-full p-2 border rounded text-sm"
                     value={newAsset.amount === 0 ? '' : newAsset.amount}
@@ -536,7 +534,6 @@ export default function NewCase() {
                   />
                   <input
                     type="text"
-                    inputMode="numeric"
                     placeholder="담보대출 (만원)"
                     className="w-full p-2 border rounded text-sm"
                     value={newAsset.loanAmount === 0 ? '' : newAsset.loanAmount}
@@ -593,7 +590,6 @@ export default function NewCase() {
                 />
                 <input
                   type="text"
-                  inputMode="numeric"
                   placeholder="금액 (만원)"
                   className="w-full p-2 border rounded text-sm"
                   value={newCreditLoan.amount === 0 ? '' : newCreditLoan.amount}
