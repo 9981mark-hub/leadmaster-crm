@@ -342,7 +342,7 @@ export default function NewCase() {
             )}
 
             <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
-            <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
+
             <div>
               <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="01012345678" />
               {duplicateCase && (
