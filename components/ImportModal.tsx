@@ -6,7 +6,7 @@ import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase } from '
 import { Partner, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
 import { ASSET_TYPES, JOB_TYPES } from '../constants';
-import { fileToBase64 } from '../utils';
+import { fileToBase64, formatPhoneNumber } from '../utils';
 
 interface ImportModalProps {
     isOpen: boolean;
@@ -83,9 +83,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
                 const parsedCases: Partial<Case>[] = data.map((row: any) => ({
                     customerName: row['customerName'] || row['고객명'],
-                    phone: row['phone'] || row['연락처'],
+                    phone: formatPhoneNumber(row['phone'] || row['연락처'] || ''),
                     caseType: row['caseType'] || row['유형'] || '개인회생',
-                    inboundPath: row['inboundPath'] || row['유입경로'] || '',
+                    inboundPath: row['inboundPath'] || row['유입경로'] || '', // Fixed mapping
                     preInfo: row['preInfo'] || row['사전정보'] || '',
                     isNew: true
                 }));

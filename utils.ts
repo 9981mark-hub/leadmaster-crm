@@ -102,6 +102,32 @@ export const normalizeBirthYear = (input: string): string => {
   return clean;
 };
 
+// --- Phone Number Formatter: 01012345678 -> 010-1234-5678 ---
+export const formatPhoneNumber = (phone: string): string => {
+  if (!phone) return '';
+  const clean = phone.replace(/[^0-9]/g, '');
+
+  if (clean.length === 11) {
+    // 010-1234-5678
+    return clean.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+  }
+  if (clean.length === 10) {
+    // 02-1234-5678 or 011-123-4567
+    if (clean.startsWith('02')) {
+      return clean.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+    }
+    return clean.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+  }
+  if (clean.length === 9) {
+    // 02-123-4567
+    if (clean.startsWith('02')) {
+      return clean.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+    }
+  }
+  // Fallback: Just return original if it doesn't match standard patterns
+  return phone;
+};
+
 // --- Money Formatter: 25000 -> 2억 5,000만원 ---
 export const formatKoreanMoney = (value: number | undefined): string => {
   if (value === undefined || value === null || isNaN(value)) return '';

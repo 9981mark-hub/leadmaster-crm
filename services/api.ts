@@ -232,11 +232,9 @@ export const processIncomingCase = (c: any): Case => {
     partnerId: c.partnerId || c.PartnerId || 'P001',       // Default from screenshot context
     // [Status Logic]
     // [Status Logic]
-    // isNew depends on status being '신규접수' AND (No Manager Assigned) AND (Not marked seen locally)
-    // Presence of managerName (locally or from DB) implies it has been handled/created manually.
-    isNew: (c.status || c.Status || '신규접수') === '신규접수'
-      && !(c.managerName || c.ManagerName)
-      && !isCaseSeen(c.caseId || c.CaseID || c.id),
+    // [Status Logic]
+    // isNew depends on status being '신규접수' AND Not marked seen locally
+    isNew: (c.status || c.Status || '신규접수') === '신규접수' && !isCaseSeen(c.caseId || c.CaseID || c.id),
 
     // [Personal]
     customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
@@ -590,8 +588,45 @@ export const fetchNewLeads = async (): Promise<Case[]> => {
 };
 
 export const batchCreateCases = async (cases: Partial<Case>[]): Promise<void> => {
+  // 1. Create all objects in memory
+  // Use a temporary list to hold new cases
+  const newCases: Case[] = [];
+  const { generateSummary } = await import('../utils');
+
   for (const c of cases) {
-    await createCase(c);
+    const caseObj = createCaseHelper(c);
+    newCases.push(caseObj);
   }
+
+  // 2. Batch Update Local State (ONE TIME)
+  // Prepend all new cases to localCases
+  localCases.unshift(...newCases);
+
+  // 3. Update Sync Dependencies (e.g. Inbound Paths)
+  syncInboundPaths(newCases);
+
+  // 4. Notify UI (ONE TIME)
+  saveToStorage();
+  notifyListeners();
+
+  // 5. Background Sync to Sheet (Fire & Forget / Batched)
+  // We'll map them to payloads and send them one by one or in chunks
+  // Since our backend might not support bulk create, we just loop calls but DON'T await them for UI unblocking
+  // However, too many concurrent requests might choke browsers. We'll verify if we can send them reasonably.
+  // Ideally, we'd have a batch endpoint. For now, we'll execute them with a small delay or Promise.all if count is low.
+  // Let's do a simple non-blocking loop with small delays to ensure reliability without freezing UI.
+
+  const syncAll = async () => {
+    for (const c of newCases) {
+      const partner = localPartners.find(p => p.partnerId === c.partnerId);
+      const formattedSummary = generateSummary(c, partner?.summaryTemplate);
+      const payload = { ...c, formattedSummary };
+      await syncToSheet({ target: 'leads', action: 'create', data: payload });
+      // Small delay to be nice to Google Script
+      await new Promise(r => setTimeout(r, 100));
+    }
+  };
+
+  syncAll().catch(err => console.error("Batch sync failed", err));
 };
 
