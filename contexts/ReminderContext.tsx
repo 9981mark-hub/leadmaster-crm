@@ -51,6 +51,7 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     useEffect(() => {
         const checkReminders = () => {
             const now = new Date();
+            console.log(`[ReminderCheck] Checking ${cases.length} cases at ${now.toLocaleTimeString()}`);
 
             cases.forEach(c => {
                 c.reminders?.forEach(r => {
@@ -59,17 +60,22 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     // Parse date "YYYY-MM-DD HH:mm"
                     let rDate = parse(r.datetime, 'yyyy-MM-dd HH:mm', new Date());
                     if (!isValid(rDate)) {
+                        console.warn(`[ReminderCheck] Invalid date for case ${c.customerName}: ${r.datetime}`);
                         // Try appending seconds if needed, or fallback logic? 
                         // Currently assuming standard format.
                         return;
                     }
 
                     const diff = differenceInMinutes(rDate, now);
+                    console.log(`[ReminderCheck] ${c.customerName} - ${r.datetime} (Diff: ${diff}m)`);
                     // Trigger window: 9 to 11 minutes (target is 10)
                     // Also check if not already processed
                     const reminderUniqueId = `${c.caseId}-${r.id}`;
 
-                    if (diff >= 9 && diff <= 11 && !processedReminders.current.has(reminderUniqueId)) {
+                    // Modified logic: Catch anything between 0 and 12 minutes to be safe for testing
+                    // Original: 9 to 11
+                    if (diff >= 0 && diff <= 12 && !processedReminders.current.has(reminderUniqueId)) {
+                        console.log(`[ReminderCheck] TRIGGERING ALERT for ${c.customerName}`);
                         // Trigger Notification
                         const newNotification: ReminderNotification = {
                             id: reminderUniqueId,
