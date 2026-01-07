@@ -11,15 +11,29 @@ import { useToast } from '../contexts/ToastContext';
 
 const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "" }: any) => {
   const displayValue = type === 'number' && value === 0 ? '' : value;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (type === 'number') {
+      // Allow only numbers (and empty string)
+      if (val === '' || /^[0-9]+$/.test(val)) {
+        onChange(val === '' ? 0 : Number(val));
+      }
+    } else {
+      onChange(val);
+    }
+  };
+
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="relative">
         <input
-          type={type}
+          type={type === 'number' ? 'text' : type}
+          inputMode={type === 'number' ? 'numeric' : undefined}
           className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={displayValue}
-          onChange={e => onChange(type === 'number' ? Number(e.target.value) || 0 : e.target.value)}
+          onChange={handleInputChange}
           onBlur={onBlur}
           placeholder={placeholder}
         />
@@ -508,18 +522,30 @@ export default function NewCase() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     placeholder="시세 (만원)"
                     className="w-full p-2 border rounded text-sm"
-                    value={newAsset.amount || ''}
-                    onChange={e => setNewAsset({ ...newAsset, amount: Number(e.target.value) })}
+                    value={newAsset.amount === 0 ? '' : newAsset.amount}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === '' || /^[0-9]+$/.test(val)) {
+                        setNewAsset({ ...newAsset, amount: Number(val) || 0 });
+                      }
+                    }}
                   />
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     placeholder="담보대출 (만원)"
                     className="w-full p-2 border rounded text-sm"
-                    value={newAsset.loanAmount || ''}
-                    onChange={e => setNewAsset({ ...newAsset, loanAmount: Number(e.target.value) })}
+                    value={newAsset.loanAmount === 0 ? '' : newAsset.loanAmount}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === '' || /^[0-9]+$/.test(val)) {
+                        setNewAsset({ ...newAsset, loanAmount: Number(val) || 0 });
+                      }
+                    }}
                   />
                 </div>
                 <div className="flex gap-2 mb-2">
@@ -566,11 +592,17 @@ export default function NewCase() {
                   onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })}
                 />
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   placeholder="금액 (만원)"
                   className="w-full p-2 border rounded text-sm"
-                  value={newCreditLoan.amount || ''}
-                  onChange={e => setNewCreditLoan({ ...newCreditLoan, amount: Number(e.target.value) })}
+                  value={newCreditLoan.amount === 0 ? '' : newCreditLoan.amount}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (val === '' || /^[0-9]+$/.test(val)) {
+                      setNewCreditLoan({ ...newCreditLoan, amount: Number(val) || 0 });
+                    }
+                  }}
                 />
                 <button
                   type="button"
