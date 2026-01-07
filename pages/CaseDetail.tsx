@@ -7,7 +7,7 @@ import { ChevronLeft, Save, Plus, Trash2, Phone, MessageSquare, AlertTriangle, C
 import { format } from 'date-fns';
 import { formatPhone, MANAGER_NAME, CASE_TYPES, JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_OWNERS, ASSET_TYPES, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS, AVAILABLE_FIELDS_CONFIG, formatMoney, DEFAULT_AI_PROMPT, STATUS_COLOR_MAP } from '../constants';
 import { useToast } from '../contexts/ToastContext';
-import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64 } from '../utils';
+import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64, convertToPlayableUrl } from '../utils';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -382,6 +382,7 @@ export default function CaseDetail() {
 
                 // Dynamic Import to avoid cycle if any, though api is already imported
                 const { uploadRecording } = await import('../services/api');
+                const { fileToBase64, convertToPlayableUrl } = await import('../utils');
                 const { url: serverUrl, id: fileId } = await uploadRecording(file);
 
                 showToast("업로드가 완료되었습니다. 이제 어디서든 듣기가 가능합니다!", 'success');
@@ -427,7 +428,7 @@ export default function CaseDetail() {
 
     const handlePlayRecording = (rec: RecordingItem) => {
         if (audioPlayerRef.current) {
-            audioPlayerRef.current.src = rec.url;
+            audioPlayerRef.current.src = convertToPlayableUrl(rec.url);
             audioPlayerRef.current.play();
             showToast(rec.filename + " 재생을 시작합니다.");
         }

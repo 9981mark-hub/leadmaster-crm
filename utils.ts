@@ -449,10 +449,31 @@ export const fileToBase64 = (file: File): Promise<string> => {
       if (typeof reader.result === 'string') {
         const base64Content = reader.result.split(',')[1];
         resolve(base64Content);
-      } else {
-        reject(new Error('Failed to convert file to base64'));
       }
     };
     reader.onerror = error => reject(error);
   });
+};
+
+export const convertToPlayableUrl = (url: string): string => {
+  if (!url) return '';
+  // Check if it's a Google Drive URL
+  if (!url.includes('drive.google.com')) return url;
+
+  let id = '';
+  // Patterns: 
+  // 1. /file/d/ID/view
+  // 2. id=ID
+  const match1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (match1) {
+    id = match1[1];
+  } else {
+    const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (match2) id = match2[1];
+  }
+
+  if (id) {
+    return `https://drive.google.com/uc?export=download&id=${id}`;
+  }
+  return url;
 };
