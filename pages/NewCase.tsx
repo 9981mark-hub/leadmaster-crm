@@ -226,6 +226,11 @@ export default function NewCase() {
     try {
       const payload = { ...formData };
 
+      // [Fix] Default name if empty to prevent nameless cases
+      if (!payload.customerName || payload.customerName.trim() === '') {
+        payload.customerName = '이름없음';
+      }
+
       // Handle specialMemo array structure
       if (payload.specialMemo && typeof payload.specialMemo === 'string' && payload.specialMemo.trim()) {
         payload.specialMemo = [{
