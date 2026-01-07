@@ -63,16 +63,31 @@ export default function CaseList() {
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     // Filters & Sort
-    const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
-    const [inboundPathFilter, setInboundPathFilter] = useState('');
-    const [partnerFilter, setPartnerFilter] = useState('');
-    const [dateFilterStart, setDateFilterStart] = useState('');
-    const [dateFilterEnd, setDateFilterEnd] = useState('');
-    const [sortOrder, setSortOrder] = useState<'createdAt_desc' | 'createdAt_asc' | 'lastConsultation_desc' | 'lastConsultation_asc' | 'inboundPath_asc'>('createdAt_desc');
+    // Filters & Sort (Persisted in sessionStorage)
+    const [search, setSearch] = useState(() => sessionStorage.getItem('lm_search') || '');
+    const [statusFilter, setStatusFilter] = useState(() => sessionStorage.getItem('lm_statusFilter') || '');
+    const [inboundPathFilter, setInboundPathFilter] = useState(() => sessionStorage.getItem('lm_inboundPathFilter') || '');
+    const [partnerFilter, setPartnerFilter] = useState(() => sessionStorage.getItem('lm_partnerFilter') || '');
+    const [dateFilterStart, setDateFilterStart] = useState(() => sessionStorage.getItem('lm_dateFilterStart') || '');
+    const [dateFilterEnd, setDateFilterEnd] = useState(() => sessionStorage.getItem('lm_dateFilterEnd') || '');
+    const [sortOrder, setSortOrder] = useState<'createdAt_desc' | 'createdAt_asc' | 'lastConsultation_desc' | 'lastConsultation_asc' | 'inboundPath_asc'>(
+        () => (sessionStorage.getItem('lm_sortOrder') as any) || 'createdAt_desc'
+    );
 
     // Quick Filter for "New" cases
-    const [showNewOnly, setShowNewOnly] = useState(false);
+    const [showNewOnly, setShowNewOnly] = useState(() => sessionStorage.getItem('lm_showNewOnly') === 'true');
+
+    // Persistence Effect
+    useEffect(() => {
+        sessionStorage.setItem('lm_search', search);
+        sessionStorage.setItem('lm_statusFilter', statusFilter);
+        sessionStorage.setItem('lm_inboundPathFilter', inboundPathFilter);
+        sessionStorage.setItem('lm_partnerFilter', partnerFilter);
+        sessionStorage.setItem('lm_dateFilterStart', dateFilterStart);
+        sessionStorage.setItem('lm_dateFilterEnd', dateFilterEnd);
+        sessionStorage.setItem('lm_sortOrder', sortOrder);
+        sessionStorage.setItem('lm_showNewOnly', String(showNewOnly));
+    }, [search, statusFilter, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly]);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);

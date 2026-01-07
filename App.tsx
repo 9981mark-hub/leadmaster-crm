@@ -15,7 +15,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useToast } from './contexts/ToastContext'; // Import hook
-import { fetchNewLeads } from './services/api'; // Import api
+
 
 // *** 중요: Google Cloud Console에서 발급받은 실제 Client ID로 교체해야 합니다 ***
 // 예: "1234567890-abcdefg.apps.googleusercontent.com"
@@ -47,32 +47,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const path = location.pathname;
   const { theme, toggleTheme } = useTheme();
   /* 
-    Poling Logic with imported hooks 
+    Poling Logic removed (handled in CaseList now)
   */
-  const { showToast } = useToast();
-  const [newLeadsCount, setNewLeadsCount] = React.useState(0);
 
-  React.useEffect(() => {
-    // Polling for new leads
-    const pollLeads = async () => {
-      try {
-        const newLeads = await fetchNewLeads();
-        if (newLeads.length > 0) {
-          setNewLeadsCount(prev => prev + newLeads.length);
-          showToast(`새로운 리드 ${newLeads.length}건이 도착했습니다!`, 'success');
-        }
-      } catch (e) {
-        console.error("Polling error", e);
-      }
-    };
-
-    const interval = setInterval(pollLeads, 15000); // Check every 15 sec for demo
-    return () => clearInterval(interval);
-  }, [showToast]);
 
   const navs = [
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
-    { to: '/cases', icon: Users, label: '케이스', badge: newLeadsCount > 0 ? newLeadsCount : undefined },
+    { to: '/cases', icon: Users, label: '케이스' },
     { to: '/new', icon: PlusCircle, label: '신규등록' },
     { to: '/settlement', icon: Calculator, label: '정산' },
     { to: '/settings', icon: Settings, label: '설정' },
