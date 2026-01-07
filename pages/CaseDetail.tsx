@@ -1200,7 +1200,7 @@ export default function CaseDetail() {
                                             <Input label="집 시세(만원)" type="number" value={c.ownHousePrice} onChange={(v: any) => handleUpdate('ownHousePrice', v)} />
                                             <Input label="집 담보 대출(만원)" type="number" value={c.ownHouseLoan} onChange={(v: any) => handleUpdate('ownHouseLoan', v)} />
                                         </div>
-                                        <Select label="집 명의자" value={c.ownHouseOwner} onChange={(v: any) => handleUpdate('ownHouseOwner', v)} options={['본인', '배우자']} />
+                                        <Select label="집 명의자" value={c.ownHouseOwner} onChange={(v: any) => handleUpdate('ownHouseOwner', v)} options={['본인', '배우자', '배우자 공동명의']} />
                                     </>
                                 ) : c.housingType === '무상거주' ? (
                                     <>

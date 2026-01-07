@@ -552,7 +552,7 @@ export default function NewCase() {
                   <div className="mb-2">
                     <input
                       type="text"
-                      placeholder="임대보증금 (전세/월세 보증금 - 채무성격) (만원)"
+                      placeholder="전세금액 (만원)"
                       className="w-full p-2 border rounded text-sm bg-orange-50 border-orange-200"
                       value={newAsset.rentDeposit === 0 ? '' : newAsset.rentDeposit}
                       onChange={e => {
