@@ -1,4 +1,4 @@
-$Url = "https://script.google.com/macros/s/AKfycbw0fM3P6oa2eL9aJorCsbS3sNyRZ8hzBzGccOvoJNGTXgy-Wdo1rhxUkgqyPkRty8HUlg/exec"
+$Url = "https://script.google.com/macros/s/AKfycbykR5IcbHJrbVprABpTTHvDJz4uBgg0qzPIdHaQKBmrakpSU37VxXKYY9VME8ZaTofa7Q/exec"
 
 # 1. Regression Check (Get Leads)
 Write-Host "Checking 'leads' target (Regression Test)..."
