@@ -81,6 +81,21 @@ export const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ src, fileN
         setIsPlaying(false);
     };
 
+    const isDriveUrl = src.includes('drive.google.com');
+
+    // Helper to convert to preview URL if needed
+    const getPreviewUrl = (url: string) => {
+        if (!url.includes('drive.google.com')) return url;
+        let id = '';
+        const match1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (match1) id = match1[1];
+        else {
+            const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (match2) id = match2[1];
+        }
+        return id ? `https://drive.google.com/file/d/${id}/preview` : url;
+    };
+
     return (
         <div className="bg-white rounded-xl shadow-lg border border-purple-100 p-4 w-full">
             {/* Header: Filename & Icon */}
@@ -93,84 +108,93 @@ export const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ src, fileN
                 </span>
             </div>
 
-            {/* Audio Element (Hidden) */}
-            <audio
-                ref={audioRef}
-                src={src}
-                onTimeUpdate={handleTimeUpdate}
-                onLoadedMetadata={handleLoadedMetadata}
-                onEnded={() => setIsPlaying(false)}
-                onError={handleError}
-            />
-
-            {error ? (
-                <div className="bg-red-50 text-red-600 text-xs p-3 rounded flex items-center justify-between">
-                    <span className="flex items-center gap-1">
-                        <AlertCircle size={14} /> 재생할 수 없는 파일입니다.
-                    </span>
-                    <a
-                        href={src}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline font-bold"
-                    >
-                        직접 열기
-                    </a>
+            {isDriveUrl ? (
+                /* Google Drive Iframe Fallback */
+                <div className="flex flex-col gap-2">
+                    <div className="relative w-full h-[100px] bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                        <iframe
+                            src={getPreviewUrl(src)}
+                            className="w-full h-full border-none"
+                            title="Audio Preview"
+                            allow="autoplay"
+                        />
+                    </div>
+                    <div className="flex justify-end items-center gap-2">
+                        <span className="text-[10px] text-gray-400">
+                            * 구글 드라이브 보안 정책으로 표준 플레이어를 사용합니다.
+                        </span>
+                        <a
+                            href={src}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded font-bold hover:bg-purple-100 transition-colors"
+                        >
+                            새 창에서 열기
+                        </a>
+                    </div>
                 </div>
             ) : (
+                /* Standard Custom Player (for local files) */
                 <>
-                    {/* Controls & Progress */}
-                    <div className="space-y-3">
-                        {/* Progress Bar */}
-                        <div className="relative group">
-                            <input
-                                type="range"
-                                min={0}
-                                max={duration || 100}
-                                value={currentTime}
-                                onChange={handleSeek}
-                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600 hover:h-2 transition-all"
-                                style={{
-                                    background: `linear-gradient(to right, #9333ea ${(currentTime / (duration || 1)) * 100}%, #e5e7eb ${(currentTime / (duration || 1)) * 100}%)`
-                                }}
-                            />
-                            <div className="flex justify-between text-[10px] text-gray-400 font-mono mt-1">
-                                <span>{formatTime(currentTime)}</span>
-                                <span>{formatTime(duration)}</span>
+                    {/* Audio Element (Hidden) */}
+                    <audio
+                        ref={audioRef}
+                        src={src}
+                        onTimeUpdate={handleTimeUpdate}
+                        onLoadedMetadata={handleLoadedMetadata}
+                        onEnded={() => setIsPlaying(false)}
+                        onError={handleError}
+                    />
+
+                    {error ? (
+                        <div className="bg-red-50 text-red-600 text-xs p-3 rounded flex items-center justify-between">
+                            <span className="flex items-center gap-1">
+                                <AlertCircle size={14} /> 재생할 수 없는 파일입니다.
+                            </span>
+                            <a
+                                href={src}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline font-bold"
+                            >
+                                직접 열기
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {/* Progress Bar */}
+                            <div className="relative group">
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={duration || 100}
+                                    value={currentTime}
+                                    onChange={handleSeek}
+                                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600 hover:h-2 transition-all"
+                                    style={{
+                                        background: `linear-gradient(to right, #9333ea ${(currentTime / (duration || 1)) * 100}%, #e5e7eb ${(currentTime / (duration || 1)) * 100}%)`
+                                    }}
+                                />
+                                <div className="flex justify-between text-[10px] text-gray-400 font-mono mt-1">
+                                    <span>{formatTime(currentTime)}</span>
+                                    <span>{formatTime(duration)}</span>
+                                </div>
+                            </div>
+
+                            {/* Control Buttons */}
+                            <div className="flex justify-center items-center gap-6">
+                                <button onClick={() => skip(-10)} className="text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full" title="10초 뒤로">
+                                    <RotateCcw size={20} />
+                                </button>
+                                <button onClick={togglePlay} className="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-purple-700 hover:scale-105 transition-all">
+                                    {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
+                                </button>
+                                <button onClick={() => skip(30)} className="text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full" title="30초 앞으로">
+                                    <RotateCw size={20} />
+                                </button>
                             </div>
                         </div>
-
-                        {/* Control Buttons */}
-                        <div className="flex justify-center items-center gap-6">
-                            {/* Skip Back 10s */}
-                            <button
-                                onClick={() => skip(-10)}
-                                className="text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full"
-                                title="10초 뒤로"
-                            >
-                                <RotateCcw size={20} />
-                                <span className="sr-only">10초 뒤로</span>
-                            </button>
-
-                            {/* Play/Pause Main Button */}
-                            <button
-                                onClick={togglePlay}
-                                className="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-purple-700 hover:scale-105 transition-all"
-                            >
-                                {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
-                            </button>
-
-                            {/* Skip Forward 30s */}
-                            <button
-                                onClick={() => skip(30)}
-                                className="text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full"
-                                title="30초 앞으로"
-                            >
-                                <RotateCw size={20} />
-                                <span className="sr-only">30초 앞으로</span>
-                            </button>
-                        </div>
-                    </div>
+                    )}
                 </>
             )}
         </div>
