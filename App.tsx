@@ -15,6 +15,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useToast } from './contexts/ToastContext'; // Import hook
+import { ReminderProvider } from './contexts/ReminderContext';
+import ReminderNotificationContainer from './components/ReminderNotificationContainer';
 
 
 // *** 중요: Google Cloud Console에서 발급받은 실제 Client ID로 교체해야 합니다 ***
@@ -127,16 +129,19 @@ export default function App() {
         <ToastProvider>
           <ThemeProvider>
             <AuthProvider>
-              <Suspense fallback={
-                <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-                  <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-                </div>
-              }>
-                <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/*" element={<ProtectedRoutes />} />
-                </Routes>
-              </Suspense>
+              <ReminderProvider>
+                <Suspense fallback={
+                  <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+                    <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                  </div>
+                }>
+                  <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/*" element={<ProtectedRoutes />} />
+                  </Routes>
+                  <ReminderNotificationContainer />
+                </Suspense>
+              </ReminderProvider>
             </AuthProvider>
           </ThemeProvider>
         </ToastProvider>
