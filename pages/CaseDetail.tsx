@@ -7,7 +7,7 @@ import { ChevronLeft, Save, Plus, Trash2, Phone, MessageSquare, AlertTriangle, C
 import { format } from 'date-fns';
 import { formatPhone, MANAGER_NAME, CASE_TYPES, JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_OWNERS, ASSET_TYPES, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS, AVAILABLE_FIELDS_CONFIG, formatMoney, DEFAULT_AI_PROMPT, STATUS_COLOR_MAP } from '../constants';
 import { useToast } from '../contexts/ToastContext';
-import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64, convertToPlayableUrl } from '../utils';
+import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64, convertToPlayableUrl, convertToPreviewUrl } from '../utils';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -427,11 +427,10 @@ export default function CaseDetail() {
     };
 
     const handlePlayRecording = (rec: RecordingItem) => {
-        if (audioPlayerRef.current) {
-            audioPlayerRef.current.src = convertToPlayableUrl(rec.url);
-            audioPlayerRef.current.play();
-            showToast(rec.filename + " 재생을 시작합니다.");
-        }
+        // Just set the URL, the conditional render below will handle the iframe vs audio tag
+        setAudioUrl(rec.url);
+        setCurrentAudioFile(null); // Clear local file selection if playing from list
+        showToast(rec.filename + " 재생을 준비합니다.");
     };
 
     const handleDeleteRecording = (id: string) => {
@@ -919,8 +918,29 @@ export default function CaseDetail() {
 
                             {/* Audio Player for Current or Selected */}
                             <div className="mb-4 bg-white p-3 rounded-lg border border-purple-100">
-                                <audio ref={audioPlayerRef} controls className="w-full h-8 mb-2" src={audioUrl || ''} />
-                                {currentAudioFile && <p className="text-xs text-gray-500">현재 선택된 파일: {currentAudioFile.name}</p>}
+                                {audioUrl && audioUrl.includes('drive.google.com') ? (
+                                    <div className="flex flex-col gap-2">
+                                        <iframe
+                                            src={convertToPreviewUrl(audioUrl)}
+                                            className="w-full h-[100px] border-none rounded overflow-hidden"
+                                            title="Audio Preview"
+                                            allow="autoplay"
+                                        />
+                                        <div className="flex justify-end">
+                                            <a
+                                                href={audioUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-blue-500 hover:underline flex items-center gap-1"
+                                            >
+                                                <Download size={12} /> 원본 다운로드/열기
+                                            </a>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <audio ref={audioPlayerRef} controls className="w-full h-8 mb-2" src={audioUrl || ''} onError={() => showToast('재생할 수 없는 파일 형식입니다.', 'error')} />
+                                )}
+                                {currentAudioFile && <p className="text-xs text-gray-500 mt-1">현재 선택된 파일: {currentAudioFile.name}</p>}
                             </div>
 
                             {/* Recording List (Archive) */}
