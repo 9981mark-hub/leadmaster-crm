@@ -55,13 +55,23 @@ export const formatMoney = (amount: number | undefined) => {
 
 export const formatPhone = (value: string) => {
   if (!value) return value;
-  const phoneNumber = value.replace(/[^\d]/g, "");
-  const phoneNumberLength = phoneNumber.length;
-  if (phoneNumberLength < 4) return phoneNumber;
-  if (phoneNumberLength < 7) {
-    return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3)}`;
+  const clean = value.replace(/[^\d]/g, "");
+
+  // 02 Case (Seoul area code)
+  if (clean.startsWith('02')) {
+    if (clean.length < 3) return clean;
+    if (clean.length < 6) return `${clean.slice(0, 2)}-${clean.slice(2)}`;
+    if (clean.length < 10) return `${clean.slice(0, 2)}-${clean.slice(2, 5)}-${clean.slice(5)}`;
+    // Max 10 digits for 02 (02-1234-5678)
+    return `${clean.slice(0, 2)}-${clean.slice(2, 6)}-${clean.slice(6, 10)}`;
   }
-  return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3, 7)}-${phoneNumber.slice(7, 11)}`;
+
+  // Standard Case (010, 031, etc)
+  if (clean.length < 4) return clean;
+  if (clean.length < 7) return `${clean.slice(0, 3)}-${clean.slice(3)}`;
+  if (clean.length < 11) return `${clean.slice(0, 3)}-${clean.slice(3, 6)}-${clean.slice(6)}`;
+  // Max 11 digits for standard mobile (010-1234-5678)
+  return `${clean.slice(0, 3)}-${clean.slice(3, 7)}-${clean.slice(7, 11)}`;
 };
 
 export const DEFAULT_SUMMARY_TEMPLATE = `* 담당자 : {{managerName}}
