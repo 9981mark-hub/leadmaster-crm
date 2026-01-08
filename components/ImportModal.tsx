@@ -123,15 +123,22 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 const data = XLSX.utils.sheet_to_json(ws);
 
                 const parsedCases = data.map((row: any) => {
-                    const phone = formatPhoneNumber(row['phone'] || row['연락처'] || '');
+                    // Safe String conversion for inputs that might be numbers in Excel
+                    const rawPhone = String(row['phone'] || row['연락처'] || '');
+                    const rawName = String(row['customerName'] || row['고객명'] || '');
+                    const rawType = String(row['caseType'] || row['유형'] || '개인회생');
+                    const rawPath = String(row['inboundPath'] || row['유입경로'] || '');
+                    const rawPre = String(row['preInfo'] || row['사전정보'] || '');
+
+                    const phone = formatPhoneNumber(rawPhone);
                     const duplicate = checkIsDuplicate(phone, existingCases);
 
                     return {
-                        customerName: row['customerName'] || row['고객명'],
+                        customerName: rawName,
                         phone: phone,
-                        caseType: row['caseType'] || row['유형'] || '개인회생',
-                        inboundPath: row['inboundPath'] || row['유입경로'] || '', // Fixed mapping
-                        preInfo: row['preInfo'] || row['사전정보'] || '',
+                        caseType: rawType,
+                        inboundPath: rawPath,
+                        preInfo: rawPre,
                         isNew: true,
                         isViewed: false, // Ensure it is explicitly unviewed
                         managerName: '미지정', // [Fix] Set as Unassigned so it appears as New to everyone

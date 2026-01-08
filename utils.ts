@@ -132,9 +132,10 @@ export const formatPhoneNumber = (phone: string): string => {
 
 // --- Duplicate Checker ---
 export const checkIsDuplicate = (phone: string, cases: Case[]): Case | undefined => {
+  if (!phone) return undefined;
   const target = normalizePhone(phone);
   if (target.length < 9) return undefined; // Too short to be valid
-  return cases.find(c => normalizePhone(c.phone) === target);
+  return cases.find(c => c.phone && normalizePhone(c.phone) === target);
 };
 
 // --- Money Formatter: 25000 -> 2억 5,000만원 ---
