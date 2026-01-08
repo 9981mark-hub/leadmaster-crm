@@ -116,8 +116,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         const reader = new FileReader();
         reader.onload = (evt) => {
             try {
-                const bstr = evt.target?.result;
-                const wb = XLSX.read(bstr, { type: 'binary' });
+                const arrayBuffer = evt.target?.result;
+                const wb = XLSX.read(arrayBuffer, { type: 'array' });
                 const wsname = wb.SheetNames[0];
                 const ws = wb.Sheets[wsname];
                 const data = XLSX.utils.sheet_to_json(ws);
@@ -147,12 +147,13 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 });
 
                 setExcelPreview(parsedCases);
-            } catch (err) {
+            } catch (err: any) {
                 console.error(err);
-                showToast('엑셀 파일 읽기에 실패했습니다.', 'error');
+                if (e.target) e.target.value = ''; // Reset input to allow re-upload
+                showToast(`엑셀 파일 읽기 실패: ${err.message}`, 'error');
             }
         };
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file);
     };
 
     const submitExcel = async () => {
