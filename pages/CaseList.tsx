@@ -12,6 +12,7 @@ import HoverCheckTooltip from '../components/HoverCheckTooltip';
 import { fetchCaseStatusLogs } from '../services/api';
 import { STATUS_COLOR_MAP } from '../constants';
 import { MemoItem, CaseStatusLog } from '../types';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const getNextUpcomingReminder = (reminders?: ReminderItem[]): ReminderItem | null => {
     if (!reminders || reminders.length === 0) return null;
@@ -553,16 +554,18 @@ export default function CaseList() {
 
             </div>
 
-            <ImportModal
-                isOpen={isImportModalOpen}
-                onClose={() => setIsImportModalOpen(false)}
-                onSuccess={() => {
-                    fetchCases().then(setCases); // Refresh list
-                    setCurrentPage(1);
-                }}
-                partners={partners}
-                inboundPaths={inboundPaths}
-            />
+            <ErrorBoundary>
+                <ImportModal
+                    isOpen={isImportModalOpen}
+                    onClose={() => setIsImportModalOpen(false)}
+                    onSuccess={() => {
+                        fetchCases().then(setCases); // Refresh list
+                        setCurrentPage(1);
+                    }}
+                    partners={partners}
+                    inboundPaths={inboundPaths}
+                />
+            </ErrorBoundary>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden min-h-[500px] flex flex-col">
                 {/* Mobile View (Cards) */}
