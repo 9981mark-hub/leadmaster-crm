@@ -221,6 +221,24 @@ const performBackgroundFetch = async () => {
   }
 };
 
+// Helper to safely parse JSON if it's a string, otherwise return as is (or default)
+const safeJsonParse = (value: any, defaultValue: any) => {
+  if (!value) return defaultValue;
+  if (typeof value === 'object') return value; // Already object/array
+  if (typeof value === 'string') {
+    try {
+      // Check if it looks like JSON array or object
+      if (value.trim().startsWith('[') || value.trim().startsWith('{')) {
+        return JSON.parse(value);
+      }
+    } catch (e) {
+      console.warn("Failed to parse JSON field:", value);
+      return defaultValue;
+    }
+  }
+  return defaultValue;
+};
+
 // Helper: Ensure imported data types are correct
 export const processIncomingCase = (c: any): Case => {
   // Ensure arrays/objects are parsed if they came as strings (double safety)
@@ -248,6 +266,9 @@ export const processIncomingCase = (c: any): Case => {
       !(c.deletedAt || c.DeletedAt), // [Fix] Deleted cases are NEVER new
 
     deletedAt: c.deletedAt || c.DeletedAt || undefined, // Map deletedAt
+
+    // [AI Summary] - Ensure it's mapped if backend uses TitleCase
+    aiSummary: c.aiSummary || c.AiSummary || '',
 
     // [Personal]
     customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
@@ -292,16 +313,27 @@ export const processIncomingCase = (c: any): Case => {
     return null as any; // Cast for now, will filter out
   }
 
+  // Safe Parse JSON Fields if they come as strings from Sheet
+  const assets = safeJsonParse(mappedCase.assets || c.Assets, []);
+  const creditLoan = safeJsonParse(mappedCase.creditLoan || c.CreditLoan, []);
+  const specialMemo = safeJsonParse(mappedCase.specialMemo || c.SpecialMemo, []);
+  const reminders = safeJsonParse(mappedCase.reminders || c.Reminders, []);
+  const recordings = safeJsonParse(mappedCase.recordings || c.Recordings, []);
+  const depositHistory = safeJsonParse(mappedCase.depositHistory || c.DepositHistory, []);
+  const statusLogs = safeJsonParse(mappedCase.statusLogs || c.StatusLogs, []);
+  const incomeDetails = safeJsonParse(mappedCase.incomeDetails || c.IncomeDetails, {});
+
   return {
     ...mappedCase,
-    assets: mappedCase.assets || [],
-    creditLoan: mappedCase.creditLoan || [],
-    specialMemo: mappedCase.specialMemo || [],
-    reminders: mappedCase.reminders || [],
-    recordings: mappedCase.recordings || [],
-    incomeDetails: mappedCase.incomeDetails || {},
-    depositHistory: mappedCase.depositHistory || [],
-    statusLogs: mappedCase.statusLogs || [], // [NEW] Map Status Logs
+    assets,
+    creditLoan,
+    specialMemo,
+    reminders,
+    recordings,
+    depositHistory,
+    statusLogs,
+    incomeDetails: typeof incomeDetails === 'object' ? incomeDetails : {}, // Ensure object
+
     // Number safety for remaining fields
     loanMonthlyPay: Number(mappedCase.loanMonthlyPay || c.LoanMonthlyPay) || 0,
     contractFee: Number(mappedCase.contractFee || c.ContractFee) || 0,
