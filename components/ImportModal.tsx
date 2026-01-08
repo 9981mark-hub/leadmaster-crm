@@ -34,14 +34,21 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     // [Fix] Sync defaults when partners/inboundPaths load
     React.useEffect(() => {
-        if (partners.length > 0 && !ocrPartnerId) {
+        if (partners && partners.length > 0 && !ocrPartnerId) {
             setOcrPartnerId(partners[0].partnerId);
             setManualForm(prev => ({ ...prev, partnerId: partners[0].partnerId }));
         }
-        if (inboundPaths.length > 0 && !manualForm.inboundPath) {
+        if (inboundPaths && inboundPaths.length > 0 && !manualForm.inboundPath) {
             setManualForm(prev => ({ ...prev, inboundPath: inboundPaths[0] }));
         }
     }, [partners, inboundPaths]);
+
+    if (!isOpen) return null;
+
+    // Safety check for critical resources
+    if (!partners || !inboundPaths) {
+        return null; // or loading spinner
+    }
 
     // Excel State
     const [excelPreview, setExcelPreview] = useState<(Partial<Case> & { duplicateInfo?: Case })[]>([]);
