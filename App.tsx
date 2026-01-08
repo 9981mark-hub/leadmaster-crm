@@ -17,6 +17,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useToast } from './contexts/ToastContext'; // Import hook
 import { ReminderProvider } from './contexts/ReminderContext';
 import ReminderNotificationContainer from './components/ReminderNotificationContainer';
+import NewCasePopup from './components/NewCasePopup';
 
 
 // *** 중요: Google Cloud Console에서 발급받은 실제 Client ID로 교체해야 합니다 ***
@@ -140,6 +141,7 @@ export default function App() {
                     <Route path="/*" element={<ProtectedRoutes />} />
                   </Routes>
                   <ReminderNotificationContainer />
+                  <NewCasePopup />
                 </Suspense>
               </ReminderProvider>
             </AuthProvider>

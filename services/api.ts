@@ -238,7 +238,10 @@ export const processIncomingCase = (c: any): Case => {
     // [Status Logic]
     isViewed: !!(c.isViewed || c.IsViewed || c.is_viewed), // Map from server/sheet
     // isNew now depends on status and the server-synced isViewed flag
-    isNew: (c.status || c.Status || '신규접수') === '신규접수' && !(c.isViewed || c.IsViewed || c.is_viewed),
+    // [Fix] If I am the manager, I shouldn't see it as "New"
+    isNew: (c.status || c.Status || '신규접수') === '신규접수' &&
+      !(c.isViewed || c.IsViewed || c.is_viewed) &&
+      (c.managerName || c.ManagerName) !== (localStorage.getItem('managerName') || 'Mark'),
 
     // [Personal]
     customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',

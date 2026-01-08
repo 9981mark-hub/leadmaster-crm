@@ -340,7 +340,7 @@ export default function CaseList() {
                         </div>
                         <div>
                             <h3 className="font-bold text-red-800">새로운 접수 건이 {newCaseCount}건 있습니다!</h3>
-                            <p className="text-sm text-red-600">신규 등록된 케이스를 확인하고 상담을 진행해주세요.</p>
+                            <p className="text-sm text-red-600">신규 등록된 케이스를 <br className="block md:hidden" />확인하고 상담을 진행해주세요.</p>
                         </div>
                     </div>
                     <button
@@ -475,11 +475,18 @@ export default function CaseList() {
                         </select>
                         <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                     </div>
+                    {/* Mobile Only Upload Button (Integrated in Filters) */}
+                    <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="md:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm h-[38px] w-[38px]"
+                    >
+                        <Upload size={18} />
+                    </button>
                 </div>
 
                 <button
                     onClick={() => setIsImportModalOpen(true)}
-                    className="flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                    className="hidden md:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                 >
                     <Upload size={18} />
                 </button>
@@ -771,6 +778,6 @@ export default function CaseList() {
 
 
             </div>
-        </div>
+        </div >
     );
 }
