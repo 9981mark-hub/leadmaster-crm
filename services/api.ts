@@ -167,6 +167,9 @@ export const initializeData = async () => {
   // 3. Trigger Background Fetch (Revalidate)
   // We don't await this, ensuring the UI renders immediately with cached data
   performBackgroundFetch();
+
+  // [NEW] Run Recycle Bin Cleanup
+  cleanupRecycleBin();
 };
 
 export const refreshData = async () => {
@@ -242,6 +245,8 @@ export const processIncomingCase = (c: any): Case => {
     isNew: (c.status || c.Status || '신규접수') === '신규접수' &&
       !(c.isViewed || c.IsViewed || c.is_viewed) &&
       (c.managerName || c.ManagerName) !== (localStorage.getItem('managerName') || 'Mark'),
+
+    deletedAt: c.deletedAt || c.DeletedAt || undefined, // Map deletedAt
 
     // [Personal]
     customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
@@ -502,10 +507,52 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
   return updated;
 };
 
-export const deleteCase = async (caseId: string): Promise<Case[]> => {
-  localCases = localCases.filter(c => c.caseId !== caseId);
-  syncToSheet({ target: 'leads', action: 'delete', data: { id: caseId } });
+export const deleteCase = async (caseId: string, force: boolean = false): Promise<Case[]> => {
+  if (force) {
+    // Hard Delete
+    localCases = localCases.filter(c => c.caseId !== caseId);
+    syncToSheet({ target: 'leads', action: 'delete', data: { id: caseId } });
+  } else {
+    // Soft Delete
+    const idx = localCases.findIndex(c => c.caseId === caseId);
+    if (idx > -1) {
+      localCases[idx].deletedAt = new Date().toISOString();
+      // Sync update (we use 'update' action, effectively patching the item)
+      syncToSheet({ target: 'leads', action: 'update', data: { caseId, deletedAt: localCases[idx].deletedAt } });
+    }
+  }
   return [...localCases];
+};
+
+export const restoreCase = async (caseId: string): Promise<Case[]> => {
+  const idx = localCases.findIndex(c => c.caseId === caseId);
+  if (idx > -1) {
+    localCases[idx].deletedAt = undefined;
+    // Sync update to remove deletedAt
+    syncToSheet({ target: 'leads', action: 'update', data: { caseId, deletedAt: '' } }); // Sending empty string or null to clear
+  }
+  return [...localCases];
+};
+
+// [NEW] Auto-Cleanup of old deleted items (older than 30 days)
+export const cleanupRecycleBin = async () => {
+  if (!localCases || localCases.length === 0) return;
+
+  const now = new Date();
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+  const casesToDelete = localCases.filter(c => {
+    if (!c.deletedAt) return false;
+    const deletedDate = new Date(c.deletedAt);
+    return (now.getTime() - deletedDate.getTime()) > THIRTY_DAYS_MS;
+  });
+
+  if (casesToDelete.length > 0) {
+    console.log(`Auto-deleting ${casesToDelete.length} items from Recycle Bin.`);
+    casesToDelete.forEach(c => {
+      deleteCase(c.caseId, true); // Force delete
+    });
+  }
 };
 
 // --- Sub-Item Manipulators (Memos, Status Logs, etc) ---

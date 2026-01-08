@@ -56,6 +56,7 @@ export interface Case {
   managerName: string;
   isNew?: boolean; // Computed local flag
   isViewed?: boolean; // Added: Syncable flag for "Seen" status across devices
+  deletedAt?: string; // [NEW] Soft Delete Timestamp (ISO)
   _raw?: any; // DEBUG
 
   // New Fields (Request)

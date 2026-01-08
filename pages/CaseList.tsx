@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
 import { Link } from 'react-router-dom';
@@ -61,6 +61,9 @@ export default function CaseList() {
     const [statuses, setStatuses] = useState<CaseStatus[]>([]);
     const [loading, setLoading] = useState(true);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+    // [NEW] Recycle Bin View Mode
+    const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
 
     // Filters & Sort
     // Filters & Sort (Persisted in sessionStorage)
@@ -205,30 +208,55 @@ export default function CaseList() {
     }, [search, statusFilter, inboundPathFilter, partnerFilter, showNewOnly]);
 
     const handleDelete = async (caseId: string, e?: React.MouseEvent) => {
-        // 이벤트 전파 방지 (카드 클릭 등으로 인한 페이지 이동 방지)
         if (e) {
             e.stopPropagation();
             e.preventDefault();
         }
 
-        // 1차 경고
-        if (!window.confirm('정말 이 케이스를 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.')) {
-            return;
+        if (viewMode === 'active') {
+            // Soft Delete Warning
+            if (!window.confirm('이 케이스를 휴지통으로 이동하시겠습니까? (30일 후 자동 삭제됨)')) {
+                return;
+            }
+            try {
+                await deleteCase(caseId); // Soft delete
+                // Locally update to reflect change immediately (hide from active list)
+                setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: new Date().toISOString() } : c));
+                showToast('휴지통으로 이동되었습니다.');
+            } catch (error) {
+                console.error("Delete failed", error);
+                showToast('삭제 중 오류가 발생했습니다.', 'error');
+            }
+        } else {
+            // Hard Delete Warning (Trash Mode)
+            if (!window.confirm('⚠️ [영구 삭제] 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다!')) {
+                return;
+            }
+            try {
+                await deleteCase(caseId, true); // Hard delete
+                setCases(prev => prev.filter(c => c.caseId !== caseId));
+                showToast('영구적으로 삭제되었습니다.');
+            } catch (error) {
+                console.error("Permanent delete failed", error);
+                showToast('삭제 중 오류가 발생했습니다.', 'error');
+            }
         }
+    };
 
-        // 2차 경고
-        if (!window.confirm('⚠️ [최종 경고] 정말로 삭제하시겠습니까? 이 작업은 절대 되돌릴 수 없습니다!')) {
-            return;
+    const handleRestore = async (caseId: string, e?: React.MouseEvent) => {
+        if (e) {
+            e.stopPropagation();
+            e.preventDefault();
         }
+        if (!window.confirm('이 케이스를 복구하시겠습니까?')) return;
 
         try {
-            // 삭제 실행
-            await deleteCase(caseId);
-            setCases(prev => prev.filter(c => c.caseId !== caseId));
-            showToast('케이스가 영구적으로 삭제되었습니다.');
+            await restoreCase(caseId);
+            setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: undefined } : c));
+            showToast('케이스가 복구되었습니다.');
         } catch (error) {
-            console.error("Delete failed", error);
-            showToast('삭제 중 오류가 발생했습니다.', 'error');
+            console.error("Restore failed", error);
+            showToast('복구 중 오류가 발생했습니다.', 'error');
         }
     };
 
@@ -239,7 +267,12 @@ export default function CaseList() {
         const matchesPartner = partnerFilter === '' || c.partnerId === partnerFilter;
         const matchesNew = showNewOnly ? c.isNew : true;
 
-        // Date Filter
+        // [NEW] Recycle Bin Filter
+        const isDeleted = !!c.deletedAt;
+        if (viewMode === 'active' && isDeleted) return false;
+        if (viewMode === 'trash' && !isDeleted) return false;
+
+        // Date Filter (Common Logic)
         let matchesDate = true;
         if (dateFilterStart || dateFilterEnd) {
             const caseDate = parseGenericDate(c.createdAt);
@@ -463,28 +496,59 @@ export default function CaseList() {
 
                     <div className="flex flex-1 min-w-[180px] gap-2">
                         <div className="relative flex-1">
+                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                             <select
-                                className="w-full border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white pl-8 appearance-none"
+                                className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
                                 value={sortOrder}
                                 onChange={e => setSortOrder(e.target.value as any)}
                             >
                                 <option value="createdAt_desc">최신 등록순</option>
-                                <option value="createdAt_asc">과거 등록순</option>
-                                <option value="lastConsultation_desc">최종 상담일순 (최신)</option>
-                                <option value="lastConsultation_asc">최종 상담일순 (과거)</option>
-                                <option value="inboundPath_asc">유입경로순 (가나다)</option>
+                                <option value="createdAt_asc">오래된 순</option>
+                                <option value="lastConsultation_desc">최근 상담순</option>
+                                <option value="lastConsultation_asc">오래된 상담순</option>
+                                <option value="inboundPath_asc">유입경로별</option>
                             </select>
-                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                         </div>
-                        {/* Mobile Only Upload Button (Integrated in Filters) */}
+
                         <button
                             onClick={() => setIsImportModalOpen(true)}
-                            className="md:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm h-[38px] w-[38px] shrink-0"
+                            className="flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
                         >
                             <Upload size={18} />
                         </button>
+
+                        {/* [NEW] Recycle Bin Toggle */}
+                        <button
+                            onClick={() => setViewMode(prev => prev === 'active' ? 'trash' : 'active')}
+                            className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
+                                ? 'bg-red-600 text-white hover:bg-red-700'
+                                : 'bg-white border text-gray-600 hover:bg-gray-50'
+                                }`}
+                            title={viewMode === 'active' ? "휴지통 보기" : "목록으로 돌아가기"}
+                        >
+                            {viewMode === 'trash' ? <ChevronLeft size={18} /> : <Trash2 size={18} />}
+                        </button>
                     </div>
                 </div>
+
+                {/* Recycle Bin Banner */}
+                {viewMode === 'trash' && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-lg">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <Trash2 className="h-5 w-5 text-red-500" />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700 font-bold">
+                                    휴지통 모드입니다.
+                                </p>
+                                <p className="text-xs text-red-600 mt-1">
+                                    삭제된 케이스는 30일 후 자동으로 완전히 삭제됩니다. 복구하거나 영구 삭제할 수 있습니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <button
                     onClick={() => setIsImportModalOpen(true)}
@@ -713,13 +777,32 @@ export default function CaseList() {
                                             ) : '-'}
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            <button
-                                                onClick={(e) => handleDelete(c.caseId, e)}
-                                                className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                title="삭제"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {viewMode === 'trash' ? (
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        onClick={(e) => handleRestore(c.caseId, e)}
+                                                        className="text-green-500 hover:text-green-700 p-1.5 rounded hover:bg-green-50"
+                                                        title="복구"
+                                                    >
+                                                        <Sparkles size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleDelete(c.caseId, e)}
+                                                        className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50"
+                                                        title="영구 삭제"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={(e) => handleDelete(c.caseId, e)}
+                                                    className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    title="삭제"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 );
