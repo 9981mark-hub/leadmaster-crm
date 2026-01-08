@@ -200,9 +200,51 @@ const performBackgroundFetch = async () => {
       if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
     }
 
-    // 2. Process Cases
+    // 2. Process Cases with Smart Merge (Conflict Resolution)
     if (casesData && Array.isArray(casesData)) {
-      localCases = casesData.map(processIncomingCase).filter((c): c is Case => c !== null);
+      const serverCases = casesData.map(processIncomingCase).filter((c): c is Case => c !== null);
+      const serverMap = new Map(serverCases.map(c => [c.caseId, c]));
+
+      const newLocalCases: Case[] = [];
+      const processedIds = new Set<string>();
+
+      // Pass 1: Iterate Local Cases to handle Updates/Pending Creates
+      localCases.forEach(local => {
+        processedIds.add(local.caseId);
+        const server = serverMap.get(local.caseId);
+
+        if (!server) {
+          // Exists Locally, not on Server. Likely a Pending Create. Keep it.
+          newLocalCases.push(local);
+        } else {
+          // Exists on Both. Compare Timestamps.
+          const localTime = new Date(local.updatedAt || 0).getTime();
+          const serverTime = new Date(server.updatedAt || 0).getTime();
+
+          // [Critical Fix] If Local is newer (pending sync), keep Local.
+          // We add a 2-second buffer to ignore minor clock skew, preferring Server if close.
+          // Actually, trusting Local is safer for "User just edited" scenario.
+          if (localTime > serverTime) {
+            console.log(`[Sync] Keeping local version for ${local.customerName} (${local.caseId}) - Local is newer`);
+            newLocalCases.push(local);
+          } else {
+            // Server is newer or equal. Accept Server.
+            newLocalCases.push(server);
+          }
+        }
+      });
+
+      // Pass 2: Add Server-only items (New cases from others)
+      serverCases.forEach(server => {
+        if (!processedIds.has(server.caseId)) {
+          newLocalCases.push(server);
+        }
+      });
+
+      // Sort by CreatedAt Desc (or maintain existing sort?) - CaseList handles sort.
+      // We just ensure data integrity here.
+      localCases = newLocalCases;
+
       syncInboundPaths(localCases);
     } else if (localCases.length === 0) {
       localCases = [...MOCK_CASES];
