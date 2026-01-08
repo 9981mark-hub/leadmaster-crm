@@ -262,7 +262,7 @@ export default function CaseList() {
     };
 
     const filteredCases = cases.filter(c => {
-        const matchesSearch = c.customerName.includes(search) || c.phone.includes(search);
+        const matchesSearch = String(c.customerName || '').includes(search) || String(c.phone || '').includes(search);
         const matchesStatus = statusFilter === '' || c.status === statusFilter;
         const matchesPath = inboundPathFilter === '' || c.inboundPath === inboundPathFilter;
         const matchesPartner = partnerFilter === '' || c.partnerId === partnerFilter;
