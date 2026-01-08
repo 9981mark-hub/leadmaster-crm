@@ -14,17 +14,30 @@ import { CustomAudioPlayer } from '../components/CustomAudioPlayer';
 
 // Reusable Components within CaseDetail
 const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "", readOnly = false }: any) => {
+    // [Fix] Handle number inputs as text to prevent IME mode switching
     const displayValue = type === 'number' && (value === 0 || value === undefined || value === null) ? '' : value;
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        if (type === 'number') {
+            // Allow only numbers
+            if (val === '' || /^[0-9]+$/.test(val)) {
+                onChange(val === '' ? 0 : Number(val));
+            }
+        } else {
+            onChange(val);
+        }
+    };
 
     return (
         <div className="mb-4">
             <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
             <div className="relative">
                 <input
-                    type={type}
+                    type={type === 'number' ? 'text' : type}
                     className={"w-full p-2 border border-blue-300 rounded text-sm outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-1 focus:ring-blue-500')}
                     value={displayValue}
-                    onChange={e => !readOnly && onChange(type === 'number' ? Number(e.target.value) || 0 : e.target.value)}
+                    onChange={!readOnly ? handleInputChange : undefined}
                     onBlur={onBlur}
                     placeholder={placeholder}
                     readOnly={readOnly}
@@ -1133,7 +1146,12 @@ export default function CaseDetail() {
                                 </div>
 
                                 <Input label="이름" value={c.customerName} onChange={(v: any) => handleUpdate('customerName', v)} />
-                                <Input label="연락처" value={c.phone} onChange={(v: any) => handleUpdate('phone', v)} placeholder="010-0000-0000" />
+                                <Input
+                                    label="연락처"
+                                    value={c.phone}
+                                    onChange={(v: any) => handleUpdate('phone', formatPhone(v))}
+                                    placeholder="010-0000-0000"
+                                />
                                 <div className="grid grid-cols-2 gap-2">
                                     <Input
                                         label="출생년도 (2자리)"
