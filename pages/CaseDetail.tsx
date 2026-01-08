@@ -35,6 +35,8 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
             <div className="relative">
                 <input
                     type={type === 'number' ? 'text' : type}
+                    inputMode={type === 'number' ? 'numeric' : undefined}
+                    autoComplete="off"
                     className={"w-full p-2 border border-blue-300 rounded text-sm outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-1 focus:ring-blue-500')}
                     value={displayValue}
                     onChange={!readOnly ? handleInputChange : undefined}
@@ -1295,28 +1297,49 @@ export default function CaseDetail() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 mb-2">
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="numeric"
+                                            autoComplete="off"
                                             placeholder="시세 (만원)"
                                             className="w-full p-1.5 border rounded text-xs"
                                             value={newAsset.amount || ''}
-                                            onChange={e => setNewAsset({ ...newAsset, amount: Number(e.target.value) })}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                if (val === '' || /^[0-9]+$/.test(val)) {
+                                                    setNewAsset({ ...newAsset, amount: val === '' ? 0 : Number(val) });
+                                                }
+                                            }}
                                         />
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="numeric"
+                                            autoComplete="off"
                                             placeholder="담보대출 (만원)"
                                             className="w-full p-1.5 border rounded text-xs"
                                             value={newAsset.loanAmount || ''}
-                                            onChange={e => setNewAsset({ ...newAsset, loanAmount: Number(e.target.value) })}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                if (val === '' || /^[0-9]+$/.test(val)) {
+                                                    setNewAsset({ ...newAsset, loanAmount: val === '' ? 0 : Number(val) });
+                                                }
+                                            }}
                                         />
                                     </div>
                                     {['부동산', '토지'].includes(newAsset.type || '') && (
                                         <div className="mb-2">
                                             <input
-                                                type="number"
+                                                type="text"
+                                                inputMode="numeric"
+                                                autoComplete="off"
                                                 placeholder="전세금액 (만원)"
                                                 className="w-full p-1.5 border rounded text-xs bg-green-50 focus:bg-white"
                                                 value={newAsset.rentDeposit || ''}
-                                                onChange={e => setNewAsset({ ...newAsset, rentDeposit: Number(e.target.value) })}
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    if (val === '' || /^[0-9]+$/.test(val)) {
+                                                        setNewAsset({ ...newAsset, rentDeposit: val === '' ? 0 : Number(val) });
+                                                    }
+                                                }}
                                             />
                                         </div>
                                     )}
@@ -1363,11 +1386,18 @@ export default function CaseDetail() {
                                             onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })}
                                         />
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="numeric"
+                                            autoComplete="off"
                                             placeholder="금액 (만원)"
                                             className="w-full p-1.5 border rounded text-xs"
                                             value={newCreditLoan.amount || ''}
-                                            onChange={e => setNewCreditLoan({ ...newCreditLoan, amount: Number(e.target.value) })}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                if (val === '' || /^[0-9]+$/.test(val)) {
+                                                    setNewCreditLoan({ ...newCreditLoan, amount: val === '' ? 0 : Number(val) });
+                                                }
+                                            }}
                                         />
                                         <button
                                             type="button"
