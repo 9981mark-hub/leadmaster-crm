@@ -26,6 +26,28 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     // [Added] Load all cases for global duplicate check
     const [existingCases, setExistingCases] = useState<Case[]>([]);
 
+    // Excel State
+    const [excelPreview, setExcelPreview] = useState<(Partial<Case> & { duplicateInfo?: Case })[]>([]);
+    const excelInputRef = useRef<HTMLInputElement>(null);
+
+    // OCR State
+    const [ocrFile, setOcrFile] = useState<File | null>(null);
+    const [ocrPreview, setOcrPreview] = useState<Partial<Case> | null>(null);
+    // Initialize with safe check
+    const [ocrPartnerId, setOcrPartnerId] = useState(partners?.[0]?.partnerId || '');
+    const ocrInputRef = useRef<HTMLInputElement>(null);
+
+    // Manual State
+    const [manualForm, setManualForm] = useState<Partial<Case>>({
+        customerName: '',
+        phone: '',
+        partnerId: partners?.[0]?.partnerId || '',
+        inboundPath: inboundPaths?.[0] || '',
+        caseType: '개인회생',
+        preInfo: ''
+    });
+
+    // Effects must be after state declarations
     React.useEffect(() => {
         if (isOpen) {
             fetchCases().then(setExistingCases);
@@ -43,34 +65,13 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         }
     }, [partners, inboundPaths]);
 
+    // Conditional Returns must be AFTER all Hooks
     if (!isOpen) return null;
 
     // Safety check for critical resources
     if (!partners || !inboundPaths) {
-        return null; // or loading spinner
+        return null;
     }
-
-    // Excel State
-    const [excelPreview, setExcelPreview] = useState<(Partial<Case> & { duplicateInfo?: Case })[]>([]);
-    const excelInputRef = useRef<HTMLInputElement>(null);
-
-    // OCR State
-    const [ocrFile, setOcrFile] = useState<File | null>(null);
-    const [ocrPreview, setOcrPreview] = useState<Partial<Case> | null>(null);
-    const [ocrPartnerId, setOcrPartnerId] = useState(partners[0]?.partnerId || '');
-    const ocrInputRef = useRef<HTMLInputElement>(null);
-
-    // Manual State
-    const [manualForm, setManualForm] = useState<Partial<Case>>({
-        customerName: '',
-        phone: '',
-        partnerId: partners[0]?.partnerId || '',
-        inboundPath: inboundPaths[0] || '',
-        caseType: '개인회생',
-        preInfo: ''
-    });
-
-    if (!isOpen) return null;
 
     // --- Excel Logic ---
     const handleDownloadTemplate = () => {
