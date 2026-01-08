@@ -103,7 +103,10 @@ export const normalizeBirthYear = (input: string): string => {
 };
 
 // --- Phone Number Formatter: 01012345678 -> 010-1234-5678 ---
-export const normalizePhone = (phone: string) => phone.replace(/[^0-9]/g, '');
+export const normalizePhone = (phone: any) => {
+  if (!phone) return '';
+  return String(phone).replace(/[^0-9]/g, '');
+};
 
 export const formatPhoneNumber = (phone: string): string => {
   if (!phone) return '';

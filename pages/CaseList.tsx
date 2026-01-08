@@ -512,7 +512,11 @@ export default function CaseList() {
                         </div>
 
                         <button
-                            onClick={() => setIsImportModalOpen(true)}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setIsImportModalOpen(true);
+                            }}
                             className="flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
                         >
                             <Upload size={18} />
