@@ -34,7 +34,7 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
             <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
             <div className="relative">
                 <input
-                    type={type === 'number' ? 'tel' : type}
+                    type={type === 'number' ? 'text' : type}
                     autoComplete="off"
                     className={"w-full p-2 border border-blue-300 rounded text-sm outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-1 focus:ring-blue-500')}
                     value={displayValue}
@@ -1296,7 +1296,7 @@ export default function CaseDetail() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 mb-2">
                                         <input
-                                            type="tel"
+                                            type="text"
                                             autoComplete="off"
                                             placeholder="시세 (만원)"
                                             className="w-full p-1.5 border rounded text-xs"
@@ -1309,7 +1309,7 @@ export default function CaseDetail() {
                                             }}
                                         />
                                         <input
-                                            type="tel"
+                                            type="text"
                                             autoComplete="off"
                                             placeholder="담보대출 (만원)"
                                             className="w-full p-1.5 border rounded text-xs"
@@ -1325,7 +1325,7 @@ export default function CaseDetail() {
                                     {['부동산', '토지'].includes(newAsset.type || '') && (
                                         <div className="mb-2">
                                             <input
-                                                type="tel"
+                                                type="text"
                                                 autoComplete="off"
                                                 placeholder="전세금액 (만원)"
                                                 className="w-full p-1.5 border rounded text-xs bg-green-50 focus:bg-white"
@@ -1382,7 +1382,7 @@ export default function CaseDetail() {
                                             onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })}
                                         />
                                         <input
-                                            type="tel"
+                                            type="text"
                                             autoComplete="off"
                                             placeholder="금액 (만원)"
                                             className="w-full p-1.5 border rounded text-xs"
