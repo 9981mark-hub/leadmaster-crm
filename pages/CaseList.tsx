@@ -222,7 +222,7 @@ export default function CaseList() {
             try {
                 await deleteCase(caseId); // Soft delete
                 // Locally update to reflect change immediately (hide from active list)
-                setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: new Date().toISOString() } : c));
+                setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: new Date().toISOString(), status: '휴지통' } : c));
                 showToast('휴지통으로 이동되었습니다.');
             } catch (error) {
                 console.error("Delete failed", error);
@@ -253,7 +253,7 @@ export default function CaseList() {
 
         try {
             await restoreCase(caseId);
-            setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: undefined } : c));
+            setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: undefined, status: '신규접수' } : c));
             showToast('케이스가 복구되었습니다.');
         } catch (error) {
             console.error("Restore failed", error);
@@ -268,8 +268,8 @@ export default function CaseList() {
         const matchesPartner = partnerFilter === '' || c.partnerId === partnerFilter;
         const matchesNew = showNewOnly ? c.isNew : true;
 
-        // [NEW] Recycle Bin Filter
-        const isDeleted = !!c.deletedAt;
+        // [NEW] Recycle Bin Filter (Refactored for Status-based Trash)
+        const isDeleted = c.status === '휴지통' || !!c.deletedAt;
         if (viewMode === 'active' && isDeleted) return false;
         if (viewMode === 'trash' && !isDeleted) return false;
 

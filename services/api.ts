@@ -529,6 +529,8 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
     const idx = localCases.findIndex(c => c.caseId === caseId);
     if (idx > -1) {
       localCases[idx].deletedAt = new Date().toISOString();
+      localCases[idx].status = '휴지통'; // [Refactor] Use Status for reliable Trash
+
       // Sync update (we use 'update' action, effectively patching the item)
       syncToSheet({
         target: 'leads',
@@ -536,9 +538,9 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
         data: {
           caseId,
           deletedAt: localCases[idx].deletedAt,
+          status: '휴지통', // [Refactor] Sync Status
           customerName: localCases[idx].customerName, // [Fix] Send Name to prevent Ghost Row
-          phone: localCases[idx].phone,
-          status: localCases[idx].status
+          phone: localCases[idx].phone
         }
       });
     }
@@ -550,8 +552,18 @@ export const restoreCase = async (caseId: string): Promise<Case[]> => {
   const idx = localCases.findIndex(c => c.caseId === caseId);
   if (idx > -1) {
     localCases[idx].deletedAt = undefined;
-    // Sync update to remove deletedAt
-    syncToSheet({ target: 'leads', action: 'update', data: { caseId, deletedAt: '' } }); // Sending empty string or null to clear
+    localCases[idx].status = '신규접수'; // [Refactor] Restore to New
+
+    // Sync update
+    syncToSheet({
+      target: 'leads',
+      action: 'update',
+      data: {
+        caseId,
+        deletedAt: '',
+        status: '신규접수'
+      }
+    });
   }
   return [...localCases];
 };
@@ -564,9 +576,12 @@ export const cleanupRecycleBin = async () => {
   const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
   const casesToDelete = localCases.filter(c => {
-    if (!c.deletedAt) return false;
-    const deletedDate = new Date(c.deletedAt);
-    return (now.getTime() - deletedDate.getTime()) > THIRTY_DAYS_MS;
+    // Check either deletedAt OR status '휴지통' for robustness
+    if (c.status !== '휴지통' && !c.deletedAt) return false;
+
+    // Use deletedAt if available, otherwise fallback to updatedAt (when it was moved to trash)
+    const refDate = c.deletedAt ? new Date(c.deletedAt) : new Date(c.updatedAt);
+    return (now.getTime() - refDate.getTime()) > THIRTY_DAYS_MS;
   });
 
   if (casesToDelete.length > 0) {
