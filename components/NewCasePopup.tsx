@@ -103,11 +103,16 @@ const NewCasePopup: React.FC = () => {
                 <div className="flex gap-2">
                     <button
                         onClick={() => {
-                            if (newCases.length === 1) {
-                                navigate(`/case/${newCases[0].caseId}`);
-                            } else {
-                                navigate('/cases');
-                            }
+                            // [Fix] Always go to Case List with "New Only" filter active
+                            // This matches the behavior of the top banner in CaseList
+                            sessionStorage.setItem('lm_showNewOnly', 'true');
+
+                            // Force a storage event dispatch or just navigate (CaseList reads on mount)
+                            // Since we might already be on /cases, we might need to force a re-render if we were already there.
+                            // But usually navigation to same route with state change is fine.
+                            // Ideally, we just set storage and go.
+                            window.dispatchEvent(new Event('storage')); // Optional, if we want to react immediately if on same page
+                            navigate('/cases');
                             setVisible(false);
                         }}
                         className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded font-bold text-sm flex items-center justify-center gap-1 transition-colors"
