@@ -47,6 +47,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         preInfo: ''
     });
 
+    // Manual Duplicate Check State (Moved from line 269)
+    const [manualDuplicate, setManualDuplicate] = useState<Case | undefined>(undefined);
+
     // Effects must be after state declarations
     React.useEffect(() => {
         if (isOpen) {
@@ -266,7 +269,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
 
     // --- Manual Logic ---
-    const [manualDuplicate, setManualDuplicate] = useState<Case | undefined>(undefined);
+
 
     const handleManualChange = (field: string, value: string) => {
         if (field === 'phone') {
