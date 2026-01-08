@@ -70,7 +70,17 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     // Safety check for critical resources
     if (!partners || !Array.isArray(partners) || !inboundPaths || !Array.isArray(inboundPaths)) {
-        return null;
+        return (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4">
+                    <Loader2 className="animate-spin text-blue-600" size={32} />
+                    <p className="text-gray-600 font-medium">기초 데이터를 불러오는 중입니다...</p>
+                    <button onClick={onClose} className="text-sm text-gray-400 hover:text-gray-600 underline">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     // --- Excel Logic ---
