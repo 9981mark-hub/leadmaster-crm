@@ -69,7 +69,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     if (!isOpen) return null;
 
     // Safety check for critical resources
-    if (!partners || !inboundPaths) {
+    if (!partners || !Array.isArray(partners) || !inboundPaths || !Array.isArray(inboundPaths)) {
         return null;
     }
 

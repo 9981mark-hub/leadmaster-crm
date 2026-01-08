@@ -432,7 +432,7 @@ export default function CaseList() {
                 <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">총 {totalItems}건</span>
             </div>
 
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="flex flex-col xl:flex-row justify-start items-start xl:items-center gap-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                 <div className="relative w-full xl:w-auto">
                     <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
                     <input
@@ -494,7 +494,7 @@ export default function CaseList() {
                         {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
 
-                    <div className="flex flex-1 min-w-[160px] gap-1">
+                    <div className="flex flex-1 min-w-[200px] gap-1">
                         <div className="relative flex-1">
                             <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                             <select
