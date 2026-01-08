@@ -148,7 +148,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
             // Note: You need a valid API key in environment variables or hardcoded constants for demo
             // Assuming GOOGLE_API_KEY is available via import.meta.env or similar, or prompt user.
             // For this demo, I will assume the key is available or throw a clear error.
-            const apiKey = process.env.GEMINI_API_KEY;
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (window as any).GEMINI_API_KEY;
             if (!apiKey) {
                 throw new Error("Google API Key Missing");
             }

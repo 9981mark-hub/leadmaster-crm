@@ -550,12 +550,7 @@ export default function CaseList() {
                     </div>
                 )}
 
-                <button
-                    onClick={() => setIsImportModalOpen(true)}
-                    className="hidden md:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                >
-                    <Upload size={18} />
-                </button>
+
             </div>
 
             <ImportModal
