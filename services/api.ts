@@ -85,6 +85,7 @@ export const markCaseAsSeen = async (caseId: string) => {
     // We update just this field. Note: In a real DB we would patch. 
     // Here we use updateCase which sends the full object, which is fine.
     await updateCase(caseId, { isViewed: true });
+    // saveToStorage(); // updateCase already saves
     notifyListeners();
   }
 };
@@ -563,6 +564,7 @@ export const createCase = async (newCase: Partial<Case>): Promise<Case> => {
   };
 
   syncToSheet({ target: 'leads', action: 'create', data: payload });
+  saveToStorage(); // [Fix] Persist immediately
 
   return c;
 };
@@ -589,6 +591,7 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
   };
 
   syncToSheet({ target: 'leads', action: 'update', data: payload });
+  saveToStorage(); // [Fix] Persist immediately to survive refresh
 
   return updated;
 };
@@ -619,6 +622,7 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
       });
     }
   }
+  saveToStorage(); // [Fix] Persist immediately
   return [...localCases];
 };
 
@@ -639,6 +643,7 @@ export const restoreCase = async (caseId: string): Promise<Case[]> => {
       }
     });
   }
+  saveToStorage(); // [Fix] Persist immediately
   return [...localCases];
 };
 
