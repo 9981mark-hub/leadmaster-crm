@@ -244,7 +244,8 @@ export const processIncomingCase = (c: any): Case => {
     // [Fix] If I am the manager, I shouldn't see it as "New"
     isNew: (c.status || c.Status || '신규접수') === '신규접수' &&
       !(c.isViewed || c.IsViewed || c.is_viewed) &&
-      (c.managerName || c.ManagerName) !== (localStorage.getItem('managerName') || 'Mark'),
+      (c.managerName || c.ManagerName) !== (localStorage.getItem('managerName') || 'Mark') &&
+      !(c.deletedAt || c.DeletedAt), // [Fix] Deleted cases are NEVER new
 
     deletedAt: c.deletedAt || c.DeletedAt || undefined, // Map deletedAt
 
