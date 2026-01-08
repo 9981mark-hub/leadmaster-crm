@@ -202,7 +202,7 @@ const performBackgroundFetch = async () => {
 
     // 2. Process Cases
     if (casesData && Array.isArray(casesData)) {
-      localCases = casesData.map(processIncomingCase);
+      localCases = casesData.map(processIncomingCase).filter((c): c is Case => c !== null);
       syncInboundPaths(localCases);
     } else if (localCases.length === 0) {
       localCases = [...MOCK_CASES];
@@ -280,6 +280,17 @@ export const processIncomingCase = (c: any): Case => {
     // DEBUG: Attach Raw Data
     _raw: c
   };
+
+  // [Ghost Case Check]
+  // If name is 'Unknown' (default) AND phone is empty AND not created just now (< 1s diff could be tricky, better use ID check)
+  // Actually, if it has no phone and name is Unknown, it's likely a ghost row from a delete operation.
+  // We double check if it has a valid ID.
+  const isGhost = mappedCase.customerName === 'Unknown' && !mappedCase.phone && mappedCase.caseId;
+
+  if (isGhost) {
+    // console.warn("Ghost case detected and filtered:", mappedCase);
+    return null as any; // Cast for now, will filter out
+  }
 
   return {
     ...mappedCase,
@@ -519,7 +530,17 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
     if (idx > -1) {
       localCases[idx].deletedAt = new Date().toISOString();
       // Sync update (we use 'update' action, effectively patching the item)
-      syncToSheet({ target: 'leads', action: 'update', data: { caseId, deletedAt: localCases[idx].deletedAt } });
+      syncToSheet({
+        target: 'leads',
+        action: 'update',
+        data: {
+          caseId,
+          deletedAt: localCases[idx].deletedAt,
+          customerName: localCases[idx].customerName, // [Fix] Send Name to prevent Ghost Row
+          phone: localCases[idx].phone,
+          status: localCases[idx].status
+        }
+      });
     }
   }
   return [...localCases];

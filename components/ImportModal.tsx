@@ -134,6 +134,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                         preInfo: row['preInfo'] || row['사전정보'] || '',
                         isNew: true,
                         isViewed: false, // Ensure it is explicitly unviewed
+                        managerName: '미지정', // [Fix] Set as Unassigned so it appears as New to everyone
                         duplicateInfo: duplicate
                     };
                 });
@@ -149,10 +150,24 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     const submitExcel = async () => {
         if (excelPreview.length === 0) return;
+
+        // [Feature] Filter Duplicates automatically
+        const validCases = excelPreview.filter(c => !c.duplicateInfo);
+        const skippedCount = excelPreview.length - validCases.length;
+
+        if (validCases.length === 0) {
+            showToast('등록 가능한 신규 연락처가 없습니다.', 'error');
+            return;
+        }
+
         setIsLoading(true);
         try {
-            await batchCreateCases(excelPreview);
-            showToast(`${excelPreview.length}건의 케이스가 등록되었습니다.`);
+            await batchCreateCases(validCases);
+
+            let message = `${validCases.length}건이 등록되었습니다.`;
+            if (skippedCount > 0) message += ` (중복 ${skippedCount}건 제외)`;
+
+            showToast(message);
             onSuccess();
             onClose();
         } catch (e) {
@@ -237,7 +252,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 isViewed: false,
                 caseType: '개인회생', // Default
                 inboundPath: 'OCR업로드',
-                partnerId: ocrPartnerId
+                partnerId: ocrPartnerId,
+                managerName: '미지정' // [Fix] OCR also creates unassigned cases
             });
 
         } catch (e: any) {
