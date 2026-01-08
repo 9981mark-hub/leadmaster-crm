@@ -517,7 +517,7 @@ export default function CaseList() {
                             <Upload size={18} />
                         </button>
 
-                        {/* [NEW] Recycle Bin Toggle */}
+                        {/* [NEW] Recycle Bin Toggle - Trigger Deploy */}
                         <button
                             onClick={() => setViewMode(prev => prev === 'active' ? 'trash' : 'active')}
                             className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
