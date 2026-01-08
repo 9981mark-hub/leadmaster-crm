@@ -461,27 +461,29 @@ export default function CaseList() {
                         {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
 
-                    <div className="relative flex-1 min-w-[180px]">
-                        <select
-                            className="w-full border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white pl-8 appearance-none"
-                            value={sortOrder}
-                            onChange={e => setSortOrder(e.target.value as any)}
+                    <div className="flex flex-1 min-w-[180px] gap-2">
+                        <div className="relative flex-1">
+                            <select
+                                className="w-full border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white pl-8 appearance-none"
+                                value={sortOrder}
+                                onChange={e => setSortOrder(e.target.value as any)}
+                            >
+                                <option value="createdAt_desc">최신 등록순</option>
+                                <option value="createdAt_asc">과거 등록순</option>
+                                <option value="lastConsultation_desc">최종 상담일순 (최신)</option>
+                                <option value="lastConsultation_asc">최종 상담일순 (과거)</option>
+                                <option value="inboundPath_asc">유입경로순 (가나다)</option>
+                            </select>
+                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
+                        </div>
+                        {/* Mobile Only Upload Button (Integrated in Filters) */}
+                        <button
+                            onClick={() => setIsImportModalOpen(true)}
+                            className="md:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm h-[38px] w-[38px] shrink-0"
                         >
-                            <option value="createdAt_desc">최신 등록순</option>
-                            <option value="createdAt_asc">과거 등록순</option>
-                            <option value="lastConsultation_desc">최종 상담일순 (최신)</option>
-                            <option value="lastConsultation_asc">최종 상담일순 (과거)</option>
-                            <option value="inboundPath_asc">유입경로순 (가나다)</option>
-                        </select>
-                        <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
+                            <Upload size={18} />
+                        </button>
                     </div>
-                    {/* Mobile Only Upload Button (Integrated in Filters) */}
-                    <button
-                        onClick={() => setIsImportModalOpen(true)}
-                        className="md:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm h-[38px] w-[38px]"
-                    >
-                        <Upload size={18} />
-                    </button>
                 </div>
 
                 <button
