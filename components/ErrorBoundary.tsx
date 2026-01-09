@@ -28,9 +28,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
     render() {
         if (this.state.hasError) {
+            if (this.props.fallback) {
+                return this.props.fallback;
+            }
             return (
                 <div className="p-4 m-4 bg-red-50 border border-red-200 rounded-lg text-red-900 overflow-auto">
-                    <h2 className="text-lg font-bold mb-2">Something went wrong (Data Error)</h2>
+                    <h2 className="text-lg font-bold mb-2">System Error (Data Crash)</h2>
                     <p className="font-semibold">{this.state.error?.toString()}</p>
                     <details className="mt-2 text-xs font-mono whitespace-pre-wrap">
                         <summary className="cursor-pointer mb-1">Stack Trace</summary>
@@ -40,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         onClick={() => window.location.reload()}
                         className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                     >
-                        Reload Page
+                        기본 화면으로 새로고침
                     </button>
                 </div>
             );
