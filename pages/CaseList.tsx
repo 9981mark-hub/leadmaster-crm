@@ -367,8 +367,12 @@ export default function CaseList() {
         }
 
         // [Tie-Breaker] Use unique Case ID if dates are identical
-        // This prevents "jumping" when dates are exactly the same (common in bulk imports)
-        return a.caseId.localeCompare(b.caseId);
+        // [Fix] Respect sort direction for tie-breaker too
+        if (direction === 'desc') {
+            return b.caseId.localeCompare(a.caseId);
+        } else {
+            return a.caseId.localeCompare(b.caseId);
+        }
     }).map(item => {
         const { _originalIndex, ...rest } = item;
         return rest as Case;
