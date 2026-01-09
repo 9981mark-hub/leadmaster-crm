@@ -605,20 +605,21 @@ export default function CaseList() {
                         </select>
                     </div>
 
-                    <select
-                        className="border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white flex-1 min-w-[90px]"
-                        value={statusFilter}
-                        onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                    >
-                        <option value="">전체 상태</option>
-                        {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                    {/* [Row 4 Mobile] Status + Sort + Trash */}
+                    <div className="flex w-full xl:w-auto gap-1">
+                        <select
+                            className="border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white flex-1 min-w-[80px] text-ellipsis"
+                            value={statusFilter}
+                            onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                        >
+                            <option value="">전체 상태</option>
+                            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
 
-                    <div className="flex flex-1 min-w-[160px] gap-1">
-                        <div className="relative flex-1">
+                        <div className="relative flex-1 min-w-[120px]">
                             <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                             <select
-                                className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
+                                className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none text-ellipsis"
                                 value={sortOrder}
                                 onChange={e => setSortOrder(e.target.value as any)}
                             >
@@ -638,18 +639,17 @@ export default function CaseList() {
                                 e.preventDefault();
                                 setIsImportModalOpen(true);
                             }}
-                            className="flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
+                            className="hidden xl:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
                         >
                             <Upload size={18} />
                         </button>
 
-                        {/* [NEW] Recycle Bin Toggle - Trigger Deploy */}
                         <button
                             onClick={() => setViewMode(prev => prev === 'active' ? 'trash' : 'active')}
-                            className={`flex items - center justify - center p - 2 rounded - lg transition - colors shadow - sm shrink - 0 ${viewMode === 'trash'
+                            className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
                                 ? 'bg-red-600 text-white hover:bg-red-700'
                                 : 'bg-white border text-gray-600 hover:bg-gray-50'
-                                } `}
+                                }`}
                             title={viewMode === 'active' ? "휴지통 보기" : "목록으로 돌아가기"}
                         >
                             {viewMode === 'trash' ? <ChevronLeft size={18} /> : <Trash2 size={18} />}
