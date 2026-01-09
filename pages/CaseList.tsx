@@ -382,13 +382,13 @@ export default function CaseList() {
         if (!c.specialMemo || !Array.isArray(c.specialMemo) || c.specialMemo.length === 0) {
             return c.updatedAt;
         }
-        const sortedMemos = [...c.specialMemo].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        const sortedMemos = [...c.specialMemo].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
         return sortedMemos[0]?.createdAt || c.updatedAt;
     };
 
     const sortedCases = [...filteredCases].map((c, index) => ({ ...c, _originalIndex: index })).sort((a, b) => {
         if (sortOrder === 'inboundPath_asc') {
-            return (a.inboundPath || '').localeCompare(b.inboundPath || '');
+            return String(a.inboundPath || '').localeCompare(String(b.inboundPath || ''));
         }
 
         // [Fix] Force 'isNew' items to the top if sorting by newest registration
@@ -428,9 +428,9 @@ export default function CaseList() {
         // [Tie-Breaker] Use unique Case ID if dates are identical
         // [Fix] Respect sort direction for tie-breaker too
         if (direction === 'desc') {
-            return b.caseId.localeCompare(a.caseId);
+            return String(b.caseId || '').localeCompare(String(a.caseId || ''));
         } else {
-            return a.caseId.localeCompare(b.caseId);
+            return String(a.caseId || '').localeCompare(String(b.caseId || ''));
         }
     }).map(item => {
         const { _originalIndex, ...rest } = item;
