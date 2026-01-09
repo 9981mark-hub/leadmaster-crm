@@ -332,7 +332,7 @@ export const processIncomingCase = (c: any): Case => {
     preInfo: c.preInfo || c.PreInfo || '',
 
     // [Job & Income]
-    jobTypes: typeof c.jobTypes === 'string' ? [c.jobTypes] : (c.JobTypes || c.jobTypes || []),
+    jobTypes: Array.isArray(c.jobTypes || c.JobTypes) ? (c.jobTypes || c.JobTypes) : (typeof (c.jobTypes || c.JobTypes) === 'string' ? [c.jobTypes || c.JobTypes] : []),
     incomeNet: Number(c.incomeNet || c.IncomeNet) || 0,
 
     // [Housing]
@@ -362,13 +362,28 @@ export const processIncomingCase = (c: any): Case => {
   }
 
   // Safe Parse JSON Fields if they come as strings from Sheet
-  const assets = safeJsonParse(mappedCase.assets || c.Assets, []);
-  const creditLoan = safeJsonParse(mappedCase.creditLoan || c.CreditLoan, []);
-  const specialMemo = safeJsonParse(mappedCase.specialMemo || c.SpecialMemo, []);
-  const reminders = safeJsonParse(mappedCase.reminders || c.Reminders, []);
-  const recordings = safeJsonParse(mappedCase.recordings || c.Recordings, []);
-  const depositHistory = safeJsonParse(mappedCase.depositHistory || c.DepositHistory, []);
-  const statusLogs = safeJsonParse(mappedCase.statusLogs || c.StatusLogs, []);
+  // [Fix] Strictly ensure they are Arrays to prevent downstream crashes (.map, .filter)
+  let assets = safeJsonParse(mappedCase.assets || c.Assets, []);
+  if (!Array.isArray(assets)) assets = [];
+
+  let creditLoan = safeJsonParse(mappedCase.creditLoan || c.CreditLoan, []);
+  if (!Array.isArray(creditLoan)) creditLoan = [];
+
+  let specialMemo = safeJsonParse(mappedCase.specialMemo || c.SpecialMemo, []);
+  if (!Array.isArray(specialMemo)) specialMemo = [];
+
+  let reminders = safeJsonParse(mappedCase.reminders || c.Reminders, []);
+  if (!Array.isArray(reminders)) reminders = [];
+
+  let recordings = safeJsonParse(mappedCase.recordings || c.Recordings, []);
+  if (!Array.isArray(recordings)) recordings = [];
+
+  let depositHistory = safeJsonParse(mappedCase.depositHistory || c.DepositHistory, []);
+  if (!Array.isArray(depositHistory)) depositHistory = [];
+
+  let statusLogs = safeJsonParse(mappedCase.statusLogs || c.StatusLogs, []);
+  if (!Array.isArray(statusLogs)) statusLogs = [];
+
   const incomeDetails = safeJsonParse(mappedCase.incomeDetails || c.IncomeDetails, {});
 
   return {
