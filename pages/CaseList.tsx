@@ -87,7 +87,7 @@ export default function CaseList() {
     const [partnerFilter, setPartnerFilter] = useState(() => sessionStorage.getItem('lm_partnerFilter') || '');
     const [dateFilterStart, setDateFilterStart] = useState(() => sessionStorage.getItem('lm_dateFilterStart') || '');
     const [dateFilterEnd, setDateFilterEnd] = useState(() => sessionStorage.getItem('lm_dateFilterEnd') || '');
-    const [sortOrder, setSortOrder] = useState<'createdAt_desc' | 'createdAt_asc' | 'lastConsultation_desc' | 'lastConsultation_asc' | 'inboundPath_asc'>(
+    const [sortOrder, setSortOrder] = useState<'createdAt_desc' | 'createdAt_asc' | 'lastConsultation_desc' | 'lastConsultation_asc' | 'updatedAt_desc' | 'updatedAt_asc' | 'inboundPath_asc'>(
         () => (sessionStorage.getItem('lm_sortOrder') as any) || 'createdAt_desc'
     );
 
@@ -350,6 +350,11 @@ export default function CaseList() {
         if (key === 'lastConsultation') {
             dateA = new Date(getLastConsultationDate(a)).getTime();
             dateB = new Date(getLastConsultationDate(b)).getTime();
+        } else if (key === 'updatedAt') {
+            const dA = parseGenericDate(a.updatedAt);
+            const dB = parseGenericDate(b.updatedAt);
+            dateA = dA ? dA.getTime() : 0;
+            dateB = dB ? dB.getTime() : 0;
         } else { // createdAt
             const dA = parseGenericDate(a.createdAt);
             const dB = parseGenericDate(b.createdAt);
@@ -549,7 +554,9 @@ export default function CaseList() {
                                 onChange={e => setSortOrder(e.target.value as any)}
                             >
                                 <option value="createdAt_desc">최신 등록순</option>
-                                <option value="createdAt_asc">오래된 순</option>
+                                <option value="createdAt_asc">오래된 등록순</option>
+                                <option value="updatedAt_desc">최근 수정순</option>
+                                <option value="updatedAt_asc">오래된 수정순</option>
                                 <option value="lastConsultation_desc">최근 상담순</option>
                                 <option value="lastConsultation_asc">오래된 상담순</option>
                                 <option value="inboundPath_asc">유입경로별</option>
