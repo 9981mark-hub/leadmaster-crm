@@ -904,6 +904,9 @@ export default function CaseList() {
                                                         <PhoneMissed size={10} />
                                                         <span>+{c.missedCallCount || 0}</span>
                                                     </button>
+                                                    <span className="text-[10px] text-gray-500 tracking-tight">
+                                                        {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
+                                                    </span>
                                                 </div>
                                             )}
 
