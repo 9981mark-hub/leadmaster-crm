@@ -353,16 +353,9 @@ export default function CaseList() {
             }
         }
 
-        // [Tie-Breaker] Use original index if dates are identical
-        // Since we unshift new items to index 0, Index 0 is the "Newest".
-        // For 'desc' (Newest first), we want LOWER index (0) to come FIRST.
-        // sort(a,b) < 0 -> a comes first.
-        // a(0) - b(1) = -1. Correct.
-        if (direction === 'desc') {
-            return a._originalIndex - b._originalIndex;
-        } else {
-            return b._originalIndex - a._originalIndex;
-        }
+        // [Tie-Breaker] Use unique Case ID if dates are identical
+        // This prevents "jumping" when dates are exactly the same (common in bulk imports)
+        return a.caseId.localeCompare(b.caseId);
     }).map(item => {
         const { _originalIndex, ...rest } = item;
         return rest as Case;
