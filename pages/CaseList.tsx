@@ -11,7 +11,7 @@ import HoverCheckTooltip from '../components/HoverCheckTooltip';
 import { fetchCaseStatusLogs } from '../services/api';
 import { STATUS_COLOR_MAP } from '../constants';
 import { MemoItem, CaseStatusLog } from '../types';
-import ErrorBoundary from '../components/ErrorBoundary';
+
 
 const getNextUpcomingReminder = (reminders?: ReminderItem[]): ReminderItem | null => {
     if (!reminders || reminders.length === 0) return null;
@@ -664,29 +664,28 @@ export default function CaseList() {
 
             </div>
 
-            <ErrorBoundary>
-                <ImportModal
-                    isOpen={isImportModalOpen}
-                    onClose={() => setIsImportModalOpen(false)}
-                    onSuccess={() => {
-                        fetchCases().then(setCases); // Refresh list
-                        setCurrentPage(1);
-                    }}
-                    partners={partners}
-                    inboundPaths={inboundPaths}
-                />
-            </ErrorBoundary>
+
+            <ImportModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onSuccess={() => {
+                    fetchCases().then(setCases); // Refresh list
+                    setCurrentPage(1);
+                }}
+                partners={partners}
+                inboundPaths={inboundPaths}
+            />
+
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden min-h-[500px] flex flex-col">
-                {/* Mobile View (Cards) */}
                 <div className="md:hidden flex-1">
-                    {currentCases.map(c => {
+                    {currentCases.map((c, index) => {
                         const partner = partners.find(p => p.partnerId === c.partnerId);
                         const warnings = getCaseWarnings(c, partner);
                         const nextReminder = getNextUpcomingReminder(c.reminders);
 
                         return (
-                            <div key={c.caseId} className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 relative group">
+                            <div key={`${c.caseId}_${index}`} className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 relative group">
                                 <div className="absolute top-4 right-4 z-10">
                                     <button
                                         onClick={(e) => handleDelete(c.caseId, e)}
@@ -818,14 +817,14 @@ export default function CaseList() {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentCases.map(c => {
+                            {currentCases.map((c, index) => {
                                 const partner = partners.find(p => p.partnerId === c.partnerId);
                                 const warnings = getCaseWarnings(c, partner);
                                 const lastConsultDate = getLastConsultationDate(c);
                                 const nextReminder = getNextUpcomingReminder(c.reminders);
 
                                 return (
-                                    <tr key={c.caseId} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <tr key={`${c.caseId}_${index}`} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                         <td className="px-4 py-3">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>

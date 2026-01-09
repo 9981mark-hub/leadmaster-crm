@@ -100,8 +100,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-import ErrorBoundary from './components/ErrorBoundary';
-
 const ProtectedRoutes = () => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
@@ -110,18 +108,16 @@ const ProtectedRoutes = () => {
 
   return (
     <Layout>
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/cases" element={<CaseList />} />
-          <Route path="/new" element={<NewCase />} />
-          <Route path="/case/:caseId" element={<CaseDetail />} />
-          <Route path="/settlement" element={<Settlement />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/mypage" element={<MyPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </ErrorBoundary>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/cases" element={<CaseList />} />
+        <Route path="/new" element={<NewCase />} />
+        <Route path="/case/:caseId" element={<CaseDetail />} />
+        <Route path="/settlement" element={<Settlement />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Layout>
   );
 };
