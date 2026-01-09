@@ -170,8 +170,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                         inboundPath: rawPath,
                         preInfo: rawPre,
                         isNew: true,
-                        isViewed: true, // [Fix] Mark as viewed so it doesn't trigger "New Case" notification
-                        managerName: '미지정', // [Fix] Set as Unassigned so it appears as New to everyone
+
+                        isViewed: false, // [Restore] Keep as false so "New UI" (Badge) appears
+                        managerName: localStorage.getItem('managerName') || '미지정', // [Fix] Assign to self to prevent Popup notification
                         duplicateInfo: duplicate
                     };
                 });
@@ -287,11 +288,11 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 phone: parsed.phone,
                 preInfo: parsed.summary,
                 isNew: true,
-                isViewed: true, // [Fix] Mark as viewed so it doesn't trigger "New Case" notification
+                isViewed: false, // [Restore] Keep as false so "New UI" (Badge) appears
                 caseType: '개인회생', // Default
                 inboundPath: 'OCR업로드',
                 partnerId: ocrPartnerId,
-                managerName: '미지정' // [Fix] OCR also creates unassigned cases
+                managerName: localStorage.getItem('managerName') || '미지정' // [Fix] Assign to self to prevent Popup notification
             });
 
         } catch (e: any) {
