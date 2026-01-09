@@ -1,27 +1,27 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React from 'react';
 
-interface Props {
-    children: ReactNode;
-    fallback?: ReactNode;
+interface ErrorBoundaryProps {
+    children: React.ReactNode;
+    fallback?: React.ReactNode;
 }
 
-interface State {
+interface ErrorBoundaryState {
     hasError: boolean;
     error: Error | null;
-    errorInfo: ErrorInfo | null;
+    errorInfo: React.ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-    constructor(props: Props) {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    constructor(props: ErrorBoundaryProps) {
         super(props);
         this.state = { hasError: false, error: null, errorInfo: null };
     }
 
-    static getDerivedStateFromError(error: Error): State {
+    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
         return { hasError: true, error, errorInfo: null };
     }
 
-    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         console.error("Uncaught error:", error, errorInfo);
         this.setState({ error, errorInfo });
     }
@@ -32,18 +32,18 @@ export class ErrorBoundary extends Component<Props, State> {
                 return this.props.fallback;
             }
             return (
-                <div className="p-4 m-4 bg-red-50 border border-red-200 rounded-lg text-red-900 overflow-auto">
-                    <h2 className="text-lg font-bold mb-2">System Error (Data Crash)</h2>
-                    <p className="font-semibold">{this.state.error?.toString()}</p>
-                    <details className="mt-2 text-xs font-mono whitespace-pre-wrap">
-                        <summary className="cursor-pointer mb-1">Stack Trace</summary>
+                <div style={{ padding: '20px', margin: '20px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', color: '#991b1b' }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>System Error (Data Critical)</h2>
+                    <p style={{ fontWeight: '600' }}>{this.state.error?.toString()}</p>
+                    <details style={{ marginTop: '10px', fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                        <summary style={{ cursor: 'pointer', marginBottom: '5px' }}>Stack Trace</summary>
                         {this.state.errorInfo?.componentStack}
                     </details>
                     <button
                         onClick={() => window.location.reload()}
-                        className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        style={{ marginTop: '15px', padding: '8px 16px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                     >
-                        기본 화면으로 새로고침
+                        Recover (Reload)
                     </button>
                 </div>
             );
