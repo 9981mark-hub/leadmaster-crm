@@ -94,7 +94,16 @@ export default function CaseList() {
     }, [search, statusFilter, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly]);
 
     // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
+    // [Fix] Persist currentPage to prevent reset on re-mount
+    const [currentPage, setCurrentPage] = useState<number>(() => {
+        const saved = sessionStorage.getItem('lm_caselist_page');
+        return saved ? Number(saved) : 1;
+    });
+
+    // Save page to session storage whenever it changes
+    useEffect(() => {
+        sessionStorage.setItem('lm_caselist_page', String(currentPage));
+    }, [currentPage]);
     const itemsPerPage = 10;
 
 
@@ -372,6 +381,14 @@ export default function CaseList() {
             window.scrollTo(0, 0);
         }
     };
+
+    // [Fix] Auto-clamp page if data shrinks (e.g. background update)
+    useEffect(() => {
+        if (totalPages > 0 && currentPage > totalPages) {
+            // If we are on page 5 but now there are only 4 pages, go to page 4.
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
 
     if (loading) return <div className="p-8 text-center text-gray-500">불러오는 중...</div>;
 
