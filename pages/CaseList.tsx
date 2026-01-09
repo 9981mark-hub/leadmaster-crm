@@ -630,8 +630,10 @@ export default function CaseList() {
                                             to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
                                             className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2"
                                         >
-                                            {c.customerName}
-                                            {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
+                                            <span className="truncate max-w-[150px]" title={c.customerName}>
+                                                {c.customerName}
+                                            </span>
+                                            {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
                                         </Link >
                                         <div className="mt-1">
                                             <HoverCheckTooltip
@@ -747,8 +749,10 @@ export default function CaseList() {
                                                 to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
                                                 className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                                             >
-                                                {c.customerName}
-                                                {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
+                                                <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
+                                                    {c.customerName}
+                                                </span>
+                                                {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
                                             </Link>
 
                                             {/* Hover Tooltip for Quick Memo View */}
