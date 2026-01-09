@@ -698,7 +698,7 @@ export default function CaseList() {
                                 <div className="flex justify-between items-start pr-10">
                                     <div className="flex-1">
                                         <Link
-                                            to={c.isNew ? `/ new? leadId = ${c.caseId} ` : ` /case/${c.caseId}`}
+                                            to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
                                             className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2"
                                         >
                                             <span className="truncate max-w-[150px]" title={c.customerName}>
