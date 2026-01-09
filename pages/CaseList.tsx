@@ -218,9 +218,8 @@ export default function CaseList() {
 
 
     // Reset page when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [search, statusFilter, inboundPathFilter, partnerFilter, showNewOnly]);
+    // [Fix] Removed useEffect that auto-resets page to prevent jumping during background refresh.
+    // Page reset is now handled explicitly in onChange handlers.
 
     const handleDelete = async (caseId: string, e?: React.MouseEvent) => {
         if (e) {
@@ -397,6 +396,7 @@ export default function CaseList() {
                     <button
                         onClick={() => {
                             setShowNewOnly(true);
+                            setCurrentPage(1);
                         }}
                         className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap md:whitespace-normal"
                     >
@@ -408,7 +408,7 @@ export default function CaseList() {
                     </button>
                     {showNewOnly && (
                         <button
-                            onClick={() => setShowNewOnly(false)}
+                            onClick={() => { setShowNewOnly(false); setCurrentPage(1); }}
                             className="absolute top-2 right-2 text-red-400 hover:text-red-600"
                         >
                             <X size={16} />
@@ -442,7 +442,7 @@ export default function CaseList() {
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                     케이스 관리
                     {showNewOnly && (
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200 cursor-pointer hover:bg-red-200" onClick={() => setShowNewOnly(false)}>
+                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200 cursor-pointer hover:bg-red-200" onClick={() => { setShowNewOnly(false); setCurrentPage(1); }}>
                             필터링됨: 신규 접수 건 <span className="ml-1 font-bold">×</span>
                         </span>
                     )}
@@ -458,7 +458,7 @@ export default function CaseList() {
                         placeholder="이름 또는 번호 검색"
                         className="pl-10 pr-4 py-2 border rounded-lg text-sm w-full xl:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                         value={search}
-                        onChange={e => setSearch(e.target.value)}
+                        onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
                     />
                 </div>
 
@@ -469,14 +469,14 @@ export default function CaseList() {
                             type="date"
                             className="bg-transparent text-sm p-1 outline-none text-gray-600 dark:text-white"
                             value={dateFilterStart}
-                            onChange={(e) => setDateFilterStart(e.target.value)}
+                            onChange={(e) => { setDateFilterStart(e.target.value); setCurrentPage(1); }}
                         />
                         <span className="text-gray-400 mx-1">~</span>
                         <input
                             type="date"
                             className="bg-transparent text-sm p-1 outline-none text-gray-600 dark:text-white"
                             value={dateFilterEnd}
-                            onChange={(e) => setDateFilterEnd(e.target.value)}
+                            onChange={(e) => { setDateFilterEnd(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
                     <div className="relative flex-1 min-w-[120px]">
@@ -484,7 +484,7 @@ export default function CaseList() {
                         <select
                             className="w-full border p-2 pl-8 rounded-lg text-sm bg-white appearance-none"
                             value={partnerFilter}
-                            onChange={e => setPartnerFilter(e.target.value)}
+                            onChange={e => { setPartnerFilter(e.target.value); setCurrentPage(1); }}
                         >
                             <option value="">전체 거래처</option>
                             {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
@@ -496,7 +496,7 @@ export default function CaseList() {
                         <select
                             className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
                             value={inboundPathFilter}
-                            onChange={e => setInboundPathFilter(e.target.value)}
+                            onChange={e => { setInboundPathFilter(e.target.value); setCurrentPage(1); }}
                         >
                             <option value="">전체 유입경로</option>
                             {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
@@ -506,7 +506,7 @@ export default function CaseList() {
                     <select
                         className="border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white flex-1 min-w-[110px]"
                         value={statusFilter}
-                        onChange={e => setStatusFilter(e.target.value)}
+                        onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
                     >
                         <option value="">전체 상태</option>
                         {statuses.map(s => <option key={s} value={s}>{s}</option>)}
