@@ -567,7 +567,7 @@ export default function CaseList() {
                             onChange={(e) => { setDateFilterEnd(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
-                    <div className="relative flex-1 min-w-[120px]">
+                    <div className="relative flex-1 min-w-[100px]">
                         <Building className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                         <select
                             className="w-full border p-2 pl-8 rounded-lg text-sm bg-white appearance-none"
@@ -579,7 +579,7 @@ export default function CaseList() {
                         </select>
                     </div>
 
-                    <div className="relative flex-1 min-w-[120px]">
+                    <div className="relative flex-1 min-w-[100px]">
                         <Filter className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                         <select
                             className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
@@ -592,7 +592,7 @@ export default function CaseList() {
                     </div>
 
                     <select
-                        className="border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white flex-1 min-w-[110px]"
+                        className="border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white flex-1 min-w-[90px]"
                         value={statusFilter}
                         onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
                     >
@@ -600,7 +600,7 @@ export default function CaseList() {
                         {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
 
-                    <div className="flex flex-1 min-w-[200px] gap-1">
+                    <div className="flex flex-1 min-w-[160px] gap-1">
                         <div className="relative flex-1">
                             <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                             <select
