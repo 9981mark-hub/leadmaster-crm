@@ -171,7 +171,7 @@ function handleRequest(method, target, e, params) {
             num(d.creditCardAmount), json(d.creditLoan), json(d.assets), d.aiSummary,
             d.contractAt, num(d.contractFee), d.installmentMonths, d.useCapital,
             json(d.depositHistory), json(d.specialMemo), json(d.reminders), json(d.recordings),
-            '', '', '', d.formattedSummary
+            d.isViewed, '', '', d.formattedSummary
         ];
         
         if (params.action === 'delete') {
@@ -355,7 +355,8 @@ function mapRowToCase(row) {
           depositHistory: parseJSON(row[38], []),
           specialMemo: parseJSON(row[39], []),
           reminders: parseJSON(row[40], []),
-          recordings: parseJSON(row[41], [])
+          recordings: parseJSON(row[41], []),
+          isViewed: Boolean(row[42])
     };
 }
 function parseJSON(str, fallback) { try { return JSON.parse(str); } catch (e) { return fallback; } }
