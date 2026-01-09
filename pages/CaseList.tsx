@@ -56,7 +56,20 @@ const StatusHistoryTooltipContent = ({ caseId }: { caseId: string }) => {
 
 export default function CaseList() {
     const { showToast } = useToast();
-    const [cases, setCases] = useState<Case[]>([]);
+    const [cases, setCases] = useState<Case[]>(() => {
+        try {
+            const saved = localStorage.getItem('lm_cases_cache');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    // Cache cases locally to prevent blink on refresh
+    useEffect(() => {
+        localStorage.setItem('lm_cases_cache', JSON.stringify(cases));
+    }, [cases]);
+
     const [partners, setPartners] = useState<Partner[]>([]);
     const [inboundPaths, setInboundPaths] = useState<string[]>([]);
     const [statuses, setStatuses] = useState<CaseStatus[]>([]);
@@ -383,7 +396,8 @@ export default function CaseList() {
         }
     }, [totalPages, currentPage]);
 
-    if (loading) return <div className="p-8 text-center text-gray-500">불러오는 중...</div>;
+    // [Fix] Only show loading if we have NO data (Zero Blink)
+    if (loading && cases.length === 0) return <div className="p-8 text-center text-gray-500">불러오는 중...</div>;
 
     const newCaseCount = cases.filter(c => c.isNew).length;
 
