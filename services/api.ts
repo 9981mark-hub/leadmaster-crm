@@ -291,38 +291,37 @@ export const processIncomingCase = (c: any): Case => {
   const mappedCase: any = {
     ...c,
     // [ID & System]
-    caseId: c.caseId || c.CaseID || c.id || uuidv4(),
-    updatedAt: c.updatedAt || c.UpdatedAt || c.statusUpdatedAt || new Date().toISOString(),
-    createdAt: c.createdAt || c.CreatedAt || c.Timestamp || new Date().toISOString(),
-    status: c.status || c.Status || '신규접수',
-    managerName: c.managerName || c.ManagerName || '진성훈', // Default from screenshot context
-    partnerId: c.partnerId || c.PartnerId || 'P001',       // Default from screenshot context
+    // [ID & System]
+    caseId: String(c.caseId || c.CaseID || c.id || uuidv4()),
+    updatedAt: String(c.updatedAt || c.UpdatedAt || c.statusUpdatedAt || new Date().toISOString()),
+    createdAt: String(c.createdAt || c.CreatedAt || c.Timestamp || new Date().toISOString()),
+    status: String(c.status || c.Status || '신규접수'),
+    managerName: String(c.managerName || c.ManagerName || '진성훈'),
+    partnerId: String(c.partnerId || c.PartnerId || 'P001'),
+
     // [Status Logic]
-    // [Status Logic]
-    // [Status Logic]
-    isViewed: !!(c.isViewed || c.IsViewed || c.is_viewed), // Map from server/sheet
-    // isNew now depends on status and the server-synced isViewed flag
+    isViewed: !!(c.isViewed || c.IsViewed || c.is_viewed),
+
     // [Fix] Logic simplified: If it's New Status AND Not Viewed AND Not Deleted, it is New.
-    // Removed manager check to allow managers to see their own manual entries as New.
-    isNew: (c.status || c.Status || '신규접수') === '신규접수' &&
+    isNew: String(c.status || c.Status || '신규접수') === '신규접수' &&
       !(c.isViewed || c.IsViewed || c.is_viewed) &&
-      !(c.deletedAt || c.DeletedAt), // [Fix] Deleted cases are NEVER new
+      !(c.deletedAt || c.DeletedAt),
 
-    deletedAt: c.deletedAt || c.DeletedAt || undefined, // Map deletedAt
+    deletedAt: c.deletedAt || c.DeletedAt || undefined,
 
-    // [AI Summary] - Ensure it's mapped if backend uses TitleCase
-    aiSummary: c.aiSummary || c.AiSummary || '',
+    // [AI Summary]
+    aiSummary: String(c.aiSummary || c.AiSummary || ''),
 
-    // [Personal]
-    customerName: c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown',
-    phone: c.phone || c.Phone || c['전화번호'] || '',
-    birth: c.birth || c.Birth || '',
-    gender: c.gender || c.Gender || '남',
-    region: c.region || c.Region || '',
+    // [Personal] - Force String to prevent React Object Render Crash
+    customerName: String(c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown'),
+    phone: String(c.phone || c.Phone || c['전화번호'] || ''),
+    birth: String(c.birth || c.Birth || ''),
+    gender: String(c.gender || c.Gender || '남'),
+    region: String(c.region || c.Region || ''),
 
     // [Case Info]
-    caseType: c.caseType || c.CaseType || '개인회생',
-    inboundPath: c.inboundPath || c.InboundPath || c.inbound_path || c['Landing ID'] || 'Landing Page',
+    caseType: String(c.caseType || c.CaseType || '개인회생'),
+    inboundPath: String(c.inboundPath || c.InboundPath || c.inbound_path || c['Landing ID'] || 'Landing Page'),
     historyType: c.historyType || c.HistoryType || '없음',
     preInfo: c.preInfo || c.PreInfo || '',
 
