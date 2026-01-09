@@ -12,7 +12,9 @@ const NewCasePopup: React.FC = () => {
 
     const checkForNewCases = async () => {
         const cases = await fetchCases();
-        const currentNewCases = cases.filter(c => c.isNew);
+        const myName = localStorage.getItem('managerName');
+        // [Fix] Exclude cases created/managed by self (Manual Entry) so popup doesn't annoy user
+        const currentNewCases = cases.filter(c => c.isNew && c.managerName !== myName);
         const count = currentNewCases.length;
 
         setNewCases(currentNewCases);

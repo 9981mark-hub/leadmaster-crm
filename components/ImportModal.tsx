@@ -170,7 +170,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                         inboundPath: rawPath,
                         preInfo: rawPre,
                         isNew: true,
-                        isViewed: false, // Ensure it is explicitly unviewed
+                        isViewed: true, // [Fix] Mark as viewed so it doesn't trigger "New Case" notification
                         managerName: '미지정', // [Fix] Set as Unassigned so it appears as New to everyone
                         duplicateInfo: duplicate
                     };
@@ -287,7 +287,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 phone: parsed.phone,
                 preInfo: parsed.summary,
                 isNew: true,
-                isViewed: false,
+                isViewed: true, // [Fix] Mark as viewed so it doesn't trigger "New Case" notification
                 caseType: '개인회생', // Default
                 inboundPath: 'OCR업로드',
                 partnerId: ocrPartnerId,
