@@ -161,14 +161,7 @@ export default function CaseDetail() {
                     setAiSummaryText(injectSummaryMetadata(foundCase.aiSummary, foundCase));
                 }
 
-                // [NEW] Load Manual Summary (Priority: Saved Memo > Generated)
-                const savedManual = foundCase.specialMemo?.find(m => m.content.startsWith('[Basic Summary]'));
-                if (savedManual) {
-                    setManualSummary(savedManual.content.replace('[Basic Summary]\n', ''));
-                } else {
-                    const template = currentPartner?.summaryTemplate;
-                    setManualSummary(generateSummary(foundCase, template));
-                }
+
             }).finally(() => setIsLoading(false));
             fetchCaseStatusLogs(caseId).then(setStatusLogs);
         }
@@ -571,21 +564,7 @@ export default function CaseDetail() {
         }
     };
 
-    const handleSaveManualSummary = () => {
-        if (!c) return;
-        const cleanMemos = (c.specialMemo || []).filter(m => !m.content.startsWith('[Basic Summary]'));
 
-        const newMemo: MemoItem = {
-            id: Date.now().toString(),
-            createdAt: new Date().toISOString(),
-            content: "[Basic Summary]\n" + manualSummary,
-        };
-
-        const updatedMemos = [newMemo, ...cleanMemos];
-        handleUpdate('specialMemo', updatedMemos);
-        setIsManualSummaryEdit(false);
-        showToast('기본 요약문이 저장되었습니다.');
-    };
 
     const handleSaveSummaryToMemo = () => {
         if (!aiSummaryText.trim()) return;
@@ -1505,16 +1484,17 @@ export default function CaseDetail() {
                                 <div className="flex gap-2">
                                     {isManualSummaryEdit ? (
                                         <>
-                                            <button onClick={handleSaveManualSummary} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 font-bold">저장</button>
                                             <button onClick={() => {
-                                                // Revert
-                                                const savedManual = c.specialMemo?.find(m => m.content.startsWith('[Basic Summary]'));
-                                                setManualSummary(savedManual ? savedManual.content.replace('[Basic Summary]\n', '') : generateSummary(c, currentPartner?.summaryTemplate));
+                                                // Cancel Edit
                                                 setIsManualSummaryEdit(false);
                                             }} className="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">취소</button>
                                         </>
                                     ) : (
-                                        <button onClick={() => setIsManualSummaryEdit(true)} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1">
+                                        <button onClick={() => {
+                                            // Init with FRESH generated summary logic
+                                            setManualSummary(generateSummary(c, currentPartner?.summaryTemplate));
+                                            setIsManualSummaryEdit(true);
+                                        }} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1">
                                             <Edit2 size={12} /> 수정
                                         </button>
                                     )}
