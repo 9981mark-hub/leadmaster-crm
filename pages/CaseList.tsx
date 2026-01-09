@@ -756,7 +756,7 @@ export default function CaseList() {
                                             }
                                         />
                                         <span className="text-[10px] text-gray-400">
-                                            {c.createdAt ? format(new Date(c.createdAt), 'yy.MM.dd') : ''}
+                                            {safeFormat(c.createdAt, 'yy.MM.dd')}
                                         </span>
                                     </div>
 
