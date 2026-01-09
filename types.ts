@@ -57,6 +57,8 @@ export interface Case {
   isNew?: boolean; // Computed local flag
   isViewed?: boolean; // Added: Syncable flag for "Seen" status across devices
   deletedAt?: string; // [NEW] Soft Delete Timestamp (ISO)
+  missedCallCount?: number; // [NEW] Missed Call Counter
+  lastMissedCallAt?: string; // [NEW] Last time a missed call was logged (ISO)
   _raw?: any; // DEBUG
 
   // New Fields (Request)

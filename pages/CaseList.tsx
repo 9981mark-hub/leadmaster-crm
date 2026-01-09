@@ -1,10 +1,9 @@
-
-import React, { useEffect, useState } from 'react';
-import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData } from '../services/api';
+import React, { useEffect, useState, useMemo } from 'react';
+import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData, updateCase } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
 import { Link } from 'react-router-dom';
-import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X } from 'lucide-react';
+import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 import ImportModal from '../components/ImportModal';
@@ -80,6 +79,10 @@ export default function CaseList() {
     const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
 
     // Filters & Sort
+    // [Missed Call Settings]
+    const [missedCallStatus, setMissedCallStatus] = useState('부재');
+    const [missedCallInterval, setMissedCallInterval] = useState(3);
+
     // Filters & Sort (Persisted in sessionStorage)
     const [search, setSearch] = useState(() => sessionStorage.getItem('lm_search') || '');
     const [statusFilter, setStatusFilter] = useState(() => sessionStorage.getItem('lm_statusFilter') || '');
@@ -139,6 +142,12 @@ export default function CaseList() {
         let isMounted = true;
 
         const loadData = async () => {
+            // Load Settings
+            const storedStats = localStorage.getItem('lm_missedStatus');
+            if (storedStats) setMissedCallStatus(storedStats);
+            const storedInterval = localStorage.getItem('lm_missedInterval');
+            if (storedInterval) setMissedCallInterval(Number(storedInterval));
+
             try {
                 setLoading(true);
                 const [data, partnerData, pathData, statusData] = await Promise.all([
@@ -293,6 +302,51 @@ export default function CaseList() {
         } catch (error) {
             console.error("Restore failed", error);
             showToast('복구 중 오류가 발생했습니다.', 'error');
+        }
+    };
+
+    // [Missed Call Action]
+    const handleMissedCall = async (e: React.MouseEvent, c: Case) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const now = new Date();
+        const nextCount = (c.missedCallCount || 0) + 1;
+
+        // Optimistic UI Update
+        const updatedCase = {
+            ...c,
+            missedCallCount: nextCount,
+            lastMissedCallAt: now.toISOString()
+        };
+
+        setCases(prev => prev.map(item => item.caseId === c.caseId ? updatedCase : item));
+
+        try {
+            // Create Log
+            const managerName = localStorage.getItem('managerName') || 'Unknown';
+            const newLog: CaseStatusLog = {
+                logId: new Date().getTime().toString(),
+                caseId: c.caseId,
+                changedBy: managerName,
+                fromStatus: c.status,
+                toStatus: c.status, // No change
+                changedAt: now.toISOString(),
+                memo: `부재 카운트 증가 (${nextCount}회)`
+            };
+            const updatedLogs = [...(c.statusLogs || []), newLog];
+
+            // Use updateCase (exported from api.ts)
+            await updateCase(c.caseId, {
+                missedCallCount: nextCount,
+                lastMissedCallAt: now.toISOString(),
+                statusLogs: updatedLogs
+            });
+
+            showToast(`부재 횟수가 ${nextCount}회로 증가했습니다.`);
+        } catch (err) {
+            console.error(err);
+            showToast('저장 중 오류가 발생했습니다.', 'error');
         }
     };
 
@@ -459,7 +513,7 @@ export default function CaseList() {
                         </div>
                         <span className="text-sm font-bold text-blue-800">
                             {newLeadsCount > 0
-                                ? `🔄 새 접수 ${newLeadsCount}건 도착 (눌러서 새로고침)`
+                                ? `🔄 새 접수 ${newLeadsCount}건 도착(눌러서 새로고침)`
                                 : '새로운 데이터가 감지되었습니다. (눌러서 새로고침)'}
                         </span>
                     </div>
@@ -577,10 +631,10 @@ export default function CaseList() {
                         {/* [NEW] Recycle Bin Toggle - Trigger Deploy */}
                         <button
                             onClick={() => setViewMode(prev => prev === 'active' ? 'trash' : 'active')}
-                            className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
+                            className={`flex items - center justify - center p - 2 rounded - lg transition - colors shadow - sm shrink - 0 ${viewMode === 'trash'
                                 ? 'bg-red-600 text-white hover:bg-red-700'
                                 : 'bg-white border text-gray-600 hover:bg-gray-50'
-                                }`}
+                                } `}
                             title={viewMode === 'active' ? "휴지통 보기" : "목록으로 돌아가기"}
                         >
                             {viewMode === 'trash' ? <ChevronLeft size={18} /> : <Trash2 size={18} />}
@@ -645,7 +699,7 @@ export default function CaseList() {
                                 <div className="flex justify-between items-start pr-10">
                                     <div className="flex-1">
                                         <Link
-                                            to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
+                                            to={c.isNew ? `/ new? leadId = ${c.caseId} ` : ` /case/${c.caseId}`}
                                             className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2"
                                         >
                                             <span className="truncate max-w-[150px]" title={c.customerName}>
@@ -706,6 +760,23 @@ export default function CaseList() {
                                             {c.createdAt ? format(new Date(c.createdAt), 'yy.MM.dd') : ''}
                                         </span>
                                     </div>
+
+                                    {/* Missed Call Button (Mobile) */}
+                                    {c.status === missedCallStatus && (
+                                        <div className="absolute top-16 right-4">
+                                            <button
+                                                onClick={(e) => handleMissedCall(e, c)}
+                                                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                    ? 'bg-red-100 border-red-200 text-red-600 animate-pulse ring-2 ring-red-400'
+                                                    : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                    }`}
+                                            >
+                                                <PhoneMissed size={14} />
+                                                <span>+{c.missedCallCount || 0}</span>
+                                            </button>
+                                            {c.lastMissedCallAt && <div className="text-[10px] text-gray-400 text-right mt-1">{format(new Date(c.lastMissedCallAt), 'MM.dd HH:mm')}</div>}
+                                        </div>
+                                    )}
                                 </div >
 
                                 <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2">
@@ -819,6 +890,38 @@ export default function CaseList() {
                                                 }
                                                 content={<StatusHistoryTooltipContent caseId={c.caseId} />}
                                             />
+                                            {/* Missed Call Button (Desktop) - Appears next to status if missed */}
+                                            {c.status === missedCallStatus && (
+                                                <div className="mt-1 flex items-center gap-1">
+                                                    <button
+                                                        onClick={(e) => handleMissedCall(e, c)}
+                                                        className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                            ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
+                                                            : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                            }`}
+                                                        title={`마지막 부재: ${c.lastMissedCallAt ? format(new Date(c.lastMissedCallAt), 'yyyy-MM-dd HH:mm') : '없음'}`}
+                                                    >
+                                                        <PhoneMissed size={10} />
+                                                        <span>+{c.missedCallCount || 0}</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {/* Missed Call Button (Desktop) - Appears next to status if missed */}
+                                            {c.status === missedCallStatus && (
+                                                <div className="mt-1 flex items-center gap-1">
+                                                    <button
+                                                        onClick={(e) => handleMissedCall(e, c)}
+                                                        className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                            ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
+                                                            : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                            }`}
+                                                        title={`마지막 부재: ${c.lastMissedCallAt ? format(new Date(c.lastMissedCallAt), 'yyyy-MM-dd HH:mm') : '없음'}`}
+                                                    >
+                                                        <PhoneMissed size={10} />
+                                                        <span>+{c.missedCallCount || 0}</span>
+                                                    </button>
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-500">
                                             {c.createdAt ? format(new Date(c.createdAt), 'yyyy-MM-dd') : '-'}
@@ -920,7 +1023,7 @@ export default function CaseList() {
 
 
 
-            </div>
+            </div >
         </div >
     );
 }

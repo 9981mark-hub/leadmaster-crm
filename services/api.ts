@@ -377,6 +377,10 @@ export const processIncomingCase = (c: any): Case => {
     statusLogs,
     incomeDetails: typeof incomeDetails === 'object' ? incomeDetails : {}, // Ensure object
 
+    // [Missed Call Management]
+    missedCallCount: Number(c.missedCallCount || c.MissedCallCount) || 0,
+    lastMissedCallAt: c.lastMissedCallAt || c.LastMissedCallAt || undefined,
+
     // Number safety for remaining fields
     loanMonthlyPay: Number(mappedCase.loanMonthlyPay || c.LoanMonthlyPay) || 0,
     contractFee: Number(mappedCase.contractFee || c.ContractFee) || 0,
@@ -543,7 +547,11 @@ export const createCaseHelper = (newCase: Partial<Case>): Case => {
     incomeNet: newCase.incomeNet || 0,
     loanMonthlyPay: newCase.loanMonthlyPay || 0,
     deposit: newCase.deposit || 0,
-    rent: newCase.rent || 0
+    rent: newCase.rent || 0,
+
+    // [Missed Call Init]
+    missedCallCount: 0,
+    lastMissedCallAt: undefined
   } as Case;
 };
 

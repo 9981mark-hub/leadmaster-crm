@@ -20,6 +20,9 @@ export default function SettingsPage() {
     const [newStatus, setNewStatus] = useState('');
 
     const [managerName, setManagerName] = useState('Mark');
+    // [Missed Call Settings] saved in localStorage
+    const [missedCallStatus, setMissedCallStatus] = useState('부재');
+    const [missedCallInterval, setMissedCallInterval] = useState(3);
 
     const { showToast } = useToast();
 
@@ -59,9 +62,13 @@ export default function SettingsPage() {
         });
 
         const storedManagerName = localStorage.getItem('managerName');
-        if (storedManagerName) {
-            setManagerName(storedManagerName);
-        }
+        if (storedManagerName) setManagerName(storedManagerName);
+
+        const storedStats = localStorage.getItem('lm_missedStatus');
+        if (storedStats) setMissedCallStatus(storedStats);
+
+        const storedInterval = localStorage.getItem('lm_missedInterval');
+        if (storedInterval) setMissedCallInterval(Number(storedInterval));
     }, []);
 
     const handleSelectPartner = (p: Partner) => {
@@ -71,7 +78,10 @@ export default function SettingsPage() {
 
     const handleSaveManagerName = () => {
         localStorage.setItem('managerName', managerName);
-        showToast('담당자 이름이 저장되었습니다.');
+        // Save Missed Call Settings together
+        localStorage.setItem('lm_missedStatus', missedCallStatus);
+        localStorage.setItem('lm_missedInterval', String(missedCallInterval));
+        showToast('공통 설정이 저장되었습니다.');
     };
 
     const handleCreatePartner = () => {
@@ -308,23 +318,59 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                     <User className="mr-2 text-gray-600" size={20} /> 공통 설정
                 </h3>
-                <div className="max-w-sm">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">담당자 이름</label>
-                    <div className="flex gap-2">
+                <div className="max-w-md space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">담당자 이름</label>
                         <input
                             type="text"
                             placeholder="담당자 이름"
-                            className="flex-1 p-2 border rounded"
+                            className="w-full p-2 border rounded"
                             value={managerName}
                             onChange={e => setManagerName(e.target.value)}
                         />
-                        <button type="button" onClick={handleSaveManagerName} className="bg-gray-700 text-white px-4 rounded hover:bg-gray-800">
-                            저장
+                        <p className="text-xs text-gray-500 mt-1">
+                            신규 생성 시 담당자, 요약문 템플릿 {'{{managerName}}'}에 사용됩니다.
+                        </p>
+                    </div>
+
+                    <hr className="border-gray-100" />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">부재 카운트 대상 상태</label>
+                            <select
+                                className="w-full p-2 border rounded bg-white"
+                                value={missedCallStatus}
+                                onChange={e => setMissedCallStatus(e.target.value)}
+                            >
+                                {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                            <p className="text-xs text-gray-500 mt-1">
+                                이 상태일 때만 '부재 확인' 버튼이 표시됩니다.
+                            </p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">재통화 알림 주기</label>
+                            <div className="flex items-center">
+                                <input
+                                    type="number"
+                                    className="flex-1 p-2 border rounded text-right mr-2"
+                                    value={missedCallInterval}
+                                    onChange={e => setMissedCallInterval(Number(e.target.value))}
+                                />
+                                <span className="text-sm text-gray-600">일 후</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                마지막 부재 확인 후 N일이 지나면 빨간 알림이 뜹니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="pt-2">
+                        <button type="button" onClick={handleSaveManagerName} className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 w-full md:w-auto">
+                            설정 저장
                         </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                        여기에 저장된 이름은 신규 케이스 생성 시 담당자 이름으로 자동 설정되며, 요약문 템플릿의 {'{{managerName}}'}에 사용됩니다.
-                    </p>
                 </div>
             </div>
 

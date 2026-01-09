@@ -129,7 +129,7 @@ function handleRequest(method, target, e, params) {
        var now = new Date().toISOString();
        var caseId = 'L' + new Date().getTime(); 
        
-       var newRow = new Array(46).fill(""); // V8 Compatible
+       var newRow = new Array(50).fill(""); // V8 Compatible (Size Increased for new columns)
        newRow[0] = caseId;              
        newRow[1] = now;                 
        newRow[2] = "신규접수";           
@@ -174,7 +174,8 @@ function handleRequest(method, target, e, params) {
             num(d.creditCardAmount), json(d.creditLoan), json(d.assets), d.aiSummary,
             d.contractAt, num(d.contractFee), d.installmentMonths, d.useCapital,
             json(d.depositHistory), json(d.specialMemo), json(d.reminders), json(d.recordings),
-            d.isViewed, d.createdAt, '', d.formattedSummary
+            json(d.depositHistory), json(d.specialMemo), json(d.reminders), json(d.recordings),
+            d.isViewed, d.createdAt, num(d.missedCallCount), d.lastMissedCallAt, d.formattedSummary
         ];
         
         if (params.action === 'delete') {
@@ -360,7 +361,11 @@ function mapRowToCase(row) {
           specialMemo: parseJSON(row[39], []),
           reminders: parseJSON(row[40], []),
           recordings: parseJSON(row[41], []),
-          isViewed: Boolean(row[42])
+          recordings: parseJSON(row[41], []),
+          isViewed: Boolean(row[42]),
+          // created at is 43 (handled above)
+          missedCallCount: Number(row[44]) || 0,
+          lastMissedCallAt: row[45]
     };
 }
 function parseJSON(str, fallback) { try { return JSON.parse(str); } catch (e) { return fallback; } }
