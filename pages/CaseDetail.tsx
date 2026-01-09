@@ -1590,7 +1590,7 @@ export default function CaseDetail() {
                                             onClick={handleSaveSummaryToMemo}
                                             className="bg-indigo-600 text-white px-4 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-indigo-700 w-full shadow-sm transition-all active:scale-95 text-xs md:text-sm"
                                         >
-                                            <Send className="mr-2" size={16} /> 상담이력 전송(특이사항)
+                                            <Send className="mr-2" size={16} /> 상담이력 전송
                                         </button>
                                     </div>
                                     <p className="text-[10px] text-center text-purple-400">
