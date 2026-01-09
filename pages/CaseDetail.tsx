@@ -1504,12 +1504,12 @@ export default function CaseDetail() {
                             <div className="flex-1 relative h-full">
                                 {isManualSummaryEdit ? (
                                     <textarea
-                                        className="w-full h-full p-4 border rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-blue-500 outline-none min-h-[300px]"
+                                        className="w-full h-full p-4 border rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-blue-500 outline-none min-h-[300px] max-h-[600px] overflow-y-auto"
                                         value={manualSummary}
                                         onChange={e => setManualSummary(e.target.value)}
                                     />
                                 ) : (
-                                    <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[300px]">
+                                    <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[300px] max-h-[600px]">
                                         {generateSummary(c, currentPartner?.summaryTemplate)}
                                     </div>
                                 )}
@@ -1554,12 +1554,12 @@ export default function CaseDetail() {
                                 {aiSummaryText ? (
                                     aiSummaryEditMode ? (
                                         <textarea
-                                            className="w-full h-full p-4 border border-purple-200 rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-purple-500 outline-none min-h-[300px]"
+                                            className="w-full h-full p-4 border border-purple-200 rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-purple-500 outline-none min-h-[300px] max-h-[600px] overflow-y-auto"
                                             value={aiSummaryText}
                                             onChange={e => setAiSummaryText(e.target.value)}
                                         />
                                     ) : (
-                                        <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[300px]"
+                                        <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[300px] max-h-[600px]"
                                             onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }} // Click to edit convenience
                                         >
                                             {aiSummaryText}
