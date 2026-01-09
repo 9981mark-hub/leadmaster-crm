@@ -346,11 +346,14 @@ export default function CaseList() {
         }
 
         // [Tie-Breaker] Use original index if dates are identical
-        // For 'desc' (Newest first), we want HIGHER index (later in list) to come FIRST.
+        // Since we unshift new items to index 0, Index 0 is the "Newest".
+        // For 'desc' (Newest first), we want LOWER index (0) to come FIRST.
+        // sort(a,b) < 0 -> a comes first.
+        // a(0) - b(1) = -1. Correct.
         if (direction === 'desc') {
-            return b._originalIndex - a._originalIndex;
-        } else {
             return a._originalIndex - b._originalIndex;
+        } else {
+            return b._originalIndex - a._originalIndex;
         }
     }).map(item => {
         const { _originalIndex, ...rest } = item;

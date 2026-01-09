@@ -302,10 +302,10 @@ export const processIncomingCase = (c: any): Case => {
     // [Status Logic]
     isViewed: !!(c.isViewed || c.IsViewed || c.is_viewed), // Map from server/sheet
     // isNew now depends on status and the server-synced isViewed flag
-    // [Fix] If I am the manager, I shouldn't see it as "New"
+    // [Fix] Logic simplified: If it's New Status AND Not Viewed AND Not Deleted, it is New.
+    // Removed manager check to allow managers to see their own manual entries as New.
     isNew: (c.status || c.Status || '신규접수') === '신규접수' &&
       !(c.isViewed || c.IsViewed || c.is_viewed) &&
-      (c.managerName || c.ManagerName) !== (localStorage.getItem('managerName') || 'Mark') &&
       !(c.deletedAt || c.DeletedAt), // [Fix] Deleted cases are NEVER new
 
     deletedAt: c.deletedAt || c.DeletedAt || undefined, // Map deletedAt
