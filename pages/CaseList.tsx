@@ -111,21 +111,14 @@ export default function CaseList() {
     }, [cases]);
 
     // [POLLING] Background check every 30 seconds
+    // [POLLING] Background check
+    // 1. Initial Load (Run once)
     useEffect(() => {
         let isMounted = true;
 
-        // 1. Polling Interval (Keep fetching from server)
-        const intervalId = setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                refreshData();
-            }
-        }, 30000); // 30s
-
-        // 2. Data Loader
-        const loadData = async (mode: 'initial' | 'update' = 'initial') => {
+        const loadData = async () => {
             try {
-                if (mode === 'initial') setLoading(true);
-
+                setLoading(true);
                 const [data, partnerData, pathData, statusData] = await Promise.all([
                     fetchCases(),
                     fetchPartners(),
@@ -134,57 +127,78 @@ export default function CaseList() {
                 ]);
 
                 if (isMounted) {
-                    if (mode === 'initial') {
-                        // Initial Load: Set directly
-                        setCases(data);
-                        setPartners(partnerData);
-                        setInboundPaths(pathData);
-                        setStatuses(statusData);
-                        setLoading(false);
-                    } else {
-                        // Background Update: Check for diffs
-                        // We primarily care about Case changes for the list view
-                        const currentStr = JSON.stringify(casesRef.current);
-                        const newStr = JSON.stringify(data);
-
-                        if (currentStr !== newStr) {
-                            setPendingCases(data);
-                            setUpdateAvailable(true);
-
-                            // Calculate new leads count
-                            const diff = data.length - casesRef.current.length;
-                            if (diff > 0) {
-                                setNewLeadsCount(diff);
-                                // Optional: Play sound or show browser notification here if needed
-                            }
-                        }
-
-                        // Others (Partners/Paths) are safe to update silent or ignore until refresh
-                        // We'll update them when user clicks refresh.
-                    }
+                    setCases(data);
+                    setPartners(partnerData);
+                    setInboundPaths(pathData);
+                    setStatuses(statusData);
+                    setLoading(false);
                 }
             } catch (err: any) {
                 console.error(err);
-                if (isMounted && mode === 'initial') {
+                if (isMounted) {
                     setLoading(false);
                     showToast("데이터를 불러오는 중 오류가 발생했습니다.", 'error');
                 }
             }
         };
 
-        loadData('initial'); // Initial
+        loadData();
 
-        // 3. Subscribe to updates
-        const unsubscribe = subscribe(() => {
-            if (isMounted) loadData('update');
+        // Subscribe to real-time updates (via WebSocket/Event check)
+        const unsubscribe = subscribe(async () => {
+            if (isMounted) {
+                // If update comes in, we can update in background or show banner.
+                // Re-using the background update logic:
+                const data = await fetchCases();
+                const currentStr = JSON.stringify(casesRef.current);
+                const newStr = JSON.stringify(data);
+
+                if (currentStr !== newStr) {
+                    setPendingCases(data);
+                    setUpdateAvailable(true);
+                    const diff = data.length - casesRef.current.length;
+                    if (diff > 0) setNewLeadsCount(diff);
+                }
+            }
         });
 
         return () => {
             isMounted = false;
-            clearInterval(intervalId);
             unsubscribe();
         };
     }, []);
+
+    // 2. Polling Interval (Skip if modal is open)
+    useEffect(() => {
+        if (isImportModalOpen) return; // Stop polling while modal is open
+
+        const intervalId = setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                // Background Refresh
+                try {
+                    await refreshData();
+                    // Note: refreshData updates internal cache in api.ts.
+                    // We need to fetch from that cache to compare.
+                    const data = await fetchCases();
+
+                    // Check for diffs
+                    const currentStr = JSON.stringify(casesRef.current);
+                    const newStr = JSON.stringify(data);
+
+                    if (currentStr !== newStr) {
+                        setPendingCases(data);
+                        setUpdateAvailable(true);
+                        const diff = data.length - casesRef.current.length;
+                        if (diff > 0) setNewLeadsCount(diff);
+                    }
+                } catch (e) {
+                    console.error("Polling failed", e);
+                }
+            }
+        }, 30000); // 30s
+
+        return () => clearInterval(intervalId);
+    }, [isImportModalOpen]);
 
     // Manual Refresh Handler
     const handleManualRefresh = () => {

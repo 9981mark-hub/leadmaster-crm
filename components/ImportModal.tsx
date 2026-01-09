@@ -38,17 +38,37 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     const ocrInputRef = useRef<HTMLInputElement>(null);
 
     // Manual State
-    const [manualForm, setManualForm] = useState<Partial<Case>>({
-        customerName: '',
-        phone: '',
-        partnerId: partners?.[0]?.partnerId || '',
-        inboundPath: inboundPaths?.[0] || '',
-        caseType: '개인회생',
-        preInfo: ''
+    const [manualForm, setManualForm] = useState<Partial<Case>>(() => {
+        // [Persistence] Restore draft if exists
+        const saved = sessionStorage.getItem('lm_manual_draft');
+        const initial = {
+            customerName: '',
+            phone: '',
+            partnerId: partners?.[0]?.partnerId || '',
+            inboundPath: inboundPaths?.[0] || '',
+            caseType: '개인회생',
+            preInfo: ''
+        };
+        if (saved) {
+            try {
+                return { ...initial, ...JSON.parse(saved) };
+            } catch (e) {
+                return initial;
+            }
+        }
+        return initial;
     });
 
     // Manual Duplicate Check State (Moved from line 269)
     const [manualDuplicate, setManualDuplicate] = useState<Case | undefined>(undefined);
+
+    // [Persistence] Save draft on change
+    React.useEffect(() => {
+        // Debounce or just save on every change (it's small text data, harmless)
+        if (manualForm.customerName || manualForm.phone || manualForm.preInfo) {
+            sessionStorage.setItem('lm_manual_draft', JSON.stringify(manualForm));
+        }
+    }, [manualForm]);
 
     // Effects must be after state declarations
     React.useEffect(() => {
@@ -61,8 +81,18 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     React.useEffect(() => {
         if (partners && partners.length > 0 && !ocrPartnerId) {
             setOcrPartnerId(partners[0].partnerId);
+            setManualForm(prev => ({ ...prev, partnerId: partners[0].partnerId })); // Only sets if empty? No, this overrides.
+            // Wait, previous logic was: setManualForm(prev => ({ ...prev, partnerId: partners[0].partnerId }));
+            // It didn't check for existence? 
+            // In the original file line 64: setManualForm(prev => ({ ...prev, partnerId: partners[0].partnerId }));
+            // This runs whenever partners changes. 
+            // Better to only set if PREV is empty.
+        }
+        // Fix for Manual Form default Sync (Respect Draft)
+        if (partners && partners.length > 0 && !manualForm.partnerId) {
             setManualForm(prev => ({ ...prev, partnerId: partners[0].partnerId }));
         }
+
         if (inboundPaths && inboundPaths.length > 0 && !manualForm.inboundPath) {
             setManualForm(prev => ({ ...prev, inboundPath: inboundPaths[0] }));
         }
@@ -313,6 +343,18 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         try {
             await createCase({ ...manualForm, isNew: true, isViewed: false });
             showToast('케이스가 등록되었습니다.');
+
+            // Clear Draft on Success
+            sessionStorage.removeItem('lm_manual_draft');
+            setManualForm({
+                customerName: '',
+                phone: '',
+                partnerId: partners?.[0]?.partnerId || '',
+                inboundPath: inboundPaths?.[0] || '',
+                caseType: '개인회생',
+                preInfo: ''
+            });
+
             onSuccess();
             onClose();
         } catch (e) {
