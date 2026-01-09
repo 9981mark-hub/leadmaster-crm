@@ -174,7 +174,6 @@ function handleRequest(method, target, e, params) {
             num(d.creditCardAmount), json(d.creditLoan), json(d.assets), d.aiSummary,
             d.contractAt, num(d.contractFee), d.installmentMonths, d.useCapital,
             json(d.depositHistory), json(d.specialMemo), json(d.reminders), json(d.recordings),
-            json(d.depositHistory), json(d.specialMemo), json(d.reminders), json(d.recordings),
             d.isViewed, d.createdAt, num(d.missedCallCount), d.lastMissedCallAt, d.formattedSummary
         ];
         

@@ -76,7 +76,7 @@ export default function CaseList() {
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     // [NEW] Recycle Bin View Mode
-    const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
+    const [viewMode, setViewMode] = useState<'active' | 'trash'>(() => (sessionStorage.getItem('lm_viewMode') as any) || 'active');
 
     // Filters & Sort
     // [Missed Call Settings]
@@ -107,7 +107,8 @@ export default function CaseList() {
         sessionStorage.setItem('lm_dateFilterEnd', dateFilterEnd);
         sessionStorage.setItem('lm_sortOrder', sortOrder);
         sessionStorage.setItem('lm_showNewOnly', String(showNewOnly));
-    }, [search, statusFilter, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly]);
+        sessionStorage.setItem('lm_viewMode', viewMode);
+    }, [search, statusFilter, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, viewMode]);
 
     // Pagination
     // [Fix] Persist currentPage to prevent reset on re-mount
