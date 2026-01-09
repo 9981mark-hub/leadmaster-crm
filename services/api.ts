@@ -522,7 +522,8 @@ export const createCaseHelper = (newCase: Partial<Case>): Case => {
     statusUpdatedAt: now,
     managerName: managerName,
     partnerId: newCase.partnerId || (localPartners[0]?.partnerId || ''),
-    isViewed: true, // [Fix] Locally created cases are always "seen" by definition
+    // [Fix] Allow overriding isViewed. Default to true for local creations unless specified (e.g. for Manual Entry we want false)
+    isViewed: newCase.isViewed !== undefined ? newCase.isViewed : true,
     insurance4: newCase.insurance4 || '미가입',
     maritalStatus: newCase.maritalStatus || '미혼',
     childrenCount: newCase.childrenCount || 0,

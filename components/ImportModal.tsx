@@ -5,8 +5,8 @@ import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, C
 import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase, fetchCases } from '../services/api';
 import { Partner, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
-import { ASSET_TYPES, JOB_TYPES } from '../constants';
-import { fileToBase64, formatPhoneNumber, checkIsDuplicate } from '../utils';
+import { ASSET_TYPES, JOB_TYPES, formatPhone } from '../constants';
+import { fileToBase64, checkIsDuplicate } from '../utils';
 
 interface ImportModalProps {
     isOpen: boolean;
@@ -160,7 +160,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     const rawPath = String(row['inboundPath'] || row['유입경로'] || '');
                     const rawPre = String(row['preInfo'] || row['사전정보'] || '');
 
-                    const phone = formatPhoneNumber(rawPhone);
+                    const phone = formatPhone(rawPhone);
                     const duplicate = checkIsDuplicate(phone, existingCases);
 
                     return {
@@ -327,7 +327,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     const handleManualChange = (field: string, value: string) => {
         if (field === 'phone') {
-            value = formatPhoneNumber(value);
+            value = formatPhone(value);
             const dup = checkIsDuplicate(value, existingCases);
             setManualDuplicate(dup);
         }
@@ -634,13 +634,24 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         value={manualForm.phone}
                                         onChange={e => handleManualChange('phone', e.target.value)}
                                     />
-                                    {manualDuplicate && (
-                                        <div className="text-xs text-red-600 mt-1 bg-red-50 p-1 rounded font-medium">
-                                            ⚠️ 중복: {manualDuplicate.customerName} ({manualDuplicate.managerName}/{manualDuplicate.status})
-                                        </div>
-                                    )}
                                 </div>
                             </div>
+
+                            {/* [Enhanced] Duplicate Warning - Matches NewCase.tsx style */}
+                            {manualDuplicate && (
+                                <div className="mb-2 animate-pulse">
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm flex flex-col gap-1">
+                                        <div className="flex items-center gap-2 text-red-700 font-bold">
+                                            <span className="text-lg">⚠️</span> 이미 등록된 연락처입니다!
+                                        </div>
+                                        <div className="text-gray-600 pl-7 text-xs">
+                                            <p>등록된 고객명: <b>{manualDuplicate.customerName}</b></p>
+                                            <p>담당자: <b>{manualDuplicate.managerName}</b></p>
+                                            <p>현재 상태: <span className="font-medium text-red-600">{manualDuplicate.status}</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 mb-1">사전 정보 (메모)</label>
