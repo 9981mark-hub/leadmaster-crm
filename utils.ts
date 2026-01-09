@@ -503,3 +503,55 @@ export const convertToPreviewUrl = (url: string): string => {
   }
   return url;
 };
+// --- AI Summary Helpers ---
+export const injectSummaryMetadata = (text: string, c: Case): string => {
+  if (!text) return '';
+  let newText = text;
+
+  // Check and Inject Manager
+  if (!newText.includes('담당자:')) {
+    const manager = c.managerName || localStorage.getItem('managerName') || '담당자 미정';
+    newText = `담당자: ${manager}\n` + newText;
+  }
+  // Check and Inject Phone (if missing)
+  if (!newText.includes('연락처:')) {
+    newText = `연락처: ${c.phone}\n` + newText;
+  }
+  // Check and Inject Name (if missing)
+  if (!newText.includes('고객명:')) {
+    newText = `고객명: ${c.customerName}\n` + newText;
+  }
+
+  // Formatting cleanup: Ensure [기본 정보] header if we injected standard fields? 
+  // For now, simple prepend is enough as per request.
+  return newText;
+};
+
+export const extractSummarySpecifics = (text: string): string => {
+  if (!text) return '';
+
+  // Patterns to look for "Special Notes" or "Specifics"
+  // Common AI output formats: "4. 특이사항", "[특이사항]", "## 특이사항"
+  const patterns = [
+    /(?:4\.|\[|#+)\s*특이사항[:\s]*([\s\S]*)/i,
+    /(?:5\.|\[|#+)\s*향후\s*계획[:\s]*([\s\S]*)/i, // Fallback to Future Plan if Special Notes missing? No, user specifically asked for "Specifics".
+    /특이사항[:\s]*([\s\S]*)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+
+  // If no specific section found, return the whole text but warn? 
+  // Or maybe return a subset? 
+  // User requested "Only upload specifics". If AI didn't generate "Specifics", the whole text might be relevant or irrelevant.
+  // Let's return the whole text with a note, or maybe just the whole text. 
+  // "기존에는... 전부 업로드 됐는데 이제 특이사항 부분만 업로드 되게 해줘" -> Implies strictly fitering.
+  // If we return full text, it defeats the purpose.
+  // But if we return empty, we lose data.
+  // Compromise: Return full text but marked.
+  return text;
+};

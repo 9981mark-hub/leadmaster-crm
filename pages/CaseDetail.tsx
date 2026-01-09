@@ -7,7 +7,7 @@ import { ChevronLeft, Save, Plus, Trash2, Phone, MessageSquare, AlertTriangle, C
 import { format } from 'date-fns';
 import { formatPhone, MANAGER_NAME, CASE_TYPES, JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_OWNERS, ASSET_TYPES, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS, AVAILABLE_FIELDS_CONFIG, formatMoney, DEFAULT_AI_PROMPT, STATUS_COLOR_MAP } from '../constants';
 import { useToast } from '../contexts/ToastContext';
-import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64, convertToPlayableUrl, convertToPreviewUrl } from '../utils';
+import { generateSummary, getCaseWarnings, calculateCommission, normalizeBirthYear, fileToBase64, convertToPlayableUrl, convertToPreviewUrl, injectSummaryMetadata, extractSummarySpecifics } from '../utils';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from 'uuid';
 import { CustomAudioPlayer } from '../components/CustomAudioPlayer';
@@ -113,6 +113,10 @@ export default function CaseDetail() {
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [aiSummaryEditMode, setAiSummaryEditMode] = useState(false);
     const [aiSummaryText, setAiSummaryText] = useState('');
+    // [NEW] Manual Summary State
+    const [manualSummary, setManualSummary] = useState('');
+    const [isManualSummaryEdit, setIsManualSummaryEdit] = useState(false);
+
     const [currentAudioFile, setCurrentAudioFile] = useState<File | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [isFileUploading, setIsFileUploading] = useState(false); // [NEW] Upload State
@@ -154,7 +158,16 @@ export default function CaseDetail() {
                 setInboundPaths(pathData);
                 setStatuses(statusData); // Added this line
                 if (foundCase?.aiSummary) {
-                    setAiSummaryText(foundCase.aiSummary);
+                    setAiSummaryText(injectSummaryMetadata(foundCase.aiSummary, foundCase));
+                }
+
+                // [NEW] Load Manual Summary (Priority: Saved Memo > Generated)
+                const savedManual = foundCase.specialMemo?.find(m => m.content.startsWith('[Basic Summary]'));
+                if (savedManual) {
+                    setManualSummary(savedManual.content.replace('[Basic Summary]\n', ''));
+                } else {
+                    const template = currentPartner?.summaryTemplate;
+                    setManualSummary(generateSummary(foundCase, template));
                 }
             }).finally(() => setIsLoading(false));
             fetchCaseStatusLogs(caseId).then(setStatusLogs);
@@ -456,6 +469,7 @@ export default function CaseDetail() {
         }
     };
 
+    // [Fix] Inject metadata when generating
     const handleGenerateAiSummary = async () => {
         if (!c) return;
 
@@ -537,8 +551,9 @@ export default function CaseDetail() {
             }
 
             if (summary) {
-                setAiSummaryText(summary);
-                handleUpdate('aiSummary', summary);
+                const injected = injectSummaryMetadata(summary, c);
+                setAiSummaryText(injected);
+                handleUpdate('aiSummary', injected);
                 showToast('AI 요약이 생성되었습니다.');
             } else {
                 showToast('AI 요약 내용이 비어있습니다.', 'error');
@@ -556,17 +571,42 @@ export default function CaseDetail() {
         }
     };
 
-    const handleSaveSummaryToMemo = () => {
-        if (!aiSummaryText.trim()) return;
-        // Modified: Removed specific header, just kept simple tag
+    const handleSaveManualSummary = () => {
+        if (!c) return;
+        const cleanMemos = (c.specialMemo || []).filter(m => !m.content.startsWith('[Basic Summary]'));
+
         const newMemo: MemoItem = {
             id: Date.now().toString(),
             createdAt: new Date().toISOString(),
-            content: "[AI 요약]\n" + aiSummaryText,
+            content: "[Basic Summary]\n" + manualSummary,
+        };
+
+        const updatedMemos = [newMemo, ...cleanMemos];
+        handleUpdate('specialMemo', updatedMemos);
+        setIsManualSummaryEdit(false);
+        showToast('기본 요약문이 저장되었습니다.');
+    };
+
+    const handleSaveSummaryToMemo = () => {
+        if (!aiSummaryText.trim()) return;
+
+        // [Refactor] Extract Specifics only using helper
+        const specifics = extractSummarySpecifics(aiSummaryText);
+        // If specifics is same as full text (extraction failed or returned full), use full label?
+        // Actually, helper returns full text if not found.
+        // User wants "Specifics Only". If extraction fails, maybe we label it as full?
+        const finalContent = specifics.length < aiSummaryText.length
+            ? "[AI 요약 - 특이사항]\n" + specifics
+            : "[AI 요약]\n" + aiSummaryText;
+
+        const newMemo: MemoItem = {
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            content: finalContent,
         };
         const updatedMemos = [newMemo, ...(c.specialMemo || [])];
         handleUpdate('specialMemo', updatedMemos);
-        showToast('상담 내용으로 저장되었습니다.');
+        showToast('상담 내용(특이사항)으로 저장되었습니다.');
     };
 
     const handleUpdateAiSummaryText = () => {
@@ -1455,13 +1495,120 @@ export default function CaseDetail() {
                 )}
 
                 {activeTab === 'summary' && (
-                    <div className="text-center space-y-4">
-                        <div className="bg-gray-800 text-white p-4 rounded text-left text-sm whitespace-pre-wrap font-mono leading-relaxed">
-                            {generateSummary(c, currentPartner ? currentPartner.summaryTemplate : undefined)}
+                    <div className="grid md:grid-cols-2 gap-4 h-full min-h-[600px]">
+                        {/* LEFT: Basic Summary */}
+                        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                                    <FileText size={18} /> 기본 요약문
+                                </h3>
+                                <div className="flex gap-2">
+                                    {isManualSummaryEdit ? (
+                                        <>
+                                            <button onClick={handleSaveManualSummary} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 font-bold">저장</button>
+                                            <button onClick={() => {
+                                                // Revert
+                                                const savedManual = c.specialMemo?.find(m => m.content.startsWith('[Basic Summary]'));
+                                                setManualSummary(savedManual ? savedManual.content.replace('[Basic Summary]\n', '') : generateSummary(c, currentPartner?.summaryTemplate));
+                                                setIsManualSummaryEdit(false);
+                                            }} className="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">취소</button>
+                                        </>
+                                    ) : (
+                                        <button onClick={() => setIsManualSummaryEdit(true)} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1">
+                                            <Edit2 size={12} /> 수정
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex-1 relative">
+                                {isManualSummaryEdit ? (
+                                    <textarea
+                                        className="w-full h-full p-4 border rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                                        value={manualSummary}
+                                        onChange={e => setManualSummary(e.target.value)}
+                                        style={{ minHeight: '400px' }} // Fix resize bug
+                                    />
+                                ) : (
+                                    <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto" style={{ minHeight: '400px', maxHeight: '600px' }}>
+                                        {manualSummary}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-4 flex justify-center">
+                                <button onClick={() => { navigator.clipboard.writeText(manualSummary); showToast('복사되었습니다.'); }} className="bg-gray-800 text-white px-6 py-3 rounded-lg font-bold flex items-center hover:bg-gray-900 w-full justify-center">
+                                    <Copy className="mr-2" size={16} /> 전체 복사하기
+                                </button>
+                            </div>
                         </div>
-                        <button onClick={handleCopySummary} className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center mx-auto hover:bg-blue-700">
-                            <Copy className="mr-2" /> 요약문 복사하기
-                        </button>
+
+                        {/* RIGHT: AI Summary */}
+                        <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 shadow-sm flex flex-col h-full">
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="font-bold text-purple-800 flex items-center gap-2">
+                                    <Sparkles size={18} /> AI 요약문
+                                </h3>
+                                <div className="flex gap-2">
+                                    {aiSummaryEditMode ? (
+                                        <>
+                                            <button onClick={handleUpdateAiSummaryText} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 font-bold">저장</button>
+                                            <button onClick={() => setAiSummaryEditMode(false)} className="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">취소</button>
+                                        </>
+                                    ) : (
+                                        <button onClick={() => {
+                                            // Inject metadata on edit start
+                                            setAiSummaryText(injectSummaryMetadata(aiSummaryText || '', c));
+                                            setAiSummaryEditMode(true);
+                                        }} className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded hover:bg-purple-200 flex items-center gap-1">
+                                            <Edit2 size={12} /> 수정
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex-1 relative">
+                                {aiSummaryText ? (
+                                    aiSummaryEditMode ? (
+                                        <textarea
+                                            className="w-full h-full p-4 border border-purple-200 rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-purple-500 outline-none"
+                                            value={aiSummaryText}
+                                            onChange={e => setAiSummaryText(e.target.value)}
+                                            style={{ minHeight: '400px' }} // Fix resize bug
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors"
+                                            onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }} // Click to edit convenience
+                                            style={{ minHeight: '400px', maxHeight: '600px' }}>
+                                            {aiSummaryText}
+                                        </div>
+                                    )
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4 min-h-[400px]">
+                                        <Sparkles size={48} className="opacity-20" />
+                                        <p className="text-center text-sm">AI 요약 결과가 없습니다.<br />'정보 수정' 탭에서 녹음 파일을 업로드하고<br />AI 요약을 실행해보세요.</p>
+                                        <button onClick={() => setActiveTab('info')} className="text-purple-600 underline text-sm">
+                                            정보 수정 탭으로 이동
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {aiSummaryText && (
+                                <div className="mt-4 flex flex-col gap-2">
+                                    {/* User Request #2: "AI 요약문" Label + Send Button */}
+                                    <button
+                                        onClick={handleSaveSummaryToMemo}
+                                        className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-indigo-700 w-full shadow-sm transition-all active:scale-95"
+                                    >
+                                        <Send className="mr-2" size={16} /> 상담 내용으로 보내기 (특이사항 추가)
+                                    </button>
+                                    <p className="text-[10px] text-center text-purple-400">
+                                        * 버튼을 누르면 '특이사항' 부분만 자동으로 추출되어 상담 이력에 저장됩니다.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
