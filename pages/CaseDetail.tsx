@@ -1511,13 +1511,17 @@ export default function CaseDetail() {
                                     />
                                 ) : (
                                     <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto" style={{ minHeight: '400px', maxHeight: '600px' }}>
-                                        {manualSummary}
+                                        {generateSummary(c, currentPartner?.summaryTemplate)}
                                     </div>
                                 )}
                             </div>
 
                             <div className="mt-4 flex justify-center">
-                                <button onClick={() => { navigator.clipboard.writeText(manualSummary); showToast('복사되었습니다.'); }} className="bg-gray-800 text-white px-6 py-3 rounded-lg font-bold flex items-center hover:bg-gray-900 w-full justify-center">
+                                <button onClick={() => {
+                                    const textToCopy = isManualSummaryEdit ? manualSummary : generateSummary(c, currentPartner?.summaryTemplate);
+                                    navigator.clipboard.writeText(textToCopy);
+                                    showToast('복사되었습니다.');
+                                }} className="bg-gray-800 text-white px-6 py-3 rounded-lg font-bold flex items-center hover:bg-gray-900 w-full justify-center">
                                     <Copy className="mr-2" size={16} /> 전체 복사하기
                                 </button>
                             </div>
