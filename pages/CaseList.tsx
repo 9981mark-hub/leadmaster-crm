@@ -539,15 +539,29 @@ export default function CaseList() {
             </div>
 
             <div className="flex flex-col xl:flex-row justify-start items-start xl:items-center gap-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                <div className="relative w-full xl:w-auto">
-                    <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="이름 또는 번호 검색"
-                        className="pl-10 pr-4 py-2 border rounded-lg text-sm w-full xl:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-                        value={search}
-                        onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                    />
+                {/* [Row 1] Search + Mobile Upload Action */}
+                <div className="flex w-full xl:w-auto gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="이름 또는 번호 검색"
+                            className="pl-10 pr-4 py-2 border rounded-lg text-sm w-full xl:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                            value={search}
+                            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+                    {/* Cloud Upload Button (Mobile Only) */}
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setIsImportModalOpen(true);
+                        }}
+                        className="xl:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
+                    >
+                        <Upload size={18} />
+                    </button>
                 </div>
 
                 <div className="flex flex-wrap gap-1 w-full xl:w-auto items-center">
