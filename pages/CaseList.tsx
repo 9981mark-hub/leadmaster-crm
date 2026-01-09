@@ -11,7 +11,7 @@ import HoverCheckTooltip from '../components/HoverCheckTooltip';
 import { fetchCaseStatusLogs } from '../services/api';
 import { STATUS_COLOR_MAP } from '../constants';
 import { MemoItem, CaseStatusLog } from '../types';
-import { ErrorBoundary } from '../components/ErrorBoundary';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const getNextUpcomingReminder = (reminders?: ReminderItem[]): ReminderItem | null => {
     if (!reminders || reminders.length === 0) return null;

@@ -1,50 +1,30 @@
-import React from 'react';
+import React, { Component } from 'react';
 
-interface ErrorBoundaryProps {
-    children: React.ReactNode;
-    fallback?: React.ReactNode;
-}
-
-interface ErrorBoundaryState {
-    hasError: boolean;
-    error: Error | null;
-    errorInfo: React.ErrorInfo | null;
-}
-
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    constructor(props: ErrorBoundaryProps) {
+export class ErrorBoundary extends Component<any, any> {
+    constructor(props: any) {
         super(props);
         this.state = { hasError: false, error: null, errorInfo: null };
     }
 
-    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-        return { hasError: true, error, errorInfo: null };
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    componentDidCatch(error: any, errorInfo: any) {
         console.error("Uncaught error:", error, errorInfo);
         this.setState({ error, errorInfo });
     }
 
     render() {
         if (this.state.hasError) {
-            if (this.props.fallback) {
-                return this.props.fallback;
-            }
             return (
-                <div style={{ padding: '20px', margin: '20px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', color: '#991b1b' }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>System Error (Data Critical)</h2>
-                    <p style={{ fontWeight: '600' }}>{this.state.error?.toString()}</p>
-                    <details style={{ marginTop: '10px', fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
-                        <summary style={{ cursor: 'pointer', marginBottom: '5px' }}>Stack Trace</summary>
-                        {this.state.errorInfo?.componentStack}
-                    </details>
-                    <button
-                        onClick={() => window.location.reload()}
-                        style={{ marginTop: '15px', padding: '8px 16px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                        Recover (Reload)
-                    </button>
+                <div style={{ padding: '20px', color: 'red', border: '1px solid red' }}>
+                    <h2>CRASH DETECTED</h2>
+                    <p>{this.state.error && this.state.error.toString()}</p>
+                    <pre style={{ fontSize: '10px' }}>
+                        {this.state.errorInfo && this.state.errorInfo.componentStack}
+                    </pre>
+                    <button onClick={() => window.location.reload()}>Reload</button>
                 </div>
             );
         }
@@ -52,3 +32,5 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         return this.props.children;
     }
 }
+
+export default ErrorBoundary;
