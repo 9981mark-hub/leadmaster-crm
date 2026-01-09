@@ -379,11 +379,11 @@ export default function CaseList() {
     });
 
     const getLastConsultationDate = (c: Case): string => {
-        if (!c.specialMemo || c.specialMemo.length === 0) {
+        if (!c.specialMemo || !Array.isArray(c.specialMemo) || c.specialMemo.length === 0) {
             return c.updatedAt;
         }
-        const sortedMemos = [...c.specialMemo].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-        return sortedMemos[0].createdAt;
+        const sortedMemos = [...c.specialMemo].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        return sortedMemos[0]?.createdAt || c.updatedAt;
     };
 
     const sortedCases = [...filteredCases].map((c, index) => ({ ...c, _originalIndex: index })).sort((a, b) => {
@@ -717,7 +717,7 @@ export default function CaseList() {
                                                 content={
                                                     <div className="space-y-1">
                                                         <p className="font-bold text-gray-300 border-b border-gray-600 pb-1 mb-1">최근 상담 내역</p>
-                                                        {c.specialMemo && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                        {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
                                                             c.specialMemo
                                                                 .filter(m => !m.content.startsWith('[상태변경]'))
                                                                 .slice(0, 2)
@@ -767,8 +767,8 @@ export default function CaseList() {
                                             <button
                                                 onClick={(e) => handleMissedCall(e, c)}
                                                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
-                                                        ? 'bg-red-100 border-red-200 text-red-600 animate-pulse ring-2 ring-red-400'
-                                                        : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                    ? 'bg-red-100 border-red-200 text-red-600 animate-pulse ring-2 ring-red-400'
+                                                    : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
                                                     }`}
                                             >
                                                 <PhoneMissed size={14} />
@@ -853,7 +853,7 @@ export default function CaseList() {
                                                     content={
                                                         <div className="space-y-2">
                                                             <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
-                                                            {c.specialMemo && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                            {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
                                                                 c.specialMemo
                                                                     .filter(m => !m.content.startsWith('[상태변경]'))
                                                                     .slice(0, 3)
