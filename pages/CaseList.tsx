@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData, updateCase } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
-import { getCaseWarnings, parseReminder, parseGenericDate } from '../utils';
+import { getCaseWarnings, parseReminder, parseGenericDate, safeFormat } from '../utils';
 import { Link } from 'react-router-dom';
 import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed } from 'lucide-react';
 import { format } from 'date-fns';
@@ -767,14 +767,14 @@ export default function CaseList() {
                                             <button
                                                 onClick={(e) => handleMissedCall(e, c)}
                                                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
-                                                    ? 'bg-red-100 border-red-200 text-red-600 animate-pulse ring-2 ring-red-400'
-                                                    : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                        ? 'bg-red-100 border-red-200 text-red-600 animate-pulse ring-2 ring-red-400'
+                                                        : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
                                                     }`}
                                             >
                                                 <PhoneMissed size={14} />
                                                 <span>+{c.missedCallCount || 0}</span>
                                             </button>
-                                            {c.lastMissedCallAt && <div className="text-[10px] text-gray-400 text-right mt-1">{format(new Date(c.lastMissedCallAt), 'MM.dd HH:mm')}</div>}
+                                            {c.lastMissedCallAt && <div className="text-[10px] text-gray-400 text-right mt-1">{safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}</div>}
                                         </div>
                                     )}
                                 </div >
@@ -899,7 +899,7 @@ export default function CaseList() {
                                                             ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
                                                             : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
                                                             }`}
-                                                        title={`마지막 부재: ${c.lastMissedCallAt ? format(new Date(c.lastMissedCallAt), 'yyyy-MM-dd HH:mm') : '없음'}`}
+                                                        title={`마지막 부재: ${safeFormat(c.lastMissedCallAt, 'yyyy-MM-dd HH:mm', '없음')}`}
                                                     >
                                                         <PhoneMissed size={10} />
                                                         <span>+{c.missedCallCount || 0}</span>
@@ -909,10 +909,10 @@ export default function CaseList() {
 
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-500">
-                                            {c.createdAt ? format(new Date(c.createdAt), 'yyyy-MM-dd') : '-'}
+                                            {safeFormat(c.createdAt, 'yyyy-MM-dd')}
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-500">
-                                            {lastConsultDate ? format(new Date(lastConsultDate), 'yyyy-MM-dd') : '-'}
+                                            {safeFormat(lastConsultDate, 'yyyy-MM-dd')}
                                         </td>
                                         <td className="px-4 py-3 text-xs">
                                             {nextReminder ? (

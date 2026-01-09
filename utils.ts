@@ -555,3 +555,16 @@ export const extractSummarySpecifics = (text: string): string => {
   // Compromise: Return full text but marked.
   return text;
 };
+
+// Helper for Safe Date Formatting (Prevents Crash on Invalid Date)
+export const safeFormat = (date: Date | string | number | undefined | null, fmt: string, fallback: string = '-'): string => {
+  if (!date) return fallback;
+  try {
+    const d = new Date(date);
+    if (!isValid(d)) return fallback;
+    return format(d, fmt);
+  } catch (e) {
+    console.warn("Date formatting error:", e);
+    return fallback;
+  }
+};
