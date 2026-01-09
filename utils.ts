@@ -335,7 +335,17 @@ export const getReminderStatus = (dateStr?: string) => {
 };
 
 // [NEW] Robust Date Parser for Korean/Unknown formats
-export const parseGenericDate = (dateStr: string | undefined | null): Date | null => {
+export const parseGenericDate = (input: Date | string | number | undefined | null): Date | null => {
+  if (input === undefined || input === null) return null;
+
+  // Handle Date Object directly
+  if (input instanceof Date) {
+    return isValid(input) ? input : null;
+  }
+
+  // Handle Number (Excel Serial or Timestamp) -> Convert to String for trying ISO, but usually specific logic needed?
+  // For now, just stringify it to prevent crash.
+  const dateStr = String(input);
   if (!dateStr) return null;
 
   // 1. Try ISO (Standard)
