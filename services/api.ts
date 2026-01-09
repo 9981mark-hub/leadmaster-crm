@@ -49,7 +49,13 @@ const loadFromStorage = () => {
     const storedLogs = localStorage.getItem(CACHE_KEYS.LOGS);
 
     if (storedPartners) localPartners = JSON.parse(storedPartners);
-    if (storedCases) localCases = JSON.parse(storedCases);
+    if (storedCases) {
+      const parsed = JSON.parse(storedCases);
+      if (Array.isArray(parsed)) {
+        // [Critical Fix] Sanitize loaded data immediately to prevent crashes from legacy bad data
+        localCases = parsed.map(processIncomingCase).filter((c): c is Case => c !== null);
+      }
+    }
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
     if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
     if (storedEmails) localAllowedEmails = JSON.parse(storedEmails);
