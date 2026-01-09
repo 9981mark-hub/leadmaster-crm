@@ -1504,12 +1504,12 @@ export default function CaseDetail() {
                             <div className="flex-1 relative h-full">
                                 {isManualSummaryEdit ? (
                                     <textarea
-                                        className="w-full h-full p-4 border rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-blue-500 outline-none min-h-[50vh] md:min-h-[500px]"
+                                        className="w-full h-full p-4 border rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-blue-500 outline-none min-h-[300px]"
                                         value={manualSummary}
                                         onChange={e => setManualSummary(e.target.value)}
                                     />
                                 ) : (
-                                    <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[50vh] md:min-h-[500px]">
+                                    <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[300px]">
                                         {generateSummary(c, currentPartner?.summaryTemplate)}
                                     </div>
                                 )}
@@ -1554,19 +1554,19 @@ export default function CaseDetail() {
                                 {aiSummaryText ? (
                                     aiSummaryEditMode ? (
                                         <textarea
-                                            className="w-full h-full p-4 border border-purple-200 rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-purple-500 outline-none min-h-[50vh] md:min-h-[500px]"
+                                            className="w-full h-full p-4 border border-purple-200 rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-purple-500 outline-none min-h-[300px]"
                                             value={aiSummaryText}
                                             onChange={e => setAiSummaryText(e.target.value)}
                                         />
                                     ) : (
-                                        <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[50vh] md:min-h-[500px]"
+                                        <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[300px]"
                                             onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }} // Click to edit convenience
                                         >
                                             {aiSummaryText}
                                         </div>
                                     )
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4 min-h-[50vh] md:min-h-[500px]">
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4 min-h-[300px]">
                                         <Sparkles size={48} className="opacity-20" />
                                         <p className="text-center text-sm">AI 요약 결과가 없습니다.<br />'정보 수정' 탭에서 녹음 파일을 업로드하고<br />AI 요약을 실행해보세요.</p>
                                         <button onClick={() => setActiveTab('info')} className="text-purple-600 underline text-sm">
