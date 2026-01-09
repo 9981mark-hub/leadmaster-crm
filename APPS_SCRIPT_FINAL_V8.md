@@ -146,6 +146,9 @@ function handleRequest(method, target, e, params) {
        newRow[39] = "[]"; 
        newRow[40] = "[]"; 
        newRow[41] = "[]"; 
+
+       // [Fix] Set Fixed CreatedAt
+       newRow[43] = now; 
        
        sheet.appendRow(newRow);
        
@@ -171,7 +174,7 @@ function handleRequest(method, target, e, params) {
             num(d.creditCardAmount), json(d.creditLoan), json(d.assets), d.aiSummary,
             d.contractAt, num(d.contractFee), d.installmentMonths, d.useCapital,
             json(d.depositHistory), json(d.specialMemo), json(d.reminders), json(d.recordings),
-            d.isViewed, '', '', d.formattedSummary
+            d.isViewed, d.createdAt, '', d.formattedSummary
         ];
         
         if (params.action === 'delete') {
@@ -316,6 +319,7 @@ function mapRowToCase(row) {
     return {
           caseId: String(row[0]),
           updatedAt: row[1],
+          createdAt: row[43] || row[1], // [Fix] Use dedicated CreatedAt or fallback to UpdatedAt
           status: row[2],
           managerName: row[3],
           partnerId: row[4],
