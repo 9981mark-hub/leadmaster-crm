@@ -136,8 +136,9 @@ export default function Settlement() {
                         value={year}
                         onChange={e => setYear(Number(e.target.value))}
                     >
-                        <option value={2024}>2024년</option>
-                        <option value={2025}>2025년</option>
+                        {Array.from({ length: 13 }, (_, i) => 2024 + i).map(y => (
+                            <option key={y} value={y}>{y}년</option>
+                        ))}
                     </select>
 
                     <select
