@@ -616,6 +616,8 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
 
   const payload = {
     ...updated,
+    Timestamp: updated.createdAt, // [Fix] Explicitly provide Timestamp for Sheet Headers
+    CreatedAt: updated.createdAt, // [Fix] Redundant backup
     formattedSummary // Add this extra field
   };
 
