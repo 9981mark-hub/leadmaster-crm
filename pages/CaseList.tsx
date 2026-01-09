@@ -715,17 +715,17 @@ export default function CaseList() {
 
                 {/* Desktop View (Table) */}
                 < div className="hidden md:block flex-1" >
-                    <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300">
+                    <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300 table-fixed">
                         <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
                             <tr>
-                                <th className="px-4 py-3">유형/경로/거래처</th>
-                                <th className="px-4 py-3">고객명</th>
-                                <th className="px-4 py-3">연락처</th>
-                                <th className="px-4 py-3">상태</th>
-                                <th className="px-4 py-3">등록일</th>
-                                <th className="px-4 py-3">최종상담일</th>
-                                <th className="px-4 py-3">리마인더</th>
-                                <th className="px-4 py-3 text-center">삭제</th>
+                                <th className="px-4 py-3 w-[15%]">유형/경로/거래처</th>
+                                <th className="px-4 py-3 w-[12%]">고객명</th>
+                                <th className="px-4 py-3 w-[13%]">연락처</th>
+                                <th className="px-4 py-3 w-[10%]">상태</th>
+                                <th className="px-4 py-3 w-[10%]">등록일</th>
+                                <th className="px-4 py-3 w-[10%]">최종상담일</th>
+                                <th className="px-4 py-3 w-[20%]">리마인더</th>
+                                <th className="px-4 py-3 w-[10%] text-center">삭제</th>
                             </tr>
                         </thead>
                         <tbody>
