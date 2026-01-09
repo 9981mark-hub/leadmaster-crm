@@ -906,22 +906,7 @@ export default function CaseList() {
                                                     </button>
                                                 </div>
                                             )}
-                                            {/* Missed Call Button (Desktop) - Appears next to status if missed */}
-                                            {c.status === missedCallStatus && (
-                                                <div className="mt-1 flex items-center gap-1">
-                                                    <button
-                                                        onClick={(e) => handleMissedCall(e, c)}
-                                                        className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
-                                                            ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
-                                                            : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
-                                                            }`}
-                                                        title={`마지막 부재: ${c.lastMissedCallAt ? format(new Date(c.lastMissedCallAt), 'yyyy-MM-dd HH:mm') : '없음'}`}
-                                                    >
-                                                        <PhoneMissed size={10} />
-                                                        <span>+{c.missedCallCount || 0}</span>
-                                                    </button>
-                                                </div>
-                                            )}
+
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-500">
                                             {c.createdAt ? format(new Date(c.createdAt), 'yyyy-MM-dd') : '-'}
