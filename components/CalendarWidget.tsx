@@ -5,7 +5,7 @@ import {
   eachDayOfInterval, parse, isToday
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Phone, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Phone, Briefcase, Users, MoreHorizontal, MapPin } from 'lucide-react';
 import { Case } from '../types';
 import { Link } from 'react-router-dom';
 
@@ -45,6 +45,17 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
       const eventDate = parse(ev.datetime, 'yyyy-MM-dd HH:mm', new Date());
       return isSameDay(eventDate, date);
     }).sort((a, b) => (a.datetime || '').localeCompare(b.datetime || ''));
+  };
+
+  const getEventIcon = (type: string) => {
+    // Colors matching Mobile/CaseDetail: Call=Blue, Business=Green, Visit=Purple
+    switch (type) {
+      case '통화': return <Phone size={12} className="text-blue-600" />;
+      case '출장미팅': return <Briefcase size={12} className="text-green-600" />;
+      case '방문미팅': return <MapPin size={12} className="text-purple-600" />;
+      case '기타': return <MoreHorizontal size={12} className="text-gray-600" />;
+      default: return <MoreHorizontal size={12} className="text-gray-600" />;
+    }
   };
 
   return (
@@ -109,14 +120,14 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                 )}
               </div>
 
-              {/* Mobile: Dot View */}
+              {/* Mobile: Dot View - Corrected Colors */}
               <div className="md:hidden flex flex-wrap gap-1 content-end mt-auto px-1 pb-1">
                 {dayEvents.slice(0, 5).map((ev, i) => (
                   <div
                     key={i}
                     className={`w-1.5 h-1.5 rounded-full ${ev.type === '방문미팅' ? 'bg-purple-500' :
-                      ev.type === '출장미팅' ? 'bg-green-500' :
-                        'bg-blue-500'
+                        ev.type === '출장미팅' ? 'bg-green-500' :
+                          'bg-blue-500' // Call or Default
                       }`}
                   />
                 ))}
@@ -143,10 +154,10 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                     >
                       <div className="flex items-center gap-1 w-full">
                         <span className="font-mono font-bold text-gray-500 whitespace-nowrap">{timeStr}</span>
-                        <span className={`font-bold whitespace-nowrap ${ev.type === '방문미팅' ? 'text-purple-600' :
-                          ev.type === '출장미팅' ? 'text-green-600' :
-                            'text-blue-600'
-                          }`}>[{ev.type}]</span>
+                        {/* ICON REPLACEMENT */}
+                        <div className="flex-shrink-0 flex items-center" title={ev.type}>
+                          {getEventIcon(ev.type)}
+                        </div>
                         <span className={`font-medium truncate flex-1 text-left ${ev.resultStatus === '완료' ? 'text-gray-400 line-through' : ''}`}>
                           {ev.resultStatus === '완료' && "✅ "}
                           {ev.resultStatus === '미연결' && "📞 "}

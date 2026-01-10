@@ -4,7 +4,7 @@ import { fetchCases, fetchPartners } from '../services/api';
 import { Case, Partner, ReminderItem } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement } from '../utils';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet } from 'lucide-react';
+import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal } from 'lucide-react';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
@@ -166,10 +166,10 @@ export default function Dashboard() {
 
                 // Color coding based on Type
                 let typeColor = 'bg-gray-100 text-gray-600';
-                if (type === '통화') typeColor = 'bg-green-100 text-green-700';
-                else if (type === '출장미팅') typeColor = 'bg-blue-100 text-blue-700';
+                if (type === '통화') typeColor = 'bg-blue-100 text-blue-700';
+                else if (type === '출장미팅') typeColor = 'bg-green-100 text-green-700';
                 else if (type === '방문미팅') typeColor = 'bg-purple-100 text-purple-700';
-                else if (type === '기타') typeColor = 'bg-yellow-100 text-yellow-700';
+                else if (type === '기타') typeColor = 'bg-gray-100 text-gray-700';
 
                 return (
                   <Link
@@ -187,6 +187,13 @@ export default function Dashboard() {
                       {/* Desktop Row: Standard Layout */}
                       <div className="hidden md:flex items-center gap-3 md:w-auto flex-shrink-0">
                         <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
+                        {/* Icon added */}
+                        <span title={type} className="flex items-center justify-center">
+                          {type === '통화' && <Phone size={16} className="text-blue-600" />}
+                          {type === '출장미팅' && <Briefcase size={16} className="text-green-600" />}
+                          {type === '방문미팅' && <MapPin size={16} className="text-purple-600" />}
+                          {type === '기타' && <MoreHorizontal size={16} className="text-gray-600" />}
+                        </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
                       </div>
 
