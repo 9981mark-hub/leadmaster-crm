@@ -223,6 +223,33 @@ export default function CaseList() {
         };
     }, []);
 
+    // [New] Scroll Restoration
+    useEffect(() => {
+        // Save scroll position before unmount or refresh
+        const handleScrollSave = () => {
+            sessionStorage.setItem('lm_caselist_scrollY', window.scrollY.toString());
+        };
+
+        window.addEventListener('beforeunload', handleScrollSave);
+        return () => {
+            window.removeEventListener('beforeunload', handleScrollSave);
+            handleScrollSave(); // Also save on unmount (navigation)
+        };
+    }, []);
+
+    // Restore scroll position when data is loaded
+    useEffect(() => {
+        if (!loading && cases.length > 0) {
+            const savedScrollY = sessionStorage.getItem('lm_caselist_scrollY');
+            if (savedScrollY) {
+                // Small timeout to ensure rendering is complete
+                setTimeout(() => {
+                    window.scrollTo(0, parseInt(savedScrollY, 10));
+                }, 100);
+            }
+        }
+    }, [loading, cases.length]);
+
     // 2. Polling Interval (Skip if modal is open)
     useEffect(() => {
         if (isImportModalOpen) return; // Stop polling while modal is open
