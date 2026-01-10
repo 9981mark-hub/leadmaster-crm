@@ -114,7 +114,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-4 md:pb-0">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white">대시보드</h2>
 
       {/* KPI Grid */}
@@ -206,9 +206,9 @@ export default function Dashboard() {
                         <div className="md:ml-auto flex items-center gap-2 text-xs mt-1 md:mt-0 flex-shrink-0">
                           {item.reminder.resultStatus && (
                             <span className={`px-2 py-1 rounded font-bold whitespace-nowrap shadow-sm ${item.reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
-                                item.reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
-                                  item.reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-gray-100 text-gray-600'
+                              item.reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
+                                item.reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
+                                  'bg-gray-100 text-gray-600'
                               }`}>
                               {item.reminder.resultStatus === '완료' && "✅ "}
                               {item.reminder.resultStatus === '미연결' && "📞 "}
