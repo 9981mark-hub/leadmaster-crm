@@ -301,19 +301,15 @@ export default function CaseList() {
                         // Success or Timeout
                         restoredRef.current = true;
 
-                        // [Watchdog] Monitor for unwanted resets for 1 second after restoration
-                        const watchdogStart = Date.now();
-                        const checkReset = () => {
-                            if (Date.now() - watchdogStart > 1000) return; // Stop watching after 1s
+                        // [Scroll Lock] Proactively force scroll position for 500ms to prevent glitches
+                        const lockStart = Date.now();
+                        const forceScrollLock = () => {
+                            if (Date.now() - lockStart > 500) return; // Stop locking after 500ms
 
-                            // If scroll position drops near 0 but we want to be further down
-                            if (container.scrollTop < 10 && targetY > 100) {
-                                console.warn("Watchdog: Detected unwanted scroll reset. Forcing restoration.");
-                                container.scrollTop = targetY;
-                            }
-                            requestAnimationFrame(checkReset);
+                            container.scrollTop = targetY;
+                            requestAnimationFrame(forceScrollLock);
                         };
-                        requestAnimationFrame(checkReset);
+                        requestAnimationFrame(forceScrollLock);
 
                         // Reveal content
                         setTimeout(() => {

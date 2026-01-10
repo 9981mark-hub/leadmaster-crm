@@ -36,6 +36,8 @@
     #main-scroll-container,
     * {
       scroll-behavior: auto !important;
+      overscroll-behavior-y: none;
+      /* Prevent rubber-banding */
     }
   </style>
   <script>
@@ -96,6 +98,8 @@
 
     input[type=number] {
       -moz-appearance: textfield;
+      -webkit-appearance: textfield;
+      appearance: textfield;
     }
 
     /* 
