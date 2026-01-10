@@ -301,26 +301,16 @@ export default function CaseList() {
                         // Success or Timeout
                         restoredRef.current = true;
 
-                        // [Scroll Lock] Proactively force scroll position for 500ms to prevent glitches
-                        const lockStart = Date.now();
-                        const forceScrollLock = () => {
-                            if (Date.now() - lockStart > 500) return; // Stop locking after 500ms
 
-                            container.scrollTop = targetY;
-                            requestAnimationFrame(forceScrollLock);
-                        };
-                        requestAnimationFrame(forceScrollLock);
 
-                        // Reveal content
-                        setTimeout(() => {
-                            setIsRestoring(false);
-                            // Do NOT restore original behavior. Keep it 'auto'.
+                        setIsRestoring(false);
+                        // Do NOT restore original behavior. Keep it 'auto'.
 
-                            // Set manual restoration for history AFTER we took control
-                            if ('scrollRestoration' in window.history) {
-                                window.history.scrollRestoration = 'manual';
-                            }
-                        }, 50);
+                        // Set manual restoration for history AFTER we took control
+                        if ('scrollRestoration' in window.history) {
+                            window.history.scrollRestoration = 'manual';
+                        }
+
                     } else {
                         // Retry next frame
                         requestAnimationFrame(attemptRestore);
