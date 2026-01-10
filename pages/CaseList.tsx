@@ -285,8 +285,7 @@ export default function CaseList() {
 
                 if (!container) return;
 
-                // Disable smooth scrolling globally on the container during restoration
-                // const originalScrollBehavior = container.style.scrollBehavior;
+                // Force instant scroll behavior
                 container.style.scrollBehavior = 'auto';
 
                 // Retry loop: Attempt to restore for up to 2 seconds
