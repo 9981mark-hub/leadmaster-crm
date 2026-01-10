@@ -603,8 +603,6 @@ export default function CaseList() {
         <div
             className="max-w-7xl mx-auto space-y-6"
             style={{
-                opacity: isRestoring ? 0 : 1,
-                transition: 'opacity 0.2s ease-in-out',
                 pointerEvents: isRestoring ? 'none' : 'auto'
             }}
         >
