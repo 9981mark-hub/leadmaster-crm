@@ -277,6 +277,10 @@ export default function CaseList() {
 
                 if (!container) return;
 
+                // Disable smooth scrolling globally on the container during restoration
+                const originalScrollBehavior = container.style.scrollBehavior;
+                container.style.scrollBehavior = 'auto';
+
                 // Retry loop: Attempt to restore for up to 2 seconds
                 // This waits for the container height to expand enough to hold the scroll
                 const startTime = Date.now();
@@ -291,6 +295,8 @@ export default function CaseList() {
                         // Small delay to ensure paint, then show content
                         setTimeout(() => {
                             setIsRestoring(false);
+                            container.style.scrollBehavior = originalScrollBehavior;
+
                             // Set manual restoration for history AFTER we took control
                             if ('scrollRestoration' in window.history) {
                                 window.history.scrollRestoration = 'manual';
@@ -566,7 +572,8 @@ export default function CaseList() {
     const handlePageChange = (pageNumber: number) => {
         if (pageNumber >= 1 && pageNumber <= totalPages) {
             setCurrentPage(pageNumber);
-            window.scrollTo(0, 0);
+            const container = document.getElementById('main-scroll-container');
+            if (container) container.scrollTop = 0;
         }
     };
 
