@@ -951,7 +951,26 @@ export default function CaseList() {
                                     <a href={`tel:${c.phone}`} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
                                         <Phone size={14} className="mr-1" /> {c.phone}
                                     </a>
-                                    {nextReminder && <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">📞 {nextReminder.datetime.split(' ')[0]}</span>}
+                                    {nextReminder && (
+                                        <HoverCheckTooltip
+                                            trigger={
+                                                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help">
+                                                    📞 {nextReminder.datetime.split(' ')[0]}
+                                                </span>
+                                            }
+                                            content={
+                                                <div className="space-y-1">
+                                                    <p className="font-bold text-gray-200">다음 리마인더</p>
+                                                    <p className="text-gray-300">{nextReminder.datetime}</p>
+                                                    {nextReminder.content && (
+                                                        <p className="text-gray-400 text-[11px] mt-1 border-t border-gray-600 pt-1">
+                                                            {nextReminder.content}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            }
+                                        />
+                                    )}
                                 </div>
 
                                 {
@@ -1087,10 +1106,25 @@ export default function CaseList() {
                                         </td>
                                         <td className="px-4 py-3 text-xs">
                                             {nextReminder ? (
-                                                <>
-                                                    <span>{nextReminder.datetime}</span>
-                                                    {(c.reminders?.length || 0) > 1 && <span className="ml-1 text-gray-400">외 {(c.reminders?.length || 0) - 1}건</span>}
-                                                </>
+                                                <HoverCheckTooltip
+                                                    trigger={
+                                                        <>
+                                                            <span className="cursor-help">{nextReminder.datetime}</span>
+                                                            {(c.reminders?.length || 0) > 1 && <span className="ml-1 text-gray-400">외 {(c.reminders?.length || 0) - 1}건</span>}
+                                                        </>
+                                                    }
+                                                    content={
+                                                        <div className="space-y-1">
+                                                            <p className="font-bold text-gray-200">다음 리마인더</p>
+                                                            <p className="text-gray-300">{nextReminder.datetime}</p>
+                                                            {nextReminder.content && (
+                                                                <p className="text-gray-400 text-[11px] mt-1 border-t border-gray-600 pt-1">
+                                                                    {nextReminder.content}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    }
+                                                />
                                             ) : '-'}
                                         </td>
                                         <td className="px-4 py-3 text-center">
