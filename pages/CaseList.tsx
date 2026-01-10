@@ -223,17 +223,31 @@ export default function CaseList() {
         };
     }, []);
 
-    // [New] Scroll Restoration
+    // [Refined] Scroll Restoration
     useEffect(() => {
+        // 1. Disable browser's native scroll restoration to prevent conflicts
+        // This prevents the browser from forcing scroll to top (0) or a wrong position before our code runs
+        const originalScrollRestoration = window.history.scrollRestoration;
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+
         // Save scroll position before unmount or refresh
         const handleScrollSave = () => {
-            sessionStorage.setItem('lm_caselist_scrollY', window.scrollY.toString());
+            if (window.scrollY > 0) {
+                sessionStorage.setItem('lm_caselist_scrollY', window.scrollY.toString());
+            }
         };
 
         window.addEventListener('beforeunload', handleScrollSave);
         return () => {
             window.removeEventListener('beforeunload', handleScrollSave);
             handleScrollSave(); // Also save on unmount (navigation)
+
+            // Revert scroll restoration setting for other pages
+            if ('scrollRestoration' in window.history) {
+                window.history.scrollRestoration = originalScrollRestoration || 'auto';
+            }
         };
     }, []);
 
@@ -242,10 +256,15 @@ export default function CaseList() {
         if (!loading && cases.length > 0) {
             const savedScrollY = sessionStorage.getItem('lm_caselist_scrollY');
             if (savedScrollY) {
-                // Small timeout to ensure rendering is complete
-                setTimeout(() => {
-                    window.scrollTo(0, parseInt(savedScrollY, 10));
-                }, 100);
+                const y = parseInt(savedScrollY, 10);
+                if (y > 0) {
+                    // Use double requestAnimationFrame to ensure layout is fully stable
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            window.scrollTo(0, y);
+                        });
+                    });
+                }
             }
         }
     }, [loading, cases.length]);
