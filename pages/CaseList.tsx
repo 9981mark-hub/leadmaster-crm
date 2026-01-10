@@ -223,49 +223,95 @@ export default function CaseList() {
         };
     }, []);
 
-    // [Refined] Scroll Restoration (Container Based)
-    const isScrollRestored = React.useRef(false);
+    // [Flicker-Free] Scroll Restoration
+    // Initialize true if there is a saved position to restore, else false
+    const [isRestoring, setIsRestoring] = useState(() => {
+        return !!sessionStorage.getItem('lm_caselist_scrollTop');
+    });
+
+    // We utilize a ref to track if we've successfully restored to prevent re-running
+    const restoredRef = React.useRef(!sessionStorage.getItem('lm_caselist_scrollTop'));
 
     useEffect(() => {
-        // Save scroll position of the main container
+        // Robust Save Logic: Save on scroll (throttled) + beforeunload
         const handleScrollSave = () => {
             const container = document.getElementById('main-scroll-container');
             if (container) {
-                // Save whatever the position is (even 0)
                 sessionStorage.setItem('lm_caselist_scrollTop', container.scrollTop.toString());
             }
         };
 
+        // Aggressive saving to catch every move
+        let timeoutId: any;
+        const throttledSave = () => {
+            if (!timeoutId) {
+                timeoutId = setTimeout(() => {
+                    handleScrollSave();
+                    timeoutId = null;
+                }, 200);
+            }
+        };
+
+        const container = document.getElementById('main-scroll-container');
+        if (container) {
+            container.addEventListener('scroll', throttledSave);
+        }
         window.addEventListener('beforeunload', handleScrollSave);
 
         return () => {
+            if (container) container.removeEventListener('scroll', throttledSave);
             window.removeEventListener('beforeunload', handleScrollSave);
-            handleScrollSave(); // Save on unmount (navigation)
+            handleScrollSave();
         };
     }, []);
 
-    // Restore scroll position
+    // Restoration Logic (Retry Strategy)
     useEffect(() => {
-        if (!isScrollRestored.current && cases.length > 0) {
+        // Run only if we have data and haven't finished restoring
+        if (!loading && cases.length > 0 && !restoredRef.current) {
             const savedScrollTop = sessionStorage.getItem('lm_caselist_scrollTop');
 
             if (savedScrollTop) {
-                const y = parseInt(savedScrollTop, 10);
+                const targetY = parseInt(savedScrollTop, 10);
+                const container = document.getElementById('main-scroll-container');
 
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        const container = document.getElementById('main-scroll-container');
-                        if (container) {
-                            container.scrollTop = y;
-                        }
-                        isScrollRestored.current = true;
-                    });
-                });
+                if (!container) return;
+
+                // Retry loop: Attempt to restore for up to 2 seconds
+                // This waits for the container height to expand enough to hold the scroll
+                const startTime = Date.now();
+                const attemptRestore = () => {
+                    // Force scroll
+                    container.scrollTop = targetY;
+
+                    // If we are close enough (allow 1px diff) OR timed out
+                    if (Math.abs(container.scrollTop - targetY) < 2 || Date.now() - startTime > 1000) {
+                        // Success or Timeout
+                        restoredRef.current = true;
+                        // Small delay to ensure paint, then show content
+                        setTimeout(() => {
+                            setIsRestoring(false);
+                            // Set manual restoration for history AFTER we took control
+                            if ('scrollRestoration' in window.history) {
+                                window.history.scrollRestoration = 'manual';
+                            }
+                        }, 50);
+                    } else {
+                        // Retry next frame
+                        requestAnimationFrame(attemptRestore);
+                    }
+                };
+
+                requestAnimationFrame(attemptRestore);
             } else {
-                isScrollRestored.current = true;
+                restoredRef.current = true;
+                setIsRestoring(false);
             }
+        } else if (!loading && cases.length > 0 && restoredRef.current) {
+            // If already restored (or new visit), ensure visible
+            setIsRestoring(false);
         }
-    }, [cases.length]);
+    }, [loading, cases.length]);
 
     // 2. Polling Interval (Skip if modal is open)
     useEffect(() => {
@@ -538,7 +584,14 @@ export default function CaseList() {
     const newCaseCount = cases.filter(c => c.isNew).length;
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div
+            className="max-w-7xl mx-auto space-y-6"
+            style={{
+                opacity: isRestoring ? 0 : 1,
+                transition: 'opacity 0.2s ease-in-out',
+                pointerEvents: isRestoring ? 'none' : 'auto'
+            }}
+        >
 
 
 
