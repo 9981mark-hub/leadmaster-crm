@@ -3,7 +3,7 @@ import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, 
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate, safeFormat } from '../utils';
 import { Link } from 'react-router-dom';
-import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed, Settings } from 'lucide-react';
+import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed, Settings, Briefcase, MapPin, MoreHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 import ImportModal from '../components/ImportModal';
@@ -1114,10 +1114,18 @@ export default function CaseList() {
                                             {nextReminder ? (
                                                 <HoverCheckTooltip
                                                     trigger={
-                                                        <>
-                                                            <span className="cursor-help">{nextReminder.datetime}</span>
-                                                            {(c.reminders?.length || 0) > 1 && <span className="ml-1 text-gray-400">외 {(c.reminders?.length || 0) - 1}건</span>}
-                                                        </>
+                                                        <div className="flex items-center gap-1.5 cursor-help">
+                                                            {/* Icon for Reminder Type */}
+                                                            {(() => {
+                                                                const rType = nextReminder.type || '통화';
+                                                                if (rType === '통화') return <Phone size={14} className="text-blue-600" />;
+                                                                if (rType === '출장미팅') return <Briefcase size={14} className="text-green-600" />;
+                                                                if (rType === '방문미팅') return <MapPin size={14} className="text-purple-600" />;
+                                                                return <MoreHorizontal size={14} className="text-gray-600" />;
+                                                            })()}
+                                                            <span className="text-gray-700 dark:text-gray-300 font-medium">{nextReminder.datetime}</span>
+                                                            {(c.reminders?.length || 0) > 1 && <span className="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
+                                                        </div>
                                                     }
                                                     content={
                                                         <div className="space-y-2 max-h-60 overflow-y-auto">
