@@ -43,7 +43,7 @@ export default function HoverCheckTooltip({
 
     // Dynamic Classes based on alignment
     const getPositionClasses = () => {
-        const mobileClass = mobileAlign === 'right' ? 'right-0' : 'left-0';
+        const mobileClass = mobileAlign === 'right' ? 'right-0' : 'right-0'; // Always right on mobile to prevent left clipping
 
         let desktopClass = '';
         if (desktopAlign === 'center') desktopClass = 'md:left-1/2 md:-translate-x-1/2 md:right-auto';
@@ -54,7 +54,7 @@ export default function HoverCheckTooltip({
     };
 
     const getArrowClasses = () => {
-        const mobileClass = mobileAlign === 'right' ? 'right-4' : 'left-4';
+        const mobileClass = mobileAlign === 'right' ? 'right-4' : 'right-4'; // Always right on mobile
 
         let desktopClass = '';
         if (desktopAlign === 'center') desktopClass = 'md:left-1/2 md:-translate-x-1/2 md:right-auto';
