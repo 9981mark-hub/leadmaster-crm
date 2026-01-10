@@ -819,20 +819,6 @@ export default function CaseDetail() {
                                                                 {reminder.content}
                                                             </span>
                                                         )}
-                                                        {confirmingDeleteReminderId === reminder.id ? (
-                                                            <div className="flex gap-2">
-                                                                <button onClick={() => handleDeleteReminder(reminder.id)} className="text-green-600 text-xs font-bold">확인</button>
-                                                                <button onClick={() => setConfirmingDeleteReminderId(null)} className="text-red-500 text-xs">취소</button>
-                                                            </div>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => setConfirmingDeleteReminderId(reminder.id)}
-                                                                className="text-red-500 p-1 hover:bg-red-50 rounded"
-                                                                title="일정 삭제"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        )}
                                                     </div>
 
                                                     {/* Result Action Area */}
@@ -879,6 +865,20 @@ export default function CaseDetail() {
                                                                         {status}
                                                                     </button>
                                                                 ))}
+                                                                {confirmingDeleteReminderId === reminder.id ? (
+                                                                    <div className="flex gap-2 flex-shrink-0">
+                                                                        <button onClick={() => handleDeleteReminder(reminder.id)} className="text-green-600 text-xs font-bold">확인</button>
+                                                                        <button onClick={() => setConfirmingDeleteReminderId(null)} className="text-red-500 text-xs">취소</button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => setConfirmingDeleteReminderId(reminder.id)}
+                                                                        className="text-red-500 p-1 hover:bg-red-50 rounded flex-shrink-0"
+                                                                        title="일정 삭제"
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
