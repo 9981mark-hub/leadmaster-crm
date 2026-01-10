@@ -224,6 +224,8 @@ export default function CaseList() {
     }, []);
 
     // [Refined] Scroll Restoration
+    const isScrollRestored = React.useRef(false); // Track ensuring we only restore once per mount
+
     useEffect(() => {
         // 1. Disable browser's native scroll restoration to prevent conflicts
         // This prevents the browser from forcing scroll to top (0) or a wrong position before our code runs
@@ -234,9 +236,10 @@ export default function CaseList() {
 
         // Save scroll position before unmount or refresh
         const handleScrollSave = () => {
-            if (window.scrollY > 0) {
-                sessionStorage.setItem('lm_caselist_scrollY', window.scrollY.toString());
-            }
+            // Check if we have actually restored scroll first (to avoid saving 0 before restoration happens)
+            // But here we want to save WHATEVER the user is at. 
+            // If they are at 0, we save 0.
+            sessionStorage.setItem('lm_caselist_scrollY', window.scrollY.toString());
         };
 
         window.addEventListener('beforeunload', handleScrollSave);
@@ -251,23 +254,27 @@ export default function CaseList() {
         };
     }, []);
 
-    // Restore scroll position when data is loaded
+    // Restore scroll position when data is loaded (Even if from cache)
     useEffect(() => {
-        if (!loading && cases.length > 0) {
+        // Only run if we haven't restored yet AND we have data to show
+        // Removing !loading check because if we have cached cases, we should restore immediately
+        if (!isScrollRestored.current && cases.length > 0) {
             const savedScrollY = sessionStorage.getItem('lm_caselist_scrollY');
             if (savedScrollY) {
                 const y = parseInt(savedScrollY, 10);
-                if (y > 0) {
-                    // Use double requestAnimationFrame to ensure layout is fully stable
+                // Restore logic
+                requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            window.scrollTo(0, y);
-                        });
+                        window.scrollTo(0, y);
+                        // Mark as restored so we don't jump again when background fetch finishes
+                        isScrollRestored.current = true;
                     });
-                }
+                });
+            } else {
+                isScrollRestored.current = true; // No saved position, mark done
             }
         }
-    }, [loading, cases.length]);
+    }, [cases.length]);
 
     // 2. Polling Interval (Skip if modal is open)
     useEffect(() => {
