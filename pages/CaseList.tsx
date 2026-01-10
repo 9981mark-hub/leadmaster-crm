@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useLayoutEffect } from 'react';
 import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData, updateCase } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate, safeFormat } from '../utils';
