@@ -3,11 +3,12 @@ import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, 
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate, safeFormat } from '../utils';
 import { Link } from 'react-router-dom';
-import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed } from 'lucide-react';
+import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 import ImportModal from '../components/ImportModal';
 import HoverCheckTooltip from '../components/HoverCheckTooltip';
+import StatusVisibilityModal from '../components/StatusVisibilityModal';
 import { fetchCaseStatusLogs } from '../services/api';
 import { STATUS_COLOR_MAP } from '../constants';
 import { MemoItem, CaseStatusLog } from '../types';
@@ -75,8 +76,30 @@ export default function CaseList() {
     const [loading, setLoading] = useState(true);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-    // [NEW] Recycle Bin View Mode
     const [viewMode, setViewMode] = useState<'active' | 'trash'>(() => (sessionStorage.getItem('lm_viewMode') as any) || 'active');
+
+    // [New] Status Visibility Filter
+    const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
+    const [hiddenStatuses, setHiddenStatuses] = useState<string[]>(() => {
+        try {
+            const saved = localStorage.getItem('lm_hiddenStatuses');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('lm_hiddenStatuses', JSON.stringify(hiddenStatuses));
+    }, [hiddenStatuses]);
+
+    const toggleHiddenStatus = (status: string) => {
+        setHiddenStatuses(prev =>
+            prev.includes(status)
+                ? prev.filter(s => s !== status)
+                : [...prev, status]
+        );
+    };
 
     // Filters & Sort
     // [Missed Call Settings]
@@ -353,7 +376,12 @@ export default function CaseList() {
 
     const filteredCases = cases.filter(c => {
         const matchesSearch = String(c.customerName || '').includes(search) || String(c.phone || '').includes(search);
-        const matchesStatus = statusFilter === '' || c.status === statusFilter;
+
+        // [Modified] Status Filter Logic (Global Hide vs Explicit Select)
+        const isHiddenGlobally = hiddenStatuses.includes(c.status);
+        const matchesStatus = statusFilter === ''
+            ? !isHiddenGlobally // If no specific filter, hide if in hidden list
+            : c.status === statusFilter; // If specific filter, SHOW even if hidden globally
         const matchesPath = inboundPathFilter === '' || c.inboundPath === inboundPathFilter;
         const matchesPartner = partnerFilter === '' || c.partnerId === partnerFilter;
         const matchesNew = showNewOnly ? c.isNew : true;
@@ -616,6 +644,14 @@ export default function CaseList() {
                             {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
 
+                        <button
+                            onClick={() => setIsVisibilityModalOpen(true)}
+                            className="p-2 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm"
+                            title="상태 보기 설정"
+                        >
+                            <Settings size={18} />
+                        </button>
+
                         <div className="relative flex-1 min-w-[120px]">
                             <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                             <select
@@ -689,6 +725,14 @@ export default function CaseList() {
                 }}
                 partners={partners}
                 inboundPaths={inboundPaths}
+            />
+
+            <StatusVisibilityModal
+                isOpen={isVisibilityModalOpen}
+                onClose={() => setIsVisibilityModalOpen(false)}
+                allStatuses={statuses}
+                hiddenStatuses={hiddenStatuses}
+                onToggleStatus={toggleHiddenStatus}
             />
 
 
