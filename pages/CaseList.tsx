@@ -223,55 +223,46 @@ export default function CaseList() {
         };
     }, []);
 
-    // [Refined] Scroll Restoration
-    const isScrollRestored = React.useRef(false); // Track ensuring we only restore once per mount
+    // [Refined] Scroll Restoration (Container Based)
+    const isScrollRestored = React.useRef(false);
 
     useEffect(() => {
-        // 1. Disable browser's native scroll restoration to prevent conflicts
-        // This prevents the browser from forcing scroll to top (0) or a wrong position before our code runs
-        const originalScrollRestoration = window.history.scrollRestoration;
-        if ('scrollRestoration' in window.history) {
-            window.history.scrollRestoration = 'manual';
-        }
-
-        // Save scroll position before unmount or refresh
+        // Save scroll position of the main container
         const handleScrollSave = () => {
-            // Check if we have actually restored scroll first (to avoid saving 0 before restoration happens)
-            // But here we want to save WHATEVER the user is at. 
-            // If they are at 0, we save 0.
-            sessionStorage.setItem('lm_caselist_scrollY', window.scrollY.toString());
+            const container = document.getElementById('main-scroll-container');
+            if (container) {
+                // Save whatever the position is (even 0)
+                sessionStorage.setItem('lm_caselist_scrollTop', container.scrollTop.toString());
+            }
         };
 
         window.addEventListener('beforeunload', handleScrollSave);
+
         return () => {
             window.removeEventListener('beforeunload', handleScrollSave);
-            handleScrollSave(); // Also save on unmount (navigation)
-
-            // Revert scroll restoration setting for other pages
-            if ('scrollRestoration' in window.history) {
-                window.history.scrollRestoration = originalScrollRestoration || 'auto';
-            }
+            handleScrollSave(); // Save on unmount (navigation)
         };
     }, []);
 
-    // Restore scroll position when data is loaded (Even if from cache)
+    // Restore scroll position
     useEffect(() => {
-        // Only run if we haven't restored yet AND we have data to show
-        // Removing !loading check because if we have cached cases, we should restore immediately
         if (!isScrollRestored.current && cases.length > 0) {
-            const savedScrollY = sessionStorage.getItem('lm_caselist_scrollY');
-            if (savedScrollY) {
-                const y = parseInt(savedScrollY, 10);
-                // Restore logic
+            const savedScrollTop = sessionStorage.getItem('lm_caselist_scrollTop');
+
+            if (savedScrollTop) {
+                const y = parseInt(savedScrollTop, 10);
+
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        window.scrollTo(0, y);
-                        // Mark as restored so we don't jump again when background fetch finishes
+                        const container = document.getElementById('main-scroll-container');
+                        if (container) {
+                            container.scrollTop = y;
+                        }
                         isScrollRestored.current = true;
                     });
                 });
             } else {
-                isScrollRestored.current = true; // No saved position, mark done
+                isScrollRestored.current = true;
             }
         }
     }, [cases.length]);

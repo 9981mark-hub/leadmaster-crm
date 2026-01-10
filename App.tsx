@@ -87,7 +87,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <div className="flex-1 overflow-y-scroll p-4 md:p-8 pb-20 md:pb-8">
+        <div id="main-scroll-container" className="flex-1 overflow-y-scroll p-4 md:p-8 pb-20 md:pb-8">
           {children}
         </div>
 
