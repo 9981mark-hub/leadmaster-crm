@@ -286,7 +286,7 @@ export default function CaseList() {
                 if (!container) return;
 
                 // Disable smooth scrolling globally on the container during restoration
-                const originalScrollBehavior = container.style.scrollBehavior;
+                // const originalScrollBehavior = container.style.scrollBehavior;
                 container.style.scrollBehavior = 'auto';
 
                 // Retry loop: Attempt to restore for up to 2 seconds
@@ -300,10 +300,25 @@ export default function CaseList() {
                     if (Math.abs(container.scrollTop - targetY) < 2 || Date.now() - startTime > 1000) {
                         // Success or Timeout
                         restoredRef.current = true;
-                        // Small delay to ensure paint, then show content
+
+                        // [Watchdog] Monitor for unwanted resets for 1 second after restoration
+                        const watchdogStart = Date.now();
+                        const checkReset = () => {
+                            if (Date.now() - watchdogStart > 1000) return; // Stop watching after 1s
+
+                            // If scroll position drops near 0 but we want to be further down
+                            if (container.scrollTop < 10 && targetY > 100) {
+                                console.warn("Watchdog: Detected unwanted scroll reset. Forcing restoration.");
+                                container.scrollTop = targetY;
+                            }
+                            requestAnimationFrame(checkReset);
+                        };
+                        requestAnimationFrame(checkReset);
+
+                        // Reveal content
                         setTimeout(() => {
                             setIsRestoring(false);
-                            container.style.scrollBehavior = originalScrollBehavior;
+                            // Do NOT restore original behavior. Keep it 'auto'.
 
                             // Set manual restoration for history AFTER we took control
                             if ('scrollRestoration' in window.history) {
