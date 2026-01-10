@@ -273,8 +273,8 @@ export default function CaseList() {
         };
     }, []);
 
-    // Restoration Logic (Retry Strategy)
-    useEffect(() => {
+    // Restoration Logic (useLayoutEffect for Synchronous Restoration)
+    useLayoutEffect(() => {
         // Run only if we have data and haven't finished restoring
         if (!loading && cases.length > 0 && !restoredRef.current) {
             const savedScrollTop = sessionStorage.getItem('lm_caselist_scrollTop');
