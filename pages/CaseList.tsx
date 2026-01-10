@@ -956,17 +956,22 @@ export default function CaseList() {
                                             trigger={
                                                 <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help">
                                                     📞 {nextReminder.datetime.split(' ')[0]}
+                                                    {(c.reminders?.length || 0) > 1 && <span className="ml-1">외 {(c.reminders?.length || 0) - 1}건</span>}
                                                 </span>
                                             }
                                             content={
-                                                <div className="space-y-1">
-                                                    <p className="font-bold text-gray-200">다음 리마인더</p>
-                                                    <p className="text-gray-300">{nextReminder.datetime}</p>
-                                                    {nextReminder.content && (
-                                                        <p className="text-gray-400 text-[11px] mt-1 border-t border-gray-600 pt-1">
-                                                            {nextReminder.content}
-                                                        </p>
-                                                    )}
+                                                <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                    <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
+                                                    {c.reminders?.map((reminder, idx) => (
+                                                        <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                            <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                            {reminder.content && (
+                                                                <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                    {reminder.content}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             }
                                         />
@@ -1114,14 +1119,18 @@ export default function CaseList() {
                                                         </>
                                                     }
                                                     content={
-                                                        <div className="space-y-1">
-                                                            <p className="font-bold text-gray-200">다음 리마인더</p>
-                                                            <p className="text-gray-300">{nextReminder.datetime}</p>
-                                                            {nextReminder.content && (
-                                                                <p className="text-gray-400 text-[11px] mt-1 border-t border-gray-600 pt-1">
-                                                                    {nextReminder.content}
-                                                                </p>
-                                                            )}
+                                                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                            <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
+                                                            {c.reminders?.map((reminder, idx) => (
+                                                                <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                                    <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                                    {reminder.content && (
+                                                                        <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                            {reminder.content}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     }
                                                 />
