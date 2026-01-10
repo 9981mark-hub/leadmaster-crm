@@ -803,8 +803,8 @@ export default function CaseDetail() {
                                         ) : (
                                             sortedReminders.map(reminder => (
                                                 <div key={reminder.id} className="bg-blue-50 border border-blue-100 rounded p-2 flex flex-col gap-2">
-                                                    <div className="flex justify-between items-center w-full">
-                                                        <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                                    <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-2">
+                                                        <div className="flex items-center gap-2 flex-wrap">
                                                             <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
                                                             <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
                                                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
@@ -813,10 +813,12 @@ export default function CaseDetail() {
                                                                 }`}>
                                                                 {reminder.type || '통화'}
                                                             </span>
-                                                            <span className="text-xs text-gray-500 truncate" title={reminder.content}>
-                                                                {reminder.content || ''}
-                                                            </span>
                                                         </div>
+                                                        {reminder.content && (
+                                                            <span className="text-xs text-gray-600 break-words w-full md:w-auto md:max-w-[200px]">
+                                                                {reminder.content}
+                                                            </span>
+                                                        )}
                                                         {confirmingDeleteReminderId === reminder.id ? (
                                                             <div className="flex gap-2">
                                                                 <button onClick={() => handleDeleteReminder(reminder.id)} className="text-green-600 text-xs font-bold">확인</button>
