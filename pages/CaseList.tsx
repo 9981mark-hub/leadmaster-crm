@@ -955,7 +955,7 @@ export default function CaseList() {
                                         <HoverCheckTooltip
                                             trigger={
                                                 <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help">
-                                                    📞 {nextReminder.datetime.split(' ')[0]}
+                                                    {nextReminder.type === '출장미팅' ? '🚗' : nextReminder.type === '방문미팅' ? '🏢' : nextReminder.type === '기타' ? '✅' : '📞'} {nextReminder.datetime.split(' ')[0]}
                                                     {(c.reminders?.length || 0) > 1 && <span className="ml-1">외 {(c.reminders?.length || 0) - 1}건</span>}
                                                 </span>
                                             }

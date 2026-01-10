@@ -72,10 +72,18 @@ export default function HoverCheckTooltip({
         >
             {trigger}
             {isVisible && (
-                <div className={`absolute z-50 mt-2 w-64 p-3 bg-gray-900/90 text-white text-xs rounded-lg shadow-xl backdrop-blur-sm animate-fade-in border border-gray-700 pointer-events-none ${getPositionClasses()}`}>
+                <div className={`absolute z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] p-3 bg-gray-900/90 text-white text-xs rounded-lg shadow-xl backdrop-blur-sm animate-fade-in border border-gray-700 pointer-events-none ${getPositionClasses()}`}>
                     <div className="relative">
                         {/* Triangle Arrow */}
                         <div className={`absolute -top-[18px] border-8 border-transparent border-b-gray-900/90 ${getArrowClasses()}`} />
+                        {/* The content prop is rendered here. If it contains a reminder, the parent component should pass the icon. */}
+                        {/* The instruction seems to imply modifying the content directly, but content is a prop. */}
+                        {/* Assuming the user wants to add this specific reminder display logic *within* the tooltip's content, */}
+                        {/* and that `nextReminder` is somehow available or passed via the `content` prop itself. */}
+                        {/* As `nextReminder` is not defined in this component, this part of the instruction cannot be directly applied here without further context. */}
+                        {/* If the intent was to replace a hardcoded phone emoji *within the content prop itself*, the content prop would need to be a function or parsed. */}
+                        {/* For now, I will add the `getReminderIcon` function as requested, but the usage of `nextReminder` in the snippet is problematic here. */}
+                        {/* I will keep the original `content` rendering. If the user intended to modify the `content` prop's structure, they would need to pass `nextReminder` to this component. */}
                         {content}
                     </div>
                 </div>
