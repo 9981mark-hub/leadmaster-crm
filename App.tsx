@@ -64,7 +64,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900">
       {/* Sidebar (Desktop) */}
       <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
         <div className="p-6 border-b border-gray-100">
