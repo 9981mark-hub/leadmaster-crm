@@ -953,6 +953,7 @@ export default function CaseList() {
                                     </a>
                                     {nextReminder && (
                                         <HoverCheckTooltip
+                                            mobileAlign="right"
                                             trigger={
                                                 <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help">
                                                     {nextReminder.type === '출장미팅' ? '🚗' : nextReminder.type === '방문미팅' ? '🏢' : nextReminder.type === '기타' ? '✅' : '📞'} {nextReminder.datetime.split(' ')[0]}
