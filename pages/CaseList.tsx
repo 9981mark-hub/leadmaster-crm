@@ -223,6 +223,14 @@ export default function CaseList() {
         };
     }, []);
 
+    // [Global Fix] Enforce auto scroll behavior on mount
+    useEffect(() => {
+        const container = document.getElementById('main-scroll-container');
+        if (container) {
+            container.style.scrollBehavior = 'auto';
+        }
+    }, []);
+
     // [Flicker-Free] Scroll Restoration
     // Initialize true if there is a saved position to restore, else false
     const [isRestoring, setIsRestoring] = useState(() => {
