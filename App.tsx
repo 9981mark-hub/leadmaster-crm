@@ -50,59 +50,54 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const path = location.pathname;
   const { theme, toggleTheme } = useTheme();
 
-  // [Global Scroll Fix] Preserve scroll position during auto-refresh
-  const scrollGuardRef = React.useRef<{
-    lastKnownScrollTop: number;
-    isUserScrolling: boolean;
-    lastScrollTime: number;
-  }>({
-    lastKnownScrollTop: 0,
-    isUserScrolling: false,
-    lastScrollTime: Date.now()
-  });
-
   React.useEffect(() => {
     const container = document.getElementById('main-scroll-container');
     if (!container) return;
 
     let scrollTimeout: any;
+    let rafId: number;
+    let lastStableScrollTop = 0;
+    let isUserScrolling = false;
+    let lastUserScrollTime = Date.now();
 
     const handleScroll = () => {
-      scrollGuardRef.current.lastKnownScrollTop = container.scrollTop;
-      scrollGuardRef.current.isUserScrolling = true;
-      scrollGuardRef.current.lastScrollTime = Date.now();
+      lastStableScrollTop = container.scrollTop;
+      isUserScrolling = true;
+      lastUserScrollTime = Date.now();
 
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        scrollGuardRef.current.isUserScrolling = false;
-      }, 150);
+        isUserScrolling = false;
+      }, 200);
     };
 
-    // Monitor for unexpected scroll jumps
-    const observer = new MutationObserver(() => {
-      const timeSinceLastScroll = Date.now() - scrollGuardRef.current.lastScrollTime;
-      const expectedScrollTop = scrollGuardRef.current.lastKnownScrollTop;
+    // Aggressive scroll guard using requestAnimationFrame
+    const guardScroll = () => {
+      const timeSinceUserScroll = Date.now() - lastUserScrollTime;
 
-      // If scroll jumped to 0 unexpectedly (not from user action, and we had a scroll position)
+      // If scroll jumped to 0 unexpectedly and we had a scroll position
       if (
-        !scrollGuardRef.current.isUserScrolling &&
-        timeSinceLastScroll > 100 &&
+        !isUserScrolling &&
+        timeSinceUserScroll > 200 &&
         container.scrollTop === 0 &&
-        expectedScrollTop > 50
+        lastStableScrollTop > 50
       ) {
-        // Restore scroll position
-        requestAnimationFrame(() => {
-          container.scrollTop = expectedScrollTop;
-        });
+        // Immediately restore scroll position
+        container.scrollTop = lastStableScrollTop;
+      } else if (container.scrollTop > 0) {
+        // Update stable position when user is at new position
+        lastStableScrollTop = container.scrollTop;
       }
-    });
+
+      rafId = requestAnimationFrame(guardScroll);
+    };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
-    observer.observe(container, { childList: true, subtree: true });
+    rafId = requestAnimationFrame(guardScroll);
 
     return () => {
       container.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
+      cancelAnimationFrame(rafId);
       clearTimeout(scrollTimeout);
     };
   }, []);

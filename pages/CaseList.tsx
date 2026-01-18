@@ -861,7 +861,7 @@ export default function CaseList() {
                 isOpen={isImportModalOpen}
                 onClose={() => setIsImportModalOpen(false)}
                 onSuccess={() => {
-                    fetchCases().then(setCases); // Refresh list
+                    fetchCases().then(setCasesWithScrollPreservation); // Refresh list with scroll preservation
                     setCurrentPage(1);
                 }}
                 partners={partners}
