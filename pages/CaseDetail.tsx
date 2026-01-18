@@ -1111,10 +1111,9 @@ export default function CaseDetail() {
                                     </div>
                                 </div>
 
-                                {/* Pre-info Display Area */}
                                 <div className="mb-4">
                                     <label className="block text-xs font-medium text-gray-500 mb-1">사전 고객 정보 (리드 수집 정보)</label>
-                                    <div className={"w-full p-2 border border-gray-200 rounded text-sm bg-gray-50 min-h-[40px] whitespace-pre-wrap " + (!c.preInfo ? 'text-gray-400' : 'text-gray-800')}>
+                                    <div className={"w-full p-2 border border-gray-200 rounded text-sm bg-gray-50 min-h-[40px] " + (!c.preInfo ? 'text-gray-400' : 'text-gray-800')}>
                                         {c.preInfo ? c.preInfo.split(/\s\/\s|\n/).filter((line: string) => {
                                             const lower = line.toLowerCase();
                                             return !lower.includes('[referrer]') &&
@@ -1122,7 +1121,12 @@ export default function CaseDetail() {
                                                 !lower.includes('[third_party_consent]') &&
                                                 !lower.includes('[user_agent]') &&
                                                 line.trim() !== '';
-                                        }).join('\n') || <span className="text-gray-400 italic">표시할 추가 정보가 없습니다. (기술 정보 제외됨)</span> : ''}
+                                        }).map((line: string, idx: number) => (
+                                            <div key={idx} className="flex items-start gap-1">
+                                                <span className="text-blue-500 font-bold">*</span>
+                                                <span>{line.trim()}</span>
+                                            </div>
+                                        )) : <span className="text-gray-400 italic">사전 정보 없음</span>}
                                     </div>
                                 </div>
 

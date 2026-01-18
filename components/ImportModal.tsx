@@ -120,18 +120,22 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     const handleDownloadTemplate = () => {
         const ws = XLSX.utils.json_to_sheet([
             {
-                customerName: '홍길동',
-                phone: '010-1234-5678',
                 caseType: '개인회생',
                 inboundPath: '블로그',
-                preInfo: '채무 5천, 직장인'
+                phone: '010-1234-5678',
+                customerName: '홍길동',
+                preInfo1: '채무 2,000~4,000만원',
+                preInfo2: '9시 30분',
+                preInfo3: '직장인'
             },
             {
-                customerName: '김철수',
-                phone: '010-9876-5432',
                 caseType: '파산',
                 inboundPath: '지인소개',
-                preInfo: '자영업, 부채 1억'
+                phone: '010-9876-5432',
+                customerName: '김철수',
+                preInfo1: '자영업',
+                preInfo2: '부채 1억',
+                preInfo3: ''
             }
         ]);
         const wb = XLSX.utils.book_new();
@@ -158,7 +162,22 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     const rawName = String(row['customerName'] || row['고객명'] || '');
                     const rawType = String(row['caseType'] || row['유형'] || '개인회생');
                     const rawPath = String(row['inboundPath'] || row['유입경로'] || '');
-                    const rawPre = String(row['preInfo'] || row['사전정보'] || '');
+
+                    // [Feature] Support multiple preInfo columns (preInfo1, preInfo2, ... preInfo10)
+                    const preInfoParts: string[] = [];
+                    // Check legacy preInfo column first (for backward compatibility)
+                    const legacyPre = row['preInfo'] || row['사전정보'];
+                    if (legacyPre && String(legacyPre).trim()) {
+                        preInfoParts.push(String(legacyPre).trim());
+                    }
+                    // Collect preInfo1 through preInfo10
+                    for (let i = 1; i <= 10; i++) {
+                        const val = row[`preInfo${i}`] || row[`사전정보${i}`];
+                        if (val && String(val).trim()) {
+                            preInfoParts.push(String(val).trim());
+                        }
+                    }
+                    const rawPre = preInfoParts.join('\n');
 
                     const phone = formatPhone(rawPhone);
                     const duplicate = checkIsDuplicate(phone, existingCases);

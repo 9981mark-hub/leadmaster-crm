@@ -357,7 +357,12 @@ export default function NewCase() {
                       !lower.includes('[third_party_consent]') &&
                       !lower.includes('[user_agent]') &&
                       line.trim() !== '';
-                  }).join('\n') || <span className="text-gray-400 italic">표시할 추가 정보가 없습니다. (기술 정보 제외됨)</span>}
+                  }).map((line: string, idx: number) => (
+                    <div key={idx} className="flex items-start gap-1">
+                      <span className="text-indigo-500 font-bold">*</span>
+                      <span>{line.trim()}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
