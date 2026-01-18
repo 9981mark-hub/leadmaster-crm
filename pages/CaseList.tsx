@@ -155,8 +155,38 @@ export default function CaseList() {
     // Keep track of current cases for diffing in the effect closure
     const casesRef = React.useRef(cases);
 
+    // [Scroll Fix] Track scroll position to prevent reset on data update
+    const scrollPositionRef = React.useRef<number>(0);
+    const isUpdatingRef = React.useRef<boolean>(false);
+
     useEffect(() => {
         casesRef.current = cases;
+    }, [cases]);
+
+    // [Scroll Fix] Helper to update cases while preserving scroll position
+    const setCasesWithScrollPreservation = React.useCallback((newCases: Case[] | ((prev: Case[]) => Case[])) => {
+        const container = document.getElementById('main-scroll-container');
+        if (container) {
+            scrollPositionRef.current = container.scrollTop;
+            isUpdatingRef.current = true;
+        }
+        setCases(newCases);
+    }, []);
+
+    // [Scroll Fix] Restore scroll position after render
+    useEffect(() => {
+        if (isUpdatingRef.current) {
+            const container = document.getElementById('main-scroll-container');
+            if (container && scrollPositionRef.current > 0) {
+                // Use requestAnimationFrame to ensure DOM has updated
+                requestAnimationFrame(() => {
+                    container.scrollTop = scrollPositionRef.current;
+                    isUpdatingRef.current = false;
+                });
+            } else {
+                isUpdatingRef.current = false;
+            }
+        }
     }, [cases]);
 
     // [POLLING] Background check every 30 seconds
@@ -182,6 +212,7 @@ export default function CaseList() {
                 ]);
 
                 if (isMounted) {
+                    // Initial load - don't need scroll preservation
                     setCases(data);
                     setPartners(partnerData);
                     setInboundPaths(pathData);
@@ -362,7 +393,7 @@ export default function CaseList() {
     // Manual Refresh Handler
     const handleManualRefresh = () => {
         if (pendingCases) {
-            setCases(pendingCases);
+            setCasesWithScrollPreservation(pendingCases);
             setUpdateAvailable(false);
             setNewLeadsCount(0);
             setPendingCases(null);
@@ -394,7 +425,7 @@ export default function CaseList() {
             try {
                 await deleteCase(caseId); // Soft delete
                 // Locally update to reflect change immediately (hide from active list)
-                setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: new Date().toISOString(), status: '휴지통' } : c));
+                setCasesWithScrollPreservation(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: new Date().toISOString(), status: '휴지통' } : c));
                 showToast('휴지통으로 이동되었습니다.');
             } catch (error) {
                 console.error("Delete failed", error);
@@ -407,7 +438,7 @@ export default function CaseList() {
             }
             try {
                 await deleteCase(caseId, true); // Hard delete
-                setCases(prev => prev.filter(c => c.caseId !== caseId));
+                setCasesWithScrollPreservation(prev => prev.filter(c => c.caseId !== caseId));
                 showToast('영구적으로 삭제되었습니다.');
             } catch (error) {
                 console.error("Permanent delete failed", error);
@@ -425,7 +456,7 @@ export default function CaseList() {
 
         try {
             await restoreCase(caseId);
-            setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: undefined, status: '신규접수' } : c));
+            setCasesWithScrollPreservation(prev => prev.map(c => c.caseId === caseId ? { ...c, deletedAt: undefined, status: '신규접수' } : c));
             showToast('케이스가 복구되었습니다.');
         } catch (error) {
             console.error("Restore failed", error);
@@ -448,7 +479,7 @@ export default function CaseList() {
             lastMissedCallAt: now.toISOString()
         };
 
-        setCases(prev => prev.map(item => item.caseId === c.caseId ? updatedCase : item));
+        setCasesWithScrollPreservation(prev => prev.map(item => item.caseId === c.caseId ? updatedCase : item));
 
         try {
             // Create Log
