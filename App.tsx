@@ -49,6 +49,63 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
   const { theme, toggleTheme } = useTheme();
+
+  // [Global Scroll Fix] Preserve scroll position during auto-refresh
+  const scrollGuardRef = React.useRef<{
+    lastKnownScrollTop: number;
+    isUserScrolling: boolean;
+    lastScrollTime: number;
+  }>({
+    lastKnownScrollTop: 0,
+    isUserScrolling: false,
+    lastScrollTime: Date.now()
+  });
+
+  React.useEffect(() => {
+    const container = document.getElementById('main-scroll-container');
+    if (!container) return;
+
+    let scrollTimeout: any;
+
+    const handleScroll = () => {
+      scrollGuardRef.current.lastKnownScrollTop = container.scrollTop;
+      scrollGuardRef.current.isUserScrolling = true;
+      scrollGuardRef.current.lastScrollTime = Date.now();
+
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        scrollGuardRef.current.isUserScrolling = false;
+      }, 150);
+    };
+
+    // Monitor for unexpected scroll jumps
+    const observer = new MutationObserver(() => {
+      const timeSinceLastScroll = Date.now() - scrollGuardRef.current.lastScrollTime;
+      const expectedScrollTop = scrollGuardRef.current.lastKnownScrollTop;
+
+      // If scroll jumped to 0 unexpectedly (not from user action, and we had a scroll position)
+      if (
+        !scrollGuardRef.current.isUserScrolling &&
+        timeSinceLastScroll > 100 &&
+        container.scrollTop === 0 &&
+        expectedScrollTop > 50
+      ) {
+        // Restore scroll position
+        requestAnimationFrame(() => {
+          container.scrollTop = expectedScrollTop;
+        });
+      }
+    });
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    observer.observe(container, { childList: true, subtree: true });
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
   /* 
     Poling Logic removed (handled in CaseList now)
   */
