@@ -56,8 +56,18 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     fetchAllowedEmails().then(setAllowedEmails);
 
     // 실시간 업데이트 구독 (다른 탭/기기 동기화)
-    const unsubscribe = subscribe(() => {
-      fetchAllowedEmails().then(setAllowedEmails);
+    // [Fix] Only update state if value actually changed to prevent unnecessary re-renders
+    const unsubscribe = subscribe(async () => {
+      const newEmails = await fetchAllowedEmails();
+      setAllowedEmails(prev => {
+        // Compare arrays - only update if different
+        const prevStr = JSON.stringify([...prev].sort());
+        const newStr = JSON.stringify([...newEmails].sort());
+        if (prevStr !== newStr) {
+          return newEmails;
+        }
+        return prev; // Return same reference to prevent re-render
+      });
     });
     return () => unsubscribe();
   }, []);
