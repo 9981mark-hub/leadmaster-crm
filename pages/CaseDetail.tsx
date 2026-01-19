@@ -130,6 +130,11 @@ export default function CaseDetail() {
     const [pendingStatus, setPendingStatus] = useState<CaseStatus | null>(null);
     const [statusChangeReason, setStatusChangeReason] = useState('');
 
+    // [NEW] Secondary Status Change Modal
+    const [isSecondaryStatusModalOpen, setIsSecondaryStatusModalOpen] = useState(false);
+    const [pendingSecondaryStatus, setPendingSecondaryStatus] = useState<string | null>(null);
+    const [secondaryStatusChangeReason, setSecondaryStatusChangeReason] = useState('');
+
 
     useEffect(() => {
         if (caseId) {
@@ -205,6 +210,46 @@ export default function CaseDetail() {
             setPendingStatus(null);
         } catch (error) {
             showToast("상태 변경에 실패했습니다.", 'error');
+        }
+    };
+
+    // [NEW] 2차 상태 변경 핸들러
+    const handleSecondaryStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newStatus = e.target.value;
+        if (newStatus === (c?.secondaryStatus || '')) return; // No change
+        setPendingSecondaryStatus(newStatus || null);
+        setTimeout(() => {
+            setIsSecondaryStatusModalOpen(true);
+        }, 100);
+        setSecondaryStatusChangeReason('');
+    };
+
+    // [NEW] 2차 상태 변경 확인
+    const confirmSecondaryStatusChange = async () => {
+        if (!c || pendingSecondaryStatus === null) return;
+        try {
+            const newSecondaryStatus = pendingSecondaryStatus || undefined;
+            const oldSecondaryStatus = c.secondaryStatus || '없음';
+
+            // 상담 이력에 변경 내용 기록
+            const changeNote = `[2차 상태 변경] ${oldSecondaryStatus} → ${pendingSecondaryStatus || '없음'}${secondaryStatusChangeReason ? '\n사유: ' + secondaryStatusChangeReason : ''}`;
+            const newMemo: MemoItem = {
+                id: Date.now().toString(),
+                createdAt: new Date().toISOString(),
+                content: changeNote,
+            };
+            const updatedMemos = [newMemo, ...(c.specialMemo || [])];
+
+            // 케이스 업데이트
+            const updatedCase = { ...c, secondaryStatus: newSecondaryStatus, specialMemo: updatedMemos };
+            setCase(updatedCase);
+            await updateCase(c.caseId, { secondaryStatus: newSecondaryStatus, specialMemo: updatedMemos });
+
+            showToast('2차 상태가 변경되었습니다.');
+            setIsSecondaryStatusModalOpen(false);
+            setPendingSecondaryStatus(null);
+        } catch (error) {
+            showToast("2차 상태 변경에 실패했습니다.", 'error');
         }
     };
 
@@ -674,13 +719,8 @@ export default function CaseDetail() {
                                 <label className="text-xs text-purple-500 font-medium">2차 상태</label>
                                 <select
                                     className="p-2 border border-purple-300 rounded font-semibold outline-none min-w-[140px] bg-purple-50 text-purple-800"
-                                    value={c.secondaryStatus || ''}
-                                    onChange={(e) => {
-                                        const val = e.target.value || undefined;
-                                        updateCase(c.caseId, { secondaryStatus: val });
-                                        setCase({ ...c, secondaryStatus: val });
-                                        showToast('2차 상태가 변경되었습니다.');
-                                    }}
+                                    value={pendingSecondaryStatus !== null ? pendingSecondaryStatus : (c.secondaryStatus || '')}
+                                    onChange={handleSecondaryStatusChange}
                                 >
                                     <option value="">선택 안함</option>
                                     {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
@@ -718,6 +758,41 @@ export default function CaseDetail() {
                             <button
                                 onClick={confirmStatusChange}
                                 className="px-4 py-2 bg-blue-600 rounded text-white font-medium hover:bg-blue-700"
+                            >
+                                변경하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* [NEW] Secondary Status Change Modal */}
+            {isSecondaryStatusModalOpen && pendingSecondaryStatus !== null && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl border-t-4 border-purple-500">
+                        <h3 className="text-lg font-bold mb-4 text-purple-700">2차 상태 변경 확인</h3>
+                        <p className="mb-4 text-gray-700">
+                            2차 상태를 <span className="font-bold text-purple-600">{c.secondaryStatus || '없음'}</span>에서 <span className="font-bold text-purple-600">{pendingSecondaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
+                        </p>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">변경 사유 / 메모</label>
+                            <textarea
+                                className="w-full p-2 border border-purple-200 rounded resize-none h-24 focus:ring-2 focus:ring-purple-500 outline-none"
+                                placeholder="상태 변경 사유를 입력하세요..."
+                                value={secondaryStatusChangeReason}
+                                onChange={e => setSecondaryStatusChangeReason(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => { setIsSecondaryStatusModalOpen(false); setPendingSecondaryStatus(null); }}
+                                className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={confirmSecondaryStatusChange}
+                                className="px-4 py-2 bg-purple-600 rounded text-white font-medium hover:bg-purple-700"
                             >
                                 변경하기
                             </button>

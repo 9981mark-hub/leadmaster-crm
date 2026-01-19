@@ -167,7 +167,8 @@ function handleRequest(method, target, e, params) {
             num(d.creditCardAmount), json(d.creditLoan), json(d.assets), d.aiSummary,
             d.contractAt, num(d.contractFee), d.installmentMonths, d.useCapital,
             json(d.depositHistory), json(d.specialMemo), json(d.reminders), json(d.recordings),
-            d.isViewed, d.createdAt, num(d.missedCallCount), d.lastMissedCallAt, d.formattedSummary
+            d.isViewed, d.createdAt, num(d.missedCallCount), d.lastMissedCallAt, d.formattedSummary,
+            d.secondaryStatus  // [NEW] 2차 상태 (사무장 접수 이후)
         ];
         
         if (params.action === 'delete') {
@@ -357,7 +358,9 @@ function mapRowToCase(row) {
           recordings: parseJSON(row[41], []),
           isViewed: Boolean(row[42]),
           missedCallCount: Number(row[44]) || 0,
-          lastMissedCallAt: row[45]
+          lastMissedCallAt: row[45],
+          // row[46] = formattedSummary (not used in frontend)
+          secondaryStatus: row[47] || ''  // [NEW] 2차 상태
     };
 }
 
