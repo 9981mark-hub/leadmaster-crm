@@ -36,7 +36,8 @@ const CACHE_KEYS = {
   PATHS: 'lm_paths',
   STATUSES: 'lm_statuses',
   EMAILS: 'lm_allowed_emails',
-  LOGS: 'lm_logs'
+  LOGS: 'lm_logs',
+  EMAIL_NOTIFICATION: 'lm_email_notification'
 };
 
 const loadFromStorage = () => {
@@ -59,6 +60,14 @@ const loadFromStorage = () => {
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
     if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
     if (storedEmails) localAllowedEmails = JSON.parse(storedEmails);
+    const storedEmailNotification = localStorage.getItem(CACHE_KEYS.EMAIL_NOTIFICATION);
+    if (storedEmailNotification) {
+      try {
+        const parsed = JSON.parse(storedEmailNotification);
+        // Will be assigned to localEmailNotificationSettings after it's declared
+        (globalThis as any)._pendingEmailNotificationSettings = parsed;
+      } catch (e) { }
+    }
   } catch (e) {
     console.error("Failed to load from cache", e);
   }
@@ -71,6 +80,7 @@ const saveToStorage = () => {
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
     localStorage.setItem(CACHE_KEYS.EMAILS, JSON.stringify(localAllowedEmails));
+    // Email notification settings are saved separately in saveEmailNotificationSettings
     // localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs)); // Deprecated: Logs are inside Case
   } catch (e) {
     console.error("Failed to save to cache", e);
@@ -205,6 +215,11 @@ const performBackgroundFetch = async () => {
       if (settingsData.allowedEmails) localAllowedEmails = settingsData.allowedEmails;
 
       if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
+
+      // Load Email Notification Settings from server
+      if (settingsData.emailNotificationSettings) {
+        (globalThis as any)._pendingEmailNotificationSettings = settingsData.emailNotificationSettings;
+      }
     }
 
     // 2. Process Cases with Smart Merge (Conflict Resolution)
@@ -497,6 +512,44 @@ export const removeAllowedEmail = async (email: string): Promise<string[]> => {
   localAllowedEmails = localAllowedEmails.filter(e => e !== email);
   syncToSheet({ target: 'settings', action: 'update', key: 'allowedEmails', value: localAllowedEmails });
   return [...localAllowedEmails];
+};
+
+
+// --- Email Notification Settings ---
+export interface EmailNotificationSettings {
+  enabled: boolean;
+  recipients: string[];
+  minutesBefore: number; // 10, 30, 60
+}
+
+let localEmailNotificationSettings: EmailNotificationSettings = {
+  enabled: false,
+  recipients: [],
+  minutesBefore: 10
+};
+
+// Load pending settings from storage/server
+if ((globalThis as any)._pendingEmailNotificationSettings) {
+  localEmailNotificationSettings = (globalThis as any)._pendingEmailNotificationSettings;
+  delete (globalThis as any)._pendingEmailNotificationSettings;
+}
+
+export const fetchEmailNotificationSettings = async (): Promise<EmailNotificationSettings> => {
+  if (!isInitialized) await initializeData();
+  // Re-check for pending settings after init
+  if ((globalThis as any)._pendingEmailNotificationSettings) {
+    localEmailNotificationSettings = (globalThis as any)._pendingEmailNotificationSettings;
+    delete (globalThis as any)._pendingEmailNotificationSettings;
+  }
+  return { ...localEmailNotificationSettings };
+};
+
+export const saveEmailNotificationSettings = async (settings: EmailNotificationSettings): Promise<EmailNotificationSettings> => {
+  localEmailNotificationSettings = { ...settings };
+  syncToSheet({ target: 'settings', action: 'update', key: 'emailNotificationSettings', value: localEmailNotificationSettings });
+  // Save to localStorage as well
+  localStorage.setItem(CACHE_KEYS.EMAIL_NOTIFICATION, JSON.stringify(localEmailNotificationSettings));
+  return { ...localEmailNotificationSettings };
 };
 
 
