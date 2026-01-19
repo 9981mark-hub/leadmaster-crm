@@ -528,29 +528,60 @@ let localEmailNotificationSettings: EmailNotificationSettings = {
   minutesBefore: 10
 };
 
+// Load from localStorage immediately on module load
+const storedEmailSettings = localStorage.getItem('lm_email_notification');
+if (storedEmailSettings) {
+  try {
+    localEmailNotificationSettings = JSON.parse(storedEmailSettings);
+  } catch (e) {
+    console.error("Failed to parse stored email settings", e);
+  }
+}
+
 // Load pending settings from storage/server
 if ((globalThis as any)._pendingEmailNotificationSettings) {
   localEmailNotificationSettings = (globalThis as any)._pendingEmailNotificationSettings;
   delete (globalThis as any)._pendingEmailNotificationSettings;
+  // Also save to localStorage
+  localStorage.setItem('lm_email_notification', JSON.stringify(localEmailNotificationSettings));
 }
 
 export const fetchEmailNotificationSettings = async (): Promise<EmailNotificationSettings> => {
   if (!isInitialized) await initializeData();
-  // Re-check for pending settings after init
+
+  // Re-check for pending settings after init (from server)
   if ((globalThis as any)._pendingEmailNotificationSettings) {
     localEmailNotificationSettings = (globalThis as any)._pendingEmailNotificationSettings;
     delete (globalThis as any)._pendingEmailNotificationSettings;
+    // Persist to localStorage
+    localStorage.setItem('lm_email_notification', JSON.stringify(localEmailNotificationSettings));
   }
+
+  // If still default, try loading from localStorage again
+  if (!localEmailNotificationSettings.enabled && localEmailNotificationSettings.recipients.length === 0) {
+    const stored = localStorage.getItem('lm_email_notification');
+    if (stored) {
+      try {
+        localEmailNotificationSettings = JSON.parse(stored);
+      } catch (e) { }
+    }
+  }
+
   return { ...localEmailNotificationSettings };
 };
 
 export const saveEmailNotificationSettings = async (settings: EmailNotificationSettings): Promise<EmailNotificationSettings> => {
   localEmailNotificationSettings = { ...settings };
+
+  // Save to localStorage immediately
+  localStorage.setItem('lm_email_notification', JSON.stringify(localEmailNotificationSettings));
+
+  // Sync to server (Google Sheets)
   syncToSheet({ target: 'settings', action: 'update', key: 'emailNotificationSettings', value: localEmailNotificationSettings });
-  // Save to localStorage as well
-  localStorage.setItem(CACHE_KEYS.EMAIL_NOTIFICATION, JSON.stringify(localEmailNotificationSettings));
+
   return { ...localEmailNotificationSettings };
 };
+
 
 
 // --- Partners ---

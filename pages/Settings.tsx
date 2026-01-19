@@ -389,8 +389,15 @@ export default function SettingsPage() {
 
             {/* Email Notification Settings */}
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
-                    <Mail className="mr-2 text-blue-600" size={20} /> 이메일 알림 설정
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
+                    <span className="flex items-center">
+                        <Mail className="mr-2 text-blue-600" size={20} /> 이메일 알림 설정
+                    </span>
+                    {emailNotificationRecipients.length > 0 && (
+                        <span className={`text-xs px-2 py-1 rounded-full ${emailNotificationEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {emailNotificationEnabled ? '✓ 활성화됨' : '비활성화'}
+                        </span>
+                    )}
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">리마인더 일정을 이메일로 미리 받아보세요. PC를 보지 않을 때도 알림을 받을 수 있습니다.</p>
                 <div className="space-y-4 max-w-xl">
@@ -476,7 +483,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Save Button */}
-                    <div className="pt-2">
+                    <div className="pt-2 flex items-center gap-3">
                         <button
                             type="button"
                             onClick={async () => {
@@ -487,13 +494,19 @@ export default function SettingsPage() {
                                 });
                                 showToast('이메일 알림 설정이 저장되었습니다.');
                             }}
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
+                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                         >
                             이메일 설정 저장
                         </button>
+                        {emailNotificationRecipients.length > 0 && (
+                            <span className="text-xs text-gray-500">
+                                💡 {emailNotificationRecipients.length}개 이메일 주소 등록됨 · {emailNotificationMinutes}분 전 알림
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
+
 
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
