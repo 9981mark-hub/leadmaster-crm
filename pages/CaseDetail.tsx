@@ -1,7 +1,7 @@
 ﻿
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchCases, fetchPartners, updateCase, addMemo, deleteMemo, fetchCaseStatusLogs, fetchInboundPaths, fetchStatuses, changeStatus, markCaseAsSeen } from '../services/api';
+import { fetchCases, fetchPartners, updateCase, addMemo, deleteMemo, fetchCaseStatusLogs, fetchInboundPaths, fetchStatuses, changeStatus, markCaseAsSeen, fetchSecondaryStatuses } from '../services/api';
 import { Case, Partner, MemoItem, CaseStatusLog, CaseStatus, AssetItem, CreditLoanItem, ReminderItem, RecordingItem, ReminderType } from '../types';
 import { ChevronLeft, Save, Plus, Trash2, Phone, MessageSquare, AlertTriangle, CalendarClock, Send, Play, Pause, Download, Volume2, Mic, Clock, FileText, Archive, PlayCircle, X, Edit2, Sparkles, Check, Copy } from 'lucide-react';
 import { format } from 'date-fns';
@@ -78,6 +78,7 @@ export default function CaseDetail() {
     const [partners, setPartners] = useState<Partner[]>([]);
     const [inboundPaths, setInboundPaths] = useState<string[]>([]);
     const [statuses, setStatuses] = useState<CaseStatus[]>([]);
+    const [secondaryStatuses, setSecondaryStatuses] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement'>('info');
 
     const [newAsset, setNewAsset] = useState<Partial<AssetItem>>({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, rentDeposit: 0, desc: '' });
@@ -132,7 +133,7 @@ export default function CaseDetail() {
 
     useEffect(() => {
         if (caseId) {
-            Promise.all([fetchCases(), fetchPartners(), fetchInboundPaths(), fetchStatuses()]).then(([caseData, partnerData, pathData, statusData]) => {
+            Promise.all([fetchCases(), fetchPartners(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses()]).then(([caseData, partnerData, pathData, statusData, secondaryStatusData]) => {
                 const foundCase = caseData.find(x => x.caseId === caseId) || null;
                 if (foundCase) {
                     // Remove isNew flag if present (Mark as read)
@@ -156,7 +157,8 @@ export default function CaseDetail() {
                 }
                 setPartners(partnerData);
                 setInboundPaths(pathData);
-                setStatuses(statusData); // Added this line
+                setStatuses(statusData);
+                setSecondaryStatuses(secondaryStatusData);
                 if (foundCase?.aiSummary) {
                     setAiSummaryText(injectSummaryMetadata(foundCase.aiSummary, foundCase));
                 }
@@ -655,15 +657,36 @@ export default function CaseDetail() {
                         )}
                     </div>
 
-                    <div className="flex flex-col gap-2 min-w-[200px]">
-                        <label className="text-xs text-gray-400 font-medium">현재 상태 변경</label>
-                        <select
-                            className={"p-2 border border-gray-300 rounded font-semibold outline-none " + (STATUS_COLOR_MAP[c.status] || 'bg-blue-50 text-blue-800')}
-                            value={pendingStatus || c.status}
-                            onChange={handleStatusChange}
-                        >
-                            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                    <div className="flex flex-col md:flex-row gap-2">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs text-gray-400 font-medium">1차 상태</label>
+                            <select
+                                className={"p-2 border border-gray-300 rounded font-semibold outline-none min-w-[140px] " + (STATUS_COLOR_MAP[c.status] || 'bg-blue-50 text-blue-800')}
+                                value={pendingStatus || c.status}
+                                onChange={handleStatusChange}
+                            >
+                                {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
+                        {/* 2차 상태 (사무장 접수 이후에만 표시) */}
+                        {c.status === '사무장 접수' && (
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-purple-500 font-medium">2차 상태</label>
+                                <select
+                                    className="p-2 border border-purple-300 rounded font-semibold outline-none min-w-[140px] bg-purple-50 text-purple-800"
+                                    value={c.secondaryStatus || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value || undefined;
+                                        updateCase(c.caseId, { secondaryStatus: val });
+                                        setCase({ ...c, secondaryStatus: val });
+                                        showToast('2차 상태가 변경되었습니다.');
+                                    }}
+                                >
+                                    <option value="">선택 안함</option>
+                                    {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

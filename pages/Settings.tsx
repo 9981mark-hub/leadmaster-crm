@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings } from '../services/api';
+import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus } from '../services/api';
 import { CommissionRule, Partner, Case, CaseStatus } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail } from 'lucide-react';
 import { getDayName } from '../utils';
@@ -18,6 +18,10 @@ export default function SettingsPage() {
 
     const [statuses, setStatuses] = useState<CaseStatus[]>([]);
     const [newStatus, setNewStatus] = useState('');
+
+    // [NEW] Secondary Statuses (2차 상태)
+    const [secondaryStatuses, setSecondaryStatuses] = useState<string[]>([]);
+    const [newSecondaryStatus, setNewSecondaryStatus] = useState('');
 
     const [managerName, setManagerName] = useState('Mark');
     // [Missed Call Settings] saved in localStorage
@@ -58,11 +62,12 @@ export default function SettingsPage() {
     const [newRule, setNewRule] = useState<Partial<CommissionRule>>({ minFee: 0, maxFee: 0, commission: 0, fullPayoutThreshold: 0, priority: 1, active: true });
 
     useEffect(() => {
-        Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses()]).then(([pData, cData, iData, sData]) => {
+        Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses()]).then(([pData, cData, iData, sData, ssData]) => {
             setPartners(pData);
             setCases(cData);
             setInboundPaths(iData);
             setStatuses(sData);
+            setSecondaryStatuses(ssData);
             if (pData.length > 0) {
                 // Select the first partner initially
                 setSelectedPartnerId(pData[0].partnerId);
@@ -622,6 +627,68 @@ export default function SettingsPage() {
                                 </button>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* 2차 상태 관리 (사무장 접수 이후) */}
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                    <ListChecks className="mr-2 text-purple-600" size={20} /> 2차 상태 관리
+                    <span className="ml-2 text-xs font-normal text-gray-500 bg-purple-50 px-2 py-0.5 rounded-full">사무장 접수 이후</span>
+                </h3>
+                <p className="text-sm text-gray-500 mb-3">"사무장 접수" 이후 2차 관리 단계에서 사용할 상태들을 관리합니다.</p>
+                <div className="space-y-4">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder="새로운 2차 상태 (예: 계약서 작성)"
+                            className="flex-1 p-2 border rounded"
+                            value={newSecondaryStatus}
+                            onChange={e => setNewSecondaryStatus(e.target.value)}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter' && newSecondaryStatus.trim()) {
+                                    addSecondaryStatus(newSecondaryStatus.trim()).then(setSecondaryStatuses);
+                                    setNewSecondaryStatus('');
+                                    showToast('2차 상태가 추가되었습니다.');
+                                }
+                            }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (newSecondaryStatus.trim()) {
+                                    addSecondaryStatus(newSecondaryStatus.trim()).then(setSecondaryStatuses);
+                                    setNewSecondaryStatus('');
+                                    showToast('2차 상태가 추가되었습니다.');
+                                }
+                            }}
+                            className="bg-purple-600 text-white px-4 rounded hover:bg-purple-700"
+                        >
+                            <Plus size={20} />
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {secondaryStatuses.map(status => (
+                            <div key={status} className="flex items-center bg-purple-50 rounded-full px-3 py-1.5 text-sm text-purple-700 border border-purple-200">
+                                {status}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (confirm(`"${status}" 상태를 삭제하시겠습니까?`)) {
+                                            deleteSecondaryStatus(status).then(setSecondaryStatuses);
+                                            showToast('2차 상태가 삭제되었습니다.');
+                                        }
+                                    }}
+                                    className="ml-2 text-purple-400 hover:text-red-500"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                        ))}
+                        {secondaryStatuses.length === 0 && (
+                            <p className="text-xs text-gray-400">등록된 2차 상태가 없습니다.</p>
+                        )}
                     </div>
                 </div>
             </div>

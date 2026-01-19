@@ -14,6 +14,7 @@ let localPartners: Partner[] = [];
 let localLogs: CaseStatusLog[] = [...MOCK_LOGS];
 let localInboundPaths: string[] = [];
 let localStatuses: CaseStatus[] = [];
+let localSecondaryStatuses: string[] = []; // [NEW] 2차 상태 목록
 let localAllowedEmails: string[] = ['9981mark@gmail.com', '2882a@naver.com']; // Default
 let isInitialized = false;
 
@@ -35,6 +36,7 @@ const CACHE_KEYS = {
   CASES: 'lm_cases',
   PATHS: 'lm_paths',
   STATUSES: 'lm_statuses',
+  SECONDARY_STATUSES: 'lm_secondary_statuses', // [NEW] 2차 상태
   EMAILS: 'lm_allowed_emails',
   LOGS: 'lm_logs',
   EMAIL_NOTIFICATION: 'lm_email_notification'
@@ -46,6 +48,7 @@ const loadFromStorage = () => {
     const storedCases = localStorage.getItem(CACHE_KEYS.CASES);
     const storedPaths = localStorage.getItem(CACHE_KEYS.PATHS);
     const storedStatuses = localStorage.getItem(CACHE_KEYS.STATUSES);
+    const storedSecondaryStatuses = localStorage.getItem(CACHE_KEYS.SECONDARY_STATUSES);
     const storedEmails = localStorage.getItem(CACHE_KEYS.EMAILS);
     const storedLogs = localStorage.getItem(CACHE_KEYS.LOGS);
 
@@ -59,6 +62,7 @@ const loadFromStorage = () => {
     }
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
     if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
+    if (storedSecondaryStatuses) localSecondaryStatuses = JSON.parse(storedSecondaryStatuses);
     if (storedEmails) localAllowedEmails = JSON.parse(storedEmails);
     const storedEmailNotification = localStorage.getItem(CACHE_KEYS.EMAIL_NOTIFICATION);
     if (storedEmailNotification) {
@@ -79,6 +83,7 @@ const saveToStorage = () => {
     localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(localCases));
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
+    localStorage.setItem(CACHE_KEYS.SECONDARY_STATUSES, JSON.stringify(localSecondaryStatuses));
     localStorage.setItem(CACHE_KEYS.EMAILS, JSON.stringify(localAllowedEmails));
     // Email notification settings are saved separately in saveEmailNotificationSettings
     // localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs)); // Deprecated: Logs are inside Case
@@ -211,6 +216,10 @@ const performBackgroundFetch = async () => {
 
       if (settingsData.statuses) localStatuses = settingsData.statuses;
       else if (localStatuses.length === 0) localStatuses = [...DEFAULT_STATUS_LIST];
+
+      // [NEW] Load secondary statuses from server
+      if (settingsData.secondaryStatuses) localSecondaryStatuses = settingsData.secondaryStatuses;
+      else if (localSecondaryStatuses.length === 0) localSecondaryStatuses = ['고객취소', '진행불가', '연락안받음', '출장예약', '방문예약', '고민중', '계약서작성', '관리중', '착수금입금', '기준비용입금'];
 
       if (settingsData.allowedEmails) localAllowedEmails = settingsData.allowedEmails;
 
@@ -462,6 +471,35 @@ export const updateStatusOrder = async (newOrder: CaseStatus[]): Promise<CaseSta
   syncToSheet({ target: 'settings', action: 'update', key: 'statuses', value: localStatuses });
   return [...localStatuses];
 }
+
+// --- Secondary Statuses (2차 상태) ---
+export const fetchSecondaryStatuses = async (): Promise<string[]> => {
+  if (!isInitialized) await initializeData();
+  return [...localSecondaryStatuses];
+};
+
+export const addSecondaryStatus = async (status: string): Promise<string[]> => {
+  if (!localSecondaryStatuses.includes(status)) {
+    localSecondaryStatuses.push(status);
+    syncToSheet({ target: 'settings', action: 'update', key: 'secondaryStatuses', value: localSecondaryStatuses });
+  }
+  return [...localSecondaryStatuses];
+};
+
+export const deleteSecondaryStatus = async (status: string): Promise<string[]> => {
+  localSecondaryStatuses = localSecondaryStatuses.filter(s => s !== status);
+  // Clear secondaryStatus from cases that have this status
+  localCases = localCases.map(c => {
+    if (c.secondaryStatus === status) {
+      const updated = { ...c, secondaryStatus: undefined, updatedAt: new Date().toISOString() };
+      updateCase(c.caseId, { secondaryStatus: undefined });
+      return updated;
+    }
+    return c;
+  });
+  syncToSheet({ target: 'settings', action: 'update', key: 'secondaryStatuses', value: localSecondaryStatuses });
+  return [...localSecondaryStatuses];
+};
 
 
 // --- Inbound Paths ---
