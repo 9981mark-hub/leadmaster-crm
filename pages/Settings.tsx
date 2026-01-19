@@ -29,6 +29,9 @@ export default function SettingsPage() {
     const [emailNotificationRecipients, setEmailNotificationRecipients] = useState<string[]>([]);
     const [emailNotificationMinutes, setEmailNotificationMinutes] = useState(10);
     const [newEmailRecipient, setNewEmailRecipient] = useState('');
+    const [emailSettingsLoaded, setEmailSettingsLoaded] = useState(false);
+    const [emailSettingsSaved, setEmailSettingsSaved] = useState(true); // true = no unsaved changes
+    const [emailSettingsLoading, setEmailSettingsLoading] = useState(true);
 
     const { showToast } = useToast();
 
@@ -79,8 +82,12 @@ export default function SettingsPage() {
         // Load Email Notification Settings
         fetchEmailNotificationSettings().then(settings => {
             setEmailNotificationEnabled(settings.enabled);
-            setEmailNotificationRecipients(settings.recipients);
+            setEmailNotificationRecipients(settings.recipients || []);
             setEmailNotificationMinutes(settings.minutesBefore);
+            setEmailSettingsLoaded(true);
+            setEmailSettingsLoading(false);
+        }).catch(() => {
+            setEmailSettingsLoading(false);
         });
     }, []);
 
@@ -393,119 +400,167 @@ export default function SettingsPage() {
                     <span className="flex items-center">
                         <Mail className="mr-2 text-blue-600" size={20} /> 이메일 알림 설정
                     </span>
-                    {emailNotificationRecipients.length > 0 && (
-                        <span className={`text-xs px-2 py-1 rounded-full ${emailNotificationEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                            {emailNotificationEnabled ? '✓ 활성화됨' : '비활성화'}
-                        </span>
-                    )}
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">리마인더 일정을 이메일로 미리 받아보세요. PC를 보지 않을 때도 알림을 받을 수 있습니다.</p>
-                <div className="space-y-4 max-w-xl">
-                    {/* Enable Toggle */}
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                            <span className="font-medium text-gray-700">이메일 알림 활성화</span>
-                            <p className="text-xs text-gray-500 mt-0.5">활성화하면 리마인더 전에 이메일을 받습니다.</p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setEmailNotificationEnabled(!emailNotificationEnabled)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'}`}
-                        >
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${emailNotificationEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                    </div>
-
-                    {/* Minutes Before Dropdown */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">사전 알림 시간</label>
-                        <select
-                            className="w-full p-2 border rounded bg-white"
-                            value={emailNotificationMinutes}
-                            onChange={e => setEmailNotificationMinutes(Number(e.target.value))}
-                        >
-                            <option value={10}>10분 전</option>
-                            <option value={30}>30분 전</option>
-                            <option value={60}>1시간 전</option>
-                        </select>
-                    </div>
-
-                    {/* Email Recipients */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">수신 이메일 주소</label>
-                        <div className="flex gap-2">
-                            <input
-                                type="email"
-                                placeholder="이메일 주소 입력"
-                                className="flex-1 p-2 border rounded"
-                                value={newEmailRecipient}
-                                onChange={e => setNewEmailRecipient(e.target.value)}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        if (newEmailRecipient.trim() && newEmailRecipient.includes('@')) {
-                                            if (!emailNotificationRecipients.includes(newEmailRecipient.trim())) {
-                                                setEmailNotificationRecipients([...emailNotificationRecipients, newEmailRecipient.trim()]);
-                                            }
-                                            setNewEmailRecipient('');
-                                        }
-                                    }
-                                }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (newEmailRecipient.trim() && newEmailRecipient.includes('@')) {
-                                        if (!emailNotificationRecipients.includes(newEmailRecipient.trim())) {
-                                            setEmailNotificationRecipients([...emailNotificationRecipients, newEmailRecipient.trim()]);
-                                        }
-                                        setNewEmailRecipient('');
-                                    }
-                                }}
-                                className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
-                            >
-                                <Plus size={20} />
-                            </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {emailNotificationRecipients.map(email => (
-                                <div key={email} className="flex items-center bg-blue-50 rounded-full px-3 py-1.5 text-sm text-blue-700 border border-blue-200">
-                                    {email}
-                                    <button type="button" onClick={() => setEmailNotificationRecipients(emailNotificationRecipients.filter(e => e !== email))} className="ml-2 text-blue-400 hover:text-red-500">
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
-                            ))}
-                            {emailNotificationRecipients.length === 0 && (
-                                <p className="text-xs text-gray-400">등록된 이메일이 없습니다.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="pt-2 flex items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                await saveEmailNotificationSettings({
-                                    enabled: emailNotificationEnabled,
-                                    recipients: emailNotificationRecipients,
-                                    minutesBefore: emailNotificationMinutes
-                                });
-                                showToast('이메일 알림 설정이 저장되었습니다.');
-                            }}
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                        >
-                            이메일 설정 저장
-                        </button>
-                        {emailNotificationRecipients.length > 0 && (
-                            <span className="text-xs text-gray-500">
-                                💡 {emailNotificationRecipients.length}개 이메일 주소 등록됨 · {emailNotificationMinutes}분 전 알림
+                    <div className="flex items-center gap-2">
+                        {!emailSettingsSaved && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
+                                ⚠ 저장 필요
+                            </span>
+                        )}
+                        {emailSettingsLoaded && emailNotificationRecipients.length > 0 && emailSettingsSaved && (
+                            <span className={`text-xs px-2 py-1 rounded-full ${emailNotificationEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                {emailNotificationEnabled ? '✓ 활성화됨' : '비활성화'}
                             </span>
                         )}
                     </div>
-                </div>
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">리마인더 일정을 이메일로 미리 받아보세요. PC를 보지 않을 때도 알림을 받을 수 있습니다.</p>
+
+                {emailSettingsLoading ? (
+                    <div className="text-center py-8 text-gray-400">
+                        <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mb-2"></div>
+                        <p className="text-sm">설정 불러오는 중...</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4 max-w-xl">
+                        {/* Enable Toggle */}
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <span className="font-medium text-gray-700">이메일 알림 활성화</span>
+                                <p className="text-xs text-gray-500 mt-0.5">활성화하면 리마인더 전에 이메일을 받습니다.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEmailNotificationEnabled(!emailNotificationEnabled);
+                                    setEmailSettingsSaved(false);
+                                }}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'}`}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${emailNotificationEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+
+                        {/* Minutes Before Dropdown */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">사전 알림 시간</label>
+                            <select
+                                className="w-full p-2 border rounded bg-white"
+                                value={emailNotificationMinutes}
+                                onChange={e => {
+                                    setEmailNotificationMinutes(Number(e.target.value));
+                                    setEmailSettingsSaved(false);
+                                }}
+                            >
+                                <option value={10}>10분 전</option>
+                                <option value={30}>30분 전</option>
+                                <option value={60}>1시간 전</option>
+                            </select>
+                        </div>
+
+                        {/* Email Recipients */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">수신 이메일 주소</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="email"
+                                    placeholder="이메일 주소 입력 후 + 버튼 또는 Enter"
+                                    className="flex-1 p-2 border rounded"
+                                    value={newEmailRecipient}
+                                    onChange={e => setNewEmailRecipient(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            if (newEmailRecipient.trim() && newEmailRecipient.includes('@')) {
+                                                if (!emailNotificationRecipients.includes(newEmailRecipient.trim())) {
+                                                    setEmailNotificationRecipients([...emailNotificationRecipients, newEmailRecipient.trim()]);
+                                                    setEmailSettingsSaved(false);
+                                                }
+                                                setNewEmailRecipient('');
+                                            }
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (newEmailRecipient.trim() && newEmailRecipient.includes('@')) {
+                                            if (!emailNotificationRecipients.includes(newEmailRecipient.trim())) {
+                                                setEmailNotificationRecipients([...emailNotificationRecipients, newEmailRecipient.trim()]);
+                                                setEmailSettingsSaved(false);
+                                            }
+                                            setNewEmailRecipient('');
+                                        }
+                                    }}
+                                    className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+                                >
+                                    <Plus size={20} />
+                                </button>
+                            </div>
+
+                            {/* Registered Emails List */}
+                            <div className="mt-3">
+                                {emailNotificationRecipients.length > 0 ? (
+                                    <div className="space-y-2">
+                                        <p className="text-xs text-gray-500 font-medium">등록된 이메일 ({emailNotificationRecipients.length}개)</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {emailNotificationRecipients.map(email => (
+                                                <div key={email} className="flex items-center bg-blue-50 rounded-full px-3 py-1.5 text-sm text-blue-700 border border-blue-200">
+                                                    <span className="mr-1">📧</span> {email}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setEmailNotificationRecipients(emailNotificationRecipients.filter(e => e !== email));
+                                                            setEmailSettingsSaved(false);
+                                                        }}
+                                                        className="ml-2 text-blue-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5"
+                                                        title="삭제 (저장 버튼을 눌러야 반영됩니다)"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-gray-400 py-2">등록된 이메일이 없습니다. 위에서 이메일을 추가해주세요.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Save Button */}
+                        <div className="pt-3 border-t">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        await saveEmailNotificationSettings({
+                                            enabled: emailNotificationEnabled,
+                                            recipients: emailNotificationRecipients,
+                                            minutesBefore: emailNotificationMinutes
+                                        });
+                                        setEmailSettingsSaved(true);
+                                        showToast('이메일 알림 설정이 저장되었습니다.');
+                                    }}
+                                    className={`px-4 py-2 rounded font-medium ${!emailSettingsSaved ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                >
+                                    {!emailSettingsSaved ? '💾 변경사항 저장' : '✓ 저장됨'}
+                                </button>
+                                {!emailSettingsSaved && (
+                                    <span className="text-xs text-yellow-600">
+                                        변경사항이 있습니다. 저장 버튼을 눌러주세요.
+                                    </span>
+                                )}
+                            </div>
+                            {emailNotificationRecipients.length > 0 && emailSettingsSaved && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                    💡 {emailNotificationRecipients.length}개 이메일로 리마인더 {emailNotificationMinutes}분 전에 알림이 발송됩니다.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
+
 
 
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
