@@ -234,7 +234,7 @@ export default function Settlement() {
             </div>
 
             {/* Monthly Summary Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-4 border-b border-gray-100">
                     <h3 className="font-bold text-gray-700">월별 요약</h3>
                 </div>
