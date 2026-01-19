@@ -59,7 +59,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
         <h3 className="font-bold text-gray-800 flex items-center gap-2">
@@ -126,8 +126,8 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
                   <div
                     key={i}
                     className={`w-1.5 h-1.5 rounded-full ${ev.type === '방문미팅' ? 'bg-purple-500' :
-                        ev.type === '출장미팅' ? 'bg-green-500' :
-                          'bg-blue-500' // Call or Default
+                      ev.type === '출장미팅' ? 'bg-green-500' :
+                        'bg-blue-500' // Call or Default
                       }`}
                   />
                 ))}
