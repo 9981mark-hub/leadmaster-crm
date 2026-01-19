@@ -142,7 +142,7 @@ export default function Dashboard() {
       </div>
 
       {/* NEW: Today's Schedule Box (Replaces 3 Lists) */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-indigo-50 dark:bg-indigo-900/20 flex justify-between items-center">
           <h3 className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
             <Calendar size={20} />
