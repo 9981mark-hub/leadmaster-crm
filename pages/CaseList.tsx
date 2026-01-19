@@ -3,7 +3,7 @@ import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, 
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate, safeFormat } from '../utils';
 import { Link } from 'react-router-dom';
-import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed, Settings, Briefcase, MapPin, MoreHorizontal } from 'lucide-react';
+import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, ChevronDown, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed, Settings, Briefcase, MapPin, MoreHorizontal, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 import ImportModal from '../components/ImportModal';
@@ -108,7 +108,11 @@ export default function CaseList() {
 
     // Filters & Sort (Persisted in sessionStorage)
     const [search, setSearch] = useState(() => sessionStorage.getItem('lm_search') || '');
-    const [statusFilter, setStatusFilter] = useState(() => sessionStorage.getItem('lm_statusFilter') || '');
+    const [statusFilters, setStatusFilters] = useState<string[]>(() => {
+        const stored = sessionStorage.getItem('lm_statusFilters');
+        return stored ? JSON.parse(stored) : [];
+    });
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
     const [inboundPathFilter, setInboundPathFilter] = useState(() => sessionStorage.getItem('lm_inboundPathFilter') || '');
     const [partnerFilter, setPartnerFilter] = useState(() => sessionStorage.getItem('lm_partnerFilter') || '');
     const [dateFilterStart, setDateFilterStart] = useState(() => sessionStorage.getItem('lm_dateFilterStart') || '');
@@ -123,7 +127,7 @@ export default function CaseList() {
     // Persistence Effect
     useEffect(() => {
         sessionStorage.setItem('lm_search', search);
-        sessionStorage.setItem('lm_statusFilter', statusFilter);
+        sessionStorage.setItem('lm_statusFilters', JSON.stringify(statusFilters));
         sessionStorage.setItem('lm_inboundPathFilter', inboundPathFilter);
         sessionStorage.setItem('lm_partnerFilter', partnerFilter);
         sessionStorage.setItem('lm_dateFilterStart', dateFilterStart);
@@ -131,7 +135,7 @@ export default function CaseList() {
         sessionStorage.setItem('lm_sortOrder', sortOrder);
         sessionStorage.setItem('lm_showNewOnly', String(showNewOnly));
         sessionStorage.setItem('lm_viewMode', viewMode);
-    }, [search, statusFilter, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, viewMode]);
+    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, viewMode]);
 
     // Pagination
     // [Fix] Persist currentPage to prevent reset on re-mount
@@ -512,11 +516,11 @@ export default function CaseList() {
     const filteredCases = cases.filter(c => {
         const matchesSearch = String(c.customerName || '').includes(search) || String(c.phone || '').includes(search);
 
-        // [Modified] Status Filter Logic (Global Hide vs Explicit Select)
+        // [Modified] Status Filter Logic (Global Hide vs Explicit Select - Multi-select support)
         const isHiddenGlobally = hiddenStatuses.includes(c.status);
-        const matchesStatus = statusFilter === ''
+        const matchesStatus = statusFilters.length === 0
             ? !isHiddenGlobally // If no specific filter, hide if in hidden list
-            : c.status === statusFilter; // If specific filter, SHOW even if hidden globally
+            : statusFilters.includes(c.status); // If specific filters selected, SHOW if status is in the list
         const matchesPath = inboundPathFilter === '' || c.inboundPath === inboundPathFilter;
         const matchesPartner = partnerFilter === '' || c.partnerId === partnerFilter;
         const matchesNew = showNewOnly ? c.isNew : true;
@@ -776,14 +780,74 @@ export default function CaseList() {
 
                     {/* [Row 4 Mobile] Status + Sort + Trash */}
                     <div className="flex w-full xl:w-auto gap-1">
-                        <select
-                            className="border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white flex-1 min-w-[80px] text-ellipsis"
-                            value={statusFilter}
-                            onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                        >
-                            <option value="">전체 상태</option>
-                            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                        {/* Multi-Status Filter Dropdown */}
+                        <div className="relative flex-1 min-w-[100px]">
+                            <button
+                                type="button"
+                                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                                className="w-full border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left flex items-center justify-between"
+                            >
+                                <span className="truncate">
+                                    {statusFilters.length === 0
+                                        ? '전체 상태'
+                                        : statusFilters.length === 1
+                                            ? statusFilters[0]
+                                            : `${statusFilters[0]} 외 ${statusFilters.length - 1}개`}
+                                </span>
+                                <ChevronDown size={16} className={`ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isStatusDropdownOpen && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setIsStatusDropdownOpen(false)}
+                                    />
+                                    <div className="absolute top-full left-0 mt-1 w-full min-w-[160px] bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setStatusFilters([]); setCurrentPage(1); }}
+                                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.length === 0 ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
+                                        >
+                                            {statusFilters.length === 0 && <Check size={14} />}
+                                            <span className={statusFilters.length === 0 ? 'font-medium' : ''}>전체 상태</span>
+                                        </button>
+                                        <div className="border-t dark:border-gray-600" />
+                                        {statuses.map(s => (
+                                            <button
+                                                type="button"
+                                                key={s}
+                                                onClick={() => {
+                                                    setStatusFilters(prev =>
+                                                        prev.includes(s)
+                                                            ? prev.filter(x => x !== s)
+                                                            : [...prev, s]
+                                                    );
+                                                    setCurrentPage(1);
+                                                }}
+                                                className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.includes(s) ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
+                                            >
+                                                <div className={`w-4 h-4 border rounded flex items-center justify-center ${statusFilters.includes(s) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'}`}>
+                                                    {statusFilters.includes(s) && <Check size={12} />}
+                                                </div>
+                                                <span>{s}</span>
+                                            </button>
+                                        ))}
+                                        {statusFilters.length > 0 && (
+                                            <>
+                                                <div className="border-t dark:border-gray-600" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setStatusFilters([]); setCurrentPage(1); setIsStatusDropdownOpen(false); }}
+                                                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                >
+                                                    ✕ 필터 초기화
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
 
                         <button
                             onClick={() => setIsVisibilityModalOpen(true)}
