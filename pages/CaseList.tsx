@@ -1176,24 +1176,23 @@ export default function CaseList() {
                                         <td className="px-4 py-3">
                                             <HoverCheckTooltip
                                                 trigger={
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className={`px-2 py-1 rounded text-xs cursor-help ${STATUS_COLOR_MAP[c.status]
-                                                            ? STATUS_COLOR_MAP[c.status].replace('bg-blue-50', 'bg-blue-100') // darkened for visibility 
+                                                    c.status === '사무장 접수' && c.secondaryStatus ? (
+                                                        // 2차 상태가 있을 때: 복합 뱃지 (한 줄에 표시)
+                                                        <span className="inline-flex items-center px-2 py-1 rounded text-xs whitespace-nowrap bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200">
+                                                            <span className="text-green-700 font-medium">✓사무장</span>
+                                                            <span className="text-gray-400 mx-0.5">›</span>
+                                                            <span className="text-purple-700 font-medium">{c.secondaryStatus}</span>
+                                                        </span>
+                                                    ) : (
+                                                        // 일반 상태 표시
+                                                        <span className={`px-2 py-1 rounded text-xs cursor-help whitespace-nowrap ${STATUS_COLOR_MAP[c.status]
+                                                            ? STATUS_COLOR_MAP[c.status].replace('bg-blue-50', 'bg-blue-100')
                                                             : 'bg-gray-100 dark:bg-gray-700'
                                                             } ${c.status === '진행불가' || c.status === '고객취소' ? 'text-red-700 bg-red-100' : ''
                                                             } ${c.status === '사무장 접수' ? 'bg-green-100 text-green-700' : ''}`}>
                                                             {c.status === '사무장 접수' ? '✓ 사무장접수' : c.status}
                                                         </span>
-                                                        {/* 2차 상태 표시 (사무장 접수 이후) */}
-                                                        {c.status === '사무장 접수' && c.secondaryStatus && (
-                                                            <>
-                                                                <span className="text-gray-400 text-xs">→</span>
-                                                                <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-700 font-medium">
-                                                                    {c.secondaryStatus}
-                                                                </span>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                                    )
                                                 }
                                                 content={<StatusHistoryTooltipContent caseId={c.caseId} />}
                                             />
