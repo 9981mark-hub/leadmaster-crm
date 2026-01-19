@@ -136,9 +136,20 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <MonthlyTrendChart cases={cases} isDark={theme === 'dark'} />
-        <StatusPieChart cases={cases} isDark={theme === 'dark'} />
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">영업 현황</h3>
+          <Link
+            to="/statistics"
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 hover:underline"
+          >
+            📊 상세 통계 보기 →
+          </Link>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <MonthlyTrendChart cases={cases} isDark={theme === 'dark'} />
+          <StatusPieChart cases={cases} isDark={theme === 'dark'} />
+        </div>
       </div>
 
       {/* NEW: Today's Schedule Box (Replaces 3 Lists) */}

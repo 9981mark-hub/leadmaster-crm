@@ -8,6 +8,7 @@ const NewCase = lazy(() => import('./pages/NewCase'));
 const CaseDetail = lazy(() => import('./pages/CaseDetail'));
 const Settlement = lazy(() => import('./pages/Settlement'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
+const Statistics = lazy(() => import('./pages/Statistics'));
 const MyPage = lazy(() => import('./pages/MyPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 import { ToastProvider } from './contexts/ToastContext';
@@ -169,6 +170,7 @@ const ProtectedRoutes = () => {
           <Route path="/new" element={<NewCase />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />
           <Route path="/settlement" element={<Settlement />} />
+          <Route path="/statistics" element={<Statistics />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
