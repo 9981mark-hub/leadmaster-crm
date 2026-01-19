@@ -877,7 +877,7 @@ export default function CaseList() {
             />
 
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden min-h-[500px] flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 min-h-[500px] flex flex-col">
                 <div className="md:hidden flex-1">
                     {currentCases.map((c, index) => {
                         const partner = partners.find(p => p.partnerId === c.partnerId);
