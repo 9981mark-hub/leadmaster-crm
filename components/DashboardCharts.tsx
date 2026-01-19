@@ -35,7 +35,10 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
             };
         });
 
-        cases.forEach(c => {
+        // 휴지통 케이스 제외
+        const activeCases = cases.filter(c => c.status !== '휴지통');
+
+        activeCases.forEach(c => {
             if (!c.createdAt) return;
             const created = new Date(c.createdAt);
             const monthData = last6Months.find(m => isWithinInterval(created, { start: m.start, end: m.end }));
@@ -85,7 +88,9 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
 export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
     const data = useMemo(() => {
         const statusCounts: Record<string, number> = {};
-        cases.forEach(c => {
+        // 휴지통 케이스 제외
+        const activeCases = cases.filter(c => c.status !== '휴지통');
+        activeCases.forEach(c => {
             const status = c.status || '미분류';
             statusCounts[status] = (statusCounts[status] || 0) + 1;
         });
