@@ -102,6 +102,7 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
             <div
               key={day.toISOString()}
               onClick={() => onDateSelect && onDateSelect(day)}
+              title={dayEvents.length > 0 ? dayEvents.map(ev => `${ev.datetime?.split(' ')[1] || ''} [${ev.type}] ${ev.customerName}${ev.resultStatus ? ` (${ev.resultStatus})` : ''}`).join('\n') : undefined}
               className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors h-[80px] md:h-[140px] border border-gray-100
                 ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset z-10' : (!isCurrentMonth ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-50')}
               `}
