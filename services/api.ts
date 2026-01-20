@@ -16,7 +16,6 @@ let localInboundPaths: string[] = [];
 let localStatuses: CaseStatus[] = [];
 let localSecondaryStatuses: string[] = []; // [NEW] 2차 상태 목록
 let localAllowedEmails: string[] = ['9981mark@gmail.com', '2882a@naver.com']; // Default
-let permanentlyDeletedIds: Set<string> = new Set(); // [FIX] 영구 삭제된 케이스 ID 추적
 let isInitialized = false;
 
 // Event Listeners for Real-time Updates
@@ -269,10 +268,7 @@ const performBackgroundFetch = async () => {
       // Pass 2: Add Server-only items (New cases from others)
       serverCases.forEach(server => {
         if (!processedIds.has(server.caseId)) {
-          // [FIX] 영구 삭제된 케이스는 다시 추가하지 않음
-          if (!permanentlyDeletedIds.has(server.caseId)) {
-            newLocalCases.push(server);
-          }
+          newLocalCases.push(server);
         }
       });
 
@@ -756,7 +752,6 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
 export const deleteCase = async (caseId: string, force: boolean = false): Promise<Case[]> => {
   if (force) {
     // Hard Delete
-    permanentlyDeletedIds.add(caseId); // [FIX] 삭제된 ID 추적하여 백그라운드 싱크에서 부활 방지
     localCases = localCases.filter(c => c.caseId !== caseId);
     syncToSheet({ target: 'leads', action: 'delete', data: { id: caseId } });
   } else {
