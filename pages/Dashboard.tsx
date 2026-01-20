@@ -102,7 +102,10 @@ export default function Dashboard() {
   );
 
   const todayReminders = allRemindersWithCase.filter(item => getReminderStatus(item.reminder.datetime) === 'today');
-  const overdueReminders = allRemindersWithCase.filter(item => getReminderStatus(item.reminder.datetime) === 'overdue');
+  const overdueReminders = allRemindersWithCase.filter(item =>
+    getReminderStatus(item.reminder.datetime) === 'overdue' &&
+    !item.reminder.resultStatus  // 결과 미입력 시에만 지연으로 표시
+  );
 
   // Warnings
   const warningCases = cases.filter(c => {
