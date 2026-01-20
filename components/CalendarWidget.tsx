@@ -112,11 +112,15 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
             >
               {/* Custom Tooltip */}
               {hoveredDate === day.toISOString() && dayEvents.length > 0 && (
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-64 bg-gray-900 text-white rounded-lg shadow-xl p-3 pointer-events-none animate-fade-in">
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-64 bg-gray-900 text-white rounded-lg shadow-xl p-3 animate-fade-in"
+                  onMouseEnter={() => setHoveredDate(day.toISOString())}
+                  onMouseLeave={() => setHoveredDate(null)}
+                >
                   <div className="text-xs font-bold text-blue-300 mb-2 border-b border-gray-700 pb-1">
                     {format(day, 'M월 d일')} 일정 ({dayEvents.length}건)
                   </div>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                     {dayEvents.map((ev, idx) => (
                       <div key={idx} className="text-xs border-l-2 border-blue-400 pl-2">
                         <div className="flex items-center gap-1">
