@@ -182,6 +182,9 @@ export default function CaseList() {
     // Quick Filter for "New" cases
     const [showNewOnly, setShowNewOnly] = useState(() => sessionStorage.getItem('lm_showNewOnly') === 'true');
 
+    // [NEW] Quick Filter for overdue missed calls (재통화 필요)
+    const [showOverdueMissedOnly, setShowOverdueMissedOnly] = useState(() => sessionStorage.getItem('lm_showOverdueMissed') === 'true');
+
     // Persistence Effect
     useEffect(() => {
         sessionStorage.setItem('lm_search', search);
@@ -192,8 +195,9 @@ export default function CaseList() {
         sessionStorage.setItem('lm_dateFilterEnd', dateFilterEnd);
         sessionStorage.setItem('lm_sortOrder', sortOrder);
         sessionStorage.setItem('lm_showNewOnly', String(showNewOnly));
+        sessionStorage.setItem('lm_showOverdueMissed', String(showOverdueMissedOnly));
         sessionStorage.setItem('lm_viewMode', viewMode);
-    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, viewMode]);
+    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, showOverdueMissedOnly, viewMode]);
 
     // Pagination
     // [Fix] Persist currentPage to prevent reset on re-mount
@@ -601,6 +605,15 @@ export default function CaseList() {
             }
         }
 
+        // [NEW] Overdue Missed Call Filter
+        if (showOverdueMissedOnly) {
+            const now = new Date().getTime();
+            const isOverdueMissed = c.status === missedCallStatus &&
+                c.lastMissedCallAt &&
+                (now - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000);
+            if (!isOverdueMissed) return false;
+        }
+
         return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew;
     });
 
@@ -691,6 +704,15 @@ export default function CaseList() {
 
     const newCaseCount = cases.filter(c => c.isNew).length;
 
+    // [NEW] Calculate overdue missed call count (재통화 필요 건수)
+    const overdueMissedCallCount = cases.filter(c => {
+        if (c.status !== missedCallStatus) return false;
+        if (!c.lastMissedCallAt) return false;
+        const now = new Date().getTime();
+        const lastCall = new Date(c.lastMissedCallAt).getTime();
+        return (now - lastCall) > (missedCallInterval * 24 * 60 * 60 * 1000);
+    }).length;
+
     return (
         <div
             className="max-w-7xl mx-auto space-y-6"
@@ -736,6 +758,31 @@ export default function CaseList() {
                 </div>
             )}
 
+            {/* [NEW] Overdue Missed Call Alert Banner (재통화 필요) */}
+            {overdueMissedCallCount > 0 && !showOverdueMissedOnly && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between animate-fade-in">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-orange-100 p-2 rounded-full">
+                            <Phone className="text-orange-600" size={20} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-orange-800">재통화 필요 {overdueMissedCallCount}건</h3>
+                            <p className="text-sm text-orange-600">마지막 통화 후 {missedCallInterval}일이 지났습니다.</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setShowOverdueMissedOnly(true);
+                            setShowNewOnly(false);
+                            setCurrentPage(1);
+                        }}
+                        className="px-4 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 transition-colors shadow-sm whitespace-nowrap"
+                    >
+                        확인하기
+                    </button>
+                </div>
+            )}
+
             {/* Manual Refresh Notification */}
             {updateAvailable && (
                 <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg animate-fade-in shadow-sm cursor-pointer hover:bg-blue-100 transition-colors" onClick={handleManualRefresh}>
@@ -763,6 +810,11 @@ export default function CaseList() {
                     {showNewOnly && (
                         <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200 cursor-pointer hover:bg-red-200" onClick={() => { setShowNewOnly(false); setCurrentPage(1); }}>
                             필터링됨: 신규 접수 건 <span className="ml-1 font-bold">×</span>
+                        </span>
+                    )}
+                    {showOverdueMissedOnly && (
+                        <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full border border-orange-200 cursor-pointer hover:bg-orange-200" onClick={() => { setShowOverdueMissedOnly(false); setCurrentPage(1); }}>
+                            필터링됨: 재통화 필요 <span className="ml-1 font-bold">×</span>
                         </span>
                     )}
                 </h2>
@@ -1068,14 +1120,14 @@ export default function CaseList() {
                                             trigger={
                                                 c.status === '사무장 접수' && c.secondaryStatus ? (
                                                     <span className={`px-2 py-1 rounded text-xs font-semibold bg-gradient-to-r from-green-100 to-purple-100 ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
-                                                            c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
-                                                                c.secondaryStatus === '출장예약' ? 'text-green-600' :
-                                                                    c.secondaryStatus === '방문예약' ? 'text-blue-600' :
-                                                                        c.secondaryStatus === '고민중' ? 'text-yellow-600' :
-                                                                            c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
-                                                                                c.secondaryStatus === '관리중' ? 'text-indigo-600' :
-                                                                                    c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
-                                                                                        'text-gray-700'
+                                                        c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
+                                                            c.secondaryStatus === '출장예약' ? 'text-green-600' :
+                                                                c.secondaryStatus === '방문예약' ? 'text-blue-600' :
+                                                                    c.secondaryStatus === '고민중' ? 'text-yellow-600' :
+                                                                        c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
+                                                                            c.secondaryStatus === '관리중' ? 'text-indigo-600' :
+                                                                                c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
+                                                                                    'text-gray-700'
                                                         }`}>
                                                         사무장›{c.secondaryStatus}
                                                     </span>

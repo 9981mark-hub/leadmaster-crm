@@ -80,6 +80,19 @@ export default function Dashboard() {
 
   if (loading) return <div className="p-10 text-center text-gray-500">로딩중...</div>;
 
+  // [NEW] Missed call settings from localStorage
+  const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
+  const missedCallInterval = Number(localStorage.getItem('lm_missedInterval')) || 3;
+
+  // [NEW] Calculate overdue missed call count (재통화 필요 건수)
+  const overdueMissedCallCount = cases.filter(c => {
+    if (c.status !== missedCallStatus) return false;
+    if (!c.lastMissedCallAt) return false;
+    const now = new Date().getTime();
+    const lastCall = new Date(c.lastMissedCallAt).getTime();
+    return (now - lastCall) > (missedCallInterval * 24 * 60 * 60 * 1000);
+  }).length;
+
   // KPIs (Summary)
   const allRemindersWithCase = cases.flatMap(c =>
     (c.reminders || []).map(r => ({ reminder: r, caseData: c }))
@@ -118,10 +131,13 @@ export default function Dashboard() {
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white">대시보드</h2>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <KPICard title="오늘 리마인더" count={todayReminders.length} color="text-blue-600" icon={PhoneCall} />
         <KPICard title="지연된 리마인더" count={overdueReminders.length} color="text-red-600" icon={Clock} />
         <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
+        <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
+          <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText={`${missedCallInterval}일 이상 경과`} />
+        </Link>
 
         {/* Settlement Card */}
         {settlementInfo && (
