@@ -11,7 +11,7 @@ import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts
 import { useTheme } from '../contexts/ThemeContext';
 
 const KPICard = ({ title, count, color, icon: Icon, subText }: any) => (
-  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between transition-colors">
+  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between transition-colors h-full">
     <div>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{title}</p>
       <p className={`text-2xl font-bold ${color}`}>{count}</p>
