@@ -4,7 +4,7 @@ import { fetchCases, fetchPartners } from '../services/api';
 import { Case, Partner, ReminderItem } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement } from '../utils';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal } from 'lucide-react';
+import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X } from 'lucide-react';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
@@ -70,6 +70,9 @@ export default function Dashboard() {
   /* New: Dashboard State for Calendar Interactivity */
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  /* [NEW] State for Overdue Reminders Modal */
+  const [showOverdueModal, setShowOverdueModal] = useState(false);
+
   useEffect(() => {
     Promise.all([fetchCases(), fetchPartners()]).then(([data, partnerData]) => {
       setCases(data);
@@ -133,7 +136,9 @@ export default function Dashboard() {
       {/* KPI Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <KPICard title="오늘 리마인더" count={todayReminders.length} color="text-blue-600" icon={PhoneCall} />
-        <KPICard title="지연된 리마인더" count={overdueReminders.length} color="text-red-600" icon={Clock} />
+        <div onClick={() => setShowOverdueModal(true)} className="cursor-pointer hover:scale-[1.02] transition-transform">
+          <KPICard title="지연된 리마인더" count={overdueReminders.length} color="text-red-600" icon={Clock} />
+        </div>
         <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
           <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText={`${missedCallInterval}일 이상 경과`} />
@@ -279,6 +284,65 @@ export default function Dashboard() {
           onDateSelect={setSelectedDate}
         />
       </div>
+
+      {/* [NEW] Overdue Reminders Modal */}
+      {showOverdueModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowOverdueModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/20 rounded-t-xl">
+              <h3 className="font-bold text-red-800 dark:text-red-300 flex items-center gap-2">
+                <Clock size={20} />
+                지연된 리마인더 ({overdueReminders.length}건)
+              </h3>
+              <button onClick={() => setShowOverdueModal(false)} className="p-1 hover:bg-red-100 dark:hover:bg-red-800 rounded-full transition-colors">
+                <X size={20} className="text-red-600 dark:text-red-400" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {overdueReminders.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  지연된 리마인더가 없습니다.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {overdueReminders.map(item => (
+                    <Link
+                      key={item.reminder.id}
+                      to={`/case/${item.caseData.caseId}`}
+                      onClick={() => setShowOverdueModal(false)}
+                      className="block p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg border border-gray-100 dark:border-gray-600 hover:border-red-200 transition-all"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
+                            <span className="text-xs text-gray-400">|</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{item.caseData.phone}</span>
+                          </div>
+                          <div className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">
+                            📅 {item.reminder.datetime}
+                          </div>
+                          {item.reminder.content && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[300px]">
+                              {item.reminder.content}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded font-bold">
+                          지연
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div >
   );
 }
