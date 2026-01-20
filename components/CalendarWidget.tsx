@@ -17,6 +17,7 @@ interface CalendarWidgetProps {
 
 export default function CalendarWidget({ cases, onDateSelect, selectedDate }: CalendarWidgetProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null);
 
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
@@ -34,8 +35,9 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
       caseId: c.caseId,
       customerName: c.customerName,
       datetime: r.datetime,
-      type: r.type || '통화', // Default to '통화' if undefined
-      resultStatus: r.resultStatus // Added: Pass result status
+      type: r.type || '통화',
+      content: r.content || '', // [NEW] 리마인더 내용 추가
+      resultStatus: r.resultStatus
     }))
   );
 
@@ -102,11 +104,35 @@ export default function CalendarWidget({ cases, onDateSelect, selectedDate }: Ca
             <div
               key={day.toISOString()}
               onClick={() => onDateSelect && onDateSelect(day)}
-              title={dayEvents.length > 0 ? dayEvents.map(ev => `${ev.datetime?.split(' ')[1] || ''} [${ev.type}] ${ev.customerName}${ev.resultStatus ? ` (${ev.resultStatus})` : ''}`).join('\n') : undefined}
-              className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors h-[80px] md:h-[140px] border border-gray-100
+              onMouseEnter={() => dayEvents.length > 0 && setHoveredDate(day.toISOString())}
+              onMouseLeave={() => setHoveredDate(null)}
+              className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors h-[80px] md:h-[140px] border border-gray-100 relative
                 ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset z-10' : (!isCurrentMonth ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-50')}
               `}
             >
+              {/* Custom Tooltip */}
+              {hoveredDate === day.toISOString() && dayEvents.length > 0 && (
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-64 bg-gray-900 text-white rounded-lg shadow-xl p-3 pointer-events-none animate-fade-in">
+                  <div className="text-xs font-bold text-blue-300 mb-2 border-b border-gray-700 pb-1">
+                    {format(day, 'M월 d일')} 일정 ({dayEvents.length}건)
+                  </div>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {dayEvents.map((ev, idx) => (
+                      <div key={idx} className="text-xs border-l-2 border-blue-400 pl-2">
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono font-bold text-yellow-300">{ev.datetime?.split(' ')[1]}</span>
+                          <span className="px-1 py-0.5 rounded text-[10px] bg-gray-700">{ev.type}</span>
+                        </div>
+                        <div className="font-medium text-white mt-0.5">{ev.customerName}</div>
+                        {ev.content && <div className="text-gray-400 mt-0.5 truncate">"{ev.content}"</div>}
+                        {ev.resultStatus && <span className="text-green-400 text-[10px]">→ {ev.resultStatus}</span>}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Arrow */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                </div>
+              )}
               <div className="flex justify-between items-start">
                 <span
                   className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full
