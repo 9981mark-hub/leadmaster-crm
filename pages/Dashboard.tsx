@@ -73,6 +73,9 @@ export default function Dashboard() {
   /* [NEW] State for Overdue Reminders Modal */
   const [showOverdueModal, setShowOverdueModal] = useState(false);
 
+  /* [NEW] State for Warning Cases Modal */
+  const [showWarningModal, setShowWarningModal] = useState(false);
+
   useEffect(() => {
     Promise.all([fetchCases(), fetchPartners()]).then(([data, partnerData]) => {
       setCases(data);
@@ -107,11 +110,14 @@ export default function Dashboard() {
     !item.reminder.resultStatus  // 결과 미입력 시에만 지연으로 표시
   );
 
-  // Warnings
-  const warningCases = cases.filter(c => {
+  // Warnings - with details
+  const warningCasesWithDetails = cases.map(c => {
     const partner = partners.find(p => p.partnerId === c.partnerId);
-    return getCaseWarnings(c, partner).length > 0;
-  });
+    const warnings = getCaseWarnings(c, partner);
+    return { caseData: c, warnings };
+  }).filter(item => item.warnings.length > 0);
+
+  const warningCases = warningCasesWithDetails.map(item => item.caseData);
 
   // Next Settlement Calc
   let settlementInfo = null;
@@ -142,7 +148,9 @@ export default function Dashboard() {
         <div onClick={() => setShowOverdueModal(true)} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
           <KPICard title="지연된 리마인더" count={overdueReminders.length} color="text-red-600" icon={Clock} />
         </div>
-        <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
+        <div onClick={() => setShowWarningModal(true)} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
+          <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
+        </div>
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
           <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText={`${missedCallInterval}일 이상 경과`} />
         </Link>
@@ -337,6 +345,66 @@ export default function Dashboard() {
                         <span className="text-xs bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded font-bold">
                           지연
                         </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* [NEW] Warning Cases Modal */}
+      {showWarningModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowWarningModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20 rounded-t-xl">
+              <h3 className="font-bold text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
+                <AlertCircle size={20} />
+                조치 필요 케이스 ({warningCases.length}건)
+              </h3>
+              <button onClick={() => setShowWarningModal(false)} className="p-1 hover:bg-yellow-100 dark:hover:bg-yellow-800 rounded-full transition-colors">
+                <X size={20} className="text-yellow-600 dark:text-yellow-400" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {warningCasesWithDetails.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  조치가 필요한 케이스가 없습니다.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {warningCasesWithDetails.map(item => (
+                    <Link
+                      key={item.caseData.caseId}
+                      to={`/case/${item.caseData.caseId}`}
+                      onClick={() => setShowWarningModal(false)}
+                      className="block p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg border border-gray-100 dark:border-gray-600 hover:border-yellow-200 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
+                            <span className="text-xs text-gray-400">|</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{item.caseData.phone}</span>
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {item.caseData.status}
+                          </div>
+                          {/* Warning Tags */}
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {item.warnings.map((warning, idx) => (
+                              <span key={idx} className="text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-400 px-2 py-0.5 rounded font-medium">
+                                ⚠ {warning}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-400 mt-1">→</span>
                       </div>
                     </Link>
                   ))}
