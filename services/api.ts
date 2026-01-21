@@ -241,6 +241,8 @@ const performBackgroundFetch = async () => {
 
       // Pass 1: Iterate Local Cases to handle Updates/Pending Creates
       localCases.forEach(local => {
+        if (processedIds.has(local.caseId)) return; // [Fix] Skip duplicates in local cache
+
         processedIds.add(local.caseId);
         const server = serverMap.get(local.caseId);
 
@@ -269,6 +271,7 @@ const performBackgroundFetch = async () => {
       serverCases.forEach(server => {
         if (!processedIds.has(server.caseId)) {
           newLocalCases.push(server);
+          processedIds.add(server.caseId); // [Fix] Prevent duplicates if server has multiple rows
         }
       });
 
