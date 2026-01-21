@@ -753,7 +753,7 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
   if (force) {
     // Hard Delete
     localCases = localCases.filter(c => c.caseId !== caseId);
-    syncToSheet({ target: 'leads', action: 'delete', data: { id: caseId } });
+    syncToSheet({ target: 'leads', action: 'delete', data: { caseId, id: caseId } });
   } else {
     // Soft Delete
     const idx = localCases.findIndex(c => c.caseId === caseId);
