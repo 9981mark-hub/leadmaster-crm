@@ -1,10 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, Mail, LogOut, ShieldCheck, Plus, Trash2, Users, Lock, Monitor, Globe } from 'lucide-react';
+import { User, Mail, LogOut, ShieldCheck, Plus, Trash2, Users, Lock, Monitor, Globe, Phone, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 
 const HOST_EMAIL = '9981mark@gmail.com';
+
+// TypeScript interface for Android Bridge
+declare global {
+    interface Window {
+        AndroidBridge?: {
+            isAndroidApp: () => boolean;
+            getPopupSettings: () => string;
+            setPopupTemplate: (templateName: string) => void;
+            setFloatingButtonEnabled: (enabled: boolean) => void;
+            getAvailableTemplates: () => string;
+        };
+    }
+}
+
+interface PopupTemplate {
+    name: string;
+    displayName: string;
+}
 
 export default function MyPage() {
     const { showToast } = useToast();
@@ -15,6 +33,12 @@ export default function MyPage() {
     // Security Dashboard State
     const [ipAddress, setIpAddress] = useState<string>('Loading...');
     const [deviceInfo, setDeviceInfo] = useState<string>('');
+
+    // Android Popup Settings State
+    const [isAndroidApp, setIsAndroidApp] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState<string>('CARD');
+    const [floatingButtonEnabled, setFloatingButtonEnabled] = useState(true);
+    const [availableTemplates, setAvailableTemplates] = useState<PopupTemplate[]>([]);
 
     const isHost = user?.email === HOST_EMAIL;
 
@@ -32,6 +56,25 @@ export default function MyPage() {
                 .then(res => res.json())
                 .then(data => setIpAddress(data.ip))
                 .catch(() => setIpAddress('확인 불가'));
+        }
+
+        // Check if running in Android app and load popup settings
+        if (window.AndroidBridge?.isAndroidApp?.()) {
+            setIsAndroidApp(true);
+            try {
+                // Load available templates
+                const templatesJson = window.AndroidBridge.getAvailableTemplates();
+                const templates = JSON.parse(templatesJson) as PopupTemplate[];
+                setAvailableTemplates(templates);
+
+                // Load current settings
+                const settingsJson = window.AndroidBridge.getPopupSettings();
+                const settings = JSON.parse(settingsJson);
+                setSelectedTemplate(settings.template);
+                setFloatingButtonEnabled(settings.floatingButtonEnabled);
+            } catch (e) {
+                console.error('Failed to load Android settings', e);
+            }
         }
 
     }, [user]);
@@ -79,6 +122,20 @@ export default function MyPage() {
 
         removeAllowedEmail(email);
         showToast('권한이 삭제되었습니다.');
+    };
+
+    // Android Popup Settings Handlers
+    const handleTemplateChange = (templateName: string) => {
+        setSelectedTemplate(templateName);
+        window.AndroidBridge?.setPopupTemplate(templateName);
+        showToast('팝업 템플릿이 변경되었습니다.');
+    };
+
+    const handleFloatingButtonToggle = () => {
+        const newValue = !floatingButtonEnabled;
+        setFloatingButtonEnabled(newValue);
+        window.AndroidBridge?.setFloatingButtonEnabled(newValue);
+        showToast(newValue ? '플로팅 버튼이 활성화되었습니다.' : '플로팅 버튼이 비활성화되었습니다.');
     };
 
     return (
@@ -151,6 +208,55 @@ export default function MyPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Android Popup Settings (Only shown in Android app) */}
+            {isAndroidApp && (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-blue-100 ring-1 ring-blue-50">
+                    <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
+                        <Phone className="mr-2" size={20} /> 전화 팝업 설정
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">수신 전화 시 표시될 팝업 디자인을 선택하세요.</p>
+
+                    {/* Template Selection */}
+                    <div className="space-y-2 mb-6">
+                        {availableTemplates.map(template => (
+                            <button
+                                key={template.name}
+                                onClick={() => handleTemplateChange(template.name)}
+                                className={`w-full p-3 rounded-lg border text-left transition-all ${selectedTemplate === template.name
+                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className="font-medium">{template.displayName}</span>
+                                    {selectedTemplate === template.name && (
+                                        <span className="text-blue-600 text-sm">✓ 선택됨</span>
+                                    )}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Floating Button Toggle */}
+                    <div className="border-t pt-4">
+                        <h4 className="font-medium text-gray-700 mb-3 flex items-center">
+                            <Bell className="mr-2" size={16} /> 통화 중 플로팅 버튼
+                        </h4>
+                        <button
+                            onClick={handleFloatingButtonToggle}
+                            className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg"
+                        >
+                            <span className="text-sm text-gray-600">전화를 받은 후 미니 버튼 표시</span>
+                            <div className={`w-12 h-6 rounded-full transition-colors ${floatingButtonEnabled ? 'bg-blue-500' : 'bg-gray-300'
+                                }`}>
+                                <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform ${floatingButtonEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                                    } mt-0.5`} />
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Security Dashboard (Host Only) */}
             {isHost && (
