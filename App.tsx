@@ -102,6 +102,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       clearTimeout(scrollTimeout);
     };
   }, []);
+
+  // Reset scroll on route change
+  React.useEffect(() => {
+    const container = document.getElementById('main-scroll-container');
+    if (container) {
+      container.scrollTop = 0;
+    }
+  }, [path]);
   /* 
     Poling Logic removed (handled in CaseList now)
   */
