@@ -212,6 +212,7 @@ export default function Dashboard() {
                 if (type === '통화') typeColor = 'bg-blue-100 text-blue-700';
                 else if (type === '출장미팅') typeColor = 'bg-green-100 text-green-700';
                 else if (type === '방문미팅') typeColor = 'bg-purple-100 text-purple-700';
+                else if (type === '입금') typeColor = 'bg-emerald-100 text-emerald-700';
                 else if (type === '기타') typeColor = 'bg-gray-100 text-gray-700';
 
                 return (
@@ -235,6 +236,7 @@ export default function Dashboard() {
                           {type === '통화' && <Phone size={16} className="text-blue-600" />}
                           {type === '출장미팅' && <Briefcase size={16} className="text-green-600" />}
                           {type === '방문미팅' && <MapPin size={16} className="text-purple-600" />}
+                          {type === '입금' && <Wallet size={16} className="text-emerald-600" />}
                           {type === '기타' && <MoreHorizontal size={16} className="text-gray-600" />}
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
@@ -242,11 +244,11 @@ export default function Dashboard() {
 
                       {/* Content Row (Name & Content) */}
                       <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
-                        <span className={`font-bold whitespace-nowrap ${item.reminder.resultStatus === '완료' ? 'text-gray-400 line-through' : 'text-gray-800 dark:text-white'}`}>
+                        <span className={`font-bold whitespace-nowrap ${item.reminder.resultStatus ? 'text-gray-400 line-through' : 'text-gray-800 dark:text-white'}`}>
                           {item.caseData.customerName}
                         </span>
                         <span className="hidden md:inline text-gray-300">|</span>
-                        <span className={`text-xs md:text-sm truncate block w-full md:w-auto ${item.reminder.resultStatus === '완료' ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                        <span className={`text-xs md:text-sm truncate block w-full md:w-auto ${item.reminder.resultStatus ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
                           {item.reminder.content || '내용 없음'}
                         </span>
                       </div>

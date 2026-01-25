@@ -871,6 +871,7 @@ export default function CaseDetail() {
                                                     <option value="통화">통화</option>
                                                     <option value="출장미팅">출장미팅</option>
                                                     <option value="방문미팅">방문미팅</option>
+                                                    <option value="입금">입금</option>
                                                     <option value="기타">기타</option>
                                                 </select>
                                             </div>

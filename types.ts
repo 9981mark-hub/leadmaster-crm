@@ -24,7 +24,7 @@ export interface MemoItem {
   content: string;
 }
 
-export type ReminderType = '통화' | '출장미팅' | '방문미팅' | '기타';
+export type ReminderType = '통화' | '출장미팅' | '방문미팅' | '입금' | '기타';
 
 export interface ReminderItem {
   id: string;

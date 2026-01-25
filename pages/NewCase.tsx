@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, TouchEvent } from 'react';
 import { createCase, updateCase, fetchCases, fetchInboundPaths, fetchPartners, markCaseAsSeen } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { formatPhone, CASE_TYPES, MANAGER_NAME } from '../constants';
@@ -71,6 +71,12 @@ export default function NewCase() {
   const [step, setStep] = useState(1);
   const [inboundPaths, setInboundPaths] = useState<string[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+
+  // Swipe gesture state
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  const isSwiping = useRef<boolean>(false);
+  const SWIPE_THRESHOLD = 80; // Minimum distance for swipe
 
   const [formData, setFormData] = useState<any>({
     partnerId: '',
@@ -218,6 +224,36 @@ export default function NewCase() {
     handleChange('creditLoan', formData.creditLoan.filter((l: CreditLoanItem) => l.id !== id));
   };
 
+  // Swipe gesture handlers
+  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.touches[0].clientX;
+    isSwiping.current = true;
+  };
+
+  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
+    if (!isSwiping.current) return;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!isSwiping.current) return;
+    isSwiping.current = false;
+
+    const swipeDistance = touchStartX.current - touchEndX.current;
+
+    // Swipe left -> Next step
+    if (swipeDistance > SWIPE_THRESHOLD && step < 5) {
+      setStep(prev => prev + 1);
+    }
+    // Swipe right -> Previous step
+    else if (swipeDistance < -SWIPE_THRESHOLD && step > 1) {
+      setStep(prev => prev - 1);
+    }
+
+    // Reset
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => setStep(prev => prev - 1);
@@ -307,7 +343,12 @@ export default function NewCase() {
         </div>
       </div>
 
-      <div className="min-h-[300px]">
+      <div
+        className="min-h-[300px]"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {step === 1 && (
           <div>
             <h3 className="text-lg font-semibold mb-4 text-blue-600">1. 기본 정보</h3>
