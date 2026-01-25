@@ -1,14 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-// Extend Window interface for AndroidBridge
-declare global {
-  interface Window {
-    AndroidBridge?: {
-      getAppTheme?: () => string;
-      [key: string]: any;
-    };
-  }
-}
+
 
 type Theme = 'light' | 'dark';
 

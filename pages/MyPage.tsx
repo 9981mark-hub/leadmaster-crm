@@ -6,18 +6,7 @@ import { useToast } from '../contexts/ToastContext';
 
 const HOST_EMAIL = '9981mark@gmail.com';
 
-// TypeScript interface for Android Bridge
-declare global {
-    interface Window {
-        AndroidBridge?: {
-            isAndroidApp: () => boolean;
-            getPopupSettings: () => string;
-            setPopupTemplate: (templateName: string) => void;
-            setFloatingButtonEnabled: (enabled: boolean) => void;
-            getAvailableTemplates: () => string;
-        };
-    }
-}
+
 
 interface PopupTemplate {
     name: string;
@@ -224,8 +213,8 @@ export default function MyPage() {
                                 key={template.name}
                                 onClick={() => handleTemplateChange(template.name)}
                                 className={`w-full p-3 rounded-lg border text-left transition-all ${selectedTemplate === template.name
-                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                    : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
