@@ -533,8 +533,8 @@ export default function CaseDetail() {
         setIsAiLoading(true);
         try {
             // [Fallback] If Env Var fails, use encoded backup key (Base64) to ensure app works
-            // Key: AIzaSy...sBU
-            const BACKUP_KEY = atob("QUl6YVN5QWNZMFMxZnZnZTBGdFZfR3NtRW81dTE1dmRzYXU0c0JV");
+            // Key: AIzaSy...piTA (Updated from Screenshot)
+            const BACKUP_KEY = atob("QUl6YVN5RDEySXF0Q2RrV0luc01SQW9ZS2Y2WVdwakU1MlZwaVRB");
 
             const apiKey = import.meta.env.VITE_GEMINI_API_KEY ||
                 (process.env as any).VITE_GEMINI_API_KEY ||
