@@ -284,6 +284,13 @@ const performBackgroundFetch = async () => {
       if (settingsData.emailNotificationSettings) {
         (globalThis as any)._pendingEmailNotificationSettings = settingsData.emailNotificationSettings;
       }
+
+      // [NEW] Load Global Missed Call Settings
+      if (settingsData.missedCallSettings) {
+        const { status, interval } = settingsData.missedCallSettings;
+        if (status) localStorage.setItem('lm_missedStatus', status);
+        if (interval) localStorage.setItem('lm_missedInterval', String(interval));
+      }
     }
 
     // 2. Process Cases with Smart Merge (Conflict Resolution)
@@ -626,6 +633,7 @@ export const addAllowedEmail = async (email: string): Promise<string[]> => {
   if (!localAllowedEmails.includes(email)) {
     localAllowedEmails.push(email);
     syncToSheet({ target: 'settings', action: 'update', key: 'allowedEmails', value: localAllowedEmails });
+    saveSettingToSupabase('allowedEmails', localAllowedEmails);
   }
   return [...localAllowedEmails];
 };
@@ -633,6 +641,7 @@ export const addAllowedEmail = async (email: string): Promise<string[]> => {
 export const removeAllowedEmail = async (email: string): Promise<string[]> => {
   localAllowedEmails = localAllowedEmails.filter(e => e !== email);
   syncToSheet({ target: 'settings', action: 'update', key: 'allowedEmails', value: localAllowedEmails });
+  saveSettingToSupabase('allowedEmails', localAllowedEmails);
   return [...localAllowedEmails];
 };
 
@@ -700,6 +709,7 @@ export const saveEmailNotificationSettings = async (settings: EmailNotificationS
 
   // Sync to server (Google Sheets)
   syncToSheet({ target: 'settings', action: 'update', key: 'emailNotificationSettings', value: localEmailNotificationSettings });
+  saveSettingToSupabase('emailNotificationSettings', localEmailNotificationSettings);
 
   return { ...localEmailNotificationSettings };
 };
@@ -718,13 +728,54 @@ export const savePartner = async (partner: Partner): Promise<Partner[]> => {
   else localPartners.push(partner);
 
   syncToSheet({ target: 'settings', action: 'update', key: 'partners', value: localPartners });
+  saveSettingToSupabase('partners', localPartners); // [Fix] Persist to Supabase
   return [...localPartners];
 };
 
 export const deletePartner = async (partnerId: string): Promise<Partner[]> => {
   localPartners = localPartners.filter(p => p.partnerId !== partnerId);
   syncToSheet({ target: 'settings', action: 'update', key: 'partners', value: localPartners });
+  saveSettingToSupabase('partners', localPartners); // [Fix] Persist to Supabase
   return [...localPartners];
+};
+
+// [NEW] Save Global Settings (Manager Name, Missed Call Config)
+export const saveGlobalSettings = async (settings: {
+  managerName?: string,
+  missedCallStatus?: string,
+  missedCallInterval?: number
+}) => {
+  const updates: any = {};
+
+  if (settings.managerName) {
+    localStorage.setItem('managerName', settings.managerName);
+    updates.managerName = settings.managerName;
+  }
+
+  if (settings.missedCallStatus) {
+    localStorage.setItem('lm_missedStatus', settings.missedCallStatus);
+  }
+
+  if (settings.missedCallInterval) {
+    localStorage.setItem('lm_missedInterval', String(settings.missedCallInterval));
+  }
+
+  // Persist common settings to Supabase
+  // We can group them into a 'commonSettings' JSON or save individually. 
+  // Based on current 'fetchSettingsFromSupabase' logic (lines 265-287), it expects 'managerName' at root.
+  // We will save individual keys for now to match fetch logic.
+
+  if (settings.managerName) await saveSettingToSupabase('managerName', settings.managerName);
+
+  // For missed call settings, we might need to add them to fetch logic or save as a group.
+  // Let's save them as 'missedCallSettings' object
+  const missedCallSettings = {
+    status: settings.missedCallStatus || localStorage.getItem('lm_missedStatus') || '부재',
+    interval: settings.missedCallInterval || Number(localStorage.getItem('lm_missedInterval')) || 3
+  };
+  await saveSettingToSupabase('missedCallSettings', missedCallSettings);
+
+  syncToSheet({ target: 'settings', action: 'update', key: 'commonSettings', value: { ...updates, ...missedCallSettings } });
 };
 
 

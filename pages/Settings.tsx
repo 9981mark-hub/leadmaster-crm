@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus } from '../services/api';
+import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, saveGlobalSettings } from '../services/api';
 import { CommissionRule, Partner, Case, CaseStatus } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail } from 'lucide-react';
 import { getDayName } from '../utils';
@@ -101,11 +101,13 @@ export default function SettingsPage() {
         setEditingPartner(JSON.parse(JSON.stringify(p))); // Deep copy for editing
     };
 
-    const handleSaveManagerName = () => {
-        localStorage.setItem('managerName', managerName);
-        // Save Missed Call Settings together
-        localStorage.setItem('lm_missedStatus', missedCallStatus);
-        localStorage.setItem('lm_missedInterval', String(missedCallInterval));
+    const handleSaveManagerName = async () => {
+        // Save to LocalStorage & DB (Supabase)
+        await saveGlobalSettings({
+            managerName,
+            missedCallStatus,
+            missedCallInterval
+        });
         showToast('공통 설정이 저장되었습니다.');
     };
 
