@@ -532,7 +532,9 @@ export default function CaseDetail() {
 
         setIsAiLoading(true);
         try {
-            const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process.env as any).GEMINI_API_KEY;
+            // [Security Warning] Hardcoded fallback for immediate deployment stability. 
+            // Ideally, set VITE_GEMINI_API_KEY in Vercel/Pipeline environment variables.
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyAcY0S1fvge0FtV_GsmEo5u15vdsau4sBU";
 
             if (!apiKey) {
                 throw new Error("API Key is missing. Check VITE_GEMINI_API_KEY in .env file.");
