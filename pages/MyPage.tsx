@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, LogOut, ShieldCheck, Plus, Trash2, Users, Lock, Monitor, Globe, Phone, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { saveGlobalSettings } from '../services/api';
 
 const HOST_EMAIL = '9981mark@gmail.com';
 
@@ -68,8 +69,6 @@ export default function MyPage() {
 
     }, [user]);
 
-    // [Fix] Import API
-    import { saveGlobalSettings } from '../services/api';
 
     // ... (inside component)
 
