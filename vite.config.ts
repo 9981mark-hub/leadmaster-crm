@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react()],
     define: {
-      // Keys should be loaded from .env via VITE_ prefix
+      // Force injection of Vercel Env Var during build
+      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY),
     },
     resolve: {
       alias: {
