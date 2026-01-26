@@ -3,6 +3,22 @@ import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Part
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  supabase,
+  DATA_MODE,
+  isSupabaseEnabled,
+  fetchCasesFromSupabase,
+  createCaseInSupabase,
+  updateCaseInSupabase,
+  deleteCaseFromSupabase,
+  softDeleteCaseInSupabase,
+  restoreCaseInSupabase,
+  fetchSettingsFromSupabase,
+  fetchPartnersFromSupabase,
+  subscribeToCases,
+  bulkInsertCases
+} from './supabase';
+
 
 // --- CONFIGURATION ---
 // Replace this with the user's deployed Web App URL
@@ -200,11 +216,49 @@ export const refreshData = async () => {
 
 const performBackgroundFetch = async () => {
   try {
-    // Parallel Fetch
-    const [settingsData, casesData] = await Promise.all([
-      fetchFromSheet('settings'),
-      fetchFromSheet('leads')
-    ]);
+    let casesData: any[] | null = null;
+    let settingsData: any = null;
+
+    // [HYBRID MODE] Determine data source
+    if (isSupabaseEnabled()) {
+      console.log('[Sync] Fetching from Supabase (primary)...');
+
+      // Try Supabase first
+      try {
+        const supabaseCases = await fetchCasesFromSupabase();
+        if (supabaseCases && supabaseCases.length > 0) {
+          // Supabase returns Case[] directly, convert to compatible format
+          casesData = supabaseCases;
+          console.log(`[Sync] Supabase: ${supabaseCases.length} cases loaded`);
+        }
+
+        // Fetch settings from Supabase
+        const supabaseSettings = await fetchSettingsFromSupabase();
+        if (Object.keys(supabaseSettings).length > 0) {
+          settingsData = supabaseSettings;
+        }
+
+        // Fetch partners from Supabase
+        const supabasePartners = await fetchPartnersFromSupabase();
+        if (supabasePartners.length > 0) {
+          localPartners = supabasePartners;
+        }
+      } catch (supabaseError) {
+        console.warn('[Sync] Supabase fetch failed, falling back to Google Sheets:', supabaseError);
+      }
+    }
+
+    // Fallback to Google Sheets if Supabase didn't return data
+    if (!casesData || casesData.length === 0) {
+      console.log('[Sync] Fetching from Google Sheets (fallback)...');
+      const [sheetSettings, sheetCases] = await Promise.all([
+        fetchFromSheet('settings'),
+        fetchFromSheet('leads')
+      ]);
+      settingsData = sheetSettings;
+      casesData = sheetCases;
+    }
+
 
     // 1. Process Settings
     if (settingsData) {
@@ -720,21 +774,29 @@ export const createCase = async (newCase: Partial<Case>): Promise<Case> => {
   const c = createCaseHelper(newCase);
   localCases.unshift(c); // Optimistic UI
 
-  // Sync to Sheet
-  // Note: We rely on the Sheet Script's "parseJSON" logic, so we can send the object as is.
-  // Exception: We need to generate 'formattedSummary' if we want it in column AS.
-  // We'll import the generator helper.
+  // Generate summary
   const { generateSummary } = await import('../utils');
   const partner = localPartners.find(p => p.partnerId === c.partnerId);
   const formattedSummary = generateSummary(c, partner?.summaryTemplate);
 
   const payload = {
     ...c,
-    formattedSummary // Add this extra field
+    formattedSummary
   };
 
+  // [HYBRID MODE] Write to Supabase first (primary), then Sheets (backup)
+  if (isSupabaseEnabled()) {
+    try {
+      await createCaseInSupabase(c);
+      console.log('[Sync] Case created in Supabase:', c.caseId);
+    } catch (err) {
+      console.error('[Sync] Supabase create failed, will rely on Sheets:', err);
+    }
+  }
+
+  // Always sync to Google Sheets as backup (in hybrid mode) or primary (in sheets mode)
   syncToSheet({ target: 'leads', action: 'create', data: payload });
-  saveToStorage(); // [Fix] Persist immediately
+  saveToStorage();
 
   return c;
 };
@@ -750,20 +812,31 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
   };
   localCases[idx] = updated;
 
-  // Sync
+  // Generate summary
   const { generateSummary } = await import('../utils');
   const partner = localPartners.find(p => p.partnerId === updated.partnerId);
   const formattedSummary = generateSummary(updated, partner?.summaryTemplate);
 
   const payload = {
     ...updated,
-    Timestamp: updated.createdAt, // [Fix] Explicitly provide Timestamp for Sheet Headers
-    CreatedAt: updated.createdAt, // [Fix] Redundant backup
-    formattedSummary // Add this extra field
+    Timestamp: updated.createdAt,
+    CreatedAt: updated.createdAt,
+    formattedSummary
   };
 
+  // [HYBRID MODE] Write to Supabase first (primary), then Sheets (backup)
+  if (isSupabaseEnabled()) {
+    try {
+      await updateCaseInSupabase(caseId, updates);
+      console.log('[Sync] Case updated in Supabase:', caseId);
+    } catch (err) {
+      console.error('[Sync] Supabase update failed, will rely on Sheets:', err);
+    }
+  }
+
+  // Always sync to Google Sheets as backup
   syncToSheet({ target: 'leads', action: 'update', data: payload });
-  saveToStorage(); // [Fix] Persist immediately to survive refresh
+  saveToStorage();
 
   return updated;
 };
@@ -772,29 +845,49 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
   if (force) {
     // Hard Delete
     localCases = localCases.filter(c => c.caseId !== caseId);
+
+    // [HYBRID MODE] Delete from Supabase
+    if (isSupabaseEnabled()) {
+      try {
+        await deleteCaseFromSupabase(caseId);
+        console.log('[Sync] Case deleted from Supabase:', caseId);
+      } catch (err) {
+        console.error('[Sync] Supabase delete failed:', err);
+      }
+    }
+
     syncToSheet({ target: 'leads', action: 'delete', data: { caseId, id: caseId } });
   } else {
     // Soft Delete
     const idx = localCases.findIndex(c => c.caseId === caseId);
     if (idx > -1) {
       localCases[idx].deletedAt = new Date().toISOString();
-      localCases[idx].status = '휴지통'; // [Refactor] Use Status for reliable Trash
+      localCases[idx].status = '휴지통';
 
-      // Sync update (we use 'update' action, effectively patching the item)
+      // [HYBRID MODE] Soft delete in Supabase
+      if (isSupabaseEnabled()) {
+        try {
+          await softDeleteCaseInSupabase(caseId);
+          console.log('[Sync] Case soft-deleted in Supabase:', caseId);
+        } catch (err) {
+          console.error('[Sync] Supabase soft-delete failed:', err);
+        }
+      }
+
       syncToSheet({
         target: 'leads',
         action: 'update',
         data: {
           caseId,
           deletedAt: localCases[idx].deletedAt,
-          status: '휴지통', // [Refactor] Sync Status
-          customerName: localCases[idx].customerName, // [Fix] Send Name to prevent Ghost Row
+          status: '휴지통',
+          customerName: localCases[idx].customerName,
           phone: localCases[idx].phone
         }
       });
     }
   }
-  saveToStorage(); // [Fix] Persist immediately
+  saveToStorage();
   return [...localCases];
 };
 
@@ -802,9 +895,18 @@ export const restoreCase = async (caseId: string): Promise<Case[]> => {
   const idx = localCases.findIndex(c => c.caseId === caseId);
   if (idx > -1) {
     localCases[idx].deletedAt = undefined;
-    localCases[idx].status = '신규접수'; // [Refactor] Restore to New
+    localCases[idx].status = '신규접수';
 
-    // Sync update
+    // [HYBRID MODE] Restore in Supabase
+    if (isSupabaseEnabled()) {
+      try {
+        await restoreCaseInSupabase(caseId);
+        console.log('[Sync] Case restored in Supabase:', caseId);
+      } catch (err) {
+        console.error('[Sync] Supabase restore failed:', err);
+      }
+    }
+
     syncToSheet({
       target: 'leads',
       action: 'update',
