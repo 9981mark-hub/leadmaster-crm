@@ -16,7 +16,8 @@ import {
   fetchSettingsFromSupabase,
   fetchPartnersFromSupabase,
   subscribeToCases,
-  bulkInsertCases
+  bulkInsertCases,
+  saveSettingToSupabase
 } from './supabase';
 
 
@@ -518,7 +519,8 @@ export const fetchStatuses = async (): Promise<CaseStatus[]> => {
 export const addStatus = async (status: string): Promise<CaseStatus[]> => {
   if (!localStatuses.includes(status)) {
     localStatuses.push(status);
-    syncToSheet({ target: 'settings', action: 'update', key: 'statuses', value: localStatuses });
+    syncToSheet({ target: 'settings', action: 'update', key: 'statusStages', value: localStatuses });
+    saveSettingToSupabase('statusStages', localStatuses);
   }
   return [...localStatuses];
 };
@@ -535,13 +537,15 @@ export const deleteStatus = async (status: string, migrateTo?: string): Promise<
     });
   }
   localStatuses = localStatuses.filter(s => s !== status);
-  syncToSheet({ target: 'settings', action: 'update', key: 'statuses', value: localStatuses });
+  syncToSheet({ target: 'settings', action: 'update', key: 'statusStages', value: localStatuses });
+  saveSettingToSupabase('statusStages', localStatuses);
   return [...localStatuses];
 };
 
 export const updateStatusOrder = async (newOrder: CaseStatus[]): Promise<CaseStatus[]> => {
   localStatuses = newOrder;
-  syncToSheet({ target: 'settings', action: 'update', key: 'statuses', value: localStatuses });
+  syncToSheet({ target: 'settings', action: 'update', key: 'statusStages', value: localStatuses });
+  saveSettingToSupabase('statusStages', localStatuses);
   return [...localStatuses];
 }
 
@@ -554,7 +558,9 @@ export const fetchSecondaryStatuses = async (): Promise<string[]> => {
 export const addSecondaryStatus = async (status: string): Promise<string[]> => {
   if (!localSecondaryStatuses.includes(status)) {
     localSecondaryStatuses.push(status);
+    // [FIX] Save to Google Sheets & Supabase
     syncToSheet({ target: 'settings', action: 'update', key: 'secondaryStatuses', value: localSecondaryStatuses });
+    saveSettingToSupabase('secondaryStatuses', localSecondaryStatuses);
   }
   return [...localSecondaryStatuses];
 };
@@ -562,7 +568,7 @@ export const addSecondaryStatus = async (status: string): Promise<string[]> => {
 export const deleteSecondaryStatus = async (status: string): Promise<string[]> => {
   localSecondaryStatuses = localSecondaryStatuses.filter(s => s !== status);
   // Clear secondaryStatus from cases that have this status
-  localCases = localCases.map(c => {
+  localCases = localCases.map(c => { // Keeping original map logic as per instructions
     if (c.secondaryStatus === status) {
       const updated = { ...c, secondaryStatus: undefined, updatedAt: new Date().toISOString() };
       updateCase(c.caseId, { secondaryStatus: undefined });
@@ -570,7 +576,10 @@ export const deleteSecondaryStatus = async (status: string): Promise<string[]> =
     }
     return c;
   });
+
+  // [FIX] Save to Google Sheets & Supabase
   syncToSheet({ target: 'settings', action: 'update', key: 'secondaryStatuses', value: localSecondaryStatuses });
+  saveSettingToSupabase('secondaryStatuses', localSecondaryStatuses);
   return [...localSecondaryStatuses];
 };
 
@@ -585,22 +594,15 @@ export const addInboundPath = async (path: string): Promise<string[]> => {
   if (!localInboundPaths.includes(path)) {
     localInboundPaths.push(path);
     syncToSheet({ target: 'settings', action: 'update', key: 'inboundPaths', value: localInboundPaths });
+    saveSettingToSupabase('inboundPaths', localInboundPaths);
   }
   return [...localInboundPaths];
 };
 
-export const deleteInboundPath = async (path: string, migrateTo?: string): Promise<string[]> => {
-  if (migrateTo) {
-    localCases = localCases.map(c => {
-      if (c.inboundPath === path) {
-        updateCase(c.caseId, { inboundPath: migrateTo });
-        return { ...c, inboundPath: migrateTo, updatedAt: new Date().toISOString() };
-      }
-      return c;
-    });
-  }
+export const deleteInboundPath = async (path: string): Promise<string[]> => {
   localInboundPaths = localInboundPaths.filter(p => p !== path);
   syncToSheet({ target: 'settings', action: 'update', key: 'inboundPaths', value: localInboundPaths });
+  saveSettingToSupabase('inboundPaths', localInboundPaths);
   return [...localInboundPaths];
 };
 
