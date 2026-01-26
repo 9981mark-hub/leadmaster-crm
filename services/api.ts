@@ -1109,6 +1109,12 @@ export const batchCreateCases = async (cases: Partial<Case>[]): Promise<void> =>
   // Prepend all new cases to localCases
   localCases.unshift(...newCases);
 
+  // [Fix] Sync to Supabase (IMMEDIATE)
+  if (isSupabaseEnabled()) {
+    console.log(`[Batch] Syncing ${newCases.length} cases to Supabase...`);
+    await bulkInsertCases(newCases);
+  }
+
   // 3. Update Sync Dependencies (e.g. Inbound Paths)
   syncInboundPaths(newCases);
 
