@@ -599,7 +599,16 @@ export const addInboundPath = async (path: string): Promise<string[]> => {
   return [...localInboundPaths];
 };
 
-export const deleteInboundPath = async (path: string): Promise<string[]> => {
+export const deleteInboundPath = async (path: string, migrateTo?: string): Promise<string[]> => {
+  if (migrateTo) {
+    localCases = localCases.map(c => {
+      if (c.inboundPath === path) {
+        updateCase(c.caseId, { inboundPath: migrateTo });
+        return { ...c, inboundPath: migrateTo, updatedAt: new Date().toISOString() };
+      }
+      return c;
+    });
+  }
   localInboundPaths = localInboundPaths.filter(p => p !== path);
   syncToSheet({ target: 'settings', action: 'update', key: 'inboundPaths', value: localInboundPaths });
   saveSettingToSupabase('inboundPaths', localInboundPaths);
