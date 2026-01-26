@@ -238,6 +238,8 @@ const performBackgroundFetch = async () => {
 
       const newLocalCases: Case[] = [];
       const processedIds = new Set<string>();
+      const now = Date.now();
+      const PENDING_SYNC_BUFFER = 5 * 60 * 1000; // 5 minutes - if created within 5 mins, assume pending sync
 
       // Pass 1: Iterate Local Cases to handle Updates/Pending Creates
       localCases.forEach(local => {
@@ -247,25 +249,39 @@ const performBackgroundFetch = async () => {
         const server = serverMap.get(local.caseId);
 
         if (!server) {
-          // Exists Locally, not on Server. Likely a Pending Create. Keep it.
-          newLocalCases.push(local);
+          // Exists Locally, not on Server.
+          // [CRITICAL FIX] Only keep if it's a very recent creation (pending sync)
+          // Otherwise, it was likely deleted from another device - REMOVE IT
+          const localCreatedTime = new Date(local.createdAt || 0).getTime();
+          const isRecentlyCreated = (now - localCreatedTime) < PENDING_SYNC_BUFFER;
+
+          if (isRecentlyCreated) {
+            console.log(`[Sync] Keeping pending local case: ${local.customerName} (${local.caseId}) - created ${Math.round((now - localCreatedTime) / 1000)}s ago`);
+            newLocalCases.push(local);
+          } else {
+            console.log(`[Sync] Removing deleted case: ${local.customerName} (${local.caseId}) - not on server, deleting from local cache`);
+            // Do NOT push - effectively deleting this case from local
+          }
         } else {
           // Exists on Both. Compare Timestamps.
           const localTime = new Date(local.updatedAt || 0).getTime();
           const serverTime = new Date(server.updatedAt || 0).getTime();
 
           // [Critical Fix] If Local is newer (pending sync), keep Local.
-          // We add a 2-second buffer to ignore minor clock skew, preferring Server if close.
-          // Actually, trusting Local is safer for "User just edited" scenario.
-          if (localTime > serverTime) {
+          // But only within a reasonable window (5 minutes) to avoid stale local data
+          const isLocalNewer = localTime > serverTime;
+          const isWithinSyncWindow = (now - localTime) < PENDING_SYNC_BUFFER;
+
+          if (isLocalNewer && isWithinSyncWindow) {
             console.log(`[Sync] Keeping local version for ${local.customerName} (${local.caseId}) - Local is newer`);
             newLocalCases.push(local);
           } else {
-            // Server is newer or equal. Accept Server.
+            // Server is newer, equal, or local is too old. Accept Server.
             newLocalCases.push(server);
           }
         }
       });
+
 
       // Pass 2: Add Server-only items (New cases from others)
       serverCases.forEach(server => {

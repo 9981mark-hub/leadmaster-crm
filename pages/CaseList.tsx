@@ -442,16 +442,26 @@ export default function CaseList() {
                     const newStr = JSON.stringify(data);
 
                     if (currentStr !== newStr) {
-                        setPendingCases(data);
-                        setUpdateAvailable(true);
                         const diff = data.length - casesRef.current.length;
-                        if (diff > 0) setNewLeadsCount(diff);
+
+                        // [IMPROVED SYNC] Auto-apply deletions and modifications immediately
+                        // Only show banner for NEW leads (to avoid losing user's scroll position)
+                        if (diff <= 0) {
+                            // Cases were deleted or modified - apply immediately
+                            setCasesWithScrollPreservation(data);
+                            console.log(`[Sync] Auto-applied changes: ${diff} case difference`);
+                        } else {
+                            // New leads arrived - show banner to avoid disruption
+                            setPendingCases(data);
+                            setUpdateAvailable(true);
+                            setNewLeadsCount(diff);
+                        }
                     }
                 } catch (e) {
                     console.error("Polling failed", e);
                 }
             }
-        }, 30000); // 30s
+        }, 15000); // 15s - faster sync between devices
 
         return () => clearInterval(intervalId);
     }, [isImportModalOpen]);
