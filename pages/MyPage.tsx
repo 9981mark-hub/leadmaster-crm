@@ -68,8 +68,14 @@ export default function MyPage() {
 
     }, [user]);
 
-    const handleSaveName = () => {
-        localStorage.setItem('managerName', managerName);
+    // [Fix] Import API
+    import { saveGlobalSettings } from '../services/api';
+
+    // ... (inside component)
+
+    const handleSaveName = async () => {
+        // [Fix] Sync to Server (Supabase) + LocalStorage
+        await saveGlobalSettings({ managerName });
         showToast('표시 이름이 변경되었습니다.');
     };
 
