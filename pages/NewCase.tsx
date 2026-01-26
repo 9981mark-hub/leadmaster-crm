@@ -227,6 +227,7 @@ export default function NewCase() {
   // Swipe gesture handlers
   const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX; // Reset to prevent tap-as-swipe
     isSwiping.current = true;
   };
 
