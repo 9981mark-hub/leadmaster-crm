@@ -64,11 +64,44 @@ export default function HoverCheckTooltip({
         return `${mobileClass} ${desktopClass}`;
     };
 
+    // [Mobile Support] Handle click to toggle
+    const handleClick = (e: React.MouseEvent) => {
+        // Prevent click from propagating if nested
+        e.stopPropagation();
+
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        setIsVisible(prev => !prev);
+    };
+
+    // [Mobile Support] Close on outside click
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+            // If visible and clicking anywhere, close it (simple approach)
+            // Ideally we check if click is inside ref, but for now global close is fine for mobile behavior
+            if (isVisible) {
+                setIsVisible(false);
+            }
+        };
+
+        if (isVisible) {
+            document.addEventListener('click', handleOutsideClick);
+        }
+
+        return () => {
+            document.removeEventListener('click', handleOutsideClick);
+        };
+    }, [isVisible]);
+
+
     return (
         <div
             className={`relative inline-block ${className}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            onClick={handleClick}
         >
             {trigger}
             {isVisible && (
