@@ -9,9 +9,15 @@ import { DEFAULT_STATUS_LIST } from '../constants';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
 import { useTheme } from '../contexts/ThemeContext';
+import { motion } from 'framer-motion';
+import { CardSkeleton } from '../components/Skeleton';
 
 const KPICard = ({ title, count, color, icon: Icon, subText }: any) => (
-  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between transition-colors h-full">
+  <motion.div
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className="glass-panel p-4 rounded-xl flex items-center justify-between transition-all h-full"
+  >
     <div>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{title}</p>
       <p className={`text-2xl font-bold ${color}`}>{count}</p>
@@ -20,7 +26,7 @@ const KPICard = ({ title, count, color, icon: Icon, subText }: any) => (
     <div className={`p-3 rounded-full bg-gray-50 dark:bg-gray-700 ${color.replace('text', 'text-opacity-20')}`}>
       <Icon size={24} className={color} />
     </div>
-  </div>
+  </motion.div>
 );
 
 interface CaseListItemProps {
@@ -84,7 +90,20 @@ export default function Dashboard() {
     });
   }, []);
 
-  if (loading) return <div className="p-10 text-center text-gray-500">로딩중...</div>;
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6 pt-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+        <div className="h-64 glass-panel rounded-xl"></div>
+      </div>
+    );
+  }
 
   // [NEW] Missed call settings from localStorage
   const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
@@ -139,7 +158,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-4 md:pb-0">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6 max-w-7xl mx-auto pb-4 md:pb-0"
+    >
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white">대시보드</h2>
 
       {/* KPI Grid */}
@@ -185,13 +209,13 @@ export default function Dashboard() {
       </div>
 
       {/* NEW: Today's Schedule Box (Replaces 3 Lists) */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-indigo-50 dark:bg-indigo-900/20 flex justify-between items-center">
+      <div className="glass-panel rounded-xl">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-indigo-50/50 dark:bg-indigo-900/20 flex justify-between items-center rounded-t-xl">
           <h3 className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
             <Calendar size={20} />
             {formatDateTitle(selectedDate)}
           </h3>
-          <span className="text-xs bg-white text-indigo-600 px-3 py-1 rounded-full font-bold shadow-sm">
+          <span className="text-xs bg-white/80 backdrop-blur text-indigo-600 px-3 py-1 rounded-full font-bold shadow-sm">
             {selectedDayEvents.length}
           </span>
         </div>
@@ -416,6 +440,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </div >
+    </motion.div >
   );
 }

@@ -13,14 +13,45 @@ import { v4 as uuidv4 } from 'uuid';
 import { CustomAudioPlayer } from '../components/CustomAudioPlayer';
 
 // Reusable Components within CaseDetail
-const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "", readOnly = false }: any) => {
-    // [Fix] Handle number inputs as text to prevent IME mode switching
-    const displayValue = type === 'number' && (value === 0 || value === undefined || value === null) ? '' : value;
+const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "", readOnly = false, isPhone = false, isCurrency = false }: any) => {
+    let displayValue = value;
+
+    if (type === 'number') {
+        if (!isCurrency && (value === 0 || value === undefined || value === null)) {
+            displayValue = '';
+        }
+    }
+
+    if (isCurrency && (typeof value === 'number' || !isNaN(Number(value)))) {
+        displayValue = Number(value).toLocaleString();
+    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
+        let val = e.target.value;
+
+        if (isPhone) {
+            // Remove non-digits and re-format
+            // Using existing formatPhone helper but ensuring it behaves as input handler
+            const raw = val.replace(/[^0-9]/g, '');
+            let formatted = raw;
+            if (raw.length > 3 && raw.length <= 7) {
+                formatted = `${raw.slice(0, 3)}-${raw.slice(3)}`;
+            } else if (raw.length > 7) {
+                formatted = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7, 11)}`;
+            }
+            onChange(formatted);
+            return;
+        }
+
+        if (isCurrency) {
+            const cleanVal = val.replace(/,/g, '');
+            if (cleanVal === '' || /^[0-9]+$/.test(cleanVal)) {
+                onChange(cleanVal === '' ? 0 : Number(cleanVal));
+            }
+            return;
+        }
+
         if (type === 'number') {
-            // Allow only numbers
             if (val === '' || /^[0-9]+$/.test(val)) {
                 onChange(val === '' ? 0 : Number(val));
             }
@@ -34,10 +65,10 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
             <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
             <div className="relative">
                 <input
-                    type={type === 'number' ? 'text' : type}
+                    type={type === 'number' && !isCurrency ? 'text' : 'text'} // Use text for currency/phone input masking
                     autoComplete="off"
                     className={"w-full p-2 border border-blue-300 rounded text-sm outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-1 focus:ring-blue-500')}
-                    value={displayValue}
+                    value={displayValue || ''}
                     onChange={!readOnly ? handleInputChange : undefined}
                     onBlur={onBlur}
                     placeholder={placeholder}
@@ -1281,8 +1312,9 @@ export default function CaseDetail() {
                                 <Input
                                     label="연락처"
                                     value={c.phone}
-                                    onChange={(v: any) => handleUpdate('phone', formatPhone(v))}
+                                    onChange={(v: any) => handleUpdate('phone', v)}
                                     placeholder="010-0000-0000"
+                                    isPhone={true}
                                 />
                                 <div className="grid grid-cols-2 gap-2">
                                     <Input
@@ -1303,13 +1335,13 @@ export default function CaseDetail() {
                                 <Select label="직업 (복수선택 가능)" value={c.jobTypes} onChange={handleJobTypeChange} options={JOB_TYPES} isMulti={true} />
 
                                 {c.jobTypes?.includes('직장인') &&
-                                    <Input label="직장인 월수입(만원)" type="number" value={c.incomeDetails.salary} onChange={(v: any) => handleIncomeChange('salary', v)} />
+                                    <Input label="직장인 월수입(만원)" type="number" value={c.incomeDetails.salary} onChange={(v: any) => handleIncomeChange('salary', v)} isCurrency={true} />
                                 }
                                 {(c.jobTypes?.includes('개인사업자') || c.jobTypes?.includes('법인사업자')) &&
-                                    <Input label="사업자 월수입(만원)" type="number" value={c.incomeDetails.business} onChange={(v: any) => handleIncomeChange('business', v)} />
+                                    <Input label="사업자 월수입(만원)" type="number" value={c.incomeDetails.business} onChange={(v: any) => handleIncomeChange('business', v)} isCurrency={true} />
                                 }
                                 {c.jobTypes?.includes('프리랜서') &&
-                                    <Input label="프리랜서 월수입(만원)" type="number" value={c.incomeDetails.freelance} onChange={(v: any) => handleIncomeChange('freelance', v)} />
+                                    <Input label="프리랜서 월수입(만원)" type="number" value={c.incomeDetails.freelance} onChange={(v: any) => handleIncomeChange('freelance', v)} isCurrency={true} />
                                 }
 
                                 <Select label="4대보험" value={c.insurance4} onChange={(v: any) => handleUpdate('insurance4', v)} options={['가입', '미가입']} />
@@ -1347,8 +1379,8 @@ export default function CaseDetail() {
                                 {c.housingType === '자가' ? (
                                     <>
                                         <div className="grid grid-cols-2 gap-2">
-                                            <Input label="집 시세(만원)" type="number" value={c.ownHousePrice} onChange={(v: any) => handleUpdate('ownHousePrice', v)} />
-                                            <Input label="집 담보 대출(만원)" type="number" value={c.ownHouseLoan} onChange={(v: any) => handleUpdate('ownHouseLoan', v)} />
+                                            <Input label="집 시세(만원)" type="number" value={c.ownHousePrice} onChange={(v: any) => handleUpdate('ownHousePrice', v)} isCurrency={true} />
+                                            <Input label="집 담보 대출(만원)" type="number" value={c.ownHouseLoan} onChange={(v: any) => handleUpdate('ownHouseLoan', v)} isCurrency={true} />
                                         </div>
                                         <Select label="집 명의자" value={c.ownHouseOwner} onChange={(v: any) => handleUpdate('ownHouseOwner', v)} options={['본인', '배우자', '배우자 공동명의']} />
                                     </>
@@ -1359,10 +1391,10 @@ export default function CaseDetail() {
                                 ) : (
                                     <>
                                         <div className="grid grid-cols-2 gap-2">
-                                            <Input label="보증금(만원)" type="number" value={c.deposit} onChange={(v: any) => handleUpdate('deposit', v)} />
-                                            <Input label="보증금 대출(만원)" type="number" value={c.depositLoanAmount} onChange={(v: any) => handleUpdate('depositLoanAmount', v)} />
+                                            <Input label="보증금(만원)" type="number" value={c.deposit} onChange={(v: any) => handleUpdate('deposit', v)} isCurrency={true} />
+                                            <Input label="보증금 대출(만원)" type="number" value={c.depositLoanAmount} onChange={(v: any) => handleUpdate('depositLoanAmount', v)} isCurrency={true} />
                                         </div>
-                                        <Input label="월세(만원)" type="number" value={c.rent} onChange={(v: any) => handleUpdate('rent', v)} />
+                                        <Input label="월세(만원)" type="number" value={c.rent} onChange={(v: any) => handleUpdate('rent', v)} isCurrency={true} />
                                         <div className="mb-4">
                                             <label className="block text-xs font-medium text-gray-500 mb-1">임대차 계약인</label>
                                             <div className="flex gap-2">
@@ -1552,10 +1584,10 @@ export default function CaseDetail() {
                                 <div className="grid grid-cols-2 gap-2">
                                     <Select label="신용카드 사용" value={c.creditCardUse} onChange={(v: any) => handleUpdate('creditCardUse', v)} options={['사용', '미사용']} />
                                     {c.creditCardUse === '사용' && (
-                                        <Input label="사용 금액(만원)" type="number" value={c.creditCardAmount} onChange={(v: any) => handleUpdate('creditCardAmount', v)} />
+                                        <Input label="사용 금액(만원)" type="number" value={c.creditCardAmount} onChange={(v: any) => handleUpdate('creditCardAmount', v)} isCurrency={true} />
                                     )}
                                 </div>
-                                <Input label="월 대출납입(만원)" type="number" value={c.loanMonthlyPay} onChange={(v: any) => handleUpdate('loanMonthlyPay', v)} />
+                                <Input label="월 대출납입(만원)" type="number" value={c.loanMonthlyPay} onChange={(v: any) => handleUpdate('loanMonthlyPay', v)} isCurrency={true} />
                             </div>
                         </div>
 

@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useMemo, useLayoutEffect } from 'react';
-import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData, updateCase } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, subscribe, updateCase } from '../services/api';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ListSkeleton } from '../components/Skeleton';
+import { KanbanBoard } from '../components/KanbanBoard';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate, safeFormat } from '../utils';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, ChevronDown, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed, Settings, Briefcase, MapPin, MoreHorizontal, Check } from 'lucide-react';
+import { AlertTriangle, ArrowUpDown, Building, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Filter, Phone, PhoneMissed, Plus, Search, Settings, Trash2, Upload, X, LayoutList, LayoutGrid, Sparkles, MessageSquare, Briefcase, MapPin, MoreHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 import ImportModal from '../components/ImportModal';
@@ -135,7 +138,20 @@ export default function CaseList() {
     const [loading, setLoading] = useState(true);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-    const [viewMode, setViewMode] = useState<'active' | 'trash'>(() => (sessionStorage.getItem('lm_viewMode') as any) || 'active');
+    const handleUpdate = async (caseId: string, updates: Partial<Case>) => {
+        try {
+            const updated = await updateCase(caseId, updates);
+            setCases(prev => prev.map(c => c.caseId === caseId ? updated : c));
+            showToast('상태가 변경되었습니다.', 'success');
+        } catch (error) {
+            console.error("Update failed", error);
+            showToast('변경 실패', 'error');
+        }
+    };
+
+    const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
+    const [layoutMode, setLayoutMode] = useState<'list' | 'kanban'>('list');
+
 
     // [New] Status Visibility Filter
     const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
@@ -433,7 +449,6 @@ export default function CaseList() {
             if (document.visibilityState === 'visible') {
                 // Background Refresh
                 try {
-                    await refreshData();
                     // Note: refreshData updates internal cache in api.ts.
                     // We need to fetch from that cache to compare.
                     const data = await fetchCases();
@@ -711,7 +726,7 @@ export default function CaseList() {
     }, [totalPages, currentPage]);
 
     // [Fix] Only show loading if we have NO data (Zero Blink)
-    if (loading && cases.length === 0) return <div className="p-8 text-center text-gray-500">불러오는 중...</div>;
+    if (loading && cases.length === 0) return <ListSkeleton />;
 
     const newCaseCount = cases.filter(c => c.isNew).length;
 
@@ -1006,6 +1021,24 @@ export default function CaseList() {
                             <Upload size={18} />
                         </button>
 
+                        <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex items-center gap-1">
+                            <button
+                                onClick={() => setLayoutMode('list')}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                title="리스트 보기"
+                            >
+                                <LayoutList size={16} />
+                            </button>
+                            <button
+                                onClick={() => setLayoutMode('kanban')}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                title="칸반 보드 보기"
+                            >
+                                <LayoutGrid size={16} />
+                            </button>
+                        </div>
+
+
                         <button
                             onClick={() => setViewMode(prev => prev === 'active' ? 'trash' : 'active')}
                             className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
@@ -1062,445 +1095,450 @@ export default function CaseList() {
             />
 
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 min-h-[500px] flex flex-col">
-                <div className="md:hidden flex-1">
-                    {currentCases.map((c, index) => {
-                        const partner = partners.find(p => p.partnerId === c.partnerId);
-                        const warnings = getCaseWarnings(c, partner);
-                        const nextReminder = getNextUpcomingReminder(c.reminders);
-
-                        return (
-                            <div
-                                key={`${c.caseId}_${index}`}
-                                className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 relative group cursor-pointer"
-                                onClick={(e) => {
-                                    // Prevent navigation if clicking on interactive elements (Links, buttons, inputs)
-                                    if ((e.target as HTMLElement).closest('a') ||
-                                        (e.target as HTMLElement).closest('button') ||
-                                        (e.target as HTMLElement).closest('input')) {
-                                        return;
-                                    }
-
-                                    // Navigate to details on card tap (SPA navigation)
-                                    const path = c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`;
-                                    navigate(path);
-                                }}
-                            >
-                                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
-                                    <button
-                                        onClick={(e) => handleDelete(c.caseId, e)}
-                                        className="text-gray-300 hover:text-red-500 p-2 bg-white dark:bg-gray-800 rounded-full border border-gray-100 dark:border-gray-700 shadow-sm transition-colors active:bg-gray-100 dark:active:bg-gray-700"
-                                        title="삭제"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                                <div className="flex justify-between items-start pr-10">
-                                    <div className="flex-1">
-                                        <Link
-                                            to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
-                                            className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2 w-full py-1"
-                                        >
-                                            <span className="truncate max-w-[200px]" title={c.customerName}>
-                                                {c.customerName}
-                                            </span>
-                                            {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
-                                        </Link >
-                                        <div className="mt-1" onClick={(e) => e.stopPropagation()}>
-                                            <HoverCheckTooltip
-                                                trigger={
-                                                    <span className="text-xs text-blue-500 cursor-help border-b border-dashed border-blue-300 p-1 -ml-1">
-                                                        최근 상담 내역 확인
-                                                    </span>
-                                                }
-                                                content={
-                                                    <div className="space-y-1">
-                                                        <p className="font-bold text-gray-300 border-b border-gray-600 pb-1 mb-1">최근 상담 내역</p>
-                                                        {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
-                                                            c.specialMemo
-                                                                .filter(m => !m.content.startsWith('[상태변경]'))
-                                                                .slice(0, 2)
-                                                                .map((m, i) => (
-                                                                    <div key={i} className="mb-1 last:mb-0">
-                                                                        <span className="text-[10px] text-gray-400 block">{m.createdAt.split('T')[0]}</span>
-                                                                        <span className="block">{m.content}</span>
-                                                                    </div>
-                                                                ))
-                                                        ) : (
-                                                            <span className="text-gray-500 italic">상담 내역이 없습니다.</span>
-                                                        )}
-                                                    </div>
-                                                }
-                                            />
-                                        </div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{(c.jobTypes || []).join(', ')} / {c.region}</p>
-                                        <div className="flex flex-wrap items-center gap-1 mt-1">
-                                            <span className="text-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 rounded">{c.caseType || '-'}</span>
-                                            <span className="text-[10px] bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 px-1.5 py-0.5 rounded">{c.inboundPath || '-'}</span>
-                                            <span className="text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded">{partner?.name || '-'}</span>
-                                        </div>
-                                    </div >
-                                    <div className="flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
-                                        <HoverCheckTooltip
-                                            mobileAlign="right"
-                                            trigger={
-                                                c.status === '사무장 접수' && c.secondaryStatus ? (
-                                                    <span className={`px-2 py-1 rounded text-xs font-semibold bg-gradient-to-r from-green-100 to-purple-100 ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
-                                                        c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
-                                                            c.secondaryStatus === '출장예약' ? 'text-green-600' :
-                                                                c.secondaryStatus === '방문예약' ? 'text-blue-600' :
-                                                                    c.secondaryStatus === '고민중' ? 'text-yellow-600' :
-                                                                        c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
-                                                                            c.secondaryStatus === '관리중' ? 'text-indigo-600' :
-                                                                                c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
-                                                                                    'text-gray-700'
-                                                        }`}>
-                                                        사무장›{c.secondaryStatus}
-                                                    </span>
-                                                ) : (
-                                                    <span className={`px-2 py-1 rounded text-xs font-semibold cursor-help ${c.status === '진행불가' || c.status === '고객취소'
-                                                        ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                                                        : c.status === '사무장 접수'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-                                                        }`}>
-                                                        {c.status === '사무장 접수' ? '✓ 사무장접수' : c.status}
-                                                    </span>
-                                                )
-                                            }
-                                            content={
-                                                <StatusHistoryTooltipContent caseId={c.caseId} />
-                                            }
-                                        />
-                                        <span className="text-[10px] text-gray-400">
-                                            {safeFormat(c.createdAt, 'yy.MM.dd')}
-                                        </span>
-                                    </div>
-
-                                    {/* Missed Call Button (Mobile) */}
-                                    {c.status === missedCallStatus && (
-                                        <div className="absolute top-16 right-4" onClick={(e) => e.stopPropagation()}>
-                                            <button
-                                                onClick={(e) => handleMissedCall(e, c)}
-                                                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
-                                                    ? 'bg-red-100 border-red-200 text-red-600 animate-pulse ring-2 ring-red-400'
-                                                    : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
-                                                    }`}
-                                            >
-                                                <PhoneMissed size={14} />
-                                                <span>+{c.missedCallCount || 0}</span>
-                                            </button>
-                                            {c.lastMissedCallAt && <div className="text-[10px] text-gray-400 text-right mt-1">{safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}</div>}
-                                        </div>
-                                    )}
-                                </div >
-
-                                <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2">
-                                    <a href={`tel:${c.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
-                                        <Phone size={14} className="mr-1" /> {c.phone}
-                                    </a>
-                                    {nextReminder && (
-                                        <div onClick={(e) => e.stopPropagation()}>
-                                            <HoverCheckTooltip
-                                                mobileAlign="right"
-                                                trigger={
-                                                    <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help p-1">
-                                                        {nextReminder.type === '출장미팅' ? '🚗' : nextReminder.type === '방문미팅' ? '🏢' : nextReminder.type === '기타' ? '✅' : '📞'} {nextReminder.datetime.split(' ')[0]}
-                                                        {(c.reminders?.length || 0) > 1 && <span className="ml-1">외 {(c.reminders?.length || 0) - 1}건</span>}
-                                                    </span>
-                                                }
-                                                content={
-                                                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                                                        <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
-                                                        {c.reminders?.map((reminder, idx) => (
-                                                            <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
-                                                                <p className="text-gray-300 font-medium">{reminder.datetime}</p>
-                                                                {reminder.content && (
-                                                                    <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
-                                                                        {reminder.content}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                }
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {
-                                    warnings.length > 0 && (
-                                        <div className="mt-2 flex flex-wrap gap-1">
-                                            {warnings.map(w => (
-                                                <span key={w} className="flex items-center text-[10px] bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded">
-                                                    <AlertTriangle size={10} className="mr-1" /> {w}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )
-                                }
-                            </div >
-                        );
-                    })}
-                </div >
-
-                {/* Desktop View (Table) */}
-                < div className="hidden md:block flex-1" >
-                    <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300 table-fixed">
-                        <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
-                            <tr>
-                                <th className="px-4 py-3 w-[15%]">유형/경로/거래처</th>
-                                <th className="px-4 py-3 w-[12%]">고객명</th>
-                                <th className="px-4 py-3 w-[13%]">연락처</th>
-                                <th className="px-4 py-3 w-[10%]">상태</th>
-                                <th className="px-4 py-3 w-[10%]">등록일</th>
-                                <th className="px-4 py-3 w-[10%]">최종상담일</th>
-                                <th className="px-4 py-3 w-[20%]">리마인더</th>
-                                <th className="px-4 py-3 w-[10%] text-center">삭제</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            {layoutMode === 'kanban' ? (
+                <KanbanBoard
+                    cases={currentCases}
+                    statuses={statuses.filter(s => s !== '휴지통')}
+                    onUpdateStatus={(caseId, newStatus) => handleUpdate(caseId, { status: newStatus })}
+                />
+            ) : (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 min-h-[500px] flex flex-col">
+                    <div className="md:hidden flex-1">
+                        <AnimatePresence>
                             {currentCases.map((c, index) => {
                                 const partner = partners.find(p => p.partnerId === c.partnerId);
                                 const warnings = getCaseWarnings(c, partner);
-                                const lastConsultDate = getLastConsultationDate(c);
                                 const nextReminder = getNextUpcomingReminder(c.reminders);
 
                                 return (
-                                    <tr key={`${c.caseId}_${index}`} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                        <td className="px-4 py-3">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
-                                                <span className="text-[10px] text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
-                                                <span className="text-[10px] text-gray-400 dark:text-gray-500">{partner?.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <Link
-                                                to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
-                                                className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        key={c.caseId}
+                                        className={`glass-card p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${c.isNew ? 'ring-1 ring-blue-500 bg-blue-50/30' : ''
+                                            }`}
+                                        onClick={() => navigate(c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`)}
+                                    >
+                                        <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                onClick={(e) => handleDelete(c.caseId, e)}
+                                                className="text-gray-300 hover:text-red-500 p-2 bg-white dark:bg-gray-800 rounded-full border border-gray-100 dark:border-gray-700 shadow-sm transition-colors active:bg-gray-100 dark:active:bg-gray-700"
+                                                title="삭제"
                                             >
-                                                <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
-                                                    {c.customerName}
-                                                </span>
-                                                {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
-                                            </Link>
-
-                                            {/* Hover Tooltip for Quick Memo View */}
-                                            <div className="ml-1 inline-block">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                        <div className="flex justify-between items-start pr-10">
+                                            <div className="flex-1">
+                                                <Link
+                                                    to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
+                                                    className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2 w-full py-1"
+                                                >
+                                                    <span className="truncate max-w-[200px]" title={c.customerName}>
+                                                        {c.customerName}
+                                                    </span>
+                                                    {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
+                                                </Link >
+                                                <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+                                                    <HoverCheckTooltip
+                                                        trigger={
+                                                            <span className="text-xs text-blue-500 cursor-help border-b border-dashed border-blue-300 p-1 -ml-1">
+                                                                최근 상담 내역 확인
+                                                            </span>
+                                                        }
+                                                        content={
+                                                            <div className="space-y-1">
+                                                                <p className="font-bold text-gray-300 border-b border-gray-600 pb-1 mb-1">최근 상담 내역</p>
+                                                                {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                                    c.specialMemo
+                                                                        .filter(m => !m.content.startsWith('[상태변경]'))
+                                                                        .slice(0, 2)
+                                                                        .map((m, i) => (
+                                                                            <div key={i} className="mb-1 last:mb-0">
+                                                                                <span className="text-[10px] text-gray-400 block">{m.createdAt.split('T')[0]}</span>
+                                                                                <span className="block">{m.content}</span>
+                                                                            </div>
+                                                                        ))
+                                                                ) : (
+                                                                    <span className="text-gray-500 italic">상담 내역이 없습니다.</span>
+                                                                )}
+                                                            </div>
+                                                        }
+                                                    />
+                                                </div>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{(c.jobTypes || []).join(', ')} / {c.region}</p>
+                                                <div className="flex flex-wrap items-center gap-1 mt-1">
+                                                    <span className="text-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 rounded">{c.caseType || '-'}</span>
+                                                    <span className="text-[10px] bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 px-1.5 py-0.5 rounded">{c.inboundPath || '-'}</span>
+                                                    <span className="text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded">{partner?.name || '-'}</span>
+                                                </div>
+                                            </div >
+                                            <div className="flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
                                                 <HoverCheckTooltip
+                                                    mobileAlign="right"
                                                     trigger={
-                                                        <MessageSquare size={14} className="text-gray-300 hover:text-blue-500 transition-colors" />
+                                                        c.status === '사무장 접수' && c.secondaryStatus ? (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs whitespace-nowrap bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200">
+                                                                <span className="text-green-700 font-medium">✓사무장</span>
+                                                                <span className="text-gray-400 mx-0.5">›</span>
+                                                                <span className={`font-medium ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
+                                                                    c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
+                                                                        c.secondaryStatus === '출장예약' ? 'text-green-600' :
+                                                                            c.secondaryStatus === '방문예약' ? 'text-blue-600' :
+                                                                                c.secondaryStatus === '고민중' ? 'text-yellow-600' :
+                                                                                    c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
+                                                                                        c.secondaryStatus === '관리중' ? 'text-indigo-600' :
+                                                                                            c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
+                                                                                                'text-purple-700'
+                                                                    }`}>{c.secondaryStatus}</span>
+                                                            </span>
+                                                        ) : (
+                                                            <span className={`px-2 py-1 rounded text-xs cursor-help whitespace-nowrap ${STATUS_COLOR_MAP[c.status]
+                                                                ? STATUS_COLOR_MAP[c.status].replace('bg-blue-50', 'bg-blue-100')
+                                                                : 'bg-gray-100 dark:bg-gray-700'
+                                                                } ${c.status === '진행불가' || c.status === '고객취소' ? 'text-red-700 bg-red-100' : ''
+                                                                } ${c.status === '사무장 접수' ? 'bg-green-100 text-green-700' : ''}`}>
+                                                                {c.status === '사무장 접수' ? '✓ 사무장접수' : c.status}
+                                                            </span>
+                                                        )
                                                     }
-                                                    content={
-                                                        <div className="space-y-2">
-                                                            <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
-                                                            {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
-                                                                c.specialMemo
-                                                                    .filter(m => !m.content.startsWith('[상태변경]'))
-                                                                    .slice(0, 3)
-                                                                    .map((m, i) => (
-                                                                        <div key={i} className="text-[11px] leading-relaxed">
-                                                                            <span className="text-blue-300 mr-1">[{m.createdAt.split('T')[0]}]</span>
-                                                                            {m.content}
-                                                                        </div>
-                                                                    ))
-                                                            ) : (
-                                                                <span className="text-gray-500 italic">내역 없음</span>
-                                                            )}
-                                                        </div>
-                                                    }
+                                                    content={<StatusHistoryTooltipContent caseId={c.caseId} />}
                                                 />
+                                                <span className="text-[10px] text-gray-400">
+                                                    {safeFormat(c.createdAt, 'yy.MM.dd')}
+                                                </span>
                                             </div>
 
-                                            {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs">⚠</span>}
-                                        </td>
-                                        <td className={`px-4 py-3 font-medium ${c.status === '진행불가' || c.status === '고객취소'
-                                            ? 'text-red-600 dark:text-red-400'
-                                            : ''
-                                            }`}>{c.phone}</td>
-                                        <td className="px-4 py-3">
-                                            <HoverCheckTooltip
-                                                trigger={
-                                                    c.status === '사무장 접수' && c.secondaryStatus ? (
-                                                        // 2차 상태가 있을 때: 복합 뱃지 (상태별 색상 적용)
-                                                        <span className="inline-flex items-center px-2 py-1 rounded text-xs whitespace-nowrap bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200">
-                                                            <span className="text-green-700 font-medium">✓사무장</span>
-                                                            <span className="text-gray-400 mx-0.5">›</span>
-                                                            <span className={`font-medium ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
-                                                                c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
-                                                                    c.secondaryStatus === '출장예약' ? 'text-green-600' :
-                                                                        c.secondaryStatus === '방문예약' ? 'text-blue-600' :
-                                                                            c.secondaryStatus === '고민중' ? 'text-yellow-600' :
-                                                                                c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
-                                                                                    c.secondaryStatus === '관리중' ? 'text-indigo-600' :
-                                                                                        c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
-                                                                                            'text-purple-700'
-                                                                }`}>{c.secondaryStatus}</span>
-                                                        </span>
-                                                    ) : (
-                                                        // 일반 상태 표시
-                                                        <span className={`px-2 py-1 rounded text-xs cursor-help whitespace-nowrap ${STATUS_COLOR_MAP[c.status]
-                                                            ? STATUS_COLOR_MAP[c.status].replace('bg-blue-50', 'bg-blue-100')
-                                                            : 'bg-gray-100 dark:bg-gray-700'
-                                                            } ${c.status === '진행불가' || c.status === '고객취소' ? 'text-red-700 bg-red-100' : ''
-                                                            } ${c.status === '사무장 접수' ? 'bg-green-100 text-green-700' : ''}`}>
-                                                            {c.status === '사무장 접수' ? '✓ 사무장접수' : c.status}
-                                                        </span>
-                                                    )
-                                                }
-                                                content={<StatusHistoryTooltipContent caseId={c.caseId} />}
-                                            />
-                                            {/* Missed Call Button (Desktop) - Appears next to status if missed */}
+                                            {/* Missed Call Button (Mobile) */}
                                             {c.status === missedCallStatus && (
-                                                <div className="mt-1 flex items-center gap-1">
+                                                <div className="absolute top-16 right-4" onClick={(e) => e.stopPropagation()}>
                                                     <button
                                                         onClick={(e) => handleMissedCall(e, c)}
-                                                        className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
-                                                            ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
+                                                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                            ? 'bg-red-100 border-red-200 text-red-600 animate-pulse ring-2 ring-red-400'
                                                             : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
                                                             }`}
-                                                        title={`마지막 부재: ${safeFormat(c.lastMissedCallAt, 'yyyy-MM-dd HH:mm', '없음')}`}
                                                     >
-                                                        <PhoneMissed size={10} />
+                                                        <PhoneMissed size={14} />
                                                         <span>+{c.missedCallCount || 0}</span>
                                                     </button>
-                                                    <span className="text-[10px] text-gray-500 tracking-tight">
-                                                        {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
-                                                    </span>
+                                                    {c.lastMissedCallAt && <div className="text-[10px] text-gray-400 text-right mt-1">{safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}</div>}
                                                 </div>
                                             )}
+                                        </div>
 
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">
-                                            {safeFormat(c.createdAt, 'yyyy-MM-dd')}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">
-                                            {safeFormat(lastConsultDate, 'yyyy-MM-dd')}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs">
-                                            {nextReminder ? (
+                                        <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2">
+                                            <a href={`tel:${c.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
+                                                <Phone size={14} className="mr-1" /> {c.phone}
+                                            </a>
+                                            {nextReminder && (
+                                                <div onClick={(e) => e.stopPropagation()}>
+                                                    <HoverCheckTooltip
+                                                        mobileAlign="right"
+                                                        trigger={
+                                                            <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help p-1">
+                                                                {nextReminder.type === '출장미팅' ? '🚗' : nextReminder.type === '방문미팅' ? '🏢' : nextReminder.type === '기타' ? '✅' : '📞'} {nextReminder.datetime.split(' ')[0]}
+                                                                {(c.reminders?.length || 0) > 1 && <span className="ml-1">외 {(c.reminders?.length || 0) - 1}건</span>}
+                                                            </span>
+                                                        }
+                                                        content={
+                                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                                <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
+                                                                {c.reminders?.map((reminder, idx) => (
+                                                                    <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                                        <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                                        {reminder.content && (
+                                                                            <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                                {reminder.content}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        }
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {warnings.length > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-1">
+                                                {warnings.map(w => (
+                                                    <span key={w} className="flex items-center text-[10px] bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded">
+                                                        <AlertTriangle size={10} className="mr-1" /> {w}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
+                    </div >
+
+                    {/* Desktop View (Table) */}
+                    < div className="hidden md:block flex-1" >
+                        <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300 table-fixed">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
+                                <tr>
+                                    <th className="px-4 py-3 w-[15%]">유형/경로/거래처</th>
+                                    <th className="px-4 py-3 w-[12%]">고객명</th>
+                                    <th className="px-4 py-3 w-[13%]">연락처</th>
+                                    <th className="px-4 py-3 w-[10%]">상태</th>
+                                    <th className="px-4 py-3 w-[10%]">등록일</th>
+                                    <th className="px-4 py-3 w-[10%]">최종상담일</th>
+                                    <th className="px-4 py-3 w-[20%]">리마인더</th>
+                                    <th className="px-4 py-3 w-[10%] text-center">삭제</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {currentCases.map((c, index) => {
+                                    const partner = partners.find(p => p.partnerId === c.partnerId);
+                                    const warnings = getCaseWarnings(c, partner);
+                                    const lastConsultDate = getLastConsultationDate(c);
+                                    const nextReminder = getNextUpcomingReminder(c.reminders);
+
+                                    return (
+                                        <motion.tr
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                            key={`${c.caseId}_${index}`}
+                                            className="border-b border-gray-50 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors"
+                                        >
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
+                                                    <span className="text-[10px] text-gray-400 dark:text-gray-500">{partner?.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <Link
+                                                    to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
+                                                    className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                                >
+                                                    <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
+                                                        {c.customerName}
+                                                    </span>
+                                                    {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
+                                                </Link>
+
+                                                {/* Hover Tooltip for Quick Memo View */}
+                                                <div className="ml-1 inline-block">
+                                                    <HoverCheckTooltip
+                                                        trigger={
+                                                            <MessageSquare size={14} className="text-gray-300 hover:text-blue-500 transition-colors" />
+                                                        }
+                                                        content={
+                                                            <div className="space-y-2">
+                                                                <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
+                                                                {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                                    c.specialMemo
+                                                                        .filter(m => !m.content.startsWith('[상태변경]'))
+                                                                        .slice(0, 3)
+                                                                        .map((m, i) => (
+                                                                            <div key={i} className="text-[11px] leading-relaxed">
+                                                                                <span className="text-blue-300 mr-1">[{m.createdAt.split('T')[0]}]</span>
+                                                                                {m.content}
+                                                                            </div>
+                                                                        ))
+                                                                ) : (
+                                                                    <span className="text-gray-500 italic">내역 없음</span>
+                                                                )}
+                                                            </div>
+                                                        }
+                                                    />
+                                                </div>
+
+                                                {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs">⚠</span>}
+                                            </td>
+                                            <td className={`px-4 py-3 font-medium ${c.status === '진행불가' || c.status === '고객취소'
+                                                ? 'text-red-600 dark:text-red-400'
+                                                : ''
+                                                }`}>{c.phone}</td>
+                                            <td className="px-4 py-3">
                                                 <HoverCheckTooltip
                                                     trigger={
-                                                        <div className="flex items-center gap-1.5 cursor-help">
-                                                            {/* Icon for Reminder Type */}
-                                                            {(() => {
-                                                                const rType = nextReminder.type || '통화';
-                                                                if (rType === '통화') return <Phone size={14} className="text-blue-600" />;
-                                                                if (rType === '출장미팅') return <Briefcase size={14} className="text-green-600" />;
-                                                                if (rType === '방문미팅') return <MapPin size={14} className="text-purple-600" />;
-                                                                return <MoreHorizontal size={14} className="text-gray-600" />;
-                                                            })()}
-                                                            <span className="text-gray-700 dark:text-gray-300 font-medium">{nextReminder.datetime}</span>
-                                                            {(c.reminders?.length || 0) > 1 && <span className="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
-                                                        </div>
+                                                        c.status === '사무장 접수' && c.secondaryStatus ? (
+                                                            // 2차 상태가 있을 때: 복합 뱃지 (상태별 색상 적용)
+                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs whitespace-nowrap bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200">
+                                                                <span className="text-green-700 font-medium">✓사무장</span>
+                                                                <span className="text-gray-400 mx-0.5">›</span>
+                                                                <span className={`font-medium ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
+                                                                    c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
+                                                                        c.secondaryStatus === '출장예약' ? 'text-green-600' :
+                                                                            c.secondaryStatus === '방문예약' ? 'text-blue-600' :
+                                                                                c.secondaryStatus === '고민중' ? 'text-yellow-600' :
+                                                                                    c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
+                                                                                        c.secondaryStatus === '관리중' ? 'text-indigo-600' :
+                                                                                            c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
+                                                                                                'text-purple-700'
+                                                                    }`}>{c.secondaryStatus}</span>
+                                                            </span>
+                                                        ) : (
+                                                            // 일반 상태 표시
+                                                            <span className={`px-2 py-1 rounded text-xs cursor-help whitespace-nowrap ${STATUS_COLOR_MAP[c.status]
+                                                                ? STATUS_COLOR_MAP[c.status].replace('bg-blue-50', 'bg-blue-100')
+                                                                : 'bg-gray-100 dark:bg-gray-700'
+                                                                } ${c.status === '진행불가' || c.status === '고객취소' ? 'text-red-700 bg-red-100' : ''
+                                                                } ${c.status === '사무장 접수' ? 'bg-green-100 text-green-700' : ''}`}>
+                                                                {c.status === '사무장 접수' ? '✓ 사무장접수' : c.status}
+                                                            </span>
+                                                        )
                                                     }
-                                                    content={
-                                                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                                                            <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
-                                                            {c.reminders?.map((reminder, idx) => (
-                                                                <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
-                                                                    <p className="text-gray-300 font-medium">{reminder.datetime}</p>
-                                                                    {reminder.content && (
-                                                                        <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
-                                                                            {reminder.content}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    }
+                                                    content={<StatusHistoryTooltipContent caseId={c.caseId} />}
                                                 />
-                                            ) : '-'}
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                            {viewMode === 'trash' ? (
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button
-                                                        onClick={(e) => handleRestore(c.caseId, e)}
-                                                        className="text-green-500 hover:text-green-700 p-1.5 rounded hover:bg-green-50"
-                                                        title="복구"
-                                                    >
-                                                        <Sparkles size={16} />
-                                                    </button>
+                                                {/* Missed Call Button (Desktop) - Appears next to status if missed */}
+                                                {c.status === missedCallStatus && (
+                                                    <div className="mt-1 flex items-center gap-1">
+                                                        <button
+                                                            onClick={(e) => handleMissedCall(e, c)}
+                                                            className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                                ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
+                                                                : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                                }`}
+                                                            title={`마지막 부재: ${safeFormat(c.lastMissedCallAt, 'yyyy-MM-dd HH:mm', '없음')}`}
+                                                        >
+                                                            <PhoneMissed size={10} />
+                                                            <span>+{c.missedCallCount || 0}</span>
+                                                        </button>
+                                                        <span className="text-[10px] text-gray-500 tracking-tight">
+                                                            {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500">
+                                                {safeFormat(c.createdAt, 'yyyy-MM-dd')}
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500">
+                                                {safeFormat(lastConsultDate, 'yyyy-MM-dd')}
+                                            </td>
+                                            <td className="px-4 py-3 text-xs">
+                                                {nextReminder ? (
+                                                    <HoverCheckTooltip
+                                                        trigger={
+                                                            <div className="flex items-center gap-1.5 cursor-help">
+                                                                {/* Icon for Reminder Type */}
+                                                                {(() => {
+                                                                    const rType = nextReminder.type || '통화';
+                                                                    if (rType === '통화') return <Phone size={14} className="text-blue-600" />;
+                                                                    if (rType === '출장미팅') return <Briefcase size={14} className="text-green-600" />;
+                                                                    if (rType === '방문미팅') return <MapPin size={14} className="text-purple-600" />;
+                                                                    return <MoreHorizontal size={14} className="text-gray-600" />;
+                                                                })()}
+                                                                <span className="text-gray-700 dark:text-gray-300 font-medium">{nextReminder.datetime}</span>
+                                                                {(c.reminders?.length || 0) > 1 && <span className="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
+                                                            </div>
+                                                        }
+                                                        content={
+                                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                                <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
+                                                                {c.reminders?.map((reminder, idx) => (
+                                                                    <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                                        <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                                        {reminder.content && (
+                                                                            <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                                {reminder.content}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        }
+                                                    />
+                                                ) : '-'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                {viewMode === 'trash' ? (
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <button
+                                                            onClick={(e) => handleRestore(c.caseId, e)}
+                                                            className="text-green-500 hover:text-green-700 p-1.5 rounded hover:bg-green-50"
+                                                            title="복구"
+                                                        >
+                                                            <Sparkles size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => handleDelete(c.caseId, e)}
+                                                            className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50"
+                                                            title="영구 삭제"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
                                                     <button
                                                         onClick={(e) => handleDelete(c.caseId, e)}
-                                                        className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50"
-                                                        title="영구 삭제"
+                                                        className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        title="삭제"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={(e) => handleDelete(c.caseId, e)}
-                                                    className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                    title="삭제"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div >
+                                                )}
+                                            </td>
+                                        </motion.tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div >
 
-                {
-                    sortedCases.length === 0 && (
-                        <div className="p-8 text-center text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>
-                    )
-                }
+                    {
+                        sortedCases.length === 0 && (
+                            <div className="p-8 text-center text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>
+                        )
+                    }
 
-                {/* Pagination Footer */}
-                {
-                    totalPages > 0 && (
-                        <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <span className="text-sm font-medium text-gray-700">
-                                    Page {currentPage} of {totalPages}
-                                </span>
-                                <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
+                    {/* Pagination Footer */}
+                    {
+                        totalPages > 0 && (
+                            <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    <span className="text-sm font-medium text-gray-700">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                                <div className="hidden sm:flex gap-1">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                                        // Only show first, last, current, and surrounding pages
+                                        (pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1) ? (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => handlePageChange(pageNum)}
+                                                className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium border ${currentPage === pageNum ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        ) : (pageNum === 2 && currentPage > 3) || (pageNum === totalPages - 1 && currentPage < totalPages - 2) ? (
+                                            <span key={pageNum} className="w-8 h-8 flex items-center justify-center text-gray-400">...</span>
+                                        ) : null
+                                    ))}
+                                </div>
                             </div>
-                            <div className="hidden sm:flex gap-1">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-                                    // Only show first, last, current, and surrounding pages
-                                    (pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1) ? (
-                                        <button
-                                            key={pageNum}
-                                            onClick={() => handlePageChange(pageNum)}
-                                            className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium border ${currentPage === pageNum ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                                        >
-                                            {pageNum}
-                                        </button>
-                                    ) : (pageNum === 2 && currentPage > 3) || (pageNum === totalPages - 1 && currentPage < totalPages - 2) ? (
-                                        <span key={pageNum} className="w-8 h-8 flex items-center justify-center text-gray-400">...</span>
-                                    ) : null
-                                ))}
-                            </div>
-                        </div>
-                    )
-                }
+                        )
+                    }
 
 
-
-            </div >
-        </div >
+                </div>
+            )}
+        </div>
     );
 }
