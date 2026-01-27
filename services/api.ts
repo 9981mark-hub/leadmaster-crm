@@ -360,30 +360,34 @@ const performBackgroundFetch = async () => {
 
     // [HYBRID MODE] Determine data source
     if (isSupabaseEnabled()) {
-      console.log('[Sync] Fetching from Supabase (primary)...');
+      // Check for valid session first to execute RLS-safe query
+      // If no session, skipping Supabase to avoid returning empty array (RLS) and overwriting data
+      let hasSession = false;
+      if (supabase) {
+        const { data } = await supabase.auth.getSession();
+        hasSession = !!data.session;
+      }
 
-      // Try Supabase first
-      try {
-        const supabaseCases = await fetchCasesFromSupabase();
-        if (supabaseCases && supabaseCases.length > 0) {
-          // Supabase returns Case[] directly, convert to compatible format
-          casesData = supabaseCases;
-          console.log(`[Sync] Supabase: ${supabaseCases.length} cases loaded`);
-        }
+      if (hasSession) {
+        console.log('[Sync] Fetching from Supabase (primary)...');
+        try {
+          const supabaseCases = await fetchCasesFromSupabase();
+          if (supabaseCases) { // Allow empty array if legitimate
+            casesData = supabaseCases;
+            console.log(`[Sync] Supabase: ${supabaseCases.length} cases loaded`);
+          }
+          // Fetch validation data
+          const supabaseSettings = await fetchSettingsFromSupabase();
+          if (Object.keys(supabaseSettings).length > 0) settingsData = supabaseSettings;
 
-        // Fetch settings from Supabase
-        const supabaseSettings = await fetchSettingsFromSupabase();
-        if (Object.keys(supabaseSettings).length > 0) {
-          settingsData = supabaseSettings;
-        }
+          const supabasePartners = await fetchPartnersFromSupabase();
+          if (supabasePartners.length > 0) localPartners = supabasePartners;
 
-        // Fetch partners from Supabase
-        const supabasePartners = await fetchPartnersFromSupabase();
-        if (supabasePartners.length > 0) {
-          localPartners = supabasePartners;
+        } catch (supabaseError) {
+          console.warn('[Sync] Supabase fetch failed, falling back to Google Sheets:', supabaseError);
         }
-      } catch (supabaseError) {
-        console.warn('[Sync] Supabase fetch failed, falling back to Google Sheets:', supabaseError);
+      } else {
+        console.warn('[Sync] No Supabase session found. Skipping Supabase fetch to prevent RLS empty data issue. Falling back to Sheets.');
       }
     }
 
