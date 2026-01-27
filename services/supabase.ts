@@ -22,7 +22,7 @@ const isSupabaseConfigured = SUPABASE_URL && SUPABASE_ANON_KEY;
 export const supabase: SupabaseClient | null = isSupabaseConfigured
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
-            persistSession: false, // No user auth needed for CRM
+            persistSession: true, // Enable session persistence for consistent auth state
         },
         realtime: {
             params: {

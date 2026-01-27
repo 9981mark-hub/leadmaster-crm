@@ -7,6 +7,7 @@ import {
   removeAllowedEmail as removeAllowedEmailApi,
   subscribe
 } from '../services/api';
+import { supabase } from '../services/supabase';
 
 interface UserProfile {
   email: string;
@@ -85,7 +86,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   const AuthProviderInternal = ({ children }: { children?: ReactNode }) => {
     const navigate = useNavigate();
 
-    const loginWithGoogle = (credential: string) => {
+    const loginWithGoogle = async (credential: string) => {
       try {
         // 1. Google ID Token 디코딩
         const decoded: any = jwtDecode(credential);
@@ -99,6 +100,15 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
         // 3. 로그인 성공 처리
         const userProfile = { email, name, picture };
+
+        // [Supabase Auth Integration]
+        if (supabase) {
+          const { error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: credential,
+          });
+          if (error) console.error("Supabase Auth Error:", error);
+        }
 
         localStorage.setItem('authToken', credential);
         localStorage.setItem('userProfile', JSON.stringify(userProfile));
@@ -114,9 +124,35 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       }
     };
 
+    // [Session Recovery] Sync Supabase Auth state if local auth exists
+    useEffect(() => {
+      const restoreSupabaseSession = async () => {
+        if (!isAuthenticated || !supabase) return;
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          const token = localStorage.getItem('authToken');
+          if (token) {
+            console.log("Restoring Supabase Session...");
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: 'google',
+              token: token,
+            });
+            if (error) {
+              console.warn("Session restore failed (expired?), logging out...", error);
+              logout();
+            }
+          }
+        }
+      };
+
+      restoreSupabaseSession();
+    }, [isAuthenticated]);
 
 
-    const logout = () => {
+
+    const logout = async () => {
+      if (supabase) await supabase.auth.signOut();
       localStorage.removeItem('authToken');
       localStorage.removeItem('userProfile');
       localStorage.removeItem('isAuthenticated');
