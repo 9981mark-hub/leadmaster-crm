@@ -225,6 +225,13 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <Link to={`/case/${c.caseId}`} className="p-2 bg-blue-100 text-blue-600 rounded-full">
                                         <MessageSquare size={16} />
                                     </Link>
+                                    <button
+                                        onClick={(e) => onDelete(c.caseId, e)}
+                                        className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                        title="휴지통으로 이동"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
                             </div>
                         </div>
