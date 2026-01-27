@@ -14,7 +14,7 @@ interface SmartInputProps {
     className?: string;
 }
 
-export const SmartInput: React.FC<SmartInputProps> = ({
+export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> = ({
     label,
     value,
     onChange,
@@ -25,19 +25,31 @@ export const SmartInput: React.FC<SmartInputProps> = ({
     readOnly = false,
     isPhone = false,
     isCurrency = false,
-    className = ""
+    className = "",
+    updateOnBlur = false
 }) => {
-    let displayValue = value;
+    // Internal state for managing value before blur
+    const [localValue, setLocalValue] = React.useState(value);
 
-    if (type === 'number') {
-        if (!isCurrency && (value === 0 || value === undefined || value === null)) {
-            displayValue = '';
+    // Sync local value with prop value when it changes externally
+    React.useEffect(() => {
+        setLocalValue(value);
+    }, [value]);
+
+    const displayValue = updateOnBlur ? localValue : value;
+
+    // Formatting logic for display (currency, etc)
+    const getFormattedValue = (val: any) => {
+        if (type === 'number') {
+            if (!isCurrency && (val === 0 || val === undefined || val === null)) {
+                return '';
+            }
         }
-    }
-
-    if (isCurrency && (typeof value === 'number' || !isNaN(Number(value)))) {
-        displayValue = Number(value).toLocaleString();
-    }
+        if (isCurrency && (typeof val === 'number' || !isNaN(Number(val)))) {
+            return Number(val).toLocaleString();
+        }
+        return val;
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
@@ -50,25 +62,58 @@ export const SmartInput: React.FC<SmartInputProps> = ({
             } else if (raw.length > 7) {
                 formatted = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7, 11)}`;
             }
-            onChange(formatted);
+            // For phone, even with updateOnBlur, we might want to update local state formatted
+            // But usually we just update parent. 
+            // If updateOnBlur is true, we update localValue only.
+            if (updateOnBlur) {
+                setLocalValue(formatted);
+            } else {
+                onChange(formatted);
+            }
             return;
         }
 
         if (isCurrency) {
             const cleanVal = val.replace(/,/g, '');
             if (cleanVal === '' || /^[0-9]+$/.test(cleanVal)) {
-                onChange(cleanVal === '' ? 0 : Number(cleanVal));
+                const numVal = cleanVal === '' ? 0 : Number(cleanVal);
+                if (updateOnBlur) {
+                    setLocalValue(numVal);
+                } else {
+                    onChange(numVal);
+                }
             }
             return;
         }
 
         if (type === 'number') {
             if (val === '' || /^[0-9]+$/.test(val)) {
-                onChange(val === '' ? 0 : Number(val));
+                const numVal = val === '' ? 0 : Number(val);
+                if (updateOnBlur) {
+                    setLocalValue(numVal);
+                } else {
+                    onChange(numVal);
+                }
             }
         } else {
-            onChange(val);
+            if (updateOnBlur) {
+                setLocalValue(val);
+            } else {
+                onChange(val);
+            }
         }
+    };
+
+    const handleBlur = () => {
+        if (updateOnBlur) {
+            // Only trigger onChange if value is different? 
+            // Or always trigger to ensure sync?
+            // Let's trigger only if different to save calls
+            if (localValue !== value) {
+                onChange(localValue);
+            }
+        }
+        if (onBlur) onBlur();
     };
 
     return (
@@ -79,9 +124,9 @@ export const SmartInput: React.FC<SmartInputProps> = ({
                     type={type === 'number' && !isCurrency ? 'text' : 'text'}
                     autoComplete="off"
                     className={"w-full p-2 border border-blue-300 rounded text-sm outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-1 focus:ring-blue-500')}
-                    value={displayValue || ''}
+                    value={getFormattedValue(displayValue) || ''}
                     onChange={!readOnly ? handleInputChange : undefined}
-                    onBlur={onBlur}
+                    onBlur={handleBlur}
                     placeholder={placeholder}
                     readOnly={readOnly}
                 />

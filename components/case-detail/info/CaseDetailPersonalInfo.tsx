@@ -111,13 +111,14 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                 <Select label="사건 유형" value={c.caseType} onChange={(v: any) => onUpdate('caseType', v)} options={CASE_TYPES} />
             </div>
 
-            <SmartInput label="이름" value={c.customerName} onChange={(v: any) => onUpdate('customerName', v)} />
+            <SmartInput label="이름" value={c.customerName} onChange={(v: any) => onUpdate('customerName', v)} updateOnBlur={true} />
             <SmartInput
                 label="연락처"
                 value={c.phone}
                 onChange={(v: any) => onUpdate('phone', v)}
                 placeholder="010-0000-0000"
                 isPhone={true}
+                updateOnBlur={true}
             />
             <div className="grid grid-cols-2 gap-2">
                 <SmartInput
@@ -130,6 +131,7 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                     }}
                     placeholder="예: 77"
                     suffix={c.birth?.length === 4 ? "년생" : ""}
+                    updateOnBlur={true}
                 />
                 <Select label="성별" value={c.gender} onChange={(v: any) => onUpdate('gender', v)} options={['남', '여']} />
             </div>

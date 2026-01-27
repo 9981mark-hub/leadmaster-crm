@@ -23,8 +23,8 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
             {c.housingType === '자가' ? (
                 <>
                     <div className="grid grid-cols-2 gap-2">
-                        <SmartInput label="집 시세(만원)" type="number" value={c.ownHousePrice} onChange={(v: any) => onUpdate('ownHousePrice', v)} isCurrency={true} />
-                        <SmartInput label="집 담보 대출(만원)" type="number" value={c.ownHouseLoan} onChange={(v: any) => onUpdate('ownHouseLoan', v)} isCurrency={true} />
+                        <SmartInput label="집 시세(만원)" type="number" value={c.ownHousePrice} onChange={(v: any) => onUpdate('ownHousePrice', v)} isCurrency={true} updateOnBlur={true} />
+                        <SmartInput label="집 담보 대출(만원)" type="number" value={c.ownHouseLoan} onChange={(v: any) => onUpdate('ownHouseLoan', v)} isCurrency={true} updateOnBlur={true} />
                     </div>
                     <Select label="집 명의자" value={c.ownHouseOwner} onChange={(v: any) => onUpdate('ownHouseOwner', v)} options={['본인', '배우자', '배우자 공동명의']} />
                 </>
@@ -35,10 +35,10 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
             ) : (
                 <>
                     <div className="grid grid-cols-2 gap-2">
-                        <SmartInput label="보증금(만원)" type="number" value={c.deposit} onChange={(v: any) => onUpdate('deposit', v)} isCurrency={true} />
-                        <SmartInput label="보증금 대출(만원)" type="number" value={c.depositLoanAmount} onChange={(v: any) => onUpdate('depositLoanAmount', v)} isCurrency={true} />
+                        <SmartInput label="보증금(만원)" type="number" value={c.deposit} onChange={(v: any) => onUpdate('deposit', v)} isCurrency={true} updateOnBlur={true} />
+                        <SmartInput label="보증금 대출(만원)" type="number" value={c.depositLoanAmount} onChange={(v: any) => onUpdate('depositLoanAmount', v)} isCurrency={true} updateOnBlur={true} />
                     </div>
-                    <SmartInput label="월세(만원)" type="number" value={c.rent} onChange={(v: any) => onUpdate('rent', v)} isCurrency={true} />
+                    <SmartInput label="월세(만원)" type="number" value={c.rent} onChange={(v: any) => onUpdate('rent', v)} isCurrency={true} updateOnBlur={true} />
                     <div className="mb-4">
                         <label className="block text-xs font-medium text-gray-500 mb-1">임대차 계약인</label>
                         <div className="flex gap-2">

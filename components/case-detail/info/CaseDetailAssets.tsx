@@ -218,10 +218,10 @@ export const CaseDetailAssets: React.FC<CaseDetailAssetsProps> = ({
             <div className="grid grid-cols-2 gap-2">
                 <Select label="신용카드 사용" value={c.creditCardUse} onChange={(v: any) => onUpdate('creditCardUse', v)} options={['사용', '미사용']} />
                 {c.creditCardUse === '사용' && (
-                    <SmartInput label="사용 금액(만원)" type="number" value={c.creditCardAmount} onChange={(v: any) => onUpdate('creditCardAmount', v)} isCurrency={true} />
+                    <SmartInput label="사용 금액(만원)" type="number" value={c.creditCardAmount} onChange={(v: any) => onUpdate('creditCardAmount', v)} isCurrency={true} updateOnBlur={true} />
                 )}
             </div>
-            <SmartInput label="월 대출납입(만원)" type="number" value={c.loanMonthlyPay} onChange={(v: any) => onUpdate('loanMonthlyPay', v)} isCurrency={true} />
+            <SmartInput label="월 대출납입(만원)" type="number" value={c.loanMonthlyPay} onChange={(v: any) => onUpdate('loanMonthlyPay', v)} isCurrency={true} updateOnBlur={true} />
         </div>
     );
 };

@@ -23,13 +23,13 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
             <Select label="직업 (복수선택 가능)" value={c.jobTypes} onChange={onJobTypeChange} options={JOB_TYPES} isMulti={true} />
 
             {c.jobTypes?.includes('직장인') &&
-                <SmartInput label="직장인 월수입(만원)" type="number" value={c.incomeDetails.salary} onChange={(v: any) => onIncomeChange('salary', v)} isCurrency={true} />
+                <SmartInput label="직장인 월수입(만원)" type="number" value={c.incomeDetails.salary} onChange={(v: any) => onIncomeChange('salary', v)} isCurrency={true} updateOnBlur={true} />
             }
             {(c.jobTypes?.includes('개인사업자') || c.jobTypes?.includes('법인사업자')) &&
-                <SmartInput label="사업자 월수입(만원)" type="number" value={c.incomeDetails.business} onChange={(v: any) => onIncomeChange('business', v)} isCurrency={true} />
+                <SmartInput label="사업자 월수입(만원)" type="number" value={c.incomeDetails.business} onChange={(v: any) => onIncomeChange('business', v)} isCurrency={true} updateOnBlur={true} />
             }
             {c.jobTypes?.includes('프리랜서') &&
-                <SmartInput label="프리랜서 월수입(만원)" type="number" value={c.incomeDetails.freelance} onChange={(v: any) => onIncomeChange('freelance', v)} isCurrency={true} />
+                <SmartInput label="프리랜서 월수입(만원)" type="number" value={c.incomeDetails.freelance} onChange={(v: any) => onIncomeChange('freelance', v)} isCurrency={true} updateOnBlur={true} />
             }
 
             <Select label="4대보험" value={c.insurance4} onChange={(v: any) => onUpdate('insurance4', v)} options={['가입', '미가입']} />

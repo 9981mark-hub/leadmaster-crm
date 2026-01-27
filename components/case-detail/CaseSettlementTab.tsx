@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
+import { SmartInput } from '../ui/SmartInput';
 import { Case } from '../../types';
 
 interface CaseSettlementTabProps {
@@ -58,11 +59,13 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                     </div>
                     <div>
                         <label className="block text-sm font-bold text-green-900 mb-1">총 수임료 (만원)</label>
-                        <input
+                        <SmartInput
                             type="number"
-                            className="w-full p-2 border border-green-300 rounded text-right font-mono text-lg font-bold"
                             value={c.contractFee || 0}
-                            onChange={e => onUpdate('contractFee', Number(e.target.value))}
+                            onChange={(v: any) => onUpdate('contractFee', Number(v))}
+                            updateOnBlur={true}
+                            className="text-lg font-bold"
+                            placeholder="0"
                         />
 
                         <div className="mt-4 pt-4 border-t border-green-200 flex justify-between items-center">
