@@ -194,7 +194,7 @@ export const CaseDetailAssets: React.FC<CaseDetailAssetsProps> = ({
                     <button
                         type="button"
                         onClick={handleAddCreditLoan}
-                        className="w-full py-1.5 bg-blue-600 text-white rounded text-xs font-bold flex justify-center items-center hover:bg-blue-700"
+                        className="w-auto px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-bold flex justify-center items-center hover:bg-blue-700 whitespace-nowrap"
                     >
                         <Plus size={14} className="mr-1" /> 신용대출 추가
                     </button>

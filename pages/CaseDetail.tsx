@@ -88,7 +88,8 @@ export default function CaseDetail() {
         if (!c) return;
         updateCaseMutation.mutate({
             id: c.caseId,
-            updates: { [field]: value }
+            updates: { [field]: value },
+            silent: true
         });
     };
 

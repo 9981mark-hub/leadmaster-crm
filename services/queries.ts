@@ -57,7 +57,7 @@ export const useUpdateCaseMutation = () => {
     const { showToast } = useToast();
 
     return useMutation({
-        mutationFn: (data: { id: string; updates: any }) => updateCase(data.id, data.updates),
+        mutationFn: (data: { id: string; updates: any; silent?: boolean }) => updateCase(data.id, data.updates),
         onSuccess: (data, variables) => {
             // Update specific case in cache
             queryClient.setQueryData(QUERY_KEYS.case(variables.id), data);
@@ -65,7 +65,9 @@ export const useUpdateCaseMutation = () => {
             // Invalidate list to refresh filtered views
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cases });
 
-            showToast('저장되었습니다.');
+            if (!variables.silent) {
+                showToast('저장되었습니다.');
+            }
         },
         onError: (error) => {
             console.error(error);
