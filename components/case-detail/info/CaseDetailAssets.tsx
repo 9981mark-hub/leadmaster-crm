@@ -191,13 +191,15 @@ export const CaseDetailAssets: React.FC<CaseDetailAssetsProps> = ({
                         suffix="만원"
                         isCurrency={true}
                     />
-                    <button
-                        type="button"
-                        onClick={handleAddCreditLoan}
-                        className="w-auto px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-bold flex justify-center items-center hover:bg-blue-700 whitespace-nowrap"
-                    >
-                        <Plus size={14} className="mr-1" /> 신용대출 추가
-                    </button>
+                    <div className="flex items-center pb-4">
+                        <button
+                            type="button"
+                            onClick={handleAddCreditLoan}
+                            className="w-full px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold flex justify-center items-center hover:bg-blue-700 whitespace-nowrap h-[38px] mt-auto"
+                        >
+                            <Plus size={14} className="mr-1" /> 추가
+                        </button>
+                    </div>
                 </div>
             </div>
 
