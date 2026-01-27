@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useLayoutEffect } from 'react';
 import { fetchCases, fetchPartners, fetchInboundPaths, deleteCase, restoreCase, fetchStatuses, GOOGLE_SCRIPT_URL, processIncomingCase, subscribe, refreshData, updateCase } from '../services/api';
 import { Case, Partner, ReminderItem, CaseStatus } from '../types';
 import { getCaseWarnings, parseReminder, parseGenericDate, safeFormat } from '../utils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Phone, AlertTriangle, ArrowUpDown, ChevronLeft, ChevronRight, ChevronDown, Filter, Trash2, Building, Upload, Sparkles, MessageSquare, X, PhoneMissed, Settings, Briefcase, MapPin, MoreHorizontal, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
@@ -113,6 +113,7 @@ const StatusHistoryTooltipContent = ({ caseId }: { caseId: string }) => {
 };
 
 export default function CaseList() {
+    const navigate = useNavigate();
     const { showToast } = useToast();
     const [cases, setCases] = useState<Case[]>(() => {
         try {
@@ -1069,8 +1070,23 @@ export default function CaseList() {
                         const nextReminder = getNextUpcomingReminder(c.reminders);
 
                         return (
-                            <div key={`${c.caseId}_${index}`} className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 relative group">
-                                <div className="absolute top-4 right-4 z-10">
+                            <div
+                                key={`${c.caseId}_${index}`}
+                                className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 relative group cursor-pointer"
+                                onClick={(e) => {
+                                    // Prevent navigation if clicking on interactive elements (Links, buttons, inputs)
+                                    if ((e.target as HTMLElement).closest('a') ||
+                                        (e.target as HTMLElement).closest('button') ||
+                                        (e.target as HTMLElement).closest('input')) {
+                                        return;
+                                    }
+
+                                    // Navigate to details on card tap (SPA navigation)
+                                    const path = c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`;
+                                    navigate(path);
+                                }}
+                            >
+                                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
                                     <button
                                         onClick={(e) => handleDelete(c.caseId, e)}
                                         className="text-gray-300 hover:text-red-500 p-2 bg-white dark:bg-gray-800 rounded-full border border-gray-100 dark:border-gray-700 shadow-sm transition-colors active:bg-gray-100 dark:active:bg-gray-700"
@@ -1083,17 +1099,17 @@ export default function CaseList() {
                                     <div className="flex-1">
                                         <Link
                                             to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
-                                            className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2"
+                                            className="font-bold text-gray-900 dark:text-white text-lg block flex items-center gap-2 w-full py-1"
                                         >
-                                            <span className="truncate max-w-[150px]" title={c.customerName}>
+                                            <span className="truncate max-w-[200px]" title={c.customerName}>
                                                 {c.customerName}
                                             </span>
                                             {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
                                         </Link >
-                                        <div className="mt-1">
+                                        <div className="mt-1" onClick={(e) => e.stopPropagation()}>
                                             <HoverCheckTooltip
                                                 trigger={
-                                                    <span className="text-xs text-blue-500 cursor-help border-b border-dashed border-blue-300">
+                                                    <span className="text-xs text-blue-500 cursor-help border-b border-dashed border-blue-300 p-1 -ml-1">
                                                         최근 상담 내역 확인
                                                     </span>
                                                 }
@@ -1117,14 +1133,14 @@ export default function CaseList() {
                                                 }
                                             />
                                         </div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{(c.jobTypes || []).join(', ')} / {c.region}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{(c.jobTypes || []).join(', ')} / {c.region}</p>
                                         <div className="flex flex-wrap items-center gap-1 mt-1">
                                             <span className="text-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 rounded">{c.caseType || '-'}</span>
                                             <span className="text-[10px] bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 px-1.5 py-0.5 rounded">{c.inboundPath || '-'}</span>
                                             <span className="text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded">{partner?.name || '-'}</span>
                                         </div>
                                     </div >
-                                    <div className="flex flex-col items-end gap-1">
+                                    <div className="flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
                                         <HoverCheckTooltip
                                             mobileAlign="right"
                                             trigger={
@@ -1163,7 +1179,7 @@ export default function CaseList() {
 
                                     {/* Missed Call Button (Mobile) */}
                                     {c.status === missedCallStatus && (
-                                        <div className="absolute top-16 right-4">
+                                        <div className="absolute top-16 right-4" onClick={(e) => e.stopPropagation()}>
                                             <button
                                                 onClick={(e) => handleMissedCall(e, c)}
                                                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
@@ -1180,34 +1196,36 @@ export default function CaseList() {
                                 </div >
 
                                 <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2">
-                                    <a href={`tel:${c.phone}`} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
+                                    <a href={`tel:${c.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
                                         <Phone size={14} className="mr-1" /> {c.phone}
                                     </a>
                                     {nextReminder && (
-                                        <HoverCheckTooltip
-                                            mobileAlign="right"
-                                            trigger={
-                                                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help">
-                                                    {nextReminder.type === '출장미팅' ? '🚗' : nextReminder.type === '방문미팅' ? '🏢' : nextReminder.type === '기타' ? '✅' : '📞'} {nextReminder.datetime.split(' ')[0]}
-                                                    {(c.reminders?.length || 0) > 1 && <span className="ml-1">외 {(c.reminders?.length || 0) - 1}건</span>}
-                                                </span>
-                                            }
-                                            content={
-                                                <div className="space-y-2 max-h-60 overflow-y-auto">
-                                                    <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
-                                                    {c.reminders?.map((reminder, idx) => (
-                                                        <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
-                                                            <p className="text-gray-300 font-medium">{reminder.datetime}</p>
-                                                            {reminder.content && (
-                                                                <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
-                                                                    {reminder.content}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            }
-                                        />
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <HoverCheckTooltip
+                                                mobileAlign="right"
+                                                trigger={
+                                                    <span className="text-xs text-orange-600 dark:text-orange-400 font-medium cursor-help p-1">
+                                                        {nextReminder.type === '출장미팅' ? '🚗' : nextReminder.type === '방문미팅' ? '🏢' : nextReminder.type === '기타' ? '✅' : '📞'} {nextReminder.datetime.split(' ')[0]}
+                                                        {(c.reminders?.length || 0) > 1 && <span className="ml-1">외 {(c.reminders?.length || 0) - 1}건</span>}
+                                                    </span>
+                                                }
+                                                content={
+                                                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                        <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
+                                                        {c.reminders?.map((reminder, idx) => (
+                                                            <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                                <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                                {reminder.content && (
+                                                                    <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                        {reminder.content}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                }
+                                            />
+                                        </div>
                                     )}
                                 </div>
 
