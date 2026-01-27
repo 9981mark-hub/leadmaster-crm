@@ -142,6 +142,50 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 min-h-[500px] flex flex-col">
+            {/* Mobile View (Cards) */}
+            <div className="md:hidden space-y-4 p-4">
+                {cases.map((c, index) => {
+                    const partner = partners.find(p => p.partnerId === c.partnerId);
+                    const warnings = getCaseWarnings(c, partner);
+                    return (
+                        <div key={c.caseId} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg flex flex-col gap-2 relative">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${c.status === '진행불가' || c.status === '고객취소' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                                        {c.status}
+                                    </span>
+                                    {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
+                                </div>
+                                <span className="text-xs text-gray-400">{safeFormat(c.createdAt, 'MM-dd')}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center mt-1">
+                                <Link to={`/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
+                                    {c.customerName}
+                                </Link>
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.phone}</span>
+                            </div>
+
+                            <div className="flex justify-between items-end mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                                <div className="flex flex-col text-xs text-gray-500">
+                                    <span>{c.caseType} | {c.inboundPath}</span>
+                                    <span>{partner?.name}</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <a href={`tel:${c.phone}`} className="p-2 bg-green-100 text-green-600 rounded-full">
+                                        <Phone size={16} />
+                                    </a>
+                                    <Link to={`/case/${c.caseId}`} className="p-2 bg-blue-100 text-blue-600 rounded-full">
+                                        <MessageSquare size={16} />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Desktop View (Table) */}
             <div className="hidden md:block flex-1">
                 <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300 table-fixed">
                     <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
