@@ -12,7 +12,8 @@ import { CaseSummaryTab } from '../components/case-detail/CaseSummaryTab';
 import { CaseSettlementTab } from '../components/case-detail/CaseSettlementTab';
 
 export default function CaseDetail() {
-    const { id } = useParams();
+    const { caseId } = useParams();
+    const id = caseId; // Alias for compatibility with existing code
     const navigate = useNavigate();
 
     // Data Fetching
