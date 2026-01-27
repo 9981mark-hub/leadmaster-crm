@@ -242,6 +242,31 @@ export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
 };
 
 /**
+ * Fetch a single case from Supabase
+ */
+export const fetchCaseFromSupabase = async (caseId: string): Promise<Case | null> => {
+    if (!supabase) return null;
+
+    try {
+        const { data, error } = await supabase
+            .from('cases')
+            .select('*')
+            .eq('case_id', caseId)
+            .single();
+
+        if (error) {
+            console.error('[Supabase] Fetch Single error:', error);
+            return null;
+        }
+
+        return data ? dbToCase(data) : null;
+    } catch (err) {
+        console.error('[Supabase] Fetch Single failed:', err);
+        return null;
+    }
+};
+
+/**
  * Create a new case in Supabase
  */
 export const createCaseInSupabase = async (newCase: Case): Promise<Case | null> => {

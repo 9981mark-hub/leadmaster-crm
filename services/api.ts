@@ -17,7 +17,8 @@ import {
   fetchPartnersFromSupabase,
   subscribeToCases,
   bulkInsertCases,
-  saveSettingToSupabase
+  saveSettingToSupabase,
+  fetchCaseFromSupabase
 } from './supabase';
 
 
@@ -924,7 +925,21 @@ export const fetchCases = async (): Promise<Case[]> => {
 
 export const fetchCase = async (id: string): Promise<Case | undefined> => {
   if (!isInitialized) await initializeData();
-  return localCases.find(c => c.caseId === id);
+  const cached = localCases.find(c => c.caseId === id);
+  if (cached) return cached;
+
+  console.log('[API] Case not found locally, fetching from Supabase...', id);
+  if (isSupabaseEnabled()) {
+    const remote = await fetchCaseFromSupabase(id);
+    if (remote) {
+      // Add to local cache if found
+      const idx = localCases.findIndex(c => c.caseId === remote.caseId);
+      if (idx > -1) localCases[idx] = remote;
+      else localCases.push(remote);
+      return remote;
+    }
+  }
+  return undefined;
 };
 
 // Helper to create a new case object locally
