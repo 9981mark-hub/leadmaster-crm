@@ -113,6 +113,25 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   /* 
     Poling Logic removed (handled in CaseList now)
   */
+  // [NEW] Global Focus / Visibility Listener for Immediate Sync
+  React.useEffect(() => {
+    const handleFocus = () => {
+      if (document.visibilityState === 'visible') {
+        import('./services/api').then(({ refreshData }) => {
+          console.log("[App] Window focused, refreshing data...");
+          refreshData();
+        });
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
+  }, []);
 
 
   const navs = [

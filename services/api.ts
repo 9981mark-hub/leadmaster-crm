@@ -209,6 +209,82 @@ export const initializeData = async () => {
 
   // [NEW] Run Recycle Bin Cleanup
   cleanupRecycleBin();
+
+  // [NEW] Setup Realtime Subscription
+  if (isSupabaseEnabled()) {
+    setupRealtimeSubscription();
+  }
+};
+
+// [NEW] Realtime Subscription Setup
+let unsubscribeRealtime: (() => void) | null = null;
+
+const setupRealtimeSubscription = () => {
+  if (unsubscribeRealtime) return; // Already subscribed
+
+  console.log("[Realtime] Setting up subscription...");
+  unsubscribeRealtime = subscribeToCases(
+    // On Insert
+    (newCase) => {
+      // Check if we already have it (e.g. created locally)
+      const existingIdx = localCases.findIndex(c => c.caseId === newCase.caseId);
+      if (existingIdx > -1) {
+        // We have it. If server is newer, update.
+        const local = localCases[existingIdx];
+        const localTime = new Date(local.updatedAt || 0).getTime();
+        const serverTime = new Date(newCase.updatedAt || 0).getTime();
+
+        if (serverTime > localTime) {
+          console.log(`[Realtime] Updating existing case (Server Newer): ${newCase.customerName}`);
+          localCases[existingIdx] = newCase;
+          saveToStorage();
+          notifyListeners();
+        }
+      } else {
+        // New case from another device
+        console.log(`[Realtime] New case received: ${newCase.customerName}`);
+        localCases.unshift(newCase);
+        // Sort by CreatedAt Desc (Handling potentially out-of-order arrival)
+        localCases.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        saveToStorage();
+        notifyListeners();
+      }
+    },
+    // On Update
+    (updatedCase) => {
+      const idx = localCases.findIndex(c => c.caseId === updatedCase.caseId);
+      if (idx > -1) {
+        const local = localCases[idx];
+        const localTime = new Date(local.updatedAt || 0).getTime();
+        const serverTime = new Date(updatedCase.updatedAt || 0).getTime();
+
+        // Conflict Strategy: Server wins if newer OR if equal (convergence)
+        if (serverTime >= localTime) {
+          console.log(`[Realtime] Updating case: ${updatedCase.customerName}`);
+          localCases[idx] = updatedCase;
+          saveToStorage();
+          notifyListeners();
+        }
+      } else {
+        // Should catch missing cases? Maybe.
+        console.log(`[Realtime] Update for unknown case (adding): ${updatedCase.customerName}`);
+        localCases.unshift(updatedCase);
+        localCases.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        saveToStorage();
+        notifyListeners();
+      }
+    },
+    // On Delete
+    (caseId) => {
+      const idx = localCases.findIndex(c => c.caseId === caseId);
+      if (idx > -1) {
+        console.log(`[Realtime] Deleting case: ${caseId}`);
+        localCases.splice(idx, 1);
+        saveToStorage();
+        notifyListeners();
+      }
+    }
+  );
 };
 
 export const refreshData = async () => {
