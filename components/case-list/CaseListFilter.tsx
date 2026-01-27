@@ -118,141 +118,148 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     </select>
                 </div>
 
-                {/* [Row 4 Mobile] Status + Sort + Trash */}
+                {/* [Row 4 Mobile] Status + Sort + Trash - Refactored for better grouping */}
                 <div className="flex flex-wrap w-full xl:w-auto gap-1">
-                    {/* Multi-Status Filter Dropdown */}
-                    <div className="relative flex-1 min-w-[100px]">
-                        <button
-                            type="button"
-                            onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                            className="w-full border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left flex items-center justify-between"
-                        >
-                            <span className="truncate">
-                                {statusFilters.length === 0
-                                    ? '전체 상태'
-                                    : statusFilters.length === 1
-                                        ? statusFilters[0]
-                                        : `${statusFilters[0]} 외 ${statusFilters.length - 1}개`}
-                            </span>
-                            <ChevronDown size={16} className={`ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        {isStatusDropdownOpen && (
-                            <>
-                                <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setIsStatusDropdownOpen(false)}
-                                />
-                                <div className="absolute top-full left-0 mt-1 w-full min-w-[160px] bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setStatusFilters([]); onResetPage(); }}
-                                        className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.length === 0 ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
-                                    >
-                                        {statusFilters.length === 0 && <Check size={14} />}
-                                        <span className={statusFilters.length === 0 ? 'font-medium' : ''}>전체 상태</span>
-                                    </button>
-                                    <div className="border-t dark:border-gray-600" />
-                                    {statuses.map(s => (
+
+                    {/* Group 1: Status & Settings */}
+                    <div className="flex flex-1 xl:contents min-w-[200px] gap-1">
+                        {/* Multi-Status Filter Dropdown */}
+                        <div className="relative flex-1 min-w-[100px]">
+                            <button
+                                type="button"
+                                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                                className="w-full border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left flex items-center justify-between"
+                            >
+                                <span className="truncate">
+                                    {statusFilters.length === 0
+                                        ? '전체 상태'
+                                        : statusFilters.length === 1
+                                            ? statusFilters[0]
+                                            : `${statusFilters[0]} 외 ${statusFilters.length - 1}개`}
+                                </span>
+                                <ChevronDown size={16} className={`ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isStatusDropdownOpen && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setIsStatusDropdownOpen(false)}
+                                    />
+                                    <div className="absolute top-full left-0 mt-1 w-full min-w-[160px] bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                                         <button
                                             type="button"
-                                            key={s}
-                                            onClick={() => {
-                                                setStatusFilters(prev =>
-                                                    prev.includes(s)
-                                                        ? prev.filter(x => x !== s)
-                                                        : [...prev, s]
-                                                );
-                                                onResetPage();
-                                            }}
-                                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.includes(s) ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
+                                            onClick={() => { setStatusFilters([]); onResetPage(); }}
+                                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.length === 0 ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
                                         >
-                                            <div className={`w-4 h-4 border rounded flex items-center justify-center ${statusFilters.includes(s) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'}`}>
-                                                {statusFilters.includes(s) && <Check size={12} />}
-                                            </div>
-                                            <span>{s}</span>
+                                            {statusFilters.length === 0 && <Check size={14} />}
+                                            <span className={statusFilters.length === 0 ? 'font-medium' : ''}>전체 상태</span>
                                         </button>
-                                    ))}
-                                    {statusFilters.length > 0 && (
-                                        <>
-                                            <div className="border-t dark:border-gray-600" />
+                                        <div className="border-t dark:border-gray-600" />
+                                        {statuses.map(s => (
                                             <button
                                                 type="button"
-                                                onClick={() => { setStatusFilters([]); onResetPage(); setIsStatusDropdownOpen(false); }}
-                                                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                key={s}
+                                                onClick={() => {
+                                                    setStatusFilters(prev =>
+                                                        prev.includes(s)
+                                                            ? prev.filter(x => x !== s)
+                                                            : [...prev, s]
+                                                    );
+                                                    onResetPage();
+                                                }}
+                                                className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.includes(s) ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
                                             >
-                                                ✕ 필터 초기화
+                                                <div className={`w-4 h-4 border rounded flex items-center justify-center ${statusFilters.includes(s) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'}`}>
+                                                    {statusFilters.includes(s) && <Check size={12} />}
+                                                </div>
+                                                <span>{s}</span>
                                             </button>
-                                        </>
-                                    )}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                                        ))}
+                                        {statusFilters.length > 0 && (
+                                            <>
+                                                <div className="border-t dark:border-gray-600" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setStatusFilters([]); onResetPage(); setIsStatusDropdownOpen(false); }}
+                                                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                >
+                                                    ✕ 필터 초기화
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
 
-                    <button
-                        onClick={onOpenStatusVisibilityModal}
-                        className="p-2 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm"
-                        title="상태 보기 설정"
-                    >
-                        <Settings size={18} />
-                    </button>
-
-                    <div className="relative flex-1 min-w-[120px]">
-                        <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
-                        <select
-                            className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none text-ellipsis"
-                            value={sortOrder}
-                            onChange={(e) => setSortOrder(e.target.value)}
-                        >
-                            <option value="createdAt_desc">최신 등록순</option>
-                            <option value="createdAt_asc">오래된 등록순</option>
-                            <option value="updatedAt_desc">최근 수정순</option>
-                            <option value="updatedAt_asc">오래된 수정순</option>
-                            <option value="lastConsultation_desc">최근 상담순</option>
-                            <option value="lastConsultation_asc">오래된 상담순</option>
-                            <option value="inboundPath_asc">유입경로별</option>
-                        </select>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onOpenImportModal();
-                        }}
-                        className="hidden xl:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
-                    >
-                        <Upload size={18} />
-                    </button>
-
-                    <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex items-center gap-1">
                         <button
-                            onClick={() => setLayoutMode('list')}
-                            className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
-                            title="리스트 보기"
+                            onClick={onOpenStatusVisibilityModal}
+                            className="p-2 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm"
+                            title="상태 보기 설정"
                         >
-                            <LayoutList size={16} />
-                        </button>
-                        <button
-                            onClick={() => setLayoutMode('kanban')}
-                            className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
-                            title="칸반 보드 보기"
-                        >
-                            <LayoutGrid size={16} />
+                            <Settings size={18} />
                         </button>
                     </div>
 
+                    {/* Group 2: Sort, Actions, Trash */}
+                    <div className="flex flex-1 xl:contents min-w-[200px] gap-1 mt-1 xl:mt-0">
+                        <div className="relative flex-1 min-w-[120px]">
+                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
+                            <select
+                                className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none text-ellipsis"
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                            >
+                                <option value="createdAt_desc">최신 등록순</option>
+                                <option value="createdAt_asc">오래된 등록순</option>
+                                <option value="updatedAt_desc">최근 수정순</option>
+                                <option value="updatedAt_asc">오래된 수정순</option>
+                                <option value="lastConsultation_desc">최근 상담순</option>
+                                <option value="lastConsultation_asc">오래된 상담순</option>
+                                <option value="inboundPath_asc">유입경로별</option>
+                            </select>
+                        </div>
 
-                    <button
-                        onClick={() => setViewMode(viewMode === 'active' ? 'trash' : 'active')}
-                        className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
-                            ? 'bg-red-600 text-white hover:bg-red-700'
-                            : 'bg-white border text-gray-600 hover:bg-gray-50'
-                            }`}
-                        title={viewMode === 'active' ? "휴지통 보기" : "목록으로 돌아가기"}
-                    >
-                        {viewMode === 'trash' ? <ChevronLeft size={18} /> : <Trash2 size={18} />}
-                    </button>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onOpenImportModal();
+                            }}
+                            className="hidden xl:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
+                        >
+                            <Upload size={18} />
+                        </button>
+
+                        <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex items-center gap-1">
+                            <button
+                                onClick={() => setLayoutMode('list')}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                title="리스트 보기"
+                            >
+                                <LayoutList size={16} />
+                            </button>
+                            <button
+                                onClick={() => setLayoutMode('kanban')}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                title="칸반 보드 보기"
+                            >
+                                <LayoutGrid size={16} />
+                            </button>
+                        </div>
+
+
+                        <button
+                            onClick={() => setViewMode(viewMode === 'active' ? 'trash' : 'active')}
+                            className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
+                                ? 'bg-red-600 text-white hover:bg-red-700'
+                                : 'bg-white border text-gray-600 hover:bg-gray-50'
+                                }`}
+                            title={viewMode === 'active' ? "휴지통 보기" : "목록으로 돌아가기"}
+                        >
+                            {viewMode === 'trash' ? <ChevronLeft size={18} /> : <Trash2 size={18} />}
+                        </button>
+                    </div>
                 </div>
             </div>
 
