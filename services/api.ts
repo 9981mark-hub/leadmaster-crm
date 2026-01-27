@@ -922,6 +922,11 @@ export const fetchCases = async (): Promise<Case[]> => {
   return [...localCases];
 };
 
+export const fetchCase = async (id: string): Promise<Case | undefined> => {
+  if (!isInitialized) await initializeData();
+  return localCases.find(c => c.caseId === id);
+};
+
 // Helper to create a new case object locally
 export const createCaseHelper = (newCase: Partial<Case>): Case => {
   const managerName = localStorage.getItem('managerName') || 'Mark';

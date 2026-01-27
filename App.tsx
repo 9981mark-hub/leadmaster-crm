@@ -208,31 +208,48 @@ const ProtectedRoutes = () => {
 };
 
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      retry: 1,
+      refetchOnWindowFocus: true,
+    },
+  },
+});
+
 export default function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <HashRouter>
-        <ToastProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <ReminderProvider>
-                <Suspense fallback={
-                  <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-                    <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-                  </div>
-                }>
-                  <Routes>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/*" element={<ProtectedRoutes />} />
-                  </Routes>
-                  <ReminderNotificationContainer />
-                  <NewCasePopup />
-                </Suspense>
-              </ReminderProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </ToastProvider>
-      </HashRouter>
+      <QueryClientProvider client={queryClient}>
+        <HashRouter>
+          <ToastProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <ReminderProvider>
+                  <Suspense fallback={
+                    <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+                      <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                    </div>
+                  }>
+                    <Routes>
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/*" element={<ProtectedRoutes />} />
+                    </Routes>
+                    <ReminderNotificationContainer />
+                    <NewCasePopup />
+                  </Suspense>
+                </ReminderProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </ToastProvider>
+        </HashRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </GoogleOAuthProvider>
   );
 }

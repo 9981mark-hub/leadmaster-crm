@@ -356,8 +356,7 @@ export const parseGenericDate = (input: Date | string | number | undefined | nul
   // Normalize: remove dots, spaces, handle AM/PM
   const cleanStr = dateStr.trim();
 
-  // Regex for Full DateTime: 2024. 1. 4. 오후 6:30:00
-  // Optional seconds, optional dots at end of numbers
+  // Regex for full DateTime
   const koFullRegex = /(\d{4})[\.\-]\s*(\d{1,2})[\.\-]\s*(\d{1,2})[\.]?\s*(오전|오후)?\s*(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/;
   const matchFull = cleanStr.match(koFullRegex);
 
@@ -555,14 +554,6 @@ export const extractSummarySpecifics = (text: string): string => {
     }
   }
 
-  // If no specific section found, return the whole text but warn? 
-  // Or maybe return a subset? 
-  // User requested "Only upload specifics". If AI didn't generate "Specifics", the whole text might be relevant or irrelevant.
-  // Let's return the whole text with a note, or maybe just the whole text. 
-  // "기존에는... 전부 업로드 됐는데 이제 특이사항 부분만 업로드 되게 해줘" -> Implies strictly fitering.
-  // If we return full text, it defeats the purpose.
-  // But if we return empty, we lose data.
-  // Compromise: Return full text but marked.
   return text;
 };
 
@@ -577,4 +568,38 @@ export const safeFormat = (date: Date | string | number | undefined | null, fmt:
     console.warn("Date formatting error:", e);
     return fallback;
   }
+};
+
+// [NEW] Added for CaseDetailAssets.tsx
+export const getAutoCollateralString = (c: Case): string => {
+  const parts: string[] = [];
+  let total = 0;
+
+  if (c.housingType !== '자가' && c.housingType !== '무상거주' && c.depositLoanAmount) {
+    parts.push(`보증금 대출(${formatKoreanMoney(c.depositLoanAmount)})`);
+    total += c.depositLoanAmount;
+  }
+  if (c.housingType === '자가' && c.ownHouseLoan) {
+    parts.push(`집 담보 대출(${formatKoreanMoney(c.ownHouseLoan)})`);
+    total += c.ownHouseLoan;
+  }
+  if (c.assets) {
+    c.assets.filter(a => a.loanAmount > 0).forEach(a => {
+      parts.push(`${a.type} 담보(${formatKoreanMoney(a.loanAmount)})`);
+      total += a.loanAmount;
+    });
+  }
+
+  if (parts.length === 0) return '없음';
+  return `${parts.join(', ')} (총 ${formatKoreanMoney(total)})`;
+};
+
+// [NEW] Added for CaseDetailAiSummary.tsx
+export const generateAiSummary = async (file: File): Promise<string> => {
+  console.log('Mock Generating AI Summary for', file.name);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`[AI 요약 - ${file.name}]\n\n1. 상담 내용: \n(내용이 자동으로 생성됩니다)\n\n2. 주요 자산:\n- 확인 필요\n\n3. 특이사항:\n- 고객 요청사항...`);
+    }, 2000);
+  });
 };
