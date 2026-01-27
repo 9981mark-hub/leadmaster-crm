@@ -182,8 +182,25 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 import ErrorBoundary from './components/ErrorBoundary';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { subscribe } from './services/api';
+import { QUERY_KEYS } from './services/queries';
+
 const ProtectedRoutes = () => {
   const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
+
+  // [Realtime Sync] Invalidate Cache on Data Change
+  React.useEffect(() => {
+    const unsubscribe = subscribe(() => {
+      // console.log("[App] Data updated via Realtime/Sync, refreshing UI...");
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cases });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.partners });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inboundPaths });
+    });
+    return () => unsubscribe();
+  }, [queryClient]);
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
