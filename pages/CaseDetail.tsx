@@ -267,7 +267,23 @@ export default function CaseDetail() {
     };
 
     if (isLoading) return <div className="p-8 text-center text-gray-500">데이터를 불러오는 중...</div>;
-    if (error || !c) return <div className="p-8 text-center text-red-500">사건 정보를 불러올 수 없습니다.</div>;
+    if (isLoading) return <div className="p-8 text-center text-gray-500">데이터를 불러오는 중...</div>;
+    if (error || !c) return (
+        <div className="p-8 text-center text-red-500 flex flex-col items-center gap-4">
+            <p className="text-xl font-bold">사건 정보를 불러올 수 없습니다.</p>
+            <p className="text-sm text-gray-500">ID: {id}</p>
+            <div className="text-xs bg-gray-100 p-2 rounded max-w-md break-all">
+                데이터 동기화가 지연되고 있을 수 있습니다.<br />
+                잠시 후 다시 시도하거나, 새로고침(F5)을 해주세요.
+            </div>
+            <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+                페이지 새로고침
+            </button>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
