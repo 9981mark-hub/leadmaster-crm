@@ -101,13 +101,17 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         // 3. 로그인 성공 처리
         const userProfile = { email, name, picture };
 
-        // [Supabase Auth Integration]
+        // [Supabase Auth Integration] - Non-blocking
         if (supabase) {
-          const { error } = await supabase.auth.signInWithIdToken({
-            provider: 'google',
-            token: credential,
-          });
-          if (error) console.error("Supabase Auth Error:", error);
+          try {
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: 'google',
+              token: credential,
+            });
+            if (error) console.warn("Supabase Auth Warning (Non-blocking):", error.message);
+          } catch (sbError) {
+            console.warn("Supabase Auth Failed (Non-blocking)", sbError);
+          }
         }
 
         localStorage.setItem('authToken', credential);
@@ -124,25 +128,25 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       }
     };
 
-    // [Session Recovery] Sync Supabase Auth state if local auth exists
+    // [Session Recovery] - Non-destructive
     useEffect(() => {
       const restoreSupabaseSession = async () => {
         if (!isAuthenticated || !supabase) return;
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          const token = localStorage.getItem('authToken');
-          if (token) {
-            console.log("Restoring Supabase Session...");
-            const { error } = await supabase.auth.signInWithIdToken({
-              provider: 'google',
-              token: token,
-            });
-            if (error) {
-              console.warn("Session restore failed (expired?), logging out...", error);
-              logout();
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+              // Try to restore, but ignore errors
+              await supabase.auth.signInWithIdToken({
+                provider: 'google',
+                token: token,
+              }).catch(e => console.warn("Session restore failed", e));
             }
           }
+        } catch (e) {
+          console.warn("Supabase session check failed", e);
         }
       };
 
