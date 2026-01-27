@@ -51,6 +51,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                     className={`flex-1 p-2 overflow-y-auto scrollbar-hide transition-colors ${snapshot.isDraggingOver ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
                                 >
                                     {columns[status]?.map((c, index) => (
+                                        // @ts-ignore
                                         <Draggable key={c.caseId} draggableId={c.caseId} index={index}>
                                             {(provided, snapshot) => (
                                                 <div
