@@ -166,6 +166,53 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.phone}</span>
                             </div>
 
+                            {/* [Mobile] Reminder Info */}
+                            {(() => {
+                                const nextReminder = getNextUpcomingReminder(c.reminders);
+                                if (!nextReminder) return null;
+                                return (
+                                    <div className="mt-1">
+                                        <HoverCheckTooltip
+                                            mobileAlign="left"
+                                            trigger={
+                                                <div className="flex items-center gap-1.5 p-1 px-2 bg-yellow-50 dark:bg-yellow-900/30 rounded border border-yellow-100 dark:border-yellow-900/50 w-fit">
+                                                    {(() => {
+                                                        const rType = nextReminder.type || '통화';
+                                                        if (rType === '통화') return <Phone size={12} className="text-blue-600" />;
+                                                        if (rType === '출장미팅') return <Briefcase size={12} className="text-green-600" />;
+                                                        if (rType === '방문미팅') return <MapPin size={12} className="text-purple-600" />;
+                                                        return <MoreHorizontal size={12} className="text-gray-600" />;
+                                                    })()}
+                                                    <span className="text-xs font-bold text-yellow-800 dark:text-yellow-300">
+                                                        {nextReminder.datetime}
+                                                    </span>
+                                                    {(c.reminders?.length || 0) > 1 && (
+                                                        <span className="text-[10px] text-gray-500 bg-white dark:bg-gray-800 px-1 rounded-full border border-gray-200 dark:border-gray-600">
+                                                            +{((c.reminders?.length || 0) - 1)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            }
+                                            content={
+                                                <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                    <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
+                                                    {c.reminders?.map((reminder, idx) => (
+                                                        <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                            <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                            {reminder.content && (
+                                                                <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                    {reminder.content}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            }
+                                        />
+                                    </div>
+                                );
+                            })()}
+
                             <div className="flex justify-between items-end mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                                 <div className="flex flex-col text-xs text-gray-500">
                                     <span>{c.caseType} | {c.inboundPath}</span>
