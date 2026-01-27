@@ -119,7 +119,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 </div>
 
                 {/* [Row 4 Mobile] Status + Sort + Trash */}
-                <div className="flex w-full xl:w-auto gap-1">
+                <div className="flex flex-wrap w-full xl:w-auto gap-1">
                     {/* Multi-Status Filter Dropdown */}
                     <div className="relative flex-1 min-w-[100px]">
                         <button
