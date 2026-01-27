@@ -345,6 +345,11 @@ const setupRealtimeSubscription = () => {
         saveToStorage();
         notifyListeners();
       }
+    },
+    // On Any Change (Partners, Settings, or Case side-effects)
+    () => {
+      console.log("[Realtime] General update signal received");
+      notifyListeners();
     }
   );
 };

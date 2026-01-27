@@ -406,10 +406,14 @@ let casesChannel: RealtimeChannel | null = null;
 /**
  * Subscribe to real-time case updates
  */
+/**
+ * Subscribe to real-time updates for Cases, Partners, and Settings
+ */
 export const subscribeToCases = (
     onInsert: (newCase: Case) => void,
     onUpdate: (updatedCase: Case) => void,
-    onDelete: (caseId: string) => void
+    onDelete: (caseId: string) => void,
+    onAnyChange?: () => void // Optional callback for any change (used for simple invalidation of other tables)
 ): (() => void) => {
     if (!supabase) {
         console.warn('[Supabase] Real-time not available - client not configured');
@@ -422,13 +426,15 @@ export const subscribeToCases = (
     }
 
     casesChannel = supabase
-        .channel('cases-realtime')
+        .channel('app-realtime')
+        // --- Cases Listeners ---
         .on(
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'cases' },
             (payload) => {
                 console.log('[Supabase] New case:', payload.new);
                 onInsert(dbToCase(payload.new as DbCase));
+                if (onAnyChange) onAnyChange();
             }
         )
         .on(
@@ -437,6 +443,7 @@ export const subscribeToCases = (
             (payload) => {
                 console.log('[Supabase] Updated case:', payload.new);
                 onUpdate(dbToCase(payload.new as DbCase));
+                if (onAnyChange) onAnyChange();
             }
         )
         .on(
@@ -445,6 +452,25 @@ export const subscribeToCases = (
             (payload) => {
                 console.log('[Supabase] Deleted case:', payload.old);
                 onDelete((payload.old as any).case_id);
+                if (onAnyChange) onAnyChange();
+            }
+        )
+        // --- Partners Listeners ---
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'partners' },
+            (payload) => {
+                console.log('[Supabase] Partners changed:', payload.eventType);
+                if (onAnyChange) onAnyChange();
+            }
+        )
+        // --- Settings Listeners ---
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'settings' },
+            (payload) => {
+                console.log('[Supabase] Settings changed:', payload.eventType);
+                if (onAnyChange) onAnyChange();
             }
         )
         .subscribe((status) => {
