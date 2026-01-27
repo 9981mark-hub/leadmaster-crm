@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeadMaster - Supabase 마이그레이션</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .status-line {
+            margin: 5px 0;
+        }
+
+        .success {
+            color: #4ade80;
+        }
+
+        .error {
+            color: #f87171;
+        }
+
+        .info {
+            color: #60a5fa;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .progress {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #4ade80, #22d3ee);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 Supabase 마이그레이션</h1>
+        <p class="subtitle">Google Sheets → Supabase 데이터 이전</p>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="totalCount">-</div>
+                <div class="stat-label">전체 케이스</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="migratedCount">0</div>
+                <div class="stat-label">마이그레이션됨</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="errorCount">0</div>
+                <div class="stat-label">오류</div>
+            </div>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="status" id="status">
+            <div class="status-line info">마이그레이션 준비 완료</div>
+            <div class="status-line">시작 버튼을 클릭하세요</div>
+        </div>
+
+        <button id="startBtn" class="primary" onclick="startMigration()">
+            📦 마이그레이션 시작
+        </button>
+        <button class="secondary" onclick="window.location.href='/'">
+            ← LeadMaster로 돌아가기
+        </button>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+        // Supabase 설정
+        const SUPABASE_URL = 'https://cenksfblktflfurxjmtv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlbmtzZmJsa3RmbGZ1cnhqbXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNzcyNTksImV4cCI6MjA4NDk1MzI1OX0.CNXTi73sjRem7FJqEMHZMxkwcpwagU3xzPpFELrUYRw';
+
+        // Google Apps Script URL (LeadMaster에서 사용 중인 URL)
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyv68G12Kd0g8RThZGpXToV2m_PjN7IsaBXwzDkPvA1TqsgFTIjQFuuC0G0_Xitsxm8/exec';
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let totalCases = [];
+        let migratedCount = 0;
+        let errorCount = 0;
+
+        function log(message, type = '') {
+            const status = document.getElementById('status');
+            const line = document.createElement('div');
+            line.className = `status-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            status.appendChild(line);
+            status.scrollTop = status.scrollHeight;
+        }
+
+        function updateProgress() {
+            const total = totalCases.length || 1;
+            const progress = ((migratedCount + errorCount) / total) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('migratedCount').textContent = migratedCount;
+            document.getElementById('errorCount').textContent = errorCount;
+        }
+
+        // camelCase to snake_case 변환
+        function caseToDb(c) {
+            return {
+                case_id: c.caseId,
+                created_at: c.createdAt,
+                updated_at: c.updatedAt,
+                status: c.status,
+                secondary_status: c.secondaryStatus || null,
+                is_viewed: c.isViewed || false,
+                deleted_at: c.deletedAt || null,
+                customer_name: c.customerName,
+                phone: c.phone,
+                birth: c.birth || null,
+                gender: c.gender || '남',
+                region: c.region || null,
+                manager_name: c.managerName,
+                partner_id: c.partnerId,
+                case_type: c.caseType || '개인회생',
+                inbound_path: c.inboundPath,
+                pre_info: c.preInfo || null,
+                history_type: c.historyType || '없음',
+                job_types: c.jobTypes || [],
+                income_net: c.incomeNet || 0,
+                income_details: c.incomeDetails || {},
+                insurance4: c.insurance4 || '미가입',
+                housing_type: c.housingType || '월세',
+                housing_detail: c.housingDetail || '기타',
+                rent_contractor: c.rentContractor || null,
+                deposit: c.deposit || 0,
+                deposit_loan_amount: c.depositLoanAmount || 0,
+                rent: c.rent || 0,
+                own_house_price: c.ownHousePrice || 0,
+                own_house_loan: c.ownHouseLoan || 0,
+                own_house_owner: c.ownHouseOwner || null,
+                credit_card_use: c.creditCardUse || null,
+                credit_card_amount: c.creditCardAmount || 0,
+                loan_monthly_pay: c.loanMonthlyPay || 0,
+                marital_status: c.maritalStatus || '미혼',
+                children_count: c.childrenCount || 0,
+                contract_at: c.contractAt || null,
+                contract_fee: c.contractFee || 0,
+                installment_months: c.installmentMonths || null,
+                use_capital: c.useCapital || false,
+                assets: c.assets || [],
+                credit_loan: c.creditLoan || [],
+                special_memo: c.specialMemo || [],
+                reminders: c.reminders || [],
+                recordings: c.recordings || [],
+                deposit_history: c.depositHistory || [],
+                status_logs: c.statusLogs || [],
+                missed_call_count: c.missedCallCount || 0,
+                last_missed_call_at: c.lastMissedCallAt || null,
+                ai_summary: c.aiSummary || null,
+                formatted_summary: c.formattedSummary || null
+            };
+        }
+
+        async function fetchFromGoogleSheets() {
+            log('Google Sheets에서 데이터 가져오는 중...', 'info');
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=leads&_t=${Date.now()}`);
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    return data;
+                }
+                throw new Error('Invalid response');
+            } catch (err) {
+                log(`Google Sheets 오류: ${err.message}`, 'error');
+                return [];
+            }
+        }
+
+        async function migrateCase(caseData) {
+            try {
+                const dbCase = caseToDb(caseData);
+                const { error } = await supabase
+                    .from('cases')
+                    .upsert([dbCase], { onConflict: 'case_id' });
+
+                if (error) throw error;
+                migratedCount++;
+                return true;
+            } catch (err) {
+                errorCount++;
+                log(`오류 (${caseData.customerName || caseData.caseId}): ${err.message}`, 'error');
+                return false;
+            }
+        }
+
+        window.startMigration = async function () {
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ 마이그레이션 중...';
+
+            log('마이그레이션 시작...', 'info');
+
+            // 1. Google Sheets에서 데이터 가져오기
+            totalCases = await fetchFromGoogleSheets();
+            document.getElementById('totalCount').textContent = totalCases.length;
+
+            if (totalCases.length === 0) {
+                log('마이그레이션할 데이터가 없습니다.', 'error');
+                btn.disabled = false;
+                btn.textContent = '📦 마이그레이션 시작';
+                return;
+            }
+
+            log(`${totalCases.length}건의 케이스를 마이그레이션합니다...`, 'info');
+
+            // 2. 배치로 마이그레이션 (5개씩)
+            const batchSize = 5;
+            for (let i = 0; i < totalCases.length; i += batchSize) {
+                const batch = totalCases.slice(i, i + batchSize);
+                await Promise.all(batch.map(migrateCase));
+                updateProgress();
+
+                // 진행상황 로그
+                if ((i + batchSize) % 20 === 0 || i + batchSize >= totalCases.length) {
+                    log(`진행: ${Math.min(i + batchSize, totalCases.length)} / ${totalCases.length}`, 'info');
+                }
+            }
+
+            // 3. 완료
+            log(`✅ 마이그레이션 완료! ${migratedCount}건 성공, ${errorCount}건 오류`, 'success');
+            btn.textContent = '✅ 완료!';
+        };
+    </script>
+</body>
+
+</html>
