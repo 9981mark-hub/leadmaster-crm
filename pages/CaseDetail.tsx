@@ -1458,47 +1458,35 @@ export default function CaseDetail() {
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 mb-2">
-                                        <input
-                                            type="text"
-                                            autoComplete="off"
-                                            placeholder="시세 (만원)"
-                                            className="w-full p-1.5 border rounded text-xs"
-                                            value={newAsset.amount || ''}
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                if (val === '' || /^[0-9]+$/.test(val)) {
-                                                    setNewAsset({ ...newAsset, amount: val === '' ? 0 : Number(val) });
-                                                }
-                                            }}
+                                        <Input
+                                            label="시세"
+                                            type="number"
+                                            value={newAsset.amount}
+                                            onChange={(v: number) => setNewAsset({ ...newAsset, amount: v })}
+                                            placeholder="시세"
+                                            suffix="만원"
+                                            isCurrency={true}
                                         />
-                                        <input
-                                            type="text"
-                                            autoComplete="off"
-                                            placeholder="담보대출 (만원)"
-                                            className="w-full p-1.5 border rounded text-xs"
-                                            value={newAsset.loanAmount || ''}
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                if (val === '' || /^[0-9]+$/.test(val)) {
-                                                    setNewAsset({ ...newAsset, loanAmount: val === '' ? 0 : Number(val) });
-                                                }
-                                            }}
+                                        <Input
+                                            label="담보대출"
+                                            type="number"
+                                            value={newAsset.loanAmount}
+                                            onChange={(v: number) => setNewAsset({ ...newAsset, loanAmount: v })}
+                                            placeholder="담보대출"
+                                            suffix="만원"
+                                            isCurrency={true}
                                         />
                                     </div>
                                     {['부동산', '토지'].includes(newAsset.type || '') && (
                                         <div className="mb-2">
-                                            <input
-                                                type="text"
-                                                autoComplete="off"
-                                                placeholder="전세금액 (만원)"
-                                                className="w-full p-1.5 border rounded text-xs bg-green-50 focus:bg-white"
-                                                value={newAsset.rentDeposit || ''}
-                                                onChange={e => {
-                                                    const val = e.target.value;
-                                                    if (val === '' || /^[0-9]+$/.test(val)) {
-                                                        setNewAsset({ ...newAsset, rentDeposit: val === '' ? 0 : Number(val) });
-                                                    }
-                                                }}
+                                            <Input
+                                                label="전세금액"
+                                                type="number"
+                                                value={newAsset.rentDeposit}
+                                                onChange={(v: number) => setNewAsset({ ...newAsset, rentDeposit: v })}
+                                                placeholder="전세금액"
+                                                suffix="만원"
+                                                isCurrency={true}
                                             />
                                         </div>
                                     )}
@@ -1544,18 +1532,14 @@ export default function CaseDetail() {
                                             value={newCreditLoan.desc || ''}
                                             onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })}
                                         />
-                                        <input
-                                            type="text"
-                                            autoComplete="off"
-                                            placeholder="금액 (만원)"
-                                            className="w-full p-1.5 border rounded text-xs"
-                                            value={newCreditLoan.amount || ''}
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                if (val === '' || /^[0-9]+$/.test(val)) {
-                                                    setNewCreditLoan({ ...newCreditLoan, amount: val === '' ? 0 : Number(val) });
-                                                }
-                                            }}
+                                        <Input
+                                            label="금액"
+                                            type="number"
+                                            value={newCreditLoan.amount}
+                                            onChange={(v: number) => setNewCreditLoan({ ...newCreditLoan, amount: v })}
+                                            placeholder="금액"
+                                            suffix="만원"
+                                            isCurrency={true}
                                         />
                                         <button
                                             type="button"

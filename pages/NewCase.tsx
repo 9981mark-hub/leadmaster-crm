@@ -9,13 +9,44 @@ import { normalizeBirthYear, checkIsDuplicate } from '../utils';
 import { AssetItem, Partner, CreditLoanItem, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
 
-const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "" }: any) => {
-  const displayValue = type === 'number' && value === 0 ? '' : value;
+const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = "", suffix = "", readOnly = false, isPhone = false, isCurrency = false }: any) => {
+  let displayValue = value;
+
+  if (type === 'number') {
+    if (!isCurrency && (value === 0 || value === undefined || value === null)) {
+      displayValue = '';
+    }
+  }
+
+  if (isCurrency && (typeof value === 'number' || !isNaN(Number(value)))) {
+    displayValue = Number(value).toLocaleString();
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+    let val = e.target.value;
+
+    if (isPhone) {
+      // Remove non-digits and re-format
+      const raw = val.replace(/[^0-9]/g, '');
+      let formatted = raw;
+      if (raw.length > 3 && raw.length <= 7) {
+        formatted = `${raw.slice(0, 3)}-${raw.slice(3)}`;
+      } else if (raw.length > 7) {
+        formatted = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7, 11)}`;
+      }
+      onChange(formatted);
+      return;
+    }
+
+    if (isCurrency) {
+      const cleanVal = val.replace(/,/g, '');
+      if (cleanVal === '' || /^[0-9]+$/.test(cleanVal)) {
+        onChange(cleanVal === '' ? 0 : Number(cleanVal));
+      }
+      return;
+    }
+
     if (type === 'number') {
-      // Allow only numbers (and empty string)
       if (val === '' || /^[0-9]+$/.test(val)) {
         onChange(val === '' ? 0 : Number(val));
       }
@@ -29,12 +60,14 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="relative">
         <input
-          type={type === 'number' ? 'text' : type}
-          className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          value={displayValue}
-          onChange={handleInputChange}
+          type={type === 'number' && !isCurrency ? 'text' : 'text'}
+          autoComplete="off"
+          className={"w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : '')}
+          value={displayValue || ''}
+          onChange={!readOnly ? handleInputChange : undefined}
           onBlur={onBlur}
           placeholder={placeholder}
+          readOnly={readOnly}
         />
         {suffix && <span className="absolute right-3 top-2 text-gray-500 text-sm">{suffix}</span>}
       </div>
@@ -412,7 +445,7 @@ export default function NewCase() {
             <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
 
             <div>
-              <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="01012345678" />
+              <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="010-0000-0000" isPhone={true} />
               {duplicateCase && (
                 <div className="mb-4 -mt-3 animate-pulse">
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm flex flex-col gap-1">
@@ -448,13 +481,13 @@ export default function NewCase() {
             <Select label="직업 (복수선택 가능)" value={formData.jobTypes} onChange={handleJobTypeChange} options={JOB_TYPES} isMulti={true} />
 
             {formData.jobTypes?.includes('직장인') &&
-              <Input label="직장인 월수입" value={formData.incomeDetails?.salary} onChange={(v: any) => handleIncomeChange('salary', v)} type="number" suffix="만원" />
+              <Input label="직장인 월수입" value={formData.incomeDetails?.salary} onChange={(v: any) => handleIncomeChange('salary', v)} type="number" suffix="만원" isCurrency={true} />
             }
             {(formData.jobTypes?.includes('개인사업자') || formData.jobTypes?.includes('법인사업자')) &&
-              <Input label="사업자 월수입" value={formData.incomeDetails?.business} onChange={(v: any) => handleIncomeChange('business', v)} type="number" suffix="만원" />
+              <Input label="사업자 월수입" value={formData.incomeDetails?.business} onChange={(v: any) => handleIncomeChange('business', v)} type="number" suffix="만원" isCurrency={true} />
             }
             {formData.jobTypes?.includes('프리랜서') &&
-              <Input label="프리랜서 월수입" value={formData.incomeDetails?.freelance} onChange={(v: any) => handleIncomeChange('freelance', v)} type="number" suffix="만원" />
+              <Input label="프리랜서 월수입" value={formData.incomeDetails?.freelance} onChange={(v: any) => handleIncomeChange('freelance', v)} type="number" suffix="만원" isCurrency={true} />
             }
 
             <Select label="4대보험" value={formData.insurance4} onChange={(v: any) => handleChange('insurance4', v)} options={['가입', '미가입']} />
@@ -490,8 +523,8 @@ export default function NewCase() {
             {formData.housingType === '자가' ? (
               <>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="집 시세" value={formData.ownHousePrice} onChange={(v: any) => handleChange('ownHousePrice', v)} type="number" suffix="만원" />
-                  <Input label="집 담보 대출" value={formData.ownHouseLoan} onChange={(v: any) => handleChange('ownHouseLoan', v)} type="number" suffix="만원" />
+                  <Input label="집 시세" value={formData.ownHousePrice} onChange={(v: any) => handleChange('ownHousePrice', v)} type="number" suffix="만원" isCurrency={true} />
+                  <Input label="집 담보 대출" value={formData.ownHouseLoan} onChange={(v: any) => handleChange('ownHouseLoan', v)} type="number" suffix="만원" isCurrency={true} />
                 </div>
                 <Select label="집 명의자" value={formData.ownHouseOwner} onChange={(v: any) => handleChange('ownHouseOwner', v)} options={['본인', '배우자', '배우자 공동명의']} />
               </>
@@ -502,13 +535,13 @@ export default function NewCase() {
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="보증금" value={formData.deposit} onChange={(v: any) => handleChange('deposit', v)} type="number" suffix="만원" />
+                  <Input label="보증금" value={formData.deposit} onChange={(v: any) => handleChange('deposit', v)} type="number" suffix="만원" isCurrency={true} />
                   {isFieldVisible('depositLoan') && (
-                    <Input label="보증금 대출" value={formData.depositLoanAmount} onChange={(v: any) => handleChange('depositLoanAmount', v)} type="number" suffix="만원" />
+                    <Input label="보증금 대출" value={formData.depositLoanAmount} onChange={(v: any) => handleChange('depositLoanAmount', v)} type="number" suffix="만원" isCurrency={true} />
                   )}
                 </div>
 
-                <Input label="월세" value={formData.rent} onChange={(v: any) => handleChange('rent', v)} type="number" suffix="만원" />
+                <Input label="월세" value={formData.rent} onChange={(v: any) => handleChange('rent', v)} type="number" suffix="만원" isCurrency={true} />
 
                 {/* Always show rent contractor for Jeonse/Wolse */}
                 <div className="mb-4">
@@ -576,44 +609,35 @@ export default function NewCase() {
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mb-2">
-                  <input
-                    type="text"
-                    placeholder="시세 (만원)"
-                    className="w-full p-2 border rounded text-sm"
-                    value={newAsset.amount === 0 ? '' : newAsset.amount}
-                    onChange={e => {
-                      const val = e.target.value;
-                      if (val === '' || /^[0-9]+$/.test(val)) {
-                        setNewAsset({ ...newAsset, amount: Number(val) || 0 });
-                      }
-                    }}
+                  <Input
+                    label="시세"
+                    value={newAsset.amount}
+                    onChange={(v: any) => setNewAsset({ ...newAsset, amount: v })}
+                    type="number"
+                    suffix="만원"
+                    isCurrency={true}
+                    placeholder="시세"
                   />
-                  <input
-                    type="text"
-                    placeholder="담보대출 (만원)"
-                    className="w-full p-2 border rounded text-sm"
-                    value={newAsset.loanAmount === 0 ? '' : newAsset.loanAmount}
-                    onChange={e => {
-                      const val = e.target.value;
-                      if (val === '' || /^[0-9]+$/.test(val)) {
-                        setNewAsset({ ...newAsset, loanAmount: Number(val) || 0 });
-                      }
-                    }}
+                  <Input
+                    label="담보대출"
+                    value={newAsset.loanAmount}
+                    onChange={(v: any) => setNewAsset({ ...newAsset, loanAmount: v })}
+                    type="number"
+                    suffix="만원"
+                    isCurrency={true}
+                    placeholder="담보대출"
                   />
                 </div>
                 {['부동산', '토지'].includes(newAsset.type || '') && (
                   <div className="mb-2">
-                    <input
-                      type="text"
-                      placeholder="전세금액 (만원)"
-                      className="w-full p-2 border rounded text-sm bg-orange-50 border-orange-200"
-                      value={newAsset.rentDeposit === 0 ? '' : newAsset.rentDeposit}
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val === '' || /^[0-9]+$/.test(val)) {
-                          setNewAsset({ ...newAsset, rentDeposit: Number(val) || 0 });
-                        }
-                      }}
+                    <Input
+                      label="전세금액"
+                      value={newAsset.rentDeposit}
+                      onChange={(v: any) => setNewAsset({ ...newAsset, rentDeposit: v })}
+                      type="number"
+                      suffix="만원"
+                      isCurrency={true}
+                      placeholder="전세금액"
                     />
                   </div>
                 )}
@@ -660,17 +684,13 @@ export default function NewCase() {
                   value={newCreditLoan.desc || ''}
                   onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })}
                 />
-                <input
-                  type="text"
-                  placeholder="금액 (만원)"
-                  className="w-full p-2 border rounded text-sm"
-                  value={newCreditLoan.amount === 0 ? '' : newCreditLoan.amount}
-                  onChange={e => {
-                    const val = e.target.value;
-                    if (val === '' || /^[0-9]+$/.test(val)) {
-                      setNewCreditLoan({ ...newCreditLoan, amount: Number(val) || 0 });
-                    }
-                  }}
+                <Input
+                  label="금액"
+                  value={newCreditLoan.amount}
+                  onChange={(v: any) => setNewCreditLoan({ ...newCreditLoan, amount: v })}
+                  type="number"
+                  suffix="만원"
+                  isCurrency={true}
                 />
                 <button
                   type="button"
@@ -701,13 +721,13 @@ export default function NewCase() {
                 <>
                   <Select label="신용카드 사용" value={formData.creditCardUse} onChange={(v: any) => handleChange('creditCardUse', v)} options={['사용', '미사용']} />
                   {formData.creditCardUse === '사용' && (
-                    <Input label="사용 금액" value={formData.creditCardAmount} onChange={(v: any) => handleChange('creditCardAmount', v)} type="number" suffix="만원" />
+                    <Input label="사용 금액" value={formData.creditCardAmount} onChange={(v: any) => handleChange('creditCardAmount', v)} type="number" suffix="만원" isCurrency={true} />
                   )}
                 </>
               )}
             </div>
 
-            <Input label="월 대출납입" value={formData.loanMonthlyPay} onChange={(v: any) => handleChange('loanMonthlyPay', v)} type="number" suffix="만원" />
+            <Input label="월 대출납입" value={formData.loanMonthlyPay} onChange={(v: any) => handleChange('loanMonthlyPay', v)} type="number" suffix="만원" isCurrency={true} />
 
             {isFieldVisible('history') && (
               <div className="mb-4">
