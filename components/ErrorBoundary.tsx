@@ -23,6 +23,25 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        // Handle chunk load errors (dynamic import failures)
+        const isChunkLoadError = error.message.includes('Failed to fetch dynamically imported module') ||
+            error.message.includes('Importing a module script failed');
+
+        if (isChunkLoadError) {
+            const retryCount = parseInt(sessionStorage.getItem('chunk_retry_count') || '0', 10);
+            if (retryCount < 3) {
+                console.warn(`Chunk load error detected. Reloading... (Attempt ${retryCount + 1}/3)`);
+                sessionStorage.setItem('chunk_retry_count', (retryCount + 1).toString());
+                window.location.reload();
+                return;
+            } else {
+                console.error("Max retries for chunk load error reached.");
+            }
+        } else {
+            // Reset retry count for other errors or successful loads (success logic handled elsewhere usually, but if we hit a different error, clear it)
+            sessionStorage.removeItem('chunk_retry_count');
+        }
+
         console.error("Uncaught error:", error, errorInfo);
         this.setState({ error, errorInfo });
     }
