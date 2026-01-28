@@ -480,13 +480,17 @@ const performBackgroundFetch = async () => {
 
         if (!server) {
           // Exists Locally, not on Server.
-          // [CRITICAL FIX] Always keep local data.
-          // Previously, we removed "old" local items (>5m) assuming they were deleted remotely.
-          // However, this caused data loss for items that failed to sync initially (e.g. creating when offline or err).
-          // Since we use Soft Deletes (Status=Trash), true "Hard Deletes" are rare (only auto-cleanup).
-          // It is safer to keep potentially unsynced local items than to delete valid data.
-          console.log(`[Sync] Keeping local case (not on server): ${local.customerName} (${local.caseId})`);
-          newLocalCases.push(local);
+          // [CRITICAL FIX v2] If this case is in TRASH locally and not on server, it was HARD DELETED.
+          // We should remove it from local cache. Otherwise, keep unsynced items.
+          const isLocallyTrashed = local.status === '휴지통' || !!local.deletedAt;
+          if (isLocallyTrashed) {
+            console.log(`[Sync] Removing locally trashed case (deleted from server): ${local.customerName} (${local.caseId})`);
+            // Don't add to newLocalCases - effectively deleting it locally
+          } else {
+            // Keep other unsynced items (e.g., newly created offline)
+            console.log(`[Sync] Keeping local case (not on server): ${local.customerName} (${local.caseId})`);
+            newLocalCases.push(local);
+          }
         } else {
           // Exists on Both. Compare Timestamps.
           const localTime = new Date(local.updatedAt || 0).getTime();
