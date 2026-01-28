@@ -915,7 +915,9 @@ export const deletePartner = async (partnerId: string): Promise<Partner[]> => {
 export const saveGlobalSettings = async (settings: {
   managerName?: string,
   missedCallStatus?: string,
-  missedCallInterval?: number
+  missedCallInterval?: number,
+  geminiApiKey?: string,
+  geminiApiKey?: string
 }) => {
   const updates: any = {};
 
