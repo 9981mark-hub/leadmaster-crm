@@ -48,7 +48,7 @@ export default function LoginPage() {
 
                 <p className="text-xs text-gray-400 mt-4">
                     &copy; {new Date().getFullYear()} LeadMaster CRM. All rights reserved.
-                    <br /><span className="text-xs text-gray-400 font-mono">v3.9 (gemini-1.5-pro)</span>
+                    <br /><span className="text-xs text-gray-400 font-mono">v3.10 (2.0-flash-exp)</span>
                 </p>
             </div>
         </div>
