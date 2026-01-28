@@ -110,8 +110,8 @@ export default function SettingsPage() {
         await saveGlobalSettings({
             managerName,
             missedCallStatus,
-            missedCallInterval,
-            geminiApiKey // [Fix] Include API Key in save
+            missedCallInterval
+            // [Fix] Do not save API Key here to prevent overwrite. Use dedicated AI Settings save.
         });
         showToast('공통 설정이 저장되었습니다.');
     };

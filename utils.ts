@@ -603,7 +603,8 @@ import { DEFAULT_AI_PROMPT } from "./constants";
 // const GEMINI_API_KEY = ... 
 
 export const generateAiSummary = async (file: File): Promise<string> => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('lm_geminiApiKey') || "";
+  /* [Fix] Prioritize LocalStorage (User Setting) over Env Var to ensure user override works */
+  const apiKey = localStorage.getItem('lm_geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY || "";
 
   if (!apiKey) {
     console.warn("Gemini API Key missing! Fallback to Mock.");
