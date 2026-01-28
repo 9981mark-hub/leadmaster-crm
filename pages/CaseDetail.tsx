@@ -214,7 +214,11 @@ export default function CaseDetail() {
         try {
             // [Modified] Use Partner's Custom Prompt if available
             const customPrompt = currentPartner?.aiPromptTemplate;
-            const summary = await generateAiSummary(currentAudioFile || new File([], "mock.mp3"), customPrompt);
+            const context = {
+                customerName: c?.customerName || '',
+                phone: c?.phone || ''
+            };
+            const summary = await generateAiSummary(currentAudioFile || new File([], "mock.mp3"), customPrompt, context);
             setAiSummaryText(summary);
             setAiSummaryEditMode(true);
 

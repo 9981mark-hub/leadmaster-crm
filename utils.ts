@@ -602,7 +602,13 @@ import { DEFAULT_AI_PROMPT } from "./constants";
 // Removed top-level constant to ensure runtime updates
 // const GEMINI_API_KEY = ... 
 
-export const generateAiSummary = async (file: File, customPrompt?: string): Promise<string> => {
+// [Improved] AI Context Interface
+interface AIContext {
+  customerName?: string;
+  phone?: string;
+}
+
+export const generateAiSummary = async (file: File, customPrompt?: string, context?: AIContext): Promise<string> => {
   const lsKey = localStorage.getItem('lm_geminiApiKey');
   const envKey = import.meta.env.VITE_GEMINI_API_KEY;
   const apiKey = lsKey || envKey || "";
@@ -627,7 +633,18 @@ export const generateAiSummary = async (file: File, customPrompt?: string): Prom
     // Convert file to compatible format (Base64)
     const base64Data = await fileToBase64(file);
 
-    const promptToUse = customPrompt && customPrompt.trim().length > 0 ? customPrompt : DEFAULT_AI_PROMPT;
+    let promptToUse = customPrompt && customPrompt.trim().length > 0 ? customPrompt : DEFAULT_AI_PROMPT;
+
+    // [Context Injection] If we know customer info, tell the AI explicitly
+    if (context) {
+      const contextInfo = `
+[알려진 정보 (고객 정보)]
+- 고객이름: ${context.customerName || '알 수 없음'}
+- 연락처: ${context.phone || '알 수 없음'}
+(위 정보는 고객 관리 시스템에 등록된 확정 정보입니다. 요약 시 이 정보를 최우선으로 반영하세요.)
+`;
+      promptToUse = contextInfo + "\n" + promptToUse;
+    }
 
     const result = await model.generateContent([
       promptToUse,
