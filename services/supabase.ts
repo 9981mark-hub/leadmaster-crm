@@ -22,16 +22,6 @@ const isSupabaseConfigured = SUPABASE_URL && SUPABASE_ANON_KEY;
 export const supabase: SupabaseClient | null = isSupabaseConfigured
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
-            auth: {
-                persistSession: true, // Enable session persistence for consistent auth state
-                autoRefreshToken: true, // [Explicit] Ensure token auto-rotation
-                detectSessionInUrl: false, // Cleaner URL handling
-            },
-            realtime: {
-                params: {
-                    eventsPerSecond: 10,
-                },
-            },
         })
     : null;
 
