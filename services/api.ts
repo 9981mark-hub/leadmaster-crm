@@ -917,7 +917,7 @@ export const saveGlobalSettings = async (settings: {
   missedCallStatus?: string,
   missedCallInterval?: number,
   geminiApiKey?: string,
-  geminiApiKey?: string
+
 }) => {
   const updates: any = {};
 
