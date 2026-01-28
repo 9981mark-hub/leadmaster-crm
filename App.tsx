@@ -128,7 +128,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     document.addEventListener('visibilitychange', handleFocus);
 
     // [CRITICAL] Cache Buster / Force Version Update
-    const CURRENT_VERSION = "3.14";
+    const CURRENT_VERSION = "3.15";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
