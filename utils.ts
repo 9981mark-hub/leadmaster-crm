@@ -606,6 +606,7 @@ import { DEFAULT_AI_PROMPT } from "./constants";
 interface AIContext {
   customerName?: string;
   phone?: string;
+  managerName?: string;
 }
 
 export const generateAiSummary = async (file: File, customPrompt?: string, context?: AIContext): Promise<string> => {
@@ -641,6 +642,7 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
 [알려진 정보 (고객 정보)]
 - 고객이름: ${context.customerName || '알 수 없음'}
 - 연락처: ${context.phone || '알 수 없음'}
+- 담당자: ${context.managerName || '알 수 없음'}
 (위 정보는 고객 관리 시스템에 등록된 확정 정보입니다. 요약 시 이 정보를 최우선으로 반영하세요.)
 `;
       promptToUse = contextInfo + "\n" + promptToUse;

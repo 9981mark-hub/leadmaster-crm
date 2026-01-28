@@ -216,7 +216,8 @@ export default function CaseDetail() {
             const customPrompt = currentPartner?.aiPromptTemplate;
             const context = {
                 customerName: c?.customerName || '',
-                phone: c?.phone || ''
+                phone: c?.phone || '',
+                managerName: localStorage.getItem('managerName') || 'Mark' // Default to Mark if not set
             };
             const summary = await generateAiSummary(currentAudioFile || new File([], "mock.mp3"), customPrompt, context);
             setAiSummaryText(summary);
