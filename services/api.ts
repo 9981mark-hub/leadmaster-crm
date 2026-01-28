@@ -1018,7 +1018,8 @@ export const createCase = async (newCase: Partial<Case>): Promise<Case> => {
       await createCaseInSupabase(c);
       console.log('[Sync] Case created in Supabase:', c.caseId);
     } catch (err) {
-      console.error('[Sync] Supabase create failed, will rely on Sheets:', err);
+      console.error('[Sync] Supabase create failed:', err);
+      throw err; // [Fix] Propagate error
     }
   }
 
@@ -1059,6 +1060,7 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
       console.log('[Sync] Case updated in Supabase:', caseId);
     } catch (err) {
       console.error('[Sync] Supabase update failed, will rely on Sheets:', err);
+      throw err; // [Fix] Propagate error
     }
   }
 
@@ -1100,6 +1102,7 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
           console.log('[Sync] Case soft-deleted in Supabase:', caseId);
         } catch (err) {
           console.error('[Sync] Supabase soft-delete failed:', err);
+          throw err; // [Fix] Propagate error to trigger UI rollback
         }
       }
 
