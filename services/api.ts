@@ -459,33 +459,28 @@ const performBackgroundFetch = async () => {
 
         if (!server) {
           // Exists Locally, not on Server.
-          // [CRITICAL FIX] Only keep if it's a very recent creation (pending sync)
-          // Otherwise, it was likely deleted from another device - REMOVE IT
-          const localCreatedTime = new Date(local.createdAt || 0).getTime();
-          const isRecentlyCreated = (now - localCreatedTime) < PENDING_SYNC_BUFFER;
-
-          if (isRecentlyCreated) {
-            console.log(`[Sync] Keeping pending local case: ${local.customerName} (${local.caseId}) - created ${Math.round((now - localCreatedTime) / 1000)}s ago`);
-            newLocalCases.push(local);
-          } else {
-            console.log(`[Sync] Removing deleted case: ${local.customerName} (${local.caseId}) - not on server, deleting from local cache`);
-            // Do NOT push - effectively deleting this case from local
-          }
+          // [CRITICAL FIX] Always keep local data.
+          // Previously, we removed "old" local items (>5m) assuming they were deleted remotely.
+          // However, this caused data loss for items that failed to sync initially (e.g. creating when offline or err).
+          // Since we use Soft Deletes (Status=Trash), true "Hard Deletes" are rare (only auto-cleanup).
+          // It is safer to keep potentially unsynced local items than to delete valid data.
+          console.log(`[Sync] Keeping local case (not on server): ${local.customerName} (${local.caseId})`);
+          newLocalCases.push(local);
         } else {
           // Exists on Both. Compare Timestamps.
           const localTime = new Date(local.updatedAt || 0).getTime();
           const serverTime = new Date(server.updatedAt || 0).getTime();
 
-          // [Critical Fix] If Local is newer (pending sync), keep Local.
-          // But only within a reasonable window (5 minutes) to avoid stale local data
+          // [Critical Fix] If Local is newer, keep Local.
+          // Removed PENDING_SYNC_BUFFER (5 min) check to prevent "Zombie" cases where valid local changes (e.g. Trash)
+          // were overwritten by stale server data just because they happened > 5 mins ago.
           const isLocalNewer = localTime > serverTime;
-          const isWithinSyncWindow = (now - localTime) < PENDING_SYNC_BUFFER;
 
-          if (isLocalNewer && isWithinSyncWindow) {
+          if (isLocalNewer) {
             console.log(`[Sync] Keeping local version for ${local.customerName} (${local.caseId}) - Local is newer`);
             newLocalCases.push(local);
           } else {
-            // Server is newer, equal, or local is too old. Accept Server.
+            // Server is newer or equal. Accept Server.
             newLocalCases.push(server);
           }
         }
