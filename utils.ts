@@ -620,7 +620,7 @@ export const generateAiSummary = async (file: File): Promise<string> => {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-preview-02-05" });
 
     // Convert file to compatible format (Base64)
     const base64Data = await fileToBase64(file);
@@ -639,6 +639,22 @@ export const generateAiSummary = async (file: File): Promise<string> => {
     return response.text();
   } catch (error) {
     console.error("Gemini AI Error:", error);
-    return `[오류 발생] AI 분석 중 문제가 발생했습니다.\n사유: ${error instanceof Error ? error.message : "알 수 없는 오류"}`;
+    let errorMsg = error instanceof Error ? error.message : "알 수 없는 오류";
+
+    // [Smart Diagnostics] If 404/Not Found, try to fetch available models
+    if (errorMsg.includes("404") || errorMsg.includes("not found")) {
+      try {
+        const listReq = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const listData = await listReq.json();
+        if (listData.models) {
+          const modelNames = listData.models.map((m: any) => m.name.replace('models/', '')).join(', ');
+          errorMsg += `\n\n[진단 - 사용 가능한 모델 목록]\n${modelNames}`;
+        }
+      } catch (e) {
+        errorMsg += `\n\n[진단] 모델 목록 조회 실패 (CORS/Network): ${e}`;
+      }
+    }
+
+    return `[오류 발생] AI 분석 중 문제가 발생했습니다.\n사유: ${errorMsg}`;
   }
 };
