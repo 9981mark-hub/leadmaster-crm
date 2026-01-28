@@ -57,7 +57,7 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
                 </>
             )}
 
-            <SmartInput label="거주지역" value={c.region} onChange={(v: any) => onUpdate('region', v)} />
+            <SmartInput label="거주지역" value={c.region} onChange={(v: any) => onUpdate('region', v)} updateOnBlur={true} />
         </div>
     );
 };
