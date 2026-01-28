@@ -454,6 +454,11 @@ const performBackgroundFetch = async () => {
         if (status) localStorage.setItem('lm_missedStatus', status);
         if (interval) localStorage.setItem('lm_missedInterval', String(interval));
       }
+
+      // [NEW] Load Gemini API Key
+      if (settingsData.geminiApiKey) {
+        localStorage.setItem('lm_geminiApiKey', settingsData.geminiApiKey);
+      }
     }
 
     // 2. Process Cases with Smart Merge (Conflict Resolution)
@@ -947,6 +952,12 @@ export const saveGlobalSettings = async (settings: {
   // We will save individual keys for now to match fetch logic.
 
   if (settings.managerName) await saveSettingToSupabase('managerName', settings.managerName);
+
+  // [Fix] Persist Gemini API Key to Supabase for roaming/sync
+  if (settings.geminiApiKey !== undefined) {
+    await saveSettingToSupabase('geminiApiKey', settings.geminiApiKey);
+    updates.geminiApiKey = settings.geminiApiKey; // For Sheet sync if needed
+  }
 
   // For missed call settings, we might need to add them to fetch logic or save as a group.
   // Let's save them as 'missedCallSettings' object

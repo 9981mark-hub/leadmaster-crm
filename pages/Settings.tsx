@@ -465,7 +465,13 @@ export default function SettingsPage() {
                                             if (!geminiApiKey.trim()) {
                                                 if (!window.confirm('API Key를 삭제하시겠습니까?')) return;
                                             }
+                                            // [Fix] Use saveGlobalSettings to persist to Supabase as well
+                                            saveGlobalSettings({ geminiApiKey: geminiApiKey });
+                                            // LocalStorage is also updated inside saveGlobalSettings, but we can keep it here for instant feedback if needed.
+                                            // Actually best to let api handle it. 
+                                            // But for UI "Saved" state, we update immediately.
                                             localStorage.setItem('lm_geminiApiKey', geminiApiKey);
+
                                             setIsEditingGeminiKey(false);
                                             showToast('Gemini API Key가 저장되었습니다.');
                                         }}
