@@ -98,7 +98,7 @@ export const useDeleteCaseMutation = () => {
     const { showToast } = useToast();
 
     return useMutation({
-        mutationFn: (id: string) => deleteCase(id),
+        mutationFn: (id: string) => deleteCase(id, true),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cases });
             showToast('삭제되었습니다.');
