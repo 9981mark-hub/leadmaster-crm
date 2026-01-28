@@ -282,13 +282,13 @@ export const createCaseInSupabase = async (newCase: Case): Promise<Case | null> 
 
         if (error) {
             console.error('[Supabase] Create error:', error);
-            return null;
+            throw error; // [Fix] Propagate error
         }
 
         return data ? dbToCase(data) : null;
     } catch (err) {
         console.error('[Supabase] Create failed:', err);
-        return null;
+        throw err; // [Fix] Propagate error
     }
 };
 
@@ -309,13 +309,13 @@ export const updateCaseInSupabase = async (caseId: string, updates: Partial<Case
 
         if (error) {
             console.error('[Supabase] Update error:', error);
-            return null;
+            throw error; // [Fix] Propagate error
         }
 
         return data ? dbToCase(data) : null;
     } catch (err) {
         console.error('[Supabase] Update failed:', err);
-        return null;
+        throw err; // [Fix] Propagate error
     }
 };
 
@@ -333,13 +333,13 @@ export const deleteCaseFromSupabase = async (caseId: string): Promise<boolean> =
 
         if (error) {
             console.error('[Supabase] Delete error:', error);
-            return false;
+            throw error; // [Fix] Propagate error
         }
 
         return true;
     } catch (err) {
         console.error('[Supabase] Delete failed:', err);
-        return false;
+        throw err; // [Fix] Propagate error
     }
 };
 
@@ -361,13 +361,13 @@ export const softDeleteCaseInSupabase = async (caseId: string): Promise<boolean>
 
         if (error) {
             console.error('[Supabase] Soft delete error:', error);
-            return false;
+            throw error; // [Fix] Propagate error
         }
 
         return true;
     } catch (err) {
         console.error('[Supabase] Soft delete failed:', err);
-        return false;
+        throw err; // [Fix] Propagate error
     }
 };
 
@@ -388,13 +388,13 @@ export const restoreCaseInSupabase = async (caseId: string): Promise<boolean> =>
 
         if (error) {
             console.error('[Supabase] Restore error:', error);
-            return false;
+            throw error; // [Fix] Propagate error
         }
 
         return true;
     } catch (err) {
         console.error('[Supabase] Restore failed:', err);
-        return false;
+        throw err; // [Fix] Propagate error
     }
 };
 
