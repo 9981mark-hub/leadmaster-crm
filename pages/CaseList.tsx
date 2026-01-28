@@ -236,7 +236,8 @@ export default function CaseList() {
         if (viewMode === 'active') {
             if (!window.confirm('휴지통으로 이동하시겠습니까?')) return;
             // Soft delete
-            updateCaseMutation.mutate({ id: caseId, updates: { status: '휴지통', deletedAt: new Date().toISOString() } });
+            // [Fix] Don't set deletedAt to ensure it remains visible to RLS-restricted queries
+            updateCaseMutation.mutate({ id: caseId, updates: { status: '휴지통' } });
         } else {
             if (!window.confirm('⚠️ 영구 삭제하시겠습니까?')) return;
             deleteCaseMutation.mutate(caseId);

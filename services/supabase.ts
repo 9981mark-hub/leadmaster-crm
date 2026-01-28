@@ -353,8 +353,9 @@ export const softDeleteCaseInSupabase = async (caseId: string): Promise<boolean>
         const { error } = await supabase
             .from('cases')
             .update({
-                deleted_at: new Date().toISOString(),
-                status: '휴지통'
+                // deleted_at: new Date().toISOString(), // [Fix] Don't set this to avoid RLS hiding the row
+                status: '휴지통',
+                updated_at: new Date().toISOString()
             })
             .eq('case_id', caseId);
 

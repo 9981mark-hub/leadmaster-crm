@@ -1089,8 +1089,9 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
     // Soft Delete
     const idx = localCases.findIndex(c => c.caseId === caseId);
     if (idx > -1) {
-      localCases[idx].deletedAt = new Date().toISOString();
+      // localCases[idx].deletedAt = new Date().toISOString(); // [Fix] Avoid RLS hiding
       localCases[idx].status = '휴지통';
+      localCases[idx].updatedAt = new Date().toISOString();
 
       // [HYBRID MODE] Soft delete in Supabase
       if (isSupabaseEnabled()) {
