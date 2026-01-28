@@ -127,6 +127,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
 
+    // [CRITICAL] Cache Buster / Force Version Update
+    const CURRENT_VERSION = "3.6";
+    const savedVersion = localStorage.getItem("app_version");
+    if (savedVersion !== CURRENT_VERSION) {
+      console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
+      localStorage.setItem("app_version", CURRENT_VERSION);
+      // Clear potential stale keys if needed, but keeping auth
+      window.location.reload();
+    }
+
     return () => {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);
