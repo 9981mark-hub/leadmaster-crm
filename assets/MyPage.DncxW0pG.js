@@ -1,4 +1,4 @@
-import{c as o,h as V,aq as q,r,j as e,a0 as w,ar as D,am as U,a7 as K}from"./index.DtGhHkmF.js";import{M as Q}from"./mail.BYeEDLBu.js";import{P as W}from"./phone.j39GPdwI.js";import{P as X,T as Y}from"./trash-2.DvNK_gn3.js";/**
+import{c as o,h as V,aq as q,r,j as e,a0 as w,ar as D,am as U,a7 as K}from"./index.CaSFPKoo.js";import{M as Q}from"./mail.Bo0Zmyzp.js";import{P as W}from"./phone.C_kuStLF.js";import{P as X,T as Y}from"./trash-2.BVufqzAR.js";/**
  * @license lucide-react v0.562.0 - ISC
  *
  * This source code is licensed under the ISC license.
