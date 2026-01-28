@@ -1059,8 +1059,8 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
     }
   }
 
-  // [Synced Disabled] Always sync to Google Sheets as backup
-  // syncToSheet({ target: 'leads', action: 'update', data: payload });
+  // [Synced Enabled] Always sync to Google Sheets as backup
+  syncToSheet({ target: 'leads', action: 'update', data: payload });
   saveToStorage();
 
   return updated;
@@ -1101,18 +1101,18 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
         }
       }
 
-      // [Synced Disabled]
-      // syncToSheet({
-      //   target: 'leads',
-      //   action: 'update',
-      //   data: {
-      //     caseId,
-      //     deletedAt: localCases[idx].deletedAt,
-      //     status: '휴지통',
-      //     customerName: localCases[idx].customerName,
-      //     phone: localCases[idx].phone
-      //   }
-      // });
+      // [Synced Enabled]
+      syncToSheet({
+        target: 'leads',
+        action: 'update',
+        data: {
+          caseId,
+          deletedAt: localCases[idx].deletedAt,
+          status: '휴지통',
+          customerName: localCases[idx].customerName,
+          phone: localCases[idx].phone
+        }
+      });
     }
   }
   saveToStorage();
