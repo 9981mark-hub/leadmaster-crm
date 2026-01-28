@@ -3,7 +3,7 @@ import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboun
 import { CommissionRule, Partner, Case, CaseStatus } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload } from 'lucide-react';
 import { getDayName } from '../utils';
-import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT } from '../constants';
+import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS } from '../constants';
 import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
 
@@ -64,6 +64,11 @@ export default function SettingsPage() {
     // [New] AI API Key State
     const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('lm_geminiApiKey') || '');
     const [isEditingGeminiKey, setIsEditingGeminiKey] = useState(false);
+
+    // [New] AI Model State
+    const [geminiModel, setGeminiModel] = useState(localStorage.getItem('lm_geminiModel') || 'gemini-1.5-flash');
+
+
 
     useEffect(() => {
         Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses()]).then(([pData, cData, iData, sData, ssData]) => {
@@ -606,6 +611,37 @@ export default function SettingsPage() {
 
                         <p className="text-xs text-gray-500 mt-2">
                             Google AI Studio에서 발급받은 API Key를 입력하세요.
+                        </p>
+                    </div>
+
+                    <hr className="border-gray-100" />
+
+                    {/* AI Model Selection */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">사용 모델 선택</label>
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2">
+                            <select
+                                className="w-full p-2 border rounded bg-white text-sm"
+                                value={geminiModel}
+                                onChange={(e) => {
+                                    const newModel = e.target.value;
+                                    setGeminiModel(newModel);
+                                    localStorage.setItem('lm_geminiModel', newModel);
+                                    showToast(`AI 모델이 변경되었습니다: ${AVAILABLE_AI_MODELS.find(m => m.id === newModel)?.label}`);
+                                }}
+                            >
+                                {AVAILABLE_AI_MODELS.map(model => (
+                                    <option key={model.id} value={model.id}>
+                                        {model.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="mt-2 text-xs text-gray-500">
+                                {AVAILABLE_AI_MODELS.find(m => m.id === geminiModel)?.description}
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            ⚠️ "모델이 과부하 상태입니다(503)" 오류 발생 시 다른 모델로 변경해보세요.
                         </p>
                     </div>
                 </div>

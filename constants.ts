@@ -130,3 +130,10 @@ export const AVAILABLE_FIELDS_CONFIG = [
   { key: 'history', label: '회생/파산 이력' },
   { key: 'assets', label: '자산 상세 입력' }
 ];
+
+export const AVAILABLE_AI_MODELS = [
+  { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (기본 / 추천)', description: '빠르고 안정적이며 비용 효율적입니다.' },
+  { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (고성능)', description: '복잡한 추론에 강하지만 속도가 조금 느립니다.' },
+  { id: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (실험버전)', description: '최신 성능을 제공하나 가끔 불안정할 수 있습니다.' },
+  { id: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash-8b (초경량)', description: '가볍고 매우 빠른 응답 속도를 제공합니다.' }
+];
