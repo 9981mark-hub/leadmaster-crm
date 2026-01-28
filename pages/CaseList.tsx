@@ -11,7 +11,7 @@ import { Case } from '../types';
 
 // React Query Hooks
 import { useCases, usePartners, useInboundPaths, useStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
-import { restoreCase, updateCase } from '../services/api'; // Keep specific API calls if hooks not ready or for specific logic
+import { restoreCase, updateCase, refreshData } from '../services/api'; // Keep specific API calls if hooks not ready or for specific logic
 
 // New Components
 import { CaseListHeader } from '../components/case-list/CaseListHeader';
@@ -298,7 +298,10 @@ export default function CaseList() {
                 missedCallInterval={missedCallInterval}
                 updateAvailable={false} // React Query handles auto-refetch, so manual banner is less critical. Removed for simplicity or can be re-added if using polling.
                 newLeadsCount={0}
-                onManualRefresh={() => refetchCases()}
+                onManualRefresh={async () => {
+                    await refreshData();
+                    refetchCases();
+                }}
                 onResetPage={() => setCurrentPage(1)}
             />
 
