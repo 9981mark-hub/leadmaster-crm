@@ -252,8 +252,19 @@ export default function CaseDetail() {
 
     const handleSaveSummaryToMemo = () => {
         if (!aiSummaryText) return;
-        // Extract '특이사항' section if possible, or just save first 100 chars
-        const memoContent = `[AI 요약 저장] \n${aiSummaryText.slice(0, 200)}...`;
+
+        // Extract '*특이사항' section from the AI summary
+        let memoContent = '';
+        const specialNotesMatch = aiSummaryText.match(/\*특이사항[:\s]*([\s\S]*?)(?=\n\*|$)/i);
+
+        if (specialNotesMatch && specialNotesMatch[1]) {
+            // Found the special notes section
+            const specialNotes = specialNotesMatch[1].trim();
+            memoContent = `[AI 요약 - 특이사항]\n${specialNotes.slice(0, 1000)}`;
+        } else {
+            // Fallback: If no special notes section found, save the whole summary (first 1000 chars)
+            memoContent = `[AI 요약 저장]\n${aiSummaryText.slice(0, 1000)}`;
+        }
 
         const newMemo: MemoItem = {
             id: Date.now().toString(),
