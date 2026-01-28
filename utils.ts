@@ -603,14 +603,17 @@ import { DEFAULT_AI_PROMPT } from "./constants";
 // const GEMINI_API_KEY = ... 
 
 export const generateAiSummary = async (file: File): Promise<string> => {
-  /* [Fix] Prioritize LocalStorage (User Setting) over Env Var to ensure user override works */
-  const apiKey = localStorage.getItem('lm_geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY || "";
+  const lsKey = localStorage.getItem('lm_geminiApiKey');
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = lsKey || envKey || "";
 
   if (!apiKey || apiKey.trim() === '') {
     console.warn("Gemini API Key missing! Fallback to Mock.");
+    const debugInfo = `오류 진단 정보:\n- 저장된 키(User): ${lsKey === null ? '없음(Null)' : (lsKey === '' ? '빈값' : `있음(${lsKey.length}자)`)}\n- 기본 키(Env): ${!envKey ? '없음' : `있음(${envKey.length}자)`}`;
+
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(`[데모 모드 v2] API 키가 확인되지 않습니다.\n설정 페이지의 [AI 설정]에서 '등록된 키가 없습니다' 문구가 뜨는지 확인해주세요.\n\n[자동 생성 예시]\n1. 상담 내용: (내용 없음)\n2. 특이사항: 확인 필요`);
+        resolve(`[데모 모드 v3] API 키가 확인되지 않습니다.\n\n${debugInfo}\n\n설정 페이지의 [AI 설정]에서 '등록된 키가 없습니다' 문구가 뜨는지 확인해주세요.\n[자동 생성 예시] 내용 없음`);
       }, 1000);
     });
   }
