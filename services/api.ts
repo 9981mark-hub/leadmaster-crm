@@ -78,7 +78,7 @@ const loadFromStorage = () => {
         localCases = parsed.map(processIncomingCase).filter((c): c is Case => c !== null);
 
         // [Zombie Cleanup] Force remove specific duplicate cases reported by user (Mobile Cache Clear)
-        const ZOMBIE_NAMES = ['박준영', '유희영', '김재열', '이희진', '주민우', '김정아', '추선구', '조강인', '김미영'];
+        const ZOMBIE_NAMES = ['박준영', '유희영', '김재열', '이희진', '주민우', '김정아', '추선구', '조강인', '김미영', '유회영'];
         const initialCount = localCases.length;
         localCases = localCases.filter(c => {
           // Remove if name matches AND status is New (likely the zombie duplicate)
