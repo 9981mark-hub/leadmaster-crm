@@ -61,6 +61,9 @@ export default function SettingsPage() {
     // Rules State
     const [newRule, setNewRule] = useState<Partial<CommissionRule>>({ minFee: 0, maxFee: 0, commission: 0, fullPayoutThreshold: 0, priority: 1, active: true });
 
+    // [New] AI API Key State
+    const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('lm_geminiApiKey') || '');
+
     useEffect(() => {
         Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses()]).then(([pData, cData, iData, sData, ssData]) => {
             setPartners(pData);
@@ -413,11 +416,10 @@ export default function SettingsPage() {
                             type="password"
                             placeholder="AI Key 입력 (sk-...)"
                             className="w-full p-2 border rounded"
-                            value={localStorage.getItem('lm_geminiApiKey') || ''}
+                            value={geminiApiKey}
                             onChange={(e) => {
+                                setGeminiApiKey(e.target.value);
                                 localStorage.setItem('lm_geminiApiKey', e.target.value);
-                                // Force re-render to show input value type effect
-                                setManagerName(prev => prev); // Dummy update to trigger re-render of this uncontrolled component approach or better use state
                             }}
                         />
                         <p className="text-xs text-gray-500 mt-1">
