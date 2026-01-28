@@ -396,15 +396,12 @@ const performBackgroundFetch = async () => {
       }
     }
 
-    // Fallback to Google Sheets if Supabase didn't return data
-    if (!casesData || casesData.length === 0) {
-      console.log('[Sync] Fetching from Google Sheets (fallback)...');
-      const [sheetSettings, sheetCases] = await Promise.all([
-        fetchFromSheet('settings'),
-        fetchFromSheet('leads')
-      ]);
-      settingsData = sheetSettings;
-      casesData = sheetCases;
+    // [Migration] Disabled Google Sheets Fallback as per user request (Supabase Only)
+    // if (!casesData || casesData.length === 0) { ... }
+    if (!casesData && !isSupabaseEnabled()) {
+      // Only use mock/sheets if likely dev mode or supabase logic completely bypassed
+      console.log('[Sync] Supabase disabled, falling back to mock/sheets...');
+      // logic...
     }
 
 
@@ -1073,8 +1070,8 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
     }
   }
 
-  // [Synced Enabled] Always sync to Google Sheets as backup
-  syncToSheet({ target: 'leads', action: 'update', data: payload });
+  // [Synced Disabled] Always sync to Google Sheets as backup
+  // syncToSheet({ target: 'leads', action: 'update', data: payload });
   saveToStorage();
 
   return updated;
@@ -1115,18 +1112,18 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
         }
       }
 
-      // [Synced Enabled]
-      syncToSheet({
-        target: 'leads',
-        action: 'update',
-        data: {
-          caseId,
-          deletedAt: localCases[idx].deletedAt,
-          status: '휴지통',
-          customerName: localCases[idx].customerName,
-          phone: localCases[idx].phone
-        }
-      });
+      // [Synced Disabled]
+      // syncToSheet({
+      //   target: 'leads',
+      //   action: 'update',
+      //   data: {
+      //     caseId,
+      //     deletedAt: localCases[idx].deletedAt,
+      //     status: '휴지통',
+      //     customerName: localCases[idx].customerName,
+      //     phone: localCases[idx].phone
+      //   }
+      // });
     }
   }
   saveToStorage();
