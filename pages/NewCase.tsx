@@ -692,13 +692,15 @@ export default function NewCase() {
                   suffix="만원"
                   isCurrency={true}
                 />
-                <button
-                  type="button"
-                  onClick={handleAddCreditLoan}
-                  className="w-full py-2 bg-blue-600 text-white rounded text-sm font-bold flex justify-center items-center hover:bg-blue-700"
-                >
-                  <Plus size={16} className="mr-1" /> 신용대출 추가
-                </button>
+                <div className="h-full flex flex-col justify-end">
+                  <button
+                    type="button"
+                    onClick={handleAddCreditLoan}
+                    className="w-full py-2 bg-blue-600 text-white rounded text-sm font-bold flex justify-center items-center hover:bg-blue-700 mb-4"
+                  >
+                    <Plus size={16} className="mr-1" /> 신용대출 추가
+                  </button>
+                </div>
               </div>
             </div>
 
