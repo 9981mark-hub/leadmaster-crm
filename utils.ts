@@ -599,10 +599,13 @@ export const getAutoCollateralString = (c: Case): string => {
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { DEFAULT_AI_PROMPT } from "./constants";
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('lm_geminiApiKey') || "";
+// Removed top-level constant to ensure runtime updates
+// const GEMINI_API_KEY = ... 
 
 export const generateAiSummary = async (file: File): Promise<string> => {
-  if (!GEMINI_API_KEY) {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('lm_geminiApiKey') || "";
+
+  if (!apiKey) {
     console.warn("Gemini API Key missing! Fallback to Mock.");
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -612,7 +615,7 @@ export const generateAiSummary = async (file: File): Promise<string> => {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Convert file to compatible format (Base64)
