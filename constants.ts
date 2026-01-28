@@ -132,8 +132,8 @@ export const AVAILABLE_FIELDS_CONFIG = [
 ];
 
 export const AVAILABLE_AI_MODELS = [
-  { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (기본 / 추천)', description: '빠르고 안정적이며 비용 효율적입니다.' },
-  { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (고성능)', description: '복잡한 추론에 강하지만 속도가 조금 느립니다.' },
-  { id: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (실험버전)', description: '최신 성능을 제공하나 가끔 불안정할 수 있습니다.' },
-  { id: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash-8b (초경량)', description: '가볍고 매우 빠른 응답 속도를 제공합니다.' }
+  { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (추천)', description: '최신 안정화 버전, 빠르고 성능이 우수합니다.' },
+  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (최신)', description: '가장 최신 Flash 모델입니다.' },
+  { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (고성능)', description: '복잡한 작업에 적합한 최신 고성능 모델입니다.' },
+  { id: 'gemini-flash-latest', label: 'Gemini Flash Latest (자동)', description: '항상 최신 Flash 버전을 자동으로 사용합니다.' }
 ];
