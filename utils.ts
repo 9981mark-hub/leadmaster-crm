@@ -595,11 +595,43 @@ export const getAutoCollateralString = (c: Case): string => {
 };
 
 // [NEW] Added for CaseDetailAiSummary.tsx
+// [Restored] Gemini AI Integration
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { DEFAULT_AI_PROMPT } from "./constants";
+
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('lm_geminiApiKey') || "";
+
 export const generateAiSummary = async (file: File): Promise<string> => {
-  console.log('Mock Generating AI Summary for', file.name);
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(`[AI 요약 - ${file.name}]\n\n1. 상담 내용: \n(내용이 자동으로 생성됩니다)\n\n2. 주요 자산:\n- 확인 필요\n\n3. 특이사항:\n- 고객 요청사항...`);
-    }, 2000);
-  });
+  if (!GEMINI_API_KEY) {
+    console.warn("Gemini API Key missing! Fallback to Mock.");
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(`[데모 모드] API 키가 없습니다. 설정에서 키를 입력해주세요.\n\n[자동 생성 예시]\n1. 상담 내용: (내용 없음)\n2. 특이사항: 확인 필요`);
+      }, 2000);
+    });
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Convert file to compatible format (Base64)
+    const base64Data = await fileToBase64(file);
+
+    const result = await model.generateContent([
+      DEFAULT_AI_PROMPT,
+      {
+        inlineData: {
+          data: base64Data,
+          mimeType: file.type || "audio/mp3",
+        },
+      },
+    ]);
+
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Gemini AI Error:", error);
+    return `[오류 발생] AI 분석 중 문제가 발생했습니다.\n사유: ${error instanceof Error ? error.message : "알 수 없는 오류"}`;
+  }
 };

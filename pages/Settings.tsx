@@ -401,6 +401,33 @@ export default function SettingsPage() {
                 </div>
             </div>
 
+            {/* AI Settings */}
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                    <Sparkles className="mr-2 text-purple-600" size={20} /> AI 설정
+                </h3>
+                <div className="max-w-md space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Gemini API Key</label>
+                        <input
+                            type="password"
+                            placeholder="AI Key 입력 (sk-...)"
+                            className="w-full p-2 border rounded"
+                            value={localStorage.getItem('lm_geminiApiKey') || ''}
+                            onChange={(e) => {
+                                localStorage.setItem('lm_geminiApiKey', e.target.value);
+                                // Force re-render to show input value type effect
+                                setManagerName(prev => prev); // Dummy update to trigger re-render of this uncontrolled component approach or better use state
+                            }}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Google AI Studio에서 발급받은 API Key를 입력하세요.
+                            <br />(저장 버튼 없이 즉시 적용됩니다)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             {/* Email Notification Settings */}
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
