@@ -620,7 +620,7 @@ export const generateAiSummary = async (file: File): Promise<string> => {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     // Convert file to compatible format (Base64)
     const base64Data = await fileToBase64(file);
