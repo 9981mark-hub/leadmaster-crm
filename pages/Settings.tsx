@@ -406,6 +406,46 @@ export default function SettingsPage() {
                 </div>
             </div>
 
+            {/* Data Force Sync */}
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-orange-100">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                    <AlertTriangle className="mr-2 text-orange-500" size={20} /> 데이터 동기화
+                </h3>
+                <div className="max-w-md space-y-4">
+                    <p className="text-sm text-gray-600">
+                        PC와 모바일 간 케이스 숫자가 다를 경우, 로컬 캐시를 삭제하고 서버에서 최신 데이터를 다시 불러옵니다.
+                    </p>
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <p className="text-xs text-orange-700 flex items-start">
+                            <Info size={14} className="mr-1 mt-0.5 flex-shrink-0" />
+                            이 작업은 로컬에만 저장된 미동기화 데이터를 삭제할 수 있습니다. 서버에 저장된 데이터는 영향받지 않습니다.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (!window.confirm('로컬 캐시를 삭제하고 서버에서 데이터를 다시 불러올까요?\n\n이 작업은 되돌릴 수 없습니다.')) return;
+
+                            // Clear local cache
+                            localStorage.removeItem('lm_cases');
+                            localStorage.removeItem('lm_partners');
+                            localStorage.removeItem('lm_paths');
+                            localStorage.removeItem('lm_statuses');
+
+                            showToast('캐시를 삭제했습니다. 페이지를 새로고침합니다...');
+
+                            // Reload page after short delay
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }}
+                        className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 w-full md:w-auto font-medium"
+                    >
+                        🔄 데이터 강제 동기화
+                    </button>
+                </div>
+            </div>
+
             {/* AI Settings */}
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
