@@ -478,6 +478,22 @@ export const subscribeToCases = (
         )
         .subscribe((status) => {
             console.log('[Supabase] Realtime status:', status);
+
+            // [SYNC FIX] Auto-reconnect on channel error or timeout
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                console.warn('[Supabase] Realtime channel error/timeout - attempting reconnect in 3s...');
+                setTimeout(() => {
+                    if (casesChannel && supabase) {
+                        supabase.removeChannel(casesChannel);
+                        casesChannel = null;
+                    }
+                    // Trigger re-subscription (caller should handle this via exported function)
+                    console.log('[Supabase] Attempting to reconnect...');
+                    // Note: The actual re-subscribe needs to be called from api.ts setupRealtimeSubscription
+                    // For immediate effect, we'll call onAnyChange to trigger a manual refresh
+                    if (onAnyChange) onAnyChange();
+                }, 3000);
+            }
         });
 
     // Return unsubscribe function

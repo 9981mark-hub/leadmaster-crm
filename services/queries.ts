@@ -31,7 +31,7 @@ export const useStatuses = () => {
     return useQuery({
         queryKey: QUERY_KEYS.statuses,
         queryFn: fetchStatuses,
-        staleTime: Infinity, // Statuses rarely change
+        staleTime: 1000 * 60 * 5, // 5 minutes (Changed from Infinity for better sync)
     });
 };
 

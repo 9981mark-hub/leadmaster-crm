@@ -366,8 +366,33 @@ const setupRealtimeSubscription = () => {
       }
     },
     // On Any Change (Partners, Settings, or Case side-effects)
-    () => {
-      console.log("[Realtime] General update signal received");
+    async () => {
+      console.log("[Realtime] General update signal received - refetching partners/settings...");
+
+      // [SYNC FIX] Fetch latest Partners and Settings from server
+      try {
+        const [partners, settings] = await Promise.all([
+          fetchPartnersFromSupabase(),
+          fetchSettingsFromSupabase()
+        ]);
+
+        if (partners && partners.length > 0) {
+          localPartners = partners;
+          console.log(`[Realtime] Partners refreshed: ${partners.length} items`);
+        }
+
+        if (settings) {
+          if (settings.inboundPaths) localInboundPaths = settings.inboundPaths;
+          if (settings.statuses) localStatuses = settings.statuses;
+          if (settings.secondaryStatuses) localSecondaryStatuses = settings.secondaryStatuses;
+          console.log('[Realtime] Settings refreshed');
+        }
+
+        saveToStorage();
+      } catch (err) {
+        console.error('[Realtime] Failed to refetch partners/settings:', err);
+      }
+
       notifyListeners();
     }
   );
