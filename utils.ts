@@ -606,12 +606,12 @@ export const generateAiSummary = async (file: File): Promise<string> => {
   /* [Fix] Prioritize LocalStorage (User Setting) over Env Var to ensure user override works */
   const apiKey = localStorage.getItem('lm_geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY || "";
 
-  if (!apiKey) {
+  if (!apiKey || apiKey.trim() === '') {
     console.warn("Gemini API Key missing! Fallback to Mock.");
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(`[데모 모드] API 키가 없습니다. 설정에서 키를 입력해주세요.\n\n[자동 생성 예시]\n1. 상담 내용: (내용 없음)\n2. 특이사항: 확인 필요`);
-      }, 2000);
+        resolve(`[데모 모드 v2] API 키가 확인되지 않습니다.\n설정 페이지의 [AI 설정]에서 '등록된 키가 없습니다' 문구가 뜨는지 확인해주세요.\n\n[자동 생성 예시]\n1. 상담 내용: (내용 없음)\n2. 특이사항: 확인 필요`);
+      }, 1000);
     });
   }
 
