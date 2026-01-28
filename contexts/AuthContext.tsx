@@ -101,16 +101,18 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         // 3. 로그인 성공 처리
         const userProfile = { email, name, picture };
 
-        // [Supabase Auth Integration] - Non-blocking
+        // [Supabase Auth Integration] - Blocking
+        // [Fix] Must succeed to consider user logged in, otherwise syncing fails silently.
         if (supabase) {
-          try {
-            const { error } = await supabase.auth.signInWithIdToken({
-              provider: 'google',
-              token: credential,
-            });
-            if (error) console.warn("Supabase Auth Warning (Non-blocking):", error.message);
-          } catch (sbError) {
-            console.warn("Supabase Auth Failed (Non-blocking)", sbError);
+          const { error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: credential,
+          });
+
+          if (error) {
+            console.error("Supabase Auth Failed:", error);
+            alert('로그인에 실패했습니다 (서버 인증 오류).\n다시 시도해주세요.');
+            return;
           }
         }
 
