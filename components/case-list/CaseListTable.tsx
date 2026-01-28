@@ -222,9 +222,32 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <a href={`tel:${c.phone}`} className="p-2 bg-green-100 text-green-600 rounded-full">
                                         <Phone size={16} />
                                     </a>
-                                    <Link to={`/case/${c.caseId}`} className="p-2 bg-blue-100 text-blue-600 rounded-full">
-                                        <MessageSquare size={16} />
-                                    </Link>
+                                    <HoverCheckTooltip
+                                        mobileAlign="right"
+                                        trigger={
+                                            <button className="p-2 bg-blue-100 text-blue-600 rounded-full">
+                                                <MessageSquare size={16} />
+                                            </button>
+                                        }
+                                        content={
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
+                                                {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                    c.specialMemo
+                                                        .filter(m => !m.content.startsWith('[상태변경]'))
+                                                        .slice(0, 5)
+                                                        .map((m, i) => (
+                                                            <div key={i} className="text-[11px] leading-relaxed border-b border-gray-700 last:border-0 pb-1">
+                                                                <span className="text-blue-300 mr-1">[{m.createdAt.split('T')[0]}]</span>
+                                                                {m.content}
+                                                            </div>
+                                                        ))
+                                                ) : (
+                                                    <span className="text-gray-500 italic">상담 내역 없음</span>
+                                                )}
+                                            </div>
+                                        }
+                                    />
                                     <button
                                         onClick={(e) => onDelete(c.caseId, e)}
                                         className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
