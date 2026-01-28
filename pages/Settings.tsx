@@ -63,6 +63,7 @@ export default function SettingsPage() {
 
     // [New] AI API Key State
     const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('lm_geminiApiKey') || '');
+    const [isEditingGeminiKey, setIsEditingGeminiKey] = useState(false);
 
     useEffect(() => {
         Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses()]).then(([pData, cData, iData, sData, ssData]) => {
@@ -406,25 +407,77 @@ export default function SettingsPage() {
 
             {/* AI Settings */}
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
-                    <Sparkles className="mr-2 text-purple-600" size={20} /> AI 설정
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
+                    <span className="flex items-center">
+                        <Sparkles className="mr-2 text-purple-600" size={20} /> AI 설정
+                    </span>
+                    {!isEditingGeminiKey && geminiApiKey && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 flex items-center">
+                            <Check size={12} className="mr-1" /> 저장됨
+                        </span>
+                    )}
                 </h3>
                 <div className="max-w-md space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Gemini API Key</label>
-                        <input
-                            type="password"
-                            placeholder="AI Key 입력 (sk-...)"
-                            className="w-full p-2 border rounded"
-                            value={geminiApiKey}
-                            onChange={(e) => {
-                                setGeminiApiKey(e.target.value);
-                                localStorage.setItem('lm_geminiApiKey', e.target.value);
-                            }}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
+
+                        {!isEditingGeminiKey ? (
+                            <div className="flex gap-2">
+                                <div className="flex-1 p-2 border rounded bg-gray-50 text-gray-500 font-mono text-sm flex items-center">
+                                    {geminiApiKey ? 'sk-********************' : '등록된 키가 없습니다'}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        if (geminiApiKey && !window.confirm('API Key를 수정하시겠습니까? \n잘못된 키 입력 시 AI 기능이 작동하지 않을 수 있습니다.')) {
+                                            return;
+                                        }
+                                        setIsEditingGeminiKey(true);
+                                    }}
+                                    className="px-4 py-2 bg-white border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium whitespace-nowrap"
+                                >
+                                    {geminiApiKey ? '수정' : '등록'}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <input
+                                    type="password"
+                                    placeholder="AI Key 입력 (sk-...)"
+                                    className="w-full p-2 border rounded border-blue-500 ring-2 ring-blue-100"
+                                    value={geminiApiKey}
+                                    onChange={(e) => setGeminiApiKey(e.target.value)}
+                                    autoFocus
+                                />
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={() => {
+                                            // Cancel: Revert to saved value
+                                            setGeminiApiKey(localStorage.getItem('lm_geminiApiKey') || '');
+                                            setIsEditingGeminiKey(false);
+                                        }}
+                                        className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                                    >
+                                        취소
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (!geminiApiKey.trim()) {
+                                                if (!window.confirm('API Key를 삭제하시겠습니까?')) return;
+                                            }
+                                            localStorage.setItem('lm_geminiApiKey', geminiApiKey);
+                                            setIsEditingGeminiKey(false);
+                                            showToast('Gemini API Key가 저장되었습니다.');
+                                        }}
+                                        className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 font-bold"
+                                    >
+                                        저장 완료
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <p className="text-xs text-gray-500 mt-2">
                             Google AI Studio에서 발급받은 API Key를 입력하세요.
-                            <br />(저장 버튼 없이 즉시 적용됩니다)
                         </p>
                     </div>
                 </div>
