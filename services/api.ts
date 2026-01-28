@@ -545,8 +545,22 @@ export const processIncomingCase = (c: any): Case => {
   const mappedCase: any = {
     ...c,
     // [ID & System]
-    // [ID & System]
-    caseId: String(c.caseId || c.CaseID || c.id || uuidv4()),
+    // [Fix] Deduplication Logic: If no ID, check if case exists by Phone + Name
+    caseId: (() => {
+      let existingId = c.caseId || c.CaseID || c.id;
+      if (!existingId) {
+        const phone = String(c.phone || c.Phone || c['전화번호'] || '').trim();
+        const name = String(c.customerName || c.CustomerName || c.Name || c['이름'] || 'Unknown').trim();
+        if (phone && name && typeof localCases !== 'undefined') {
+          const match = localCases.find(lc => lc.phone === phone && lc.customerName === name);
+          if (match) {
+            console.log(`[Dedup] Matched existing case for ${name} (${phone}): ${match.caseId}`);
+            existingId = match.caseId;
+          }
+        }
+      }
+      return String(existingId || uuidv4());
+    })(),
     updatedAt: String(c.updatedAt || c.UpdatedAt || c.statusUpdatedAt || new Date().toISOString()),
     createdAt: String(c.createdAt || c.CreatedAt || c.Timestamp || new Date().toISOString()),
     status: String(c.status || c.Status || '신규접수'),
