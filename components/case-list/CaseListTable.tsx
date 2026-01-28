@@ -163,7 +163,28 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                 <Link to={`/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
                                     {c.customerName}
                                 </Link>
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.phone}</span>
+                                <div className="flex flex-col items-end gap-1">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.phone}</span>
+
+                                    {/* [Mobile] Missed Call Management */}
+                                    {c.status === missedCallStatus && (
+                                        <div className="flex items-center gap-1.5">
+                                            <button
+                                                onClick={(e) => onMissedCall(e, c)}
+                                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold border transition-all shadow-sm ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                    ? 'bg-red-50 border-red-200 text-red-600 animate-pulse ring-1 ring-red-100'
+                                                    : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                    }`}
+                                            >
+                                                <PhoneMissed size={12} />
+                                                <span>부재 +{c.missedCallCount || 0}</span>
+                                            </button>
+                                            <span className="text-[10px] text-gray-500 font-mono">
+                                                {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* [Mobile] Reminder Info */}
