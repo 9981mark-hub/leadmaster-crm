@@ -602,12 +602,13 @@ import { DEFAULT_AI_PROMPT } from "./constants";
 // Removed top-level constant to ensure runtime updates
 // const GEMINI_API_KEY = ... 
 
-export const generateAiSummary = async (file: File): Promise<string> => {
+export const generateAiSummary = async (file: File, customPrompt?: string): Promise<string> => {
   const lsKey = localStorage.getItem('lm_geminiApiKey');
   const envKey = import.meta.env.VITE_GEMINI_API_KEY;
   const apiKey = lsKey || envKey || "";
 
   if (!apiKey || apiKey.trim() === '') {
+    // ... (Keep existing fallback logic) ...
     console.warn("Gemini API Key missing! Fallback to Mock.");
     const debugInfo = `오류 진단 정보:\n- 저장된 키(User): ${lsKey === null ? '없음(Null)' : (lsKey === '' ? '빈값' : `있음(${lsKey.length}자)`)}\n- 기본 키(Env): ${!envKey ? '없음' : `있음(${envKey.length}자)`}`;
 
@@ -625,8 +626,10 @@ export const generateAiSummary = async (file: File): Promise<string> => {
     // Convert file to compatible format (Base64)
     const base64Data = await fileToBase64(file);
 
+    const promptToUse = customPrompt && customPrompt.trim().length > 0 ? customPrompt : DEFAULT_AI_PROMPT;
+
     const result = await model.generateContent([
-      DEFAULT_AI_PROMPT,
+      promptToUse,
       {
         inlineData: {
           data: base64Data,

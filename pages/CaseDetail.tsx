@@ -212,7 +212,9 @@ export default function CaseDetail() {
         }
         setIsAiLoading(true);
         try {
-            const summary = await generateAiSummary(currentAudioFile || new File([], "mock.mp3")); // Mock
+            // [Modified] Use Partner's Custom Prompt if available
+            const customPrompt = currentPartner?.aiPromptTemplate;
+            const summary = await generateAiSummary(currentAudioFile || new File([], "mock.mp3"), customPrompt);
             setAiSummaryText(summary);
             setAiSummaryEditMode(true);
 
