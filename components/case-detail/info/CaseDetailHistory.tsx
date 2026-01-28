@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Case } from '../../../types';
 import { HISTORY_TYPES } from '../../../constants';
 
@@ -11,6 +11,19 @@ export const CaseDetailHistory: React.FC<CaseDetailHistoryProps> = ({
     c,
     onUpdate
 }) => {
+    // Local state to handle IME inputs correctly
+    const [localMemo, setLocalMemo] = useState(c.historyMemo || '');
+
+    useEffect(() => {
+        setLocalMemo(c.historyMemo || '');
+    }, [c.historyMemo]);
+
+    const handleBlur = () => {
+        if (localMemo !== c.historyMemo) {
+            onUpdate('historyMemo', localMemo);
+        }
+    };
+
     return (
         <div className="mt-4">
             <h3 className="font-bold text-gray-700 border-b pb-2 mb-4">개인회생 / 파산 이력</h3>
@@ -29,8 +42,9 @@ export const CaseDetailHistory: React.FC<CaseDetailHistoryProps> = ({
             {c.historyType && c.historyType !== '없음' && (
                 <textarea
                     className="w-full p-2 border border-gray-300 rounded text-sm h-24"
-                    value={c.historyMemo}
-                    onChange={e => onUpdate('historyMemo', e.target.value)}
+                    value={localMemo}
+                    onChange={e => setLocalMemo(e.target.value)}
+                    onBlur={handleBlur}
                     placeholder="이력 상세 내용을 입력하세요."
                 />
             )}
