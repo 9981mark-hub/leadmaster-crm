@@ -111,7 +111,8 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
           if (error) {
             console.error("Supabase Auth Failed:", error);
-            alert('로그인에 실패했습니다 (서버 인증 오류).\n다시 시도해주세요.');
+            // [Debug] Show specific error message to user for troubleshooting
+            alert(`로그인에 실패했습니다.\n사유: ${error.message}\n(서버 설정 문제일 수 있습니다)`);
             return;
           }
         }
