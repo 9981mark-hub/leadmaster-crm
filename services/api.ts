@@ -513,6 +513,7 @@ const performBackgroundFetch = async () => {
     console.error("Background fetch failed", error);
     // If cache was empty, maybe load mocks? 
     // But loadFromStorage should have handled it or left it empty.
+    throw error; // [Fix] Propagate error so manual refresh UI knows it failed
     // We leave it as is to avoid overwriting cache with mocks on offline error.
   }
 };
@@ -598,13 +599,12 @@ export const processIncomingCase = (c: any): Case => {
   };
 
   // [Ghost Case Check]
-  // If name is 'Unknown' (default) AND phone is empty AND not created just now (< 1s diff could be tricky, better use ID check)
-  // Actually, if it has no phone and name is Unknown, it's likely a ghost row from a delete operation.
-  // We double check if it has a valid ID.
-  const isGhost = mappedCase.customerName === 'Unknown' && !mappedCase.phone && mappedCase.caseId;
+  // [Fix] drastically relaxed. Only filter if absolutely no ID.
+  // Previous logic (name=='Unknown' && !phone) was too aggressive for new leads.
+  const isGhost = !mappedCase.caseId || mappedCase.caseId === 'undefined';
 
   if (isGhost) {
-    // console.warn("Ghost case detected and filtered:", mappedCase);
+    console.warn("Ghost case detected and filtered (No ID):", mappedCase);
     return null as any; // Cast for now, will filter out
   }
 

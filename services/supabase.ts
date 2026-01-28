@@ -231,13 +231,13 @@ export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
 
         if (error) {
             console.error('[Supabase] Fetch error:', error);
-            return [];
+            throw error; // [Fix] Propagate error
         }
 
         return (data || []).map(dbToCase);
     } catch (err) {
         console.error('[Supabase] Fetch failed:', err);
-        return [];
+        throw err; // [Fix] Propagate error
     }
 };
 
