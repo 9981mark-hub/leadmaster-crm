@@ -138,11 +138,17 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
           if (!session) {
             const token = localStorage.getItem('authToken');
             if (token) {
-              // Try to restore, but ignore errors
-              await supabase.auth.signInWithIdToken({
+              // Try to restore
+              const { error } = await supabase.auth.signInWithIdToken({
                 provider: 'google',
                 token: token,
-              }).catch(e => console.warn("Session restore failed", e));
+              });
+
+              if (error) {
+                console.warn("Session restore failed (Token Expired?)", error);
+                alert("로그인 세션이 만료되었습니다. 데이터 보호를 위해 다시 로그인해주세요.");
+                logout();
+              }
             }
           }
         } catch (e) {
