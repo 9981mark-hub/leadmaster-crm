@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, saveGlobalSettings } from '../services/api';
 import { CommissionRule, Partner, Case, CaseStatus } from '../types';
-import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail } from 'lucide-react';
+import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload } from 'lucide-react';
 import { getDayName } from '../utils';
 import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT } from '../constants';
 import Modal from '../components/Modal';
@@ -411,20 +411,101 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                     <AlertTriangle className="mr-2 text-orange-500" size={20} /> 데이터 동기화
                 </h3>
-                <div className="max-w-md space-y-4">
+                <div className="max-w-lg space-y-4">
                     <p className="text-sm text-gray-600">
                         PC와 모바일 간 케이스 숫자가 다를 경우, 로컬 캐시를 삭제하고 서버에서 최신 데이터를 다시 불러옵니다.
                     </p>
+
+                    {/* Backup & Restore Section */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                        <p className="text-sm font-medium text-blue-800">📦 로컬 데이터 백업 / 복원</p>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const backupData = {
+                                        version: '3.19',
+                                        exportedAt: new Date().toISOString(),
+                                        cases: localStorage.getItem('lm_cases'),
+                                        partners: localStorage.getItem('lm_partners'),
+                                        paths: localStorage.getItem('lm_paths'),
+                                        statuses: localStorage.getItem('lm_statuses'),
+                                        secondaryStatuses: localStorage.getItem('lm_secondary_statuses'),
+                                    };
+
+                                    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `leadmaster_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+
+                                    showToast('백업 파일이 다운로드되었습니다.');
+                                }}
+                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium flex items-center gap-2"
+                            >
+                                <Download size={16} /> 백업 다운로드
+                            </button>
+
+                            <label className="bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded hover:bg-blue-50 font-medium flex items-center gap-2 cursor-pointer">
+                                <Upload size={16} /> 백업 복원
+                                <input
+                                    type="file"
+                                    accept=".json"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+
+                                        const reader = new FileReader();
+                                        reader.onload = (evt) => {
+                                            try {
+                                                const data = JSON.parse(evt.target?.result as string);
+
+                                                if (!data.version || !data.cases) {
+                                                    showToast('유효하지 않은 백업 파일입니다.', 'error');
+                                                    return;
+                                                }
+
+                                                if (!window.confirm(`백업 파일 정보:\n- 내보낸 날짜: ${data.exportedAt || '알 수 없음'}\n\n이 백업으로 로컬 데이터를 복원하시겠습니까?`)) return;
+
+                                                // Restore data
+                                                if (data.cases) localStorage.setItem('lm_cases', data.cases);
+                                                if (data.partners) localStorage.setItem('lm_partners', data.partners);
+                                                if (data.paths) localStorage.setItem('lm_paths', data.paths);
+                                                if (data.statuses) localStorage.setItem('lm_statuses', data.statuses);
+                                                if (data.secondaryStatuses) localStorage.setItem('lm_secondary_statuses', data.secondaryStatuses);
+
+                                                showToast('백업이 복원되었습니다. 페이지를 새로고침합니다...');
+                                                setTimeout(() => window.location.reload(), 1000);
+                                            } catch (err) {
+                                                showToast('백업 파일을 읽는 중 오류가 발생했습니다.', 'error');
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                        e.target.value = ''; // Reset input
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        <p className="text-xs text-blue-600">
+                            💡 동기화 전에 백업을 다운로드해두면 문제 발생 시 복원할 수 있습니다.
+                        </p>
+                    </div>
+
+                    <hr className="border-gray-200" />
+
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                         <p className="text-xs text-orange-700 flex items-start">
                             <Info size={14} className="mr-1 mt-0.5 flex-shrink-0" />
-                            이 작업은 로컬에만 저장된 미동기화 데이터를 삭제할 수 있습니다. 서버에 저장된 데이터는 영향받지 않습니다.
+                            강제 동기화는 로컬 캐시만 삭제합니다. 서버(Supabase)에 저장된 데이터는 영향받지 않습니다.
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={() => {
-                            if (!window.confirm('로컬 캐시를 삭제하고 서버에서 데이터를 다시 불러올까요?\n\n이 작업은 되돌릴 수 없습니다.')) return;
+                            if (!window.confirm('로컬 캐시를 삭제하고 서버에서 데이터를 다시 불러올까요?\n\n💡 먼저 위의 "백업 다운로드" 버튼으로 백업해두세요!')) return;
 
                             // Clear local cache
                             localStorage.removeItem('lm_cases');
