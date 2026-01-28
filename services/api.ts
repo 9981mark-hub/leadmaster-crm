@@ -932,6 +932,13 @@ export const saveGlobalSettings = async (settings: {
     localStorage.setItem('lm_missedInterval', String(settings.missedCallInterval));
   }
 
+  // [Fix] Save Gemini API Key
+  if (settings.geminiApiKey !== undefined) {
+    // Allow saving empty string to clear it
+    localStorage.setItem('lm_geminiApiKey', settings.geminiApiKey);
+    // Force reload env or just let utils read from storage
+  }
+
   // Persist common settings to Supabase
   // We can group them into a 'commonSettings' JSON or save individually. 
   // Based on current 'fetchSettingsFromSupabase' logic (lines 265-287), it expects 'managerName' at root.
