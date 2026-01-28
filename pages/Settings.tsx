@@ -425,7 +425,7 @@ export default function SettingsPage() {
                         {!isEditingGeminiKey ? (
                             <div className="flex gap-2">
                                 <div className="flex-1 p-2 border rounded bg-gray-50 text-gray-500 font-mono text-sm flex items-center">
-                                    {geminiApiKey ? 'sk-********************' : '등록된 키가 없습니다'}
+                                    {geminiApiKey ? 'AIza********************' : '등록된 키가 없습니다'}
                                 </div>
                                 <button
                                     onClick={() => {
@@ -443,7 +443,7 @@ export default function SettingsPage() {
                             <div className="space-y-2">
                                 <input
                                     type="password"
-                                    placeholder="AI Key 입력 (sk-...)"
+                                    placeholder="AI Key 입력 (AIza...)"
                                     className="w-full p-2 border rounded border-blue-500 ring-2 ring-blue-100"
                                     value={geminiApiKey}
                                     onChange={(e) => setGeminiApiKey(e.target.value)}
