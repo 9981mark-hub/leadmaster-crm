@@ -160,7 +160,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                             </div>
 
                             <div className="flex justify-between items-center mt-1">
-                                <Link to={`/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
+                                <Link to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
                                     {c.customerName}
                                 </Link>
                                 <div className="flex flex-col items-end gap-1">
