@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, saveGlobalSettings } from '../services/api';
+import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation } from '../services/queries';
 import { CommissionRule, Partner, Case, CaseStatus } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload } from 'lucide-react';
 import { getDayName } from '../utils';
@@ -67,6 +68,9 @@ export default function SettingsPage() {
 
     // [New] AI Model State
     const [geminiModel, setGeminiModel] = useState(localStorage.getItem('lm_geminiModel') || 'gemini-2.0-flash');
+
+    const addSecondaryStatusMutation = useAddSecondaryStatusMutation();
+    const deleteSecondaryStatusMutation = useDeleteSecondaryStatusMutation();
 
 
 
@@ -896,9 +900,12 @@ export default function SettingsPage() {
                             onChange={e => setNewSecondaryStatus(e.target.value)}
                             onKeyDown={e => {
                                 if (e.key === 'Enter' && newSecondaryStatus.trim()) {
-                                    addSecondaryStatus(newSecondaryStatus.trim()).then(setSecondaryStatuses);
-                                    setNewSecondaryStatus('');
-                                    showToast('2차 상태가 추가되었습니다.');
+                                    addSecondaryStatusMutation.mutate(newSecondaryStatus.trim(), {
+                                        onSuccess: (updatedList) => {
+                                            setSecondaryStatuses(updatedList);
+                                            setNewSecondaryStatus('');
+                                        }
+                                    });
                                 }
                             }}
                         />
@@ -906,9 +913,12 @@ export default function SettingsPage() {
                             type="button"
                             onClick={() => {
                                 if (newSecondaryStatus.trim()) {
-                                    addSecondaryStatus(newSecondaryStatus.trim()).then(setSecondaryStatuses);
-                                    setNewSecondaryStatus('');
-                                    showToast('2차 상태가 추가되었습니다.');
+                                    addSecondaryStatusMutation.mutate(newSecondaryStatus.trim(), {
+                                        onSuccess: (updatedList) => {
+                                            setSecondaryStatuses(updatedList);
+                                            setNewSecondaryStatus('');
+                                        }
+                                    });
                                 }
                             }}
                             className="bg-purple-600 text-white px-4 rounded hover:bg-purple-700"
@@ -924,8 +934,9 @@ export default function SettingsPage() {
                                     type="button"
                                     onClick={() => {
                                         if (confirm(`"${status}" 상태를 삭제하시겠습니까?`)) {
-                                            deleteSecondaryStatus(status).then(setSecondaryStatuses);
-                                            showToast('2차 상태가 삭제되었습니다.');
+                                            deleteSecondaryStatusMutation.mutate(status, {
+                                                onSuccess: (updatedList) => setSecondaryStatuses(updatedList)
+                                            });
                                         }
                                     }}
                                     className="ml-2 text-purple-400 hover:text-red-500"

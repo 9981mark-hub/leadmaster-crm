@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses } from './api';
+import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus } from './api';
 import { useToast } from '../contexts/ToastContext';
 
 // Keys
@@ -111,6 +111,42 @@ export const useDeleteCaseMutation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cases });
             showToast('삭제되었습니다.');
+        },
+        onError: (error) => {
+            console.error(error);
+            showToast('삭제에 실패했습니다.', 'error');
+        }
+    });
+};
+
+export const useAddSecondaryStatusMutation = () => {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: addSecondaryStatus,
+        onSuccess: (updatedList) => {
+            queryClient.setQueryData(QUERY_KEYS.secondaryStatuses, updatedList);
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.secondaryStatuses });
+            showToast('2차 상태가 추가되었습니다.');
+        },
+        onError: (error) => {
+            console.error(error);
+            showToast('추가에 실패했습니다.', 'error');
+        }
+    });
+};
+
+export const useDeleteSecondaryStatusMutation = () => {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: deleteSecondaryStatus,
+        onSuccess: (updatedList) => {
+            queryClient.setQueryData(QUERY_KEYS.secondaryStatuses, updatedList);
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.secondaryStatuses });
+            showToast('2차 상태가 삭제되었습니다.');
         },
         onError: (error) => {
             console.error(error);
