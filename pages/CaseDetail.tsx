@@ -55,11 +55,7 @@ export default function CaseDetail() {
     }, [c]);
 
     // [Refactor Restore] Mark as viewed on mount
-    useEffect(() => {
-        if (c && !c.isViewed) {
-            handleUpdate('isViewed', true);
-        }
-    }, [c]);
+
 
     // Derived Data
     const currentPartner = partners.find(p => p.partnerId === c?.partnerId);
