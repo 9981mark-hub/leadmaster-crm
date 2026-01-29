@@ -997,6 +997,16 @@ export const saveGlobalSettings = async (settings: {
   await saveSettingToSupabase('missedCallSettings', missedCallSettings);
 
   syncToSheet({ target: 'settings', action: 'update', key: 'commonSettings', value: { ...updates, ...missedCallSettings } });
+
+  // [Fix] Sync with Android App if running in WebView
+  if (typeof (window as any).AndroidBridge !== 'undefined' && settings.missedCallInterval) {
+    try {
+      (window as any).AndroidBridge.setMissedCallConfig(settings.missedCallInterval);
+      console.log('Synced config with Android App');
+    } catch (e) {
+      console.error('Failed to sync with Android App', e);
+    }
+  }
 };
 
 
