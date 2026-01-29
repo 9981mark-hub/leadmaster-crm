@@ -505,16 +505,21 @@ const performBackgroundFetch = async () => {
 
         if (!server) {
           // Exists Locally, not on Server.
-          // [CRITICAL FIX v2] If this case is in TRASH locally and not on server, it was HARD DELETED.
-          // We should remove it from local cache. Otherwise, keep unsynced items.
-          const isLocallyTrashed = local.status === '휴지통' || !!local.deletedAt;
-          if (isLocallyTrashed) {
-            console.log(`[Sync] Removing locally trashed case (deleted from server): ${local.customerName} (${local.caseId})`);
-            // Don't add to newLocalCases - effectively deleting it locally
-          } else {
-            // Keep other unsynced items (e.g., newly created offline)
-            console.log(`[Sync] Keeping local case (not on server): ${local.customerName} (${local.caseId})`);
+          // [Fix] Zombie Case Handling:
+          // If a case is missing from the server response (and we have a successful response),
+          // it means it was Hard Deleted or soft-deleted dependent on query (but query fetches all).
+          // Exception: It was just created locally and hasn't synced yet.
+
+          const createdTime = new Date(local.createdAt).getTime();
+          // If created within last 5 minutes, keep it (assume syncing)
+          const isRecentlyCreated = (now - createdTime) < (5 * 60 * 1000);
+
+          if (isRecentlyCreated) {
+            console.log(`[Sync] Keeping potential new local case: ${local.customerName} (${local.caseId})`);
             newLocalCases.push(local);
+          } else {
+            // Old case missing from server -> It's a Zombie (Hard Deleted elsewhere). Remove it.
+            console.log(`[Sync] Removing zombie case (missing on server): ${local.customerName} (${local.caseId})`);
           }
         } else {
           // Exists on Both. Compare Timestamps.
