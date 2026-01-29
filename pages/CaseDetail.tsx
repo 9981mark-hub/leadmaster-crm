@@ -34,6 +34,11 @@ export default function CaseDetail() {
     const [secondaryStatusChangeReason, setSecondaryStatusChangeReason] = useState('');
     const [secondaryStatuses, setSecondaryStatuses] = useState<string[]>([]);
 
+    // [New] Primary Status Change Modal State
+    const [isPrimaryStatusModalOpen, setIsPrimaryStatusModalOpen] = useState(false);
+    const [pendingPrimaryStatus, setPendingPrimaryStatus] = useState<CaseStatus | null>(null);
+    const [primaryStatusChangeReason, setPrimaryStatusChangeReason] = useState('');
+
     // AI Summary & Audio State (Managed here to share between tabs if needed, though primarily allowed in Info)
     const [aiSummaryText, setAiSummaryText] = useState<string | null>(null);
     const [aiSummaryEditMode, setAiSummaryEditMode] = useState(false);
@@ -116,31 +121,45 @@ export default function CaseDetail() {
 
     // Status Change Logic
     const handleStatusChangeStart = (newStatus: CaseStatus) => {
-        if (newStatus === '사무장 접수') {
+        if (newStatus === c?.status) return;
+        setPendingPrimaryStatus(newStatus);
+        setPrimaryStatusChangeReason('');
+        setIsPrimaryStatusModalOpen(true);
+    };
+
+    const confirmPrimaryStatusChange = () => {
+        if (!c || !pendingPrimaryStatus) return;
+
+        // Update local secondary statuses logic if needed
+        if (pendingPrimaryStatus === '사무장 접수') {
             setSecondaryStatuses(['서류 준비', '서류 완비', '접수 대기', '접수 완료']);
         } else {
             setSecondaryStatuses([]);
         }
 
-        // Log status change
         const log = {
             logId: Date.now().toString(),
-            fromStatus: c!.status,
-            toStatus: newStatus,
+            fromStatus: c.status,
+            toStatus: pendingPrimaryStatus,
             changedAt: new Date().toISOString(),
             changedBy: 'User', // Todo: Auth
-            memo: ''
+            memo: primaryStatusChangeReason
         };
 
-        // Optimistic update handled by mutation, but we strictly send updates
+        // Optimistic update handled by mutation
         updateCaseMutation.mutate({
-            id: c!.caseId,
+            id: c.caseId,
             updates: {
-                status: newStatus,
-                statusLogs: [log, ...(c!.statusLogs || [])]
+                status: pendingPrimaryStatus,
+                statusLogs: [log, ...(c.statusLogs || [])],
+                // Clear secondary status if moving away from '사무장 접수' (Optional, mostly handled by business logic but good to clear)
+                ...(pendingPrimaryStatus !== '사무장 접수' ? { secondaryStatus: undefined } : {})
             }
         });
-        showToast(`상태가 ${newStatus}(으)로 변경되었습니다.`);
+
+        showToast(`상태가 ${pendingPrimaryStatus}(으)로 변경되었습니다.`);
+        setIsPrimaryStatusModalOpen(false);
+        setPendingPrimaryStatus(null);
     };
 
     const handleSecondaryStatusChangeStart = (status: string | null) => {
@@ -162,8 +181,25 @@ export default function CaseDetail() {
             memo: secondaryStatusChangeReason
         };
 
-        handleUpdate('secondaryStatus', pendingSecondaryStatus);
-        handleUpdate('statusLogs', [log, ...(c.statusLogs || [])]);
+        // [New] Add detailed memo for List Tooltip Compatibility
+        // Format: [2차 상태 변경] Prev -> Next \n사유: ...
+        const memoContent = `[2차 상태 변경] ${c.secondaryStatus || '없음'} → ${pendingSecondaryStatus}${secondaryStatusChangeReason ? `\n사유: ${secondaryStatusChangeReason}` : ''}`;
+        const newMemo: MemoItem = {
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            content: memoContent
+        };
+
+        // We need to update multiple fields: secondaryStatus, statusLogs, specialMemo
+        // useUpdateCaseMutation handles merging updates.
+        updateCaseMutation.mutate({
+            id: c.caseId,
+            updates: {
+                secondaryStatus: pendingSecondaryStatus,
+                statusLogs: [log, ...(c.statusLogs || [])],
+                specialMemo: [newMemo, ...(c.specialMemo || [])]
+            }
+        });
 
         setIsSecondaryStatusModalOpen(false);
         setPendingSecondaryStatus(null);
@@ -332,6 +368,41 @@ export default function CaseDetail() {
                     onStatusChangeStart={handleStatusChangeStart}
                     onSecondaryStatusChangeStart={handleSecondaryStatusChangeStart}
                 />
+
+                {/* Primary Status Modal */}
+                {isPrimaryStatusModalOpen && pendingPrimaryStatus !== null && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl border-t-4 border-blue-500">
+                            <h3 className="text-lg font-bold mb-4 text-blue-700">상태 변경 확인</h3>
+                            <p className="mb-4 text-gray-700">
+                                상태를 <span className="font-bold text-blue-600">{c.status}</span>에서 <span className="font-bold text-blue-600">{pendingPrimaryStatus}</span>(으)로 변경하시겠습니까?
+                            </p>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">변경 사유 (선택)</label>
+                                <textarea
+                                    className="w-full p-2 border border-blue-200 rounded resize-none h-24 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="상태 변경 사유를 입력하세요... (예: 부재중, 상담 완료 등)"
+                                    value={primaryStatusChangeReason}
+                                    onChange={e => setPrimaryStatusChangeReason(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => { setIsPrimaryStatusModalOpen(false); setPendingPrimaryStatus(null); }}
+                                    className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    onClick={confirmPrimaryStatusChange}
+                                    className="px-4 py-2 bg-blue-600 rounded text-white font-medium hover:bg-blue-700"
+                                >
+                                    변경하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Secondary Status Modal */}
                 {isSecondaryStatusModalOpen && pendingSecondaryStatus !== null && (
