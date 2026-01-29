@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layout } from 'lucide-react';
 import { Case, CaseStatus, ReminderItem, MemoItem, RecordingItem } from '../types';
-import { useCase, usePartners, useInboundPaths, useStatuses, useUpdateCaseMutation } from '../services/queries';
+import { useCase, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useUpdateCaseMutation } from '../services/queries';
 import { calculateCommission, generateAiSummary, convertToPlayableUrl } from '../utils';
 import { CommandPalette } from '../components/CommandPalette';
 // Sub-components
@@ -21,6 +21,7 @@ export default function CaseDetail() {
     const { data: partners = [] } = usePartners();
     const { data: inboundPaths = [] } = useInboundPaths();
     const { data: statuses = [] } = useStatuses();
+    const { data: globalSecondaryStatuses = [] } = useSecondaryStatuses();
     const updateCaseMutation = useUpdateCaseMutation();
 
     // UI State
@@ -52,12 +53,13 @@ export default function CaseDetail() {
         if (c) {
             setAiSummaryText(c.aiSummary || null);
             if (c.status === '사무장 접수') {
-                setSecondaryStatuses(['서류 준비', '서류 완비', '접수 대기', '접수 완료']);
+                // [Fix] Use global dynamic list instead of hardcoded
+                setSecondaryStatuses(globalSecondaryStatuses.length > 0 ? globalSecondaryStatuses : []);
             } else {
                 setSecondaryStatuses([]);
             }
         }
-    }, [c]);
+    }, [c, globalSecondaryStatuses]);
 
     // [Refactor Restore] Mark as viewed on mount
 
@@ -132,7 +134,8 @@ export default function CaseDetail() {
 
         // Update local secondary statuses logic if needed
         if (pendingPrimaryStatus === '사무장 접수') {
-            setSecondaryStatuses(['서류 준비', '서류 완비', '접수 대기', '접수 완료']);
+            // [Fix] Use global dynamic list
+            setSecondaryStatuses(globalSecondaryStatuses);
         } else {
             setSecondaryStatuses([]);
         }

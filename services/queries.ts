@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths } from './api';
+import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses } from './api';
 import { useToast } from '../contexts/ToastContext';
 
 // Keys
@@ -7,6 +7,7 @@ export const QUERY_KEYS = {
     cases: ['cases'],
     case: (id: string) => ['case', id],
     statuses: ['statuses'],
+    secondaryStatuses: ['secondaryStatuses'], // [New]
     partners: ['partners'],
     inboundPaths: ['inboundPaths'],
 };
@@ -16,6 +17,14 @@ export const useCases = () => {
     return useQuery({
         queryKey: QUERY_KEYS.cases,
         queryFn: fetchCases,
+    });
+};
+
+export const useSecondaryStatuses = () => {
+    return useQuery({
+        queryKey: QUERY_KEYS.secondaryStatuses,
+        queryFn: fetchSecondaryStatuses,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 };
 
