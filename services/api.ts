@@ -1323,8 +1323,16 @@ export const fetchCaseStatusLogs = async (caseId: string): Promise<CaseStatusLog
       };
     });
 
-  // Merge with legacy localLogs (if any) or statusLogs (if any) to be safe, but preference is memo
-  return memoLogs.sort((a, b) => b.changedAt.localeCompare(a.changedAt));
+  // [Fix] Merge with structured statusLogs (Primary Source)
+  const structuredLogs = c.statusLogs || [];
+
+  // Combine and Deduplicate based on ID (if possible) or just merge
+  // Since structuredLogs are newer and distinct from legacy memo logs, simple merge is usually safe.
+  // But to be safe against duplicates if we ever double-save:
+  const allLogs = [...structuredLogs, ...memoLogs];
+
+  // Sort by Date Descending
+  return allLogs.sort((a, b) => b.changedAt.localeCompare(a.changedAt));
 };
 
 // Backwards compatibility / Polling disabled for now to prevent spam
