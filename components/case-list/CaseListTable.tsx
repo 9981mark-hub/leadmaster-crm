@@ -151,9 +151,14 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                         <div key={c.caseId} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg flex flex-col gap-2 relative">
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${c.status === '진행불가' || c.status === '고객취소' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
-                                        {c.status}
-                                    </span>
+                                    <HoverCheckTooltip
+                                        trigger={
+                                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${c.status === '진행불가' || c.status === '고객취소' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                {c.status}
+                                            </span>
+                                        }
+                                        content={<StatusHistoryTooltipContent caseId={c.caseId} />}
+                                    />
                                     {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
                                 </div>
                                 <span className="text-xs text-gray-400">{safeFormat(c.createdAt, 'MM-dd')}</span>
