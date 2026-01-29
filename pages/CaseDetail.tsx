@@ -288,17 +288,23 @@ export default function CaseDetail() {
     const handleSaveSummaryToMemo = () => {
         if (!aiSummaryText) return;
 
-        // Extract '*특이사항' section from the AI summary
+        // Extract '특이사항' section from the AI summary
+        // Supports: *특이사항, 4. 특이사항, - 특이사항, 특이사항:
         let memoContent = '';
-        const specialNotesMatch = aiSummaryText.match(/\*특이사항[:\s]*([\s\S]*?)(?=\n\*|$)/i);
+        const specialNotesMatch = aiSummaryText.match(/(?:^|\n)(?:[\*\-0-9\.\s]*특이사항)[:\s]*([\s\S]*?)(?=\n[0-9]+\.|^$|$)/i);
+        // Note: The regex looks for "Usage" section or EOF as terminator if needed, but usually Special Memo is last.
+        // Simplified regex to just grab everything after "특이사항" header if it's the last section.
 
-        if (specialNotesMatch && specialNotesMatch[1]) {
+        // Robust Regex: Finds "특이사항" (with optional prefixes) and captures everything after it
+        const simpleMatch = aiSummaryText.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
+
+        if (simpleMatch && simpleMatch[1]) {
             // Found the special notes section
-            const specialNotes = specialNotesMatch[1].trim();
-            memoContent = `[AI 요약 - 특이사항]\n${specialNotes.slice(0, 1000)}`;
+            const specialNotes = simpleMatch[1].trim();
+            memoContent = `${specialNotes.slice(0, 1000)}`;
         } else {
-            // Fallback: If no special notes section found, save the whole summary (first 1000 chars)
-            memoContent = `[AI 요약 저장]\n${aiSummaryText.slice(0, 1000)}`;
+            // Fallback: If not found, save whole summary with label
+            memoContent = `[AI 요약 전체]\n${aiSummaryText.slice(0, 1000)}`;
         }
 
         const newMemo: MemoItem = {
@@ -307,7 +313,7 @@ export default function CaseDetail() {
             content: memoContent
         };
         handleUpdateMemos([newMemo, ...(c?.specialMemo || [])]);
-        showToast('상담 이력에 저장되었습니다.');
+        showToast('특이사항이 상담 이력에 저장되었습니다.');
     };
 
     const handlePlayRecording = (rec: RecordingItem) => {
