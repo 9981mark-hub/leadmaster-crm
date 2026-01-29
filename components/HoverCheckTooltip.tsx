@@ -18,26 +18,46 @@ export default function HoverCheckTooltip({
     desktopAlign = 'center'
 }: HoverCheckTooltipProps) {
     const [isVisible, setIsVisible] = useState(false);
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const enterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const tooltipRef = useRef<HTMLDivElement>(null);
 
     const handleMouseEnter = () => {
-        timeoutRef.current = setTimeout(() => {
-            setIsVisible(true);
-        }, delay);
+        // Clear any pending leave timer (user came back or entered tooltip)
+        if (leaveTimeoutRef.current) {
+            clearTimeout(leaveTimeoutRef.current);
+            leaveTimeoutRef.current = null;
+        }
+
+        // If already visible, keep it (don't re-trigger enter delay)
+        if (isVisible) return;
+
+        // Start enter delay
+        if (!enterTimeoutRef.current) {
+            enterTimeoutRef.current = setTimeout(() => {
+                setIsVisible(true);
+            }, delay);
+        }
     };
 
     const handleMouseLeave = () => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
+        // Clear pending enter timer (user left before delay finished)
+        if (enterTimeoutRef.current) {
+            clearTimeout(enterTimeoutRef.current);
+            enterTimeoutRef.current = null;
         }
-        setIsVisible(false);
+
+        // Start leave delay (give time to move to tooltip)
+        leaveTimeoutRef.current = setTimeout(() => {
+            setIsVisible(false);
+        }, 300); // 300ms grace period
     };
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            if (enterTimeoutRef.current) clearTimeout(enterTimeoutRef.current);
+            if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
         };
     }, []);
 
@@ -69,9 +89,14 @@ export default function HoverCheckTooltip({
         // Prevent click from propagating if nested
         e.stopPropagation();
 
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
+        // If clicking inside the tooltip content (e.g. scrolling), ignore toggle
+        if (tooltipRef.current && tooltipRef.current.contains(e.target as Node)) {
+            return;
+        }
+
+        if (enterTimeoutRef.current) {
+            clearTimeout(enterTimeoutRef.current);
+            enterTimeoutRef.current = null;
         }
         setIsVisible(prev => !prev);
     };
@@ -79,14 +104,23 @@ export default function HoverCheckTooltip({
     // [Mobile Support] Close on outside click
     useEffect(() => {
         const handleOutsideClick = (event: MouseEvent) => {
-            // If visible and clicking anywhere, close it (simple approach)
-            // Ideally we check if click is inside ref, but for now global close is fine for mobile behavior
             if (isVisible) {
+                // If checking inside ref is tricky due to portals (not used here), global close is fine.
+                // But we should verify if click is NOT inside our component.
+                // Since event bubbles, we can't easily check 'wrapper ref' unless we attach ref to wrapper.
+                // But simplified: existing logic closed it.
                 setIsVisible(false);
             }
         };
 
         if (isVisible) {
+            // Use capture phase or verify target but for now standard click
+            // Wait, this will trigger immediately if bubbling from handleClick?
+            // "click" event listener on document fires AFTER bubble.
+            // But handleClick stopped propagation. So this is safe from self-trigger.
+            // Problem: If I click Tooltip Content, handleClick returns early (doesn't toggle).
+            // But e.stopPropagation() was called. So document listener WON'T fire.
+            // So clicking tooltip content won't close it. Good.
             document.addEventListener('click', handleOutsideClick);
         }
 
@@ -105,18 +139,15 @@ export default function HoverCheckTooltip({
         >
             {trigger}
             {isVisible && (
-                <div className={`absolute z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] p-3 bg-gray-900/90 text-white text-xs rounded-lg shadow-xl backdrop-blur-sm animate-fade-in border border-gray-700 pointer-events-none ${getPositionClasses()}`}>
+                <div
+                    ref={tooltipRef}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    className={`absolute z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] p-3 bg-gray-900/90 text-white text-xs rounded-lg shadow-xl backdrop-blur-sm animate-fade-in border border-gray-700 pointer-events-auto ${getPositionClasses()}`}
+                >
                     <div className="relative">
                         {/* Triangle Arrow */}
                         <div className={`absolute -top-[18px] border-8 border-transparent border-b-gray-900/90 ${getArrowClasses()}`} />
-                        {/* The content prop is rendered here. If it contains a reminder, the parent component should pass the icon. */}
-                        {/* The instruction seems to imply modifying the content directly, but content is a prop. */}
-                        {/* Assuming the user wants to add this specific reminder display logic *within* the tooltip's content, */}
-                        {/* and that `nextReminder` is somehow available or passed via the `content` prop itself. */}
-                        {/* As `nextReminder` is not defined in this component, this part of the instruction cannot be directly applied here without further context. */}
-                        {/* If the intent was to replace a hardcoded phone emoji *within the content prop itself*, the content prop would need to be a function or parsed. */}
-                        {/* For now, I will add the `getReminderIcon` function as requested, but the usage of `nextReminder` in the snippet is problematic here. */}
-                        {/* I will keep the original `content` rendering. If the user intended to modify the `content` prop's structure, they would need to pass `nextReminder` to this component. */}
                         {content}
                     </div>
                 </div>
