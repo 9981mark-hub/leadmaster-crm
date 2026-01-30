@@ -147,6 +147,15 @@ export default function CaseList() {
 
     const sortedCases = useMemo(() => {
         return [...filteredCases].sort((a, b) => {
+            // Special sorting for overdue missed calls: sort by lastMissedCallAt ascending (oldest first)
+            // This matches the mobile widget's sorting logic for consistency
+            if (showOverdueMissedOnly) {
+                const dateA = a.lastMissedCallAt ? new Date(a.lastMissedCallAt).getTime() : 0;
+                const dateB = b.lastMissedCallAt ? new Date(b.lastMissedCallAt).getTime() : 0;
+                if (dateA !== dateB) return dateA - dateB; // Ascending (oldest first)
+                return String(a.caseId || '').localeCompare(String(b.caseId || ''));
+            }
+
             if (sortOrder === 'inboundPath_asc') {
                 return String(a.inboundPath || '').localeCompare(String(b.inboundPath || ''));
             }
@@ -184,7 +193,7 @@ export default function CaseList() {
                 ? String(b.caseId || '').localeCompare(String(a.caseId || ''))
                 : String(a.caseId || '').localeCompare(String(b.caseId || ''));
         });
-    }, [filteredCases, sortOrder]);
+    }, [filteredCases, sortOrder, showOverdueMissedOnly]);
 
 
     // Pagination Logic
