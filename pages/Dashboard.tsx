@@ -126,7 +126,8 @@ export default function Dashboard() {
   const todayReminders = allRemindersWithCase.filter(item => getReminderStatus(item.reminder.datetime) === 'today');
   const overdueReminders = allRemindersWithCase.filter(item =>
     getReminderStatus(item.reminder.datetime) === 'overdue' &&
-    !item.reminder.resultStatus  // 결과 미입력 시에만 지연으로 표시
+    // Only exclude when a REAL result status is entered (not just dismissed '확인')
+    !['완료', '미연결', '재예약', '취소'].includes(item.reminder.resultStatus || '')
   );
 
   // Warnings - with details
