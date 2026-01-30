@@ -32,7 +32,7 @@ export interface ReminderItem {
   type: ReminderType;
   content?: string;
   isCompleted?: boolean;
-  resultStatus?: '완료' | '미연결' | '재예약' | '부재중' | '취소'; // Added: Result Tracking
+  resultStatus?: '완료' | '미연결' | '재예약' | '부재중' | '취소' | '확인'; // Added: Result Tracking + '확인' for dismiss sync
   resultNote?: string; // Added: Result Note
 }
 
