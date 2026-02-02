@@ -284,6 +284,25 @@ export default function CaseList() {
         });
     };
 
+    // [NEW] Quick Status Change Handler - allows changing status directly from case list
+    const handleQuickStatusChange = async (caseId: string, newStatus: string, oldStatus: string) => {
+        const now = new Date().toISOString();
+        const updates: Partial<Case> = {
+            status: newStatus,
+            statusUpdatedAt: now,
+        };
+
+        // When changing to "부재" status, automatically set missedCallCount to 1
+        // and lastMissedCallAt to current time (since user already made a call that wasn't answered)
+        if (newStatus === missedCallStatus) {
+            updates.missedCallCount = 1;
+            updates.lastMissedCallAt = now;
+        }
+
+        updateCaseMutation.mutate({ id: caseId, updates });
+        showToast(`상태가 "${newStatus}"(으)로 변경되었습니다.`);
+    };
+
     if (loadingCases && cases.length === 0) return <ListSkeleton />;
 
     const newCaseCount = cases.filter(c => c.isNew).length;
@@ -362,9 +381,11 @@ export default function CaseList() {
                         viewMode={viewMode}
                         missedCallStatus={missedCallStatus}
                         missedCallInterval={missedCallInterval}
+                        statuses={statuses.filter(s => s !== '휴지통')}
                         onDelete={handleDelete}
                         onRestore={handleRestore}
                         onMissedCall={handleMissedCall}
+                        onStatusChange={handleQuickStatusChange}
                     />
 
                     <CaseListPagination
