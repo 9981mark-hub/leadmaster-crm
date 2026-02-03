@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { differenceInMinutes, parse, isValid } from 'date-fns';
 import { Case, ReminderItem } from '../types';
-import { fetchCases, fetchCase, updateCase } from '../services/api';
+import { fetchCases } from '../services/api';
 
 interface ReminderNotification {
     id: string; // Unique ID for notification (caseId + reminderId)
@@ -113,28 +113,10 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return () => clearInterval(checkerInterval);
     }, [cases]);
 
-    const dismissNotification = async (id: string, skipUpdate: boolean = false) => {
-        // Remove from local state immediately
-        const notification = notifications.find(n => n.id === id);
+    const dismissNotification = (id: string) => {
+        // Remove from local state only - user must manually input result in case detail page
         setNotifications(prev => prev.filter(n => n.id !== id));
-
-        // Update resultStatus in Supabase for cross-platform sync
-        if (!skipUpdate && notification) {
-            try {
-                const currentCase = await fetchCase(notification.caseId);
-                if (currentCase && currentCase.reminders) {
-                    const updatedReminders = currentCase.reminders.map(r =>
-                        r.id === notification.reminder.id
-                            ? { ...r, resultStatus: '확인' as const }
-                            : r
-                    );
-                    await updateCase(notification.caseId, { reminders: updatedReminders });
-                    console.log(`[ReminderSync] Updated resultStatus to '확인' for reminder ${notification.reminder.id}`);
-                }
-            } catch (error) {
-                console.error('[ReminderSync] Failed to update reminder status:', error);
-            }
-        }
+        console.log(`[ReminderNotification] Dismissed notification ${id} - no auto-complete, user must input result manually`);
     };
 
     return (
