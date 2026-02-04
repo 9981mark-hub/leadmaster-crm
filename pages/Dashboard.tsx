@@ -123,7 +123,11 @@ export default function Dashboard() {
     (c.reminders || []).map(r => ({ reminder: r, caseData: c }))
   );
 
-  const todayReminders = allRemindersWithCase.filter(item => getReminderStatus(item.reminder.datetime) === 'today');
+  const todayReminders = allRemindersWithCase.filter(item =>
+    getReminderStatus(item.reminder.datetime) === 'today' &&
+    // [FIX] Exclude completed reminders from count
+    !item.reminder.resultStatus
+  );
   const overdueReminders = allRemindersWithCase.filter(item =>
     getReminderStatus(item.reminder.datetime) === 'overdue' &&
     // [CHANGED] Any result status means it's been handled
