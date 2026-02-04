@@ -107,7 +107,15 @@ export default function CaseList() {
     // Derived Logic (Filtering & Sorting)
     const filteredCases = useMemo(() => {
         return cases.filter(c => {
-            const matchesSearch = String(c.customerName || '').includes(search) || String(c.phone || '').includes(search);
+            // Extended search: name, phone, consultation history (specialMemo), and reminders
+            const searchLower = search.toLowerCase();
+            const matchesSearch =
+                String(c.customerName || '').toLowerCase().includes(searchLower) ||
+                String(c.phone || '').includes(search) ||
+                // 상담이력(메모) 검색
+                (c.specialMemo || []).some(m => String(m.content || '').toLowerCase().includes(searchLower)) ||
+                // 리마인더 검색
+                (c.reminders || []).some(r => String(r.content || '').toLowerCase().includes(searchLower));
 
             const isHiddenGlobally = hiddenStatuses.includes(c.status);
             const matchesStatus = statusFilters.length === 0
