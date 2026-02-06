@@ -28,13 +28,23 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
     // Extract events from batches
     const events: SettlementEvent[] = [];
     batches.forEach(batch => {
-        // Collection event
+        // Collection event - check both collectionInfo.collectedAt and status
         if (batch.collectionInfo?.collectedAt) {
             events.push({
                 date: batch.collectionInfo.collectedAt,
                 type: 'collection',
                 label: '수금',
                 amount: batch.collectionInfo.amount,
+                batchId: batch.batchId,
+                weekLabel: batch.weekLabel
+            });
+        } else if (['collected', 'paid', 'completed'].includes(batch.status)) {
+            // Legacy: status is collected but no collectedAt date - use cutoffDate as fallback
+            events.push({
+                date: batch.endDate,
+                type: 'collection',
+                label: '수금 (상태기준)',
+                amount: batch.totalCommission,
                 batchId: batch.batchId,
                 weekLabel: batch.weekLabel
             });
