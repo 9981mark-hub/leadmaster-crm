@@ -164,8 +164,14 @@ export default function Settlement() {
         showToast('템플릿이 클립보드에 복사되었습니다.', 'success');
     };
 
-    // Filter by Partner (for report tab)
-    const partnerCases = isAll ? cases : cases.filter(c => c.partnerId === selectedPartnerId);
+    // Filter by Partner (for report tab) - Flexible matching for legacy data
+    const partnerCases = isAll ? cases : cases.filter(c => {
+        if (c.partnerId === selectedPartnerId) return true;
+        // Fallback: Check if partnerId matches partner name (legacy data)
+        const selectedPartner = partners.find(p => p.partnerId === selectedPartnerId);
+        if (selectedPartner && c.partnerId === selectedPartner.name) return true;
+        return false;
+    });
 
     // Helper to calculate commission for a specific case
     const getCommissionForCase = (c: Case) => {
