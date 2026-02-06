@@ -1591,6 +1591,52 @@ export const deleteSettlementBatch = async (batchId: string): Promise<boolean> =
   return false;
 };
 
+// [NEW] Refresh an existing batch with latest case data
+export const refreshWeeklyBatch = async (batchId: string): Promise<SettlementBatch | null> => {
+  ensureBatchesLoaded();
+
+  const batch = localSettlementBatches.find(b => b.batchId === batchId);
+  if (!batch) return null;
+
+  const { startDate, endDate, partnerId } = batch;
+
+  // Re-find deals based on current case data
+  const weekDeals = localCases.filter(c => {
+    if (c.partnerId !== partnerId) return false;
+    if (!c.contractAt) return false;
+    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중'].includes(c.status)) return false;
+    const contractDate = c.contractAt;
+    return contractDate >= startDate && contractDate <= endDate;
+  });
+
+  // Recalculate totals
+  const dealIds = weekDeals.map(d => d.caseId);
+  const totalContractFee = weekDeals.reduce((sum, d) => sum + (d.contractFee || 0), 0);
+
+  const partner = localPartners.find(p => p.partnerId === partnerId);
+  let totalCommission = 0;
+  if (partner) {
+    const { calculateCommission } = await import('../utils');
+    totalCommission = weekDeals.reduce((sum, d) => sum + calculateCommission(d.contractFee || 0, partner.commissionRules), 0);
+  }
+
+  // Update batch
+  const idx = localSettlementBatches.findIndex(b => b.batchId === batchId);
+  if (idx > -1) {
+    localSettlementBatches[idx] = {
+      ...localSettlementBatches[idx],
+      dealIds,
+      totalContractFee,
+      totalCommission,
+      updatedAt: new Date().toISOString()
+    };
+    saveSettlementBatches();
+    return localSettlementBatches[idx];
+  }
+
+  return null;
+};
+
 // Generate or fetch weekly batch for a partner
 export const generateWeeklyBatch = async (partnerId: string, weekStart: Date): Promise<SettlementBatch> => {
   ensureBatchesLoaded();

@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday } from '../services/api';
+import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday } from '../services/api';
 import { Case, Partner, SettlementBatch } from '../types';
 import { calculateCommission, calculateNextSettlement } from '../utils';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock } from 'lucide-react';
+import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw } from 'lucide-react';
 import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
 
@@ -81,6 +81,18 @@ export default function Settlement() {
         });
         setLoadingBatches(false);
         showToast(`${weekLabel} 배치가 생성되었습니다.`, 'success');
+    };
+
+    // [NEW] Refresh batch with latest case data
+    const handleRefreshBatch = async () => {
+        if (!currentBatch) return;
+        setLoadingBatches(true);
+        const refreshed = await refreshWeeklyBatch(currentBatch.batchId);
+        if (refreshed) {
+            setBatches(prev => prev.map(b => b.batchId === refreshed.batchId ? refreshed : b));
+            showToast('배치 데이터가 최신 고객 정보로 업데이트되었습니다.', 'success');
+        }
+        setLoadingBatches(false);
     };
 
     // Update batch status
@@ -238,8 +250,17 @@ export default function Settlement() {
 
                         {/* Deal List */}
                         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                            <div className="p-3 border-b border-gray-100 bg-gray-50">
+                            <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                                 <h4 className="font-bold text-gray-700 text-sm">정산 대상 딜 목록</h4>
+                                <button
+                                    onClick={handleRefreshBatch}
+                                    disabled={loadingBatches}
+                                    className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                                    title="고객 상세페이지 변경사항을 반영합니다"
+                                >
+                                    <RefreshCw size={14} className={loadingBatches ? 'animate-spin' : ''} />
+                                    새로고침
+                                </button>
                             </div>
                             <div className="max-h-48 overflow-y-auto">
                                 {weekDeals.length === 0 ? (
@@ -638,8 +659,8 @@ export default function Settlement() {
                         <button
                             onClick={() => setActiveTab('monday')}
                             className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'monday'
-                                    ? 'border-blue-600 text-blue-600 bg-blue-50'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-blue-600 text-blue-600 bg-blue-50'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             📅 월요일 (확인)
@@ -647,8 +668,8 @@ export default function Settlement() {
                         <button
                             onClick={() => setActiveTab('tuesday')}
                             className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'tuesday'
-                                    ? 'border-yellow-600 text-yellow-600 bg-yellow-50'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-yellow-600 text-yellow-600 bg-yellow-50'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             📄 화요일 (발행/수금)
@@ -656,8 +677,8 @@ export default function Settlement() {
                         <button
                             onClick={() => setActiveTab('wednesday')}
                             className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'wednesday'
-                                    ? 'border-green-600 text-green-600 bg-green-50'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-green-600 text-green-600 bg-green-50'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             💰 수요일 (지급)
@@ -667,8 +688,8 @@ export default function Settlement() {
                 <button
                     onClick={() => setActiveTab('report')}
                     className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'report'
-                            ? 'border-purple-600 text-purple-600 bg-purple-50'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                        ? 'border-purple-600 text-purple-600 bg-purple-50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     📊 리포트
