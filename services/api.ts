@@ -1604,7 +1604,7 @@ export const refreshWeeklyBatch = async (batchId: string): Promise<SettlementBat
   const weekDeals = localCases.filter(c => {
     if (c.partnerId !== partnerId) return false;
     if (!c.contractAt) return false;
-    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중'].includes(c.status)) return false;
+    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
     const contractDate = c.contractAt;
     return contractDate >= startDate && contractDate <= endDate;
   });
@@ -1660,7 +1660,7 @@ export const generateWeeklyBatch = async (partnerId: string, weekStart: Date): P
   const weekDeals = localCases.filter(c => {
     if (c.partnerId !== partnerId) return false;
     if (!c.contractAt) return false;
-    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중'].includes(c.status)) return false;
+    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
 
     const contractDate = c.contractAt;
     return contractDate >= startDateStr && contractDate <= endDateStr;
