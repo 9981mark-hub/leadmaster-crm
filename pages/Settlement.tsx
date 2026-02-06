@@ -1014,6 +1014,169 @@ export default function Settlement() {
                 </div>
             </div>
 
+            {/* Future Cashflow Prediction */}
+            {(() => {
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+
+                // Collect future deposits from all cases
+                interface FutureDeposit {
+                    caseId: string;
+                    customerName: string;
+                    depositDate: string;
+                    amount: number;
+                    depositNumber: number;
+                    contractFee: number;
+                    totalDeposited: number; // up to this deposit
+                    expectedPayout: number;
+                    payoutDate: string;
+                }
+
+                const futureDeposits: FutureDeposit[] = [];
+
+                const partnerCases = cases.filter(c => c.partnerId === selectedPartnerId);
+
+                partnerCases.forEach(c => {
+                    if (!c.depositHistory || c.depositHistory.length === 0) return;
+                    const commission = calculateCommission(currentPartner!, c.contractFee || 0);
+
+                    let cumulativeDeposit = 0;
+                    c.depositHistory.forEach((dep, idx) => {
+                        if (!dep.date || dep.date <= todayStr) {
+                            // Past deposit - just accumulate
+                            cumulativeDeposit += dep.amount || 0;
+                            return;
+                        }
+
+                        // Future deposit
+                        cumulativeDeposit += dep.amount || 0;
+
+                        // Calculate payout based on this deposit - use mock case for calculation
+                        const mockCase = {
+                            ...c,
+                            depositHistory: c.depositHistory!.slice(0, idx + 1)
+                        } as Case;
+                        const rules = currentPartner?.commissionRules || [];
+                        const config = currentPartner?.settlementConfig;
+                        const payableInfo = calculatePayableCommission(mockCase, rules, config);
+
+                        // Calculate payout date: next Tuesday after the week containing this deposit
+                        const depositDate = new Date(dep.date);
+                        const dayOfWeek = depositDate.getDay();
+                        // Find next Tuesday (day 2)
+                        let daysUntilTuesday = (2 - dayOfWeek + 7) % 7;
+                        if (daysUntilTuesday === 0) daysUntilTuesday = 7; // If it's Tuesday, next Tuesday
+                        // If deposit is Mon-Sun, payout is next week's Tuesday (2 days after week end)
+                        const weekEnd = new Date(depositDate);
+                        weekEnd.setDate(weekEnd.getDate() + (7 - dayOfWeek)); // Go to next Sunday
+                        weekEnd.setDate(weekEnd.getDate() + 2); // Add 2 days = Tuesday
+
+                        futureDeposits.push({
+                            caseId: c.caseId,
+                            customerName: c.customerName,
+                            depositDate: dep.date,
+                            amount: dep.amount || 0,
+                            depositNumber: idx + 1,
+                            contractFee: c.contractFee || 0,
+                            totalDeposited: cumulativeDeposit,
+                            expectedPayout: payableInfo.payable,
+                            payoutDate: weekEnd.toISOString().split('T')[0]
+                        });
+                    });
+                });
+
+                // Sort by deposit date
+                futureDeposits.sort((a, b) => a.depositDate.localeCompare(b.depositDate));
+
+                // Take only next 60 days
+                const sixtyDaysLater = new Date(today);
+                sixtyDaysLater.setDate(sixtyDaysLater.getDate() + 60);
+                const sixtyDaysStr = sixtyDaysLater.toISOString().split('T')[0];
+                const nearFutureDeposits = futureDeposits.filter(d => d.depositDate <= sixtyDaysStr);
+
+                // Calculate totals
+                const totalFutureDeposit = nearFutureDeposits.reduce((sum, d) => sum + d.amount, 0);
+                const totalFuturePayout = nearFutureDeposits.reduce((sum, d) => sum + d.expectedPayout, 0);
+
+                if (nearFutureDeposits.length === 0) {
+                    return (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-2xl">🔮</span>
+                                <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm">향후 60일 내 예정된 입금이 없습니다.</p>
+                        </div>
+                    );
+                }
+
+                return (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-white">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl">🔮</span>
+                                    <div>
+                                        <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
+                                        <p className="text-xs text-gray-500">향후 60일 내 예정된 입금과 수수료 지급 일정</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 text-sm">
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-500">예상 입금</p>
+                                        <p className="font-bold text-green-600">{totalFutureDeposit.toLocaleString()}만원</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-500">예상 지급</p>
+                                        <p className="font-bold text-orange-600">{totalFuturePayout.toLocaleString()}만원</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Timeline + Table View */}
+                        <div className="p-4">
+                            <div className="space-y-3">
+                                {nearFutureDeposits.map((dep, idx) => (
+                                    <div key={`${dep.caseId}-${dep.depositNumber}`} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                        {/* Date Badge */}
+                                        <div className="flex-shrink-0 text-center">
+                                            <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
+                                                {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 mt-1">입금예정</p>
+                                        </div>
+
+                                        {/* Customer Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-gray-800">{dep.customerName}</span>
+                                                <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                                                    {dep.depositNumber}차 입금
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-1">
+                                                수임료 {dep.contractFee}만원 중 누적 {dep.totalDeposited}만원 입금
+                                            </p>
+                                        </div>
+
+                                        {/* Amount */}
+                                        <div className="text-right flex-shrink-0">
+                                            <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
+                                            {dep.expectedPayout > 0 && (
+                                                <div className="mt-1 text-xs">
+                                                    <span className="text-orange-600">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* Weekly Batch Status Overview */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white">
