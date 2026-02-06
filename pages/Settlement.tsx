@@ -171,6 +171,22 @@ export default function Settlement() {
         return calculateCommission(c.contractFee || 0, p.commissionRules);
     };
 
+    // Helper to calculate payable commission (deposit-based) for a specific case
+    const getPayableInfoForCase = (c: Case) => {
+        const p = partners.find(partner => partner.partnerId === c.partnerId);
+        if (!p) return { payable: 0, total: 0, isPartial: false, totalDeposit: 0 };
+
+        const { calculatePayableCommission } = require('../utils');
+        const result = calculatePayableCommission(c, p.commissionRules, p.settlementConfig);
+
+        // Calculate total deposit
+        const totalDeposit = (c.depositHistory && c.depositHistory.length > 0)
+            ? c.depositHistory.reduce((sum: number, d: any) => sum + (d.amount || 0), 0)
+            : (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
+
+        return { ...result, totalDeposit };
+    };
+
     // Filter by Year & Month for Statistics
     const statsCases = partnerCases.filter(c => {
         if (!c.contractAt) return false;
@@ -269,21 +285,44 @@ export default function Settlement() {
                                     <table className="w-full text-sm">
                                         <thead className="bg-gray-50 text-gray-600 sticky top-0">
                                             <tr>
-                                                <th className="text-left px-4 py-2">고객명</th>
-                                                <th className="text-left px-4 py-2">계약일</th>
-                                                <th className="text-right px-4 py-2">수임료</th>
-                                                <th className="text-right px-4 py-2">수수료</th>
+                                                <th className="text-left px-3 py-2">고객명</th>
+                                                <th className="text-center px-2 py-2 text-xs">분납</th>
+                                                <th className="text-right px-2 py-2">수임료</th>
+                                                <th className="text-right px-2 py-2">입금액</th>
+                                                <th className="text-right px-2 py-2 text-orange-600">총수수료</th>
+                                                <th className="text-right px-2 py-2 text-green-600 font-bold">금주지급</th>
+                                                <th className="text-center px-2 py-2">상태</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
-                                            {weekDeals.map(deal => (
-                                                <tr key={deal.caseId} className="hover:bg-gray-50">
-                                                    <td className="px-4 py-2 font-medium">{deal.customerName}</td>
-                                                    <td className="px-4 py-2 text-gray-500">{deal.contractAt}</td>
-                                                    <td className="px-4 py-2 text-right text-blue-600">{deal.contractFee?.toLocaleString()}만원</td>
-                                                    <td className="px-4 py-2 text-right text-green-600 font-bold">{getCommissionForCase(deal).toLocaleString()}만원</td>
-                                                </tr>
-                                            ))}
+                                            {weekDeals.map(deal => {
+                                                const info = getPayableInfoForCase(deal);
+                                                return (
+                                                    <tr key={deal.caseId} className="hover:bg-gray-50">
+                                                        <td className="px-3 py-2 font-medium">{deal.customerName}</td>
+                                                        <td className="px-2 py-2 text-center text-xs text-gray-500">{deal.installmentMonths || '-'}</td>
+                                                        <td className="px-2 py-2 text-right text-gray-700">{deal.contractFee?.toLocaleString()}</td>
+                                                        <td className="px-2 py-2 text-right text-blue-600 font-medium">{info.totalDeposit.toLocaleString()}</td>
+                                                        <td className="px-2 py-2 text-right text-orange-500">{info.total.toLocaleString()}</td>
+                                                        <td className="px-2 py-2 text-right text-green-600 font-bold">{info.payable.toLocaleString()}</td>
+                                                        <td className="px-2 py-2 text-center">
+                                                            {info.isPartial ? (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-700">
+                                                                    50%
+                                                                </span>
+                                                            ) : info.payable > 0 ? (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">
+                                                                    100%
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">
+                                                                    대기
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 )}
