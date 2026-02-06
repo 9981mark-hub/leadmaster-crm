@@ -66,7 +66,11 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
 
     const getEventsForDay = (date: Date): SettlementEvent[] => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        return events.filter(e => e.date === dateStr);
+        return events.filter(e => {
+            // Handle both ISO format (2026-02-06T12:34:56Z) and yyyy-MM-dd format
+            const eventDateStr = e.date ? e.date.substring(0, 10) : '';
+            return eventDateStr === dateStr;
+        });
     };
 
     const renderHeader = () => (
@@ -207,7 +211,10 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>
+                <div>
+                    <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>
+                    <p className="text-xs text-gray-400 mt-1">총 {events.length}개의 이벤트 / {batches.length}개 배치</p>
+                </div>
                 <div className="flex gap-2 text-xs">
                     <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full">💰 수금</span>
                     <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full">💳 지급</span>
