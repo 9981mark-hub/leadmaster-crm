@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday } from '../services/api';
 import { Case, Partner, SettlementBatch } from '../types';
-import { calculateCommission, calculateNextSettlement } from '../utils';
+import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw } from 'lucide-react';
 import Modal from '../components/Modal';
@@ -176,7 +176,6 @@ export default function Settlement() {
         const p = partners.find(partner => partner.partnerId === c.partnerId);
         if (!p) return { payable: 0, total: 0, isPartial: false, totalDeposit: 0 };
 
-        const { calculatePayableCommission } = require('../utils');
         const result = calculatePayableCommission(c, p.commissionRules, p.settlementConfig);
 
         // Calculate total deposit
