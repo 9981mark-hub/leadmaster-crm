@@ -171,19 +171,61 @@ export default function Settlement() {
         return calculateCommission(c.contractFee || 0, p.commissionRules);
     };
 
-    // Helper to calculate payable commission (deposit-based) for a specific case
-    const getPayableInfoForCase = (c: Case) => {
+    // Helper to calculate payable commission for a specific week
+    // Only counts deposits that occurred UP TO the week end date
+    const getPayableInfoForCase = (c: Case, weekStartDate: string, weekEndDate: string) => {
         const p = partners.find(partner => partner.partnerId === c.partnerId);
-        if (!p) return { payable: 0, total: 0, isPartial: false, totalDeposit: 0 };
+        if (!p) return { payable: 0, total: 0, isPartial: false, thisWeekDeposit: 0, cumulativeDeposit: 0, isThisWeekDeposit: false };
 
-        const result = calculatePayableCommission(c, p.commissionRules, p.settlementConfig);
+        const rule = p.commissionRules.find(r =>
+            r.active && (c.contractFee || 0) >= r.minFee && ((c.contractFee || 0) <= r.maxFee || r.maxFee === 0)
+        );
+        const totalCommission = rule?.commission || 0;
+        const threshold = rule?.fullPayoutThreshold || 0;
 
-        // Calculate total deposit
-        const totalDeposit = (c.depositHistory && c.depositHistory.length > 0)
-            ? c.depositHistory.reduce((sum: number, d: any) => sum + (d.amount || 0), 0)
-            : (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
+        // Get deposits array
+        const deposits = (c.depositHistory && c.depositHistory.length > 0)
+            ? c.depositHistory
+            : [
+                { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+                { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+            ];
 
-        return { ...result, totalDeposit };
+        // Calculate deposits for THIS WEEK only
+        const thisWeekDeposit = deposits
+            .filter((d: any) => d.date && d.date >= weekStartDate && d.date <= weekEndDate)
+            .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+
+        // Calculate CUMULATIVE deposits up to week end date
+        const cumulativeDeposit = deposits
+            .filter((d: any) => d.date && d.date <= weekEndDate)
+            .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+
+        // Calculate payable based on cumulative deposit
+        const downPaymentRate = p.settlementConfig?.downPaymentPercentage ? p.settlementConfig.downPaymentPercentage / 100 : 0.1;
+        const firstPayoutRate = p.settlementConfig?.firstPayoutPercentage ? p.settlementConfig.firstPayoutPercentage / 100 : 0.5;
+
+        let payable = 0;
+        let isPartial = false;
+
+        if (threshold > 0 && cumulativeDeposit >= threshold) {
+            // Full payout condition
+            payable = totalCommission;
+            isPartial = false;
+        } else if (cumulativeDeposit >= ((c.contractFee || 0) * downPaymentRate)) {
+            // Partial payout condition  
+            payable = totalCommission * firstPayoutRate;
+            isPartial = true;
+        }
+
+        return {
+            payable,
+            total: totalCommission,
+            isPartial,
+            thisWeekDeposit,
+            cumulativeDeposit,
+            isThisWeekDeposit: thisWeekDeposit > 0
+        };
     };
 
     // Filter by Year & Month for Statistics
@@ -295,13 +337,13 @@ export default function Settlement() {
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
                                             {weekDeals.map(deal => {
-                                                const info = getPayableInfoForCase(deal);
+                                                const info = getPayableInfoForCase(deal, currentBatch!.startDate, currentBatch!.endDate);
                                                 return (
                                                     <tr key={deal.caseId} className="hover:bg-gray-50">
                                                         <td className="px-3 py-2 font-medium">{deal.customerName}</td>
                                                         <td className="px-2 py-2 text-center text-xs text-gray-500">{deal.installmentMonths || '-'}</td>
                                                         <td className="px-2 py-2 text-right text-gray-700">{deal.contractFee?.toLocaleString()}</td>
-                                                        <td className="px-2 py-2 text-right text-blue-600 font-medium">{info.totalDeposit.toLocaleString()}</td>
+                                                        <td className="px-2 py-2 text-right text-blue-600 font-medium">{info.thisWeekDeposit.toLocaleString()}</td>
                                                         <td className="px-2 py-2 text-right text-orange-500">{info.total.toLocaleString()}</td>
                                                         <td className="px-2 py-2 text-right text-green-600 font-bold">{info.payable.toLocaleString()}</td>
                                                         <td className="px-2 py-2 text-center">
