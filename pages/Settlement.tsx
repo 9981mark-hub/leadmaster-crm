@@ -931,6 +931,22 @@ export default function Settlement() {
 
     const renderReportTab = () => (
         <div className="space-y-6">
+            {/* DEBUG PANEL - Remove after fixing */}
+            <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 text-sm">
+                <p className="font-bold text-yellow-800 mb-2">🔧 디버그 정보 (문제 해결 후 삭제)</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-yellow-700">
+                    <div>총 케이스: <strong>{cases.length}</strong></div>
+                    <div>파트너 케이스: <strong>{partnerCases.length}</strong></div>
+                    <div>통계 케이스: <strong>{statsCases.length}</strong></div>
+                    <div>선택된 파트너ID: <strong className="break-all text-xs">{selectedPartnerId}</strong></div>
+                </div>
+                {cases.length > 0 && partnerCases.length === 0 && (
+                    <p className="text-red-600 mt-2">⚠️ 케이스가 있지만 파트너 매칭 실패. 샘플 partnerId: {cases.slice(0, 3).map(c => `"${c.partnerId}"`).join(', ')}</p>
+                )}
+                {partnerCases.length > 0 && statsCases.length === 0 && (
+                    <p className="text-red-600 mt-2">⚠️ 파트너 케이스는 있지만 날짜 필터링 실패. 샘플 contractAt: {partnerCases.slice(0, 3).map(c => `"${c.contractAt || c.createdAt}"`).join(', ')}</p>
+                )}
+            </div>
             {/* Row 1: Main KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div
