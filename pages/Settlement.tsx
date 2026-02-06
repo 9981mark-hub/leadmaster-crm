@@ -262,19 +262,97 @@ export default function Settlement() {
         return yearMatch && monthMatch;
     });
 
-    // Calculate KPIs
+    // Today for deposit date comparison
+    const today = new Date().toISOString().split('T')[0];
+
+    // Helper to get deposit info for a case
+    const getDepositInfo = (c: Case) => {
+        const deposits = (c.depositHistory && c.depositHistory.length > 0)
+            ? c.depositHistory
+            : [
+                { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+                { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+            ];
+
+        // Actual deposits (date <= today)
+        const actualDeposit = deposits
+            .filter((d: any) => d.date && d.date <= today)
+            .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+
+        // Expected future deposits (date > today)
+        const expectedDeposit = deposits
+            .filter((d: any) => d.date && d.date > today)
+            .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+
+        // Total deposits (all)
+        const totalDeposit = deposits
+            .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+
+        return { actualDeposit, expectedDeposit, totalDeposit };
+    };
+
+    // Helper to calculate paid commission for a case
+    const getPaidCommissionInfo = (c: Case) => {
+        const p = partners.find(partner => partner.partnerId === c.partnerId);
+        if (!p) return { paidCommission: 0, unpaidCommission: 0, totalCommission: 0 };
+
+        const rule = p.commissionRules.find(r =>
+            r.active && (c.contractFee || 0) >= r.minFee && ((c.contractFee || 0) <= r.maxFee || r.maxFee === 0)
+        );
+        const totalCommission = rule?.commission || 0;
+        const threshold = rule?.fullPayoutThreshold || 0;
+
+        const { actualDeposit } = getDepositInfo(c);
+        const downPaymentRate = p.settlementConfig?.downPaymentPercentage ? p.settlementConfig.downPaymentPercentage / 100 : 0.1;
+        const firstPayoutRate = p.settlementConfig?.firstPayoutPercentage ? p.settlementConfig.firstPayoutPercentage / 100 : 0.5;
+        const contractFee = c.contractFee || 0;
+
+        let paidCommission = 0;
+        if (threshold > 0 && actualDeposit >= threshold) {
+            paidCommission = totalCommission;
+        } else if (actualDeposit >= (contractFee * downPaymentRate)) {
+            paidCommission = totalCommission * firstPayoutRate;
+        }
+
+        return { paidCommission, unpaidCommission: totalCommission - paidCommission, totalCommission };
+    };
+
+    // Calculate Enhanced KPIs
     const totalCount = statsCases.length;
     const totalRevenue = statsCases.reduce((sum, c) => sum + (c.contractFee || 0), 0);
     const totalCommission = statsCases.reduce((sum, c) => sum + getCommissionForCase(c), 0);
     const missingDateCount = partnerCases.filter(c => ['계약 완료', '1차 입금완료', '2차 입금완료'].includes(c.status) && !c.contractAt).length;
 
-    // Monthly Stats for Chart
+    // NEW KPIs
+    const totalActualDeposit = statsCases.reduce((sum, c) => sum + getDepositInfo(c).actualDeposit, 0);
+    const totalExpectedDeposit = statsCases.reduce((sum, c) => sum + getDepositInfo(c).expectedDeposit, 0);
+    const totalPaidCommission = statsCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
+    const totalUnpaidCommission = totalCommission - totalPaidCommission;
+    const installmentInProgress = statsCases.filter(c => (c.installmentMonths || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission).length;
+    const depositCompleteCount = statsCases.filter(c => {
+        const { actualDeposit, totalDeposit } = getDepositInfo(c);
+        return totalDeposit > 0 && actualDeposit >= totalDeposit;
+    }).length;
+    const depositRate = totalCount > 0 ? Math.round((depositCompleteCount / totalCount) * 100) : 0;
+
+    // Monthly Stats for Chart (Enhanced)
     const monthlyStats = Array.from({ length: 12 }, (_, i) => {
         const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`;
         const monthCases = partnerCases.filter(c => c.contractAt && c.contractAt.startsWith(monthStr));
         const revenue = monthCases.reduce((sum, c) => sum + (c.contractFee || 0), 0);
         const commission = monthCases.reduce((sum, c) => sum + getCommissionForCase(c), 0);
-        return { name: `${i + 1}월`, count: monthCases.length, revenue, commission };
+        const actualDeposit = monthCases.reduce((sum, c) => sum + getDepositInfo(c).actualDeposit, 0);
+        const paidCommission = monthCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
+        const unpaidCommission = commission - paidCommission;
+        return {
+            name: `${i + 1}월`,
+            count: monthCases.length,
+            revenue,
+            commission,
+            actualDeposit,
+            paidCommission,
+            unpaidCommission
+        };
     });
 
     const getPartnerName = (pid: string) => partners.find(p => p.partnerId === pid)?.name || '-';
@@ -649,37 +727,65 @@ export default function Settlement() {
 
     const renderReportTab = () => (
         <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Row 1: Main KPIs */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div
                     onClick={() => setIsDetailModalOpen(true)}
-                    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-sm text-gray-500">총 계약 건수 ({month === 'all' ? '연간' : `${month}월`})</p>
-                        <Search size={16} className="text-gray-300 group-hover:text-blue-500" />
+                        <p className="text-sm text-gray-500">📋 계약 건수</p>
+                        <Search size={14} className="text-gray-300 group-hover:text-blue-500" />
                     </div>
-                    <p className="text-3xl font-bold text-gray-800 mt-1">{totalCount}건</p>
-                    <p className="text-xs text-blue-500 mt-2 font-medium">클릭하여 상세 내역 보기 →</p>
+                    <p className="text-2xl font-bold text-gray-800 mt-1">{totalCount}건</p>
+                    <p className="text-xs text-blue-500 mt-1">상세 보기 →</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm text-gray-500">총 매출 (수임료)</p>
-                    <p className="text-3xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-sm text-gray-500">💰 총 매출</p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1">수임료 합계</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm text-gray-500">총 기대 수익 (전액)</p>
-                    <p className="text-3xl font-bold text-green-600 mt-1">{totalCommission.toLocaleString()}만원</p>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-sm text-gray-500">✅ 실제 입금액</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1">오늘까지 확정</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm text-gray-500">계약일 누락</p>
-                    <p className="text-3xl font-bold text-red-500 mt-1">{missingDateCount}건</p>
-                    <p className="text-xs text-red-400 mt-2">정산 집계 제외됨</p>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-sm text-gray-500">⏳ 예상 입금액</p>
+                    <p className="text-2xl font-bold text-purple-500 mt-1">{totalExpectedDeposit.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1">미래 예정분</p>
+                </div>
+            </div>
+
+            {/* Row 2: Commission KPIs */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200">
+                    <p className="text-sm text-green-700">💵 지급된 수수료</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
+                    <p className="text-xs text-green-500 mt-1">입금 확정 기준</p>
+                </div>
+                <div className="bg-gradient-to-br from-orange-50 to-white p-5 rounded-xl shadow-sm border border-orange-200">
+                    <p className="text-sm text-orange-700">🔜 미지급 수수료</p>
+                    <p className="text-2xl font-bold text-orange-600 mt-1">{totalUnpaidCommission.toLocaleString()}만원</p>
+                    <p className="text-xs text-orange-500 mt-1">추가 입금 필요</p>
+                </div>
+                <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl shadow-sm border border-indigo-200">
+                    <p className="text-sm text-indigo-700">📊 분납 진행중</p>
+                    <p className="text-2xl font-bold text-indigo-600 mt-1">{installmentInProgress}건</p>
+                    <p className="text-xs text-indigo-500 mt-1">추가 입금 대기</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200">
+                    <p className="text-sm text-blue-700">📈 입금 완료율</p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">{depositRate}%</p>
+                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${depositRate}%` }} />
+                    </div>
                 </div>
             </div>
 
             {/* Chart */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-80 flex flex-col">
-                <h3 className="text-lg font-bold text-gray-700 mb-4 flex-shrink-0">월별 매출 추이 ({isAll ? '전체' : currentPartner?.name})</h3>
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
                 <div className="flex-1 min-h-0 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={monthlyStats}>
@@ -687,39 +793,69 @@ export default function Settlement() {
                             <XAxis dataKey="name" />
                             <YAxis />
                             <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '']} />
-                            <Bar dataKey="revenue" fill="#3b82f6" name="매출" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="commission" fill="#10b981" name="예상 수당(Full)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="actualDeposit" fill="#10b981" name="실제입금" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="paidCommission" fill="#22c55e" name="지급수수료" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="unpaidCommission" fill="#f59e0b" name="미지급수수료" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
-            {/* Monthly Summary Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="p-4 border-b border-gray-100">
-                    <h3 className="font-bold text-gray-700">월별 요약</h3>
+            {/* Monthly Summary Table (Enhanced) */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 bg-gray-50">
+                    <h3 className="font-bold text-gray-700">📅 월별 상세 요약</h3>
                 </div>
-                <table className="w-full text-sm text-center">
-                    <thead className="bg-gray-50 text-gray-600 font-medium">
-                        <tr>
-                            <th className="py-3">월</th>
-                            <th className="py-3">계약 건수</th>
-                            <th className="py-3">매출</th>
-                            <th className="py-3">수당 (예상 Full)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {monthlyStats.map((m, i) => (
-                            <tr key={i} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 ${month === (i + 1) ? 'bg-blue-50' : ''}`}>
-                                <td className="py-3 font-medium">{m.name}</td>
-                                <td className="py-3 text-gray-500">{m.count}</td>
-                                <td className="py-3 text-blue-600">{m.revenue.toLocaleString()}</td>
-                                <td className="py-3 text-green-600 font-bold">{m.commission.toLocaleString()}</td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-600 font-medium">
+                            <tr>
+                                <th className="py-3 px-3 text-center">월</th>
+                                <th className="py-3 px-3 text-center">건수</th>
+                                <th className="py-3 px-3 text-right">매출</th>
+                                <th className="py-3 px-3 text-right text-green-600">입금액</th>
+                                <th className="py-3 px-3 text-right text-blue-600">총수수료</th>
+                                <th className="py-3 px-3 text-right text-green-600">지급완료</th>
+                                <th className="py-3 px-3 text-right text-orange-600">미지급</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {monthlyStats.map((m, i) => (
+                                <tr key={i} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 ${month === (i + 1) ? 'bg-blue-50' : ''}`}>
+                                    <td className="py-3 px-3 font-medium text-center">{m.name}</td>
+                                    <td className="py-3 px-3 text-center text-gray-500">{m.count}</td>
+                                    <td className="py-3 px-3 text-right text-gray-700">{m.revenue.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-green-600 font-medium">{m.actualDeposit.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-blue-600">{m.commission.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-green-600 font-bold">{m.paidCommission.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-orange-600">{m.unpaidCommission.toLocaleString()}만원</td>
+                                </tr>
+                            ))}
+                            {/* Total Row */}
+                            <tr className="bg-gray-100 font-bold border-t-2 border-gray-300">
+                                <td className="py-3 px-3 text-center">합계</td>
+                                <td className="py-3 px-3 text-center">{totalCount}</td>
+                                <td className="py-3 px-3 text-right text-gray-700">{totalRevenue.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-green-600">{totalActualDeposit.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-blue-600">{totalCommission.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-green-600">{totalPaidCommission.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-orange-600">{totalUnpaidCommission.toLocaleString()}만원</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            {/* Warning for missing dates */}
+            {missingDateCount > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                    <span className="text-2xl">⚠️</span>
+                    <div>
+                        <p className="font-bold text-red-700">계약일 누락: {missingDateCount}건</p>
+                        <p className="text-sm text-red-600">계약일이 없는 건은 정산 집계에서 제외됩니다.</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 
