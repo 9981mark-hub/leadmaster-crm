@@ -172,10 +172,10 @@ export default function Settlement() {
     };
 
     // Helper to calculate payable commission for a specific week
-    // Only counts deposits that occurred UP TO the week end date
+    // Calculates: thisWeekPayable = currentPayable - previouslyPaid
     const getPayableInfoForCase = (c: Case, weekStartDate: string, weekEndDate: string) => {
         const p = partners.find(partner => partner.partnerId === c.partnerId);
-        if (!p) return { payable: 0, total: 0, isPartial: false, thisWeekDeposit: 0, cumulativeDeposit: 0, isThisWeekDeposit: false, isFutureDeposit: false };
+        if (!p) return { payable: 0, thisWeekPayable: 0, total: 0, isPartial: false, thisWeekDeposit: 0, cumulativeDeposit: 0, isThisWeekDeposit: false, isFutureDeposit: false, previouslyPaid: 0 };
 
         const rule = p.commissionRules.find(r =>
             r.active && (c.contractFee || 0) >= r.minFee && ((c.contractFee || 0) <= r.maxFee || r.maxFee === 0)
@@ -206,25 +206,42 @@ export default function Settlement() {
             .filter((d: any) => d.date && d.date <= weekEndDate)
             .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
 
-        // Calculate payable based on cumulative deposit
+        // Calculate PREVIOUS deposits (before this week)
+        const previousDeposit = deposits
+            .filter((d: any) => d.date && d.date < weekStartDate)
+            .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+
+        // Payout rules
         const downPaymentRate = p.settlementConfig?.downPaymentPercentage ? p.settlementConfig.downPaymentPercentage / 100 : 0.1;
         const firstPayoutRate = p.settlementConfig?.firstPayoutPercentage ? p.settlementConfig.firstPayoutPercentage / 100 : 0.5;
+        const contractFee = c.contractFee || 0;
 
-        let payable = 0;
+        // Calculate what was PREVIOUSLY PAID (based on deposits before this week)
+        let previouslyPaid = 0;
+        if (threshold > 0 && previousDeposit >= threshold) {
+            previouslyPaid = totalCommission; // 100% already paid
+        } else if (previousDeposit >= (contractFee * downPaymentRate)) {
+            previouslyPaid = totalCommission * firstPayoutRate; // 50% already paid
+        }
+
+        // Calculate CURRENT total payable (based on cumulative deposit including this week)
+        let currentPayable = 0;
         let isPartial = false;
-
         if (threshold > 0 && cumulativeDeposit >= threshold) {
-            // Full payout condition
-            payable = totalCommission;
+            currentPayable = totalCommission;
             isPartial = false;
-        } else if (cumulativeDeposit >= ((c.contractFee || 0) * downPaymentRate)) {
-            // Partial payout condition  
-            payable = totalCommission * firstPayoutRate;
+        } else if (cumulativeDeposit >= (contractFee * downPaymentRate)) {
+            currentPayable = totalCommission * firstPayoutRate;
             isPartial = true;
         }
 
+        // THIS WEEK's payable = current - previous
+        const thisWeekPayable = Math.max(0, currentPayable - previouslyPaid);
+
         return {
-            payable,
+            payable: currentPayable,
+            thisWeekPayable,
+            previouslyPaid,
             total: totalCommission,
             isPartial,
             thisWeekDeposit,
@@ -361,7 +378,7 @@ export default function Settlement() {
                                                         <td className="px-2 py-2 text-right text-orange-500">{info.total.toLocaleString()}만원</td>
                                                         <td className={`px-2 py-2 text-right font-bold ${info.isFutureDeposit ? 'text-purple-600' : 'text-green-600'}`}>
                                                             {info.isFutureDeposit && <span className="text-xs mr-0.5">예상</span>}
-                                                            {info.payable.toLocaleString()}만원
+                                                            {info.thisWeekPayable.toLocaleString()}만원
                                                         </td>
                                                         <td className="px-2 py-2 text-center">
                                                             {info.isFutureDeposit ? (
@@ -372,7 +389,7 @@ export default function Settlement() {
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-700">
                                                                     50%
                                                                 </span>
-                                                            ) : info.payable > 0 ? (
+                                                            ) : info.thisWeekPayable > 0 ? (
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">
                                                                     100%
                                                                 </span>
