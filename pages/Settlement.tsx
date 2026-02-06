@@ -1,12 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
+import { differenceInDays, parseISO } from 'date-fns';
 import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday } from '../services/api';
 import { Case, Partner, SettlementBatch } from '../types';
 import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2 } from 'lucide-react';
+import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download } from 'lucide-react';
 import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
+import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
 
 type TabType = 'monday' | 'tuesday' | 'wednesday' | 'report';
@@ -352,7 +354,8 @@ export default function Settlement() {
             commission,
             actualDeposit,
             paidCommission,
-            unpaidCommission
+            unpaidCommission,
+            netProfit: actualDeposit - paidCommission
         };
     });
 
@@ -951,6 +954,103 @@ export default function Settlement() {
                 </div>
             </div>
 
+            {/* Overdue Management Section */}
+            {(() => {
+                const partnerCases = cases.filter(c => c.partnerId === selectedPartnerId);
+                const today = new Date();
+
+                // Filter overdue cases
+                // 1. Unpaid amount > 0
+                // 2. Last deposit (or contract date) was > 30 days ago
+                const overdueCases = partnerCases.filter(c => {
+                    if (c.status === '종결' || c.status === '취소') return false;
+
+                    const contractFee = c.contractFee || 0;
+                    const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const unpaidAmount = contractFee - totalDeposited;
+
+                    if (unpaidAmount <= 0) return false;
+
+                    // Check date
+                    let lastActivityDateStr = c.contractAt || c.createdAt;
+                    if (c.depositHistory && c.depositHistory.length > 0) {
+                        // Find latest deposit
+                        const dates = c.depositHistory.map(d => d.date).sort();
+                        lastActivityDateStr = dates[dates.length - 1];
+                    }
+
+                    if (!lastActivityDateStr) return false;
+
+                    const lastDate = parseISO(lastActivityDateStr);
+                    const diffDays = differenceInDays(today, lastDate);
+
+                    return diffDays >= 30;
+                }).map(c => {
+                    const contractFee = c.contractFee || 0;
+                    const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const unpaidAmount = contractFee - totalDeposited;
+                    let lastActivityDateStr = c.contractAt || c.createdAt;
+                    if (c.depositHistory && c.depositHistory.length > 0) {
+                        const dates = c.depositHistory.map(d => d.date).sort();
+                        lastActivityDateStr = dates[dates.length - 1];
+                    }
+                    return {
+                        ...c,
+                        unpaidAmount,
+                        overdueDays: differenceInDays(today, parseISO(lastActivityDateStr!))
+                    };
+                }).sort((a, b) => b.unpaidAmount - a.unpaidAmount); // Sort by highest unpaid amount
+
+                if (overdueCases.length === 0) return null;
+
+                return (
+                    <div className="bg-red-50 rounded-xl shadow-sm border border-red-100 p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="p-1.5 bg-red-100 text-red-600 rounded-lg">🚨</span>
+                                <div>
+                                    <h3 className="font-bold text-red-800">장기 미수금 현황</h3>
+                                    <p className="text-xs text-red-600">최근 30일 이상 미입금 고객 ({overdueCases.length}명)</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xs text-red-500">총 미수금</p>
+                                <p className="font-bold text-red-700 text-lg">
+                                    {overdueCases.reduce((sum, c) => sum + c.unpaidAmount, 0).toLocaleString()}만원
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Horizontal Scroll for Overdue Cards */}
+                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                            {overdueCases.map(c => (
+                                <div key={c.caseId} className="min-w-[240px] bg-white p-4 rounded-lg border border-red-200 shadow-sm flex-shrink-0">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="font-bold text-gray-800">{c.customerName}</span>
+                                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-bold">
+                                            +{c.overdueDays}일째
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">미납액</span>
+                                            <span className="font-bold text-red-600">{c.unpaidAmount.toLocaleString()}만원</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">진행상태</span>
+                                            <span className="text-gray-700">{c.status}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                                        <p className="text-xs text-gray-400">마지막: {c.depositHistory?.length ? '입금' : '계약'}일 기준</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* Chart */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-80 flex flex-col">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
@@ -961,9 +1061,10 @@ export default function Settlement() {
                             <XAxis dataKey="name" />
                             <YAxis />
                             <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '']} />
+                            <Legend />
                             <Bar dataKey="actualDeposit" fill="#10b981" name="실제입금" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="paidCommission" fill="#22c55e" name="지급수수료" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="unpaidCommission" fill="#f59e0b" name="미지급수수료" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="paidCommission" fill="#ef4444" name="지급수수료" radius={[4, 4, 0, 0]} />
+                            <Line type="monotone" dataKey="netProfit" stroke="#3b82f6" strokeWidth={2} name="순수익 (입금-지급)" dot={{ r: 4 }} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -1013,6 +1114,59 @@ export default function Settlement() {
                     </table>
                 </div>
             </div>
+
+            {/* Partner Stats Section (Only visible when viewing all) */}
+            {isAll && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+                    <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+                        <h3 className="font-bold text-gray-700">🤝 파트너별 성과 분석</h3>
+                        <p className="text-xs text-gray-500 mt-1">파트너별 수임 건수 및 수수료 지급 현황</p>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 text-gray-600 font-medium">
+                                <tr>
+                                    <th className="py-3 px-3 text-left">파트너명</th>
+                                    <th className="py-3 px-3 text-center">건수</th>
+                                    <th className="py-3 px-3 text-right">총 수임료</th>
+                                    <th className="py-3 px-3 text-right text-blue-600">지급 완료</th>
+                                    <th className="py-3 px-3 text-right text-orange-600">미지급</th>
+                                    <th className="py-3 px-3 text-right">지급률</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {partners.map(p => {
+                                    const pCases = cases.filter(c => c.partnerId === p.partnerId);
+                                    if (pCases.length === 0) return null;
+
+                                    const count = pCases.length;
+                                    const revenue = pCases.reduce((sum, c) => sum + (c.contractFee || 0), 0);
+                                    const paid = pCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
+                                    const totalComm = pCases.reduce((sum, c) => sum + getCommissionForCase(c), 0);
+                                    const unpaid = totalComm - paid;
+                                    const rate = totalComm > 0 ? Math.round((paid / totalComm) * 100) : 0;
+
+                                    return { p, count, revenue, paid, unpaid, rate };
+                                })
+                                    .filter(item => item !== null)
+                                    .sort((a, b) => (b?.revenue || 0) - (a?.revenue || 0))
+                                    .map((item, idx) => (
+                                        <tr key={item!.p.partnerId} className="hover:bg-gray-50 transition-colors">
+                                            <td className="py-3 px-3 font-medium text-gray-800">
+                                                {idx + 1}. {item!.p.name}
+                                            </td>
+                                            <td className="py-3 px-3 text-center">{item!.count}건</td>
+                                            <td className="py-3 px-3 text-right font-bold">{item!.revenue.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-blue-600">{item!.paid.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-orange-600">{item!.unpaid.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-gray-500">{item!.rate}%</td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
 
             {/* Future Cashflow Prediction */}
             {(() => {
@@ -1179,9 +1333,36 @@ export default function Settlement() {
 
             {/* Weekly Batch Status Overview */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white">
-                    <h3 className="font-bold text-gray-700">📋 주간 정산 배치 현황</h3>
-                    <p className="text-xs text-gray-500 mt-1">최근 정산 배치별 수금/지급/세금계산서 상태</p>
+                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white flex justify-between items-center">
+                    <div>
+                        <h3 className="font-bold text-gray-700">📋 주간 정산 배치 현황</h3>
+                        <p className="text-xs text-gray-500 mt-1">최근 정산 배치별 수금/지급/세금계산서 상태</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            if (batches.length === 0) {
+                                showToast('내보낼 데이터가 없습니다.', 'error');
+                                return;
+                            }
+                            const excelData = batches.map(b => ({
+                                '주차': b.weekLabel,
+                                '기간': `${b.startDate} ~ ${b.endDate}`,
+                                '수수료(만원)': b.totalCommission,
+                                '수금상태': b.collectionInfo?.collectedAt ? `완료 (${b.collectionInfo.collectedAt})` : '대기',
+                                '파트너 지급': (b.payoutItems || []).length > 0
+                                    ? (b.payoutItems || []).map(p => `${p.partnerName}(${p.amount}만원)`).join(', ')
+                                    : '없음',
+                                '세금계산서': b.purchaseInvoice?.receivedAt ? `수취 (${b.purchaseInvoice.receivedAt})` : '미수취',
+                                '상태': getSettlementStatusLabel(b.status)
+                            }));
+                            exportToExcel(`정산내역_${new Date().toISOString().split('T')[0]}`, excelData);
+                            showToast('엑셀 파일이 다운로드되었습니다.', 'success');
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                    >
+                        <Download size={16} />
+                        엑셀 다운로드
+                    </button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -1306,6 +1487,37 @@ export default function Settlement() {
         </div>
     );
 
+    // Notification Logic
+    const notificationToday = new Date();
+    const notificationDayOfWeek = notificationToday.getDay(); // 0:Sun, 1:Mon, ...
+
+    // 1. Overdue Count
+    const totalOverdueCount = cases.filter(c => {
+        if (c.status === '종결' || c.status === '취소') return false;
+        const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+        const unpaid = (c.contractFee || 0) - totalDeposited;
+        if (unpaid <= 0) return false;
+
+        // Simple 30 days check
+        const lastDateStr = c.depositHistory?.length
+            ? c.depositHistory.map(d => d.date).sort().pop()
+            : (c.contractAt || c.createdAt);
+        if (!lastDateStr) return false;
+        return differenceInDays(notificationToday, parseISO(lastDateStr)) >= 30;
+    }).length;
+
+    // 2. Weekly Task Check
+    let weeklyTaskAlert: { type: 'warning' | 'info', msg: string } | null = null;
+    if (notificationDayOfWeek === 1) { // Monday
+        if (!currentBatch) weeklyTaskAlert = { type: 'warning', msg: '월요일입니다. 금주 정산 배치를 생성하고 확인해주세요.' };
+        else if (currentBatch.status === 'draft') weeklyTaskAlert = { type: 'info', msg: '정산 내역을 확인하고 확정(Confirmed)해주세요.' };
+    } else if (notificationDayOfWeek === 2) { // Tuesday
+        if (currentBatch && !currentBatch.invoiceInfo) weeklyTaskAlert = { type: 'warning', msg: '화요일입니다. 세금계산서 발행 및 수금 확인이 필요합니다.' };
+    } else if (notificationDayOfWeek === 3) { // Wednesday
+        if (currentBatch && currentBatch.status !== 'completed' && currentBatch.status !== 'paid')
+            weeklyTaskAlert = { type: 'warning', msg: '수요일입니다. 파트너 수수료 지급을 진행해주세요.' };
+    }
+
     return (
         <div className="max-w-6xl mx-auto space-y-6">
             {/* Header */}
@@ -1325,6 +1537,31 @@ export default function Settlement() {
                         <Building className="absolute left-3 top-3 text-indigo-500" size={18} />
                     </div>
                 </div>
+            </div>
+
+            {/* Notification Center */}
+            <div className="space-y-2 mb-4">
+                {totalOverdueCount > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between animate-pulse">
+                        <div className="flex items-center gap-2 text-red-700">
+                            <span className="font-bold">🚨 긴급</span>
+                            <span className="text-sm">현재 30일 이상 장기 미수금 건이 <span className="font-bold underline">{totalOverdueCount}건</span> 있습니다.</span>
+                        </div>
+                        <button
+                            onClick={() => { setActiveTab('report'); }}
+                            className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold hover:bg-red-200"
+                        >
+                            확인하기
+                        </button>
+                    </div>
+                )}
+                {weeklyTaskAlert && (
+                    <div className={`border rounded-lg p-3 flex items-center gap-2 ${weeklyTaskAlert.type === 'warning' ? 'bg-orange-50 border-orange-200 text-orange-800' : 'bg-blue-50 border-blue-200 text-blue-800'
+                        }`}>
+                        <span>{weeklyTaskAlert.type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                        <span className="text-sm font-medium">{weeklyTaskAlert.msg}</span>
+                    </div>
+                )}
             </div>
 
             {/* Week Navigator (for settlement tabs) */}
