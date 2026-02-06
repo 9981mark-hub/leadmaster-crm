@@ -33,12 +33,24 @@ export default function Settlement() {
     const [copiedTemplate, setCopiedTemplate] = useState(false);
 
     useEffect(() => {
-        Promise.all([fetchCases(), fetchPartners()]).then(([c, p]) => {
+        const loadData = async () => {
+            // Initial load (may get cached/empty data)
+            const [c, p] = await Promise.all([fetchCases(), fetchPartners()]);
             setCases(c);
             setPartners(p);
             if (p.length > 0) setSelectedPartnerId(p[0].partnerId);
             setLoading(false);
-        });
+
+            // Re-fetch after delay to get Supabase data (background sync)
+            setTimeout(async () => {
+                const freshCases = await fetchCases();
+                if (freshCases.length > c.length) {
+                    console.log('[Settlement] Re-fetched cases:', freshCases.length);
+                    setCases(freshCases);
+                }
+            }, 1500);
+        };
+        loadData();
     }, []);
 
     // Load batches when partner or week changes
@@ -946,6 +958,17 @@ export default function Settlement() {
                 {partnerCases.length > 0 && statsCases.length === 0 && (
                     <p className="text-red-600 mt-2">⚠️ 파트너 케이스는 있지만 날짜 필터링 실패. 샘플 contractAt: {partnerCases.slice(0, 3).map(c => `"${c.contractAt || c.createdAt}"`).join(', ')}</p>
                 )}
+                <button
+                    onClick={async () => {
+                        setLoading(true);
+                        const freshCases = await fetchCases();
+                        setCases(freshCases);
+                        setLoading(false);
+                    }}
+                    className="mt-2 bg-yellow-500 text-white px-4 py-1 rounded text-sm hover:bg-yellow-600"
+                >
+                    🔄 케이스 다시 불러오기
+                </button>
             </div>
             {/* Row 1: Main KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
