@@ -6,6 +6,7 @@ import { calculateCommission, calculateNextSettlement, calculatePayableCommissio
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
+import SettlementCalendar from '../components/SettlementCalendar';
 import { useToast } from '../contexts/ToastContext';
 
 type TabType = 'monday' | 'tuesday' | 'wednesday' | 'report';
@@ -1136,6 +1137,9 @@ export default function Settlement() {
                     </div>
                 </div>
             )}
+
+            {/* Settlement History Calendar */}
+            <SettlementCalendar batches={batches} />
         </div>
     );
 
