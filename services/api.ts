@@ -1607,10 +1607,16 @@ export const refreshWeeklyBatch = async (batchId: string): Promise<SettlementBat
     if (!c.contractFee) return false;
     if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
 
+    // Check depositHistory array first (new method), then fallback to legacy fields
+    const deposits = (c.depositHistory && c.depositHistory.length > 0)
+      ? c.depositHistory
+      : [
+        { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+        { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+      ];
+
     // Check if any deposit falls within this week
-    const deposit1InWeek = c.deposit1Date && c.deposit1Date >= startDate && c.deposit1Date <= endDate;
-    const deposit2InWeek = c.deposit2Date && c.deposit2Date >= startDate && c.deposit2Date <= endDate;
-    return deposit1InWeek || deposit2InWeek;
+    return deposits.some(d => d.date && d.date >= startDate && d.date <= endDate);
   });
 
   // Recalculate totals using payable commission
@@ -1670,10 +1676,16 @@ export const generateWeeklyBatch = async (partnerId: string, weekStart: Date): P
     if (!c.contractFee) return false;
     if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
 
+    // Check depositHistory array first (new method), then fallback to legacy fields
+    const deposits = (c.depositHistory && c.depositHistory.length > 0)
+      ? c.depositHistory
+      : [
+        { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+        { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+      ];
+
     // Check if any deposit falls within this week
-    const deposit1InWeek = c.deposit1Date && c.deposit1Date >= startDateStr && c.deposit1Date <= endDateStr;
-    const deposit2InWeek = c.deposit2Date && c.deposit2Date >= startDateStr && c.deposit2Date <= endDateStr;
-    return deposit1InWeek || deposit2InWeek;
+    return deposits.some(d => d.date && d.date >= startDateStr && d.date <= endDateStr);
   });
 
   // Calculate totals

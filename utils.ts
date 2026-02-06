@@ -39,7 +39,11 @@ export const calculatePayableCommission = (c: Case, rules: CommissionRule[], con
   const rule = getMatchingRule(c.contractFee, rules);
   if (!rule) return { payable: 0, total: 0, isPartial: false };
 
-  const totalDeposit = (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
+  // Use depositHistory if available, else fallback to legacy fields
+  const totalDeposit = (c.depositHistory && c.depositHistory.length > 0)
+    ? c.depositHistory.reduce((sum, d) => sum + (d.amount || 0), 0)
+    : (c.deposit1Amount || 0) + (c.deposit2Amount || 0);
+
   const threshold = rule.fullPayoutThreshold || 0;
 
   const downPaymentRate = config ? config.downPaymentPercentage / 100 : 0.1; // Default 10%
