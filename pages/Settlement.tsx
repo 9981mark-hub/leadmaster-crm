@@ -175,7 +175,7 @@ export default function Settlement() {
     // Only counts deposits that occurred UP TO the week end date
     const getPayableInfoForCase = (c: Case, weekStartDate: string, weekEndDate: string) => {
         const p = partners.find(partner => partner.partnerId === c.partnerId);
-        if (!p) return { payable: 0, total: 0, isPartial: false, thisWeekDeposit: 0, cumulativeDeposit: 0, isThisWeekDeposit: false };
+        if (!p) return { payable: 0, total: 0, isPartial: false, thisWeekDeposit: 0, cumulativeDeposit: 0, isThisWeekDeposit: false, isFutureDeposit: false };
 
         const rule = p.commissionRules.find(r =>
             r.active && (c.contractFee || 0) >= r.minFee && ((c.contractFee || 0) <= r.maxFee || r.maxFee === 0)
@@ -191,10 +191,15 @@ export default function Settlement() {
                 { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
             ];
 
-        // Calculate deposits for THIS WEEK only
-        const thisWeekDeposit = deposits
-            .filter((d: any) => d.date && d.date >= weekStartDate && d.date <= weekEndDate)
-            .reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+        // Today's date for comparison
+        const today = new Date().toISOString().split('T')[0];
+
+        // Get deposits for THIS WEEK
+        const thisWeekDeposits = deposits.filter((d: any) => d.date && d.date >= weekStartDate && d.date <= weekEndDate);
+        const thisWeekDeposit = thisWeekDeposits.reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+
+        // Check if ALL this week's deposits are in the FUTURE (not yet occurred)
+        const isFutureDeposit = thisWeekDeposits.length > 0 && thisWeekDeposits.every((d: any) => d.date > today);
 
         // Calculate CUMULATIVE deposits up to week end date
         const cumulativeDeposit = deposits
@@ -224,7 +229,8 @@ export default function Settlement() {
             isPartial,
             thisWeekDeposit,
             cumulativeDeposit,
-            isThisWeekDeposit: thisWeekDeposit > 0
+            isThisWeekDeposit: thisWeekDeposit > 0,
+            isFutureDeposit
         };
     };
 
@@ -339,15 +345,30 @@ export default function Settlement() {
                                             {weekDeals.map(deal => {
                                                 const info = getPayableInfoForCase(deal, currentBatch!.startDate, currentBatch!.endDate);
                                                 return (
-                                                    <tr key={deal.caseId} className="hover:bg-gray-50">
-                                                        <td className="px-3 py-2 font-medium">{deal.customerName}</td>
+                                                    <tr key={deal.caseId} className={`hover:bg-gray-50 ${info.isFutureDeposit ? 'bg-purple-50/50' : ''}`}>
+                                                        <td className="px-3 py-2 font-medium">
+                                                            {deal.customerName}
+                                                            {info.isFutureDeposit && (
+                                                                <span className="ml-1 text-xs text-purple-500">(예상)</span>
+                                                            )}
+                                                        </td>
                                                         <td className="px-2 py-2 text-center text-xs text-gray-500">{deal.installmentMonths || '-'}</td>
-                                                        <td className="px-2 py-2 text-right text-gray-700">{deal.contractFee?.toLocaleString()}</td>
-                                                        <td className="px-2 py-2 text-right text-blue-600 font-medium">{info.thisWeekDeposit.toLocaleString()}</td>
-                                                        <td className="px-2 py-2 text-right text-orange-500">{info.total.toLocaleString()}</td>
-                                                        <td className="px-2 py-2 text-right text-green-600 font-bold">{info.payable.toLocaleString()}</td>
+                                                        <td className="px-2 py-2 text-right text-gray-700">{deal.contractFee?.toLocaleString()}만원</td>
+                                                        <td className={`px-2 py-2 text-right font-medium ${info.isFutureDeposit ? 'text-purple-500' : 'text-blue-600'}`}>
+                                                            {info.isFutureDeposit && <span className="text-xs mr-0.5">예상</span>}
+                                                            {info.thisWeekDeposit.toLocaleString()}만원
+                                                        </td>
+                                                        <td className="px-2 py-2 text-right text-orange-500">{info.total.toLocaleString()}만원</td>
+                                                        <td className={`px-2 py-2 text-right font-bold ${info.isFutureDeposit ? 'text-purple-600' : 'text-green-600'}`}>
+                                                            {info.isFutureDeposit && <span className="text-xs mr-0.5">예상</span>}
+                                                            {info.payable.toLocaleString()}만원
+                                                        </td>
                                                         <td className="px-2 py-2 text-center">
-                                                            {info.isPartial ? (
+                                                            {info.isFutureDeposit ? (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700">
+                                                                    예상
+                                                                </span>
+                                                            ) : info.isPartial ? (
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-700">
                                                                     50%
                                                                 </span>
