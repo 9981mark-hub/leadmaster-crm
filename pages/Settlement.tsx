@@ -4,7 +4,7 @@ import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch,
 import { Case, Partner, SettlementBatch } from '../types';
 import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw } from 'lucide-react';
+import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
 
@@ -650,176 +650,247 @@ export default function Settlement() {
         </div>
     );
 
-    const renderWednesdayTab = () => (
-        <div className="space-y-6">
-            {/* Section 1: 수금 정보 (내가 거래처에서 받는 금액) */}
-            <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
-                    💰 수금 정보 (거래처에서 받을 금액)
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                    거래처에서 내 계좌로 입금받을 금액입니다.
-                </p>
+    const renderWednesdayTab = () => {
+        const payoutItems = currentBatch?.payoutItems || [];
 
-                {!currentBatch || !['collected', 'invoiced', 'confirmed'].includes(currentBatch.status) ? (
-                    <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
-                        <AlertTriangle className="mx-auto text-yellow-500 mb-2" size={32} />
-                        <p className="text-gray-600">화요일 탭에서 발행/수금을 먼저 완료해주세요.</p>
-                    </div>
-                ) : (
-                    <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div className="bg-blue-50 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500">수금 대상 금액</p>
-                                <p className="text-2xl font-bold text-blue-700">{currentBatch.totalCommission.toLocaleString()}만원</p>
-                            </div>
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500">거래처</p>
-                                <p className="text-lg font-bold text-gray-700">{currentPartner?.name}</p>
-                            </div>
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500">내 입금 계좌</p>
-                                <p className="text-sm font-medium text-gray-600">
-                                    {currentPartner?.bankInfo
-                                        ? `${currentPartner.bankInfo.bankName} ${currentPartner.bankInfo.accountNumber}`
-                                        : '(미설정)'}
-                                </p>
-                            </div>
+        const addPayoutItem = async () => {
+            if (!currentBatch) return;
+            const newItem = {
+                id: `payout-${Date.now()}`,
+                partnerName: '',
+                partnerAccount: '',
+                amount: 0
+            };
+            const updatedItems = [...payoutItems, newItem];
+            await updateSettlementBatch(currentBatch.batchId, { payoutItems: updatedItems });
+            setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, payoutItems: updatedItems } : b));
+        };
+
+        const updatePayoutItem = async (itemId: string, updates: Partial<typeof payoutItems[0]>) => {
+            if (!currentBatch) return;
+            const updatedItems = payoutItems.map(item => item.id === itemId ? { ...item, ...updates } : item);
+            await updateSettlementBatch(currentBatch.batchId, { payoutItems: updatedItems });
+            setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, payoutItems: updatedItems } : b));
+        };
+
+        const deletePayoutItem = async (itemId: string) => {
+            if (!currentBatch) return;
+            const updatedItems = payoutItems.filter(item => item.id !== itemId);
+            await updateSettlementBatch(currentBatch.batchId, { payoutItems: updatedItems });
+            setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, payoutItems: updatedItems } : b));
+        };
+
+        const markPayoutPaid = async (itemId: string) => {
+            const today = new Date().toISOString().split('T')[0];
+            await updatePayoutItem(itemId, { paidAt: today });
+        };
+
+        const handleCollectionComplete = async () => {
+            if (!currentBatch) return;
+            const today = new Date().toISOString().split('T')[0];
+            const collectionInfo = { collectedAt: today, amount: currentBatch.totalCommission };
+            await updateSettlementBatch(currentBatch.batchId, { collectionInfo, status: 'collected' as any });
+            setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, collectionInfo, status: 'collected' as any } : b));
+            showToast('수금 완료 처리되었습니다.', 'success');
+        };
+
+        const handleInvoiceReceived = async () => {
+            if (!currentBatch) return;
+            const today = new Date().toISOString().split('T')[0];
+            const purchaseInvoice = { receivedAt: today };
+            await updateSettlementBatch(currentBatch.batchId, { purchaseInvoice, status: 'completed' as any });
+            setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, purchaseInvoice, status: 'completed' as any } : b));
+            showToast('매입 세금계산서 수취 완료 처리되었습니다.', 'success');
+        };
+
+        const presets = currentPartner?.payoutPartnerPresets || [];
+
+        return (
+            <div className="space-y-6">
+                {/* Section 1: 수금 정보 */}
+                <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                    <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
+                        💰 수금 정보 (거래처에서 받을 금액)
+                    </h3>
+
+                    {!currentBatch || !['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) ? (
+                        <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
+                            <AlertTriangle className="mx-auto text-yellow-500 mb-2" size={32} />
+                            <p className="text-gray-600">화요일 탭에서 발행을 먼저 완료해주세요.</p>
                         </div>
-                        {currentBatch.collectionInfo?.collectedAt ? (
-                            <p className="text-blue-600 font-bold">
-                                ✓ 수금완료 ({currentBatch.collectionInfo.collectedAt}) - {currentBatch.collectionInfo.amount?.toLocaleString()}만원
-                            </p>
-                        ) : (
-                            <p className="text-gray-500 text-sm">화요일 탭에서 수금 완료 처리됩니다.</p>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Section 2: 파트너 지급 (내가 파트너에게 지급하는 금액 - 선택적) */}
-            <div className="bg-green-50 p-6 rounded-xl border border-green-100">
-                <h3 className="font-bold text-green-800 mb-4 text-lg flex items-center">
-                    <CreditCard className="mr-2" size={20} /> 파트너 지급 (선택)
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                    파트너사에 지급할 수수료가 있는 경우에만 입력합니다. (수금액과 별개)
-                </p>
-
-                {currentBatch && ['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) && (
-                    <div className="space-y-4">
-                        {/* Toggle */}
+                    ) : (
                         <div className="bg-white p-4 rounded-lg border border-gray-200">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={currentBatch.payoutInfo?.enabled || false}
-                                    onChange={async (e) => {
-                                        const newPayoutInfo = { ...currentBatch.payoutInfo, enabled: e.target.checked };
-                                        await updateSettlementBatch(currentBatch.batchId, { payoutInfo: newPayoutInfo });
-                                        setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, payoutInfo: newPayoutInfo } : b));
-                                    }}
-                                    className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                />
-                                <span className="font-medium text-gray-700">이번 주 파트너 지급 있음</span>
-                            </label>
-                        </div>
-
-                        {/* Payout Details (only if enabled) */}
-                        {currentBatch.payoutInfo?.enabled && (
-                            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">지급 금액 (만원)</label>
-                                        <input
-                                            type="number"
-                                            defaultValue={currentBatch.payoutInfo?.amount || 0}
-                                            onBlur={async (e) => {
-                                                const amount = parseInt(e.target.value) || 0;
-                                                const newPayoutInfo = { ...currentBatch.payoutInfo, amount };
-                                                await updateSettlementBatch(currentBatch.batchId, { payoutInfo: newPayoutInfo });
-                                                setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, payoutInfo: newPayoutInfo } : b));
-                                            }}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-lg font-bold"
-                                            placeholder="금액 입력"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">지급 대상 파트너</label>
-                                        <input
-                                            type="text"
-                                            defaultValue={currentBatch.payoutInfo?.partnerName || ''}
-                                            onBlur={async (e) => {
-                                                const newPayoutInfo = { ...currentBatch.payoutInfo, partnerName: e.target.value };
-                                                await updateSettlementBatch(currentBatch.batchId, { payoutInfo: newPayoutInfo });
-                                                setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, payoutInfo: newPayoutInfo } : b));
-                                            }}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                            placeholder="파트너명"
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div className="bg-blue-50 p-3 rounded-lg">
+                                    <p className="text-xs text-gray-500">수금 대상 금액</p>
+                                    <p className="text-2xl font-bold text-blue-700">{currentBatch.totalCommission.toLocaleString()}만원</p>
                                 </div>
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1">파트너 계좌 정보</label>
-                                    <input
-                                        type="text"
-                                        defaultValue={currentBatch.payoutInfo?.partnerAccount || ''}
-                                        onBlur={async (e) => {
-                                            const newPayoutInfo = { ...currentBatch.payoutInfo, partnerAccount: e.target.value };
-                                            await updateSettlementBatch(currentBatch.batchId, { payoutInfo: newPayoutInfo });
-                                            setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, payoutInfo: newPayoutInfo } : b));
-                                        }}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                        placeholder="은행명 계좌번호"
-                                    />
+                                <div className="bg-gray-50 p-3 rounded-lg">
+                                    <p className="text-xs text-gray-500">거래처</p>
+                                    <p className="text-lg font-bold text-gray-700">{currentPartner?.name}</p>
                                 </div>
-
-                                {currentBatch.payoutInfo?.paidAt ? (
-                                    <p className="text-green-600 font-bold">
-                                        ✓ 지급완료 ({currentBatch.payoutInfo.paidAt}) - {currentBatch.payoutInfo.amount?.toLocaleString()}만원
+                                <div className="bg-gray-50 p-3 rounded-lg">
+                                    <p className="text-xs text-gray-500">내 입금 계좌</p>
+                                    <p className="text-sm font-medium text-gray-600">
+                                        {currentPartner?.bankInfo
+                                            ? `${currentPartner.bankInfo.bankName} ${currentPartner.bankInfo.accountNumber}`
+                                            : '(설정에서 입력)'}
                                     </p>
-                                ) : (
-                                    <button
-                                        onClick={() => handleUpdateBatchStatus('paid')}
-                                        className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700"
-                                    >
-                                        ✓ 파트너 지급 완료 처리
-                                    </button>
-                                )}
+                                </div>
                             </div>
-                        )}
+                            {currentBatch.collectionInfo?.collectedAt ? (
+                                <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                                    <p className="text-green-700 font-bold text-lg">
+                                        ✓ 수금완료 ({currentBatch.collectionInfo.collectedAt})
+                                    </p>
+                                    <p className="text-green-600">{currentBatch.collectionInfo.amount?.toLocaleString()}만원 입금 확인</p>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleCollectionComplete}
+                                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700"
+                                >
+                                    💰 수금 완료 처리
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
 
-                        {!currentBatch.payoutInfo?.enabled && (
-                            <p className="text-sm text-gray-500 italic">파트너 지급이 없으면 체크박스를 해제한 상태로 두세요.</p>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Section 3: 매입 세금계산서 수취 */}
-            <div className="bg-purple-50 p-6 rounded-xl border border-purple-100">
-                <h3 className="font-bold text-purple-800 mb-4 text-lg flex items-center">
-                    📥 매입 세금계산서 수취
-                </h3>
-                {currentBatch && ['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) && (
-                    <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        {currentBatch.purchaseInvoice?.receivedAt ? (
-                            <p className="text-purple-600 font-bold">
-                                ✓ 수취완료 ({currentBatch.purchaseInvoice.receivedAt})
-                            </p>
-                        ) : (
+                {/* Section 2: 파트너 지급 (복수 지원) */}
+                <div className="bg-green-50 p-6 rounded-xl border border-green-100">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-green-800 text-lg flex items-center">
+                            <CreditCard className="mr-2" size={20} /> 파트너 지급 ({payoutItems.length}건)
+                        </h3>
+                        {currentBatch && ['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) && (
                             <button
-                                onClick={() => handleUpdateBatchStatus('completed')}
-                                className="bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700"
+                                onClick={addPayoutItem}
+                                className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center gap-1"
                             >
-                                매입 세금계산서 수취 완료
+                                <Plus size={16} /> 지급 추가
                             </button>
                         )}
                     </div>
-                )}
+
+                    {payoutItems.length === 0 ? (
+                        <p className="text-sm text-gray-500 bg-white p-4 rounded-lg">파트너 지급이 없으면 "지급 추가" 없이 두세요.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {payoutItems.map((item, idx) => (
+                                <div key={item.id} className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <span className="text-sm font-medium text-gray-500">지급 #{idx + 1}</span>
+                                        {!item.paidAt && (
+                                            <button onClick={() => deletePayoutItem(item.id)} className="text-red-500 hover:text-red-700">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Preset Dropdown */}
+                                    {presets.length > 0 && !item.partnerName && (
+                                        <div className="mb-3">
+                                            <label className="block text-xs text-gray-500 mb-1">프리셋 선택</label>
+                                            <select
+                                                onChange={(e) => {
+                                                    const preset = presets.find(p => p.id === e.target.value);
+                                                    if (preset) {
+                                                        updatePayoutItem(item.id, {
+                                                            partnerName: preset.name,
+                                                            partnerAccount: preset.accountInfo,
+                                                            amount: preset.defaultAmount || 0
+                                                        });
+                                                    }
+                                                }}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                            >
+                                                <option value="">직접 입력</option>
+                                                {presets.map(p => (
+                                                    <option key={p.id} value={p.id}>{p.name} - {p.accountInfo}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">파트너명</label>
+                                            <input
+                                                type="text"
+                                                defaultValue={item.partnerName}
+                                                onBlur={(e) => updatePayoutItem(item.id, { partnerName: e.target.value })}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                                placeholder="파트너명"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">계좌정보</label>
+                                            <input
+                                                type="text"
+                                                defaultValue={item.partnerAccount}
+                                                onBlur={(e) => updatePayoutItem(item.id, { partnerAccount: e.target.value })}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                                placeholder="은행 계좌번호"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">금액 (만원)</label>
+                                            <input
+                                                type="number"
+                                                defaultValue={item.amount}
+                                                onBlur={(e) => updatePayoutItem(item.id, { amount: parseInt(e.target.value) || 0 })}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 font-bold"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3">
+                                        {item.paidAt ? (
+                                            <div className="bg-green-50 p-2 rounded border border-green-200">
+                                                <p className="text-green-700 font-bold">✓ 지급완료 ({item.paidAt}) - {item.amount?.toLocaleString()}만원</p>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => markPayoutPaid(item.id)}
+                                                className="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700"
+                                            >
+                                                ✓ 지급 완료 처리
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Section 3: 매입 세금계산서 수취 */}
+                <div className="bg-purple-50 p-6 rounded-xl border border-purple-100">
+                    <h3 className="font-bold text-purple-800 mb-4 text-lg flex items-center">
+                        📥 매입 세금계산서 수취
+                    </h3>
+                    {currentBatch && ['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) && (
+                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            {currentBatch.purchaseInvoice?.receivedAt ? (
+                                <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                                    <p className="text-purple-700 font-bold text-lg">✓ 수취완료 ({currentBatch.purchaseInvoice.receivedAt})</p>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleInvoiceReceived}
+                                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700"
+                                >
+                                    📥 매입 세금계산서 수취 완료
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const renderReportTab = () => (
         <div className="space-y-6">

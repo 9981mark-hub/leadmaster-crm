@@ -1107,6 +1107,123 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
+                        {/* Payout Partner Presets Section */}
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                                💳 지급 파트너 프리셋
+                            </h3>
+                            <p className="text-sm text-gray-500 mb-4">
+                                자주 지급하는 파트너를 미리 등록해두면 정산 시 빠르게 선택할 수 있습니다.
+                            </p>
+
+                            {/* Add New Preset */}
+                            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                                <h4 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">새 프리셋 추가</h4>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                                    <div>
+                                        <label className="text-[10px] text-gray-500 block mb-1">파트너명</label>
+                                        <input
+                                            type="text"
+                                            id="newPresetName"
+                                            className="w-full p-2 border rounded text-sm"
+                                            placeholder="마케팅 A사"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-gray-500 block mb-1">계좌 정보</label>
+                                        <input
+                                            type="text"
+                                            id="newPresetAccount"
+                                            className="w-full p-2 border rounded text-sm"
+                                            placeholder="국민 111-222-333"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-gray-500 block mb-1">기본 금액 (만원)</label>
+                                        <input
+                                            type="number"
+                                            id="newPresetAmount"
+                                            className="w-full p-2 border rounded text-sm"
+                                            placeholder="100"
+                                        />
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const nameEl = document.getElementById('newPresetName') as HTMLInputElement;
+                                                const accountEl = document.getElementById('newPresetAccount') as HTMLInputElement;
+                                                const amountEl = document.getElementById('newPresetAmount') as HTMLInputElement;
+
+                                                if (!nameEl?.value.trim() || !accountEl?.value.trim()) {
+                                                    showToast('파트너명과 계좌 정보를 입력해주세요.', 'error');
+                                                    return;
+                                                }
+
+                                                const newPreset = {
+                                                    id: `preset-${Date.now()}`,
+                                                    name: nameEl.value.trim(),
+                                                    accountInfo: accountEl.value.trim(),
+                                                    defaultAmount: parseInt(amountEl?.value) || undefined
+                                                };
+
+                                                const currentPresets = editingPartner?.payoutPartnerPresets || [];
+                                                setEditingPartner({
+                                                    ...editingPartner!,
+                                                    payoutPartnerPresets: [...currentPresets, newPreset]
+                                                });
+
+                                                nameEl.value = '';
+                                                accountEl.value = '';
+                                                amountEl.value = '';
+                                                showToast('프리셋이 추가되었습니다. 저장 버튼을 눌러주세요.');
+                                            }}
+                                            className="w-full bg-green-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-green-700"
+                                        >
+                                            <Plus size={16} className="inline mr-1" /> 추가
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Preset List */}
+                            <div className="space-y-2">
+                                {(editingPartner?.payoutPartnerPresets || []).length === 0 ? (
+                                    <p className="text-sm text-gray-400 py-4 text-center">등록된 프리셋이 없습니다.</p>
+                                ) : (
+                                    (editingPartner?.payoutPartnerPresets || []).map(preset => (
+                                        <div key={preset.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            <div className="flex items-center gap-4">
+                                                <div>
+                                                    <span className="font-medium text-gray-800">{preset.name}</span>
+                                                    <span className="text-sm text-gray-500 ml-2">{preset.accountInfo}</span>
+                                                </div>
+                                                {preset.defaultAmount && (
+                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                                        기본 {preset.defaultAmount}만원
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const updatedPresets = (editingPartner?.payoutPartnerPresets || []).filter(p => p.id !== preset.id);
+                                                    setEditingPartner({
+                                                        ...editingPartner!,
+                                                        payoutPartnerPresets: updatedPresets
+                                                    });
+                                                    showToast('프리셋이 삭제되었습니다. 저장 버튼을 눌러주세요.');
+                                                }}
+                                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
                         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4">수당 계산 룰</h3>
                             <div className="bg-gray-50 p-4 rounded-lg mb-4">

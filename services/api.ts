@@ -1548,7 +1548,7 @@ export const createSettlementBatch = async (batch: Partial<SettlementBatch>): Pr
     confirmationEvidence: batch.confirmationEvidence,
     invoiceInfo: batch.invoiceInfo,
     collectionInfo: batch.collectionInfo,
-    payoutInfo: batch.payoutInfo,
+    payoutItems: batch.payoutItems,
     purchaseInvoice: batch.purchaseInvoice,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()

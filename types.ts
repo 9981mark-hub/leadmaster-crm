@@ -211,6 +211,25 @@ export interface Partner {
   // [NEW] 정산 관련 설정
   bankInfo?: BankAccountInfo;        // 입금 계좌 정보
   kakaoTemplates?: KakaoTemplates;   // 카톡 템플릿
+  payoutPartnerPresets?: PayoutPartnerPreset[];  // 지급 파트너 프리셋 목록
+}
+
+// 지급 파트너 프리셋 (설정에서 미리 저장)
+export interface PayoutPartnerPreset {
+  id: string;
+  name: string;           // "마케팅 A사"
+  accountInfo: string;    // "국민 111-222-333"
+  defaultAmount?: number; // 기본 금액 (만원)
+}
+
+// 개별 파트너 지급 항목
+export interface PayoutItem {
+  id: string;
+  partnerName: string;
+  partnerAccount: string;
+  amount: number;
+  paidAt?: string;
+  memo?: string;
 }
 
 export interface SettlementSummary {
@@ -273,15 +292,8 @@ export interface SettlementBatch {
     memo?: string;
   };
 
-  // 파트너 지급 - 수요일 (선택적, 매번 있지 않을 수 있음)
-  payoutInfo?: {
-    enabled?: boolean;       // 파트너 지급 여부 (없으면 false)
-    paidAt?: string;
-    amount?: number;         // 수동 입력 금액 (수금액과 연동 X)
-    memo?: string;
-    partnerName?: string;    // 지급 대상 파트너명
-    partnerAccount?: string; // 지급 계좌 정보
-  };
+  // 파트너 지급 - 수요일 (복수 지급 지원)
+  payoutItems?: PayoutItem[];
 
   // 매입 세금계산서 (파트너로부터 수취)
   purchaseInvoice?: {
