@@ -67,6 +67,9 @@ export default function Settlement() {
 
     if (loading) return <div>로딩중...</div>;
 
+    // [CRITICAL FIX] Ensure cases is always an array for all operations
+    const safeCases = Array.isArray(cases) ? cases : [];
+
     const isAll = selectedPartnerId === 'all';
     const currentPartner = !isAll ? partners.find(p => p.partnerId === selectedPartnerId) : null;
     const weekLabel = getWeekLabel(selectedWeekStart);
@@ -178,8 +181,7 @@ export default function Settlement() {
 
     // Filter by Partner (for report tab) - Flexible matching for legacy data
     const selectedPartner = partners.find(p => p.partnerId === selectedPartnerId);
-    // Safety: Ensure cases is always an array
-    const safeCases = Array.isArray(cases) ? cases : [];
+    // Using safeCases from top-level (line 71)
     const partnerCases = isAll ? safeCases : safeCases.filter(c => {
         if (!c || !c.partnerId) return false;
         // Method 1: Exact ID match
@@ -1568,7 +1570,7 @@ export default function Settlement() {
     const notificationDayOfWeek = notificationToday.getDay(); // 0:Sun, 1:Mon, ...
 
     // 1. Overdue Count
-    const totalOverdueCount = cases.filter(c => {
+    const totalOverdueCount = safeCases.filter(c => {
         if (c.status === '종결' || c.status === '취소') return false;
         const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
         const unpaid = (c.contractFee || 0) - totalDeposited;
