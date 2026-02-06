@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, saveGlobalSettings } from '../services/api';
 import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation } from '../services/queries';
 import { CommissionRule, Partner, Case, CaseStatus } from '../types';
-import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload } from 'lucide-react';
+import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare } from 'lucide-react';
 import { getDayName } from '../utils';
 import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS } from '../constants';
 import Modal from '../components/Modal';
@@ -1218,6 +1218,118 @@ export default function SettingsPage() {
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+
+                        {/* [NEW] Bank Account Info Section */}
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                                <Building className="mr-2 text-yellow-600" size={20} /> 입금 계좌 정보
+                            </h3>
+                            <p className="text-sm text-gray-500 mb-4">정산 안내 시 자동으로 포함될 계좌 정보입니다.</p>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                <div>
+                                    <label className="text-xs text-gray-500 block mb-1">은행명</label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none"
+                                        placeholder="예: 카카오뱅크"
+                                        value={editingPartner.bankInfo?.bankName || ''}
+                                        onChange={e => setEditingPartner({
+                                            ...editingPartner,
+                                            bankInfo: { ...editingPartner.bankInfo, bankName: e.target.value, accountNumber: editingPartner.bankInfo?.accountNumber || '', accountHolder: editingPartner.bankInfo?.accountHolder || '' }
+                                        })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 block mb-1">계좌번호</label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none"
+                                        placeholder="예: 3333-01-1234567"
+                                        value={editingPartner.bankInfo?.accountNumber || ''}
+                                        onChange={e => setEditingPartner({
+                                            ...editingPartner,
+                                            bankInfo: { ...editingPartner.bankInfo, bankName: editingPartner.bankInfo?.bankName || '', accountNumber: e.target.value, accountHolder: editingPartner.bankInfo?.accountHolder || '' }
+                                        })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 block mb-1">예금주</label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none"
+                                        placeholder="예: 홍길동"
+                                        value={editingPartner.bankInfo?.accountHolder || ''}
+                                        onChange={e => setEditingPartner({
+                                            ...editingPartner,
+                                            bankInfo: { ...editingPartner.bankInfo, bankName: editingPartner.bankInfo?.bankName || '', accountNumber: editingPartner.bankInfo?.accountNumber || '', accountHolder: e.target.value }
+                                        })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* [NEW] Kakao Templates Section */}
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                                <MessageSquare className="mr-2 text-yellow-500" size={20} /> 카톡 템플릿 설정
+                            </h3>
+                            <p className="text-sm text-gray-500 mb-4">주간 정산 시 사용할 카카오톡 메시지 템플릿입니다.</p>
+
+                            <div className="space-y-6">
+                                {/* Invoice Notice Template */}
+                                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                    <h4 className="text-sm font-bold text-yellow-800 mb-2 flex items-center">
+                                        📄 발행 완료 안내 (화요일)
+                                    </h4>
+                                    <p className="text-xs text-yellow-600 mb-3">세금계산서 발행 후 거래처에 보낼 안내 메시지입니다.</p>
+                                    <textarea
+                                        className="w-full h-32 p-3 border border-yellow-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white"
+                                        placeholder={`예시:
+안녕하세요, {{거래처명}}님!
+{{주차라벨}} 정산 세금계산서 발행 완료되었습니다.
+
+공급가: {{공급가}}원
+VAT: {{VAT}}원
+합계: {{합계}}원
+
+입금 계좌: {{계좌정보}}
+
+확인 부탁드립니다. 감사합니다!`}
+                                        value={editingPartner.kakaoTemplates?.invoiceNotice || ''}
+                                        onChange={e => setEditingPartner({
+                                            ...editingPartner,
+                                            kakaoTemplates: { ...editingPartner.kakaoTemplates, invoiceNotice: e.target.value }
+                                        })}
+                                    />
+                                </div>
+
+                                {/* Payout Request Template */}
+                                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                                    <h4 className="text-sm font-bold text-green-800 mb-2 flex items-center">
+                                        💰 파트너 세금계산서 요청 (수요일)
+                                    </h4>
+                                    <p className="text-xs text-green-600 mb-3">파트너 지급 후 매입 세금계산서 발행 요청 메시지입니다.</p>
+                                    <textarea
+                                        className="w-full h-32 p-3 border border-green-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                        placeholder={`예시:
+안녕하세요, {{거래처명}}님!
+{{주차라벨}} 수당 {{지급액}}원 송금 완료되었습니다.
+
+세금계산서 발행 부탁드립니다.
+감사합니다!`}
+                                        value={editingPartner.kakaoTemplates?.payoutRequest || ''}
+                                        onChange={e => setEditingPartner({
+                                            ...editingPartner,
+                                            kakaoTemplates: { ...editingPartner.kakaoTemplates, payoutRequest: e.target.value }
+                                        })}
+                                    />
+                                </div>
+                            </div>
+
+                            <p className="text-[10px] text-gray-500 mt-3">
+                                * 템플릿 치환자: {'{{거래처명}}'}, {'{{주차라벨}}'}, {'{{공급가}}'}, {'{{VAT}}'}, {'{{합계}}'}, {'{{계좌정보}}'}, {'{{지급액}}'}
+                            </p>
                         </div>
 
                         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">

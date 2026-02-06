@@ -179,6 +179,19 @@ export interface SettlementConfig {
   firstPayoutPercentage: number; // e.g. 50 (%)
 }
 
+// 입금 계좌 정보
+export interface BankAccountInfo {
+  bankName: string;      // "카카오뱅크"
+  accountNumber: string;
+  accountHolder: string;
+}
+
+// 카톡 템플릿 설정
+export interface KakaoTemplates {
+  invoiceNotice?: string;    // 화요일 발행완료 안내
+  payoutRequest?: string;    // 수요일 파트너 세금계산서 요청
+}
+
 // New: Partner (Law Firm) Configuration
 export interface Partner {
   partnerId: string;
@@ -194,6 +207,10 @@ export interface Partner {
 
   // Form Configuration
   requiredFields: string[]; // List of field keys to show/require e.g., ['spouseAssets', 'childrenCount']
+
+  // [NEW] 정산 관련 설정
+  bankInfo?: BankAccountInfo;        // 입금 계좌 정보
+  kakaoTemplates?: KakaoTemplates;   // 카톡 템플릿
 }
 
 export interface SettlementSummary {
@@ -204,3 +221,87 @@ export interface SettlementSummary {
   totalCommission: number;
   missingInfoCount: number;
 }
+
+// ============================================
+// Weekly Settlement System Types (PRD v1.0)
+// ============================================
+
+// 주차 배치 상태
+export type SettlementBatchStatus =
+  | 'draft'       // 초안
+  | 'confirmed'   // 월요일 카톡 확인 완료 (락0)
+  | 'invoiced'    // 화요일 매출 발행 완료 (락1)
+  | 'collected'   // 수금 완료
+  | 'paid'        // 수요일 파트너 지급 완료 (락2)
+  | 'completed';  // 매입증빙 수취 완료
+
+// 주차 배치 (정산 단위)
+export interface SettlementBatch {
+  batchId: string;
+  partnerId: string;
+  weekLabel: string;           // "2026-W06"
+  startDate: string;           // "2026-02-03" (월요일)
+  endDate: string;             // "2026-02-09" (일요일)
+  status: SettlementBatchStatus;
+
+  // 집계
+  dealIds: string[];           // 포함된 Deal(Case) IDs
+  totalContractFee: number;    // 총 수임료 (만원)
+  totalCommission: number;     // 총 수수료 (만원)
+
+  // 증빙 - 월요일 카톡 확인
+  confirmationEvidence?: {
+    text?: string;
+    imageUrl?: string;
+    confirmedAt?: string;
+  };
+
+  // 세금계산서 - 화요일 발행
+  invoiceInfo?: {
+    issueDate?: string;
+    supplyAmount?: number;     // 공급가
+    vat?: number;              // 부가세
+    total?: number;            // 합계
+    approvalNumber?: string;   // 승인번호
+  };
+
+  // 수금 정보
+  collectionInfo?: {
+    collectedAt?: string;
+    amount?: number;
+    bankTxId?: string;
+    memo?: string;
+  };
+
+  // 파트너 지급 - 수요일
+  payoutInfo?: {
+    paidAt?: string;
+    amount?: number;
+    memo?: string;
+  };
+
+  // 매입 세금계산서 (파트너로부터 수취)
+  purchaseInvoice?: {
+    receivedAt?: string;
+    supplyAmount?: number;
+    vat?: number;
+    approvalNumber?: string;
+  };
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 조정 기록 (락 이후 변경 시)
+export interface SettlementAdjustment {
+  adjustmentId: string;
+  batchId: string;
+  type: 'refund' | 'correction' | 'late_add' | 'other';
+  reason: string;
+  amount: number;
+  createdBy: string;
+  createdAt: string;
+  attachmentUrl?: string;
+}
+
+

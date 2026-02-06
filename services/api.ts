@@ -1,5 +1,5 @@
 
-import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem } from '../types';
+import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -57,7 +57,8 @@ const CACHE_KEYS = {
   SECONDARY_STATUSES: 'lm_secondary_statuses', // [NEW] 2차 상태
   EMAILS: 'lm_allowed_emails',
   LOGS: 'lm_logs',
-  EMAIL_NOTIFICATION: 'lm_email_notification'
+  EMAIL_NOTIFICATION: 'lm_email_notification',
+  SETTLEMENT_BATCHES: 'lm_settlement_batches' // [NEW] 주차 정산 배치
 };
 
 const loadFromStorage = () => {
@@ -1445,4 +1446,222 @@ export const uploadRecording = async (file: File): Promise<{ url: string, id: st
     url: result.url,
     id: result.id
   };
+};
+
+// ============================================
+// Weekly Settlement Batch API (PRD v1.0)
+// ============================================
+
+// Local cache for settlement batches
+let localSettlementBatches: SettlementBatch[] = [];
+
+// Load settlement batches from localStorage
+const loadSettlementBatches = (): SettlementBatch[] => {
+  try {
+    const stored = localStorage.getItem(CACHE_KEYS.SETTLEMENT_BATCHES);
+    if (stored) {
+      localSettlementBatches = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Failed to load settlement batches", e);
+  }
+  return localSettlementBatches;
+};
+
+// Save settlement batches to localStorage
+const saveSettlementBatches = () => {
+  try {
+    localStorage.setItem(CACHE_KEYS.SETTLEMENT_BATCHES, JSON.stringify(localSettlementBatches));
+  } catch (e) {
+    console.error("Failed to save settlement batches", e);
+  }
+};
+
+// Initialize batches on first access
+let batchesInitialized = false;
+const ensureBatchesLoaded = () => {
+  if (!batchesInitialized) {
+    loadSettlementBatches();
+    batchesInitialized = true;
+  }
+};
+
+// Helper: Get week label (ISO week format: YYYY-Wnn)
+export const getWeekLabel = (date: Date): string => {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+};
+
+// Helper: Get Monday of the week
+export const getWeekMonday = (date: Date): Date => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+// Helper: Get Sunday of the week
+export const getWeekSunday = (date: Date): Date => {
+  const monday = getWeekMonday(date);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return sunday;
+};
+
+// Fetch all settlement batches for a partner and year
+export const fetchSettlementBatches = async (partnerId?: string, year?: number): Promise<SettlementBatch[]> => {
+  ensureBatchesLoaded();
+
+  let result = [...localSettlementBatches];
+
+  if (partnerId) {
+    result = result.filter(b => b.partnerId === partnerId);
+  }
+
+  if (year) {
+    result = result.filter(b => b.startDate.startsWith(String(year)));
+  }
+
+  return result.sort((a, b) => b.startDate.localeCompare(a.startDate));
+};
+
+// Create a new settlement batch
+export const createSettlementBatch = async (batch: Partial<SettlementBatch>): Promise<SettlementBatch> => {
+  ensureBatchesLoaded();
+
+  const newBatch: SettlementBatch = {
+    batchId: `batch_${Date.now()}`,
+    partnerId: batch.partnerId || '',
+    weekLabel: batch.weekLabel || getWeekLabel(new Date()),
+    startDate: batch.startDate || getWeekMonday(new Date()).toISOString().split('T')[0],
+    endDate: batch.endDate || getWeekSunday(new Date()).toISOString().split('T')[0],
+    status: batch.status || 'draft',
+    dealIds: batch.dealIds || [],
+    totalContractFee: batch.totalContractFee || 0,
+    totalCommission: batch.totalCommission || 0,
+    confirmationEvidence: batch.confirmationEvidence,
+    invoiceInfo: batch.invoiceInfo,
+    collectionInfo: batch.collectionInfo,
+    payoutInfo: batch.payoutInfo,
+    purchaseInvoice: batch.purchaseInvoice,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  localSettlementBatches.unshift(newBatch);
+  saveSettlementBatches();
+
+  return newBatch;
+};
+
+// Update a settlement batch
+export const updateSettlementBatch = async (batchId: string, updates: Partial<SettlementBatch>): Promise<SettlementBatch | null> => {
+  ensureBatchesLoaded();
+
+  const idx = localSettlementBatches.findIndex(b => b.batchId === batchId);
+  if (idx === -1) return null;
+
+  localSettlementBatches[idx] = {
+    ...localSettlementBatches[idx],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveSettlementBatches();
+  return localSettlementBatches[idx];
+};
+
+// Delete a settlement batch
+export const deleteSettlementBatch = async (batchId: string): Promise<boolean> => {
+  ensureBatchesLoaded();
+
+  const initialLength = localSettlementBatches.length;
+  localSettlementBatches = localSettlementBatches.filter(b => b.batchId !== batchId);
+
+  if (localSettlementBatches.length < initialLength) {
+    saveSettlementBatches();
+    return true;
+  }
+  return false;
+};
+
+// Generate or fetch weekly batch for a partner
+export const generateWeeklyBatch = async (partnerId: string, weekStart: Date): Promise<SettlementBatch> => {
+  ensureBatchesLoaded();
+
+  const monday = getWeekMonday(weekStart);
+  const sunday = getWeekSunday(weekStart);
+  const weekLabel = getWeekLabel(weekStart);
+  const startDateStr = monday.toISOString().split('T')[0];
+  const endDateStr = sunday.toISOString().split('T')[0];
+
+  // Check if batch already exists
+  const existing = localSettlementBatches.find(
+    b => b.partnerId === partnerId && b.weekLabel === weekLabel
+  );
+
+  if (existing) {
+    return existing;
+  }
+
+  // Find deals in this week (contractAt within the week, status = 계약 완료 or similar)
+  const weekDeals = localCases.filter(c => {
+    if (c.partnerId !== partnerId) return false;
+    if (!c.contractAt) return false;
+    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중'].includes(c.status)) return false;
+
+    const contractDate = c.contractAt;
+    return contractDate >= startDateStr && contractDate <= endDateStr;
+  });
+
+  // Calculate totals
+  const dealIds = weekDeals.map(d => d.caseId);
+  const totalContractFee = weekDeals.reduce((sum, d) => sum + (d.contractFee || 0), 0);
+
+  // Calculate commission based on partner rules
+  const partner = localPartners.find(p => p.partnerId === partnerId);
+  let totalCommission = 0;
+  if (partner) {
+    const { calculateCommission } = await import('../utils');
+    totalCommission = weekDeals.reduce((sum, d) => sum + calculateCommission(d.contractFee || 0, partner.commissionRules), 0);
+  }
+
+  // Create new batch
+  return createSettlementBatch({
+    partnerId,
+    weekLabel,
+    startDate: startDateStr,
+    endDate: endDateStr,
+    status: 'draft',
+    dealIds,
+    totalContractFee,
+    totalCommission
+  });
+};
+
+// Find which batch a case belongs to
+export const findBatchForCase = async (caseId: string): Promise<SettlementBatch | null> => {
+  ensureBatchesLoaded();
+
+  return localSettlementBatches.find(b => b.dealIds.includes(caseId)) || null;
+};
+
+// Get status label in Korean
+export const getSettlementStatusLabel = (status: SettlementBatchStatus): string => {
+  const labels: Record<SettlementBatchStatus, string> = {
+    draft: '초안',
+    confirmed: '확인완료',
+    invoiced: '발행완료',
+    collected: '수금완료',
+    paid: '지급완료',
+    completed: '정산완료'
+  };
+  return labels[status] || status;
 };

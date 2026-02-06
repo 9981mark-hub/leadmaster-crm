@@ -1,7 +1,8 @@
-import React from 'react';
-import { Plus, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Plus, X, Calendar, FileText, CheckCircle, Clock } from 'lucide-react';
 import { SmartInput } from '../ui/SmartInput';
-import { Case } from '../../types';
+import { Case, SettlementBatch } from '../../types';
+import { findBatchForCase, getSettlementStatusLabel } from '../../services/api';
 
 interface CaseSettlementTabProps {
     c: Case;
@@ -14,8 +15,109 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
     commission,
     onUpdate
 }) => {
+    const [settlementBatch, setSettlementBatch] = useState<SettlementBatch | null>(null);
+    const [isLoadingBatch, setIsLoadingBatch] = useState(true);
+
+    useEffect(() => {
+        const loadBatch = async () => {
+            setIsLoadingBatch(true);
+            const batch = await findBatchForCase(c.caseId);
+            setSettlementBatch(batch);
+            setIsLoadingBatch(false);
+        };
+        loadBatch();
+    }, [c.caseId]);
+
+    // Get status badge color
+    const getStatusBadgeColor = (status: string) => {
+        const colors: Record<string, string> = {
+            draft: 'bg-gray-100 text-gray-600',
+            confirmed: 'bg-blue-100 text-blue-700',
+            invoiced: 'bg-yellow-100 text-yellow-700',
+            collected: 'bg-green-100 text-green-700',
+            paid: 'bg-purple-100 text-purple-700',
+            completed: 'bg-emerald-100 text-emerald-700'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-600';
+    };
+
     return (
         <div className="space-y-6">
+            {/* [NEW] Settlement Batch Info Section */}
+            <div className="bg-blue-50 p-4 md:p-6 rounded-xl border border-blue-100">
+                <h3 className="font-bold text-blue-800 mb-3 text-lg flex items-center">
+                    <Calendar className="mr-2" size={20} /> 정산 배치 정보
+                </h3>
+
+                {isLoadingBatch ? (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Clock size={14} className="animate-spin" />
+                        로딩 중...
+                    </div>
+                ) : settlementBatch ? (
+                    <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
+                                <span className="text-xs text-gray-500 block">주차</span>
+                                <span className="font-bold text-blue-800">{settlementBatch.weekLabel}</span>
+                            </div>
+                            <div className="bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
+                                <span className="text-xs text-gray-500 block">기간</span>
+                                <span className="font-medium text-gray-700 text-sm">
+                                    {settlementBatch.startDate} ~ {settlementBatch.endDate}
+                                </span>
+                            </div>
+                            <div className={`px-4 py-2 rounded-lg ${getStatusBadgeColor(settlementBatch.status)}`}>
+                                <span className="text-xs block">상태</span>
+                                <span className="font-bold">{getSettlementStatusLabel(settlementBatch.status)}</span>
+                            </div>
+                        </div>
+
+                        {/* Invoice Info */}
+                        {settlementBatch.invoiceInfo?.approvalNumber && (
+                            <div className="flex items-center gap-2 bg-white p-3 rounded-lg border border-green-200">
+                                <FileText className="text-green-600" size={18} />
+                                <div>
+                                    <span className="text-xs text-gray-500 block">세금계산서</span>
+                                    <span className="font-medium text-green-700">
+                                        발행완료 ({settlementBatch.invoiceInfo.issueDate})
+                                    </span>
+                                    <span className="text-xs text-gray-500 ml-2">
+                                        승인번호: {settlementBatch.invoiceInfo.approvalNumber}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Collection Info */}
+                        {settlementBatch.collectionInfo?.collectedAt && (
+                            <div className="flex items-center gap-2 bg-white p-3 rounded-lg border border-green-200">
+                                <CheckCircle className="text-green-600" size={18} />
+                                <div>
+                                    <span className="text-xs text-gray-500 block">수금</span>
+                                    <span className="font-medium text-green-700">
+                                        수금완료 ({settlementBatch.collectionInfo.collectedAt})
+                                    </span>
+                                    <span className="font-bold text-green-800 ml-2">
+                                        {settlementBatch.collectionInfo.amount?.toLocaleString()}만원
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 text-gray-500">
+                        <Clock size={16} />
+                        <span className="text-sm">아직 정산 배치에 포함되지 않았습니다.</span>
+                        {c.contractAt && (
+                            <span className="text-xs text-gray-400 ml-2">
+                                (계약일: {c.contractAt} 기준 주차에 자동 배정 예정)
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
+
             <div className="bg-green-50 p-6 rounded-xl border border-green-100">
                 <h3 className="font-bold text-green-800 mb-4 text-lg">계약 및 수임료</h3>
                 <div className="grid md:grid-cols-2 gap-6">
