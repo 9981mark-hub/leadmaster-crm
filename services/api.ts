@@ -429,9 +429,8 @@ const performBackgroundFetch = async () => {
           // Fetch validation data
           const supabaseSettings = await fetchSettingsFromSupabase();
           if (Object.keys(supabaseSettings).length > 0) settingsData = supabaseSettings;
-
-          const supabasePartners = await fetchPartnersFromSupabase();
-          if (supabasePartners.length > 0) localPartners = supabasePartners;
+          // [Fix] Removed fetchPartnersFromSupabase() call - it returns empty commissionRules.
+          // Partners with full data (including commissionRules) are loaded from settingsData.partners below.
 
         } catch (supabaseError) {
           console.warn('[Sync] Supabase fetch failed, falling back to Google Sheets:', supabaseError);
