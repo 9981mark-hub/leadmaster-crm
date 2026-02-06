@@ -178,14 +178,18 @@ export default function Settlement() {
 
     // Filter by Partner (for report tab) - Flexible matching for legacy data
     const selectedPartner = partners.find(p => p.partnerId === selectedPartnerId);
-    const partnerCases = isAll ? cases : cases.filter(c => {
-        if (!c) return false;
+    // Safety: Ensure cases is always an array
+    const safeCases = Array.isArray(cases) ? cases : [];
+    const partnerCases = isAll ? safeCases : safeCases.filter(c => {
+        if (!c || !c.partnerId) return false;
         // Method 1: Exact ID match
         if (c.partnerId === selectedPartnerId) return true;
         // Method 2: Partner name match (legacy)
         if (selectedPartner && c.partnerId === selectedPartner.name) return true;
-        // Method 3: Case contains partner ID anywhere (loose match)
-        if (selectedPartner && (c.partnerId?.includes(selectedPartnerId) || selectedPartnerId?.includes(c.partnerId))) return true;
+        // Method 3: Loose match (only if both are valid strings)
+        if (selectedPartner && selectedPartnerId && c.partnerId) {
+            if (String(c.partnerId).includes(String(selectedPartnerId)) || String(selectedPartnerId).includes(String(c.partnerId))) return true;
+        }
         return false;
     });
 
