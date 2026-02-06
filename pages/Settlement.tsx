@@ -1013,6 +1013,119 @@ export default function Settlement() {
                 </div>
             </div>
 
+            {/* Weekly Batch Status Overview */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white">
+                    <h3 className="font-bold text-gray-700">📋 주간 정산 배치 현황</h3>
+                    <p className="text-xs text-gray-500 mt-1">최근 정산 배치별 수금/지급/세금계산서 상태</p>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-600 font-medium">
+                            <tr>
+                                <th className="py-3 px-3 text-left">주차</th>
+                                <th className="py-3 px-3 text-right">수수료</th>
+                                <th className="py-3 px-3 text-center">수금</th>
+                                <th className="py-3 px-3 text-center">파트너 지급</th>
+                                <th className="py-3 px-3 text-center">매입세금계산서</th>
+                                <th className="py-3 px-3 text-center">상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {batches.slice(0, 8).map((b) => {
+                                const payoutCount = (b.payoutItems || []).length;
+                                const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
+                                const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+                                return (
+                                    <tr key={b.batchId} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                        <td className="py-3 px-3 font-medium">{b.weekLabel}</td>
+                                        <td className="py-3 px-3 text-right font-bold text-blue-600">{b.totalCommission.toLocaleString()}만원</td>
+                                        <td className="py-3 px-3 text-center">
+                                            {b.collectionInfo?.collectedAt ? (
+                                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">✓ {b.collectionInfo.amount?.toLocaleString()}만원</span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">대기</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-3 text-center">
+                                            {payoutCount > 0 ? (
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${paidPayoutCount === payoutCount ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                    {paidPayoutCount}/{payoutCount}건 ({totalPayoutAmount}만원)
+                                                </span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-400 rounded-full text-xs">없음</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-3 text-center">
+                                            {b.purchaseInvoice?.receivedAt ? (
+                                                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">✓ 수취완료</span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">미수취</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-3 text-center">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium
+                                                ${b.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                    b.status === 'paid' ? 'bg-blue-100 text-blue-700' :
+                                                        b.status === 'collected' ? 'bg-teal-100 text-teal-700' :
+                                                            'bg-gray-100 text-gray-600'}`}>
+                                                {getSettlementStatusLabel(b.status)}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Partner Payout Breakdown */}
+            {(() => {
+                // Aggregate payouts by partner name across all batches
+                const payoutByPartner: Record<string, { total: number; paid: number; count: number }> = {};
+                batches.forEach(b => {
+                    (b.payoutItems || []).forEach(item => {
+                        const name = item.partnerName || '미지정';
+                        if (!payoutByPartner[name]) payoutByPartner[name] = { total: 0, paid: 0, count: 0 };
+                        payoutByPartner[name].total += item.amount || 0;
+                        payoutByPartner[name].count += 1;
+                        if (item.paidAt) payoutByPartner[name].paid += item.amount || 0;
+                    });
+                });
+                const partnerList = Object.entries(payoutByPartner).sort((a, b) => b[1].total - a[1].total);
+
+                if (partnerList.length === 0) return null;
+
+                return (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
+                            <h3 className="font-bold text-gray-700">💳 파트너별 지급 현황</h3>
+                            <p className="text-xs text-gray-500 mt-1">전체 정산 기간 파트너 지급 누계</p>
+                        </div>
+                        <div className="p-4 grid gap-3">
+                            {partnerList.map(([name, data]) => (
+                                <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">🏢</span>
+                                        <div>
+                                            <p className="font-medium text-gray-800">{name}</p>
+                                            <p className="text-xs text-gray-500">{data.count}건</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-green-600">{data.paid.toLocaleString()}만원 <span className="text-gray-400 font-normal">지급</span></p>
+                                        {data.total > data.paid && (
+                                            <p className="text-xs text-orange-600">{(data.total - data.paid).toLocaleString()}만원 미지급</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* Warning for missing dates */}
             {missingDateCount > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
