@@ -477,7 +477,17 @@ const performBackgroundFetch = async () => {
       if (settingsData.missedCallSettings) {
         const { status, interval } = settingsData.missedCallSettings;
         if (status) localStorage.setItem('lm_missedStatus', status);
+        if (status) localStorage.setItem('lm_missedStatus', status);
         if (interval) localStorage.setItem('lm_missedInterval', String(interval));
+      }
+
+      // [NEW] Load Settlement Batches from server
+      if (settingsData.settlementBatches && Array.isArray(settingsData.settlementBatches)) {
+        localSettlementBatches = settingsData.settlementBatches;
+        // Also update localStorage to keep it fresh
+        localStorage.setItem(CACHE_KEYS.SETTLEMENT_BATCHES, JSON.stringify(localSettlementBatches));
+        batchesInitialized = true;
+        console.log(`[Sync] Loaded ${localSettlementBatches.length} settlement batches from server.`);
       }
 
       // [NEW] Load Gemini API Key
@@ -1467,10 +1477,19 @@ const loadSettlementBatches = (): SettlementBatch[] => {
   return localSettlementBatches;
 };
 
-// Save settlement batches to localStorage
+// Save settlement batches to localStorage AND Server
 const saveSettlementBatches = () => {
   try {
+    // 1. Local Storage
     localStorage.setItem(CACHE_KEYS.SETTLEMENT_BATCHES, JSON.stringify(localSettlementBatches));
+
+    // 2. Supabase (Settings)
+    // We save this as a part of global settings for now since it's admin data
+    saveSettingToSupabase('settlementBatches', localSettlementBatches);
+
+    // 3. Google Sheets (Settings)
+    syncToSheet({ target: 'settings', action: 'update', key: 'settlementBatches', value: localSettlementBatches });
+
   } catch (e) {
     console.error("Failed to save settlement batches", e);
   }
