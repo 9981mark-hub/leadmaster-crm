@@ -1599,25 +1599,31 @@ export const refreshWeeklyBatch = async (batchId: string): Promise<SettlementBat
   if (!batch) return null;
 
   const { startDate, endDate, partnerId } = batch;
+  const partner = localPartners.find(p => p.partnerId === partnerId);
 
-  // Re-find deals based on current case data
+  // Re-find deals based on DEPOSIT DATE (not contract date)
   const weekDeals = localCases.filter(c => {
     if (c.partnerId !== partnerId) return false;
-    if (!c.contractAt) return false;
+    if (!c.contractFee) return false;
     if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
-    const contractDate = c.contractAt;
-    return contractDate >= startDate && contractDate <= endDate;
+
+    // Check if any deposit falls within this week
+    const deposit1InWeek = c.deposit1Date && c.deposit1Date >= startDate && c.deposit1Date <= endDate;
+    const deposit2InWeek = c.deposit2Date && c.deposit2Date >= startDate && c.deposit2Date <= endDate;
+    return deposit1InWeek || deposit2InWeek;
   });
 
-  // Recalculate totals
+  // Recalculate totals using payable commission
   const dealIds = weekDeals.map(d => d.caseId);
   const totalContractFee = weekDeals.reduce((sum, d) => sum + (d.contractFee || 0), 0);
 
-  const partner = localPartners.find(p => p.partnerId === partnerId);
   let totalCommission = 0;
   if (partner) {
-    const { calculateCommission } = await import('../utils');
-    totalCommission = weekDeals.reduce((sum, d) => sum + calculateCommission(d.contractFee || 0, partner.commissionRules), 0);
+    const { calculatePayableCommission } = await import('../utils');
+    totalCommission = weekDeals.reduce((sum, d) => {
+      const { payable } = calculatePayableCommission(d, partner.commissionRules, partner.settlementConfig);
+      return sum + payable;
+    }, 0);
   }
 
   // Update batch
@@ -1656,26 +1662,32 @@ export const generateWeeklyBatch = async (partnerId: string, weekStart: Date): P
     return existing;
   }
 
-  // Find deals in this week (contractAt within the week, status = 계약 완료 or similar)
+  const partner = localPartners.find(p => p.partnerId === partnerId);
+
+  // Find deals with deposits in this week (DEPOSIT DATE based, not contract date)
   const weekDeals = localCases.filter(c => {
     if (c.partnerId !== partnerId) return false;
-    if (!c.contractAt) return false;
+    if (!c.contractFee) return false;
     if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
 
-    const contractDate = c.contractAt;
-    return contractDate >= startDateStr && contractDate <= endDateStr;
+    // Check if any deposit falls within this week
+    const deposit1InWeek = c.deposit1Date && c.deposit1Date >= startDateStr && c.deposit1Date <= endDateStr;
+    const deposit2InWeek = c.deposit2Date && c.deposit2Date >= startDateStr && c.deposit2Date <= endDateStr;
+    return deposit1InWeek || deposit2InWeek;
   });
 
   // Calculate totals
   const dealIds = weekDeals.map(d => d.caseId);
   const totalContractFee = weekDeals.reduce((sum, d) => sum + (d.contractFee || 0), 0);
 
-  // Calculate commission based on partner rules
-  const partner = localPartners.find(p => p.partnerId === partnerId);
+  // Calculate payable commission (based on deposit amounts, not full commission)
   let totalCommission = 0;
   if (partner) {
-    const { calculateCommission } = await import('../utils');
-    totalCommission = weekDeals.reduce((sum, d) => sum + calculateCommission(d.contractFee || 0, partner.commissionRules), 0);
+    const { calculatePayableCommission } = await import('../utils');
+    totalCommission = weekDeals.reduce((sum, d) => {
+      const { payable } = calculatePayableCommission(d, partner.commissionRules, partner.settlementConfig);
+      return sum + payable;
+    }, 0);
   }
 
   // Create new batch
