@@ -256,8 +256,22 @@ export default function Settlement() {
 
     // Filter by Year & Month for Statistics
     const statsCases = partnerCases.filter(c => {
-        if (!c.contractAt) return false;
-        const cDate = new Date(c.contractAt);
+        const dateStr = c.contractAt || c.createdAt;
+        if (!dateStr) return false;
+
+        // Handle potentially various date formats
+        let cDate: Date;
+        try {
+            cDate = parseISO(dateStr);
+            if (isNaN(cDate.getTime())) {
+                cDate = new Date(dateStr); // Fallback to native
+            }
+        } catch (e) {
+            return false;
+        }
+
+        if (isNaN(cDate.getTime())) return false;
+
         const cYear = cDate.getFullYear();
         const cMonth = cDate.getMonth() + 1;
         const yearMatch = cYear === year;
