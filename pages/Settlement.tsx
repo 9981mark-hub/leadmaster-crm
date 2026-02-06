@@ -165,12 +165,25 @@ export default function Settlement() {
     };
 
     // Filter by Partner (for report tab) - Flexible matching for legacy data
+    const selectedPartner = partners.find(p => p.partnerId === selectedPartnerId);
     const partnerCases = isAll ? cases : cases.filter(c => {
+        if (!c) return false;
+        // Method 1: Exact ID match
         if (c.partnerId === selectedPartnerId) return true;
-        // Fallback: Check if partnerId matches partner name (legacy data)
-        const selectedPartner = partners.find(p => p.partnerId === selectedPartnerId);
+        // Method 2: Partner name match (legacy)
         if (selectedPartner && c.partnerId === selectedPartner.name) return true;
+        // Method 3: Case contains partner ID anywhere (loose match)
+        if (selectedPartner && (c.partnerId?.includes(selectedPartnerId) || selectedPartnerId?.includes(c.partnerId))) return true;
         return false;
+    });
+
+    // DEBUG: Log for troubleshooting (will be visible in console)
+    console.log('[Settlement Debug]', {
+        selectedPartnerId,
+        selectedPartnerName: selectedPartner?.name,
+        totalCases: cases.length,
+        partnerCasesCount: partnerCases.length,
+        sampleCasePartnerIds: cases.slice(0, 5).map(c => ({ name: c.customerName, partnerId: c.partnerId, contractAt: c.contractAt }))
     });
 
     // Helper to calculate commission for a specific case
@@ -976,7 +989,7 @@ export default function Settlement() {
 
             {/* Overdue Management Section */}
             {(() => {
-                const partnerCases = cases.filter(c => c.partnerId === selectedPartnerId);
+                // Use partnerCases from parent scope (already filtered with flexible matching)
                 const today = new Date();
 
                 // Filter overdue cases
