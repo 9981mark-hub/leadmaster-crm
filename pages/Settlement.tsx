@@ -298,9 +298,12 @@ export default function Settlement() {
     };
 
     // Filter by Year & Month for Statistics
+    // [FIX] 계약 건수 조건: contractAt(계약완료일) AND contractFee(수임료) 모두 필요
     const statsCases = partnerCases.filter(c => {
-        const dateStr = c.contractAt || c.createdAt;
-        if (!dateStr) return false;
+        // 계약완료일과 수임료가 모두 있어야 계약건으로 인정
+        if (!c.contractAt || !c.contractFee) return false;
+
+        const dateStr = c.contractAt;
 
         // Handle potentially various date formats
         let cDate: Date;
