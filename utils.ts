@@ -5,7 +5,9 @@ import { REMINDER_REQUIRED_STATUSES, CONTRACT_COMPLETED_STATUSES, DEFAULT_SUMMAR
 import { ko } from 'date-fns/locale';
 
 export const getMatchingRule = (fee: number, rules: CommissionRule[]): CommissionRule | undefined => {
-  const activeRules = rules.filter(r => r.active);
+  // [SAFETY FIX] Ensure rules is always an array
+  const safeRules = Array.isArray(rules) ? rules : [];
+  const activeRules = safeRules.filter(r => r.active);
   const matchedRules = activeRules.filter(r => {
     const minOk = fee >= r.minFee;
     const maxOk = !r.maxFee || fee <= r.maxFee;
@@ -28,7 +30,9 @@ export const getMatchingRule = (fee: number, rules: CommissionRule[]): Commissio
 // Calculate Max Potential Commission
 export const calculateCommission = (fee: number, rules: CommissionRule[]): number => {
   if (!fee) return 0;
-  const rule = getMatchingRule(fee, rules);
+  // [SAFETY FIX] getMatchingRule already handles array safety, but ensure rules exists
+  const safeRules = Array.isArray(rules) ? rules : [];
+  const rule = getMatchingRule(fee, safeRules);
   return rule ? rule.commission : 0;
 };
 
@@ -36,7 +40,9 @@ export const calculateCommission = (fee: number, rules: CommissionRule[]): numbe
 export const calculatePayableCommission = (c: Case, rules: CommissionRule[], config?: SettlementConfig): { payable: number, total: number, isPartial: boolean, rule?: CommissionRule } => {
   if (!c.contractFee) return { payable: 0, total: 0, isPartial: false };
 
-  const rule = getMatchingRule(c.contractFee, rules);
+  // [SAFETY FIX] Ensure rules is always an array
+  const safeRules = Array.isArray(rules) ? rules : [];
+  const rule = getMatchingRule(c.contractFee, safeRules);
   if (!rule) return { payable: 0, total: 0, isPartial: false };
 
   // Use depositHistory if available, else fallback to legacy fields
@@ -411,8 +417,10 @@ export const calculateNextSettlement = (cases: Case[], partner: Partner) => {
   const config = partner.settlementConfig;
 
   // 1. Calculate Eligible Pending Amount based on Rules
+  // [SAFETY FIX] Ensure cases is always an array
+  const safeCases = Array.isArray(cases) ? cases : [];
   // Filter cases for this partner
-  const eligibleCases = cases.filter(c =>
+  const eligibleCases = safeCases.filter(c =>
     c.partnerId === partner.partnerId &&
     ['1차 입금완료', '2차 입금완료', '계약 완료'].includes(c.status) && c.contractFee
   );
