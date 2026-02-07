@@ -985,645 +985,602 @@ export default function Settlement() {
         );
     };
 
-    const renderReportTab = () => {
-        try {
-            return (
-                <div className="space-y-6">
-                    {/* DEBUG PANEL - Remove after fixing */}
-                    <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 text-sm">
-                        <p className="font-bold text-yellow-800 mb-2">🔧 디버그 정보 (문제 해결 후 삭제)</p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-yellow-700">
-                            <div>총 케이스: <strong>{safeCases.length}</strong></div>
-                            <div>파트너 케이스: <strong>{(Array.isArray(partnerCases) ? partnerCases : []).length}</strong></div>
-                            <div>통계 케이스: <strong>{(Array.isArray(statsCases) ? statsCases : []).length}</strong></div>
-                            <div>선택된 파트너ID: <strong className="break-all text-xs">{selectedPartnerId}</strong></div>
-                        </div>
-                        {safeCases.length > 0 && (Array.isArray(partnerCases) ? partnerCases : []).length === 0 && (
-                            <p className="text-red-600 mt-2">⚠️ 케이스가 있지만 파트너 매칭 실패. 샘플 partnerId: {safeCases.slice(0, 3).map(c => `"${c.partnerId}"`).join(', ')}</p>
-                        )}
-                        {(Array.isArray(partnerCases) ? partnerCases : []).length > 0 && (Array.isArray(statsCases) ? statsCases : []).length === 0 && (
-                            <p className="text-red-600 mt-2">⚠️ 파트너 케이스는 있지만 날짜 필터링 실패. 샘플 contractAt: {(Array.isArray(partnerCases) ? partnerCases : []).slice(0, 3).map(c => `"${c.contractAt || c.createdAt}"`).join(', ')}</p>
-                        )}
-                        <button
-                            onClick={async () => {
-                                setLoading(true);
-                                const freshCases = await fetchCases();
-                                setCases(freshCases);
-                                setLoading(false);
-                            }}
-                            className="mt-2 bg-yellow-500 text-white px-4 py-1 rounded text-sm hover:bg-yellow-600"
-                        >
-                            🔄 케이스 다시 불러오기
-                        </button>
+    const renderReportTab = () => (
+        <div className="space-y-6">
+            {/* Row 1: Main KPIs */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-sm text-gray-500">📋 계약 건수</p>
+                        <Search size={14} className="text-gray-300 group-hover:text-blue-500" />
                     </div>
-                    {/* Row 1: Main KPIs */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div
-                            onClick={() => setIsDetailModalOpen(true)}
-                            className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
-                        >
-                            <div className="flex justify-between items-start">
-                                <p className="text-sm text-gray-500">📋 계약 건수</p>
-                                <Search size={14} className="text-gray-300 group-hover:text-blue-500" />
+                    <p className="text-2xl font-bold text-gray-800 mt-1">{totalCount}건</p>
+                    <p className="text-xs text-blue-500 mt-1">상세 보기 →</p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-sm text-gray-500">💰 총 매출</p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1">수임료 합계</p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-sm text-gray-500">✅ 실제 입금액</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1">오늘까지 확정</p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-sm text-gray-500">📅 예상 입금액</p>
+                    <p className="text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1">{monthlyExpectedCount}건 입금 예정</p>
+                </div>
+            </div>
+
+            {/* Row 2: Commission KPIs */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200">
+                    <p className="text-sm text-green-700">💵 지급된 수수료</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
+                    <p className="text-xs text-green-500 mt-1">입금 확정 기준</p>
+                </div>
+                <div className="bg-gradient-to-br from-orange-50 to-white p-5 rounded-xl shadow-sm border border-orange-200">
+                    <p className="text-sm text-orange-700">🔜 미지급 수수료</p>
+                    <p className="text-2xl font-bold text-orange-600 mt-1">{totalUnpaidCommission.toLocaleString()}만원</p>
+                    <p className="text-xs text-orange-500 mt-1">추가 입금 필요</p>
+                </div>
+                <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl shadow-sm border border-indigo-200">
+                    <p className="text-sm text-indigo-700">📊 분납 진행중</p>
+                    <p className="text-2xl font-bold text-indigo-600 mt-1">{installmentInProgress}건</p>
+                    <p className="text-xs text-indigo-500 mt-1">추가 입금 대기</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200">
+                    <p className="text-sm text-blue-700">📈 입금 완료율</p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">{depositRate}%</p>
+                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${depositRate}%` }} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Overdue Management Section */}
+            {(() => {
+                // Use partnerCases from parent scope (already filtered with flexible matching)
+                // [SAFETY FIX] Ensure partnerCases is always an array
+                const safePartnerCases = Array.isArray(partnerCases) ? partnerCases : [];
+                const today = new Date();
+
+                // Filter overdue cases
+                // 1. Unpaid amount > 0
+                // 2. Last deposit (or contract date) was > 30 days ago
+                const overdueCases = safePartnerCases.filter(c => {
+                    if (c.status === '종결' || c.status === '취소') return false;
+
+                    const contractFee = c.contractFee || 0;
+                    const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const unpaidAmount = contractFee - totalDeposited;
+
+                    if (unpaidAmount <= 0) return false;
+
+                    // Check date
+                    let lastActivityDateStr = c.contractAt || c.createdAt;
+                    if (c.depositHistory && c.depositHistory.length > 0) {
+                        // Find latest deposit
+                        const dates = c.depositHistory.map(d => d.date).sort();
+                        lastActivityDateStr = dates[dates.length - 1];
+                    }
+
+                    if (!lastActivityDateStr) return false;
+
+                    const lastDate = parseISO(lastActivityDateStr);
+                    const diffDays = differenceInDays(today, lastDate);
+
+                    return diffDays >= 30;
+                }).map(c => {
+                    const contractFee = c.contractFee || 0;
+                    const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+                    const unpaidAmount = contractFee - totalDeposited;
+                    let lastActivityDateStr = c.contractAt || c.createdAt;
+                    if (c.depositHistory && c.depositHistory.length > 0) {
+                        const dates = c.depositHistory.map(d => d.date).sort();
+                        lastActivityDateStr = dates[dates.length - 1];
+                    }
+                    return {
+                        ...c,
+                        unpaidAmount,
+                        overdueDays: differenceInDays(today, parseISO(lastActivityDateStr!))
+                    };
+                }).sort((a, b) => b.unpaidAmount - a.unpaidAmount); // Sort by highest unpaid amount
+
+                if (overdueCases.length === 0) return null;
+
+                return (
+                    <div className="bg-red-50 rounded-xl shadow-sm border border-red-100 p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="p-1.5 bg-red-100 text-red-600 rounded-lg">🚨</span>
+                                <div>
+                                    <h3 className="font-bold text-red-800">장기 미수금 현황</h3>
+                                    <p className="text-xs text-red-600">최근 30일 이상 미입금 고객 ({overdueCases.length}명)</p>
+                                </div>
                             </div>
-                            <p className="text-2xl font-bold text-gray-800 mt-1">{totalCount}건</p>
-                            <p className="text-xs text-blue-500 mt-1">상세 보기 →</p>
+                            <div className="text-right">
+                                <p className="text-xs text-red-500">총 미수금</p>
+                                <p className="font-bold text-red-700 text-lg">
+                                    {overdueCases.reduce((sum, c) => sum + c.unpaidAmount, 0).toLocaleString()}만원
+                                </p>
+                            </div>
                         </div>
-                        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                            <p className="text-sm text-gray-500">💰 총 매출</p>
-                            <p className="text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
-                            <p className="text-xs text-gray-400 mt-1">수임료 합계</p>
-                        </div>
-                        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                            <p className="text-sm text-gray-500">✅ 실제 입금액</p>
-                            <p className="text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
-                            <p className="text-xs text-gray-400 mt-1">오늘까지 확정</p>
-                        </div>
-                        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                            <p className="text-sm text-gray-500">📅 예상 입금액</p>
-                            <p className="text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
-                            <p className="text-xs text-gray-400 mt-1">{monthlyExpectedCount}건 입금 예정</p>
+
+                        {/* Horizontal Scroll for Overdue Cards */}
+                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                            {overdueCases.map(c => (
+                                <div key={c.caseId} className="min-w-[240px] bg-white p-4 rounded-lg border border-red-200 shadow-sm flex-shrink-0">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="font-bold text-gray-800">{c.customerName}</span>
+                                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-bold">
+                                            +{c.overdueDays}일째
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">미납액</span>
+                                            <span className="font-bold text-red-600">{c.unpaidAmount.toLocaleString()}만원</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">진행상태</span>
+                                            <span className="text-gray-700">{c.status}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                                        <p className="text-xs text-gray-400">마지막: {c.depositHistory?.length ? '입금' : '계약'}일 기준</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
+                );
+            })()}
 
-                    {/* Row 2: Commission KPIs */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200">
-                            <p className="text-sm text-green-700">💵 지급된 수수료</p>
-                            <p className="text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
-                            <p className="text-xs text-green-500 mt-1">입금 확정 기준</p>
+            {/* Chart */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-80 flex flex-col">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
+                <div className="flex-1 min-h-0 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={monthlyStats}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '']} />
+                            <Legend />
+                            <Bar dataKey="actualDeposit" fill="#10b981" name="실제입금" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="paidCommission" fill="#ef4444" name="지급수수료" radius={[4, 4, 0, 0]} />
+                            <Line type="monotone" dataKey="netProfit" stroke="#3b82f6" strokeWidth={2} name="순수익 (입금-지급)" dot={{ r: 4 }} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Monthly Summary Table (Enhanced) */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 bg-gray-50">
+                    <h3 className="font-bold text-gray-700">📅 월별 상세 요약</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-600 font-medium">
+                            <tr>
+                                <th className="py-3 px-3 text-center">월</th>
+                                <th className="py-3 px-3 text-center">건수</th>
+                                <th className="py-3 px-3 text-right">매출</th>
+                                <th className="py-3 px-3 text-right text-green-600">입금액</th>
+                                <th className="py-3 px-3 text-right text-blue-600">총수수료</th>
+                                <th className="py-3 px-3 text-right text-green-600">지급완료</th>
+                                <th className="py-3 px-3 text-right text-orange-600">미지급</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {monthlyStats.map((m, i) => (
+                                <tr key={i} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 ${month === (i + 1) ? 'bg-blue-50' : ''}`}>
+                                    <td className="py-3 px-3 font-medium text-center">{m.name}</td>
+                                    <td className="py-3 px-3 text-center text-gray-500">{m.count}</td>
+                                    <td className="py-3 px-3 text-right text-gray-700">{m.revenue.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-green-600 font-medium">{m.actualDeposit.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-blue-600">{m.commission.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-green-600 font-bold">{m.paidCommission.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-orange-600">{m.unpaidCommission.toLocaleString()}만원</td>
+                                </tr>
+                            ))}
+                            {/* Total Row */}
+                            <tr className="bg-gray-100 font-bold border-t-2 border-gray-300">
+                                <td className="py-3 px-3 text-center">합계</td>
+                                <td className="py-3 px-3 text-center">{totalCount}</td>
+                                <td className="py-3 px-3 text-right text-gray-700">{totalRevenue.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-green-600">{totalActualDeposit.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-blue-600">{totalCommission.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-green-600">{totalPaidCommission.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-orange-600">{totalUnpaidCommission.toLocaleString()}만원</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Partner Stats Section (Only visible when viewing all) */}
+            {isAll && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+                    <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+                        <h3 className="font-bold text-gray-700">🤝 파트너별 성과 분석</h3>
+                        <p className="text-xs text-gray-500 mt-1">파트너별 수임 건수 및 수수료 지급 현황</p>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 text-gray-600 font-medium">
+                                <tr>
+                                    <th className="py-3 px-3 text-left">파트너명</th>
+                                    <th className="py-3 px-3 text-center">건수</th>
+                                    <th className="py-3 px-3 text-right">총 수임료</th>
+                                    <th className="py-3 px-3 text-right text-blue-600">지급 완료</th>
+                                    <th className="py-3 px-3 text-right text-orange-600">미지급</th>
+                                    <th className="py-3 px-3 text-right">지급률</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {partners.map(p => {
+                                    const pCases = safeCases.filter(c => c.partnerId === p.partnerId);
+                                    if (pCases.length === 0) return null;
+
+                                    const count = pCases.length;
+                                    const revenue = pCases.reduce((sum, c) => sum + (c.contractFee || 0), 0);
+                                    const paid = pCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
+                                    const totalComm = pCases.reduce((sum, c) => sum + getCommissionForCase(c), 0);
+                                    const unpaid = totalComm - paid;
+                                    const rate = totalComm > 0 ? Math.round((paid / totalComm) * 100) : 0;
+
+                                    return { p, count, revenue, paid, unpaid, rate };
+                                })
+                                    .filter(item => item !== null)
+                                    .sort((a, b) => (b?.revenue || 0) - (a?.revenue || 0))
+                                    .map((item, idx) => (
+                                        <tr key={item!.p.partnerId} className="hover:bg-gray-50 transition-colors">
+                                            <td className="py-3 px-3 font-medium text-gray-800">
+                                                {idx + 1}. {item!.p.name}
+                                            </td>
+                                            <td className="py-3 px-3 text-center">{item!.count}건</td>
+                                            <td className="py-3 px-3 text-right font-bold">{item!.revenue.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-blue-600">{item!.paid.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-orange-600">{item!.unpaid.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-gray-500">{item!.rate}%</td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Future Cashflow Prediction */}
+            {(() => {
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+
+                // Collect future deposits from all cases
+                interface FutureDeposit {
+                    caseId: string;
+                    customerName: string;
+                    depositDate: string;
+                    amount: number;
+                    depositNumber: number;
+                    contractFee: number;
+                    totalDeposited: number; // up to this deposit
+                    expectedPayout: number;
+                    payoutDate: string;
+                }
+
+                const futureDeposits: FutureDeposit[] = [];
+
+                const partnerCasesForFuture = safeCases.filter(c => c.partnerId === selectedPartnerId);
+
+                partnerCasesForFuture.forEach(c => {
+                    if (!c.depositHistory || c.depositHistory.length === 0) return;
+                    if (!currentPartner) return; // Skip if no partner selected
+                    const commission = calculateCommission(currentPartner, c.contractFee || 0);
+
+                    let cumulativeDeposit = 0;
+                    c.depositHistory.forEach((dep, idx) => {
+                        if (!dep.date || dep.date <= todayStr) {
+                            // Past deposit - just accumulate
+                            cumulativeDeposit += dep.amount || 0;
+                            return;
+                        }
+
+                        // Future deposit
+                        cumulativeDeposit += dep.amount || 0;
+
+                        // Calculate payout based on this deposit - use mock case for calculation
+                        const mockCase = {
+                            ...c,
+                            depositHistory: c.depositHistory!.slice(0, idx + 1)
+                        } as Case;
+                        const rules = currentPartner?.commissionRules || [];
+                        const config = currentPartner?.settlementConfig;
+                        const payableInfo = calculatePayableCommission(mockCase, rules, config);
+
+                        // Calculate payout date: next Tuesday after the week containing this deposit
+                        const depositDate = new Date(dep.date);
+                        const dayOfWeek = depositDate.getDay();
+                        // Find next Tuesday (day 2)
+                        let daysUntilTuesday = (2 - dayOfWeek + 7) % 7;
+                        if (daysUntilTuesday === 0) daysUntilTuesday = 7; // If it's Tuesday, next Tuesday
+                        // If deposit is Mon-Sun, payout is next week's Tuesday (2 days after week end)
+                        const weekEnd = new Date(depositDate);
+                        weekEnd.setDate(weekEnd.getDate() + (7 - dayOfWeek)); // Go to next Sunday
+                        weekEnd.setDate(weekEnd.getDate() + 2); // Add 2 days = Tuesday
+
+                        futureDeposits.push({
+                            caseId: c.caseId,
+                            customerName: c.customerName,
+                            depositDate: dep.date,
+                            amount: dep.amount || 0,
+                            depositNumber: idx + 1,
+                            contractFee: c.contractFee || 0,
+                            totalDeposited: cumulativeDeposit,
+                            expectedPayout: payableInfo.payable,
+                            payoutDate: weekEnd.toISOString().split('T')[0]
+                        });
+                    });
+                });
+
+                // Sort by deposit date
+                futureDeposits.sort((a, b) => a.depositDate.localeCompare(b.depositDate));
+
+                // Take only next 60 days
+                const sixtyDaysLater = new Date(today);
+                sixtyDaysLater.setDate(sixtyDaysLater.getDate() + 60);
+                const sixtyDaysStr = sixtyDaysLater.toISOString().split('T')[0];
+                const nearFutureDeposits = futureDeposits.filter(d => d.depositDate <= sixtyDaysStr);
+
+                // Calculate totals
+                const totalFutureDeposit = nearFutureDeposits.reduce((sum, d) => sum + d.amount, 0);
+                const totalFuturePayout = nearFutureDeposits.reduce((sum, d) => sum + d.expectedPayout, 0);
+
+                if (nearFutureDeposits.length === 0) {
+                    return (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-2xl">🔮</span>
+                                <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm">향후 60일 내 예정된 입금이 없습니다.</p>
                         </div>
-                        <div className="bg-gradient-to-br from-orange-50 to-white p-5 rounded-xl shadow-sm border border-orange-200">
-                            <p className="text-sm text-orange-700">🔜 미지급 수수료</p>
-                            <p className="text-2xl font-bold text-orange-600 mt-1">{totalUnpaidCommission.toLocaleString()}만원</p>
-                            <p className="text-xs text-orange-500 mt-1">추가 입금 필요</p>
+                    );
+                }
+
+                return (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-white">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl">🔮</span>
+                                    <div>
+                                        <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
+                                        <p className="text-xs text-gray-500">향후 60일 내 예정된 입금과 수수료 지급 일정</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 text-sm">
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-500">예상 입금</p>
+                                        <p className="font-bold text-green-600">{totalFutureDeposit.toLocaleString()}만원</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-500">예상 지급</p>
+                                        <p className="font-bold text-orange-600">{totalFuturePayout.toLocaleString()}만원</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl shadow-sm border border-indigo-200">
-                            <p className="text-sm text-indigo-700">📊 분납 진행중</p>
-                            <p className="text-2xl font-bold text-indigo-600 mt-1">{installmentInProgress}건</p>
-                            <p className="text-xs text-indigo-500 mt-1">추가 입금 대기</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200">
-                            <p className="text-sm text-blue-700">📈 입금 완료율</p>
-                            <p className="text-2xl font-bold text-blue-600 mt-1">{depositRate}%</p>
-                            <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${depositRate}%` }} />
+
+                        {/* Timeline + Table View */}
+                        <div className="p-4">
+                            <div className="space-y-3">
+                                {nearFutureDeposits.map((dep, idx) => (
+                                    <div key={`${dep.caseId}-${dep.depositNumber}`} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                        {/* Date Badge */}
+                                        <div className="flex-shrink-0 text-center">
+                                            <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
+                                                {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 mt-1">입금예정</p>
+                                        </div>
+
+                                        {/* Customer Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-gray-800">{dep.customerName}</span>
+                                                <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                                                    {dep.depositNumber}차 입금
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-1">
+                                                수임료 {dep.contractFee}만원 중 누적 {dep.totalDeposited}만원 입금
+                                            </p>
+                                        </div>
+
+                                        {/* Amount */}
+                                        <div className="text-right flex-shrink-0">
+                                            <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
+                                            {dep.expectedPayout > 0 && (
+                                                <div className="mt-1 text-xs">
+                                                    <span className="text-orange-600">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
+                );
+            })()}
 
-                    {/* Overdue Management Section */}
-                    {(() => {
-                        // Use partnerCases from parent scope (already filtered with flexible matching)
-                        // [SAFETY FIX] Ensure partnerCases is always an array
-                        const safePartnerCases = Array.isArray(partnerCases) ? partnerCases : [];
-                        const today = new Date();
-
-                        // Filter overdue cases
-                        // 1. Unpaid amount > 0
-                        // 2. Last deposit (or contract date) was > 30 days ago
-                        const overdueCases = safePartnerCases.filter(c => {
-                            if (c.status === '종결' || c.status === '취소') return false;
-
-                            const contractFee = c.contractFee || 0;
-                            const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
-                            const unpaidAmount = contractFee - totalDeposited;
-
-                            if (unpaidAmount <= 0) return false;
-
-                            // Check date
-                            let lastActivityDateStr = c.contractAt || c.createdAt;
-                            if (c.depositHistory && c.depositHistory.length > 0) {
-                                // Find latest deposit
-                                const dates = c.depositHistory.map(d => d.date).sort();
-                                lastActivityDateStr = dates[dates.length - 1];
+            {/* Weekly Batch Status Overview */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white flex justify-between items-center">
+                    <div>
+                        <h3 className="font-bold text-gray-700">📋 주간 정산 배치 현황</h3>
+                        <p className="text-xs text-gray-500 mt-1">최근 정산 배치별 수금/지급/세금계산서 상태</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            const safeBatches = Array.isArray(batches) ? batches : [];
+                            if (safeBatches.length === 0) {
+                                showToast('내보낼 데이터가 없습니다.', 'error');
+                                return;
                             }
+                            const excelData = safeBatches.map(b => ({
+                                '주차': b.weekLabel,
+                                '기간': `${b.startDate} ~ ${b.endDate}`,
+                                '수수료(만원)': b.totalCommission,
+                                '수금상태': b.collectionInfo?.collectedAt ? `완료 (${b.collectionInfo.collectedAt})` : '대기',
+                                '파트너 지급': (b.payoutItems || []).length > 0
+                                    ? (b.payoutItems || []).map(p => `${p.partnerName}(${p.amount}만원)`).join(', ')
+                                    : '없음',
+                                '세금계산서': b.purchaseInvoice?.receivedAt ? `수취 (${b.purchaseInvoice.receivedAt})` : '미수취',
+                                '상태': getSettlementStatusLabel(b.status)
+                            }));
+                            exportToExcel(`정산내역_${new Date().toISOString().split('T')[0]}`, excelData);
+                            showToast('엑셀 파일이 다운로드되었습니다.', 'success');
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                    >
+                        <Download size={16} />
+                        엑셀 다운로드
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-600 font-medium">
+                            <tr>
+                                <th className="py-3 px-3 text-left">주차</th>
+                                <th className="py-3 px-3 text-right">수수료</th>
+                                <th className="py-3 px-3 text-center">수금</th>
+                                <th className="py-3 px-3 text-center">파트너 지급</th>
+                                <th className="py-3 px-3 text-center">매입세금계산서</th>
+                                <th className="py-3 px-3 text-center">상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(Array.isArray(batches) ? batches : []).slice(0, 8).map((b) => {
+                                const payoutCount = (b.payoutItems || []).length;
+                                const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
+                                const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+                                return (
+                                    <tr key={b.batchId} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                        <td className="py-3 px-3 font-medium">{b.weekLabel}</td>
+                                        <td className="py-3 px-3 text-right font-bold text-blue-600">{b.totalCommission.toLocaleString()}만원</td>
+                                        <td className="py-3 px-3 text-center">
+                                            {b.collectionInfo?.collectedAt ? (
+                                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">✓ {b.collectionInfo.amount?.toLocaleString()}만원</span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">대기</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-3 text-center">
+                                            {payoutCount > 0 ? (
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${paidPayoutCount === payoutCount ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                    {paidPayoutCount}/{payoutCount}건 ({totalPayoutAmount}만원)
+                                                </span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-400 rounded-full text-xs">없음</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-3 text-center">
+                                            {b.purchaseInvoice?.receivedAt ? (
+                                                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">✓ 수취완료</span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">미수취</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-3 text-center">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium
+                                                ${b.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                    b.status === 'paid' ? 'bg-blue-100 text-blue-700' :
+                                                        b.status === 'collected' ? 'bg-teal-100 text-teal-700' :
+                                                            'bg-gray-100 text-gray-600'}`}>
+                                                {getSettlementStatusLabel(b.status)}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                            if (!lastActivityDateStr) return false;
+            {/* Partner Payout Breakdown */}
+            {(() => {
+                // Aggregate payouts by partner name across all batches
+                // [SAFETY FIX] Ensure batches is always an array
+                const safeBatches = Array.isArray(batches) ? batches : [];
+                const payoutByPartner: Record<string, { total: number; paid: number; count: number }> = {};
+                safeBatches.forEach(b => {
+                    (b.payoutItems || []).forEach(item => {
+                        const name = item.partnerName || '미지정';
+                        if (!payoutByPartner[name]) payoutByPartner[name] = { total: 0, paid: 0, count: 0 };
+                        payoutByPartner[name].total += item.amount || 0;
+                        payoutByPartner[name].count += 1;
+                        if (item.paidAt) payoutByPartner[name].paid += item.amount || 0;
+                    });
+                });
+                const partnerList = Object.entries(payoutByPartner).sort((a, b) => b[1].total - a[1].total);
 
-                            const lastDate = parseISO(lastActivityDateStr);
-                            const diffDays = differenceInDays(today, lastDate);
+                if (partnerList.length === 0) return null;
 
-                            return diffDays >= 30;
-                        }).map(c => {
-                            const contractFee = c.contractFee || 0;
-                            const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
-                            const unpaidAmount = contractFee - totalDeposited;
-                            let lastActivityDateStr = c.contractAt || c.createdAt;
-                            if (c.depositHistory && c.depositHistory.length > 0) {
-                                const dates = c.depositHistory.map(d => d.date).sort();
-                                lastActivityDateStr = dates[dates.length - 1];
-                            }
-                            return {
-                                ...c,
-                                unpaidAmount,
-                                overdueDays: differenceInDays(today, parseISO(lastActivityDateStr!))
-                            };
-                        }).sort((a, b) => b.unpaidAmount - a.unpaidAmount); // Sort by highest unpaid amount
-
-                        if (overdueCases.length === 0) return null;
-
-                        return (
-                            <div className="bg-red-50 rounded-xl shadow-sm border border-red-100 p-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="p-1.5 bg-red-100 text-red-600 rounded-lg">🚨</span>
+                return (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
+                            <h3 className="font-bold text-gray-700">💳 파트너별 지급 현황</h3>
+                            <p className="text-xs text-gray-500 mt-1">전체 정산 기간 파트너 지급 누계</p>
+                        </div>
+                        <div className="p-4 grid gap-3">
+                            {partnerList.map(([name, data]) => (
+                                <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">🏢</span>
                                         <div>
-                                            <h3 className="font-bold text-red-800">장기 미수금 현황</h3>
-                                            <p className="text-xs text-red-600">최근 30일 이상 미입금 고객 ({overdueCases.length}명)</p>
+                                            <p className="font-medium text-gray-800">{name}</p>
+                                            <p className="text-xs text-gray-500">{data.count}건</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs text-red-500">총 미수금</p>
-                                        <p className="font-bold text-red-700 text-lg">
-                                            {overdueCases.reduce((sum, c) => sum + c.unpaidAmount, 0).toLocaleString()}만원
-                                        </p>
+                                        <p className="font-bold text-green-600">{data.paid.toLocaleString()}만원 <span className="text-gray-400 font-normal">지급</span></p>
+                                        {data.total > data.paid && (
+                                            <p className="text-xs text-orange-600">{(data.total - data.paid).toLocaleString()}만원 미지급</p>
+                                        )}
                                     </div>
                                 </div>
-
-                                {/* Horizontal Scroll for Overdue Cards */}
-                                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                                    {overdueCases.map(c => (
-                                        <div key={c.caseId} className="min-w-[240px] bg-white p-4 rounded-lg border border-red-200 shadow-sm flex-shrink-0">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className="font-bold text-gray-800">{c.customerName}</span>
-                                                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-bold">
-                                                    +{c.overdueDays}일째
-                                                </span>
-                                            </div>
-                                            <div className="space-y-1 text-sm">
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-500">미납액</span>
-                                                    <span className="font-bold text-red-600">{c.unpaidAmount.toLocaleString()}만원</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-500">진행상태</span>
-                                                    <span className="text-gray-700">{c.status}</span>
-                                                </div>
-                                            </div>
-                                            <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                                <p className="text-xs text-gray-400">마지막: {c.depositHistory?.length ? '입금' : '계약'}일 기준</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })()}
-
-                    {/* Chart */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-80 flex flex-col">
-                        <h3 className="text-lg font-bold text-gray-700 mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
-                        <div className="flex-1 min-h-0 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={monthlyStats}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '']} />
-                                    <Legend />
-                                    <Bar dataKey="actualDeposit" fill="#10b981" name="실제입금" radius={[4, 4, 0, 0]} />
-                                    <Bar dataKey="paidCommission" fill="#ef4444" name="지급수수료" radius={[4, 4, 0, 0]} />
-                                    <Line type="monotone" dataKey="netProfit" stroke="#3b82f6" strokeWidth={2} name="순수익 (입금-지급)" dot={{ r: 4 }} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            ))}
                         </div>
                     </div>
+                );
+            })()}
 
-                    {/* Monthly Summary Table (Enhanced) */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 bg-gray-50">
-                            <h3 className="font-bold text-gray-700">📅 월별 상세 요약</h3>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-gray-50 text-gray-600 font-medium">
-                                    <tr>
-                                        <th className="py-3 px-3 text-center">월</th>
-                                        <th className="py-3 px-3 text-center">건수</th>
-                                        <th className="py-3 px-3 text-right">매출</th>
-                                        <th className="py-3 px-3 text-right text-green-600">입금액</th>
-                                        <th className="py-3 px-3 text-right text-blue-600">총수수료</th>
-                                        <th className="py-3 px-3 text-right text-green-600">지급완료</th>
-                                        <th className="py-3 px-3 text-right text-orange-600">미지급</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {monthlyStats.map((m, i) => (
-                                        <tr key={i} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 ${month === (i + 1) ? 'bg-blue-50' : ''}`}>
-                                            <td className="py-3 px-3 font-medium text-center">{m.name}</td>
-                                            <td className="py-3 px-3 text-center text-gray-500">{m.count}</td>
-                                            <td className="py-3 px-3 text-right text-gray-700">{m.revenue.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-right text-green-600 font-medium">{m.actualDeposit.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-right text-blue-600">{m.commission.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-right text-green-600 font-bold">{m.paidCommission.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-right text-orange-600">{m.unpaidCommission.toLocaleString()}만원</td>
-                                        </tr>
-                                    ))}
-                                    {/* Total Row */}
-                                    <tr className="bg-gray-100 font-bold border-t-2 border-gray-300">
-                                        <td className="py-3 px-3 text-center">합계</td>
-                                        <td className="py-3 px-3 text-center">{totalCount}</td>
-                                        <td className="py-3 px-3 text-right text-gray-700">{totalRevenue.toLocaleString()}만원</td>
-                                        <td className="py-3 px-3 text-right text-green-600">{totalActualDeposit.toLocaleString()}만원</td>
-                                        <td className="py-3 px-3 text-right text-blue-600">{totalCommission.toLocaleString()}만원</td>
-                                        <td className="py-3 px-3 text-right text-green-600">{totalPaidCommission.toLocaleString()}만원</td>
-                                        <td className="py-3 px-3 text-right text-orange-600">{totalUnpaidCommission.toLocaleString()}만원</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+            {/* Warning for missing dates */}
+            {missingDateCount > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                    <span className="text-2xl">⚠️</span>
+                    <div>
+                        <p className="font-bold text-red-700">계약일 누락: {missingDateCount}건</p>
+                        <p className="text-sm text-red-600">계약일이 없는 건은 정산 집계에서 제외됩니다.</p>
                     </div>
-
-                    {/* Partner Stats Section (Only visible when viewing all) */}
-                    {isAll && (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-                            <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
-                                <h3 className="font-bold text-gray-700">🤝 파트너별 성과 분석</h3>
-                                <p className="text-xs text-gray-500 mt-1">파트너별 수임 건수 및 수수료 지급 현황</p>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 text-gray-600 font-medium">
-                                        <tr>
-                                            <th className="py-3 px-3 text-left">파트너명</th>
-                                            <th className="py-3 px-3 text-center">건수</th>
-                                            <th className="py-3 px-3 text-right">총 수임료</th>
-                                            <th className="py-3 px-3 text-right text-blue-600">지급 완료</th>
-                                            <th className="py-3 px-3 text-right text-orange-600">미지급</th>
-                                            <th className="py-3 px-3 text-right">지급률</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {partners.map(p => {
-                                            const pCases = safeCases.filter(c => c.partnerId === p.partnerId);
-                                            if (pCases.length === 0) return null;
-
-                                            const count = pCases.length;
-                                            const revenue = pCases.reduce((sum, c) => sum + (c.contractFee || 0), 0);
-                                            const paid = pCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
-                                            const totalComm = pCases.reduce((sum, c) => sum + getCommissionForCase(c), 0);
-                                            const unpaid = totalComm - paid;
-                                            const rate = totalComm > 0 ? Math.round((paid / totalComm) * 100) : 0;
-
-                                            return { p, count, revenue, paid, unpaid, rate };
-                                        })
-                                            .filter(item => item !== null)
-                                            .sort((a, b) => (b?.revenue || 0) - (a?.revenue || 0))
-                                            .map((item, idx) => (
-                                                <tr key={item!.p.partnerId} className="hover:bg-gray-50 transition-colors">
-                                                    <td className="py-3 px-3 font-medium text-gray-800">
-                                                        {idx + 1}. {item!.p.name}
-                                                    </td>
-                                                    <td className="py-3 px-3 text-center">{item!.count}건</td>
-                                                    <td className="py-3 px-3 text-right font-bold">{item!.revenue.toLocaleString()}만원</td>
-                                                    <td className="py-3 px-3 text-right text-blue-600">{item!.paid.toLocaleString()}만원</td>
-                                                    <td className="py-3 px-3 text-right text-orange-600">{item!.unpaid.toLocaleString()}만원</td>
-                                                    <td className="py-3 px-3 text-right text-gray-500">{item!.rate}%</td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Future Cashflow Prediction */}
-                    {(() => {
-                        const today = new Date();
-                        const todayStr = today.toISOString().split('T')[0];
-
-                        // Collect future deposits from all cases
-                        interface FutureDeposit {
-                            caseId: string;
-                            customerName: string;
-                            depositDate: string;
-                            amount: number;
-                            depositNumber: number;
-                            contractFee: number;
-                            totalDeposited: number; // up to this deposit
-                            expectedPayout: number;
-                            payoutDate: string;
-                        }
-
-                        const futureDeposits: FutureDeposit[] = [];
-
-                        const partnerCasesForFuture = safeCases.filter(c => c.partnerId === selectedPartnerId);
-
-                        partnerCasesForFuture.forEach(c => {
-                            if (!c.depositHistory || c.depositHistory.length === 0) return;
-                            if (!currentPartner) return; // Skip if no partner selected
-                            const commission = calculateCommission(currentPartner, c.contractFee || 0);
-
-                            let cumulativeDeposit = 0;
-                            c.depositHistory.forEach((dep, idx) => {
-                                if (!dep.date || dep.date <= todayStr) {
-                                    // Past deposit - just accumulate
-                                    cumulativeDeposit += dep.amount || 0;
-                                    return;
-                                }
-
-                                // Future deposit
-                                cumulativeDeposit += dep.amount || 0;
-
-                                // Calculate payout based on this deposit - use mock case for calculation
-                                const mockCase = {
-                                    ...c,
-                                    depositHistory: c.depositHistory!.slice(0, idx + 1)
-                                } as Case;
-                                const rules = currentPartner?.commissionRules || [];
-                                const config = currentPartner?.settlementConfig;
-                                const payableInfo = calculatePayableCommission(mockCase, rules, config);
-
-                                // Calculate payout date: next Tuesday after the week containing this deposit
-                                const depositDate = new Date(dep.date);
-                                const dayOfWeek = depositDate.getDay();
-                                // Find next Tuesday (day 2)
-                                let daysUntilTuesday = (2 - dayOfWeek + 7) % 7;
-                                if (daysUntilTuesday === 0) daysUntilTuesday = 7; // If it's Tuesday, next Tuesday
-                                // If deposit is Mon-Sun, payout is next week's Tuesday (2 days after week end)
-                                const weekEnd = new Date(depositDate);
-                                weekEnd.setDate(weekEnd.getDate() + (7 - dayOfWeek)); // Go to next Sunday
-                                weekEnd.setDate(weekEnd.getDate() + 2); // Add 2 days = Tuesday
-
-                                futureDeposits.push({
-                                    caseId: c.caseId,
-                                    customerName: c.customerName,
-                                    depositDate: dep.date,
-                                    amount: dep.amount || 0,
-                                    depositNumber: idx + 1,
-                                    contractFee: c.contractFee || 0,
-                                    totalDeposited: cumulativeDeposit,
-                                    expectedPayout: payableInfo.payable,
-                                    payoutDate: weekEnd.toISOString().split('T')[0]
-                                });
-                            });
-                        });
-
-                        // Sort by deposit date
-                        futureDeposits.sort((a, b) => a.depositDate.localeCompare(b.depositDate));
-
-                        // Take only next 60 days
-                        const sixtyDaysLater = new Date(today);
-                        sixtyDaysLater.setDate(sixtyDaysLater.getDate() + 60);
-                        const sixtyDaysStr = sixtyDaysLater.toISOString().split('T')[0];
-                        const nearFutureDeposits = futureDeposits.filter(d => d.depositDate <= sixtyDaysStr);
-
-                        // Calculate totals
-                        const totalFutureDeposit = nearFutureDeposits.reduce((sum, d) => sum + d.amount, 0);
-                        const totalFuturePayout = nearFutureDeposits.reduce((sum, d) => sum + d.expectedPayout, 0);
-
-                        if (nearFutureDeposits.length === 0) {
-                            return (
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-2xl">🔮</span>
-                                        <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
-                                    </div>
-                                    <p className="text-gray-400 text-sm">향후 60일 내 예정된 입금이 없습니다.</p>
-                                </div>
-                            );
-                        }
-
-                        return (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-white">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">🔮</span>
-                                            <div>
-                                                <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
-                                                <p className="text-xs text-gray-500">향후 60일 내 예정된 입금과 수수료 지급 일정</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-4 text-sm">
-                                            <div className="text-right">
-                                                <p className="text-xs text-gray-500">예상 입금</p>
-                                                <p className="font-bold text-green-600">{totalFutureDeposit.toLocaleString()}만원</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-xs text-gray-500">예상 지급</p>
-                                                <p className="font-bold text-orange-600">{totalFuturePayout.toLocaleString()}만원</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Timeline + Table View */}
-                                <div className="p-4">
-                                    <div className="space-y-3">
-                                        {nearFutureDeposits.map((dep, idx) => (
-                                            <div key={`${dep.caseId}-${dep.depositNumber}`} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                                {/* Date Badge */}
-                                                <div className="flex-shrink-0 text-center">
-                                                    <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
-                                                        {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                                                    </div>
-                                                    <p className="text-[10px] text-gray-400 mt-1">입금예정</p>
-                                                </div>
-
-                                                {/* Customer Info */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-medium text-gray-800">{dep.customerName}</span>
-                                                        <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                                                            {dep.depositNumber}차 입금
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-sm text-gray-500 mt-1">
-                                                        수임료 {dep.contractFee}만원 중 누적 {dep.totalDeposited}만원 입금
-                                                    </p>
-                                                </div>
-
-                                                {/* Amount */}
-                                                <div className="text-right flex-shrink-0">
-                                                    <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
-                                                    {dep.expectedPayout > 0 && (
-                                                        <div className="mt-1 text-xs">
-                                                            <span className="text-orange-600">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
-
-                    {/* Weekly Batch Status Overview */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white flex justify-between items-center">
-                            <div>
-                                <h3 className="font-bold text-gray-700">📋 주간 정산 배치 현황</h3>
-                                <p className="text-xs text-gray-500 mt-1">최근 정산 배치별 수금/지급/세금계산서 상태</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    const safeBatches = Array.isArray(batches) ? batches : [];
-                                    if (safeBatches.length === 0) {
-                                        showToast('내보낼 데이터가 없습니다.', 'error');
-                                        return;
-                                    }
-                                    const excelData = safeBatches.map(b => ({
-                                        '주차': b.weekLabel,
-                                        '기간': `${b.startDate} ~ ${b.endDate}`,
-                                        '수수료(만원)': b.totalCommission,
-                                        '수금상태': b.collectionInfo?.collectedAt ? `완료 (${b.collectionInfo.collectedAt})` : '대기',
-                                        '파트너 지급': (b.payoutItems || []).length > 0
-                                            ? (b.payoutItems || []).map(p => `${p.partnerName}(${p.amount}만원)`).join(', ')
-                                            : '없음',
-                                        '세금계산서': b.purchaseInvoice?.receivedAt ? `수취 (${b.purchaseInvoice.receivedAt})` : '미수취',
-                                        '상태': getSettlementStatusLabel(b.status)
-                                    }));
-                                    exportToExcel(`정산내역_${new Date().toISOString().split('T')[0]}`, excelData);
-                                    showToast('엑셀 파일이 다운로드되었습니다.', 'success');
-                                }}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                            >
-                                <Download size={16} />
-                                엑셀 다운로드
-                            </button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-gray-50 text-gray-600 font-medium">
-                                    <tr>
-                                        <th className="py-3 px-3 text-left">주차</th>
-                                        <th className="py-3 px-3 text-right">수수료</th>
-                                        <th className="py-3 px-3 text-center">수금</th>
-                                        <th className="py-3 px-3 text-center">파트너 지급</th>
-                                        <th className="py-3 px-3 text-center">매입세금계산서</th>
-                                        <th className="py-3 px-3 text-center">상태</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(Array.isArray(batches) ? batches : []).slice(0, 8).map((b) => {
-                                        const payoutCount = (b.payoutItems || []).length;
-                                        const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
-                                        const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
-                                        return (
-                                            <tr key={b.batchId} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                                                <td className="py-3 px-3 font-medium">{b.weekLabel}</td>
-                                                <td className="py-3 px-3 text-right font-bold text-blue-600">{b.totalCommission.toLocaleString()}만원</td>
-                                                <td className="py-3 px-3 text-center">
-                                                    {b.collectionInfo?.collectedAt ? (
-                                                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">✓ {b.collectionInfo.amount?.toLocaleString()}만원</span>
-                                                    ) : (
-                                                        <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">대기</span>
-                                                    )}
-                                                </td>
-                                                <td className="py-3 px-3 text-center">
-                                                    {payoutCount > 0 ? (
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${paidPayoutCount === payoutCount ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                            {paidPayoutCount}/{payoutCount}건 ({totalPayoutAmount}만원)
-                                                        </span>
-                                                    ) : (
-                                                        <span className="px-2 py-1 bg-gray-100 text-gray-400 rounded-full text-xs">없음</span>
-                                                    )}
-                                                </td>
-                                                <td className="py-3 px-3 text-center">
-                                                    {b.purchaseInvoice?.receivedAt ? (
-                                                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">✓ 수취완료</span>
-                                                    ) : (
-                                                        <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">미수취</span>
-                                                    )}
-                                                </td>
-                                                <td className="py-3 px-3 text-center">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                                                ${b.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                            b.status === 'paid' ? 'bg-blue-100 text-blue-700' :
-                                                                b.status === 'collected' ? 'bg-teal-100 text-teal-700' :
-                                                                    'bg-gray-100 text-gray-600'}`}>
-                                                        {getSettlementStatusLabel(b.status)}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* Partner Payout Breakdown */}
-                    {(() => {
-                        // Aggregate payouts by partner name across all batches
-                        // [SAFETY FIX] Ensure batches is always an array
-                        const safeBatches = Array.isArray(batches) ? batches : [];
-                        const payoutByPartner: Record<string, { total: number; paid: number; count: number }> = {};
-                        safeBatches.forEach(b => {
-                            (b.payoutItems || []).forEach(item => {
-                                const name = item.partnerName || '미지정';
-                                if (!payoutByPartner[name]) payoutByPartner[name] = { total: 0, paid: 0, count: 0 };
-                                payoutByPartner[name].total += item.amount || 0;
-                                payoutByPartner[name].count += 1;
-                                if (item.paidAt) payoutByPartner[name].paid += item.amount || 0;
-                            });
-                        });
-                        const partnerList = Object.entries(payoutByPartner).sort((a, b) => b[1].total - a[1].total);
-
-                        if (partnerList.length === 0) return null;
-
-                        return (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
-                                    <h3 className="font-bold text-gray-700">💳 파트너별 지급 현황</h3>
-                                    <p className="text-xs text-gray-500 mt-1">전체 정산 기간 파트너 지급 누계</p>
-                                </div>
-                                <div className="p-4 grid gap-3">
-                                    {partnerList.map(([name, data]) => (
-                                        <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-2xl">🏢</span>
-                                                <div>
-                                                    <p className="font-medium text-gray-800">{name}</p>
-                                                    <p className="text-xs text-gray-500">{data.count}건</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-bold text-green-600">{data.paid.toLocaleString()}만원 <span className="text-gray-400 font-normal">지급</span></p>
-                                                {data.total > data.paid && (
-                                                    <p className="text-xs text-orange-600">{(data.total - data.paid).toLocaleString()}만원 미지급</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })()}
-
-                    {/* Warning for missing dates */}
-                    {missingDateCount > 0 && (
-                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-                            <span className="text-2xl">⚠️</span>
-                            <div>
-                                <p className="font-bold text-red-700">계약일 누락: {missingDateCount}건</p>
-                                <p className="text-sm text-red-600">계약일이 없는 건은 정산 집계에서 제외됩니다.</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Settlement History Calendar */}
-                    <SettlementCalendar batches={batches} />
                 </div>
-            );
-        } catch (error: any) {
-            console.error('[renderReportTab] Error:', error);
-            return (
-                <div className="bg-red-100 border border-red-400 rounded-lg p-6">
-                    <p className="font-bold text-red-800 mb-2">🚨 리포트 탭 로딩 오류</p>
-                    <p className="text-red-700">{error?.message || String(error)}</p>
-                    <pre className="mt-2 text-xs bg-red-50 p-2 rounded overflow-auto max-h-40">{error?.stack}</pre>
-                    <button onClick={() => window.location.reload()} className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                        새로고침
-                    </button>
-                </div>
-            );
-        }
-    };
+            )}
+
+            {/* Settlement History Calendar */}
+            <SettlementCalendar batches={batches} />
+        </div>
+    );
 
     // Notification Logic
     const notificationToday = new Date();
