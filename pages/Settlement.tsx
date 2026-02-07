@@ -44,9 +44,12 @@ export default function Settlement() {
             // Re-fetch after delay to get Supabase data (background sync)
             setTimeout(async () => {
                 const freshCases = await fetchCases();
-                if (freshCases.length > c.length) {
-                    console.log('[Settlement] Re-fetched cases:', freshCases.length);
-                    setCases(freshCases);
+                // [SAFETY FIX] Ensure freshCases is always an array
+                const safeFreshCases = Array.isArray(freshCases) ? freshCases : [];
+                const safeC = Array.isArray(c) ? c : [];
+                if (safeFreshCases.length > safeC.length) {
+                    console.log('[Settlement] Re-fetched cases:', safeFreshCases.length);
+                    setCases(safeFreshCases);
                 }
             }, 1500);
         };
@@ -201,9 +204,9 @@ export default function Settlement() {
     console.log('[Settlement Debug]', {
         selectedPartnerId,
         selectedPartnerName: selectedPartner?.name,
-        totalCases: cases.length,
+        totalCases: safeCases.length,
         partnerCasesCount: partnerCases.length,
-        sampleCasePartnerIds: cases.slice(0, 5).map(c => ({ name: c.customerName, partnerId: c.partnerId, contractAt: c.contractAt }))
+        sampleCasePartnerIds: safeCases.slice(0, 5).map(c => ({ name: c.customerName, partnerId: c.partnerId, contractAt: c.contractAt }))
     });
 
     // Helper to calculate commission for a specific case
