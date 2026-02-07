@@ -261,10 +261,19 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                 <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
                     <span className="font-bold text-gray-700">총 누적 입금액</span>
                     <span className="text-2xl font-bold text-blue-600">
-                        {((c.depositHistory && c.depositHistory.length > 0)
-                            ? c.depositHistory.reduce((sum, d) => sum + (d.amount || 0), 0)
-                            : (c.deposit1Amount || 0) + (c.deposit2Amount || 0)
-                        ).toLocaleString()} 만원
+                        {(() => {
+                            const today = new Date().toISOString().split('T')[0];
+                            const deposits = (c.depositHistory && c.depositHistory.length > 0)
+                                ? c.depositHistory
+                                : [
+                                    { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+                                    { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+                                ];
+                            // 오늘 날짜 이전(포함)인 입금만 합산 (미래 입금은 제외)
+                            return deposits
+                                .filter(d => d.date && d.date <= today)
+                                .reduce((sum, d) => sum + (d.amount || 0), 0);
+                        })().toLocaleString()} 만원
                     </span>
                 </div>
             </div>
