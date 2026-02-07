@@ -354,6 +354,34 @@ export default function Settlement() {
         return { actualDeposit, expectedDeposit, totalDeposit };
     };
 
+    // Helper to get monthly expected deposits (입금일 기준으로 해당 월에 예정된 입금 계산)
+    const getMonthlyExpectedDeposits = () => {
+        const monthPrefix = month === 'all'
+            ? `${year}-`
+            : `${year}-${String(month).padStart(2, '0')}`;
+
+        let expectedCount = 0;
+        let expectedAmount = 0;
+
+        partnerCases.forEach(c => {
+            const deposits = (c.depositHistory && c.depositHistory.length > 0)
+                ? c.depositHistory
+                : [
+                    { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+                    { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+                ];
+
+            deposits.forEach((d: any) => {
+                // 해당 월에 속하고, 아직 입금되지 않은 건 (today 이후)
+                if (d.date && d.date.startsWith(monthPrefix) && d.date > today && d.amount > 0) {
+                    expectedCount++;
+                    expectedAmount += d.amount;
+                }
+            });
+        });
+
+        return { expectedCount, expectedAmount };
+    };
     // Helper to calculate paid commission for a case
     const getPaidCommissionInfo = (c: Case) => {
         const p = partners.find(partner => partner.partnerId === c.partnerId);
@@ -388,7 +416,8 @@ export default function Settlement() {
 
     // NEW KPIs
     const totalActualDeposit = statsCases.reduce((sum, c) => sum + getDepositInfo(c).actualDeposit, 0);
-    const totalExpectedDeposit = statsCases.reduce((sum, c) => sum + getDepositInfo(c).expectedDeposit, 0);
+    // 월별 입금 예정 (입금일 기준)
+    const { expectedCount: monthlyExpectedCount, expectedAmount: monthlyExpectedAmount } = getMonthlyExpectedDeposits();
     const totalPaidCommission = statsCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
     const totalUnpaidCommission = totalCommission - totalPaidCommission;
     const installmentInProgress = statsCases.filter(c => (c.installmentMonths || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission).length;
@@ -1011,9 +1040,9 @@ export default function Settlement() {
                             <p className="text-xs text-gray-400 mt-1">오늘까지 확정</p>
                         </div>
                         <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                            <p className="text-sm text-gray-500">⏳ 예상 입금액</p>
-                            <p className="text-2xl font-bold text-purple-500 mt-1">{totalExpectedDeposit.toLocaleString()}만원</p>
-                            <p className="text-xs text-gray-400 mt-1">미래 예정분</p>
+                            <p className="text-sm text-gray-500">📅 예상 입금액</p>
+                            <p className="text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
+                            <p className="text-xs text-gray-400 mt-1">{monthlyExpectedCount}건 입금 예정</p>
                         </div>
                     </div>
 
