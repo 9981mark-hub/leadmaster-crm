@@ -1294,17 +1294,26 @@ export default function Settlement() {
                             return;
                         }
 
-                        // Future deposit
-                        cumulativeDeposit += dep.amount || 0;
+                        // Future deposit - calculate incremental payout
+                        const rules = currentPartner?.commissionRules || [];
+                        const config = currentPartner?.settlementConfig;
 
-                        // Calculate payout based on this deposit - use mock case for calculation
+                        // 1. 오늘까지의 입금으로 이미 지급된 수수료 계산
+                        const pastDeposits = c.depositHistory!.filter((d, i) => d.date && d.date <= todayStr);
+                        const mockCasePast = { ...c, depositHistory: pastDeposits } as Case;
+                        const alreadyPaidInfo = calculatePayableCommission(mockCasePast, rules, config);
+                        const alreadyPaid = alreadyPaidInfo.payable;
+
+                        // 2. 이 미래 입금 포함한 누적 입금으로 지급 가능한 총 수수료 계산
+                        cumulativeDeposit += dep.amount || 0;
                         const mockCase = {
                             ...c,
                             depositHistory: c.depositHistory!.slice(0, idx + 1)
                         } as Case;
-                        const rules = currentPartner?.commissionRules || [];
-                        const config = currentPartner?.settlementConfig;
                         const payableInfo = calculatePayableCommission(mockCase, rules, config);
+
+                        // 3. 추가 지급액 = 총 지급 가능액 - 이미 지급된 금액
+                        const incrementalPayout = Math.max(0, payableInfo.payable - alreadyPaid);
 
                         // Calculate payout date: next Tuesday after the week containing this deposit
                         const depositDate = new Date(dep.date);
@@ -1325,7 +1334,7 @@ export default function Settlement() {
                             depositNumber: idx + 1,
                             contractFee: c.contractFee || 0,
                             totalDeposited: cumulativeDeposit,
-                            expectedPayout: payableInfo.payable,
+                            expectedPayout: incrementalPayout, // 이제 추가 지급액만 표시
                             payoutDate: weekEnd.toISOString().split('T')[0]
                         });
                     });
