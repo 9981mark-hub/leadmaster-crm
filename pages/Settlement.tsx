@@ -1266,9 +1266,9 @@ export default function Settlement() {
 
                 const futureDeposits: FutureDeposit[] = [];
 
-                const partnerCases = cases.filter(c => c.partnerId === selectedPartnerId);
+                const partnerCasesForFuture = safeCases.filter(c => c.partnerId === selectedPartnerId);
 
-                partnerCases.forEach(c => {
+                partnerCasesForFuture.forEach(c => {
                     if (!c.depositHistory || c.depositHistory.length === 0) return;
                     const commission = calculateCommission(currentPartner!, c.contractFee || 0);
 

@@ -25,9 +25,10 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Extract events from batches
+    // Extract events from batches - ensure batches is always an array
+    const safeBatches = Array.isArray(batches) ? batches : [];
     const events: SettlementEvent[] = [];
-    batches.forEach(batch => {
+    safeBatches.forEach(batch => {
         // Collection event - check both collectionInfo.collectedAt and status
         if (batch.collectionInfo?.collectedAt) {
             events.push({
