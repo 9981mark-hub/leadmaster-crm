@@ -418,7 +418,7 @@ export default function Settlement() {
     const getPartnerName = (pid: string) => partners.find(p => p.partnerId === pid)?.name || '-';
 
     // Get deals for current week batch
-    const weekDeals = currentBatch?.dealIds.map(id => cases.find(c => c.caseId === id)).filter(Boolean) as Case[] || [];
+    const weekDeals = currentBatch?.dealIds.map(id => safeCases.find(c => c.caseId === id)).filter(Boolean) as Case[] || [];
 
     // Tab content render functions
     const renderMondayTab = () => (
@@ -1221,7 +1221,7 @@ export default function Settlement() {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {partners.map(p => {
-                                    const pCases = cases.filter(c => c.partnerId === p.partnerId);
+                                    const pCases = safeCases.filter(c => c.partnerId === p.partnerId);
                                     if (pCases.length === 0) return null;
 
                                     const count = pCases.length;
@@ -1277,7 +1277,8 @@ export default function Settlement() {
 
                 partnerCasesForFuture.forEach(c => {
                     if (!c.depositHistory || c.depositHistory.length === 0) return;
-                    const commission = calculateCommission(currentPartner!, c.contractFee || 0);
+                    if (!currentPartner) return; // Skip if no partner selected
+                    const commission = calculateCommission(currentPartner, c.contractFee || 0);
 
                     let cumulativeDeposit = 0;
                     c.depositHistory.forEach((dep, idx) => {
