@@ -182,7 +182,7 @@ export default function Settlement() {
     // Filter by Partner (for report tab) - Flexible matching for legacy data
     const selectedPartner = partners.find(p => p.partnerId === selectedPartnerId);
     // Using safeCases from top-level (line 71)
-    const partnerCases = isAll ? safeCases : safeCases.filter(c => {
+    const _partnerCases = isAll ? safeCases : safeCases.filter(c => {
         if (!c || !c.partnerId) return false;
         // Method 1: Exact ID match
         if (c.partnerId === selectedPartnerId) return true;
@@ -194,6 +194,8 @@ export default function Settlement() {
         }
         return false;
     });
+    // [SAFETY FIX] Ensure partnerCases is always an array for all downstream operations
+    const partnerCases = Array.isArray(_partnerCases) ? _partnerCases : [];
 
     // DEBUG: Log for troubleshooting (will be visible in console)
     console.log('[Settlement Debug]', {
@@ -953,16 +955,16 @@ export default function Settlement() {
             <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 text-sm">
                 <p className="font-bold text-yellow-800 mb-2">🔧 디버그 정보 (문제 해결 후 삭제)</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-yellow-700">
-                    <div>총 케이스: <strong>{cases.length}</strong></div>
-                    <div>파트너 케이스: <strong>{partnerCases.length}</strong></div>
-                    <div>통계 케이스: <strong>{statsCases.length}</strong></div>
+                    <div>총 케이스: <strong>{safeCases.length}</strong></div>
+                    <div>파트너 케이스: <strong>{(Array.isArray(partnerCases) ? partnerCases : []).length}</strong></div>
+                    <div>통계 케이스: <strong>{(Array.isArray(statsCases) ? statsCases : []).length}</strong></div>
                     <div>선택된 파트너ID: <strong className="break-all text-xs">{selectedPartnerId}</strong></div>
                 </div>
-                {cases.length > 0 && partnerCases.length === 0 && (
-                    <p className="text-red-600 mt-2">⚠️ 케이스가 있지만 파트너 매칭 실패. 샘플 partnerId: {cases.slice(0, 3).map(c => `"${c.partnerId}"`).join(', ')}</p>
+                {safeCases.length > 0 && (Array.isArray(partnerCases) ? partnerCases : []).length === 0 && (
+                    <p className="text-red-600 mt-2">⚠️ 케이스가 있지만 파트너 매칭 실패. 샘플 partnerId: {safeCases.slice(0, 3).map(c => `"${c.partnerId}"`).join(', ')}</p>
                 )}
-                {partnerCases.length > 0 && statsCases.length === 0 && (
-                    <p className="text-red-600 mt-2">⚠️ 파트너 케이스는 있지만 날짜 필터링 실패. 샘플 contractAt: {partnerCases.slice(0, 3).map(c => `"${c.contractAt || c.createdAt}"`).join(', ')}</p>
+                {(Array.isArray(partnerCases) ? partnerCases : []).length > 0 && (Array.isArray(statsCases) ? statsCases : []).length === 0 && (
+                    <p className="text-red-600 mt-2">⚠️ 파트너 케이스는 있지만 날짜 필터링 실패. 샘플 contractAt: {(Array.isArray(partnerCases) ? partnerCases : []).slice(0, 3).map(c => `"${c.contractAt || c.createdAt}"`).join(', ')}</p>
                 )}
                 <button
                     onClick={async () => {
@@ -1035,12 +1037,14 @@ export default function Settlement() {
             {/* Overdue Management Section */}
             {(() => {
                 // Use partnerCases from parent scope (already filtered with flexible matching)
+                // [SAFETY FIX] Ensure partnerCases is always an array
+                const safePartnerCases = Array.isArray(partnerCases) ? partnerCases : [];
                 const today = new Date();
 
                 // Filter overdue cases
                 // 1. Unpaid amount > 0
                 // 2. Last deposit (or contract date) was > 30 days ago
-                const overdueCases = partnerCases.filter(c => {
+                const overdueCases = safePartnerCases.filter(c => {
                     if (c.status === '종결' || c.status === '취소') return false;
 
                     const contractFee = c.contractFee || 0;
