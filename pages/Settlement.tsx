@@ -62,7 +62,8 @@ export default function Settlement() {
             if (!selectedPartnerId || selectedPartnerId === 'all') return;
             setLoadingBatches(true);
             const weekBatches = await fetchSettlementBatches(selectedPartnerId, selectedWeekStart.getFullYear());
-            setBatches(weekBatches);
+            // [SAFETY FIX] Ensure weekBatches is always an array
+            setBatches(Array.isArray(weekBatches) ? weekBatches : []);
             setLoadingBatches(false);
         };
         loadBatches();
@@ -76,7 +77,7 @@ export default function Settlement() {
     const isAll = selectedPartnerId === 'all';
     const currentPartner = !isAll ? partners.find(p => p.partnerId === selectedPartnerId) : null;
     const weekLabel = getWeekLabel(selectedWeekStart);
-    const currentBatch = batches.find(b => b.weekLabel === weekLabel && b.partnerId === selectedPartnerId);
+    const currentBatch = (Array.isArray(batches) ? batches : []).find(b => b.weekLabel === weekLabel && b.partnerId === selectedPartnerId);
 
     // Navigate weeks
     const goToPrevWeek = () => {
@@ -1426,11 +1427,12 @@ export default function Settlement() {
                     </div>
                     <button
                         onClick={() => {
-                            if (batches.length === 0) {
+                            const safeBatches = Array.isArray(batches) ? batches : [];
+                            if (safeBatches.length === 0) {
                                 showToast('내보낼 데이터가 없습니다.', 'error');
                                 return;
                             }
-                            const excelData = batches.map(b => ({
+                            const excelData = safeBatches.map(b => ({
                                 '주차': b.weekLabel,
                                 '기간': `${b.startDate} ~ ${b.endDate}`,
                                 '수수료(만원)': b.totalCommission,
@@ -1463,7 +1465,7 @@ export default function Settlement() {
                             </tr>
                         </thead>
                         <tbody>
-                            {batches.slice(0, 8).map((b) => {
+                            {(Array.isArray(batches) ? batches : []).slice(0, 8).map((b) => {
                                 const payoutCount = (b.payoutItems || []).length;
                                 const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
                                 const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -1514,8 +1516,10 @@ export default function Settlement() {
             {/* Partner Payout Breakdown */}
             {(() => {
                 // Aggregate payouts by partner name across all batches
+                // [SAFETY FIX] Ensure batches is always an array
+                const safeBatches = Array.isArray(batches) ? batches : [];
                 const payoutByPartner: Record<string, { total: number; paid: number; count: number }> = {};
-                batches.forEach(b => {
+                safeBatches.forEach(b => {
                     (b.payoutItems || []).forEach(item => {
                         const name = item.partnerName || '미지정';
                         if (!payoutByPartner[name]) payoutByPartner[name] = { total: 0, paid: 0, count: 0 };
