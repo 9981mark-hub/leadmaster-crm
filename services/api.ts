@@ -1028,7 +1028,8 @@ export const saveGlobalSettings = async (settings: {
 // --- Cases ---
 export const fetchCases = async (): Promise<Case[]> => {
   if (!isInitialized) await initializeData();
-  return [...localCases];
+  // [CRITICAL FIX] Always return array even if localCases is undefined/null
+  return Array.isArray(localCases) ? [...localCases] : [];
 };
 
 export const fetchCase = async (id: string): Promise<Case | undefined> => {
