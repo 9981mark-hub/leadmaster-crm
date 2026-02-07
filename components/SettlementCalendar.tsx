@@ -224,7 +224,7 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>
-                    <p className="text-xs text-gray-400 mt-1">총 {events.length}개의 이벤트 / {batches.length}개 배치</p>
+                    <p className="text-xs text-gray-400 mt-1">총 {events.length}개의 이벤트 / {safeBatches.length}개 배치</p>
                 </div>
                 <div className="flex gap-2 text-xs">
                     <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full">💰 수금</span>
