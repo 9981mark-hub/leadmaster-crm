@@ -2987,149 +2987,20 @@ export default function Settlement() {
                 </div>
 
                 {/* 세금계산서 등록/관리 UI */}
+                {/*  세금계산서 관리 - 준비 중 */}
                 <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
                     <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-bold text-rose-700 flex items-center gap-2">
-                                    📜 세금계산서 관리
-                                </h3>
-                                <p className="text-xs text-rose-500 mt-1">{year}년 매입/매출 세금계산서</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    const type = prompt('세금계산서 유형을 선택하세요:\n1. 매출\n2. 매입', '1');
-                                    if (!type) return;
-
-                                    const invoiceType = type === '1' ? '매출' : '매입';
-                                    const issueDate = prompt('발행일 (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-                                    if (!issueDate) return;
-
-                                    const companyName = prompt('거래처 상호:');
-                                    if (!companyName) return;
-
-                                    const businessNumber = prompt('사업자번호 (하이픈 포함):', '000-00-00000') || '';
-
-                                    const supplyAmountStr = prompt('공급가액 (원):');
-                                    if (!supplyAmountStr) return;
-                                    const supplyAmount = parseInt(supplyAmountStr.replace(/,/g, ''));
-
-                                    const vatAmount = Math.round(supplyAmount * 0.1);
-
-                                    const description = prompt('적요/품목:', '') || '';
-                                    const approvalNumber = prompt('승인번호 (선택):', '') || undefined;
-                                    const isElectronic = confirm('전자세금계산서 입니까?');
-
-                                    // API 함수 호출
-                                    const { createTaxInvoice } = require('../services/api');
-                                    createTaxInvoice({
-                                        type: invoiceType,
-                                        issueDate,
-                                        supplyAmount,
-                                        vatAmount,
-                                        totalAmount: supplyAmount + vatAmount,
-                                        businessNumber,
-                                        companyName,
-                                        description,
-                                        approvalNumber,
-                                        isElectronic
-                                    });
-
-                                    alert(`세금계산서가 등록되었습니다:\n${invoiceType} ${supplyAmount.toLocaleString()}원`);
-                                    window.location.reload();
-                                }}
-                                className="px-3 py-1.5 bg-rose-600 text-white text-sm rounded-lg hover:bg-rose-700"
-                            >
-                                + 세금계산서 등록
-                            </button>
-                        </div>
+                        <h3 className="font-bold text-rose-700 flex items-center gap-2">
+                             세금계산서 관리
+                        </h3>
+                        <p className="text-xs text-rose-500 mt-1">매입/매출 세금계산서 관리 기능</p>
                     </div>
                     <div className="p-4">
-                        {(() => {
-                            const { fetchTaxInvoices, getTaxInvoiceStats, deleteTaxInvoice } = require('../services/api');
-                            const invoices = fetchTaxInvoices(year);
-                            const stats = getTaxInvoiceStats(year);
-
-                            return (
-                                <>
-                                    {/* 통계 요약 */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                                            <p className="text-xs text-green-600">매출 세금계산서</p>
-                                            <p className="text-lg font-bold text-green-700">{stats.salesCount}건</p>
-                                            <p className="text-xs text-green-500">{stats.salesTotal.toLocaleString()}원</p>
-                                        </div>
-                                        <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                                            <p className="text-xs text-red-600">매입 세금계산서</p>
-                                            <p className="text-lg font-bold text-red-700">{stats.purchaseCount}건</p>
-                                            <p className="text-xs text-red-500">{stats.purchaseTotal.toLocaleString()}원</p>
-                                        </div>
-                                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                                            <p className="text-xs text-blue-600">매출세액</p>
-                                            <p className="text-lg font-bold text-blue-700">{stats.salesVat.toLocaleString()}원</p>
-                                        </div>
-                                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                                            <p className="text-xs text-purple-600">납부 예정 세액</p>
-                                            <p className={`text-lg font-bold ${stats.vatPayable >= 0 ? 'text-purple-700' : 'text-green-700'}`}>
-                                                {stats.vatPayable >= 0 ? '' : '-'}{Math.abs(stats.vatPayable).toLocaleString()}원
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* 세금계산서 목록 */}
-                                    {invoices.length > 0 ? (
-                                        <div className="overflow-x-auto max-h-60 overflow-y-auto">
-                                            <table className="w-full text-sm">
-                                                <thead className="bg-rose-50 text-rose-700 sticky top-0">
-                                                    <tr>
-                                                        <th className="py-2 px-2 text-left">유형</th>
-                                                        <th className="py-2 px-2 text-left">발행일</th>
-                                                        <th className="py-2 px-2 text-left">거래처</th>
-                                                        <th className="py-2 px-2 text-right">공급가액</th>
-                                                        <th className="py-2 px-2 text-right">세액</th>
-                                                        <th className="py-2 px-2 text-center">전자</th>
-                                                        <th className="py-2 px-2"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {invoices.map((inv: any) => (
-                                                        <tr key={inv.id} className="border-b border-gray-100 hover:bg-gray-50">
-                                                            <td className="py-2 px-2">
-                                                                <span className={`px-2 py-0.5 rounded text-xs ${inv.type === '매출' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                                    {inv.type}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-2 px-2">{inv.issueDate}</td>
-                                                            <td className="py-2 px-2">{inv.companyName}</td>
-                                                            <td className="py-2 px-2 text-right">{inv.supplyAmount.toLocaleString()}</td>
-                                                            <td className="py-2 px-2 text-right">{inv.vatAmount.toLocaleString()}</td>
-                                                            <td className="py-2 px-2 text-center">{inv.isElectronic ? '✓' : ''}</td>
-                                                            <td className="py-2 px-2">
-                                                                <button
-                                                                    onClick={() => {
-                                                                        if (confirm('이 세금계산서를 삭제하시겠습니까?')) {
-                                                                            deleteTaxInvoice(inv.id);
-                                                                            window.location.reload();
-                                                                        }
-                                                                    }}
-                                                                    className="text-gray-400 hover:text-red-500"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-8 text-gray-400">
-                                            등록된 세금계산서가 없습니다.
-                                        </div>
-                                    )}
-                                </>
-                            );
-                        })()}
+                        <div className="text-center py-8 text-gray-400">
+                            <span className="text-4xl block mb-2"></span>
+                            <p>세금계산서 관리 기능 준비 중</p>
+                            <p className="text-xs mt-1">곧 사용 가능합니다</p>
+                        </div>
                     </div>
                 </div>
 
