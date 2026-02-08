@@ -514,6 +514,107 @@ export default function Settlement() {
 
         return { expectedCount, expectedAmount };
     };
+
+    // Helper to get monthly expected commission payouts (지급 예정일이 해당 월에 속하는 수수료)
+    const getMonthlyExpectedCommission = () => {
+        const monthPrefix = month === 'all'
+            ? `${year}-`
+            : `${year}-${String(month).padStart(2, '0')}`;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().slice(0, 10);
+
+        let expectedCount = 0;
+        let expectedAmount = 0;
+        const expectedPayouts: { date: string; amount: number; customerName: string }[] = [];
+
+        partnerCases.forEach(c => {
+            const p = partners.find(partner => partner.partnerId === c.partnerId);
+            if (!p || !p.settlementConfig || !p.commissionRules) return;
+
+            const rule = p.commissionRules.find(r =>
+                r.active && (c.contractFee || 0) >= r.minFee && ((c.contractFee || 0) <= r.maxFee || r.maxFee === 0)
+            );
+            if (!rule) return;
+
+            const config = p.settlementConfig;
+            const totalCommission = rule.commission;
+            const downPaymentThreshold = (c.contractFee || 0) * (config.downPaymentPercentage / 100);
+            const fullPayoutThreshold = rule.fullPayoutThreshold || totalCommission;
+            const firstPayoutAmount = totalCommission * (config.firstPayoutPercentage / 100);
+            const secondPayoutAmount = totalCommission - firstPayoutAmount;
+
+            // 모든 입금 내역
+            const allDeposits = (c.depositHistory || []).sort((a, b) => a.date.localeCompare(b.date));
+
+            let cumulativeDeposit = 0;
+            let firstPayoutTriggered = false;
+            let secondPayoutTriggered = false;
+
+            allDeposits.forEach(deposit => {
+                if (!deposit.date) return;
+                cumulativeDeposit += deposit.amount;
+                const depositDate = new Date(deposit.date);
+                const isFutureDeposit = depositDate > today;
+
+                // 지급일 계산 (입금 주차 마감 후 다음 주 화요일)
+                const calcPayoutDate = (dDate: string) => {
+                    const d = new Date(dDate);
+                    const dayOfWeek = d.getDay(); // 0=일, 1=월, ..., 6=토
+                    // 다음 일요일까지 남은 일수
+                    const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+                    const weekEnd = new Date(d);
+                    weekEnd.setDate(d.getDate() + daysToSunday);
+                    // 다음 화요일 = 일요일 + 2일
+                    const payoutDate = new Date(weekEnd);
+                    payoutDate.setDate(weekEnd.getDate() + 2);
+                    if (config.payoutWeekDelay === 1) {
+                        payoutDate.setDate(payoutDate.getDate() + 7);
+                    }
+                    return payoutDate.toISOString().slice(0, 10);
+                };
+
+                // 1차 지급 조건
+                if (!firstPayoutTriggered && cumulativeDeposit >= downPaymentThreshold) {
+                    firstPayoutTriggered = true;
+                    const payoutDateStr = calcPayoutDate(deposit.date);
+                    // 지급일이 미래이고 해당 월에 속하면
+                    if (payoutDateStr > todayStr && payoutDateStr.startsWith(monthPrefix)) {
+                        expectedCount++;
+                        expectedAmount += firstPayoutAmount;
+                        expectedPayouts.push({
+                            date: payoutDateStr,
+                            amount: firstPayoutAmount,
+                            customerName: c.customerName || ''
+                        });
+                    }
+                }
+
+                // 2차 지급 조건
+                if (!secondPayoutTriggered && cumulativeDeposit >= fullPayoutThreshold) {
+                    secondPayoutTriggered = true;
+                    const payoutDateStr = calcPayoutDate(deposit.date);
+                    if (payoutDateStr > todayStr && payoutDateStr.startsWith(monthPrefix)) {
+                        expectedCount++;
+                        expectedAmount += secondPayoutAmount;
+                        expectedPayouts.push({
+                            date: payoutDateStr,
+                            amount: secondPayoutAmount,
+                            customerName: c.customerName || ''
+                        });
+                    }
+                }
+            });
+        });
+
+        // 가장 빠른 지급 예정일 찾기
+        const sortedPayouts = expectedPayouts.sort((a, b) => a.date.localeCompare(b.date));
+        const nextPayoutDate = sortedPayouts.length > 0 ? sortedPayouts[0].date : null;
+
+        return { expectedCount, expectedAmount, nextPayoutDate, payouts: sortedPayouts };
+    };
+
     // Helper to calculate paid commission for a case
     const getPaidCommissionInfo = (c: Case) => {
         const p = partners.find(partner => partner.partnerId === c.partnerId);
@@ -552,6 +653,8 @@ export default function Settlement() {
     const { expectedCount: monthlyExpectedCount, expectedAmount: monthlyExpectedAmount } = getMonthlyExpectedDeposits();
     const totalPaidCommission = statsCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
     const totalUnpaidCommission = totalCommission - totalPaidCommission;
+    // 월별 예상 수수료 (지급 예정일 기준)
+    const { expectedAmount: monthlyExpectedCommission, nextPayoutDate, payouts: expectedPayouts } = getMonthlyExpectedCommission();
     const installmentInProgress = statsCases.filter(c => (c.installmentMonths || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission).length;
     const depositCompleteCount = statsCases.filter(c => {
         const { actualDeposit, totalDeposit } = getDepositInfo(c);
@@ -1156,10 +1259,12 @@ export default function Settlement() {
                     <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
                     <p className="text-xs text-green-500 mt-1 hidden md:block">입금 확정 기준</p>
                 </div>
-                <div className="bg-gradient-to-br from-orange-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-orange-200">
-                    <p className="text-xs md:text-sm text-orange-700">🔜 미지급 수수료</p>
-                    <p className="text-lg md:text-2xl font-bold text-orange-600 mt-1">{totalUnpaidCommission.toLocaleString()}만원</p>
-                    <p className="text-xs text-orange-500 mt-1 hidden md:block">추가 입금 필요</p>
+                <div className="bg-gradient-to-br from-emerald-50 to-white p-3 md:p-5 rounded-xl shadow-sm border-2 border-dashed border-emerald-300">
+                    <p className="text-xs md:text-sm text-emerald-700">📅 예상 수령 수수료</p>
+                    <p className="text-lg md:text-2xl font-bold text-emerald-600 mt-1">{monthlyExpectedCommission.toLocaleString()}만원</p>
+                    <p className="text-xs text-emerald-500 mt-1 hidden md:block">
+                        {nextPayoutDate ? `${nextPayoutDate.slice(5).replace('-', '/')} 지급 예정` : '지급 예정 없음'}
+                    </p>
                 </div>
                 <div className="bg-gradient-to-br from-indigo-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-indigo-200">
                     <p className="text-xs md:text-sm text-indigo-700">📊 분납 진행중</p>
