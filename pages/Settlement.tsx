@@ -119,10 +119,16 @@ export default function Settlement() {
         setUploadingFile(true);
         try {
             const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data, { type: 'array' });
+            // password: '' 옵션으로 암호화 관련 오류 우회 (한국 은행 엑셀 호환성)
+            const workbook = XLSX.read(new Uint8Array(data), {
+                type: 'array',
+                password: '',
+                cellDates: true,
+                raw: false
+            });
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: '' }) as any[][];
 
             // 파싱 및 매칭
             const { bank, transactions } = parseBankExcel(jsonData, file.name);
