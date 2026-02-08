@@ -1678,7 +1678,11 @@ export default function Settlement() {
     };
 
     const renderExpensesTab = () => {
-        const netProfit = totalActualDeposit - totalPaidCommission - expenseStats.total;
+        // 파트너사에게 지급하는 수수료 (현재는 시스템에 없으므로 0, 추후 확장 가능)
+        const partnerPayoutCommission = 0;
+
+        // 순이익 = 받은 수수료 - 파트너 지급 수수료 - 지출
+        const netProfit = totalPaidCommission - partnerPayoutCommission - expenseStats.total;
         const thisMonthExpenses = month === 'all'
             ? expenseStats.total
             : expenses.filter(e => e.date && e.date.startsWith(`${year}-${String(month).padStart(2, '0')}`)).reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -1696,15 +1700,15 @@ export default function Settlement() {
             <div className="space-y-6">
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200">
+                        <p className="text-sm text-green-700">💵 받은 수수료</p>
+                        <p className="text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
+                        <p className="text-xs text-green-500 mt-1">{year}년 누적</p>
+                    </div>
                     <div className="bg-gradient-to-br from-red-50 to-white p-5 rounded-xl shadow-sm border border-red-200">
                         <p className="text-sm text-red-700">💸 총 지출</p>
                         <p className="text-2xl font-bold text-red-600 mt-1">{expenseStats.total.toLocaleString()}만원</p>
-                        <p className="text-xs text-red-500 mt-1">{year}년 누적</p>
-                    </div>
-                    <div className="bg-gradient-to-br from-orange-50 to-white p-5 rounded-xl shadow-sm border border-orange-200">
-                        <p className="text-sm text-orange-700">📅 이번 달 지출</p>
-                        <p className="text-2xl font-bold text-orange-600 mt-1">{thisMonthExpenses.toLocaleString()}만원</p>
-                        <p className="text-xs text-orange-500 mt-1">{month === 'all' ? '전체 월' : `${month}월`}</p>
+                        <p className="text-xs text-red-500 mt-1">{month === 'all' ? '전체 월' : `${month}월`}: {thisMonthExpenses.toLocaleString()}만원</p>
                     </div>
                     <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200">
                         <p className="text-sm text-blue-700">📊 광고비 비중</p>
@@ -1716,7 +1720,7 @@ export default function Settlement() {
                     <div className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-white border-green-200' : 'from-red-50 to-white border-red-200'} p-5 rounded-xl shadow-sm border`}>
                         <p className={`text-sm ${netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>💰 순이익</p>
                         <p className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{netProfit.toLocaleString()}만원</p>
-                        <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>입금 - 수수료 - 지출</p>
+                        <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>수수료수익 - 지출</p>
                     </div>
                 </div>
 
