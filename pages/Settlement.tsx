@@ -2282,6 +2282,261 @@ export default function Settlement() {
                         </p>
                     </div>
                 </div>
+
+                {/* VAT (부가가치세) Dashboard */}
+                <div className="bg-white rounded-xl shadow-sm border border-teal-100 overflow-hidden">
+                    <div className="p-4 border-b border-teal-100 bg-gradient-to-r from-teal-50 to-cyan-50">
+                        <h3 className="font-bold text-teal-700 flex items-center gap-2">
+                            🧾 부가가치세 예상액
+                        </h3>
+                        <p className="text-xs text-teal-500 mt-1">{year}년 분기별 부가세 (10%)</p>
+                    </div>
+                    <div className="p-4">
+                        {(() => {
+                            // 분기별 매출/매입 계산
+                            const quarterlyData = [1, 2, 3, 4].map(q => {
+                                const startMonth = (q - 1) * 3 + 1;
+                                const endMonth = q * 3;
+
+                                // 매출 (수수료 수입)
+                                const salesIncome = safeCases
+                                    .filter(c => {
+                                        const settledAt = c.settledAt || c.contractAt;
+                                        if (!settledAt) return false;
+                                        const m = parseInt(settledAt.substring(5, 7));
+                                        const y = parseInt(settledAt.substring(0, 4));
+                                        return y === year && m >= startMonth && m <= endMonth;
+                                    })
+                                    .reduce((sum, c) => {
+                                        // 정산된 수수료
+                                        return sum + (c.commission || 0);
+                                    }, 0) * 10000;
+
+                                // 은행 수입
+                                const bankIncome = bankTransactions
+                                    .filter(tx => {
+                                        if (tx.type !== 'income' || tx.category === '이자') return false;
+                                        const m = parseInt(tx.date.substring(5, 7));
+                                        return m >= startMonth && m <= endMonth;
+                                    })
+                                    .reduce((sum, tx) => sum + tx.amount, 0);
+
+                                const totalSales = salesIncome + bankIncome;
+                                const outputVat = Math.round(totalSales * 0.1); // 매출세액
+
+                                // 매입 (비용)
+                                const expenseAmount = expenses
+                                    .filter(e => {
+                                        if (!e.date) return false;
+                                        const m = parseInt(e.date.substring(5, 7));
+                                        return m >= startMonth && m <= endMonth;
+                                    })
+                                    .reduce((sum, e) => sum + (e.amount || 0) * 10000, 0);
+
+                                const bankExpense = bankTransactions
+                                    .filter(tx => {
+                                        if (tx.type !== 'expense') return false;
+                                        const m = parseInt(tx.date.substring(5, 7));
+                                        return m >= startMonth && m <= endMonth;
+                                    })
+                                    .reduce((sum, tx) => sum + tx.amount, 0);
+
+                                const totalPurchase = expenseAmount + bankExpense;
+                                const inputVat = Math.round(totalPurchase * 0.1); // 매입세액
+
+                                const vatPayable = outputVat - inputVat; // 납부할 세액
+
+                                return { quarter: q, sales: totalSales, purchase: totalPurchase, outputVat, inputVat, vatPayable };
+                            });
+
+                            const totalVatPayable = quarterlyData.reduce((sum, q) => sum + Math.max(0, q.vatPayable), 0);
+
+                            return (
+                                <>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                                        {quarterlyData.map(q => (
+                                            <div key={q.quarter} className={`p-3 rounded-lg border ${q.vatPayable > 0 ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-200'}`}>
+                                                <p className="text-xs text-gray-500">{q.quarter}분기 ({(q.quarter - 1) * 3 + 1}~{q.quarter * 3}월)</p>
+                                                <p className="text-sm font-bold text-teal-700 mt-1">
+                                                    {q.vatPayable > 0 ? '+' : ''}{q.vatPayable.toLocaleString()}원
+                                                </p>
+                                                <div className="text-[10px] text-gray-400 mt-1">
+                                                    <div>매출세액: {q.outputVat.toLocaleString()}</div>
+                                                    <div>매입세액: -{q.inputVat.toLocaleString()}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="bg-teal-100 p-3 rounded-lg flex justify-between items-center">
+                                        <span className="text-sm text-teal-700">연간 예상 부가세 납부액</span>
+                                        <span className="text-xl font-bold text-teal-800">{totalVatPayable.toLocaleString()}원</span>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-2">
+                                        💡 1월, 7월: 부가세 확정신고 / 4월, 10월: 예정신고
+                                    </p>
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+
+                {/* 원천징수 (Withholding Tax) Calculator */}
+                <div className="bg-white rounded-xl shadow-sm border border-orange-100 overflow-hidden">
+                    <div className="p-4 border-b border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50">
+                        <h3 className="font-bold text-orange-700 flex items-center gap-2">
+                            💰 원천징수 계산기
+                        </h3>
+                        <p className="text-xs text-orange-500 mt-1">파트너 지급 시 3.3% 원천세 자동 계산</p>
+                    </div>
+                    <div className="p-4">
+                        {(() => {
+                            // 파트너별 지급액 계산 (배치 데이터 기반)
+                            const partnerPayouts = partners.map(partner => {
+                                // 해당 파트너에게 지급한 금액 (배치에서 계산)
+                                const partnerBatches = batches.filter(b =>
+                                    b.partnerId === partner.partnerId &&
+                                    (b.status === 'paid' || b.status === 'completed')
+                                );
+
+                                const totalPayout = partnerBatches.reduce((sum, b) => sum + (b.totalPayableCommission || 0), 0) * 10000;
+
+                                // 3.3% 원천세 (소득세 3% + 지방소득세 0.3%)
+                                const withholdingTax = Math.round(totalPayout * 0.033);
+                                const netPayout = totalPayout - withholdingTax;
+
+                                return { partner, totalPayout, withholdingTax, netPayout };
+                            }).filter(p => p.totalPayout > 0);
+
+                            const totalWithholding = partnerPayouts.reduce((sum, p) => sum + p.withholdingTax, 0);
+
+                            return (
+                                <>
+                                    {partnerPayouts.length === 0 ? (
+                                        <p className="text-sm text-gray-400 text-center py-4">
+                                            지급 완료된 정산 건이 없습니다.
+                                        </p>
+                                    ) : (
+                                        <>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-sm">
+                                                    <thead className="bg-orange-50 text-orange-700">
+                                                        <tr>
+                                                            <th className="py-2 px-3 text-left">파트너</th>
+                                                            <th className="py-2 px-3 text-right">지급액</th>
+                                                            <th className="py-2 px-3 text-right">원천세(3.3%)</th>
+                                                            <th className="py-2 px-3 text-right">실지급액</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {partnerPayouts.map(p => (
+                                                            <tr key={p.partner.partnerId} className="border-b border-gray-100">
+                                                                <td className="py-2 px-3">{p.partner.name}</td>
+                                                                <td className="py-2 px-3 text-right">{p.totalPayout.toLocaleString()}원</td>
+                                                                <td className="py-2 px-3 text-right text-red-600">-{p.withholdingTax.toLocaleString()}원</td>
+                                                                <td className="py-2 px-3 text-right font-bold">{p.netPayout.toLocaleString()}원</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div className="bg-orange-100 p-3 rounded-lg flex justify-between items-center mt-3">
+                                                <span className="text-sm text-orange-700">매월 10일까지 납부할 원천세</span>
+                                                <span className="text-xl font-bold text-orange-800">{totalWithholding.toLocaleString()}원</span>
+                                            </div>
+                                        </>
+                                    )}
+                                    <p className="text-xs text-gray-400 mt-2">
+                                        💡 사업소득 원천징수: 소득세 3% + 지방소득세 0.3% = 3.3%
+                                    </p>
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+
+                {/* Tax Calendar (세무 캘린더) */}
+                <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                    <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
+                        <h3 className="font-bold text-rose-700 flex items-center gap-2">
+                            📅 세무 캘린더
+                        </h3>
+                        <p className="text-xs text-rose-500 mt-1">주요 세금 신고 일정</p>
+                    </div>
+                    <div className="p-4">
+                        {(() => {
+                            const today = new Date();
+                            const currentYear = today.getFullYear();
+                            const currentMonth = today.getMonth() + 1;
+
+                            // 주요 세무 일정
+                            const taxSchedules = [
+                                { month: 1, day: 25, name: '부가세 확정신고', desc: '7~12월분', type: '부가세' },
+                                { month: 2, day: 10, name: '원천세 납부', desc: '1월분', type: '원천세' },
+                                { month: 3, day: 10, name: '원천세 납부', desc: '2월분', type: '원천세' },
+                                { month: 4, day: 10, name: '원천세 납부', desc: '3월분', type: '원천세' },
+                                { month: 4, day: 25, name: '부가세 예정신고', desc: '1~3월분', type: '부가세' },
+                                { month: 5, day: 10, name: '원천세 납부', desc: '4월분', type: '원천세' },
+                                { month: 5, day: 31, name: '종합소득세 신고', desc: '전년도분', type: '소득세' },
+                                { month: 6, day: 10, name: '원천세 납부', desc: '5월분', type: '원천세' },
+                                { month: 7, day: 10, name: '원천세 납부', desc: '6월분', type: '원천세' },
+                                { month: 7, day: 25, name: '부가세 확정신고', desc: '1~6월분', type: '부가세' },
+                                { month: 8, day: 10, name: '원천세 납부', desc: '7월분', type: '원천세' },
+                                { month: 9, day: 10, name: '원천세 납부', desc: '8월분', type: '원천세' },
+                                { month: 10, day: 10, name: '원천세 납부', desc: '9월분', type: '원천세' },
+                                { month: 10, day: 25, name: '부가세 예정신고', desc: '7~9월분', type: '부가세' },
+                                { month: 11, day: 10, name: '원천세 납부', desc: '10월분', type: '원천세' },
+                                { month: 12, day: 10, name: '원천세 납부', desc: '11월분', type: '원천세' },
+                            ];
+
+                            // D-day 계산 및 다가오는 일정 정렬
+                            const upcomingSchedules = taxSchedules
+                                .map(s => {
+                                    let scheduleDate = new Date(currentYear, s.month - 1, s.day);
+                                    // 날짜가 지났으면 다음 해로
+                                    if (scheduleDate < today) {
+                                        scheduleDate = new Date(currentYear + 1, s.month - 1, s.day);
+                                    }
+                                    const dDay = Math.ceil((scheduleDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                                    return { ...s, scheduleDate, dDay };
+                                })
+                                .sort((a, b) => a.dDay - b.dDay)
+                                .slice(0, 6);
+
+                            const typeColors: Record<string, string> = {
+                                '부가세': 'bg-teal-100 text-teal-700',
+                                '원천세': 'bg-orange-100 text-orange-700',
+                                '소득세': 'bg-purple-100 text-purple-700'
+                            };
+
+                            return (
+                                <div className="space-y-2">
+                                    {upcomingSchedules.map((s, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`flex items-center justify-between p-3 rounded-lg border ${s.dDay <= 7 ? 'bg-red-50 border-red-200' :
+                                                    s.dDay <= 14 ? 'bg-yellow-50 border-yellow-200' :
+                                                        'bg-gray-50 border-gray-200'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${typeColors[s.type] || 'bg-gray-100 text-gray-700'}`}>
+                                                    {s.type}
+                                                </span>
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{s.name}</p>
+                                                    <p className="text-xs text-gray-500">{s.desc} • {s.month}월 {s.day}일</p>
+                                                </div>
+                                            </div>
+                                            <div className={`text-right ${s.dDay <= 7 ? 'text-red-600 font-bold' : 'text-gray-600'}`}>
+                                                {s.dDay === 0 ? 'D-Day!' : s.dDay > 0 ? `D-${s.dDay}` : `D+${Math.abs(s.dDay)}`}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
             </div>
         );
     };
