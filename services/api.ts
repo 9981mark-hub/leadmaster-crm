@@ -1,4 +1,4 @@
-
+﻿
 import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType, TaxInvoice, TaxInvoiceType, TaxReminder, TaxReminderType } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
@@ -2514,3 +2514,4 @@ export const getTodayTaxAlerts = (): { reminder: TaxReminder; daysLeft: number }
 
   return alerts;
 };
+

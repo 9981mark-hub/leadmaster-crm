@@ -9,6 +9,7 @@ import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, 
 import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
 import ReceiptOcrSection from '../components/ReceiptOcrSection';
+import TaxInvoiceSection from '../components/TaxInvoiceSection';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
 import * as XLSX from 'xlsx';
@@ -1715,6 +1716,9 @@ export default function Settlement() {
 
             {/* Settlement History Calendar */}
             <SettlementCalendar batches={batches} />
+
+            {/* 📜 세금계산서 관리 */}
+            <TaxInvoiceSection year={year} onDataChanged={() => window.location.reload()} />
 
             {/* 📷 영수증 OCR 스캔 */}
             <ReceiptOcrSection onExpenseSaved={() => window.location.reload()} />
