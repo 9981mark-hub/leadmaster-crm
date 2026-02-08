@@ -1,5 +1,5 @@
 
-import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus } from '../types';
+import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -34,6 +34,8 @@ let localInboundPaths: string[] = [];
 let localStatuses: CaseStatus[] = [];
 let localSecondaryStatuses: string[] = []; // [NEW] 2차 상태 목록
 let localAllowedEmails: string[] = ['9981mark@gmail.com', '2882a@naver.com']; // Default
+let localExpenses: ExpenseItem[] = []; // [NEW] 지출 목록
+let expensesInitialized = false; // [NEW] 지출 초기화 여부
 let isInitialized = false;
 
 // Event Listeners for Real-time Updates
@@ -58,7 +60,8 @@ const CACHE_KEYS = {
   EMAILS: 'lm_allowed_emails',
   LOGS: 'lm_logs',
   EMAIL_NOTIFICATION: 'lm_email_notification',
-  SETTLEMENT_BATCHES: 'lm_settlement_batches' // [NEW] 주차 정산 배치
+  SETTLEMENT_BATCHES: 'lm_settlement_batches', // [NEW] 주차 정산 배치
+  EXPENSES: 'lm_expenses' // [NEW] 지출 관리
 };
 
 const loadFromStorage = () => {
@@ -1753,4 +1756,165 @@ export const getSettlementStatusLabel = (status: SettlementBatchStatus): string 
     completed: '정산완료'
   };
   return labels[status] || status;
+};
+
+// ============================================
+// EXPENSE MANAGEMENT (지출 관리)
+// ============================================
+
+// Helper to ensure expenses are loaded
+const ensureExpensesLoaded = () => {
+  if (!expensesInitialized) {
+    const stored = localStorage.getItem(CACHE_KEYS.EXPENSES);
+    if (stored) {
+      try {
+        localExpenses = JSON.parse(stored);
+      } catch (e) {
+        localExpenses = [];
+      }
+    }
+    expensesInitialized = true;
+  }
+};
+
+// Save expenses to storage and sync to server
+const saveExpenses = () => {
+  localStorage.setItem(CACHE_KEYS.EXPENSES, JSON.stringify(localExpenses));
+  // Sync to Supabase settings
+  saveSettingToSupabase('expenses', localExpenses);
+  syncToSheet({ target: 'settings', action: 'update', key: 'expenses', value: localExpenses });
+};
+
+// Default expense categories
+export const EXPENSE_CATEGORIES: ExpenseCategory[] = ['광고비', '마케팅비', '사무비용', '인건비', '교통비', '식대', '기타'];
+
+// Fetch all expenses (optionally filter by partner and/or year)
+export const fetchExpenses = async (partnerId?: string, year?: number): Promise<ExpenseItem[]> => {
+  ensureExpensesLoaded();
+
+  let result = [...localExpenses];
+
+  // Filter by partnerId if specified (and not 'all')
+  if (partnerId && partnerId !== 'all') {
+    result = result.filter(e => e.partnerId === partnerId || !e.partnerId);
+  }
+
+  // Filter by year if specified
+  if (year) {
+    result = result.filter(e => e.date && e.date.startsWith(String(year)));
+  }
+
+  // Sort by date descending
+  return result.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+};
+
+// Create a new expense
+export const createExpense = async (expense: Partial<ExpenseItem>): Promise<ExpenseItem> => {
+  ensureExpensesLoaded();
+
+  const now = new Date().toISOString();
+  const newExpense: ExpenseItem = {
+    id: `exp-${uuidv4().slice(0, 8)}`,
+    partnerId: expense.partnerId,
+    date: expense.date || now.split('T')[0],
+    category: expense.category || '기타',
+    amount: expense.amount || 0,
+    description: expense.description || '',
+    memo: expense.memo,
+    receiptUrl: expense.receiptUrl,
+    createdAt: now,
+    updatedAt: now
+  };
+
+  localExpenses.unshift(newExpense);
+  saveExpenses();
+  notifyListeners();
+
+  return newExpense;
+};
+
+// Update an expense
+export const updateExpense = async (id: string, updates: Partial<ExpenseItem>): Promise<ExpenseItem | null> => {
+  ensureExpensesLoaded();
+
+  const idx = localExpenses.findIndex(e => e.id === id);
+  if (idx === -1) return null;
+
+  localExpenses[idx] = {
+    ...localExpenses[idx],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveExpenses();
+  notifyListeners();
+
+  return localExpenses[idx];
+};
+
+// Delete an expense
+export const deleteExpense = async (id: string): Promise<boolean> => {
+  ensureExpensesLoaded();
+
+  const idx = localExpenses.findIndex(e => e.id === id);
+  if (idx === -1) return false;
+
+  localExpenses.splice(idx, 1);
+  saveExpenses();
+  notifyListeners();
+
+  return true;
+};
+
+// Get expense statistics for a given year and optional month
+export const getExpenseStats = async (year: number, month?: number | 'all', partnerId?: string): Promise<{
+  total: number;
+  byCategory: Record<ExpenseCategory, number>;
+  byMonth: { month: string; amount: number }[];
+}> => {
+  ensureExpensesLoaded();
+
+  let filtered = localExpenses.filter(e => {
+    if (!e.date) return false;
+    const eYear = parseInt(e.date.slice(0, 4));
+    if (eYear !== year) return false;
+    if (month !== 'all' && month !== undefined) {
+      const eMonth = parseInt(e.date.slice(5, 7));
+      if (eMonth !== month) return false;
+    }
+    if (partnerId && partnerId !== 'all' && e.partnerId && e.partnerId !== partnerId) return false;
+    return true;
+  });
+
+  const total = filtered.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+  const byCategory: Record<ExpenseCategory, number> = {
+    '광고비': 0,
+    '마케팅비': 0,
+    '사무비용': 0,
+    '인건비': 0,
+    '교통비': 0,
+    '식대': 0,
+    '기타': 0
+  };
+
+  filtered.forEach(e => {
+    if (e.category && byCategory[e.category] !== undefined) {
+      byCategory[e.category] += e.amount || 0;
+    } else {
+      byCategory['기타'] += e.amount || 0;
+    }
+  });
+
+  // Monthly breakdown for chart
+  const byMonth: { month: string; amount: number }[] = Array.from({ length: 12 }, (_, i) => {
+    const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`;
+    const monthExpenses = localExpenses.filter(e => e.date && e.date.startsWith(monthStr));
+    const amount = monthExpenses
+      .filter(e => !partnerId || partnerId === 'all' || !e.partnerId || e.partnerId === partnerId)
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    return { month: `${i + 1}월`, amount };
+  });
+
+  return { total, byCategory, byMonth };
 };

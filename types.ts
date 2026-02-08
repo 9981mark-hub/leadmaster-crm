@@ -319,4 +319,25 @@ export interface SettlementAdjustment {
   attachmentUrl?: string;
 }
 
+// ============================================
+// Expense Management Types (지출 관리)
+// ============================================
+
+// 지출 카테고리
+export type ExpenseCategory = '광고비' | '마케팅비' | '사무비용' | '인건비' | '교통비' | '식대' | '기타';
+
+// 지출 항목
+export interface ExpenseItem {
+  id: string;
+  partnerId?: string;           // 거래처 ID (선택적 필터링용)
+  date: string;                 // "YYYY-MM-DD"
+  category: ExpenseCategory;
+  amount: number;               // 만원 단위
+  description: string;          // 지출 내용
+  memo?: string;                // 추가 메모
+  receiptUrl?: string;          // 영수증 이미지 URL (선택)
+  createdAt: string;
+  updatedAt: string;
+}
+
 

@@ -1,17 +1,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
-import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday } from '../services/api';
-import { Case, Partner, SettlementBatch } from '../types';
+import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday, fetchExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, EXPENSE_CATEGORIES } from '../services/api';
+import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory } from '../types';
 import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
-import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download } from 'lucide-react';
 import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
 
-type TabType = 'monday' | 'tuesday' | 'wednesday' | 'report';
+type TabType = 'monday' | 'tuesday' | 'wednesday' | 'report' | 'expenses';
 
 export default function Settlement() {
     const { showToast } = useToast();
@@ -31,6 +31,14 @@ export default function Settlement() {
     // Modal State
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [copiedTemplate, setCopiedTemplate] = useState(false);
+
+    // Expenses State
+    const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+    const [loadingExpenses, setLoadingExpenses] = useState(false);
+    const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+    const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
+    const [expenseForm, setExpenseForm] = useState<Partial<ExpenseItem>>({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+    const [expenseStats, setExpenseStats] = useState<{ total: number; byCategory: Record<ExpenseCategory, number>; byMonth: { month: string; amount: number }[] }>({ total: 0, byCategory: { '광고비': 0, '마케팅비': 0, '사무비용': 0, '인건비': 0, '교통비': 0, '식대': 0, '기타': 0 }, byMonth: [] });
 
     useEffect(() => {
         const loadData = async () => {
@@ -68,6 +76,22 @@ export default function Settlement() {
         };
         loadBatches();
     }, [selectedPartnerId, selectedWeekStart]);
+
+    // Load expenses when tab is expenses or year/partner changes
+    useEffect(() => {
+        const loadExpenses = async () => {
+            if (activeTab !== 'expenses') return;
+            setLoadingExpenses(true);
+            const [expenseList, stats] = await Promise.all([
+                fetchExpenses(selectedPartnerId, year),
+                getExpenseStats(year, month, selectedPartnerId)
+            ]);
+            setExpenses(expenseList);
+            setExpenseStats(stats);
+            setLoadingExpenses(false);
+        };
+        loadExpenses();
+    }, [activeTab, year, month, selectedPartnerId]);
 
     if (loading) return <div>로딩중...</div>;
 
@@ -1591,6 +1615,252 @@ export default function Settlement() {
         </div>
     );
 
+    // Expense category colors for charts
+    const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
+        '광고비': '#ef4444',
+        '마케팅비': '#f97316',
+        '사무비용': '#eab308',
+        '인건비': '#22c55e',
+        '교통비': '#3b82f6',
+        '식대': '#8b5cf6',
+        '기타': '#6b7280'
+    };
+
+    // Expense handlers
+    const handleSaveExpense = async () => {
+        if (!expenseForm.amount || !expenseForm.description) {
+            showToast('금액과 내용을 입력해주세요.', 'error');
+            return;
+        }
+
+        if (editingExpense) {
+            await updateExpense(editingExpense.id, expenseForm);
+            showToast('지출이 수정되었습니다.', 'success');
+        } else {
+            await createExpense({ ...expenseForm, partnerId: selectedPartnerId !== 'all' ? selectedPartnerId : undefined });
+            showToast('지출이 등록되었습니다.', 'success');
+        }
+
+        // Refresh data
+        const [expenseList, stats] = await Promise.all([
+            fetchExpenses(selectedPartnerId, year),
+            getExpenseStats(year, month, selectedPartnerId)
+        ]);
+        setExpenses(expenseList);
+        setExpenseStats(stats);
+        setIsExpenseModalOpen(false);
+        setEditingExpense(null);
+        setExpenseForm({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+    };
+
+    const handleDeleteExpense = async (id: string) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        await deleteExpense(id);
+        showToast('지출이 삭제되었습니다.', 'success');
+        const [expenseList, stats] = await Promise.all([
+            fetchExpenses(selectedPartnerId, year),
+            getExpenseStats(year, month, selectedPartnerId)
+        ]);
+        setExpenses(expenseList);
+        setExpenseStats(stats);
+    };
+
+    const openEditExpense = (expense: ExpenseItem) => {
+        setEditingExpense(expense);
+        setExpenseForm({
+            date: expense.date,
+            category: expense.category,
+            amount: expense.amount,
+            description: expense.description,
+            memo: expense.memo
+        });
+        setIsExpenseModalOpen(true);
+    };
+
+    const renderExpensesTab = () => {
+        const netProfit = totalActualDeposit - totalPaidCommission - expenseStats.total;
+        const thisMonthExpenses = month === 'all'
+            ? expenseStats.total
+            : expenses.filter(e => e.date && e.date.startsWith(`${year}-${String(month).padStart(2, '0')}`)).reduce((sum, e) => sum + (e.amount || 0), 0);
+
+        // Prepare pie chart data
+        const pieData = Object.entries(expenseStats.byCategory)
+            .filter(([_, value]) => (value as number) > 0)
+            .map(([category, value]) => ({
+                name: category,
+                value: value as number,
+                color: CATEGORY_COLORS[category as ExpenseCategory]
+            }));
+
+        return (
+            <div className="space-y-6">
+                {/* KPI Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-gradient-to-br from-red-50 to-white p-5 rounded-xl shadow-sm border border-red-200">
+                        <p className="text-sm text-red-700">💸 총 지출</p>
+                        <p className="text-2xl font-bold text-red-600 mt-1">{expenseStats.total.toLocaleString()}만원</p>
+                        <p className="text-xs text-red-500 mt-1">{year}년 누적</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-orange-50 to-white p-5 rounded-xl shadow-sm border border-orange-200">
+                        <p className="text-sm text-orange-700">📅 이번 달 지출</p>
+                        <p className="text-2xl font-bold text-orange-600 mt-1">{thisMonthExpenses.toLocaleString()}만원</p>
+                        <p className="text-xs text-orange-500 mt-1">{month === 'all' ? '전체 월' : `${month}월`}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200">
+                        <p className="text-sm text-blue-700">📊 광고비 비중</p>
+                        <p className="text-2xl font-bold text-blue-600 mt-1">
+                            {expenseStats.total > 0 ? Math.round((expenseStats.byCategory['광고비'] / expenseStats.total) * 100) : 0}%
+                        </p>
+                        <p className="text-xs text-blue-500 mt-1">{expenseStats.byCategory['광고비'].toLocaleString()}만원</p>
+                    </div>
+                    <div className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-white border-green-200' : 'from-red-50 to-white border-red-200'} p-5 rounded-xl shadow-sm border`}>
+                        <p className={`text-sm ${netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>💰 순이익</p>
+                        <p className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{netProfit.toLocaleString()}만원</p>
+                        <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>입금 - 수수료 - 지출</p>
+                    </div>
+                </div>
+
+                {/* Add Expense Button */}
+                <div className="flex justify-end">
+                    <button
+                        onClick={() => {
+                            setEditingExpense(null);
+                            setExpenseForm({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+                            setIsExpenseModalOpen(true);
+                        }}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 flex items-center gap-2"
+                    >
+                        <Plus size={18} /> 지출 등록
+                    </button>
+                </div>
+
+                {/* Charts Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Pie Chart - Category Breakdown */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 className="text-lg font-bold text-gray-700 mb-4">📊 카테고리별 지출</h3>
+                        {pieData.length > 0 ? (
+                            <div className="flex items-center">
+                                <ResponsiveContainer width="50%" height={200}>
+                                    <PieChart>
+                                        <Pie
+                                            data={pieData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={40}
+                                            outerRadius={80}
+                                            paddingAngle={2}
+                                            dataKey="value"
+                                        >
+                                            {pieData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip formatter={(value: any) => [`${Number(value).toLocaleString()}만원`, '']} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="flex-1 space-y-2">
+                                    {pieData.map((entry, idx) => (
+                                        <div key={idx} className="flex items-center justify-between text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                                                <span>{entry.name}</span>
+                                            </div>
+                                            <span className="font-medium">{entry.value.toLocaleString()}만원</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="h-48 flex items-center justify-center text-gray-400">
+                                지출 데이터가 없습니다
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bar Chart - Monthly Trend */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 className="text-lg font-bold text-gray-700 mb-4">📈 월별 지출 추이</h3>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={expenseStats.byMonth}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="month" />
+                                <YAxis />
+                                <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '지출']} />
+                                <Bar dataKey="amount" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Expense List Table */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-700">📋 지출 내역</h3>
+                        <span className="text-sm text-gray-500">{expenses.length}건</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 text-gray-600 font-medium">
+                                <tr>
+                                    <th className="py-3 px-3 text-left">날짜</th>
+                                    <th className="py-3 px-3 text-left">카테고리</th>
+                                    <th className="py-3 px-3 text-left">내용</th>
+                                    <th className="py-3 px-3 text-right">금액</th>
+                                    <th className="py-3 px-3 text-center">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loadingExpenses ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-8 text-center text-gray-400">로딩중...</td>
+                                    </tr>
+                                ) : expenses.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-8 text-center text-gray-400">등록된 지출이 없습니다</td>
+                                    </tr>
+                                ) : (
+                                    expenses.slice(0, 20).map(exp => (
+                                        <tr key={exp.id} className="border-b border-gray-50 hover:bg-gray-50">
+                                            <td className="py-3 px-3 text-gray-600">{exp.date}</td>
+                                            <td className="py-3 px-3">
+                                                <span
+                                                    className="px-2 py-1 rounded text-xs font-medium text-white"
+                                                    style={{ backgroundColor: CATEGORY_COLORS[exp.category] }}
+                                                >
+                                                    {exp.category}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-3 text-gray-800">
+                                                {exp.description}
+                                                {exp.memo && <span className="text-gray-400 ml-2 text-xs">({exp.memo})</span>}
+                                            </td>
+                                            <td className="py-3 px-3 text-right font-bold text-red-600">{exp.amount.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-center">
+                                                <button
+                                                    onClick={() => openEditExpense(exp)}
+                                                    className="text-blue-600 hover:text-blue-700 mr-2"
+                                                >
+                                                    수정
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteExpense(exp.id)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     // Notification Logic
     const notificationToday = new Date();
     const notificationDayOfWeek = notificationToday.getDay(); // 0:Sun, 1:Mon, ...
@@ -1736,10 +2006,19 @@ export default function Settlement() {
                 >
                     📊 리포트
                 </button>
+                <button
+                    onClick={() => setActiveTab('expenses')}
+                    className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'expenses'
+                        ? 'border-red-600 text-red-600 bg-red-50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    💳 지출
+                </button>
             </div>
 
-            {/* Year/Month Filter (only for report tab) */}
-            {activeTab === 'report' && (
+            {/* Year/Month Filter (for report and expenses tabs) */}
+            {(activeTab === 'report' || activeTab === 'expenses') && (
                 <div className="flex gap-2 items-center">
                     <select
                         className="bg-white border p-2 rounded text-lg font-bold cursor-pointer min-w-[100px]"
@@ -1768,7 +2047,8 @@ export default function Settlement() {
             {activeTab === 'tuesday' && !isAll && renderTuesdayTab()}
             {activeTab === 'wednesday' && !isAll && renderWednesdayTab()}
             {activeTab === 'report' && renderReportTab()}
-            {isAll && activeTab !== 'report' && (
+            {activeTab === 'expenses' && renderExpensesTab()}
+            {isAll && activeTab !== 'report' && activeTab !== 'expenses' && (
                 <div className="bg-gray-50 p-8 rounded-xl text-center">
                     <p className="text-gray-500">주간 정산 기능은 특정 거래처를 선택해야 사용할 수 있습니다.</p>
                     <p className="text-sm text-gray-400 mt-2">통계를 보시려면 "리포트" 탭을 선택하세요.</p>
@@ -1844,6 +2124,98 @@ export default function Settlement() {
                     >
                         닫기
                     </button>
+                </div>
+            </Modal>
+
+            {/* Expense Add/Edit Modal */}
+            <Modal
+                isOpen={isExpenseModalOpen}
+                onClose={() => {
+                    setIsExpenseModalOpen(false);
+                    setEditingExpense(null);
+                }}
+                title={editingExpense ? '지출 수정' : '지출 등록'}
+            >
+                <div className="space-y-4">
+                    {/* Date */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                        <input
+                            type="date"
+                            className="w-full border rounded-lg p-2"
+                            value={expenseForm.date || ''}
+                            onChange={e => setExpenseForm({ ...expenseForm, date: e.target.value })}
+                        />
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
+                        <select
+                            className="w-full border rounded-lg p-2"
+                            value={expenseForm.category || '광고비'}
+                            onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value as ExpenseCategory })}
+                        >
+                            {EXPENSE_CATEGORIES.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Amount */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">금액 (만원)</label>
+                        <input
+                            type="number"
+                            className="w-full border rounded-lg p-2"
+                            placeholder="예: 100"
+                            value={expenseForm.amount || ''}
+                            onChange={e => setExpenseForm({ ...expenseForm, amount: Number(e.target.value) })}
+                        />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">내용 *</label>
+                        <input
+                            type="text"
+                            className="w-full border rounded-lg p-2"
+                            placeholder="예: 네이버 광고비"
+                            value={expenseForm.description || ''}
+                            onChange={e => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                        />
+                    </div>
+
+                    {/* Memo */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">메모 (선택)</label>
+                        <textarea
+                            className="w-full border rounded-lg p-2"
+                            rows={2}
+                            placeholder="추가 메모"
+                            value={expenseForm.memo || ''}
+                            onChange={e => setExpenseForm({ ...expenseForm, memo: e.target.value })}
+                        />
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex gap-2 pt-4">
+                        <button
+                            onClick={handleSaveExpense}
+                            className="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-700"
+                        >
+                            {editingExpense ? '수정' : '등록'}
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsExpenseModalOpen(false);
+                                setEditingExpense(null);
+                            }}
+                            className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-300"
+                        >
+                            취소
+                        </button>
+                    </div>
                 </div>
             </Modal>
         </div>
