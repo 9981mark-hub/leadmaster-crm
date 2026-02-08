@@ -1714,6 +1714,246 @@ export default function Settlement() {
 
             {/* Settlement History Calendar */}
             <SettlementCalendar batches={batches} />
+
+            {/* 📷 영수증 OCR 스캔 섹션 */}
+            {(() => {
+                const [ocrLoading, setOcrLoading] = React.useState(false);
+                const [ocrResult, setOcrResult] = React.useState<{
+                    success: boolean;
+                    rawText: string;
+                    parsed: { date: string | null; amount: number | null; storeName: string | null; items: string[] };
+                    error?: string;
+                } | null>(null);
+                const [ocrFormData, setOcrFormData] = React.useState({
+                    date: '',
+                    amount: 0,
+                    description: '',
+                    category: '기타지출' as const
+                });
+                const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+                const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    setOcrLoading(true);
+                    setOcrResult(null);
+
+                    try {
+                        const { imageToBase64, resizeImage, analyzeReceiptImage, hasGoogleApiKey, setGoogleApiKey } = await import('../services/visionService');
+
+                        // API 키 확인
+                        if (!hasGoogleApiKey()) {
+                            const apiKey = prompt('Google Vision API 키를 입력해주세요:');
+                            if (apiKey) {
+                                setGoogleApiKey(apiKey);
+                            } else {
+                                setOcrLoading(false);
+                                return;
+                            }
+                        }
+
+                        // 이미지 처리
+                        const base64 = await imageToBase64(file);
+                        const resized = await resizeImage(base64);
+
+                        // OCR 분석
+                        const result = await analyzeReceiptImage(resized);
+                        setOcrResult(result);
+
+                        if (result.success && result.parsed) {
+                            setOcrFormData({
+                                date: result.parsed.date || new Date().toISOString().split('T')[0],
+                                amount: result.parsed.amount || 0,
+                                description: result.parsed.storeName || '',
+                                category: '기타지출'
+                            });
+                        }
+                    } catch (error) {
+                        console.error('OCR Error:', error);
+                        setOcrResult({
+                            success: false,
+                            rawText: '',
+                            parsed: { date: null, amount: null, storeName: null, items: [] },
+                            error: 'OCR 처리 중 오류가 발생했습니다.'
+                        });
+                    } finally {
+                        setOcrLoading(false);
+                        if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                        }
+                    }
+                };
+
+                const handleSaveExpense = async () => {
+                    if (!ocrFormData.amount || !ocrFormData.date) {
+                        alert('날짜와 금액을 입력해주세요.');
+                        return;
+                    }
+
+                    try {
+                        const { createExpense } = await import('../services/api');
+                        await createExpense({
+                            date: ocrFormData.date,
+                            amount: ocrFormData.amount,
+                            category: ocrFormData.category,
+                            description: ocrFormData.description,
+                            ocrText: ocrResult?.rawText || ''
+                        });
+
+                        alert('지출이 등록되었습니다!');
+                        setOcrResult(null);
+                        setOcrFormData({ date: '', amount: 0, description: '', category: '기타지출' });
+                        // 페이지 새로고침하여 지출 목록 갱신
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Save expense error:', error);
+                        alert('지출 등록 중 오류가 발생했습니다.');
+                    }
+                };
+
+                return (
+                    <div className="bg-white rounded-xl shadow-sm border border-cyan-100 overflow-hidden">
+                        <div className="p-4 border-b border-cyan-100 bg-gradient-to-r from-cyan-50 to-teal-50">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-bold text-cyan-700 flex items-center gap-2">
+                                        📷 영수증 스캔 (OCR)
+                                    </h3>
+                                    <p className="text-xs text-cyan-500 mt-1">영수증 사진을 업로드하면 자동으로 날짜, 금액을 추출합니다</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        onChange={handleReceiptUpload}
+                                        className="hidden"
+                                        id="receipt-upload"
+                                    />
+                                    <label
+                                        htmlFor="receipt-upload"
+                                        className={`px-4 py-2 rounded-lg cursor-pointer flex items-center gap-2 ${ocrLoading
+                                            ? 'bg-gray-300 cursor-not-allowed'
+                                            : 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                                            }`}
+                                    >
+                                        {ocrLoading ? (
+                                            <>
+                                                <span className="animate-spin">⏳</span>
+                                                분석 중...
+                                            </>
+                                        ) : (
+                                            <>📷 영수증 촬영/업로드</>
+                                        )}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-4">
+                            {/* OCR 에러 */}
+                            {ocrResult && !ocrResult.success && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                    <p className="text-red-700">❌ {ocrResult.error}</p>
+                                </div>
+                            )}
+
+                            {/* OCR 결과 및 폼 */}
+                            {ocrResult && ocrResult.success && (
+                                <div className="space-y-4">
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                        <p className="text-green-700 text-sm">✅ 영수증 분석 완료! 아래 정보를 확인 후 저장해주세요.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                                            <input
+                                                type="date"
+                                                value={ocrFormData.date}
+                                                onChange={e => setOcrFormData(prev => ({ ...prev, date: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">금액 (원)</label>
+                                            <input
+                                                type="number"
+                                                value={ocrFormData.amount}
+                                                onChange={e => setOcrFormData(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">상호/내용</label>
+                                            <input
+                                                type="text"
+                                                value={ocrFormData.description}
+                                                onChange={e => setOcrFormData(prev => ({ ...prev, description: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                                placeholder="상호명 또는 내용"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
+                                            <select
+                                                value={ocrFormData.category}
+                                                onChange={e => setOcrFormData(prev => ({ ...prev, category: e.target.value as any }))}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                            >
+                                                <option value="광고비">광고비</option>
+                                                <option value="마케팅비">마케팅비</option>
+                                                <option value="사무비용">사무비용</option>
+                                                <option value="인건비">인건비</option>
+                                                <option value="교통비">교통비</option>
+                                                <option value="식대">식대</option>
+                                                <option value="기타지출">기타지출</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* 원본 텍스트 (접기/펼치기) */}
+                                    <details className="bg-gray-50 rounded-lg p-3">
+                                        <summary className="text-sm text-gray-600 cursor-pointer">📄 인식된 원본 텍스트 보기</summary>
+                                        <pre className="mt-2 text-xs text-gray-500 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                            {ocrResult.rawText}
+                                        </pre>
+                                    </details>
+
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={handleSaveExpense}
+                                            className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+                                        >
+                                            💾 지출 저장
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setOcrResult(null);
+                                                setOcrFormData({ date: '', amount: 0, description: '', category: '기타지출' });
+                                            }}
+                                            className="px-4 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+                                        >
+                                            취소
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 초기 상태 */}
+                            {!ocrResult && !ocrLoading && (
+                                <div className="text-center py-8 text-gray-400">
+                                    <span className="text-4xl block mb-2">📷</span>
+                                    <p>영수증 사진을 업로드하면 AI가 자동으로 분석합니다</p>
+                                    <p className="text-xs mt-1">지원 형식: JPG, PNG (최대 4MB)</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 
@@ -2968,6 +3208,247 @@ export default function Settlement() {
                         <p className="text-xs text-gray-400 mt-3">
                             💡 다운로드 후 세무사에게 제출 또는 회계 프로그램에 직접 임포트하세요.
                         </p>
+                    </div>
+                </div>
+
+                {/* 세금계산서 등록/관리 UI */}
+                <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                    <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="font-bold text-rose-700 flex items-center gap-2">
+                                    📜 세금계산서 관리
+                                </h3>
+                                <p className="text-xs text-rose-500 mt-1">{year}년 매입/매출 세금계산서</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const type = prompt('세금계산서 유형을 선택하세요:\n1. 매출\n2. 매입', '1');
+                                    if (!type) return;
+
+                                    const invoiceType = type === '1' ? '매출' : '매입';
+                                    const issueDate = prompt('발행일 (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+                                    if (!issueDate) return;
+
+                                    const companyName = prompt('거래처 상호:');
+                                    if (!companyName) return;
+
+                                    const businessNumber = prompt('사업자번호 (하이픈 포함):', '000-00-00000') || '';
+
+                                    const supplyAmountStr = prompt('공급가액 (원):');
+                                    if (!supplyAmountStr) return;
+                                    const supplyAmount = parseInt(supplyAmountStr.replace(/,/g, ''));
+
+                                    const vatAmount = Math.round(supplyAmount * 0.1);
+
+                                    const description = prompt('적요/품목:', '') || '';
+                                    const approvalNumber = prompt('승인번호 (선택):', '') || undefined;
+                                    const isElectronic = confirm('전자세금계산서 입니까?');
+
+                                    // API 함수 호출
+                                    const { createTaxInvoice } = require('../services/api');
+                                    createTaxInvoice({
+                                        type: invoiceType,
+                                        issueDate,
+                                        supplyAmount,
+                                        vatAmount,
+                                        totalAmount: supplyAmount + vatAmount,
+                                        businessNumber,
+                                        companyName,
+                                        description,
+                                        approvalNumber,
+                                        isElectronic
+                                    });
+
+                                    alert(`세금계산서가 등록되었습니다:\n${invoiceType} ${supplyAmount.toLocaleString()}원`);
+                                    window.location.reload();
+                                }}
+                                className="px-3 py-1.5 bg-rose-600 text-white text-sm rounded-lg hover:bg-rose-700"
+                            >
+                                + 세금계산서 등록
+                            </button>
+                        </div>
+                    </div>
+                    <div className="p-4">
+                        {(() => {
+                            const { fetchTaxInvoices, getTaxInvoiceStats, deleteTaxInvoice } = require('../services/api');
+                            const invoices = fetchTaxInvoices(year);
+                            const stats = getTaxInvoiceStats(year);
+
+                            return (
+                                <>
+                                    {/* 통계 요약 */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                                            <p className="text-xs text-green-600">매출 세금계산서</p>
+                                            <p className="text-lg font-bold text-green-700">{stats.salesCount}건</p>
+                                            <p className="text-xs text-green-500">{stats.salesTotal.toLocaleString()}원</p>
+                                        </div>
+                                        <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                                            <p className="text-xs text-red-600">매입 세금계산서</p>
+                                            <p className="text-lg font-bold text-red-700">{stats.purchaseCount}건</p>
+                                            <p className="text-xs text-red-500">{stats.purchaseTotal.toLocaleString()}원</p>
+                                        </div>
+                                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                            <p className="text-xs text-blue-600">매출세액</p>
+                                            <p className="text-lg font-bold text-blue-700">{stats.salesVat.toLocaleString()}원</p>
+                                        </div>
+                                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                                            <p className="text-xs text-purple-600">납부 예정 세액</p>
+                                            <p className={`text-lg font-bold ${stats.vatPayable >= 0 ? 'text-purple-700' : 'text-green-700'}`}>
+                                                {stats.vatPayable >= 0 ? '' : '-'}{Math.abs(stats.vatPayable).toLocaleString()}원
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* 세금계산서 목록 */}
+                                    {invoices.length > 0 ? (
+                                        <div className="overflow-x-auto max-h-60 overflow-y-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-rose-50 text-rose-700 sticky top-0">
+                                                    <tr>
+                                                        <th className="py-2 px-2 text-left">유형</th>
+                                                        <th className="py-2 px-2 text-left">발행일</th>
+                                                        <th className="py-2 px-2 text-left">거래처</th>
+                                                        <th className="py-2 px-2 text-right">공급가액</th>
+                                                        <th className="py-2 px-2 text-right">세액</th>
+                                                        <th className="py-2 px-2 text-center">전자</th>
+                                                        <th className="py-2 px-2"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {invoices.map((inv: any) => (
+                                                        <tr key={inv.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="py-2 px-2">
+                                                                <span className={`px-2 py-0.5 rounded text-xs ${inv.type === '매출' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                                    {inv.type}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-2 px-2">{inv.issueDate}</td>
+                                                            <td className="py-2 px-2">{inv.companyName}</td>
+                                                            <td className="py-2 px-2 text-right">{inv.supplyAmount.toLocaleString()}</td>
+                                                            <td className="py-2 px-2 text-right">{inv.vatAmount.toLocaleString()}</td>
+                                                            <td className="py-2 px-2 text-center">{inv.isElectronic ? '✓' : ''}</td>
+                                                            <td className="py-2 px-2">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (confirm('이 세금계산서를 삭제하시겠습니까?')) {
+                                                                            deleteTaxInvoice(inv.id);
+                                                                            window.location.reload();
+                                                                        }
+                                                                    }}
+                                                                    className="text-gray-400 hover:text-red-500"
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-400">
+                                            등록된 세금계산서가 없습니다.
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+
+                {/* 월간 세무 캘린더 (확장) */}
+                <div className="bg-white rounded-xl shadow-sm border border-amber-100 overflow-hidden">
+                    <div className="p-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-yellow-50">
+                        <h3 className="font-bold text-amber-700 flex items-center gap-2">
+                            📆 월간 세무 캘린더
+                        </h3>
+                        <p className="text-xs text-amber-500 mt-1">{year}년 세무 일정 한눈에</p>
+                    </div>
+                    <div className="p-4">
+                        {(() => {
+                            const today = new Date();
+                            const currentMonth = today.getMonth() + 1;
+
+                            // 월별 세무 일정 데이터
+                            const taxSchedule: { [key: number]: { day: number; name: string; type: string; color: string }[] } = {
+                                1: [
+                                    { day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' },
+                                    { day: 25, name: '부가세 확정신고', type: '부가세', color: 'bg-green-500' }
+                                ],
+                                2: [{ day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' }],
+                                3: [
+                                    { day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' },
+                                    { day: 31, name: '법인세 신고', type: '법인세', color: 'bg-purple-500' }
+                                ],
+                                4: [
+                                    { day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' },
+                                    { day: 25, name: '부가세 예정신고', type: '부가세', color: 'bg-green-500' }
+                                ],
+                                5: [
+                                    { day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' },
+                                    { day: 31, name: '종합소득세 신고', type: '소득세', color: 'bg-red-500' }
+                                ],
+                                6: [{ day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' }],
+                                7: [
+                                    { day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' },
+                                    { day: 25, name: '부가세 확정신고', type: '부가세', color: 'bg-green-500' }
+                                ],
+                                8: [{ day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' }],
+                                9: [{ day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' }],
+                                10: [
+                                    { day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' },
+                                    { day: 25, name: '부가세 예정신고', type: '부가세', color: 'bg-green-500' }
+                                ],
+                                11: [{ day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' }],
+                                12: [{ day: 10, name: '원천세 납부', type: '원천세', color: 'bg-blue-500' }]
+                            };
+
+                            return (
+                                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => {
+                                        const events = taxSchedule[month] || [];
+                                        const isCurrentMonth = month === currentMonth;
+
+                                        return (
+                                            <div
+                                                key={month}
+                                                className={`p-3 rounded-lg border ${isCurrentMonth ? 'border-amber-400 bg-amber-50 ring-2 ring-amber-200' : 'border-gray-200 bg-gray-50'}`}
+                                            >
+                                                <div className={`text-sm font-bold mb-2 ${isCurrentMonth ? 'text-amber-700' : 'text-gray-600'}`}>
+                                                    {month}월
+                                                </div>
+                                                <div className="space-y-1">
+                                                    {events.length > 0 ? events.map((event, idx) => (
+                                                        <div key={idx} className="flex items-center gap-1">
+                                                            <span className={`w-1.5 h-1.5 rounded-full ${event.color}`}></span>
+                                                            <span className="text-[10px] text-gray-600 truncate">{event.day}일 {event.name}</span>
+                                                        </div>
+                                                    )) : (
+                                                        <div className="text-[10px] text-gray-400">일정 없음</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
+
+                        {/* 세무 알림 설정 안내 */}
+                        <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                            <div className="flex items-start gap-2">
+                                <span className="text-lg">🔔</span>
+                                <div>
+                                    <p className="text-sm font-medium text-amber-700">앱 세무 알림</p>
+                                    <p className="text-xs text-amber-600 mt-1">
+                                        LeadMaster 앱에서 세무 일정 알림을 받으세요! 설정 → 알림에서 세무 알림을 활성화하면
+                                        부가세, 원천세, 소득세 신고 기한 7일, 3일, 1일 전에 푸시 알림을 받을 수 있습니다.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

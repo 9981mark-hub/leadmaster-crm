@@ -339,6 +339,7 @@ export interface ExpenseItem {
   description: string;          // 지출 내용
   memo?: string;                // 추가 메모
   receiptUrl?: string;          // 영수증 이미지 URL (선택)
+  ocrText?: string;             // OCR 인식 원본 텍스트 (선택)
   createdAt: string;
   updatedAt: string;
 }
@@ -393,4 +394,37 @@ export interface TransactionStats {
   netProfit: number;
   byCategory: Record<TransactionCategory, number>;
   byMonth: { month: string; income: number; expense: number }[];
+}
+
+// 세금계산서 타입
+export type TaxInvoiceType = '매출' | '매입';
+
+export interface TaxInvoice {
+  id: string;
+  type: TaxInvoiceType;           // 매출/매입
+  issueDate: string;              // 발행일 "YYYY-MM-DD"
+  supplyAmount: number;           // 공급가액 (원)
+  vatAmount: number;              // 세액 (원)
+  totalAmount: number;            // 합계 (원)
+  businessNumber: string;         // 사업자번호
+  companyName: string;            // 상호
+  description: string;            // 적요
+  approvalNumber?: string;        // 승인번호
+  isElectronic: boolean;          // 전자세금계산서 여부
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 세무 알림 타입
+export type TaxReminderType = '부가세' | '원천세' | '소득세' | '기타';
+
+export interface TaxReminder {
+  id: string;
+  type: TaxReminderType;
+  name: string;                   // 알림 이름
+  dueDate: string;                // 기한일 "YYYY-MM-DD"
+  description: string;            // 상세 설명
+  isCompleted: boolean;           // 완료 여부
+  notifyDaysBefore: number[];     // 며칠 전 알림 [7, 3, 1]
+  createdAt: string;
 }

@@ -1,5 +1,5 @@
 
-import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType } from '../types';
+import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType, TaxInvoice, TaxInvoiceType, TaxReminder, TaxReminderType } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -2294,3 +2294,223 @@ export const TRANSACTION_CATEGORIES: TransactionCategory[] = [
   '수수료수입', '이자', '기타수입',
   '광고비', '마케팅비', '사무비용', '인건비', '교통비', '식대', '기타지출'
 ];
+
+// =====================================================
+// 세금계산서 관리 (Tax Invoice)
+// =====================================================
+
+const CACHE_KEYS_TAX_INVOICES = 'leadmaster_tax_invoices';
+let localTaxInvoices: TaxInvoice[] = [];
+let taxInvoicesInitialized = false;
+
+const loadTaxInvoices = (): TaxInvoice[] => {
+  if (taxInvoicesInitialized) return localTaxInvoices;
+  try {
+    const stored = localStorage.getItem(CACHE_KEYS_TAX_INVOICES);
+    if (stored) {
+      localTaxInvoices = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.warn('Failed to load tax invoices from localStorage:', e);
+  }
+  taxInvoicesInitialized = true;
+  return localTaxInvoices;
+};
+
+const saveTaxInvoices = () => {
+  try {
+    localStorage.setItem(CACHE_KEYS_TAX_INVOICES, JSON.stringify(localTaxInvoices));
+  } catch (e) {
+    console.warn('Failed to save tax invoices to localStorage:', e);
+  }
+};
+
+// 세금계산서 조회
+export const fetchTaxInvoices = (year?: number, type?: TaxInvoiceType): TaxInvoice[] => {
+  loadTaxInvoices();
+
+  let filtered = [...localTaxInvoices];
+
+  if (year) {
+    filtered = filtered.filter(inv => inv.issueDate.startsWith(String(year)));
+  }
+
+  if (type) {
+    filtered = filtered.filter(inv => inv.type === type);
+  }
+
+  return filtered.sort((a, b) => b.issueDate.localeCompare(a.issueDate));
+};
+
+// 세금계산서 생성
+export const createTaxInvoice = (data: Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>): TaxInvoice => {
+  loadTaxInvoices();
+
+  const now = new Date().toISOString();
+  const newInvoice: TaxInvoice = {
+    ...data,
+    id: uuidv4(),
+    createdAt: now,
+    updatedAt: now
+  };
+
+  localTaxInvoices.push(newInvoice);
+  saveTaxInvoices();
+
+  return newInvoice;
+};
+
+// 세금계산서 수정
+export const updateTaxInvoice = (id: string, updates: Partial<TaxInvoice>): TaxInvoice | null => {
+  loadTaxInvoices();
+
+  const idx = localTaxInvoices.findIndex(inv => inv.id === id);
+  if (idx === -1) return null;
+
+  localTaxInvoices[idx] = {
+    ...localTaxInvoices[idx],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveTaxInvoices();
+  return localTaxInvoices[idx];
+};
+
+// 세금계산서 삭제
+export const deleteTaxInvoice = (id: string): boolean => {
+  loadTaxInvoices();
+
+  const idx = localTaxInvoices.findIndex(inv => inv.id === id);
+  if (idx === -1) return false;
+
+  localTaxInvoices.splice(idx, 1);
+  saveTaxInvoices();
+
+  return true;
+};
+
+// 세금계산서 통계
+export const getTaxInvoiceStats = (year: number) => {
+  const invoices = fetchTaxInvoices(year);
+
+  const salesInvoices = invoices.filter(inv => inv.type === '매출');
+  const purchaseInvoices = invoices.filter(inv => inv.type === '매입');
+
+  const salesTotal = salesInvoices.reduce((sum, inv) => sum + inv.supplyAmount, 0);
+  const salesVat = salesInvoices.reduce((sum, inv) => sum + inv.vatAmount, 0);
+
+  const purchaseTotal = purchaseInvoices.reduce((sum, inv) => sum + inv.supplyAmount, 0);
+  const purchaseVat = purchaseInvoices.reduce((sum, inv) => sum + inv.vatAmount, 0);
+
+  return {
+    salesCount: salesInvoices.length,
+    salesTotal,
+    salesVat,
+    purchaseCount: purchaseInvoices.length,
+    purchaseTotal,
+    purchaseVat,
+    vatPayable: salesVat - purchaseVat
+  };
+};
+
+// =====================================================
+// 세무 알림 관리 (Tax Reminder)
+// =====================================================
+
+const CACHE_KEYS_TAX_REMINDERS = 'leadmaster_tax_reminders';
+let localTaxReminders: TaxReminder[] = [];
+let taxRemindersInitialized = false;
+
+const loadTaxReminders = (): TaxReminder[] => {
+  if (taxRemindersInitialized) return localTaxReminders;
+  try {
+    const stored = localStorage.getItem(CACHE_KEYS_TAX_REMINDERS);
+    if (stored) {
+      localTaxReminders = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.warn('Failed to load tax reminders from localStorage:', e);
+  }
+  taxRemindersInitialized = true;
+  return localTaxReminders;
+};
+
+const saveTaxReminders = () => {
+  try {
+    localStorage.setItem(CACHE_KEYS_TAX_REMINDERS, JSON.stringify(localTaxReminders));
+  } catch (e) {
+    console.warn('Failed to save tax reminders to localStorage:', e);
+  }
+};
+
+// 세무 알림 조회
+export const fetchTaxReminders = (): TaxReminder[] => {
+  loadTaxReminders();
+  return [...localTaxReminders].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+};
+
+// 세무 알림 생성
+export const createTaxReminder = (data: Omit<TaxReminder, 'id' | 'createdAt'>): TaxReminder => {
+  loadTaxReminders();
+
+  const newReminder: TaxReminder = {
+    ...data,
+    id: uuidv4(),
+    createdAt: new Date().toISOString()
+  };
+
+  localTaxReminders.push(newReminder);
+  saveTaxReminders();
+
+  return newReminder;
+};
+
+// 세무 알림 완료 토글
+export const toggleTaxReminderComplete = (id: string): TaxReminder | null => {
+  loadTaxReminders();
+
+  const idx = localTaxReminders.findIndex(r => r.id === id);
+  if (idx === -1) return null;
+
+  localTaxReminders[idx].isCompleted = !localTaxReminders[idx].isCompleted;
+  saveTaxReminders();
+
+  return localTaxReminders[idx];
+};
+
+// 세무 알림 삭제
+export const deleteTaxReminder = (id: string): boolean => {
+  loadTaxReminders();
+
+  const idx = localTaxReminders.findIndex(r => r.id === id);
+  if (idx === -1) return false;
+
+  localTaxReminders.splice(idx, 1);
+  saveTaxReminders();
+
+  return true;
+};
+
+// 앱 알림용: 오늘 알려야 할 세무 일정 가져오기
+export const getTodayTaxAlerts = (): { reminder: TaxReminder; daysLeft: number }[] => {
+  const reminders = fetchTaxReminders().filter(r => !r.isCompleted);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const alerts: { reminder: TaxReminder; daysLeft: number }[] = [];
+
+  for (const reminder of reminders) {
+    const dueDate = new Date(reminder.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+
+    const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    // 설정된 알림 일수에 해당하면 추가
+    if (reminder.notifyDaysBefore.includes(daysLeft) || daysLeft === 0) {
+      alerts.push({ reminder, daysLeft });
+    }
+  }
+
+  return alerts;
+};
