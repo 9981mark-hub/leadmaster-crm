@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     format, addMonths, subMonths, startOfMonth, endOfMonth,
-    startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isToday
+    startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isToday,
+    parseISO, nextTuesday, isBefore, isAfter
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { SettlementBatch, Case } from '../types';
+import { SettlementBatch, Case, Partner, CommissionRule, SettlementConfig } from '../types';
 
 interface SettlementCalendarProps {
     batches: SettlementBatch[];
-    cases?: Case[];  // 케이스 입금 내역용
+    cases?: Case[];
+    partners?: Partner[];
 }
 
 interface SettlementEvent {
@@ -23,10 +25,40 @@ interface SettlementEvent {
     isExpected?: boolean;  // 예상 이벤트 여부
 }
 
-export default function SettlementCalendar({ batches, cases = [] }: SettlementCalendarProps) {
+export default function SettlementCalendar({ batches, cases = [], partners = [] }: SettlementCalendarProps) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // 수수료 계산 함수: 수임료 기준 수당 계산
+    const getCommission = (contractFee: number, rules: CommissionRule[]): CommissionRule | null => {
+        const activeRules = rules.filter(r => r.active).sort((a, b) => a.priority - b.priority);
+        for (const rule of activeRules) {
+            const maxFee = rule.maxFee || Infinity;
+            if (contractFee >= rule.minFee && contractFee <= maxFee) {
+                return rule;
+            }
+        }
+        return null;
+    };
+
+    // 지급일 계산: 입금일 기준 다음 화요일
+    const calculatePayoutDate = (depositDate: string, config: SettlementConfig): string => {
+        const date = parseISO(depositDate);
+        // 주차 기준일 (월요일=1)
+        const weekStart = startOfWeek(date, { weekStartsOn: config.cutoffDay as 0 | 1 | 2 | 3 | 4 | 5 | 6 || 1 });
+        // 다음 화요일 찾기
+        let payoutDate = nextTuesday(weekStart);
+        // payoutWeekDelay 적용 (0=이번주, 1=다음주)
+        if (config.payoutWeekDelay === 1) {
+            payoutDate = addDays(payoutDate, 7);
+        }
+        // 입금일보다 이전이면 다음 화요일
+        if (isBefore(payoutDate, date)) {
+            payoutDate = addDays(payoutDate, 7);
+        }
+        return format(payoutDate, 'yyyy-MM-dd');
+    };
 
     // Extract events from batches - ensure batches is always an array
     const safeBatches = Array.isArray(batches) ? batches : [];
@@ -133,6 +165,74 @@ export default function SettlementCalendar({ batches, cases = [] }: SettlementCa
                 }
             });
         }
+    });
+
+    // 3. 케이스별 수수료 지급 자동 계산 (파트너 설정 기반)
+    const safePartners = Array.isArray(partners) ? partners : [];
+    safeCases.forEach(caseItem => {
+        // 케이스에 계약 정보가 없으면 스킵
+        if (!caseItem.contractFee || caseItem.contractFee <= 0) return;
+
+        // 파트너 찾기 (케이스의 파트너 ID 또는 거래처 이름으로 매칭)
+        const partner = safePartners.find(p =>
+            p.partnerId === (caseItem as any).partnerId ||
+            p.name === (caseItem as any).partnerName ||
+            p.name === (caseItem as any).lawFirm
+        );
+        if (!partner || !partner.commissionRules || !partner.settlementConfig) return;
+
+        // 수수료 규칙 찾기
+        const rule = getCommission(caseItem.contractFee, partner.commissionRules);
+        if (!rule) return;
+
+        const config = partner.settlementConfig;
+        const totalCommission = rule.commission; // 총 수수료 (만원)
+        const downPaymentThreshold = caseItem.contractFee * (config.downPaymentPercentage / 100); // 선지급 기준 금액
+        const fullPayoutThreshold = rule.fullPayoutThreshold || totalCommission; // 완납 기준 금액
+        const firstPayoutAmount = totalCommission * (config.firstPayoutPercentage / 100); // 1차 지급액
+        const secondPayoutAmount = totalCommission - firstPayoutAmount; // 2차 지급액 (잔금)
+
+        // 모든 입금 내역 합치기 (실제 + 예상)
+        const allDeposits = [
+            ...(caseItem.depositHistory || []).map(d => ({ ...d, isExpected: false })),
+            ...(caseItem.expectedDeposits || []).map(d => ({ ...d, isExpected: true }))
+        ].sort((a, b) => a.date.localeCompare(b.date));
+
+        let cumulativeDeposit = 0;
+        let firstPayoutTriggered = false;
+        let secondPayoutTriggered = false;
+
+        allDeposits.forEach((deposit, idx) => {
+            cumulativeDeposit += deposit.amount;
+
+            // 1차 지급 조건: 누적 입금 >= 선지급 기준 (수임료의 10%)
+            if (!firstPayoutTriggered && cumulativeDeposit >= downPaymentThreshold) {
+                firstPayoutTriggered = true;
+                const payoutDate = calculatePayoutDate(deposit.date, config);
+                events.push({
+                    date: payoutDate,
+                    type: deposit.isExpected ? 'expected_commission' : 'commission_received',
+                    label: deposit.isExpected ? '1차 수수료 (예정)' : '1차 수수료 지급',
+                    amount: firstPayoutAmount,
+                    customerName: caseItem.customerName,
+                    isExpected: deposit.isExpected
+                });
+            }
+
+            // 2차 지급 조건: 누적 입금 >= 완납 기준
+            if (!secondPayoutTriggered && cumulativeDeposit >= fullPayoutThreshold) {
+                secondPayoutTriggered = true;
+                const payoutDate = calculatePayoutDate(deposit.date, config);
+                events.push({
+                    date: payoutDate,
+                    type: deposit.isExpected ? 'expected_commission' : 'commission_received',
+                    label: deposit.isExpected ? '잔금 수수료 (예정)' : '잔금 수수료 지급',
+                    amount: secondPayoutAmount,
+                    customerName: caseItem.customerName,
+                    isExpected: deposit.isExpected
+                });
+            }
+        });
     });
 
     const getEventsForDay = (date: Date): SettlementEvent[] => {
