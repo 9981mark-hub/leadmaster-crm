@@ -221,7 +221,7 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
                         </div>
 
                         {/* 부가세 계산 테이블 */}
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto" style={{ overscrollBehavior: 'auto' }}>
                             <table className="w-full text-sm">
                                 <thead className="bg-amber-50 text-amber-700">
                                     <tr>

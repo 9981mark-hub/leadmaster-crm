@@ -254,7 +254,7 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                     <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
                         📋 상세 내역 보기
                     </summary>
-                    <div className="mt-2 overflow-x-auto">
+                    <div className="mt-2 overflow-x-auto" style={{ overscrollBehavior: 'auto' }}>
                         <table className="w-full text-sm">
                             <thead className="bg-emerald-50 text-emerald-700">
                                 <tr>

@@ -181,7 +181,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
 
                 {/* 고정비 목록 */}
                 {fixedCosts.length > 0 ? (
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                    <div className="space-y-2 max-h-60 overflow-y-auto" style={{ overscrollBehavior: 'auto' }}>
                         {fixedCosts.map(cost => (
                             <div
                                 key={cost.id}

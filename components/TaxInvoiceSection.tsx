@@ -142,7 +142,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
 
                 {/* 세금계산서 목록 */}
                 {invoices.length > 0 ? (
-                    <div className="overflow-x-auto max-h-60 overflow-y-auto">
+                    <div className="overflow-x-auto max-h-60 overflow-y-auto" style={{ overscrollBehavior: 'auto' }}>
                         <table className="w-full text-sm">
                             <thead className="bg-rose-50 text-rose-700 sticky top-0">
                                 <tr>
@@ -203,8 +203,8 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                                     <button
                                         onClick={() => setFormData(prev => ({ ...prev, type: '매출' }))}
                                         className={`flex-1 py-2 rounded-lg border ${formData.type === '매출'
-                                                ? 'bg-green-100 border-green-500 text-green-700'
-                                                : 'bg-gray-50 border-gray-200 text-gray-600'
+                                            ? 'bg-green-100 border-green-500 text-green-700'
+                                            : 'bg-gray-50 border-gray-200 text-gray-600'
                                             }`}
                                     >
                                         매출
@@ -212,8 +212,8 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                                     <button
                                         onClick={() => setFormData(prev => ({ ...prev, type: '매입' }))}
                                         className={`flex-1 py-2 rounded-lg border ${formData.type === '매입'
-                                                ? 'bg-red-100 border-red-500 text-red-700'
-                                                : 'bg-gray-50 border-gray-200 text-gray-600'
+                                            ? 'bg-red-100 border-red-500 text-red-700'
+                                            : 'bg-gray-50 border-gray-200 text-gray-600'
                                             }`}
                                     >
                                         매입

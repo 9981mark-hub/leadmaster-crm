@@ -188,7 +188,7 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
                             <X size={20} />
                         </button>
                     </div>
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto" style={{ overscrollBehavior: 'auto' }}>
                         {dayEvents.map((e, idx) => (
                             <div
                                 key={idx}
