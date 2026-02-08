@@ -1719,7 +1719,7 @@ export default function Settlement() {
             )}
 
             {/* Settlement History Calendar */}
-            <SettlementCalendar batches={batches} />
+            <SettlementCalendar batches={batches} cases={partnerCases} />
 
             {/* 📊 손익계산서 */}
             <ProfitLossSection year={year} />

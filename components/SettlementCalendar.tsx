@@ -5,36 +5,41 @@ import {
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { SettlementBatch } from '../types';
+import { SettlementBatch, Case } from '../types';
 
 interface SettlementCalendarProps {
     batches: SettlementBatch[];
+    cases?: Case[];  // 케이스 입금 내역용
 }
 
 interface SettlementEvent {
     date: string;
-    type: 'collection' | 'payout' | 'invoice';
+    type: 'collection' | 'payout' | 'invoice' | 'deposit';  // deposit 타입 추가
     label: string;
     amount?: number;
-    batchId: string;
-    weekLabel: string;
+    batchId?: string;
+    weekLabel?: string;
+    customerName?: string;  // 고객명 추가
 }
 
-export default function SettlementCalendar({ batches }: SettlementCalendarProps) {
+export default function SettlementCalendar({ batches, cases = [] }: SettlementCalendarProps) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Extract events from batches - ensure batches is always an array
     const safeBatches = Array.isArray(batches) ? batches : [];
+    const safeCases = Array.isArray(cases) ? cases : [];
     const events: SettlementEvent[] = [];
+
+    // 1. 배치에서 이벤트 추출
     safeBatches.forEach(batch => {
         // Collection event - check both collectionInfo.collectedAt and status
         if (batch.collectionInfo?.collectedAt) {
             events.push({
                 date: batch.collectionInfo.collectedAt,
                 type: 'collection',
-                label: '수금',
+                label: '수금 완료',
                 amount: batch.collectionInfo.amount,
                 batchId: batch.batchId,
                 weekLabel: batch.weekLabel
@@ -71,6 +76,23 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
                 label: '세금계산서 수취',
                 batchId: batch.batchId,
                 weekLabel: batch.weekLabel
+            });
+        }
+    });
+
+    // 2. 케이스의 depositHistory에서 입금 이벤트 추출
+    safeCases.forEach(caseItem => {
+        if (caseItem.depositHistory && Array.isArray(caseItem.depositHistory)) {
+            caseItem.depositHistory.forEach((deposit, idx) => {
+                if (deposit.date) {
+                    events.push({
+                        date: deposit.date,
+                        type: 'deposit',
+                        label: `${idx + 1}차 입금`,
+                        amount: deposit.amount,
+                        customerName: caseItem.customerName
+                    });
+                }
             });
         }
     });
@@ -153,9 +175,10 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
                                         className={`text-[10px] px-1 py-0.5 rounded truncate
                       ${e.type === 'collection' ? 'bg-green-100 text-green-700' :
                                                 e.type === 'payout' ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-purple-100 text-purple-700'}`}
+                                                    e.type === 'deposit' ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-purple-100 text-purple-700'}`}
                                     >
-                                        {e.type === 'collection' ? '💰' : e.type === 'payout' ? '💳' : '📥'} {e.amount ? `${e.amount}만원` : e.label}
+                                        {e.type === 'collection' ? '💰' : e.type === 'payout' ? '💳' : e.type === 'deposit' ? '💵' : '📥'} {e.amount ? `${e.amount}만원` : e.label}
                                     </div>
                                 ))}
                                 {dayEvents.length > 2 && (
@@ -195,17 +218,19 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
                                 className={`p-4 rounded-lg border
                   ${e.type === 'collection' ? 'bg-green-50 border-green-200' :
                                         e.type === 'payout' ? 'bg-orange-50 border-orange-200' :
-                                            'bg-purple-50 border-purple-200'}`}
+                                            e.type === 'deposit' ? 'bg-blue-50 border-blue-200' :
+                                                'bg-purple-50 border-purple-200'}`}
                             >
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <span className={`text-sm font-bold
                       ${e.type === 'collection' ? 'text-green-700' :
-                                                e.type === 'payout' ? 'text-orange-700' : 'text-purple-700'}`}>
-                                            {e.type === 'collection' ? '💰 수금' : e.type === 'payout' ? '💳 지급' : '📥 세금계산서'}
+                                                e.type === 'payout' ? 'text-orange-700' :
+                                                    e.type === 'deposit' ? 'text-blue-700' : 'text-purple-700'}`}>
+                                            {e.type === 'collection' ? '💰 수금' : e.type === 'payout' ? '💳 지급' : e.type === 'deposit' ? '💵 입금' : '📥 세금계산서'}
                                         </span>
-                                        <p className="text-gray-600 text-sm mt-1">{e.label}</p>
-                                        <p className="text-xs text-gray-400 mt-1">{e.weekLabel}</p>
+                                        <p className="text-gray-600 text-sm mt-1">{e.customerName ? `${e.customerName} - ${e.label}` : e.label}</p>
+                                        {e.weekLabel && <p className="text-xs text-gray-400 mt-1">{e.weekLabel}</p>}
                                     </div>
                                     {e.amount && (
                                         <span className="text-lg font-bold text-gray-800">{e.amount.toLocaleString()}만원</span>
@@ -226,7 +251,8 @@ export default function SettlementCalendar({ batches }: SettlementCalendarProps)
                     <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>
                     <p className="text-xs text-gray-400 mt-1">총 {events.length}개의 이벤트 / {safeBatches.length}개 배치</p>
                 </div>
-                <div className="flex gap-2 text-xs">
+                <div className="flex gap-2 text-xs flex-wrap">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">💵 입금</span>
                     <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full">💰 수금</span>
                     <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full">💳 지급</span>
                     <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full">📥 세금계산서</span>
