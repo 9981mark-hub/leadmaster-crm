@@ -42,21 +42,29 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
         return null;
     };
 
-    // 지급일 계산: 입금일 기준 다음 화요일
+    // 지급일 계산: 입금이 속한 주차 마감(일요일) 후 다음 주 화요일
     const calculatePayoutDate = (depositDate: string, config: SettlementConfig): string => {
         const date = parseISO(depositDate);
-        // 주차 기준일 (월요일=1)
-        const weekStart = startOfWeek(date, { weekStartsOn: config.cutoffDay as 0 | 1 | 2 | 3 | 4 | 5 | 6 || 1 });
-        // 다음 화요일 찾기
-        let payoutDate = nextTuesday(weekStart);
-        // payoutWeekDelay 적용 (0=이번주, 1=다음주)
+
+        // 정산 주기: 월요일(1) ~ 일요일(0)
+        // 주 시작을 월요일로 설정
+        const weekStart = startOfWeek(date, { weekStartsOn: 1 }); // 월요일 시작
+        const weekEnd = endOfWeek(date, { weekStartsOn: 1 }); // 일요일 마감
+
+        // 주차 마감일(일요일) 다음날은 다음 주 월요일
+        const nextMonday = addDays(weekEnd, 1);
+
+        // 지급 요일 계산 (화요일 = 2)
+        // payoutDay: 0=일, 1=월, 2=화, 3=수, 4=목, 5=금, 6=토
+        const payoutDayOffset = config.payoutDay === 0 ? 6 : config.payoutDay - 1;
+        let payoutDate = addDays(nextMonday, payoutDayOffset);
+
+        // payoutWeekDelay 적용 (0=이번주(차주), 1=다다음주)
+        // "이번 주 (금주)" = 마감 후 첫 번째 해당 요일
         if (config.payoutWeekDelay === 1) {
             payoutDate = addDays(payoutDate, 7);
         }
-        // 입금일보다 이전이면 다음 화요일
-        if (isBefore(payoutDate, date)) {
-            payoutDate = addDays(payoutDate, 7);
-        }
+
         return format(payoutDate, 'yyyy-MM-dd');
     };
 
