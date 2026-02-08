@@ -10,6 +10,8 @@ import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
 import ReceiptOcrSection from '../components/ReceiptOcrSection';
 import TaxInvoiceSection from '../components/TaxInvoiceSection';
+import ProfitLossSection from '../components/ProfitLossSection';
+import VatHelperSection from '../components/VatHelperSection';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
 import * as XLSX from 'xlsx';
@@ -1716,6 +1718,12 @@ export default function Settlement() {
 
             {/* Settlement History Calendar */}
             <SettlementCalendar batches={batches} />
+
+            {/* 📊 손익계산서 */}
+            <ProfitLossSection year={year} />
+
+            {/* 🧾 부가세 신고 도우미 */}
+            <VatHelperSection year={year} />
 
             {/* 📜 세금계산서 관리 */}
             <TaxInvoiceSection year={year} onDataChanged={() => window.location.reload()} />
