@@ -117,39 +117,63 @@ export default function Settlement() {
         if (!file) return;
 
         setUploadingFile(true);
-        try {
-            const data = await file.arrayBuffer();
-            // password: '' 옵션으로 암호화 관련 오류 우회 (한국 은행 엑셀 호환성)
-            const workbook = XLSX.read(new Uint8Array(data), {
-                type: 'array',
-                password: '',
-                cellDates: true,
-                raw: false
-            });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: '' }) as any[][];
 
-            // 파싱 및 매칭
-            const { bank, transactions } = parseBankExcel(jsonData, file.name);
-            const matched = matchTransactionsWithPartners(transactions, partners);
+        // FileReader를 사용하여 binary string으로 읽기 (한국 은행 엑셀 호환성)
+        const reader = new FileReader();
 
-            // 저장
-            const { added, skipped } = saveBankTransactions(matched);
+        reader.onload = (event) => {
+            try {
+                const binaryStr = event.target?.result;
+                if (!binaryStr) {
+                    showToast('파일을 읽을 수 없습니다.', 'error');
+                    setUploadingFile(false);
+                    return;
+                }
 
-            // 새로고침
-            const refreshed = fetchBankTransactions(year);
-            const refreshedMatched = matchTransactionsWithPartners(refreshed, partners);
-            setBankTransactions(refreshedMatched);
+                const workbook = XLSX.read(binaryStr, {
+                    type: 'binary',
+                    cellDates: true,
+                    codepage: 949  // 한글 인코딩
+                });
 
-            showToast(`${bank === 'kakao' ? '카카오뱅크' : '케이뱅크'}: ${added}건 추가됨 ${skipped > 0 ? `(${skipped}건 중복)` : ''}`, 'success');
-        } catch (err) {
-            console.error('파일 업로드 오류:', err);
-            showToast('파일 업로드에 실패했습니다.', 'error');
-        } finally {
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                    header: 1,
+                    raw: false,
+                    defval: ''
+                }) as any[][];
+
+                // 파싱 및 매칭
+                const { bank, transactions } = parseBankExcel(jsonData, file.name);
+                const matched = matchTransactionsWithPartners(transactions, partners);
+
+                // 저장
+                const { added, skipped } = saveBankTransactions(matched);
+
+                // 새로고침
+                const refreshed = fetchBankTransactions(year);
+                const refreshedMatched = matchTransactionsWithPartners(refreshed, partners);
+                setBankTransactions(refreshedMatched);
+
+                showToast(`${bank === 'kakao' ? '카카오뱅크' : '케이뱅크'}: ${added}건 추가됨 ${skipped > 0 ? `(${skipped}건 중복)` : ''}`, 'success');
+            } catch (err) {
+                console.error('파일 파싱 오류:', err);
+                showToast('파일 파싱에 실패했습니다. 올바른 은행 거래내역 파일인지 확인해주세요.', 'error');
+            } finally {
+                setUploadingFile(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            }
+        };
+
+        reader.onerror = () => {
+            console.error('파일 읽기 오류');
+            showToast('파일을 읽는 중 오류가 발생했습니다.', 'error');
             setUploadingFile(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
-        }
+        };
+
+        reader.readAsBinaryString(file);
     };
 
     // 거래내역 카테고리 변경 핸들러
