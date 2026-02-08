@@ -146,6 +146,21 @@ export interface Case {
     amount: number;
     memo?: string;
   }[];
+
+  // New: Expected Deposits (예상 입금)
+  expectedDeposits?: {
+    date: string;
+    amount: number;
+    memo?: string;
+  }[];
+
+  // New: Commission Payments (수수료 지급 내역)
+  commissionPayments?: {
+    date: string;
+    amount: number;
+    isExpected?: boolean;  // true면 예상 지급, false면 실제 지급
+    memo?: string;
+  }[];
 }
 
 export interface CaseStatusLog {

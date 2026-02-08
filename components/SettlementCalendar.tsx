@@ -14,12 +14,13 @@ interface SettlementCalendarProps {
 
 interface SettlementEvent {
     date: string;
-    type: 'collection' | 'payout' | 'invoice' | 'deposit';  // deposit 타입 추가
+    type: 'collection' | 'payout' | 'invoice' | 'deposit' | 'expected_deposit' | 'commission_received' | 'expected_commission';
     label: string;
     amount?: number;
     batchId?: string;
     weekLabel?: string;
-    customerName?: string;  // 고객명 추가
+    customerName?: string;
+    isExpected?: boolean;  // 예상 이벤트 여부
 }
 
 export default function SettlementCalendar({ batches, cases = [] }: SettlementCalendarProps) {
@@ -82,6 +83,7 @@ export default function SettlementCalendar({ batches, cases = [] }: SettlementCa
 
     // 2. 케이스의 depositHistory에서 입금 이벤트 추출
     safeCases.forEach(caseItem => {
+        // 2-1. 실제 입금 내역
         if (caseItem.depositHistory && Array.isArray(caseItem.depositHistory)) {
             caseItem.depositHistory.forEach((deposit, idx) => {
                 if (deposit.date) {
@@ -90,7 +92,43 @@ export default function SettlementCalendar({ batches, cases = [] }: SettlementCa
                         type: 'deposit',
                         label: `${idx + 1}차 입금`,
                         amount: deposit.amount,
-                        customerName: caseItem.customerName
+                        customerName: caseItem.customerName,
+                        isExpected: false
+                    });
+                }
+            });
+        }
+
+        // 2-2. 예상 입금
+        if (caseItem.expectedDeposits && Array.isArray(caseItem.expectedDeposits)) {
+            caseItem.expectedDeposits.forEach((deposit, idx) => {
+                if (deposit.date) {
+                    const depositNum = (caseItem.depositHistory?.length || 0) + idx + 1;
+                    events.push({
+                        date: deposit.date,
+                        type: 'expected_deposit',
+                        label: `${depositNum}차 입금 (예정)`,
+                        amount: deposit.amount,
+                        customerName: caseItem.customerName,
+                        isExpected: true
+                    });
+                }
+            });
+        }
+
+        // 2-3. 수수료 지급 내역 (실제/예상)
+        if (caseItem.commissionPayments && Array.isArray(caseItem.commissionPayments)) {
+            caseItem.commissionPayments.forEach((payment, idx) => {
+                if (payment.date) {
+                    events.push({
+                        date: payment.date,
+                        type: payment.isExpected ? 'expected_commission' : 'commission_received',
+                        label: payment.isExpected
+                            ? `${idx + 1}차 수수료 지급 (예정)`
+                            : `${idx + 1}차 수수료 지급`,
+                        amount: payment.amount,
+                        customerName: caseItem.customerName,
+                        isExpected: payment.isExpected
                     });
                 }
             });
@@ -169,18 +207,39 @@ export default function SettlementCalendar({ batches, cases = [] }: SettlementCa
                         </span>
                         {hasEvents && (
                             <div className="mt-1 space-y-0.5">
-                                {dayEvents.slice(0, 2).map((e, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`text-[10px] px-1 py-0.5 rounded truncate
-                      ${e.type === 'collection' ? 'bg-green-100 text-green-700' :
-                                                e.type === 'payout' ? 'bg-orange-100 text-orange-700' :
-                                                    e.type === 'deposit' ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-purple-100 text-purple-700'}`}
-                                    >
-                                        {e.type === 'collection' ? '💰' : e.type === 'payout' ? '💳' : e.type === 'deposit' ? '💵' : '📥'} {e.amount ? `${e.amount}만원` : e.label}
-                                    </div>
-                                ))}
+                                {dayEvents.slice(0, 2).map((e, idx) => {
+                                    const getEventStyle = () => {
+                                        const baseStyle = e.isExpected ? 'border border-dashed ' : '';
+                                        switch (e.type) {
+                                            case 'deposit': return baseStyle + 'bg-blue-100 text-blue-700';
+                                            case 'expected_deposit': return 'bg-blue-50 text-blue-600 border border-dashed border-blue-300';
+                                            case 'commission_received': return baseStyle + 'bg-emerald-100 text-emerald-700';
+                                            case 'expected_commission': return 'bg-emerald-50 text-emerald-600 border border-dashed border-emerald-300';
+                                            case 'collection': return baseStyle + 'bg-green-100 text-green-700';
+                                            case 'payout': return baseStyle + 'bg-orange-100 text-orange-700';
+                                            default: return baseStyle + 'bg-purple-100 text-purple-700';
+                                        }
+                                    };
+                                    const getIcon = () => {
+                                        switch (e.type) {
+                                            case 'deposit': return '💵';
+                                            case 'expected_deposit': return '📅💵';
+                                            case 'commission_received': return '💸';
+                                            case 'expected_commission': return '📅💸';
+                                            case 'collection': return '💰';
+                                            case 'payout': return '💳';
+                                            default: return '📥';
+                                        }
+                                    };
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className={`text-[10px] px-1 py-0.5 rounded truncate ${getEventStyle()}`}
+                                        >
+                                            {getIcon()} {e.amount ? `${e.amount}만원` : e.label}
+                                        </div>
+                                    );
+                                })}
                                 {dayEvents.length > 2 && (
                                     <div className="text-[10px] text-gray-500">+{dayEvents.length - 2}건 더</div>
                                 )}
@@ -212,32 +271,59 @@ export default function SettlementCalendar({ batches, cases = [] }: SettlementCa
                         </button>
                     </div>
                     <div className="space-y-3 max-h-[400px] overflow-y-auto" style={{ overscrollBehavior: 'auto' }}>
-                        {dayEvents.map((e, idx) => (
-                            <div
-                                key={idx}
-                                className={`p-4 rounded-lg border
-                  ${e.type === 'collection' ? 'bg-green-50 border-green-200' :
-                                        e.type === 'payout' ? 'bg-orange-50 border-orange-200' :
-                                            e.type === 'deposit' ? 'bg-blue-50 border-blue-200' :
-                                                'bg-purple-50 border-purple-200'}`}
-                            >
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <span className={`text-sm font-bold
-                      ${e.type === 'collection' ? 'text-green-700' :
-                                                e.type === 'payout' ? 'text-orange-700' :
-                                                    e.type === 'deposit' ? 'text-blue-700' : 'text-purple-700'}`}>
-                                            {e.type === 'collection' ? '💰 수금' : e.type === 'payout' ? '💳 지급' : e.type === 'deposit' ? '💵 입금' : '📥 세금계산서'}
-                                        </span>
-                                        <p className="text-gray-600 text-sm mt-1">{e.customerName ? `${e.customerName} - ${e.label}` : e.label}</p>
-                                        {e.weekLabel && <p className="text-xs text-gray-400 mt-1">{e.weekLabel}</p>}
+                        {dayEvents.map((e, idx) => {
+                            const getModalStyle = () => {
+                                const baseBorder = e.isExpected ? 'border-dashed ' : '';
+                                switch (e.type) {
+                                    case 'deposit': return 'bg-blue-50 border-blue-200 ' + baseBorder;
+                                    case 'expected_deposit': return 'bg-blue-50/50 border-dashed border-blue-300';
+                                    case 'commission_received': return 'bg-emerald-50 border-emerald-200 ' + baseBorder;
+                                    case 'expected_commission': return 'bg-emerald-50/50 border-dashed border-emerald-300';
+                                    case 'collection': return 'bg-green-50 border-green-200 ' + baseBorder;
+                                    case 'payout': return 'bg-orange-50 border-orange-200 ' + baseBorder;
+                                    default: return 'bg-purple-50 border-purple-200 ' + baseBorder;
+                                }
+                            };
+                            const getModalTextColor = () => {
+                                switch (e.type) {
+                                    case 'deposit': case 'expected_deposit': return 'text-blue-700';
+                                    case 'commission_received': case 'expected_commission': return 'text-emerald-700';
+                                    case 'collection': return 'text-green-700';
+                                    case 'payout': return 'text-orange-700';
+                                    default: return 'text-purple-700';
+                                }
+                            };
+                            const getModalIcon = () => {
+                                switch (e.type) {
+                                    case 'deposit': return '💵 입금';
+                                    case 'expected_deposit': return '📅 예정 입금';
+                                    case 'commission_received': return '💸 수수료 지급';
+                                    case 'expected_commission': return '📅 예정 수수료';
+                                    case 'collection': return '💰 수금';
+                                    case 'payout': return '💳 지급';
+                                    default: return '📥 세금계산서';
+                                }
+                            };
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`p-4 rounded-lg border ${getModalStyle()}`}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <span className={`text-sm font-bold ${getModalTextColor()}`}>
+                                                {getModalIcon()}
+                                            </span>
+                                            <p className="text-gray-600 text-sm mt-1">{e.customerName ? `${e.customerName} - ${e.label}` : e.label}</p>
+                                            {e.weekLabel && <p className="text-xs text-gray-400 mt-1">{e.weekLabel}</p>}
+                                        </div>
+                                        {e.amount && (
+                                            <span className="text-lg font-bold text-gray-800">{e.amount.toLocaleString()}만원</span>
+                                        )}
                                     </div>
-                                    {e.amount && (
-                                        <span className="text-lg font-bold text-gray-800">{e.amount.toLocaleString()}만원</span>
-                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -251,11 +337,11 @@ export default function SettlementCalendar({ batches, cases = [] }: SettlementCa
                     <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>
                     <p className="text-xs text-gray-400 mt-1">총 {events.length}개의 이벤트 / {safeBatches.length}개 배치</p>
                 </div>
-                <div className="flex gap-2 text-xs flex-wrap">
+                <div className="flex gap-1.5 text-xs flex-wrap">
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">💵 입금</span>
-                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full">💰 수금</span>
-                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full">💳 지급</span>
-                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full">📥 세금계산서</span>
+                    <span className="px-2 py-1 bg-blue-50 text-blue-600 border border-dashed border-blue-300 rounded-full">📅 예정입금</span>
+                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full">💸 수수료</span>
+                    <span className="px-2 py-1 bg-emerald-50 text-emerald-600 border border-dashed border-emerald-300 rounded-full">📅 예정수수료</span>
                 </div>
             </div>
             {renderHeader()}
