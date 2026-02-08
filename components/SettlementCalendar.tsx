@@ -113,25 +113,33 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
         }
     });
 
-    // 2. 케이스의 depositHistory에서 입금 이벤트 추출
+    // 2. 케이스의 depositHistory에서 입금 이벤트 추출 (미래 날짜는 자동으로 예상 입금 처리)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);  // 오늘 날짜의 시작
+
     safeCases.forEach(caseItem => {
-        // 2-1. 실제 입금 내역
+        // 2-1. 입금 내역 (실제 + 예상 자동 판별)
         if (caseItem.depositHistory && Array.isArray(caseItem.depositHistory)) {
             caseItem.depositHistory.forEach((deposit, idx) => {
                 if (deposit.date) {
+                    const depositDate = parseISO(deposit.date);
+                    const isFuture = isAfter(depositDate, today) || isSameDay(depositDate, today) && isAfter(new Date(), today);
+                    // 미래 날짜인 경우 오늘 이후이면 예상으로 처리
+                    const isFutureDeposit = isAfter(depositDate, today);
+
                     events.push({
                         date: deposit.date,
-                        type: 'deposit',
-                        label: `${idx + 1}차 입금`,
+                        type: isFutureDeposit ? 'expected_deposit' : 'deposit',
+                        label: isFutureDeposit ? `${idx + 1}차 입금 (예정)` : `${idx + 1}차 입금`,
                         amount: deposit.amount,
                         customerName: caseItem.customerName,
-                        isExpected: false
+                        isExpected: isFutureDeposit
                     });
                 }
             });
         }
 
-        // 2-2. 예상 입금
+        // 2-2. 예상 입금 (별도 필드 - 이전 호환성)
         if (caseItem.expectedDeposits && Array.isArray(caseItem.expectedDeposits)) {
             caseItem.expectedDeposits.forEach((deposit, idx) => {
                 if (deposit.date) {
@@ -192,9 +200,12 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
         const firstPayoutAmount = totalCommission * (config.firstPayoutPercentage / 100); // 1차 지급액
         const secondPayoutAmount = totalCommission - firstPayoutAmount; // 2차 지급액 (잔금)
 
-        // 모든 입금 내역 합치기 (실제 + 예상)
+        // 모든 입금 내역 합치기 (날짜 기준으로 미래면 예상으로 자동 처리)
         const allDeposits = [
-            ...(caseItem.depositHistory || []).map(d => ({ ...d, isExpected: false })),
+            ...(caseItem.depositHistory || []).map(d => ({
+                ...d,
+                isExpected: isAfter(parseISO(d.date), today)
+            })),
             ...(caseItem.expectedDeposits || []).map(d => ({ ...d, isExpected: true }))
         ].sort((a, b) => a.date.localeCompare(b.date));
 
