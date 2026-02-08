@@ -144,8 +144,19 @@ export default function Settlement() {
                     defval: ''
                 }) as any[][];
 
+                // 디버그: 엑셀 데이터 구조 확인
+                console.log('[DEBUG] Excel Data - Total Rows:', jsonData.length);
+                console.log('[DEBUG] First 15 rows:', jsonData.slice(0, 15));
+                console.log('[DEBUG] File name:', file.name);
+
                 // 파싱 및 매칭
                 const { bank, transactions } = parseBankExcel(jsonData, file.name);
+                console.log('[DEBUG] Detected bank:', bank);
+                console.log('[DEBUG] Parsed transactions count:', transactions.length);
+                if (transactions.length > 0) {
+                    console.log('[DEBUG] First transaction:', transactions[0]);
+                }
+
                 const matched = matchTransactionsWithPartners(transactions, partners);
 
                 // 저장

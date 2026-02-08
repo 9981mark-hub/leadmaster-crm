@@ -1957,31 +1957,74 @@ const saveTransactions = () => {
   }
 };
 
-// 카카오뱅크 엑셀 파싱
+// 카카오뱅크 엑셀 파싱 (유연한 헤더 감지)
 const parseKakaoBank = (data: any[][], fileName: string): BankTransaction[] => {
   const transactions: BankTransaction[] = [];
 
-  // 헤더는 11번째 행 (인덱스 10)
-  // A: 거래일시, B: 구분, C: 거래금액, D: 거래 후 잔액, E: 거래구분, F: 내용, G: 메모
-  for (let i = 11; i < data.length; i++) {
+  // 헤더 행 자동 감지 - "거래일시" 또는 "거래일" 컬럼 찾기
+  let headerRowIdx = -1;
+  let dateColIdx = 0;
+  let amountColIdx = 2;
+  let balanceColIdx = 3;
+  let descColIdx = 4;
+  let counterpartyColIdx = 5;
+  let memoColIdx = 6;
+
+  for (let i = 0; i < Math.min(20, data.length); i++) {
     const row = data[i];
-    if (!row || !row[0]) continue;
+    if (!row) continue;
 
-    const datetimeStr = String(row[0] || '').trim();
-    if (!datetimeStr || datetimeStr.length < 10) continue;
+    for (let j = 0; j < row.length; j++) {
+      const cell = String(row[j] || '').trim();
+      if (cell.includes('거래일시') || cell.includes('거래일') || cell === '일시') {
+        headerRowIdx = i;
+        dateColIdx = j;
+        // 나머지 컬럼 찾기
+        for (let k = 0; k < row.length; k++) {
+          const colName = String(row[k] || '').trim();
+          if (colName.includes('금액') || colName.includes('거래금액')) amountColIdx = k;
+          else if (colName.includes('잔액')) balanceColIdx = k;
+          else if (colName.includes('내용') || colName.includes('적요')) counterpartyColIdx = k;
+          else if (colName.includes('구분') || colName.includes('거래구분')) descColIdx = k;
+          else if (colName.includes('메모') || colName.includes('비고')) memoColIdx = k;
+        }
+        break;
+      }
+    }
+    if (headerRowIdx >= 0) break;
+  }
 
-    const amount = parseFloat(String(row[2] || '0').replace(/,/g, ''));
-    if (amount === 0) continue;
+  // 헤더를 못찾으면 기본값 사용 (기존 로직)
+  if (headerRowIdx < 0) {
+    headerRowIdx = 10; // 인덱스 10 = 11번째 행
+    console.log('[DEBUG] parseKakaoBank: Header not found, using default row 11');
+  } else {
+    console.log('[DEBUG] parseKakaoBank: Found header at row', headerRowIdx + 1, 'columns:', { dateColIdx, amountColIdx, balanceColIdx, counterpartyColIdx, descColIdx, memoColIdx });
+  }
 
-    const balance = parseFloat(String(row[3] || '0').replace(/,/g, ''));
-    const counterparty = String(row[5] || '').trim();
-    const description = String(row[4] || '').trim();
-    const memo = String(row[6] || '').trim();
+  // 데이터 파싱 (헤더 다음 행부터)
+  for (let i = headerRowIdx + 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row || !row[dateColIdx]) continue;
 
-    // 날짜 파싱 (YYYY.MM.DD HH:mm:ss -> YYYY-MM-DD HH:mm:ss)
-    const dateParts = datetimeStr.replace(/\./g, '-').split(' ');
-    const date = dateParts[0];
-    const datetime = datetimeStr.replace(/\./g, '-');
+    const datetimeStr = String(row[dateColIdx] || '').trim();
+    // 날짜 형식 검증 (최소 8자 이상, 숫자와 구분자 포함)
+    if (!datetimeStr || datetimeStr.length < 8 || !/\d/.test(datetimeStr)) continue;
+
+    // 금액 파싱 (여러 형식 지원)
+    let amountStr = String(row[amountColIdx] || '0');
+    const amount = parseFloat(amountStr.replace(/[,\s원]/g, ''));
+    if (isNaN(amount) || amount === 0) continue;
+
+    const balanceStr = String(row[balanceColIdx] || '0');
+    const balance = parseFloat(balanceStr.replace(/[,\s원]/g, '')) || 0;
+    const counterparty = String(row[counterpartyColIdx] || '').trim();
+    const description = String(row[descColIdx] || '').trim();
+    const memo = String(row[memoColIdx] || '').trim();
+
+    // 날짜 파싱 (다양한 형식 지원)
+    let date = datetimeStr.replace(/[.\/]/g, '-').split(' ')[0];
+    const datetime = datetimeStr.replace(/[.\/]/g, '-');
 
     const type: 'income' | 'expense' = amount > 0 ? 'income' : 'expense';
     const absAmount = Math.abs(amount);
@@ -2016,6 +2059,7 @@ const parseKakaoBank = (data: any[][], fileName: string): BankTransaction[] => {
     });
   }
 
+  console.log('[DEBUG] parseKakaoBank: Parsed', transactions.length, 'transactions');
   return transactions;
 };
 
