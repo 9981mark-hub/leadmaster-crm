@@ -329,6 +329,9 @@ export interface SettlementAdjustment {
 // 지출 카테고리
 export type ExpenseCategory = '광고비' | '마케팅비' | '사무비용' | '인건비' | '교통비' | '식대' | '기타';
 
+// 결제수단 타입
+export type PaymentMethod = '현금' | '법인카드' | '개인카드' | '계좌이체' | '기타';
+
 // 지출 항목
 export interface ExpenseItem {
   id: string;
@@ -337,6 +340,7 @@ export interface ExpenseItem {
   category: ExpenseCategory;
   amount: number;               // 만원 단위
   description: string;          // 지출 내용
+  paymentMethod?: PaymentMethod; // 결제수단
   memo?: string;                // 추가 메모
   receiptUrl?: string;          // 영수증 이미지 URL (선택)
   ocrText?: string;             // OCR 인식 원본 텍스트 (선택)

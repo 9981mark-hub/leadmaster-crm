@@ -12,6 +12,8 @@ import ReceiptOcrSection from '../components/ReceiptOcrSection';
 import TaxInvoiceSection from '../components/TaxInvoiceSection';
 import ProfitLossSection from '../components/ProfitLossSection';
 import VatHelperSection from '../components/VatHelperSection';
+import BudgetManagementSection from '../components/BudgetManagementSection';
+import FixedCostSection from '../components/FixedCostSection';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
 import * as XLSX from 'xlsx';
@@ -1730,6 +1732,12 @@ export default function Settlement() {
 
             {/* 📷 영수증 OCR 스캔 */}
             <ReceiptOcrSection onExpenseSaved={() => window.location.reload()} />
+
+            {/* 💰 예산 관리 */}
+            <BudgetManagementSection year={year} month={month} />
+
+            {/* 📌 고정비용 관리 */}
+            <FixedCostSection year={year} month={month} onExpenseCreated={() => window.location.reload()} />
         </div>
     );
 
