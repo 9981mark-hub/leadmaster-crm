@@ -2514,8 +2514,8 @@ export default function Settlement() {
                                         <div
                                             key={idx}
                                             className={`flex items-center justify-between p-3 rounded-lg border ${s.dDay <= 7 ? 'bg-red-50 border-red-200' :
-                                                    s.dDay <= 14 ? 'bg-yellow-50 border-yellow-200' :
-                                                        'bg-gray-50 border-gray-200'
+                                                s.dDay <= 14 ? 'bg-yellow-50 border-yellow-200' :
+                                                    'bg-gray-50 border-gray-200'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -2535,6 +2535,439 @@ export default function Settlement() {
                                 </div>
                             );
                         })()}
+                    </div>
+                </div>
+
+                {/* Monthly/Quarterly Income Statement (손익계산서) */}
+                <div className="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden">
+                    <div className="p-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50">
+                        <h3 className="font-bold text-indigo-700 flex items-center gap-2">
+                            📈 월별 손익계산서
+                        </h3>
+                        <p className="text-xs text-indigo-500 mt-1">{year}년 월별 수입/지출/순이익 분석</p>
+                    </div>
+                    <div className="p-4">
+                        {(() => {
+                            // 월별 데이터 계산
+                            const monthlyData = Array.from({ length: 12 }, (_, i) => {
+                                const m = i + 1;
+                                const monthStr = String(m).padStart(2, '0');
+
+                                // 수수료 수입
+                                const commissionIncome = safeCases
+                                    .filter(c => {
+                                        const settledAt = c.settledAt || c.contractAt;
+                                        if (!settledAt) return false;
+                                        return settledAt.startsWith(`${year}-${monthStr}`);
+                                    })
+                                    .reduce((sum, c) => sum + (c.commission || 0), 0) * 10000;
+
+                                // 은행 수입
+                                const bankIncome = bankTransactions
+                                    .filter(tx => tx.type === 'income' && tx.date.substring(5, 7) === monthStr)
+                                    .reduce((sum, tx) => sum + tx.amount, 0);
+
+                                // 지출 (경비)
+                                const expenseAmount = expenses
+                                    .filter(e => e.date?.substring(5, 7) === monthStr)
+                                    .reduce((sum, e) => sum + (e.amount || 0) * 10000, 0);
+
+                                // 은행 지출
+                                const bankExpense = bankTransactions
+                                    .filter(tx => tx.type === 'expense' && tx.date.substring(5, 7) === monthStr)
+                                    .reduce((sum, tx) => sum + tx.amount, 0);
+
+                                const totalIncome = commissionIncome + bankIncome;
+                                const totalExpense = expenseAmount + bankExpense;
+                                const netProfit = totalIncome - totalExpense;
+
+                                return { month: m, income: totalIncome, expense: totalExpense, profit: netProfit };
+                            });
+
+                            const yearTotal = monthlyData.reduce((acc, m) => ({
+                                income: acc.income + m.income,
+                                expense: acc.expense + m.expense,
+                                profit: acc.profit + m.profit
+                            }), { income: 0, expense: 0, profit: 0 });
+
+                            return (
+                                <>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-indigo-50 text-indigo-700">
+                                                <tr>
+                                                    <th className="py-2 px-2 text-left">월</th>
+                                                    <th className="py-2 px-2 text-right">수입</th>
+                                                    <th className="py-2 px-2 text-right">지출</th>
+                                                    <th className="py-2 px-2 text-right">순이익</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {monthlyData.filter(m => m.income > 0 || m.expense > 0).map(m => (
+                                                    <tr key={m.month} className="border-b border-gray-100">
+                                                        <td className="py-2 px-2 font-medium">{m.month}월</td>
+                                                        <td className="py-2 px-2 text-right text-green-600">+{m.income.toLocaleString()}</td>
+                                                        <td className="py-2 px-2 text-right text-red-600">-{m.expense.toLocaleString()}</td>
+                                                        <td className={`py-2 px-2 text-right font-bold ${m.profit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                            {m.profit >= 0 ? '+' : ''}{m.profit.toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                            <tfoot className="bg-indigo-100 font-bold">
+                                                <tr>
+                                                    <td className="py-2 px-2">연간 합계</td>
+                                                    <td className="py-2 px-2 text-right text-green-700">+{yearTotal.income.toLocaleString()}</td>
+                                                    <td className="py-2 px-2 text-right text-red-700">-{yearTotal.expense.toLocaleString()}</td>
+                                                    <td className={`py-2 px-2 text-right ${yearTotal.profit >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                                                        {yearTotal.profit >= 0 ? '+' : ''}{yearTotal.profit.toLocaleString()}
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+
+                                    {/* 차트 */}
+                                    <div className="mt-4 h-48">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={monthlyData.filter(m => m.income > 0 || m.expense > 0)}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="month" tickFormatter={(v) => `${v}월`} />
+                                                <YAxis tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
+                                                <Tooltip formatter={(v: number) => `${v.toLocaleString()}원`} />
+                                                <Legend />
+                                                <Bar dataKey="income" name="수입" fill="#22c55e" />
+                                                <Bar dataKey="expense" name="지출" fill="#ef4444" />
+                                                <Bar dataKey="profit" name="순이익" fill="#3b82f6" />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+
+                {/* Partner Revenue Analysis (거래처별 수익 분석) */}
+                <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden">
+                    <div className="p-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
+                        <h3 className="font-bold text-emerald-700 flex items-center gap-2">
+                            🏢 거래처별 수익 분석
+                        </h3>
+                        <p className="text-xs text-emerald-500 mt-1">{year}년 파트너별 발생 수수료</p>
+                    </div>
+                    <div className="p-4">
+                        {(() => {
+                            // 파트너별 수익 계산
+                            const partnerRevenue = partners.map(partner => {
+                                const partnerCases = safeCases.filter(c =>
+                                    c.partnerId === partner.partnerId &&
+                                    (c.settledAt || c.contractAt)?.startsWith(String(year))
+                                );
+
+                                const totalCommission = partnerCases.reduce((sum, c) => sum + (c.commission || 0), 0);
+                                const caseCount = partnerCases.length;
+                                const avgCommission = caseCount > 0 ? totalCommission / caseCount : 0;
+
+                                return {
+                                    partner,
+                                    totalCommission,
+                                    caseCount,
+                                    avgCommission
+                                };
+                            }).filter(p => p.totalCommission > 0)
+                                .sort((a, b) => b.totalCommission - a.totalCommission);
+
+                            const totalRevenue = partnerRevenue.reduce((sum, p) => sum + p.totalCommission, 0);
+
+                            // 색상 배열
+                            const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+
+                            return (
+                                <>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        {/* 테이블 */}
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-emerald-50 text-emerald-700">
+                                                    <tr>
+                                                        <th className="py-2 px-2 text-left">거래처</th>
+                                                        <th className="py-2 px-2 text-right">건수</th>
+                                                        <th className="py-2 px-2 text-right">수수료</th>
+                                                        <th className="py-2 px-2 text-right">비중</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {partnerRevenue.map((p, idx) => (
+                                                        <tr key={p.partner.partnerId} className="border-b border-gray-100">
+                                                            <td className="py-2 px-2 flex items-center gap-2">
+                                                                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                                                                {p.partner.name}
+                                                            </td>
+                                                            <td className="py-2 px-2 text-right">{p.caseCount}건</td>
+                                                            <td className="py-2 px-2 text-right font-bold text-emerald-600">{p.totalCommission.toLocaleString()}만원</td>
+                                                            <td className="py-2 px-2 text-right text-gray-500">
+                                                                {totalRevenue > 0 ? Math.round((p.totalCommission / totalRevenue) * 100) : 0}%
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* 파이 차트 */}
+                                        <div className="h-48">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        data={partnerRevenue.map((p, idx) => ({
+                                                            name: p.partner.name,
+                                                            value: p.totalCommission,
+                                                            fill: COLORS[idx % COLORS.length]
+                                                        }))}
+                                                        dataKey="value"
+                                                        nameKey="name"
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        outerRadius={60}
+                                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                    >
+                                                        {partnerRevenue.map((_, idx) => (
+                                                            <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                                                        ))}
+                                                    </Pie>
+                                                    <Tooltip formatter={(v: number) => `${v.toLocaleString()}만원`} />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+
+                {/* 더존/세무사랑 형식 엑셀 내보내기 */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-gray-50">
+                        <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                            📤 세무사 제출용 엑셀 내보내기
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1">더존, 세무사랑 등 회계 프로그램 호환 형식</p>
+                    </div>
+                    <div className="p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {/* 더존 Smart A 형식 */}
+                            <button
+                                onClick={() => {
+                                    // 더존 Smart A 일반전표 형식
+                                    const rows = [
+                                        ['전표일자', '계정과목코드', '계정과목명', '적요', '차변금액', '대변금액', '거래처코드', '거래처명'],
+                                    ];
+
+                                    // 수입 (매출)
+                                    safeCases
+                                        .filter(c => (c.settledAt || c.contractAt)?.startsWith(String(year)))
+                                        .forEach(c => {
+                                            const date = (c.settledAt || c.contractAt || '').replace(/-/g, '');
+                                            const partner = partners.find(p => p.partnerId === c.partnerId);
+                                            rows.push([
+                                                date.substring(0, 8),
+                                                '401', // 매출 계정코드
+                                                '수수료수입',
+                                                `${c.customerName} 수수료`,
+                                                '',
+                                                String((c.commission || 0) * 10000),
+                                                partner?.partnerId || '',
+                                                partner?.name || ''
+                                            ]);
+                                        });
+
+                                    // 지출 (비용)
+                                    expenses.forEach(e => {
+                                        const date = (e.date || '').replace(/-/g, '');
+                                        const accountCode = e.category === '광고비' ? '811' : e.category === '인건비' ? '813' : '819';
+                                        rows.push([
+                                            date.substring(0, 8),
+                                            accountCode,
+                                            e.category,
+                                            e.description,
+                                            String((e.amount || 0) * 10000),
+                                            '',
+                                            '',
+                                            ''
+                                        ]);
+                                    });
+
+                                    const csvContent = rows.map(row => row.join(',')).join('\n');
+                                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `더존_일반전표_${year}년.csv`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}
+                                className="bg-blue-100 text-blue-700 p-4 rounded-lg font-medium hover:bg-blue-200 flex flex-col items-center gap-2"
+                            >
+                                <span className="text-2xl">📊</span>
+                                <span className="text-sm">더존 Smart A</span>
+                                <span className="text-xs text-blue-500">일반전표 형식</span>
+                            </button>
+
+                            {/* 세무사랑 형식 */}
+                            <button
+                                onClick={() => {
+                                    const rows = [
+                                        ['일자', '구분', '계정과목', '적요', '공급가액', '부가세', '합계', '거래처'],
+                                    ];
+
+                                    // 수입
+                                    safeCases
+                                        .filter(c => (c.settledAt || c.contractAt)?.startsWith(String(year)))
+                                        .forEach(c => {
+                                            const date = c.settledAt || c.contractAt || '';
+                                            const partner = partners.find(p => p.partnerId === c.partnerId);
+                                            const amount = (c.commission || 0) * 10000;
+                                            const vat = Math.round(amount * 0.1);
+                                            rows.push([
+                                                date,
+                                                '매출',
+                                                '수수료수입',
+                                                `${c.customerName}`,
+                                                String(amount),
+                                                String(vat),
+                                                String(amount + vat),
+                                                partner?.name || ''
+                                            ]);
+                                        });
+
+                                    // 지출
+                                    expenses.forEach(e => {
+                                        const amount = (e.amount || 0) * 10000;
+                                        const vat = Math.round(amount * 0.1);
+                                        rows.push([
+                                            e.date || '',
+                                            '매입',
+                                            e.category,
+                                            e.description,
+                                            String(amount),
+                                            String(vat),
+                                            String(amount + vat),
+                                            ''
+                                        ]);
+                                    });
+
+                                    const csvContent = rows.map(row => row.join(',')).join('\n');
+                                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `세무사랑_매입매출_${year}년.csv`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}
+                                className="bg-green-100 text-green-700 p-4 rounded-lg font-medium hover:bg-green-200 flex flex-col items-center gap-2"
+                            >
+                                <span className="text-2xl">💚</span>
+                                <span className="text-sm">세무사랑</span>
+                                <span className="text-xs text-green-500">매입매출 형식</span>
+                            </button>
+
+                            {/* 부가세 신고용 */}
+                            <button
+                                onClick={() => {
+                                    const rows = [
+                                        ['구분', '세금계산서발급일', '공급자사업자번호', '공급자상호', '공급가액', '세액', '비고'],
+                                    ];
+
+                                    // 매출 세금계산서 (가상)
+                                    rows.push(['[ 매출 세금계산서 합계 ]', '', '', '', '', '', '']);
+
+                                    const salesTotal = safeCases
+                                        .filter(c => (c.settledAt || c.contractAt)?.startsWith(String(year)))
+                                        .reduce((sum, c) => sum + (c.commission || 0) * 10000, 0);
+                                    const salesVat = Math.round(salesTotal * 0.1);
+
+                                    rows.push(['매출합계', '', '', '', String(salesTotal), String(salesVat), '']);
+                                    rows.push(['', '', '', '', '', '', '']);
+                                    rows.push(['[ 매입 세금계산서 합계 ]', '', '', '', '', '', '']);
+
+                                    const purchaseTotal = expenses.reduce((sum, e) => sum + (e.amount || 0) * 10000, 0);
+                                    const purchaseVat = Math.round(purchaseTotal * 0.1);
+
+                                    rows.push(['매입합계', '', '', '', String(purchaseTotal), String(purchaseVat), '']);
+                                    rows.push(['', '', '', '', '', '', '']);
+                                    rows.push(['[ 부가세 납부 예정액 ]', '', '', '', '', String(salesVat - purchaseVat), '']);
+
+                                    const csvContent = rows.map(row => row.join(',')).join('\n');
+                                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `부가세신고자료_${year}년.csv`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}
+                                className="bg-purple-100 text-purple-700 p-4 rounded-lg font-medium hover:bg-purple-200 flex flex-col items-center gap-2"
+                            >
+                                <span className="text-2xl">🧾</span>
+                                <span className="text-sm">부가세 신고</span>
+                                <span className="text-xs text-purple-500">세금계산서 합계</span>
+                            </button>
+
+                            {/* 원천세 신고용 */}
+                            <button
+                                onClick={() => {
+                                    const rows = [
+                                        ['소득자성명', '주민번호', '소득구분', '지급액', '소득세', '지방소득세', '실지급액', '지급일'],
+                                    ];
+
+                                    // 파트너별 지급 내역 (배치 기반)
+                                    partners.forEach(partner => {
+                                        const partnerBatches = batches.filter(b =>
+                                            b.partnerId === partner.partnerId &&
+                                            (b.status === 'paid' || b.status === 'completed')
+                                        );
+
+                                        partnerBatches.forEach(b => {
+                                            const payout = (b.totalPayableCommission || 0) * 10000;
+                                            const incomeTax = Math.round(payout * 0.03);
+                                            const localTax = Math.round(payout * 0.003);
+                                            const netPayout = payout - incomeTax - localTax;
+
+                                            rows.push([
+                                                partner.name,
+                                                '', // 주민번호는 수기입력
+                                                '사업소득',
+                                                String(payout),
+                                                String(incomeTax),
+                                                String(localTax),
+                                                String(netPayout),
+                                                b.weekStart || ''
+                                            ]);
+                                        });
+                                    });
+
+                                    const csvContent = rows.map(row => row.join(',')).join('\n');
+                                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `원천세신고자료_${year}년.csv`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}
+                                className="bg-orange-100 text-orange-700 p-4 rounded-lg font-medium hover:bg-orange-200 flex flex-col items-center gap-2"
+                            >
+                                <span className="text-2xl">💰</span>
+                                <span className="text-sm">원천세 신고</span>
+                                <span className="text-xs text-orange-500">지급명세서 형식</span>
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3">
+                            💡 다운로드 후 세무사에게 제출 또는 회계 프로그램에 직접 임포트하세요.
+                        </p>
                     </div>
                 </div>
             </div>
