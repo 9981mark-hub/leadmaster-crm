@@ -139,32 +139,32 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-teal-100 overflow-hidden">
-            <div className="p-4 border-b border-teal-100 bg-gradient-to-r from-teal-50 to-cyan-50">
-                <div className="flex items-center justify-between">
+            <div className="p-3 md:p-4 border-b border-teal-100 bg-gradient-to-r from-teal-50 to-cyan-50">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
-                        <h3 className="font-bold text-teal-700 flex items-center gap-2">
+                        <h3 className="font-bold text-teal-700 flex items-center gap-2 text-sm md:text-base">
                             📌 고정비용 관리
                         </h3>
-                        <p className="text-xs text-teal-500 mt-1">매월 반복되는 지출 항목</p>
+                        <p className="text-xs text-teal-500 mt-0.5">매월 반복되는 지출 항목</p>
                     </div>
                     <div className="flex gap-2">
                         <button
                             onClick={registerAsExpenses}
-                            className="px-3 py-1.5 bg-teal-100 text-teal-700 text-sm rounded-lg hover:bg-teal-200"
+                            className="px-2 md:px-3 py-1 md:py-1.5 bg-teal-100 text-teal-700 text-xs md:text-sm rounded-lg hover:bg-teal-200"
                         >
-                            📥 {month}월 지출 등록
+                            📥 <span className="hidden md:inline">{month}월 지출</span><span className="md:hidden">등록</span>
                         </button>
                         <button
                             onClick={() => setIsAddModalOpen(true)}
-                            className="px-3 py-1.5 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700"
+                            className="px-2 md:px-3 py-1 md:py-1.5 bg-teal-600 text-white text-xs md:text-sm rounded-lg hover:bg-teal-700"
                         >
-                            + 고정비 추가
+                            + <span className="hidden md:inline">고정비 추가</span><span className="md:hidden">추가</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="p-4">
+            <div className="p-3 md:p-4">
                 {/* 요약 */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="bg-teal-50 p-3 rounded-lg border border-teal-200">
@@ -192,8 +192,8 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                                     <button
                                         onClick={() => toggleActive(cost.id)}
                                         className={`w-5 h-5 rounded border flex items-center justify-center ${cost.isActive
-                                                ? 'bg-teal-500 border-teal-500 text-white'
-                                                : 'bg-white border-gray-300'
+                                            ? 'bg-teal-500 border-teal-500 text-white'
+                                            : 'bg-white border-gray-300'
                                             }`}
                                     >
                                         {cost.isActive && '✓'}

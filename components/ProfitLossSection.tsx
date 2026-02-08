@@ -154,28 +154,28 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden">
-            <div className="p-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
-                <div className="flex items-center justify-between">
+            <div className="p-3 md:p-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
-                        <h3 className="font-bold text-emerald-700 flex items-center gap-2">
+                        <h3 className="font-bold text-emerald-700 flex items-center gap-2 text-sm md:text-base">
                             📊 손익계산서 (P&L)
                         </h3>
-                        <p className="text-xs text-emerald-500 mt-1">{year}년 수익/비용/순이익 현황</p>
+                        <p className="text-xs text-emerald-500 mt-0.5">{year}년 수익/비용/순이익 현황</p>
                     </div>
                     <div className="flex gap-2">
                         <select
                             value={viewMode}
                             onChange={e => setViewMode(e.target.value as typeof viewMode)}
-                            className="text-sm border border-emerald-300 rounded-lg px-2 py-1"
+                            className="text-xs md:text-sm border border-emerald-300 rounded-lg px-2 py-1"
                         >
                             <option value="monthly">월별</option>
                             <option value="quarterly">분기별</option>
                         </select>
                         <button
                             onClick={exportToExcel}
-                            className="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 flex items-center gap-1"
+                            className="px-2 md:px-3 py-1 md:py-1.5 bg-emerald-600 text-white text-xs md:text-sm rounded-lg hover:bg-emerald-700 flex items-center gap-1"
                         >
-                            📥 Excel
+                            📥 <span className="hidden md:inline">Excel</span>
                         </button>
                     </div>
                 </div>

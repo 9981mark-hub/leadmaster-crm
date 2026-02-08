@@ -110,17 +110,17 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden">
-            <div className="p-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50">
-                <div className="flex items-center justify-between">
+            <div className="p-3 md:p-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
-                        <h3 className="font-bold text-indigo-700 flex items-center gap-2">
+                        <h3 className="font-bold text-indigo-700 flex items-center gap-2 text-sm md:text-base">
                             💰 예산 관리
                         </h3>
-                        <p className="text-xs text-indigo-500 mt-1">{year}년 {month}월 카테고리별 예산</p>
+                        <p className="text-xs text-indigo-500 mt-0.5">{year}년 {month}월 카테고리별 예산</p>
                     </div>
                     <button
                         onClick={() => isEditMode ? saveBudgets() : setIsEditMode(true)}
-                        className={`px-3 py-1.5 text-sm rounded-lg ${isEditMode
+                        className={`px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-lg ${isEditMode
                             ? 'bg-green-600 text-white hover:bg-green-700'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700'
                             }`}
@@ -130,7 +130,7 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                 </div>
             </div>
 
-            <div className="p-4">
+            <div className="p-3 md:p-4">
                 {/* 전체 요약 */}
                 <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-indigo-100 to-blue-100">
                     <div className="flex items-center justify-between mb-2">

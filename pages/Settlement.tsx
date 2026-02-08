@@ -1120,56 +1120,56 @@ export default function Settlement() {
     const renderReportTab = () => (
         <div className="space-y-6">
             {/* Row 1: Main KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                 <div
                     onClick={() => setIsDetailModalOpen(true)}
-                    className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-sm text-gray-500">📋 계약 건수</p>
-                        <Search size={14} className="text-gray-300 group-hover:text-blue-500" />
+                        <p className="text-xs md:text-sm text-gray-500">📋 계약 건수</p>
+                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 mt-1">{totalCount}건</p>
-                    <p className="text-xs text-blue-500 mt-1">상세 보기 →</p>
+                    <p className="text-lg md:text-2xl font-bold text-gray-800 mt-1">{totalCount}건</p>
+                    <p className="text-xs text-blue-500 mt-1 hidden md:block">상세 보기 →</p>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm text-gray-500">💰 총 매출</p>
-                    <p className="text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1">수임료 합계</p>
+                <div className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-xs md:text-sm text-gray-500">💰 총 매출</p>
+                    <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1 hidden md:block">수임료 합계</p>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm text-gray-500">✅ 실제 입금액</p>
-                    <p className="text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1">오늘까지 확정</p>
+                <div className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-xs md:text-sm text-gray-500">✅ 실제 입금액</p>
+                    <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1 hidden md:block">오늘까지 확정</p>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm text-gray-500">📅 예상 입금액</p>
-                    <p className="text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1">{monthlyExpectedCount}건 입금 예정</p>
+                <div className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
+                    <p className="text-xs md:text-sm text-gray-500">📅 예상 입금액</p>
+                    <p className="text-lg md:text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
+                    <p className="text-xs text-gray-400 mt-1 hidden md:block">{monthlyExpectedCount}건 입금 예정</p>
                 </div>
             </div>
 
             {/* Row 2: Commission KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200">
-                    <p className="text-sm text-green-700">💵 지급된 수수료</p>
-                    <p className="text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
-                    <p className="text-xs text-green-500 mt-1">입금 확정 기준</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-green-200">
+                    <p className="text-xs md:text-sm text-green-700">💵 지급된 수수료</p>
+                    <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
+                    <p className="text-xs text-green-500 mt-1 hidden md:block">입금 확정 기준</p>
                 </div>
-                <div className="bg-gradient-to-br from-orange-50 to-white p-5 rounded-xl shadow-sm border border-orange-200">
-                    <p className="text-sm text-orange-700">🔜 미지급 수수료</p>
-                    <p className="text-2xl font-bold text-orange-600 mt-1">{totalUnpaidCommission.toLocaleString()}만원</p>
-                    <p className="text-xs text-orange-500 mt-1">추가 입금 필요</p>
+                <div className="bg-gradient-to-br from-orange-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-orange-200">
+                    <p className="text-xs md:text-sm text-orange-700">🔜 미지급 수수료</p>
+                    <p className="text-lg md:text-2xl font-bold text-orange-600 mt-1">{totalUnpaidCommission.toLocaleString()}만원</p>
+                    <p className="text-xs text-orange-500 mt-1 hidden md:block">추가 입금 필요</p>
                 </div>
-                <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl shadow-sm border border-indigo-200">
-                    <p className="text-sm text-indigo-700">📊 분납 진행중</p>
-                    <p className="text-2xl font-bold text-indigo-600 mt-1">{installmentInProgress}건</p>
-                    <p className="text-xs text-indigo-500 mt-1">추가 입금 대기</p>
+                <div className="bg-gradient-to-br from-indigo-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-indigo-200">
+                    <p className="text-xs md:text-sm text-indigo-700">📊 분납 진행중</p>
+                    <p className="text-lg md:text-2xl font-bold text-indigo-600 mt-1">{installmentInProgress}건</p>
+                    <p className="text-xs text-indigo-500 mt-1 hidden md:block">추가 입금 대기</p>
                 </div>
-                <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200">
-                    <p className="text-sm text-blue-700">📈 입금 완료율</p>
-                    <p className="text-2xl font-bold text-blue-600 mt-1">{depositRate}%</p>
-                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-br from-blue-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-blue-200">
+                    <p className="text-xs md:text-sm text-blue-700">📈 입금 완료율</p>
+                    <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1">{depositRate}%</p>
+                    <div className="mt-1 md:mt-2 h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full" style={{ width: `${depositRate}%` }} />
                     </div>
                 </div>
