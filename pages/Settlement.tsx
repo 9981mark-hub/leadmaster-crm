@@ -8,6 +8,7 @@ import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cartes
 import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download } from 'lucide-react';
 import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
+import ReceiptOcrSection from '../components/ReceiptOcrSection';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
 import * as XLSX from 'xlsx';
@@ -1715,20 +1716,8 @@ export default function Settlement() {
             {/* Settlement History Calendar */}
             <SettlementCalendar batches={batches} />
 
-            {/*  영수증 OCR 스캔 - 준비 중 */}
-            <div className="bg-white rounded-xl shadow-sm border border-cyan-100 overflow-hidden">
-                <div className="p-4 border-b border-cyan-100 bg-gradient-to-r from-cyan-50 to-teal-50">
-                    <h3 className="font-bold text-cyan-700 flex items-center gap-2"> 영수증 스캔 (OCR)</h3>
-                    <p className="text-xs text-cyan-500 mt-1">영수증 사진을 업로드하면 자동으로 날짜, 금액을 추출합니다</p>
-                </div>
-                <div className="p-4">
-                    <div className="text-center py-8 text-gray-400">
-                        <span className="text-4xl block mb-2">�</span>
-                        <p>영수증 OCR 기능 준비 중</p>
-                        <p className="text-xs mt-1">곧 사용 가능합니다</p>
-                    </div>
-                </div>
-            </div>
+            {/* 📷 영수증 OCR 스캔 */}
+            <ReceiptOcrSection onExpenseSaved={() => window.location.reload()} />
         </div>
     );
 
@@ -2991,7 +2980,7 @@ export default function Settlement() {
                 <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
                     <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
                         <h3 className="font-bold text-rose-700 flex items-center gap-2">
-                             세금계산서 관리
+                            세금계산서 관리
                         </h3>
                         <p className="text-xs text-rose-500 mt-1">매입/매출 세금계산서 관리 기능</p>
                     </div>
