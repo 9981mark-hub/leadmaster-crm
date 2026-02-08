@@ -1,5 +1,5 @@
 
-import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory } from '../types';
+import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -1918,3 +1918,335 @@ export const getExpenseStats = async (year: number, month?: number | 'all', part
 
   return { total, byCategory, byMonth };
 };
+
+// ============================================
+// Bank Transaction Management (은행 거래내역)
+// ============================================
+
+const CACHE_KEYS_TRANSACTIONS = 'leadmaster_bank_transactions';
+let localTransactions: BankTransaction[] = [];
+let transactionsInitialized = false;
+
+// 광고비 키워드 목록
+const AD_KEYWORDS = ['토스', '비바리퍼블리', 'toss', 'viva', '네이버', 'naver', '구글', 'google', '페이스북', 'facebook', '메타', 'meta', '카카오', 'kakao'];
+
+// 이자 키워드
+const INTEREST_KEYWORDS = ['이자', '예금이자', '입출금통장 이자'];
+
+// 로컬스토리지에서 거래내역 로드
+const loadTransactions = (): BankTransaction[] => {
+  if (transactionsInitialized) return localTransactions;
+  try {
+    const stored = localStorage.getItem(CACHE_KEYS_TRANSACTIONS);
+    if (stored) {
+      localTransactions = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.warn('Failed to load transactions from localStorage:', e);
+  }
+  transactionsInitialized = true;
+  return localTransactions;
+};
+
+// 로컬스토리지에 저장
+const saveTransactions = () => {
+  try {
+    localStorage.setItem(CACHE_KEYS_TRANSACTIONS, JSON.stringify(localTransactions));
+  } catch (e) {
+    console.warn('Failed to save transactions to localStorage:', e);
+  }
+};
+
+// 카카오뱅크 엑셀 파싱
+const parseKakaoBank = (data: any[][], fileName: string): BankTransaction[] => {
+  const transactions: BankTransaction[] = [];
+
+  // 헤더는 11번째 행 (인덱스 10)
+  // A: 거래일시, B: 구분, C: 거래금액, D: 거래 후 잔액, E: 거래구분, F: 내용, G: 메모
+  for (let i = 11; i < data.length; i++) {
+    const row = data[i];
+    if (!row || !row[0]) continue;
+
+    const datetimeStr = String(row[0] || '').trim();
+    if (!datetimeStr || datetimeStr.length < 10) continue;
+
+    const amount = parseFloat(String(row[2] || '0').replace(/,/g, ''));
+    if (amount === 0) continue;
+
+    const balance = parseFloat(String(row[3] || '0').replace(/,/g, ''));
+    const counterparty = String(row[5] || '').trim();
+    const description = String(row[4] || '').trim();
+    const memo = String(row[6] || '').trim();
+
+    // 날짜 파싱 (YYYY.MM.DD HH:mm:ss -> YYYY-MM-DD HH:mm:ss)
+    const dateParts = datetimeStr.replace(/\./g, '-').split(' ');
+    const date = dateParts[0];
+    const datetime = datetimeStr.replace(/\./g, '-');
+
+    const type: 'income' | 'expense' = amount > 0 ? 'income' : 'expense';
+    const absAmount = Math.abs(amount);
+
+    // 자동 분류
+    let category: TransactionCategory = type === 'income' ? '기타수입' : '기타지출';
+
+    // 이자 확인
+    if (INTEREST_KEYWORDS.some(k => description.includes(k) || counterparty.includes(k))) {
+      category = '이자';
+    }
+    // 광고비 확인
+    else if (type === 'expense' && AD_KEYWORDS.some(k => counterparty.toLowerCase().includes(k.toLowerCase()))) {
+      category = '광고비';
+    }
+
+    transactions.push({
+      id: uuidv4(),
+      bank: 'kakao',
+      date,
+      datetime,
+      type,
+      amount: absAmount,
+      balance,
+      category,
+      counterparty,
+      description,
+      memo: memo || undefined,
+      isVerified: false,
+      uploadedAt: new Date().toISOString(),
+      sourceFile: fileName
+    });
+  }
+
+  return transactions;
+};
+
+// 케이뱅크 엑셀 파싱
+const parseKBank = (data: any[][], fileName: string): BankTransaction[] => {
+  const transactions: BankTransaction[] = [];
+
+  // 헤더는 4번째 행 (인덱스 3)
+  // A: 거래일시, B: 거래구분, C: 입금금액, D: 출금금액, E: 잔액, F: 상대 예금주명, G: 상대 은행, H: 상대 계좌번호, I: 적요내용, J: 메모
+  for (let i = 4; i < data.length; i++) {
+    const row = data[i];
+    if (!row || !row[0]) continue;
+
+    const datetimeStr = String(row[0] || '').trim();
+    if (!datetimeStr || datetimeStr.length < 10) continue;
+
+    const incomeAmount = parseFloat(String(row[2] || '0').replace(/,/g, ''));
+    const expenseAmount = parseFloat(String(row[3] || '0').replace(/,/g, ''));
+
+    if (incomeAmount === 0 && expenseAmount === 0) continue;
+
+    const balance = parseFloat(String(row[4] || '0').replace(/,/g, ''));
+    const counterparty = String(row[5] || '').trim();
+    const description = String(row[8] || row[1] || '').trim();
+    const memo = String(row[9] || '').trim();
+
+    // 날짜 파싱
+    const dateParts = datetimeStr.replace(/\./g, '-').split(' ');
+    const date = dateParts[0];
+    const datetime = datetimeStr.replace(/\./g, '-');
+
+    const type: 'income' | 'expense' = incomeAmount > 0 ? 'income' : 'expense';
+    const amount = type === 'income' ? incomeAmount : expenseAmount;
+
+    // 자동 분류
+    let category: TransactionCategory = type === 'income' ? '기타수입' : '기타지출';
+
+    // 이자 확인
+    if (INTEREST_KEYWORDS.some(k => description.includes(k) || counterparty.includes(k))) {
+      category = '이자';
+    }
+    // 광고비 확인
+    else if (type === 'expense' && AD_KEYWORDS.some(k => counterparty.toLowerCase().includes(k.toLowerCase()))) {
+      category = '광고비';
+    }
+
+    transactions.push({
+      id: uuidv4(),
+      bank: 'kbank',
+      date,
+      datetime,
+      type,
+      amount,
+      balance,
+      category,
+      counterparty,
+      description,
+      memo: memo || undefined,
+      isVerified: false,
+      uploadedAt: new Date().toISOString(),
+      sourceFile: fileName
+    });
+  }
+
+  return transactions;
+};
+
+// 은행 자동 감지 및 파싱
+export const parseBankExcel = (data: any[][], fileName: string): { bank: BankType; transactions: BankTransaction[] } => {
+  // 카카오뱅크 감지: 2행에 "카카오뱅크 거래내역" 또는 특정 구조
+  const isKakao = data.some((row, idx) =>
+    idx < 5 && row && row[1] && String(row[1]).includes('카카오뱅크')
+  ) || fileName.includes('카카오');
+
+  // 케이뱅크 감지
+  const isKBank = data.some((row, idx) =>
+    idx < 5 && row && (String(row[0]).includes('고객명') || String(row[2]).includes('계좌번호'))
+  ) || fileName.includes('케이뱅크');
+
+  if (isKakao) {
+    return { bank: 'kakao', transactions: parseKakaoBank(data, fileName) };
+  } else if (isKBank) {
+    return { bank: 'kbank', transactions: parseKBank(data, fileName) };
+  }
+
+  // 기본적으로 카카오뱅크 형식으로 시도
+  return { bank: 'kakao', transactions: parseKakaoBank(data, fileName) };
+};
+
+// 거래처 자동 매칭
+export const matchTransactionsWithPartners = (transactions: BankTransaction[], partners: Partner[]): BankTransaction[] => {
+  return transactions.map(tx => {
+    if (tx.type !== 'income' || tx.category !== '기타수입') return tx;
+
+    // 거래처의 depositNames와 매칭
+    for (const partner of partners) {
+      if (!partner.depositNames) continue;
+
+      for (const depositName of partner.depositNames) {
+        if (tx.counterparty.includes(depositName) || depositName.includes(tx.counterparty)) {
+          return {
+            ...tx,
+            category: '수수료수입' as TransactionCategory,
+            matchedPartnerId: partner.partnerId
+          };
+        }
+      }
+    }
+
+    return tx;
+  });
+};
+
+// 거래내역 조회
+export const fetchBankTransactions = (year?: number, bank?: BankType): BankTransaction[] => {
+  loadTransactions();
+
+  let filtered = [...localTransactions];
+
+  if (year) {
+    filtered = filtered.filter(tx => tx.date.startsWith(String(year)));
+  }
+
+  if (bank) {
+    filtered = filtered.filter(tx => tx.bank === bank);
+  }
+
+  return filtered.sort((a, b) => b.datetime.localeCompare(a.datetime));
+};
+
+// 거래내역 저장 (업로드 시 사용)
+export const saveBankTransactions = (transactions: BankTransaction[]): { added: number; skipped: number } => {
+  loadTransactions();
+
+  let added = 0;
+  let skipped = 0;
+
+  for (const tx of transactions) {
+    // 중복 체크 (같은 datetime + amount + counterparty)
+    const isDuplicate = localTransactions.some(
+      existing => existing.datetime === tx.datetime &&
+        existing.amount === tx.amount &&
+        existing.counterparty === tx.counterparty
+    );
+
+    if (isDuplicate) {
+      skipped++;
+    } else {
+      localTransactions.push(tx);
+      added++;
+    }
+  }
+
+  if (added > 0) {
+    saveTransactions();
+  }
+
+  return { added, skipped };
+};
+
+// 거래내역 업데이트 (카테고리 변경 등)
+export const updateBankTransaction = (id: string, updates: Partial<BankTransaction>): BankTransaction | null => {
+  loadTransactions();
+
+  const index = localTransactions.findIndex(tx => tx.id === id);
+  if (index === -1) return null;
+
+  localTransactions[index] = { ...localTransactions[index], ...updates };
+  saveTransactions();
+
+  return localTransactions[index];
+};
+
+// 거래내역 삭제
+export const deleteBankTransaction = (id: string): boolean => {
+  loadTransactions();
+
+  const index = localTransactions.findIndex(tx => tx.id === id);
+  if (index === -1) return false;
+
+  localTransactions.splice(index, 1);
+  saveTransactions();
+
+  return true;
+};
+
+// 거래 통계
+export const getBankTransactionStats = (year: number, month?: number | 'all'): {
+  totalIncome: number;
+  totalExpense: number;
+  netProfit: number;
+  byCategory: Record<string, number>;
+  commissionIncome: number;
+} => {
+  loadTransactions();
+
+  let filtered = localTransactions.filter(tx => tx.date.startsWith(String(year)));
+
+  if (month && month !== 'all') {
+    const monthStr = String(month).padStart(2, '0');
+    filtered = filtered.filter(tx => tx.date.substring(5, 7) === monthStr);
+  }
+
+  const totalIncome = filtered
+    .filter(tx => tx.type === 'income')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const totalExpense = filtered
+    .filter(tx => tx.type === 'expense')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const commissionIncome = filtered
+    .filter(tx => tx.category === '수수료수입')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const byCategory: Record<string, number> = {};
+  filtered.forEach(tx => {
+    byCategory[tx.category] = (byCategory[tx.category] || 0) + tx.amount;
+  });
+
+  return {
+    totalIncome,
+    totalExpense,
+    netProfit: totalIncome - totalExpense,
+    byCategory,
+    commissionIncome
+  };
+};
+
+// 카테고리 목록 export
+export const TRANSACTION_CATEGORIES: TransactionCategory[] = [
+  '수수료수입', '이자', '기타수입',
+  '광고비', '마케팅비', '사무비용', '인건비', '교통비', '식대', '기타지출'
+];

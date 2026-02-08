@@ -1,8 +1,8 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
-import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday, fetchExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, EXPENSE_CATEGORIES } from '../services/api';
-import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory } from '../types';
+import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday, fetchExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, EXPENSE_CATEGORIES, parseBankExcel, matchTransactionsWithPartners, fetchBankTransactions, saveBankTransactions, updateBankTransaction, deleteBankTransaction, getBankTransactionStats, TRANSACTION_CATEGORIES } from '../services/api';
+import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory } from '../types';
 import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
 import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download } from 'lucide-react';
@@ -10,6 +10,7 @@ import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
+import * as XLSX from 'xlsx';
 
 type TabType = 'monday' | 'tuesday' | 'wednesday' | 'report' | 'expenses';
 
@@ -39,6 +40,12 @@ export default function Settlement() {
     const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
     const [expenseForm, setExpenseForm] = useState<Partial<ExpenseItem>>({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
     const [expenseStats, setExpenseStats] = useState<{ total: number; byCategory: Record<ExpenseCategory, number>; byMonth: { month: string; amount: number }[] }>({ total: 0, byCategory: { '광고비': 0, '마케팅비': 0, '사무비용': 0, '인건비': 0, '교통비': 0, '식대': 0, '기타': 0 }, byMonth: [] });
+
+    // Bank Transactions State
+    const [bankTransactions, setBankTransactions] = useState<BankTransaction[]>([]);
+    const [loadingTransactions, setLoadingTransactions] = useState(false);
+    const [uploadingFile, setUploadingFile] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -92,6 +99,60 @@ export default function Settlement() {
         };
         loadExpenses();
     }, [activeTab, year, month, selectedPartnerId]);
+
+    // Load bank transactions when tab is expenses
+    useEffect(() => {
+        if (activeTab !== 'expenses') return;
+        setLoadingTransactions(true);
+        const txs = fetchBankTransactions(year);
+        // 거래처 자동 매칭
+        const matched = matchTransactionsWithPartners(txs, partners);
+        setBankTransactions(matched);
+        setLoadingTransactions(false);
+    }, [activeTab, year, partners]);
+
+    // 엑셀 파일 업로드 핸들러
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingFile(true);
+        try {
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+
+            // 파싱 및 매칭
+            const { bank, transactions } = parseBankExcel(jsonData, file.name);
+            const matched = matchTransactionsWithPartners(transactions, partners);
+
+            // 저장
+            const { added, skipped } = saveBankTransactions(matched);
+
+            // 새로고침
+            const refreshed = fetchBankTransactions(year);
+            const refreshedMatched = matchTransactionsWithPartners(refreshed, partners);
+            setBankTransactions(refreshedMatched);
+
+            showToast(`${bank === 'kakao' ? '카카오뱅크' : '케이뱅크'}: ${added}건 추가됨 ${skipped > 0 ? `(${skipped}건 중복)` : ''}`, 'success');
+        } catch (err) {
+            console.error('파일 업로드 오류:', err);
+            showToast('파일 업로드에 실패했습니다.', 'error');
+        } finally {
+            setUploadingFile(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    // 거래내역 카테고리 변경 핸들러
+    const handleTransactionCategoryChange = (id: string, category: TransactionCategory) => {
+        const updated = updateBankTransaction(id, { category, isVerified: true });
+        if (updated) {
+            setBankTransactions(prev => prev.map(tx => tx.id === id ? updated : tx));
+        }
+    };
 
     if (loading) return <div>로딩중...</div>;
 
@@ -1859,6 +1920,325 @@ export default function Settlement() {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                {/* Bank Transaction Upload Section */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50 flex justify-between items-center">
+                        <div>
+                            <h3 className="font-bold text-indigo-700">🏦 은행 거래내역 업로드</h3>
+                            <p className="text-xs text-indigo-500 mt-1">카카오뱅크, 케이뱅크 엑셀 파일 지원</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".xlsx,.xls"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                                id="bank-file-upload"
+                            />
+                            <label
+                                htmlFor="bank-file-upload"
+                                className={`px-4 py-2 rounded-lg font-medium cursor-pointer flex items-center gap-2 ${uploadingFile
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                    }`}
+                            >
+                                {uploadingFile ? (
+                                    <>⏳ 업로드 중...</>
+                                ) : (
+                                    <><Plus size={18} /> 엑셀 업로드</>
+                                )}
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Transaction List */}
+                    <div className="overflow-x-auto max-h-96">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 text-gray-600 font-medium sticky top-0">
+                                <tr>
+                                    <th className="py-3 px-3 text-left">일시</th>
+                                    <th className="py-3 px-3 text-left">은행</th>
+                                    <th className="py-3 px-3 text-left">상대방</th>
+                                    <th className="py-3 px-3 text-left">분류</th>
+                                    <th className="py-3 px-3 text-right">금액</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loadingTransactions ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-8 text-center text-gray-400">로딩중...</td>
+                                    </tr>
+                                ) : bankTransactions.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-8 text-center text-gray-400">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <span className="text-2xl">📤</span>
+                                                <span>은행 거래내역 엑셀 파일을 업로드하세요</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    bankTransactions
+                                        .filter(tx => {
+                                            if (month === 'all') return true;
+                                            const monthStr = String(month).padStart(2, '0');
+                                            return tx.date.substring(5, 7) === monthStr;
+                                        })
+                                        .slice(0, 50)
+                                        .map(tx => (
+                                            <tr key={tx.id} className={`border-b border-gray-50 hover:bg-gray-50 ${!tx.isVerified && tx.category.includes('기타') ? 'bg-yellow-50' : ''}`}>
+                                                <td className="py-2 px-3 text-gray-600 text-xs">{tx.datetime}</td>
+                                                <td className="py-2 px-3">
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${tx.bank === 'kakao' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
+                                                        }`}>
+                                                        {tx.bank === 'kakao' ? '카카오' : '케이'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-2 px-3 text-gray-800">{tx.counterparty || tx.description}</td>
+                                                <td className="py-2 px-3">
+                                                    <select
+                                                        value={tx.category}
+                                                        onChange={(e) => handleTransactionCategoryChange(tx.id, e.target.value as TransactionCategory)}
+                                                        className={`text-xs border rounded px-2 py-1 ${tx.type === 'income' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
+                                                            }`}
+                                                    >
+                                                        {TRANSACTION_CATEGORIES
+                                                            .filter(cat => tx.type === 'income'
+                                                                ? ['수수료수입', '이자', '기타수입'].includes(cat)
+                                                                : !['수수료수입', '이자', '기타수입'].includes(cat)
+                                                            )
+                                                            .map(cat => (
+                                                                <option key={cat} value={cat}>{cat}</option>
+                                                            ))
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td className={`py-2 px-3 text-right font-bold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {tx.type === 'income' ? '+' : '-'}{tx.amount.toLocaleString()}원
+                                                </td>
+                                            </tr>
+                                        ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {bankTransactions.length > 0 && (
+                        <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-between text-sm">
+                            <span className="text-gray-600">총 {bankTransactions.length}건</span>
+                            <div className="flex gap-4">
+                                <span className="text-green-600">
+                                    입금: +{bankTransactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0).toLocaleString()}원
+                                </span>
+                                <span className="text-red-600">
+                                    출금: -{bankTransactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0).toLocaleString()}원
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Tax Calculation Dashboard */}
+                <div className="bg-white rounded-xl shadow-sm border border-purple-100 overflow-hidden">
+                    <div className="p-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+                        <h3 className="font-bold text-purple-700 flex items-center gap-2">
+                            📊 세금 계산 도우미 (개인사업자)
+                        </h3>
+                        <p className="text-xs text-purple-500 mt-1">{year}년 기준 예상 세금 계산</p>
+                    </div>
+                    <div className="p-4">
+                        {/* Tax Summary Cards */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div className="bg-green-50 p-3 rounded-lg border border-green-100">
+                                <p className="text-xs text-green-600">총 수입</p>
+                                <p className="text-lg font-bold text-green-700">
+                                    {(
+                                        totalPaidCommission * 10000 +
+                                        bankTransactions.filter(tx => tx.type === 'income' && tx.category !== '이자').reduce((sum, tx) => sum + tx.amount, 0)
+                                    ).toLocaleString()}원
+                                </p>
+                                <p className="text-[10px] text-green-500">수수료 + 기타수입</p>
+                            </div>
+                            <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                                <p className="text-xs text-red-600">필요경비</p>
+                                <p className="text-lg font-bold text-red-700">
+                                    {(
+                                        expenseStats.total * 10000 +
+                                        bankTransactions.filter(tx => tx.type === 'expense' && !['이체', '기타지출'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0)
+                                    ).toLocaleString()}원
+                                </p>
+                                <p className="text-[10px] text-red-500">광고비, 사무비 등</p>
+                            </div>
+                            <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                <p className="text-xs text-blue-600">소득금액</p>
+                                <p className="text-lg font-bold text-blue-700">
+                                    {(() => {
+                                        const income = totalPaidCommission * 10000 +
+                                            bankTransactions.filter(tx => tx.type === 'income' && tx.category !== '이자').reduce((sum, tx) => sum + tx.amount, 0);
+                                        const expense = expenseStats.total * 10000 +
+                                            bankTransactions.filter(tx => tx.type === 'expense' && !['이체', '기타지출'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0);
+                                        return (income - expense).toLocaleString();
+                                    })()}원
+                                </p>
+                                <p className="text-[10px] text-blue-500">수입 - 필요경비</p>
+                            </div>
+                            <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                <p className="text-xs text-purple-600">예상 종합소득세</p>
+                                <p className="text-lg font-bold text-purple-700">
+                                    {(() => {
+                                        const income = totalPaidCommission * 10000 +
+                                            bankTransactions.filter(tx => tx.type === 'income' && tx.category !== '이자').reduce((sum, tx) => sum + tx.amount, 0);
+                                        const expense = expenseStats.total * 10000 +
+                                            bankTransactions.filter(tx => tx.type === 'expense' && !['이체', '기타지출'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0);
+                                        const taxableIncome = Math.max(0, income - expense);
+                                        // 2024 개인사업자 소득세율 (간이)
+                                        let tax = 0;
+                                        if (taxableIncome <= 14000000) tax = taxableIncome * 0.06;
+                                        else if (taxableIncome <= 50000000) tax = 840000 + (taxableIncome - 14000000) * 0.15;
+                                        else if (taxableIncome <= 88000000) tax = 6240000 + (taxableIncome - 50000000) * 0.24;
+                                        else if (taxableIncome <= 150000000) tax = 15360000 + (taxableIncome - 88000000) * 0.35;
+                                        else if (taxableIncome <= 300000000) tax = 37060000 + (taxableIncome - 150000000) * 0.38;
+                                        else if (taxableIncome <= 500000000) tax = 94060000 + (taxableIncome - 300000000) * 0.40;
+                                        else tax = 174060000 + (taxableIncome - 500000000) * 0.45;
+                                        return Math.round(tax).toLocaleString();
+                                    })()}원
+                                </p>
+                                <p className="text-[10px] text-purple-500">실제 세금은 다를 수 있음</p>
+                            </div>
+                        </div>
+
+                        {/* Category Breakdown for Tax */}
+                        <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h4 className="text-sm font-bold text-gray-700 mb-3">📋 세무 분류별 요약</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">📢 광고비</span>
+                                    <span className="font-medium">{(expenseStats.byCategory['광고비'] * 10000 + bankTransactions.filter(tx => tx.category === '광고비').reduce((sum, tx) => sum + tx.amount, 0)).toLocaleString()}원</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">🏢 사무비</span>
+                                    <span className="font-medium">{(expenseStats.byCategory['사무비용'] * 10000 + bankTransactions.filter(tx => tx.category === '사무비').reduce((sum, tx) => sum + tx.amount, 0)).toLocaleString()}원</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">🚗 교통비</span>
+                                    <span className="font-medium">{(expenseStats.byCategory['교통비'] * 10000 + bankTransactions.filter(tx => tx.category === '교통비').reduce((sum, tx) => sum + tx.amount, 0)).toLocaleString()}원</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">📱 통신비</span>
+                                    <span className="font-medium">{(expenseStats.byCategory['통신비'] * 10000 + bankTransactions.filter(tx => tx.category === '통신비').reduce((sum, tx) => sum + tx.amount, 0)).toLocaleString()}원</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">🍽️ 접대비</span>
+                                    <span className="font-medium">{(expenseStats.byCategory['접대비'] * 10000 + bankTransactions.filter(tx => tx.category === '접대비').reduce((sum, tx) => sum + tx.amount, 0)).toLocaleString()}원</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">📦 기타</span>
+                                    <span className="font-medium">{(expenseStats.byCategory['기타'] * 10000 + bankTransactions.filter(tx => tx.category === '기타지출').reduce((sum, tx) => sum + tx.amount, 0)).toLocaleString()}원</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Export Button */}
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => {
+                                    // Generate tax report Excel
+                                    const rows: string[][] = [
+                                        [`${year}년 세무 보고서`, '', '', '', ''],
+                                        ['', '', '', '', ''],
+                                        ['[ 수입 내역 ]', '', '', '', ''],
+                                        ['날짜', '구분', '거래처', '분류', '금액(원)'],
+                                    ];
+
+                                    // Add income transactions
+                                    bankTransactions
+                                        .filter(tx => tx.type === 'income')
+                                        .sort((a, b) => a.date.localeCompare(b.date))
+                                        .forEach(tx => {
+                                            rows.push([tx.date, '입금', tx.counterparty || '', tx.category, tx.amount.toString()]);
+                                        });
+
+                                    rows.push(['', '', '', '', '']);
+                                    rows.push(['[ 지출 내역 ]', '', '', '', '']);
+                                    rows.push(['날짜', '구분', '내용', '분류', '금액(원)']);
+
+                                    // Add expenses
+                                    expenses.forEach(exp => {
+                                        rows.push([exp.date, '지출', exp.description, exp.category, (exp.amount * 10000).toString()]);
+                                    });
+
+                                    // Add expense transactions from bank
+                                    bankTransactions
+                                        .filter(tx => tx.type === 'expense')
+                                        .sort((a, b) => a.date.localeCompare(b.date))
+                                        .forEach(tx => {
+                                            rows.push([tx.date, '출금', tx.counterparty || tx.description, tx.category, tx.amount.toString()]);
+                                        });
+
+                                    rows.push(['', '', '', '', '']);
+                                    rows.push(['[ 요약 ]', '', '', '', '']);
+
+                                    const totalIncome = totalPaidCommission * 10000 +
+                                        bankTransactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
+                                    const totalExpense = expenseStats.total * 10000 +
+                                        bankTransactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
+
+                                    rows.push(['총 수입', '', '', '', totalIncome.toString()]);
+                                    rows.push(['총 지출', '', '', '', totalExpense.toString()]);
+                                    rows.push(['소득금액', '', '', '', (totalIncome - totalExpense).toString()]);
+
+                                    // CSV export
+                                    const csvContent = rows.map(row => row.join(',')).join('\n');
+                                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `세무보고서_${year}년.csv`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}
+                                className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 flex items-center gap-2"
+                            >
+                                📥 세무용 엑셀 다운로드
+                            </button>
+                            <button
+                                onClick={() => {
+                                    // Download bank transactions only
+                                    const rows = [
+                                        ['날짜', '시간', '은행', '구분', '상대방', '분류', '금액', '메모'],
+                                        ...bankTransactions.map(tx => [
+                                            tx.date,
+                                            tx.datetime.split(' ')[1] || '',
+                                            tx.bank === 'kakao' ? '카카오뱅크' : '케이뱅크',
+                                            tx.type === 'income' ? '입금' : '출금',
+                                            tx.counterparty || '',
+                                            tx.category,
+                                            tx.amount.toString(),
+                                            tx.memo || ''
+                                        ])
+                                    ];
+                                    const csvContent = rows.map(row => row.join(',')).join('\n');
+                                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `은행거래내역_${year}년.csv`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}
+                                className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg font-medium hover:bg-indigo-200 flex items-center gap-2"
+                            >
+                                📄 거래내역만 다운로드
+                            </button>
+                        </div>
+
+                        <p className="text-xs text-gray-400 mt-3">
+                            ⚠️ 본 계산은 참고용이며, 정확한 세금은 세무사와 상담하세요.
+                        </p>
                     </div>
                 </div>
             </div>

@@ -212,6 +212,9 @@ export interface Partner {
   bankInfo?: BankAccountInfo;        // 입금 계좌 정보
   kakaoTemplates?: KakaoTemplates;   // 카톡 템플릿
   payoutPartnerPresets?: PayoutPartnerPreset[];  // 지급 파트너 프리셋 목록
+
+  // [NEW] 은행 거래내역 자동 매칭용
+  depositNames?: string[];           // 입금 시 표시되는 이름들 (예: ["안철형", "명율"])
 }
 
 // 지급 파트너 프리셋 (설정에서 미리 저장)
@@ -340,4 +343,54 @@ export interface ExpenseItem {
   updatedAt: string;
 }
 
+// ============================================
+// Bank Transaction Types (은행 거래내역)
+// ============================================
 
+// 은행 종류
+export type BankType = 'kakao' | 'kbank';
+
+// 거래 카테고리
+export type TransactionCategory =
+  | '수수료수입'    // 거래처에서 받은 수수료
+  | '이자'          // 예금 이자
+  | '기타수입'      // 분류 불가 수입
+  | '광고비'        // 토스, 네이버, 구글 등
+  | '마케팅비'
+  | '사무비용'
+  | '인건비'
+  | '교통비'
+  | '식대'
+  | '기타지출';     // 분류 불가 지출
+
+// 은행 거래 내역
+export interface BankTransaction {
+  id: string;
+  bank: BankType;
+  date: string;              // "YYYY-MM-DD"
+  datetime: string;          // "YYYY-MM-DD HH:mm:ss"
+  type: 'income' | 'expense';
+  amount: number;            // 양수 값 (원 단위)
+  balance: number;           // 거래 후 잔액
+  category: TransactionCategory;
+  counterparty: string;      // 상대방 이름/회사
+  description: string;       // 적요/내용
+  memo?: string;
+
+  // 매칭 정보
+  matchedPartnerId?: string; // 매칭된 거래처
+  isVerified: boolean;       // 수동 확인 여부
+
+  // 메타
+  uploadedAt: string;
+  sourceFile: string;
+}
+
+// 거래 통계
+export interface TransactionStats {
+  totalIncome: number;
+  totalExpense: number;
+  netProfit: number;
+  byCategory: Record<TransactionCategory, number>;
+  byMonth: { month: string; income: number; expense: number }[];
+}

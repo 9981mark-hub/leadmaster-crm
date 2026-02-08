@@ -1107,6 +1107,83 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
+                        {/* Deposit Names Section - Bank Transaction Matching */}
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-indigo-100">
+                            <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                                🏦 입금자명 설정 (거래내역 자동 매칭)
+                            </h3>
+                            <p className="text-sm text-gray-500 mb-4">
+                                이 거래처에서 수수료를 입금할 때 사용하는 이름을 등록해 두면, 은행 거래내역 업로드 시 자동으로 매칭됩니다.
+                            </p>
+
+                            <div className="bg-indigo-50 p-4 rounded-lg mb-4">
+                                <h4 className="text-xs font-bold text-indigo-700 mb-3 uppercase tracking-wider">등록된 입금자명</h4>
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {(editingPartner.depositNames || []).length > 0 ? (
+                                        editingPartner.depositNames?.map((name, idx) => (
+                                            <div key={idx} className="flex items-center bg-white rounded-full px-3 py-1.5 text-sm text-indigo-700 border border-indigo-200">
+                                                <span className="mr-1">👤</span> {name}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const updated = (editingPartner.depositNames || []).filter((_, i) => i !== idx);
+                                                        setEditingPartner({ ...editingPartner, depositNames: updated });
+                                                    }}
+                                                    className="ml-2 text-indigo-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5"
+                                                    title="삭제"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-indigo-400">등록된 입금자명이 없습니다.</p>
+                                    )}
+                                </div>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        id="newDepositName"
+                                        className="flex-1 p-2 border rounded text-sm"
+                                        placeholder="입금자명 입력 (예: 안철형)"
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const input = e.target as HTMLInputElement;
+                                                if (input.value.trim()) {
+                                                    const current = editingPartner.depositNames || [];
+                                                    if (!current.includes(input.value.trim())) {
+                                                        setEditingPartner({ ...editingPartner, depositNames: [...current, input.value.trim()] });
+                                                    }
+                                                    input.value = '';
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const input = document.getElementById('newDepositName') as HTMLInputElement;
+                                            if (input?.value.trim()) {
+                                                const current = editingPartner.depositNames || [];
+                                                if (!current.includes(input.value.trim())) {
+                                                    setEditingPartner({ ...editingPartner, depositNames: [...current, input.value.trim()] });
+                                                    showToast('입금자명이 추가되었습니다. 저장 버튼을 눌러주세요.');
+                                                }
+                                                input.value = '';
+                                            }
+                                        }}
+                                        className="bg-indigo-600 text-white px-4 rounded hover:bg-indigo-700"
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+                                </div>
+                                <p className="text-xs text-indigo-500 mt-2">
+                                    💡 예: "안철형", "명율", "법무법인명율" 등 거래처에서 입금 시 표시되는 이름
+                                </p>
+                            </div>
+                        </div>
+
                         {/* Payout Partner Presets Section */}
                         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
