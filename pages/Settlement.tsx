@@ -1630,36 +1630,65 @@ export default function Settlement() {
                         <div className="p-4">
                             <div className="space-y-3">
                                 {nearFutureDeposits.map((dep, idx) => (
-                                    <div key={`${dep.caseId}-${dep.depositNumber}`} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                        {/* Date Badge */}
-                                        <div className="flex-shrink-0 text-center">
-                                            <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
-                                                {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                                            </div>
-                                            <p className="text-[10px] text-gray-400 mt-1">입금예정</p>
-                                        </div>
-
-                                        {/* Customer Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium text-gray-800">{dep.customerName}</span>
+                                    <div key={`${dep.caseId}-${dep.depositNumber}`} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                        {/* Mobile: Vertical Stack Layout */}
+                                        <div className="md:hidden">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
+                                                    {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                                                </div>
                                                 <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
                                                     {dep.depositNumber}차 입금
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-500 mt-1">
-                                                수임료 {dep.contractFee}만원 중 누적 {dep.totalDeposited}만원 입금
-                                            </p>
-                                        </div>
-
-                                        {/* Amount */}
-                                        <div className="text-right flex-shrink-0">
-                                            <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
+                                            <div className="mb-2">
+                                                <span className="font-medium text-gray-800">{dep.customerName}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-gray-500">
+                                                    수임료 {dep.contractFee}만원 중 {dep.totalDeposited}만원
+                                                </p>
+                                                <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
+                                            </div>
                                             {dep.expectedPayout > 0 && (
-                                                <div className="mt-1 text-xs">
-                                                    <span className="text-orange-600">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
+                                                <div className="mt-2 pt-2 border-t border-gray-200">
+                                                    <span className="text-orange-600 text-xs">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
                                                 </div>
                                             )}
+                                        </div>
+
+                                        {/* Desktop: Horizontal Layout */}
+                                        <div className="hidden md:flex items-start gap-4">
+                                            {/* Date Badge */}
+                                            <div className="flex-shrink-0 text-center">
+                                                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
+                                                    {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                                                </div>
+                                                <p className="text-[10px] text-gray-400 mt-1">입금예정</p>
+                                            </div>
+
+                                            {/* Customer Info */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium text-gray-800">{dep.customerName}</span>
+                                                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                                                        {dep.depositNumber}차 입금
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-500 mt-1">
+                                                    수임료 {dep.contractFee}만원 중 누적 {dep.totalDeposited}만원 입금
+                                                </p>
+                                            </div>
+
+                                            {/* Amount */}
+                                            <div className="text-right flex-shrink-0">
+                                                <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
+                                                {dep.expectedPayout > 0 && (
+                                                    <div className="mt-1 text-xs">
+                                                        <span className="text-orange-600">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -1703,7 +1732,69 @@ export default function Settlement() {
                         엑셀 다운로드
                     </button>
                 </div>
-                <div className="overflow-x-auto">
+
+                {/* Mobile Card View */}
+                <div className="md:hidden p-3 space-y-3">
+                    {(Array.isArray(batches) ? batches : []).slice(0, 8).map((b) => {
+                        const payoutCount = (b.payoutItems || []).length;
+                        const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
+                        const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+                        return (
+                            <div key={b.batchId} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                {/* Header: Week + Status */}
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="font-bold text-gray-800 text-base">{b.weekLabel}</span>
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium
+                                        ${b.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                            b.status === 'paid' ? 'bg-blue-100 text-blue-700' :
+                                                b.status === 'collected' ? 'bg-teal-100 text-teal-700' :
+                                                    'bg-gray-100 text-gray-600'}`}>
+                                        {getSettlementStatusLabel(b.status)}
+                                    </span>
+                                </div>
+
+                                {/* Commission Amount */}
+                                <div className="mb-3 pb-3 border-b border-gray-200">
+                                    <p className="text-xs text-gray-500">수수료</p>
+                                    <p className="text-xl font-bold text-blue-600">{b.totalCommission.toLocaleString()}만원</p>
+                                </div>
+
+                                {/* Status Grid */}
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div className="bg-white rounded-lg p-2">
+                                        <p className="text-[10px] text-gray-400 mb-1">수금</p>
+                                        {b.collectionInfo?.collectedAt ? (
+                                            <span className="text-green-600 text-xs font-medium">✓ 완료</span>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">대기</span>
+                                        )}
+                                    </div>
+                                    <div className="bg-white rounded-lg p-2">
+                                        <p className="text-[10px] text-gray-400 mb-1">파트너 지급</p>
+                                        {payoutCount > 0 ? (
+                                            <span className={`text-xs font-medium ${paidPayoutCount === payoutCount ? 'text-green-600' : 'text-yellow-600'}`}>
+                                                {paidPayoutCount}/{payoutCount}건
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">없음</span>
+                                        )}
+                                    </div>
+                                    <div className="bg-white rounded-lg p-2">
+                                        <p className="text-[10px] text-gray-400 mb-1">세금계산서</p>
+                                        {b.purchaseInvoice?.receivedAt ? (
+                                            <span className="text-purple-600 text-xs font-medium">✓ 수취</span>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">미수취</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 text-gray-600 font-medium">
                             <tr>
