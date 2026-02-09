@@ -460,7 +460,7 @@ export default function CalendarWidget({
                   onClick={() => onDateSelect && onDateSelect(day)}
                   onMouseEnter={() => dayEvents.length > 0 && setHoveredDate(day.toISOString())}
                   onMouseLeave={() => setHoveredDate(null)}
-                  className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors ${viewMode === 'week' ? 'h-[200px]' : 'h-[80px] md:h-[120px]'} border border-gray-100 relative
+                  className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors ${viewMode === 'week' ? 'h-[260px]' : 'h-[104px] md:h-[156px]'} border border-gray-100 relative
                     ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset z-10' : (!isCurrentMonth && viewMode === 'month' ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-50')}
                   `}
                 >
