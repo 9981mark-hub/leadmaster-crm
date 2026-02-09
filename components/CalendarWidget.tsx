@@ -8,11 +8,12 @@ import {
 import { ko } from 'date-fns/locale';
 import {
   ChevronLeft, ChevronRight, Phone, Briefcase, MapPin, MoreHorizontal,
-  Calendar, List, Clock, Plus, Filter, DollarSign, FileText, Edit
+  Calendar, List, Clock, Plus, Filter, DollarSign, FileText, Edit, Download, Gift
 } from 'lucide-react';
 import { Case, SettlementBatch, CalendarMemo, CalendarEventType } from '../types';
 import { Link } from 'react-router-dom';
 import { fetchCalendarMemos, createCalendarMemo, updateCalendarMemo, deleteCalendarMemo } from '../services/calendarMemoService';
+import { fetchKoreanHolidays, HolidayEvent, downloadICS } from '../services/icsService';
 import CalendarMemoModal from './CalendarMemoModal';
 
 interface CalendarWidgetProps {
@@ -24,10 +25,11 @@ interface CalendarWidgetProps {
 }
 
 type ViewMode = 'month' | 'week' | 'list';
+type ExtendedEventType = CalendarEventType | 'holiday';
 
 interface UnifiedEvent {
   id: string;
-  type: CalendarEventType;
+  type: ExtendedEventType;
   date: string;
   time?: string;
   title: string;
@@ -68,29 +70,35 @@ export default function CalendarWidget({
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [memos, setMemos] = useState<CalendarMemo[]>([]);
+  const [holidays, setHolidays] = useState<HolidayEvent[]>([]);
   const [isMemoModalOpen, setIsMemoModalOpen] = useState(false);
   const [memoModalDate, setMemoModalDate] = useState<string | undefined>();
   const [editingMemo, setEditingMemo] = useState<CalendarMemo | null>(null);
 
-  // Filters
-  const [filters, setFilters] = useState<Record<CalendarEventType, boolean>>({
+  // Filters (including holiday)
+  const [filters, setFilters] = useState<Record<ExtendedEventType, boolean>>({
     reminder: true,
     settlement: true,
     tax: true,
-    memo: true
+    memo: true,
+    holiday: true
   });
 
-  // Load memos
+  // Load memos and holidays
   useEffect(() => {
-    const loadMemos = async () => {
+    const loadData = async () => {
       try {
-        const loadedMemos = await fetchCalendarMemos();
+        const [loadedMemos, loadedHolidays] = await Promise.all([
+          fetchCalendarMemos(),
+          fetchKoreanHolidays()
+        ]);
         setMemos(loadedMemos);
+        setHolidays(loadedHolidays);
       } catch (e) {
-        console.error('Failed to load memos:', e);
+        console.error('Failed to load calendar data:', e);
       }
     };
-    loadMemos();
+    loadData();
   }, []);
 
   const prevMonth = () => setCurrentDate(viewMode === 'week' ? subWeeks(currentDate, 1) : subMonths(currentDate, 1));
@@ -217,8 +225,22 @@ export default function CalendarWidget({
       });
     }
 
+    // 5. Korean holidays
+    if (filters.holiday) {
+      holidays.forEach(h => {
+        events.push({
+          id: `holiday-${h.id}`,
+          type: 'holiday',
+          date: h.date,
+          title: h.name,
+          color: 'red',
+          icon: <Gift size={12} />
+        });
+      });
+    }
+
     return events;
-  }, [cases, batches, memos, filters, currentDate]);
+  }, [cases, batches, memos, holidays, filters, currentDate]);
 
   const getEventsForDay = (date: Date): UnifiedEvent[] => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -239,8 +261,24 @@ export default function CalendarWidget({
     return colors[color]?.[type] || colors.gray[type];
   };
 
-  const toggleFilter = (type: CalendarEventType) => {
+  const toggleFilter = (type: ExtendedEventType) => {
     setFilters(prev => ({ ...prev, [type]: !prev[type] }));
+  };
+
+  // Export handler
+  const handleExport = () => {
+    const exportEvents = unifiedEvents
+      .filter(ev => ev.type !== 'holiday') // Don't export holidays (they're public)
+      .map(ev => ({
+        id: ev.id,
+        title: ev.title,
+        description: ev.subtitle,
+        startDate: ev.date,
+        startTime: ev.time,
+        isAllDay: !ev.time
+      }));
+
+    downloadICS(exportEvents, `leadmaster-calendar-${format(new Date(), 'yyyy-MM')}.ics`);
   };
 
   const handleAddMemo = (date: Date) => {
@@ -381,10 +419,25 @@ export default function CalendarWidget({
               📝 메모
             </button>
             <button
+              onClick={() => toggleFilter('holiday')}
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.holiday ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-400'
+                }`}
+            >
+              🎌 공휴일
+            </button>
+            <div className="flex-1" />
+            <button
               onClick={() => handleAddMemo(new Date())}
               className="px-3 py-1 text-xs rounded-full font-medium bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1"
             >
               <Plus size={12} /> 메모 추가
+            </button>
+            <button
+              onClick={handleExport}
+              className="px-3 py-1 text-xs rounded-full font-medium bg-gray-600 text-white hover:bg-gray-700 flex items-center gap-1"
+              title="ICS 파일로 내보내기"
+            >
+              <Download size={12} /> 내보내기
             </button>
           </div>
         )}
