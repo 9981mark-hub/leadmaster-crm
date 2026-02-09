@@ -170,17 +170,56 @@ export default function CalendarWidget({
         });
       });
 
-      // Expected deposits from cases
+      // Deposit history from cases (입금 내역)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      cases.forEach(c => {
+        // 입금 내역 (depositHistory)
+        (c.depositHistory || []).forEach((d, idx) => {
+          if (d.date) {
+            const depositDate = parseISO(d.date);
+            const isFuture = isAfter(depositDate, today);
+            events.push({
+              id: `deposit-${c.caseId}-${idx}`,
+              type: 'settlement',
+              date: d.date,
+              title: isFuture ? `${idx + 1}차 입금(예정) ${d.amount}만원` : `${idx + 1}차 입금 ${d.amount}만원`,
+              subtitle: c.customerName,
+              color: isFuture ? 'cyan' : 'blue',
+              icon: <DollarSign size={12} />
+            });
+          }
+        });
+
+        // 수수료 지급 내역 (commissionPayments)
+        (c.commissionPayments || []).forEach((p, idx) => {
+          if (p.date) {
+            events.push({
+              id: `commission-${c.caseId}-${idx}`,
+              type: 'settlement',
+              date: p.date,
+              title: p.isExpected ? `${idx + 1}차 수수료(예정) ${p.amount}만원` : `${idx + 1}차 수수료 ${p.amount}만원`,
+              subtitle: c.customerName,
+              color: p.isExpected ? 'lime' : 'emerald',
+              icon: <DollarSign size={12} />
+            });
+          }
+        });
+      });
+
+      // Expected deposits from cases (예상 입금)
       cases.forEach(c => {
         (c.expectedDeposits || []).forEach((ed, idx) => {
-          if (ed.date && isAfter(parseISO(ed.date), new Date())) {
+          if (ed.date) {
+            const depositNum = (c.depositHistory?.length || 0) + idx + 1;
             events.push({
               id: `expected-deposit-${c.caseId}-${idx}`,
               type: 'settlement',
               date: ed.date,
-              title: `예상입금 ${ed.amount}만원`,
+              title: `${depositNum}차 입금(예정) ${ed.amount}만원`,
               subtitle: c.customerName,
-              color: 'teal',
+              color: 'cyan',
               icon: <DollarSign size={12} />
             });
           }
@@ -257,6 +296,9 @@ export default function CalendarWidget({
       purple: { bg: 'bg-purple-100', text: 'text-purple-600', border: 'border-purple-300' },
       teal: { bg: 'bg-teal-100', text: 'text-teal-600', border: 'border-teal-300' },
       gray: { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' },
+      cyan: { bg: 'bg-cyan-100', text: 'text-cyan-600', border: 'border-cyan-300' },
+      lime: { bg: 'bg-lime-100', text: 'text-lime-600', border: 'border-lime-300' },
+      emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', border: 'border-emerald-300' },
     };
     return colors[color]?.[type] || colors.gray[type];
   };
