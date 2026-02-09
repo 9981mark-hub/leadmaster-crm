@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { format } from 'date-fns';
-import { fetchCases, fetchPartners } from '../services/api';
-import { Case, Partner, ReminderItem } from '../types';
+import React, { useEffect, useState, useMemo } from 'react';
+import { format, parseISO, isSameDay, isToday, isBefore } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { fetchCases, fetchPartners, fetchSettlementBatches } from '../services/api';
+import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement } from '../utils';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X } from 'lucide-react';
+import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X, DollarSign, FileText, Bell } from 'lucide-react';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
@@ -71,6 +72,7 @@ export default function Dashboard() {
   const { theme } = useTheme();
   const [cases, setCases] = useState<Case[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [batches, setBatches] = useState<SettlementBatch[]>([]);
   const [loading, setLoading] = useState(true);
 
   /* New: Dashboard State for Calendar Interactivity */
@@ -83,9 +85,10 @@ export default function Dashboard() {
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchCases(), fetchPartners()]).then(([data, partnerData]) => {
+    Promise.all([fetchCases(), fetchPartners(), fetchSettlementBatches()]).then(([data, partnerData, batchData]) => {
       setCases(data);
       setPartners(partnerData);
+      setBatches(batchData);
       setLoading(false);
     });
   }, []);
@@ -318,10 +321,114 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Calendar Section - Connected */}
+      {/* Today's Events Banner */}
+      {(() => {
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        const currentYear = new Date().getFullYear();
+
+        // Tax schedules for today check
+        const TAX_SCHEDULES = [
+          { month: 1, day: 25, name: '부가세 확정신고' },
+          { month: 2, day: 10, name: '원천세 납부' },
+          { month: 3, day: 10, name: '원천세 납부' },
+          { month: 4, day: 10, name: '원천세 납부' },
+          { month: 4, day: 25, name: '부가세 예정신고' },
+          { month: 5, day: 10, name: '원천세 납부' },
+          { month: 5, day: 31, name: '종합소득세 신고' },
+          { month: 6, day: 10, name: '원천세 납부' },
+          { month: 7, day: 10, name: '원천세 납부' },
+          { month: 7, day: 25, name: '부가세 확정신고' },
+          { month: 8, day: 10, name: '원천세 납부' },
+          { month: 9, day: 10, name: '원천세 납부' },
+          { month: 10, day: 10, name: '원천세 납부' },
+          { month: 10, day: 25, name: '부가세 예정신고' },
+          { month: 11, day: 10, name: '원천세 납부' },
+          { month: 12, day: 10, name: '원천세 납부' },
+        ];
+
+        const todayEvents: { type: CalendarEventType; title: string; time?: string; color: string }[] = [];
+
+        // Reminders for today
+        allRemindersWithCase.filter(item =>
+          item.reminder.datetime?.startsWith(todayStr) && !item.reminder.resultStatus
+        ).forEach(item => {
+          todayEvents.push({
+            type: 'reminder',
+            title: `${item.caseData.customerName} (${item.reminder.type || '통화'})`,
+            time: item.reminder.datetime?.split(' ')[1],
+            color: 'blue'
+          });
+        });
+
+        // Settlement events for today
+        batches.forEach(b => {
+          if (b.collectionInfo?.collectedAt?.startsWith(todayStr)) {
+            todayEvents.push({ type: 'settlement', title: `수금 ${b.totalCommission}만원`, color: 'green' });
+          }
+          (b.payoutItems || []).forEach(p => {
+            if (p.paidAt?.startsWith(todayStr)) {
+              todayEvents.push({ type: 'settlement', title: `지급 ${p.amount}만원`, color: 'orange' });
+            }
+          });
+        });
+
+        // Tax events for today
+        const today = new Date();
+        TAX_SCHEDULES.forEach(s => {
+          if (today.getMonth() + 1 === s.month && today.getDate() === s.day) {
+            todayEvents.push({ type: 'tax', title: s.name, color: 'red' });
+          }
+        });
+
+        if (todayEvents.length === 0) return null;
+
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white shadow-lg"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Bell size={20} />
+                <span className="font-bold text-lg">오늘의 일정</span>
+                <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm font-bold">
+                  {todayEvents.length}건
+                </span>
+              </div>
+              <span className="text-sm opacity-80">
+                {format(new Date(), 'M월 d일 (E)', { locale: ko })}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {todayEvents.slice(0, 5).map((ev, idx) => (
+                <div
+                  key={idx}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 ${ev.type === 'reminder' ? 'bg-blue-400/30' :
+                      ev.type === 'settlement' ? 'bg-green-400/30' :
+                        ev.type === 'tax' ? 'bg-red-400/30' : 'bg-purple-400/30'
+                    }`}
+                >
+                  {ev.type === 'reminder' && <Phone size={14} />}
+                  {ev.type === 'settlement' && <DollarSign size={14} />}
+                  {ev.type === 'tax' && <FileText size={14} />}
+                  {ev.time && <span className="font-mono">{ev.time}</span>}
+                  <span>{ev.title}</span>
+                </div>
+              ))}
+              {todayEvents.length > 5 && (
+                <span className="text-sm opacity-70">+{todayEvents.length - 5}개 더</span>
+              )}
+            </div>
+          </motion.div>
+        );
+      })()}
+
+      {/* Calendar Section - Connected with Batches */}
       <div>
         <CalendarWidget
           cases={cases}
+          batches={batches}
           selectedDate={selectedDate}
           onDateSelect={setSelectedDate}
         />

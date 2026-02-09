@@ -447,3 +447,30 @@ export interface TaxReminder {
   notifyDaysBefore: number[];     // 며칠 전 알림 [7, 3, 1]
   createdAt: string;
 }
+
+// ============================================
+// 통합 캘린더 Types
+// ============================================
+
+// 통합 캘린더 이벤트 타입
+export type CalendarEventType =
+  | 'reminder'      // 기존 리마인더 (고객 통화/미팅)
+  | 'settlement'    // 정산 관련 (수금, 지급, 입금)
+  | 'tax'           // 세무 일정 (부가세, 원천세 등)
+  | 'memo';         // 사용자 개인 메모
+
+// 사용자 캘린더 메모
+export interface CalendarMemo {
+  id: string;
+  date: string;                   // "YYYY-MM-DD"
+  time?: string;                  // "HH:mm" (선택)
+  title: string;
+  content?: string;
+  color?: 'blue' | 'green' | 'orange' | 'red' | 'purple' | 'gray';
+  isAllDay?: boolean;
+  hasNotification?: boolean;
+  notifyMinutesBefore?: number;   // 몇 분 전 알림
+  createdAt: string;
+  updatedAt: string;
+}
+
