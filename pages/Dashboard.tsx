@@ -186,17 +186,6 @@ export default function Dashboard() {
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
           <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText={`${missedCallInterval}일 이상 경과`} />
         </Link>
-
-        {/* Settlement Card */}
-        {settlementInfo && (
-          <KPICard
-            title={settlementInfo.isEligible ? "지급 예정 수당" : "누적 입금액(미달성)"}
-            count={settlementInfo.isEligible ? `${settlementInfo.expectedCommission.toLocaleString()}만원` : `${settlementInfo.currentTotalDeposit.toLocaleString()}만원`}
-            color={settlementInfo.isEligible ? "text-green-600" : "text-gray-400"}
-            icon={Wallet}
-            subText={settlementInfo.isEligible ? `지급일: ${settlementInfo.payoutDate}` : `목표: ${settlementInfo.threshold}만원`}
-          />
-        )}
       </div>
 
       {/* Charts Section */}
