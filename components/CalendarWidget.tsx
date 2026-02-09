@@ -614,22 +614,54 @@ export default function CalendarWidget({
 
                   {/* Desktop: Event List */}
                   <div className="hidden md:block flex-1 overflow-y-auto no-scrollbar space-y-0.5 mt-1">
-                    {dayEvents.slice(0, viewMode === 'week' ? 8 : 3).map((ev) => (
-                      <div
-                        key={ev.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (ev.type === 'memo') {
-                            handleEditMemo(ev.id.replace('memo-', ''));
-                          }
-                        }}
-                        className={`text-[10px] px-1 py-0.5 rounded truncate ${getColorClass(ev.color, 'bg')} ${getColorClass(ev.color, 'text')} cursor-pointer hover:opacity-80`}
-                        title={`${ev.time || ''} ${ev.title} - ${ev.subtitle || ''}`}
-                      >
-                        {ev.time && <span className="font-mono mr-1">{ev.time}</span>}
-                        {ev.title}
-                      </div>
-                    ))}
+                    {dayEvents.slice(0, viewMode === 'week' ? 8 : 3).map((ev) => {
+                      // Settlement events get special styling
+                      const isSettlement = ev.type === 'settlement';
+                      const isHoliday = ev.type === 'holiday';
+                      const isTax = ev.type === 'tax';
+
+                      // Get icon based on content/type
+                      const getEventIcon = () => {
+                        if (isHoliday) return '🎌';
+                        if (isTax) return '📋';
+                        if (isSettlement) {
+                          if (ev.title.includes('입금')) return '💵';
+                          if (ev.title.includes('수수료')) return '💸';
+                          if (ev.title.includes('수금')) return '💰';
+                          if (ev.title.includes('지급')) return '💳';
+                          return '💰';
+                        }
+                        return '';
+                      };
+
+                      return (
+                        <div
+                          key={ev.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (ev.type === 'memo') {
+                              handleEditMemo(ev.id.replace('memo-', ''));
+                            }
+                          }}
+                          className={`text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1
+                            ${isSettlement
+                              ? (ev.title.includes('예정')
+                                ? 'bg-emerald-50 text-emerald-700 border border-dashed border-emerald-300'
+                                : 'bg-emerald-100 text-emerald-700 font-medium')
+                              : isHoliday
+                                ? 'bg-red-100 text-red-700 font-medium'
+                                : `${getColorClass(ev.color, 'bg')} ${getColorClass(ev.color, 'text')}`
+                            }`}
+                          title={`${ev.time || ''} ${ev.title} - ${ev.subtitle || ''}`}
+                        >
+                          {(isSettlement || isHoliday || isTax) && (
+                            <span className="flex-shrink-0">{getEventIcon()}</span>
+                          )}
+                          {ev.time && <span className="font-mono">{ev.time}</span>}
+                          <span className="truncate">{ev.title}</span>
+                        </div>
+                      );
+                    })}
                     {dayEvents.length > (viewMode === 'week' ? 8 : 3) && (
                       <div className="text-[9px] text-gray-400 text-center">
                         +{dayEvents.length - (viewMode === 'week' ? 8 : 3)}개 더
