@@ -10,7 +10,7 @@ import {
   ChevronLeft, ChevronRight, Phone, Briefcase, MapPin, MoreHorizontal,
   Calendar, List, Clock, Plus, Filter, DollarSign, FileText, Edit, Download, Gift
 } from 'lucide-react';
-import { Case, SettlementBatch, CalendarMemo, CalendarEventType } from '../types';
+import { Case, SettlementBatch, CalendarMemo, CalendarEventType, Partner, CommissionRule, SettlementConfig } from '../types';
 import { Link } from 'react-router-dom';
 import { fetchCalendarMemos, createCalendarMemo, updateCalendarMemo, deleteCalendarMemo } from '../services/calendarMemoService';
 import { fetchKoreanHolidays, HolidayEvent, downloadICS } from '../services/icsService';
@@ -19,10 +19,36 @@ import CalendarMemoModal from './CalendarMemoModal';
 interface CalendarWidgetProps {
   cases: Case[];
   batches?: SettlementBatch[];
+  partners?: Partner[];
   onDateSelect?: (date: Date) => void;
   selectedDate?: Date;
   showFilters?: boolean;
 }
+
+// 수수료 규칙 찾기
+const getCommission = (contractFee: number, rules: CommissionRule[]): CommissionRule | null => {
+  const activeRules = rules.filter(r => r.active).sort((a, b) => a.priority - b.priority);
+  for (const rule of activeRules) {
+    const maxFee = rule.maxFee || Infinity;
+    if (contractFee >= rule.minFee && contractFee <= maxFee) {
+      return rule;
+    }
+  }
+  return null;
+};
+
+// 지급일 계산: 입금이 속한 주차 마감 후 다음 주 화요일
+const calculatePayoutDate = (depositDate: string, config: SettlementConfig): string => {
+  const date = parseISO(depositDate);
+  const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
+  const nextMonday = addDays(weekEnd, 1);
+  const payoutDayOffset = config.payoutDay === 0 ? 6 : config.payoutDay - 1;
+  let payoutDate = addDays(nextMonday, payoutDayOffset);
+  if (config.payoutWeekDelay === 1) {
+    payoutDate = addDays(payoutDate, 7);
+  }
+  return format(payoutDate, 'yyyy-MM-dd');
+};
 
 type ViewMode = 'month' | 'week' | 'list';
 type ExtendedEventType = CalendarEventType | 'holiday';
@@ -62,6 +88,7 @@ const TAX_SCHEDULES = [
 export default function CalendarWidget({
   cases,
   batches = [],
+  partners = [],
   onDateSelect,
   selectedDate,
   showFilters = true
@@ -225,6 +252,77 @@ export default function CalendarWidget({
           }
         });
       });
+
+      // Auto-calculated commission payouts (same logic as SettlementCalendar)
+      const safePartners = Array.isArray(partners) ? partners : [];
+      cases.forEach(caseItem => {
+        if (!caseItem.contractFee || caseItem.contractFee <= 0) return;
+
+        // Find partner for this case
+        const partner = safePartners.find(p =>
+          p.partnerId === (caseItem as any).partnerId ||
+          p.name === (caseItem as any).partnerName ||
+          p.name === (caseItem as any).lawFirm
+        );
+        if (!partner || !partner.commissionRules || !partner.settlementConfig) return;
+
+        const rule = getCommission(caseItem.contractFee, partner.commissionRules);
+        if (!rule) return;
+
+        const config = partner.settlementConfig;
+        const totalCommission = rule.commission;
+        const downPaymentThreshold = caseItem.contractFee * (config.downPaymentPercentage / 100);
+        const fullPayoutThreshold = rule.fullPayoutThreshold || totalCommission;
+        const firstPayoutAmount = totalCommission * (config.firstPayoutPercentage / 100);
+        const secondPayoutAmount = totalCommission - firstPayoutAmount;
+
+        // Combine all deposits
+        const allDeposits = [
+          ...(caseItem.depositHistory || []).map(d => ({
+            ...d,
+            isExpected: isAfter(parseISO(d.date), today)
+          })),
+          ...(caseItem.expectedDeposits || []).map(d => ({ ...d, isExpected: true }))
+        ].sort((a, b) => a.date.localeCompare(b.date));
+
+        let cumulativeDeposit = 0;
+        let firstPayoutTriggered = false;
+        let secondPayoutTriggered = false;
+
+        allDeposits.forEach((deposit) => {
+          cumulativeDeposit += deposit.amount;
+
+          // 1st payout: cumulative >= downPaymentThreshold
+          if (!firstPayoutTriggered && cumulativeDeposit >= downPaymentThreshold) {
+            firstPayoutTriggered = true;
+            const payoutDate = calculatePayoutDate(deposit.date, config);
+            events.push({
+              id: `auto-commission-1st-${caseItem.caseId}`,
+              type: 'settlement',
+              date: payoutDate,
+              title: deposit.isExpected ? `1차 수수료(예정) ${firstPayoutAmount}만원` : `1차 수수료 ${firstPayoutAmount}만원`,
+              subtitle: caseItem.customerName,
+              color: deposit.isExpected ? 'lime' : 'emerald',
+              icon: <DollarSign size={12} />
+            });
+          }
+
+          // 2nd payout: cumulative >= fullPayoutThreshold
+          if (!secondPayoutTriggered && cumulativeDeposit >= fullPayoutThreshold) {
+            secondPayoutTriggered = true;
+            const payoutDate = calculatePayoutDate(deposit.date, config);
+            events.push({
+              id: `auto-commission-2nd-${caseItem.caseId}`,
+              type: 'settlement',
+              date: payoutDate,
+              title: deposit.isExpected ? `잔금 수수료(예정) ${secondPayoutAmount}만원` : `잔금 수수료 ${secondPayoutAmount}만원`,
+              subtitle: caseItem.customerName,
+              color: deposit.isExpected ? 'lime' : 'emerald',
+              icon: <DollarSign size={12} />
+            });
+          }
+        });
+      });
     }
 
     // 3. Tax schedules
@@ -279,7 +377,7 @@ export default function CalendarWidget({
     }
 
     return events;
-  }, [cases, batches, memos, holidays, filters, currentDate]);
+  }, [cases, batches, partners, memos, holidays, filters, currentDate]);
 
   const getEventsForDay = (date: Date): UnifiedEvent[] => {
     const dateStr = format(date, 'yyyy-MM-dd');

@@ -405,8 +405,8 @@ export default function Dashboard() {
                 <div
                   key={idx}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 ${ev.type === 'reminder' ? 'bg-blue-400/30' :
-                      ev.type === 'settlement' ? 'bg-green-400/30' :
-                        ev.type === 'tax' ? 'bg-red-400/30' : 'bg-purple-400/30'
+                    ev.type === 'settlement' ? 'bg-green-400/30' :
+                      ev.type === 'tax' ? 'bg-red-400/30' : 'bg-purple-400/30'
                     }`}
                 >
                   {ev.type === 'reminder' && <Phone size={14} />}
@@ -429,6 +429,7 @@ export default function Dashboard() {
         <CalendarWidget
           cases={cases}
           batches={batches}
+          partners={partners}
           selectedDate={selectedDate}
           onDateSelect={setSelectedDate}
         />
