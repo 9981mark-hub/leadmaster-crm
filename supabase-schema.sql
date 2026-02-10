@@ -124,10 +124,20 @@ ALTER TABLE cases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partners ENABLE ROW LEVEL SECURITY;
 
--- anon key로 모든 작업 허용 (공개 CRM 용도)
-CREATE POLICY "Allow all for anon" ON cases FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON settings FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON partners FOR ALL USING (true) WITH CHECK (true);
+-- 인증된 사용자만 접근 허용 (Google OAuth 로그인 필수)
+CREATE POLICY "Authenticated users can read cases" ON cases FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can insert cases" ON cases FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update cases" ON cases FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete cases" ON cases FOR DELETE USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can read settings" ON settings FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can upsert settings" ON settings FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update settings" ON settings FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can read partners" ON partners FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can insert partners" ON partners FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update partners" ON partners FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete partners" ON partners FOR DELETE USING (auth.role() = 'authenticated');
 
 -- ============================================
 -- 5. REALTIME 활성화

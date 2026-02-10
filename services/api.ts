@@ -23,8 +23,8 @@ import {
 
 
 // --- CONFIGURATION ---
-// Replace this with the user's deployed Web App URL
-export const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyv68G12Kd0g8RThZGpXToV2m_PjN7IsaBXwzDkPvA1TqsgFTIjQFuuC0G0_Xitsxm8/exec";
+// Google Apps Script URL (환경변수 우선, 없으면 기본값 사용)
+export const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbyv68G12Kd0g8RThZGpXToV2m_PjN7IsaBXwzDkPvA1TqsgFTIjQFuuC0G0_Xitsxm8/exec";
 
 // --- LOCAL CACHE & STATE MANAGEMENT ---
 let localCases: Case[] = [];
