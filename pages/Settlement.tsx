@@ -342,9 +342,14 @@ export default function Settlement() {
         sampleCasePartnerIds: safeCases.slice(0, 5).map(c => ({ name: c.customerName, partnerId: c.partnerId, contractAt: c.contractAt }))
     });
 
-    // Helper to calculate commission for a specific case
+    // Helper to calculate commission for a specific case (with fallback partner matching)
+    const findPartnerForCase = (c: Case): Partner | undefined => {
+        return partners.find(partner => partner.partnerId === c.partnerId)
+            || partners.find(partner => partner.name === (c as any).partnerName)
+            || partners.find(partner => partner.name === (c as any).lawFirm);
+    };
     const getCommissionForCase = (c: Case) => {
-        const p = partners.find(partner => partner.partnerId === c.partnerId);
+        const p = findPartnerForCase(c);
         if (!p) return 0;
         return calculateCommission(c.contractFee || 0, p.commissionRules);
     };
@@ -352,7 +357,7 @@ export default function Settlement() {
     // Helper to calculate payable commission for a specific week
     // Calculates: thisWeekPayable = currentPayable - previouslyPaid
     const getPayableInfoForCase = (c: Case, weekStartDate: string, weekEndDate: string) => {
-        const p = partners.find(partner => partner.partnerId === c.partnerId);
+        const p = findPartnerForCase(c);
         if (!p) return { payable: 0, thisWeekPayable: 0, total: 0, isPartial: false, thisWeekDeposit: 0, cumulativeDeposit: 0, isThisWeekDeposit: false, isFutureDeposit: false, previouslyPaid: 0 };
 
         const rule = p.commissionRules.find(r =>
@@ -530,7 +535,7 @@ export default function Settlement() {
         const expectedPayouts: { date: string; amount: number; customerName: string }[] = [];
 
         partnerCases.forEach(c => {
-            const p = partners.find(partner => partner.partnerId === c.partnerId);
+            const p = findPartnerForCase(c);
             if (!p || !p.settlementConfig || !p.commissionRules) return;
 
             const rule = p.commissionRules.find(r =>
@@ -617,7 +622,7 @@ export default function Settlement() {
 
     // Helper to calculate paid commission for a case
     const getPaidCommissionInfo = (c: Case) => {
-        const p = partners.find(partner => partner.partnerId === c.partnerId);
+        const p = findPartnerForCase(c);
         if (!p) return { paidCommission: 0, unpaidCommission: 0, totalCommission: 0 };
 
         const rule = p.commissionRules.find(r =>

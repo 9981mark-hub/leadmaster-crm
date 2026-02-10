@@ -172,8 +172,13 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
 
                         <div className="mt-4 pt-4 border-t border-green-200 flex justify-between items-center">
                             <span className="text-sm text-green-700 font-medium">예상 수당 (Commission):</span>
-                            <span className="text-xl font-bold text-green-900">{commission.toLocaleString()}만원</span>
+                            <span className={`text-xl font-bold ${commission > 0 ? 'text-green-900' : 'text-red-500'}`}>{commission.toLocaleString()}만원</span>
                         </div>
+                        {commission === 0 && (c.contractFee || 0) > 0 && (
+                            <p className="text-xs text-red-500 mt-2 bg-red-50 p-2 rounded border border-red-200">
+                                ⚠️ 수당이 0원입니다. &quot;정보 수정&quot; 탭에서 거래처를 올바르게 설정했는지 확인해주세요.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

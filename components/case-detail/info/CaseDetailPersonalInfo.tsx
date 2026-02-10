@@ -31,12 +31,16 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                 <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-500 mb-1">거래처 (법률사무소)</label>
                     <select
-                        className="w-full p-2 border border-gray-300 rounded text-sm bg-gray-50"
+                        className={`w-full p-2 border rounded text-sm ${!partners.find(p => p.partnerId === c.partnerId) ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-gray-50'}`}
                         value={c.partnerId}
                         onChange={e => onUpdate('partnerId', e.target.value)}
                     >
+                        <option value="">거래처를 선택하세요</option>
                         {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
                     </select>
+                    {!partners.find(p => p.partnerId === c.partnerId) && c.partnerId && (
+                        <p className="text-xs text-red-500 mt-1">⚠️ 현재 거래처({c.partnerId})가 등록된 목록에 없습니다. 거래처를 다시 선택해주세요.</p>
+                    )}
                 </div>
                 <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-500 mb-1">유입 경로</label>

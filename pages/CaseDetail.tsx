@@ -65,7 +65,9 @@ export default function CaseDetail() {
 
 
     // Derived Data
-    const currentPartner = partners.find(p => p.partnerId === c?.partnerId);
+    const currentPartner = partners.find(p => p.partnerId === c?.partnerId)
+        || partners.find(p => p.name === (c as any)?.partnerName)
+        || partners.find(p => p.name === (c as any)?.lawFirm);
     const commission = c ? calculateCommission(c.contractFee || 0, currentPartner?.commissionRules || []) : 0;
 
     // Toast Helper
