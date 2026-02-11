@@ -10,6 +10,7 @@ import { CaseDetailHeader } from '../components/case-detail/CaseDetailHeader';
 import { CaseInfoTab } from '../components/case-detail/info/CaseInfoTab';
 import { CaseSummaryTab } from '../components/case-detail/CaseSummaryTab';
 import { CaseSettlementTab } from '../components/case-detail/CaseSettlementTab';
+import { CaseTimeline } from '../components/case-detail/CaseTimeline';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -25,7 +26,7 @@ export default function CaseDetail() {
     const updateCaseMutation = useUpdateCaseMutation();
 
     // UI State
-    const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement'>('info');
+    const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline'>('info');
     const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
     const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
 
@@ -454,6 +455,7 @@ export default function CaseDetail() {
                 <div className="flex border-b border-gray-200 bg-white px-4 rounded-t-lg overflow-x-auto no-scrollbar">
                     {[
                         { id: 'info', label: '정보 수정' },
+                        { id: 'timeline', label: '타임라인' },
                         { id: 'summary', label: '요약문' },
                         { id: 'settlement', label: '수임료/정산' }
                     ].map(tab => (
@@ -512,6 +514,13 @@ export default function CaseDetail() {
                             handleUpdateAiSummaryText={handleUpdateAiSummaryText}
                             handleSaveSummaryToMemo={handleSaveSummaryToMemo}
                             showToast={showToast}
+                        />
+                    )}
+
+                    {activeTab === 'timeline' && (
+                        <CaseTimeline
+                            c={c}
+                            statusLogs={c.statusLogs || []}
                         />
                     )}
 

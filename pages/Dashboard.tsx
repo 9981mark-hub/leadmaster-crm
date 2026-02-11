@@ -12,6 +12,7 @@ import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts
 import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 import { CardSkeleton } from '../components/Skeleton';
+import RevenueWidget from '../components/RevenueWidget';
 
 const KPICard = ({ title, count, color, icon: Icon, subText }: any) => (
   <motion.div
@@ -187,6 +188,9 @@ export default function Dashboard() {
           <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText={`${missedCallInterval}일 이상 경과`} />
         </Link>
       </div>
+
+      {/* Revenue KPI Widget */}
+      <RevenueWidget cases={cases} partners={partners} />
 
       {/* Charts Section */}
       <div className="space-y-2">
