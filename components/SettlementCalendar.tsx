@@ -189,6 +189,9 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
         // 케이스에 계약 정보가 없으면 스킵
         if (!caseItem.contractFee || caseItem.contractFee <= 0) return;
 
+        // 수동 입력된 수수료 지급 내역이 있으면 자동 계산 스킵 (중복 방지)
+        if (caseItem.commissionPayments && Array.isArray(caseItem.commissionPayments) && caseItem.commissionPayments.length > 0) return;
+
         // 파트너 찾기 (케이스의 파트너 ID 또는 거래처 이름으로 매칭)
         const partner = safePartners.find(p =>
             p.partnerId === (caseItem as any).partnerId ||
@@ -224,32 +227,56 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
         allDeposits.forEach((deposit, idx) => {
             cumulativeDeposit += deposit.amount;
 
+            let firstTriggeredThisDeposit = false;
+            let secondTriggeredThisDeposit = false;
+
             // 1차 지급 조건: 누적 입금 >= 선지급 기준 (수임료의 10%)
             if (!firstPayoutTriggered && cumulativeDeposit >= downPaymentThreshold) {
                 firstPayoutTriggered = true;
-                const payoutDate = calculatePayoutDate(deposit.date, config);
-                events.push({
-                    date: payoutDate,
-                    type: deposit.isExpected ? 'expected_commission' : 'commission_received',
-                    label: deposit.isExpected ? '1차 수수료 (예정)' : '1차 수수료 지급',
-                    amount: firstPayoutAmount,
-                    customerName: caseItem.customerName,
-                    isExpected: deposit.isExpected
-                });
+                firstTriggeredThisDeposit = true;
             }
 
             // 2차 지급 조건: 누적 입금 >= 완납 기준
             if (!secondPayoutTriggered && cumulativeDeposit >= fullPayoutThreshold) {
                 secondPayoutTriggered = true;
-                const payoutDate = calculatePayoutDate(deposit.date, config);
+                secondTriggeredThisDeposit = true;
+            }
+
+            const payoutDate = (firstTriggeredThisDeposit || secondTriggeredThisDeposit)
+                ? calculatePayoutDate(deposit.date, config)
+                : '';
+
+            // 같은 입금에서 1차와 2차가 동시에 발생하면 (완납) 합산하여 한 건으로 표시
+            if (firstTriggeredThisDeposit && secondTriggeredThisDeposit) {
                 events.push({
                     date: payoutDate,
                     type: deposit.isExpected ? 'expected_commission' : 'commission_received',
-                    label: deposit.isExpected ? '잔금 수수료 (예정)' : '잔금 수수료 지급',
-                    amount: secondPayoutAmount,
+                    label: deposit.isExpected ? '수수료 전액 (예정)' : '수수료 전액 지급',
+                    amount: totalCommission,
                     customerName: caseItem.customerName,
                     isExpected: deposit.isExpected
                 });
+            } else {
+                if (firstTriggeredThisDeposit) {
+                    events.push({
+                        date: payoutDate,
+                        type: deposit.isExpected ? 'expected_commission' : 'commission_received',
+                        label: deposit.isExpected ? '1차 수수료 (예정)' : '1차 수수료 지급',
+                        amount: firstPayoutAmount,
+                        customerName: caseItem.customerName,
+                        isExpected: deposit.isExpected
+                    });
+                }
+                if (secondTriggeredThisDeposit) {
+                    events.push({
+                        date: payoutDate,
+                        type: deposit.isExpected ? 'expected_commission' : 'commission_received',
+                        label: deposit.isExpected ? '잔금 수수료 (예정)' : '잔금 수수료 지급',
+                        amount: secondPayoutAmount,
+                        customerName: caseItem.customerName,
+                        isExpected: deposit.isExpected
+                    });
+                }
             }
         });
     });
