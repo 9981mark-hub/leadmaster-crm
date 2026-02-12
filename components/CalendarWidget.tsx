@@ -295,34 +295,59 @@ export default function CalendarWidget({
         allDeposits.forEach((deposit) => {
           cumulativeDeposit += deposit.amount;
 
+          let firstTriggeredThisDeposit = false;
+          let secondTriggeredThisDeposit = false;
+
           // 1st payout: cumulative >= downPaymentThreshold
           if (!firstPayoutTriggered && cumulativeDeposit >= downPaymentThreshold) {
             firstPayoutTriggered = true;
-            const payoutDate = calculatePayoutDate(deposit.date, config);
-            events.push({
-              id: `auto-commission-1st-${caseItem.caseId}`,
-              type: 'settlement',
-              date: payoutDate,
-              title: deposit.isExpected ? `1차 수수료(예정) ${firstPayoutAmount}만원` : `1차 수수료 ${firstPayoutAmount}만원`,
-              subtitle: caseItem.customerName,
-              color: deposit.isExpected ? 'lime' : 'emerald',
-              icon: <DollarSign size={12} />
-            });
+            firstTriggeredThisDeposit = true;
           }
 
           // 2nd payout: cumulative >= fullPayoutThreshold
           if (!secondPayoutTriggered && cumulativeDeposit >= fullPayoutThreshold) {
             secondPayoutTriggered = true;
-            const payoutDate = calculatePayoutDate(deposit.date, config);
+            secondTriggeredThisDeposit = true;
+          }
+
+          const payoutDate = (firstTriggeredThisDeposit || secondTriggeredThisDeposit)
+            ? calculatePayoutDate(deposit.date, config)
+            : '';
+
+          // [FIX] 같은 입금에서 1차와 2차가 동시에 발생하면 (완납) 합산하여 한 건으로 표시
+          if (firstTriggeredThisDeposit && secondTriggeredThisDeposit) {
             events.push({
-              id: `auto-commission-2nd-${caseItem.caseId}`,
+              id: `auto-commission-full-${caseItem.caseId}`,
               type: 'settlement',
               date: payoutDate,
-              title: deposit.isExpected ? `잔금 수수료(예정) ${secondPayoutAmount}만원` : `잔금 수수료 ${secondPayoutAmount}만원`,
+              title: deposit.isExpected ? `수수료 전액(예정) ${totalCommission}만원` : `수수료 전액 ${totalCommission}만원`,
               subtitle: caseItem.customerName,
               color: deposit.isExpected ? 'lime' : 'emerald',
               icon: <DollarSign size={12} />
             });
+          } else {
+            if (firstTriggeredThisDeposit) {
+              events.push({
+                id: `auto-commission-1st-${caseItem.caseId}`,
+                type: 'settlement',
+                date: payoutDate,
+                title: deposit.isExpected ? `1차 수수료(예정) ${firstPayoutAmount}만원` : `1차 수수료 ${firstPayoutAmount}만원`,
+                subtitle: caseItem.customerName,
+                color: deposit.isExpected ? 'lime' : 'emerald',
+                icon: <DollarSign size={12} />
+              });
+            }
+            if (secondTriggeredThisDeposit) {
+              events.push({
+                id: `auto-commission-2nd-${caseItem.caseId}`,
+                type: 'settlement',
+                date: payoutDate,
+                title: deposit.isExpected ? `잔금 수수료(예정) ${secondPayoutAmount}만원` : `잔금 수수료 ${secondPayoutAmount}만원`,
+                subtitle: caseItem.customerName,
+                color: deposit.isExpected ? 'lime' : 'emerald',
+                icon: <DollarSign size={12} />
+              });
+            }
           }
         });
       });
