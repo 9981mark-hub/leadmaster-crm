@@ -254,9 +254,12 @@ export default function CalendarWidget({
       });
 
       // Auto-calculated commission payouts (same logic as SettlementCalendar)
+      // [FIX] Skip cases that already have commissionPayments to avoid duplicate/split display
       const safePartners = Array.isArray(partners) ? partners : [];
       cases.forEach(caseItem => {
         if (!caseItem.contractFee || caseItem.contractFee <= 0) return;
+        // If this case already has commissionPayments recorded, skip auto-calculation
+        if (caseItem.commissionPayments && caseItem.commissionPayments.length > 0) return;
 
         // Find partner for this case
         const partner = safePartners.find(p =>
