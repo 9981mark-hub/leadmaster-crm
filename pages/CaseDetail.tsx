@@ -41,6 +41,12 @@ export default function CaseDetail() {
     const [pendingPrimaryStatus, setPendingPrimaryStatus] = useState<CaseStatus | null>(null);
     const [primaryStatusChangeReason, setPrimaryStatusChangeReason] = useState('');
 
+    // [NEW] 이탈 사유 (고객취소/진행불가 시)
+    const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
+    const DROP_OFF_REASONS = ['비용 부담', '타 사무소 선택', '연락 두절', '자격 미달', '본인 의사 취소', '시기 미정', '기타'];
+    const [selectedDropOffReason, setSelectedDropOffReason] = useState<string>('');
+    const isDropOffStatus = pendingPrimaryStatus ? DROP_OFF_STATUSES.includes(pendingPrimaryStatus) : false;
+
     // AI Summary & Audio State (Managed here to share between tabs if needed, though primarily allowed in Info)
     const [aiSummaryText, setAiSummaryText] = useState<string | null>(null);
     const [aiSummaryEditMode, setAiSummaryEditMode] = useState(false);
@@ -129,15 +135,22 @@ export default function CaseDetail() {
         if (newStatus === c?.status) return;
         setPendingPrimaryStatus(newStatus);
         setPrimaryStatusChangeReason('');
+        setSelectedDropOffReason('');
         setIsPrimaryStatusModalOpen(true);
     };
 
     const confirmPrimaryStatusChange = () => {
         if (!c || !pendingPrimaryStatus) return;
 
+        // [NEW] 이탈 사유 필수 체크
+        const isDropOff = DROP_OFF_STATUSES.includes(pendingPrimaryStatus);
+        if (isDropOff && !selectedDropOffReason) {
+            showToast('이탈 사유를 선택해주세요.', 'error');
+            return;
+        }
+
         // Update local secondary statuses logic if needed
         if (pendingPrimaryStatus === '사무장 접수') {
-            // [Fix] Use global dynamic list
             setSecondaryStatuses(globalSecondaryStatuses);
         } else {
             setSecondaryStatuses([]);
@@ -148,24 +161,30 @@ export default function CaseDetail() {
             fromStatus: c.status,
             toStatus: pendingPrimaryStatus,
             changedAt: new Date().toISOString(),
-            changedBy: 'User', // Todo: Auth
-            memo: primaryStatusChangeReason
+            changedBy: 'User',
+            memo: isDropOff
+                ? `[이탈사유: ${selectedDropOffReason}] ${primaryStatusChangeReason}`.trim()
+                : primaryStatusChangeReason
         };
 
-        // Optimistic update handled by mutation
         updateCaseMutation.mutate({
             id: c.caseId,
             updates: {
                 status: pendingPrimaryStatus,
                 statusLogs: [log, ...(c.statusLogs || [])],
-                // Clear secondary status if moving away from '사무장 접수' (Optional, mostly handled by business logic but good to clear)
-                ...(pendingPrimaryStatus !== '사무장 접수' ? { secondaryStatus: undefined } : {})
+                ...(pendingPrimaryStatus !== '사무장 접수' ? { secondaryStatus: undefined } : {}),
+                // [NEW] 이탈 사유 저장
+                ...(isDropOff ? {
+                    dropOffReason: selectedDropOffReason,
+                    dropOffDetail: primaryStatusChangeReason || undefined
+                } : {})
             }
         });
 
         showToast(`상태가 ${pendingPrimaryStatus}(으)로 변경되었습니다.`);
         setIsPrimaryStatusModalOpen(false);
         setPendingPrimaryStatus(null);
+        setSelectedDropOffReason('');
     };
 
     const handleSecondaryStatusChangeStart = (status: string | null) => {
@@ -384,30 +403,70 @@ export default function CaseDetail() {
                 {/* Primary Status Modal */}
                 {isPrimaryStatusModalOpen && pendingPrimaryStatus !== null && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl border-t-4 border-blue-500">
-                            <h3 className="text-lg font-bold mb-4 text-blue-700">상태 변경 확인</h3>
+                        <div className={`bg-white rounded-lg p-6 w-[440px] shadow-xl border-t-4 ${isDropOffStatus ? 'border-red-500' : 'border-blue-500'}`}>
+                            <h3 className={`text-lg font-bold mb-4 ${isDropOffStatus ? 'text-red-700' : 'text-blue-700'}`}>
+                                {isDropOffStatus ? '⚠ 상담 중단 확인' : '상태 변경 확인'}
+                            </h3>
                             <p className="mb-4 text-gray-700">
-                                상태를 <span className="font-bold text-blue-600">{c.status}</span>에서 <span className="font-bold text-blue-600">{pendingPrimaryStatus}</span>(으)로 변경하시겠습니까?
+                                상태를 <span className="font-bold text-blue-600">{c.status}</span>에서{' '}
+                                <span className={`font-bold ${isDropOffStatus ? 'text-red-600' : 'text-blue-600'}`}>{pendingPrimaryStatus}</span>
+                                (으)로 변경하시겠습니까?
                             </p>
+
+                            {/* [NEW] 이탈 사유 카테고리 선택 (고객취소/진행불가 시에만 표시) */}
+                            {isDropOffStatus && (
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        이탈 사유 <span className="text-red-500">*필수</span>
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {DROP_OFF_REASONS.map(reason => (
+                                            <button
+                                                key={reason}
+                                                type="button"
+                                                onClick={() => setSelectedDropOffReason(reason)}
+                                                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${selectedDropOffReason === reason
+                                                        ? 'bg-red-600 text-white border-red-600 shadow-sm'
+                                                        : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-600'
+                                                    }`}
+                                            >
+                                                {reason}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">변경 사유 (선택)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {isDropOffStatus ? '상세 메모 (선택)' : '변경 사유 (선택)'}
+                                </label>
                                 <textarea
-                                    className="w-full p-2 border border-blue-200 rounded resize-none h-24 focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="상태 변경 사유를 입력하세요... (예: 부재중, 상담 완료 등)"
+                                    className={`w-full p-2 border rounded resize-none h-20 focus:ring-2 outline-none ${isDropOffStatus
+                                            ? 'border-red-200 focus:ring-red-500'
+                                            : 'border-blue-200 focus:ring-blue-500'
+                                        }`}
+                                    placeholder={isDropOffStatus
+                                        ? '추가 메모를 입력하세요... (예: 상담 3회 진행 후 비용 문제로 포기)'
+                                        : '상태 변경 사유를 입력하세요... (예: 부재중, 상담 완료 등)'
+                                    }
                                     value={primaryStatusChangeReason}
                                     onChange={e => setPrimaryStatusChangeReason(e.target.value)}
                                 />
                             </div>
                             <div className="flex justify-end gap-2">
                                 <button
-                                    onClick={() => { setIsPrimaryStatusModalOpen(false); setPendingPrimaryStatus(null); }}
+                                    onClick={() => { setIsPrimaryStatusModalOpen(false); setPendingPrimaryStatus(null); setSelectedDropOffReason(''); }}
                                     className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={confirmPrimaryStatusChange}
-                                    className="px-4 py-2 bg-blue-600 rounded text-white font-medium hover:bg-blue-700"
+                                    className={`px-4 py-2 rounded text-white font-medium ${isDropOffStatus
+                                            ? 'bg-red-600 hover:bg-red-700'
+                                            : 'bg-blue-600 hover:bg-blue-700'
+                                        }`}
                                 >
                                     변경하기
                                 </button>

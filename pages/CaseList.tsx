@@ -37,6 +37,16 @@ export default function CaseList() {
     const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
     const [layoutMode, setLayoutMode] = useState<'list' | 'kanban'>('list');
 
+    // [NEW] 이탈 사유 모달 (CaseList 빠른 상태 변경 시)
+    const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
+    const DROP_OFF_REASONS = ['비용 부담', '타 사무소 선택', '연락 두절', '자격 미달', '본인 의사 취소', '시기 미정', '기타'];
+    const [isDropOffModalOpen, setIsDropOffModalOpen] = useState(false);
+    const [dropOffCaseId, setDropOffCaseId] = useState<string>('');
+    const [dropOffNewStatus, setDropOffNewStatus] = useState<string>('');
+    const [dropOffOldStatus, setDropOffOldStatus] = useState<string>('');
+    const [dropOffReason, setDropOffReason] = useState<string>('');
+    const [dropOffDetail, setDropOffDetail] = useState<string>('');
+
     // [New] Status Visibility Filter
     const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
     const [hiddenStatuses, setHiddenStatuses] = useState<string[]>(() => {
@@ -294,14 +304,23 @@ export default function CaseList() {
 
     // [NEW] Quick Status Change Handler - allows changing status directly from case list
     const handleQuickStatusChange = async (caseId: string, newStatus: string, oldStatus: string) => {
+        // [NEW] 고객취소/진행불가 시 이탈 사유 모달 표시
+        if (DROP_OFF_STATUSES.includes(newStatus)) {
+            setDropOffCaseId(caseId);
+            setDropOffNewStatus(newStatus);
+            setDropOffOldStatus(oldStatus);
+            setDropOffReason('');
+            setDropOffDetail('');
+            setIsDropOffModalOpen(true);
+            return;
+        }
+
         const now = new Date().toISOString();
         const updates: Partial<Case> = {
             status: newStatus,
             statusUpdatedAt: now,
         };
 
-        // When changing to "부재" status, automatically set missedCallCount to 1
-        // and lastMissedCallAt to current time (since user already made a call that wasn't answered)
         if (newStatus === missedCallStatus) {
             updates.missedCallCount = 1;
             updates.lastMissedCallAt = now;
@@ -309,6 +328,36 @@ export default function CaseList() {
 
         updateCaseMutation.mutate({ id: caseId, updates });
         showToast(`상태가 "${newStatus}"(으)로 변경되었습니다.`);
+    };
+
+    // [NEW] 이탈 사유 모달 확인 핸들러
+    const confirmDropOffStatusChange = () => {
+        if (!dropOffReason) {
+            showToast('이탈 사유를 선택해주세요.', 'error');
+            return;
+        }
+        const now = new Date().toISOString();
+        const log = {
+            logId: Date.now().toString(),
+            fromStatus: dropOffOldStatus,
+            toStatus: dropOffNewStatus,
+            changedAt: now,
+            changedBy: 'User',
+            memo: `[이탈사유: ${dropOffReason}] ${dropOffDetail}`.trim()
+        };
+        const targetCase = cases.find(c => c.caseId === dropOffCaseId);
+        updateCaseMutation.mutate({
+            id: dropOffCaseId,
+            updates: {
+                status: dropOffNewStatus,
+                statusUpdatedAt: now,
+                statusLogs: [log, ...(targetCase?.statusLogs || [])],
+                dropOffReason: dropOffReason,
+                dropOffDetail: dropOffDetail || undefined,
+            }
+        });
+        showToast(`상태가 "${dropOffNewStatus}"(으)로 변경되었습니다.`);
+        setIsDropOffModalOpen(false);
     };
 
     if (loadingCases && cases.length === 0) return <ListSkeleton />;
@@ -405,6 +454,62 @@ export default function CaseList() {
                         }}
                     />
                 </>
+            )}
+
+            {/* [NEW] 이탈 사유 모달 (빠른 상태 변경 시) */}
+            {isDropOffModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-[440px] shadow-xl border-t-4 border-red-500">
+                        <h3 className="text-lg font-bold mb-4 text-red-700">⚠ 상담 중단 확인</h3>
+                        <p className="mb-4 text-gray-700">
+                            상태를 <span className="font-bold text-blue-600">{dropOffOldStatus}</span>에서{' '}
+                            <span className="font-bold text-red-600">{dropOffNewStatus}</span>(으)로 변경하시겠습니까?
+                        </p>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                이탈 사유 <span className="text-red-500">*필수</span>
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                                {DROP_OFF_REASONS.map(reason => (
+                                    <button
+                                        key={reason}
+                                        type="button"
+                                        onClick={() => setDropOffReason(reason)}
+                                        className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${dropOffReason === reason
+                                                ? 'bg-red-600 text-white border-red-600 shadow-sm'
+                                                : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-600'
+                                            }`}
+                                    >
+                                        {reason}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">상세 메모 (선택)</label>
+                            <textarea
+                                className="w-full p-2 border border-red-200 rounded resize-none h-20 focus:ring-2 focus:ring-red-500 outline-none"
+                                placeholder="추가 메모를 입력하세요..."
+                                value={dropOffDetail}
+                                onChange={e => setDropOffDetail(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setIsDropOffModalOpen(false)}
+                                className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={confirmDropOffStatusChange}
+                                className="px-4 py-2 bg-red-600 rounded text-white font-medium hover:bg-red-700"
+                            >
+                                변경하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

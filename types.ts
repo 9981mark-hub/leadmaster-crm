@@ -161,6 +161,10 @@ export interface Case {
     isExpected?: boolean;  // true면 예상 지급, false면 실제 지급
     memo?: string;
   }[];
+
+  // [NEW] 이탈 분석 (고객취소/진행불가 사유 구조화)
+  dropOffReason?: string;     // 이탈 사유 카테고리
+  dropOffDetail?: string;     // 이탈 상세 메모
 }
 
 export interface CaseStatusLog {

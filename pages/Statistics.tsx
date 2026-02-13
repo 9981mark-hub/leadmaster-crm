@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, differenceInDays, parseISO } from 'date-fns';
 import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses } from '../services/api';
 import { Case, Partner, CaseStatus } from '../types';
-import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart as RechartsPie, Pie, Cell, Legend, LineChart, Line, AreaChart, Area,
@@ -267,6 +267,116 @@ export default function Statistics() {
         ].filter(d => d.value > 0);
     }, [filteredCases]);
 
+    // ============ [NEW] Ad Spend & ROI Data ============
+    const [adSpendMonth, setAdSpendMonth] = useState(format(new Date(), 'yyyy-MM'));
+    const [adSpendData, setAdSpendData] = useState<Record<string, Record<string, number>>>(() => {
+        try {
+            const saved = localStorage.getItem('lm_ad_spend');
+            return saved ? JSON.parse(saved) : {};
+        } catch { return {}; }
+    });
+    const [adSpendEditing, setAdSpendEditing] = useState<Record<string, string>>({});
+    const [showAdSpendInput, setShowAdSpendInput] = useState(false);
+
+    const handleAdSpendChange = (path: string, value: string) => {
+        setAdSpendEditing(prev => ({ ...prev, [path]: value }));
+    };
+
+    const saveAdSpend = () => {
+        const monthData: Record<string, number> = {};
+        Object.entries(adSpendEditing).forEach(([path, val]) => {
+            const num = Number(val);
+            if (num > 0) monthData[path] = num;
+        });
+        const updated = { ...adSpendData, [adSpendMonth]: monthData };
+        setAdSpendData(updated);
+        localStorage.setItem('lm_ad_spend', JSON.stringify(updated));
+        setShowAdSpendInput(false);
+    };
+
+    // Initialize editing values when month changes
+    useEffect(() => {
+        const monthSpend = adSpendData[adSpendMonth] || {};
+        const editing: Record<string, string> = {};
+        inboundPaths.forEach(p => {
+            editing[p] = monthSpend[p]?.toString() || '';
+        });
+        setAdSpendEditing(editing);
+    }, [adSpendMonth, adSpendData, inboundPaths]);
+
+    const roiData = useMemo(() => {
+        // Aggregate ad spend for the filtered period
+        const aggregatedSpend: Record<string, number> = {};
+        Object.entries(adSpendData).forEach(([month, paths]) => {
+            Object.entries(paths).forEach(([path, amount]) => {
+                aggregatedSpend[path] = (aggregatedSpend[path] || 0) + amount;
+            });
+        });
+
+        const pathCounts: Record<string, { leads: number; contracts: number; fee: number; spend: number }> = {};
+        inboundPaths.forEach(p => {
+            pathCounts[p] = { leads: 0, contracts: 0, fee: 0, spend: aggregatedSpend[p] || 0 };
+        });
+
+        filteredCases.forEach(c => {
+            const path = c.inboundPath || '미분류';
+            if (!pathCounts[path]) pathCounts[path] = { leads: 0, contracts: 0, fee: 0, spend: 0 };
+            pathCounts[path].leads++;
+            if (c.contractAt) {
+                pathCounts[path].contracts++;
+                pathCounts[path].fee += c.contractFee || 0;
+            }
+        });
+
+        return Object.entries(pathCounts)
+            .filter(([_, d]) => d.leads > 0 || d.spend > 0)
+            .map(([name, d]) => ({
+                name,
+                리드: d.leads,
+                계약: d.contracts,
+                수임료: d.fee,
+                광고비: d.spend,
+                CPA: d.spend > 0 && d.leads > 0 ? Math.round(d.spend / d.leads) : 0,
+                CPC: d.spend > 0 && d.contracts > 0 ? Math.round(d.spend / d.contracts) : 0,
+                ROAS: d.spend > 0 ? Math.round((d.fee / d.spend) * 100) : 0,
+            }))
+            .sort((a, b) => b.ROAS - a.ROAS);
+    }, [filteredCases, adSpendData, inboundPaths]);
+
+    // ============ [NEW] Drop-Off Analysis ============
+    const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
+
+    const dropOffReasonData = useMemo(() => {
+        const counts: Record<string, number> = {};
+        filteredCases.forEach(c => {
+            if (DROP_OFF_STATUSES.includes(c.status) && c.dropOffReason) {
+                counts[c.dropOffReason] = (counts[c.dropOffReason] || 0) + 1;
+            }
+        });
+        return Object.entries(counts)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+    }, [filteredCases]);
+
+    const dropOffStageData = useMemo(() => {
+        const stageCounts: Record<string, number> = {};
+        filteredCases.forEach(c => {
+            if (DROP_OFF_STATUSES.includes(c.status) && c.statusLogs && c.statusLogs.length > 0) {
+                // Find the log entry that changed TO a drop-off status
+                const dropOffLog = c.statusLogs.find(log => DROP_OFF_STATUSES.includes(log.toStatus));
+                if (dropOffLog) {
+                    const fromStatus = dropOffLog.fromStatus || '알 수 없음';
+                    stageCounts[fromStatus] = (stageCounts[fromStatus] || 0) + 1;
+                }
+            }
+        });
+        return Object.entries(stageCounts)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+    }, [filteredCases]);
+
+    const totalDropOff = filteredCases.filter(c => DROP_OFF_STATUSES.includes(c.status)).length;
+
     if (loading) return <div className="p-10 text-center text-gray-500">로딩중...</div>;
 
     return (
@@ -303,8 +413,8 @@ export default function Statistics() {
                                 key={p.key}
                                 onClick={() => setPeriodFilter(p.key as any)}
                                 className={`px-3 py-1 text-xs rounded-md transition-colors ${periodFilter === p.key
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 {p.label}
@@ -568,6 +678,194 @@ export default function Statistics() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            </ChartSection>
+
+            {/* ============ [NEW] Ad ROI Analysis ============ */}
+            <ChartSection title="💰 광고 ROI 분석">
+                <div className="space-y-4">
+                    {/* Ad Spend Input Toggle */}
+                    <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            유입경로별 광고비를 입력하면 CPA, CPC, ROAS를 자동 계산합니다.
+                        </p>
+                        <button
+                            onClick={() => setShowAdSpendInput(!showAdSpendInput)}
+                            className="text-sm px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium dark:bg-blue-900/30 dark:text-blue-400"
+                        >
+                            {showAdSpendInput ? '접기' : '광고비 입력'}
+                        </button>
+                    </div>
+
+                    {/* Ad Spend Input Panel */}
+                    {showAdSpendInput && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
+                            <div className="flex items-center gap-3">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">월 선택</label>
+                                <input
+                                    type="month"
+                                    value={adSpendMonth}
+                                    onChange={e => setAdSpendMonth(e.target.value)}
+                                    className="p-1.5 border rounded text-sm bg-white dark:bg-gray-700 dark:border-gray-600"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                {inboundPaths.map(path => (
+                                    <div key={path} className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[60px] truncate" title={path}>{path}</span>
+                                        <div className="flex items-center">
+                                            <input
+                                                type="number"
+                                                placeholder="0"
+                                                value={adSpendEditing[path] || ''}
+                                                onChange={e => handleAdSpendChange(path, e.target.value)}
+                                                className="w-20 p-1.5 border rounded text-sm text-right bg-white dark:bg-gray-700 dark:border-gray-600"
+                                            />
+                                            <span className="text-xs text-gray-500 ml-1">만원</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <button
+                                onClick={saveAdSpend}
+                                className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                            >
+                                <Save size={14} /> 저장
+                            </button>
+                        </div>
+                    )}
+
+                    {/* ROI Table */}
+                    {roiData.length > 0 && roiData.some(d => d.광고비 > 0) ? (
+                        <>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-gray-200 dark:border-gray-700">
+                                            <th className="text-left py-2 px-2 text-gray-500">채널</th>
+                                            <th className="text-right py-2 px-2 text-gray-500">광고비</th>
+                                            <th className="text-right py-2 px-2 text-gray-500">리드</th>
+                                            <th className="text-right py-2 px-2 text-gray-500">계약</th>
+                                            <th className="text-right py-2 px-2 text-gray-500">수임료</th>
+                                            <th className="text-right py-2 px-2 text-gray-500">CPA</th>
+                                            <th className="text-right py-2 px-2 text-gray-500">CPC</th>
+                                            <th className="text-right py-2 px-2 text-gray-500 font-bold">ROAS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {roiData.map((d, i) => (
+                                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                <td className="py-2 px-2 font-medium">{d.name}</td>
+                                                <td className="py-2 px-2 text-right text-gray-500">{d.광고비 > 0 ? `${d.광고비.toLocaleString()}만원` : '-'}</td>
+                                                <td className="py-2 px-2 text-right">{d.리드}</td>
+                                                <td className="py-2 px-2 text-right text-green-600">{d.계약}</td>
+                                                <td className="py-2 px-2 text-right text-purple-600">{d.수임료 > 0 ? `${d.수임료.toLocaleString()}만원` : '-'}</td>
+                                                <td className="py-2 px-2 text-right">{d.CPA > 0 ? `${d.CPA.toLocaleString()}만원` : '-'}</td>
+                                                <td className="py-2 px-2 text-right">{d.CPC > 0 ? `${d.CPC.toLocaleString()}만원` : '-'}</td>
+                                                <td className={`py-2 px-2 text-right font-bold ${d.ROAS >= 300 ? 'text-green-600' : d.ROAS >= 100 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                    {d.ROAS > 0 ? `${d.ROAS}%` : '-'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* ROAS Bar Chart */}
+                            <div className="h-[250px] mt-4">
+                                <p className="text-xs text-gray-400 mb-2 font-medium">ROAS 비교 (광고수익률 %)</p>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={roiData.filter(d => d.광고비 > 0)}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
+                                        <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                                        <YAxis tick={{ fontSize: 11 }} />
+                                        <Tooltip formatter={(value: any) => `${value}%`} />
+                                        <Bar dataKey="ROAS" fill="#3B82F6" radius={[4, 4, 0, 0]}>
+                                            {roiData.filter(d => d.광고비 > 0).map((entry, i) => (
+                                                <Cell
+                                                    key={i}
+                                                    fill={entry.ROAS >= 300 ? '#10B981' : entry.ROAS >= 100 ? '#3B82F6' : '#EF4444'}
+                                                />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-center py-8 text-gray-400">
+                            <DollarSign size={32} className="mx-auto mb-2 opacity-30" />
+                            <p className="text-sm">광고비를 입력하면 ROI 분석이 표시됩니다.</p>
+                        </div>
+                    )}
+                </div>
+            </ChartSection>
+
+            {/* ============ [NEW] Drop-Off Analysis ============ */}
+            <ChartSection title={`⚠️ 이탈 분석 (${totalDropOff}건)`}>
+                <div className="space-y-4">
+                    {totalDropOff > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Drop-off Reason Pie Chart */}
+                            <div>
+                                <p className="text-xs text-gray-400 mb-2 font-medium">이탈 사유 분포</p>
+                                <div className="h-[250px]">
+                                    {dropOffReasonData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <RechartsPie>
+                                                <Pie
+                                                    data={dropOffReasonData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={45}
+                                                    outerRadius={80}
+                                                    dataKey="value"
+                                                    label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
+                                                >
+                                                    {dropOffReasonData.map((_, i) => (
+                                                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                                <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: '11px' }} />
+                                            </RechartsPie>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                            <p>구조화된 이탈 사유 데이터가 없습니다.<br />상태 변경 시 이탈 사유를 선택하면 여기에 표시됩니다.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Drop-off Stage Bar Chart */}
+                            <div>
+                                <p className="text-xs text-gray-400 mb-2 font-medium">이탈 직전 단계</p>
+                                <div className="h-[250px]">
+                                    {dropOffStageData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={dropOffStageData} layout="vertical">
+                                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
+                                                <XAxis type="number" tick={{ fontSize: 11 }} />
+                                                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={80} />
+                                                <Tooltip />
+                                                <Bar dataKey="value" fill="#EF4444" radius={[0, 4, 4, 0]} name="이탈 건수" />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                            <p>이탈 단계 데이터가 없습니다.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-gray-400">
+                            <AlertTriangle size={32} className="mx-auto mb-2 opacity-30" />
+                            <p className="text-sm">고객취소/진행불가 케이스가 없습니다.</p>
+                        </div>
+                    )}
                 </div>
             </ChartSection>
         </div>
