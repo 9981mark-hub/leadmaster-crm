@@ -124,18 +124,18 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 inboundPath: '블로그',
                 phone: '010-1234-5678',
                 customerName: '홍길동',
-                preInfo1: '채무 2,000~4,000만원',
-                preInfo2: '9시 30분',
-                preInfo3: '직장인'
+                '성별': '남',
+                '희망시간': '9시 30분',
+                '직업': '직장인'
             },
             {
                 caseType: '파산',
                 inboundPath: '지인소개',
                 phone: '010-9876-5432',
                 customerName: '김철수',
-                preInfo1: '자영업',
-                preInfo2: '부채 1억',
-                preInfo3: ''
+                '성별': '여',
+                '희망시간': '오후 2시',
+                '직업': '자영업'
             }
         ]);
         const wb = XLSX.utils.book_new();
@@ -156,6 +156,18 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 const ws = wb.Sheets[wsname];
                 const data = XLSX.utils.sheet_to_json(ws);
 
+                // Known system column names (these are NOT preInfo)
+                const SYSTEM_COLUMNS = new Set([
+                    'caseType', '유형', 'inboundPath', '유입경로',
+                    'phone', '연락처', 'customerName', '고객명',
+                    'preInfo', '사전정보', 'partnerId', '거래처'
+                ]);
+                // Also exclude legacy preInfoN columns from dynamic detection
+                for (let i = 1; i <= 20; i++) {
+                    SYSTEM_COLUMNS.add(`preInfo${i}`);
+                    SYSTEM_COLUMNS.add(`사전정보${i}`);
+                }
+
                 const parsedCases = data.map((row: any) => {
                     // Safe String conversion for inputs that might be numbers in Excel
                     const rawPhone = String(row['phone'] || row['연락처'] || '');
@@ -163,20 +175,33 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     const rawType = String(row['caseType'] || row['유형'] || '개인회생');
                     const rawPath = String(row['inboundPath'] || row['유입경로'] || '');
 
-                    // [Feature] Support multiple preInfo columns (preInfo1, preInfo2, ... preInfo10)
+                    // [Feature] Dynamic preInfo: detect non-system columns and use header name as label
                     const preInfoParts: string[] = [];
-                    // Check legacy preInfo column first (for backward compatibility)
+
+                    // 1. Check legacy preInfo column (backward compat)
                     const legacyPre = row['preInfo'] || row['사전정보'];
                     if (legacyPre && String(legacyPre).trim()) {
                         preInfoParts.push(String(legacyPre).trim());
                     }
-                    // Collect preInfo1 through preInfo10
+
+                    // 2. Check legacy preInfo1~10 columns (backward compat, value only)
                     for (let i = 1; i <= 10; i++) {
                         const val = row[`preInfo${i}`] || row[`사전정보${i}`];
                         if (val && String(val).trim()) {
                             preInfoParts.push(String(val).trim());
                         }
                     }
+
+                    // 3. Detect any non-system columns → use "headerName: value" format
+                    Object.keys(row).forEach(colName => {
+                        if (!SYSTEM_COLUMNS.has(colName) && row[colName] != null) {
+                            const val = String(row[colName]).trim();
+                            if (val) {
+                                preInfoParts.push(`${colName}: ${val}`);
+                            }
+                        }
+                    });
+
                     const rawPre = preInfoParts.join('\n');
 
                     const phone = formatPhone(rawPhone);

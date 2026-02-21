@@ -65,12 +65,28 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                             !lower.includes('[third_party_consent]') &&
                             !lower.includes('[user_agent]') &&
                             line.trim() !== '';
-                    }).map((line: string, idx: number) => (
-                        <div key={idx} className="flex items-start gap-1">
-                            <span className="text-blue-500 font-bold">*</span>
-                            <span>{line.trim()}</span>
-                        </div>
-                    )) : <span className="text-gray-400 italic">사전 정보 없음</span>}
+                    }).map((line: string, idx: number) => {
+                        const trimmed = line.trim();
+                        // Detect "label: value" format
+                        const colonIdx = trimmed.indexOf(':');
+                        if (colonIdx > 0 && colonIdx < trimmed.length - 1) {
+                            const label = trimmed.substring(0, colonIdx).trim();
+                            const value = trimmed.substring(colonIdx + 1).trim();
+                            return (
+                                <div key={idx} className="flex items-start gap-1">
+                                    <span className="text-blue-600 font-bold whitespace-nowrap">{label}:</span>
+                                    <span>{value}</span>
+                                </div>
+                            );
+                        }
+                        // Fallback: plain value with * bullet
+                        return (
+                            <div key={idx} className="flex items-start gap-1">
+                                <span className="text-blue-500 font-bold">*</span>
+                                <span>{trimmed}</span>
+                            </div>
+                        );
+                    }) : <span className="text-gray-400 italic">사전 정보 없음</span>}
                 </div>
             </div>
 
