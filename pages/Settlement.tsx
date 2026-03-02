@@ -545,7 +545,8 @@ export default function Settlement() {
 
             const config = p.settlementConfig;
             const totalCommission = rule.commission;
-            const downPaymentThreshold = (c.contractFee || 0) * (config.downPaymentPercentage / 100);
+            // [FIX] 구간 최저값(rule.minFee) 기준으로 계약금 비율 적용
+            const downPaymentThreshold = (rule.minFee || c.contractFee || 0) * (config.downPaymentPercentage / 100);
             const fullPayoutThreshold = rule.fullPayoutThreshold || totalCommission;
             const firstPayoutAmount = totalCommission * (config.firstPayoutPercentage / 100);
             const secondPayoutAmount = totalCommission - firstPayoutAmount;

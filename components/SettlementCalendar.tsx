@@ -206,7 +206,8 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
 
         const config = partner.settlementConfig;
         const totalCommission = rule.commission; // 총 수수료 (만원)
-        const downPaymentThreshold = caseItem.contractFee * (config.downPaymentPercentage / 100); // 선지급 기준 금액
+        // [FIX] 구간 최저값(rule.minFee) 기준으로 계약금 비율 적용
+        const downPaymentThreshold = rule.minFee * (config.downPaymentPercentage / 100); // 선지급 기준 금액
         const fullPayoutThreshold = rule.fullPayoutThreshold || totalCommission; // 완납 기준 금액
         const firstPayoutAmount = totalCommission * (config.firstPayoutPercentage / 100); // 1차 지급액
         const secondPayoutAmount = totalCommission - firstPayoutAmount; // 2차 지급액 (잔금)

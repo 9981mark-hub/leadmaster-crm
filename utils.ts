@@ -61,7 +61,8 @@ export const calculatePayableCommission = (c: Case, rules: CommissionRule[], con
   }
 
   // 2. Partial Payout Condition (Deposit >= Down Payment % of Fee)
-  if (totalDeposit >= (c.contractFee * downPaymentRate)) {
+  // [FIX] 구간 최저값(rule.minFee)을 기준으로 계약금 비율 적용 (e.g. 400~499 구간 → 400 × 10% = 40만원)
+  if (totalDeposit >= (rule.minFee * downPaymentRate)) {
     return { payable: rule.commission * firstPayoutRate, total: rule.commission, isPartial: true, rule };
   }
 

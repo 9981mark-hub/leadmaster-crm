@@ -1101,7 +1101,8 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
                                     <p className="text-[10px] text-blue-600 mt-2 ml-1">
-                                        * 계약금이 설정된 비율 이상 입금되면 수당의 일부를 선지급합니다.
+                                        * 수임료 구간 최저값 × 계약금 비율 이상 입금 시, 수수료의 선지급 비율만큼 지급합니다.<br />
+                                        * 예: 400~499 구간, 10% → 40만원 이상 입금 시 수수료 50% 선지급
                                     </p>
                                 </div>
                             </div>
