@@ -478,3 +478,20 @@ export interface CalendarMemo {
   updatedAt: string;
 }
 
+// ============================================
+// 재통화 알림 구간별 설정 Types
+// ============================================
+
+export interface MissedCallIntervalTier {
+  minDays: number;    // 등록일 기준 최소 경과일 (이상)
+  maxDays: number;    // 등록일 기준 최대 경과일 (미만, 0 = 무한)
+  interval: number;   // 재통화 알림 주기 (일)
+  label: string;      // UI 표시용 라벨
+}
+
+export const DEFAULT_INTERVAL_TIERS: MissedCallIntervalTier[] = [
+  { minDays: 0,  maxDays: 7,  interval: 2,  label: '7일 미만 (신규)' },
+  { minDays: 7,  maxDays: 30, interval: 5,  label: '7일~30일' },
+  { minDays: 30, maxDays: 0,  interval: 14, label: '30일 이상 (장기)' },
+];
+

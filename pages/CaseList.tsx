@@ -5,9 +5,9 @@ import { ListSkeleton } from '../components/Skeleton';
 import { KanbanBoard } from '../components/KanbanBoard';
 import StatusVisibilityModal from '../components/StatusVisibilityModal';
 import ImportModal from '../components/ImportModal';
-import { parseGenericDate } from '../utils';
+import { parseGenericDate, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { format } from 'date-fns';
-import { Case } from '../types';
+import { Case, MissedCallIntervalTier } from '../types';
 
 // React Query Hooks
 import { useCases, usePartners, useInboundPaths, useStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
@@ -72,7 +72,7 @@ export default function CaseList() {
 
     // Filters & Sort
     const [missedCallStatus, setMissedCallStatus] = useState(() => localStorage.getItem('lm_missedStatus') || '부재');
-    const [missedCallInterval, setMissedCallInterval] = useState(() => Number(localStorage.getItem('lm_missedInterval')) || 3);
+    const [missedCallIntervalTiers, setMissedCallIntervalTiers] = useState<MissedCallIntervalTier[]>(() => loadMissedCallTiers());
 
     const [search, setSearch] = useState(() => sessionStorage.getItem('lm_search') || '');
     const [statusFilters, setStatusFilters] = useState<string[]>(() => {
@@ -152,16 +152,13 @@ export default function CaseList() {
             }
 
             if (showOverdueMissedOnly) {
-                const now = new Date().getTime();
-                const isOverdueMissed = c.status === missedCallStatus &&
-                    c.lastMissedCallAt &&
-                    (now - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000);
+                const isOverdueMissed = isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers);
                 if (!isOverdueMissed) return false;
             }
 
             return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew;
         });
-    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, missedCallStatus, missedCallInterval]);
+    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, missedCallStatus, missedCallIntervalTiers]);
 
     const sortedCases = useMemo(() => {
         return [...filteredCases].sort((a, b) => {
@@ -364,10 +361,7 @@ export default function CaseList() {
 
     const newCaseCount = cases.filter(c => c.isNew).length;
     const overdueMissedCallCount = cases.filter(c => {
-        if (c.status !== missedCallStatus) return false;
-        if (!c.lastMissedCallAt) return false;
-        const now = new Date().getTime();
-        return (now - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000);
+        return isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers);
     }).length;
 
     return (
@@ -380,7 +374,7 @@ export default function CaseList() {
                 overdueMissedCallCount={overdueMissedCallCount}
                 showOverdueMissedOnly={showOverdueMissedOnly}
                 setShowOverdueMissedOnly={setShowOverdueMissedOnly}
-                missedCallInterval={missedCallInterval}
+                missedCallIntervalTiers={missedCallIntervalTiers}
                 updateAvailable={false} // React Query handles auto-refetch, so manual banner is less critical. Removed for simplicity or can be re-added if using polling.
                 newLeadsCount={0}
                 onManualRefresh={async () => {
@@ -437,7 +431,7 @@ export default function CaseList() {
                         partners={partners}
                         viewMode={viewMode}
                         missedCallStatus={missedCallStatus}
-                        missedCallInterval={missedCallInterval}
+                        missedCallIntervalTiers={missedCallIntervalTiers}
                         statuses={statuses.filter(s => s !== '휴지통')}
                         onDelete={handleDelete}
                         onRestore={handleRestore}

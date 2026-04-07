@@ -1,8 +1,60 @@
 
-import { Case, CommissionRule, CaseStatus, SettlementConfig, Partner, MemoItem } from './types';
+import { Case, CommissionRule, CaseStatus, SettlementConfig, Partner, MemoItem, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS } from './types';
 import { differenceInDays, parse, format, isValid, isToday, isPast, nextDay, addWeeks, setDay, startOfWeek, endOfWeek, isAfter, isBefore } from 'date-fns';
 import { REMINDER_REQUIRED_STATUSES, CONTRACT_COMPLETED_STATUSES, DEFAULT_SUMMARY_TEMPLATE } from './constants';
 import { ko } from 'date-fns/locale';
+
+// ============================================
+// 재통화 알림 구간별 유틸리티
+// ============================================
+
+/**
+ * 케이스의 등록일(createdAt) 기준으로 적절한 알림 주기를 반환
+ */
+export const getMissedCallInterval = (createdAt: string, tiers: MissedCallIntervalTier[]): number => {
+  const safeTiers = Array.isArray(tiers) && tiers.length > 0 ? tiers : DEFAULT_INTERVAL_TIERS;
+  const ageDays = Math.floor(
+    (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  const tier = safeTiers.find(t =>
+    ageDays >= t.minDays && (t.maxDays === 0 || ageDays < t.maxDays)
+  );
+
+  return tier?.interval ?? safeTiers[0]?.interval ?? 3;
+};
+
+/**
+ * 특정 케이스가 재통화 필요 상태인지 판단
+ */
+export const isOverdueMissedCall = (
+  c: Case,
+  missedCallStatus: string,
+  tiers: MissedCallIntervalTier[]
+): boolean => {
+  if (c.status !== missedCallStatus) return false;
+  if (!c.lastMissedCallAt) return false;
+
+  const interval = getMissedCallInterval(c.createdAt, tiers);
+  const elapsed = Date.now() - new Date(c.lastMissedCallAt).getTime();
+  return elapsed > interval * 24 * 60 * 60 * 1000;
+};
+
+/**
+ * localStorage에서 tiers를 로드하는 헬퍼
+ */
+export const loadMissedCallTiers = (): MissedCallIntervalTier[] => {
+  try {
+    const stored = localStorage.getItem('lm_missedIntervalTiers');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.warn('Failed to parse missedCallIntervalTiers:', e);
+  }
+  return [...DEFAULT_INTERVAL_TIERS];
+};
 
 export const getMatchingRule = (fee: number, rules: CommissionRule[]): CommissionRule | undefined => {
   // [SAFETY FIX] Ensure rules is always an array

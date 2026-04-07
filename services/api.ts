@@ -1,5 +1,5 @@
-﻿
-import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType, TaxInvoice, TaxInvoiceType, TaxReminder, TaxReminderType } from '../types';
+
+import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType, TaxInvoice, TaxInvoiceType, TaxReminder, TaxReminderType, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -968,6 +968,7 @@ export const saveGlobalSettings = async (settings: {
   managerName?: string,
   missedCallStatus?: string,
   missedCallInterval?: number,
+  missedCallIntervalTiers?: MissedCallIntervalTier[],
   geminiApiKey?: string,
 
 }) => {
@@ -982,45 +983,56 @@ export const saveGlobalSettings = async (settings: {
     localStorage.setItem('lm_missedStatus', settings.missedCallStatus);
   }
 
-  if (settings.missedCallInterval) {
+  // [NEW] Save tiered interval settings
+  if (settings.missedCallIntervalTiers && settings.missedCallIntervalTiers.length > 0) {
+    localStorage.setItem('lm_missedIntervalTiers', JSON.stringify(settings.missedCallIntervalTiers));
+    // Backward compat: save first tier interval as legacy single value
+    localStorage.setItem('lm_missedInterval', String(settings.missedCallIntervalTiers[0].interval));
+  } else if (settings.missedCallInterval) {
     localStorage.setItem('lm_missedInterval', String(settings.missedCallInterval));
   }
 
   // [Fix] Save Gemini API Key
   if (settings.geminiApiKey !== undefined) {
-    // Allow saving empty string to clear it
     localStorage.setItem('lm_geminiApiKey', settings.geminiApiKey);
-    // Force reload env or just let utils read from storage
   }
-
-  // Persist common settings to Supabase
-  // We can group them into a 'commonSettings' JSON or save individually. 
-  // Based on current 'fetchSettingsFromSupabase' logic (lines 265-287), it expects 'managerName' at root.
-  // We will save individual keys for now to match fetch logic.
 
   if (settings.managerName) await saveSettingToSupabase('managerName', settings.managerName);
 
-  // [Fix] Persist Gemini API Key to Supabase for roaming/sync
   if (settings.geminiApiKey !== undefined) {
     await saveSettingToSupabase('geminiApiKey', settings.geminiApiKey);
-    updates.geminiApiKey = settings.geminiApiKey; // For Sheet sync if needed
+    updates.geminiApiKey = settings.geminiApiKey;
   }
 
-  // For missed call settings, we might need to add them to fetch logic or save as a group.
-  // Let's save them as 'missedCallSettings' object
+  // Save missed call settings with tiers
+  const tiersToSave = settings.missedCallIntervalTiers || (() => {
+    try {
+      const stored = localStorage.getItem('lm_missedIntervalTiers');
+      if (stored) return JSON.parse(stored);
+    } catch(e) {}
+    return DEFAULT_INTERVAL_TIERS;
+  })();
+
   const missedCallSettings = {
     status: settings.missedCallStatus || localStorage.getItem('lm_missedStatus') || '부재',
-    interval: settings.missedCallInterval || Number(localStorage.getItem('lm_missedInterval')) || 3
+    interval: tiersToSave[0]?.interval || 3,
+    intervalTiers: tiersToSave
   };
   await saveSettingToSupabase('missedCallSettings', missedCallSettings);
 
   syncToSheet({ target: 'settings', action: 'update', key: 'commonSettings', value: { ...updates, ...missedCallSettings } });
 
   // [Fix] Sync with Android App if running in WebView
-  if (typeof (window as any).AndroidBridge !== 'undefined' && settings.missedCallInterval) {
+  if (typeof (window as any).AndroidBridge !== 'undefined') {
     try {
-      (window as any).AndroidBridge.setMissedCallConfig(settings.missedCallInterval);
-      console.log('Synced config with Android App');
+      // Send full tiers config to Android App
+      if (typeof (window as any).AndroidBridge.setMissedCallTiersConfig === 'function') {
+        (window as any).AndroidBridge.setMissedCallTiersConfig(JSON.stringify(tiersToSave));
+      } else {
+        // Fallback: send first tier interval for backward compat
+        (window as any).AndroidBridge.setMissedCallConfig(tiersToSave[0]?.interval || 3);
+      }
+      console.log('Synced missed call tiers config with Android App');
     } catch (e) {
       console.error('Failed to sync with Android App', e);
     }

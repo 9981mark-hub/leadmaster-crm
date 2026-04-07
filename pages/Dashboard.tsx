@@ -3,7 +3,7 @@ import { format, parseISO, isSameDay, isToday, isBefore } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { fetchCases, fetchPartners, fetchSettlementBatches } from '../services/api';
 import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
-import { getCaseWarnings, getReminderStatus, calculateNextSettlement } from '../utils';
+import { getCaseWarnings, getReminderStatus, calculateNextSettlement, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X, DollarSign, FileText, Bell } from 'lucide-react';
 import { DEFAULT_STATUS_LIST } from '../constants';
@@ -111,16 +111,10 @@ export default function Dashboard() {
 
   // [NEW] Missed call settings from localStorage
   const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
-  const missedCallInterval = Number(localStorage.getItem('lm_missedInterval')) || 3;
+  const missedCallTiers = loadMissedCallTiers();
 
-  // [NEW] Calculate overdue missed call count (재통화 필요 건수)
-  const overdueMissedCallCount = cases.filter(c => {
-    if (c.status !== missedCallStatus) return false;
-    if (!c.lastMissedCallAt) return false;
-    const now = new Date().getTime();
-    const lastCall = new Date(c.lastMissedCallAt).getTime();
-    return (now - lastCall) > (missedCallInterval * 24 * 60 * 60 * 1000);
-  }).length;
+  // [NEW] Calculate overdue missed call count (재통화 필요 건수) - using tiered intervals
+  const overdueMissedCallCount = cases.filter(c => isOverdueMissedCall(c, missedCallStatus, missedCallTiers)).length;
 
   // KPIs (Summary)
   const allRemindersWithCase = cases.flatMap(c =>
@@ -185,7 +179,7 @@ export default function Dashboard() {
           <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
         </div>
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
-          <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText={`${missedCallInterval}일 이상 경과`} />
+          <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText="구간별 알림 적용중" />
         </Link>
       </div>
 

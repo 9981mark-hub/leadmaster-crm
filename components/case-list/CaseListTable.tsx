@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown } from 'lucide-react';
-import { Case, Partner, ReminderItem, CaseStatusLog } from '../../types'; // Adjust imports
-import { getCaseWarnings, safeFormat, parseReminder } from '../../utils';
+import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
+import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
 import { STATUS_COLOR_MAP } from '../../constants';
 import { fetchCaseStatusLogs, fetchCases } from '../../services/api';
@@ -120,7 +120,7 @@ interface CaseListTableProps {
     partners: Partner[];
     viewMode: 'active' | 'trash';
     missedCallStatus: string;
-    missedCallInterval: number;
+    missedCallIntervalTiers: MissedCallIntervalTier[];
     statuses: string[]; // [NEW] Status list for quick change dropdown
     onDelete: (id: string, e: React.MouseEvent) => void;
     onRestore: (id: string, e: React.MouseEvent) => void;
@@ -133,7 +133,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     partners,
     viewMode,
     missedCallStatus,
-    missedCallInterval,
+    missedCallIntervalTiers,
     statuses,
     onDelete,
     onRestore,
@@ -260,7 +260,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         <div className="flex items-center gap-1.5">
                                             <button
                                                 onClick={(e) => onMissedCall(e, c)}
-                                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold border transition-all shadow-sm ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold border transition-all shadow-sm ${isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)
                                                     ? 'bg-red-50 border-red-200 text-red-600 animate-pulse ring-1 ring-red-100'
                                                     : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
                                                     }`}
@@ -538,7 +538,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <div className="mt-1 flex items-center gap-1">
                                                 <button
                                                     onClick={(e) => onMissedCall(e, c)}
-                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${c.lastMissedCallAt && (new Date().getTime() - new Date(c.lastMissedCallAt).getTime()) > (missedCallInterval * 24 * 60 * 60 * 1000)
+                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)
                                                         ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
                                                         : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
                                                         }`}

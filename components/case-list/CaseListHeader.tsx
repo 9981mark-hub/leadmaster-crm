@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, Phone, X, ArrowUpDown } from 'lucide-react';
+import { MissedCallIntervalTier } from '../../types';
 
 interface CaseListHeaderProps {
     totalItems: number;
@@ -9,7 +10,7 @@ interface CaseListHeaderProps {
     overdueMissedCallCount: number;
     showOverdueMissedOnly: boolean;
     setShowOverdueMissedOnly: (show: boolean) => void;
-    missedCallInterval: number;
+    missedCallIntervalTiers: MissedCallIntervalTier[];
     updateAvailable: boolean;
     newLeadsCount: number;
     onManualRefresh: () => void;
@@ -24,7 +25,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     overdueMissedCallCount,
     showOverdueMissedOnly,
     setShowOverdueMissedOnly,
-    missedCallInterval,
+    missedCallIntervalTiers,
     updateAvailable,
     newLeadsCount,
     onManualRefresh,
@@ -75,7 +76,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                         </div>
                         <div>
                             <h3 className="font-bold text-orange-800">재통화 필요 {overdueMissedCallCount}건</h3>
-                            <p className="text-sm text-orange-600">마지막 통화 후 {missedCallInterval}일이 지났습니다.</p>
+                            <p className="text-sm text-orange-600">구간별 알림 주기가 경과되었습니다.</p>
                         </div>
                     </div>
                     <button
