@@ -14,7 +14,11 @@ interface CaseListFilterProps {
     inboundPathFilter: string;
     setInboundPathFilter: (val: string) => void;
     statusFilters: string[];
-    setStatusFilters: (val: string[] | ((prev: string[]) => string[])) => void; // Support function update
+    setStatusFilters: (val: string[] | ((prev: string[]) => string[])) => void;
+    secondaryStatusFilter: string;
+    setSecondaryStatusFilter: (val: string) => void;
+    tertiaryStatusFilter: string;
+    setTertiaryStatusFilter: (val: string) => void;
     sortOrder: string;
     setSortOrder: (val: any) => void;
     layoutMode: 'list' | 'kanban';
@@ -24,6 +28,8 @@ interface CaseListFilterProps {
     partners: Partner[];
     inboundPaths: string[];
     statuses: CaseStatus[];
+    secondaryStatuses: string[];
+    tertiaryStatuses: Record<string, string[]>;
     onOpenImportModal: () => void;
     onOpenStatusVisibilityModal: () => void;
     onResetPage: () => void;
@@ -36,10 +42,13 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     partnerFilter, setPartnerFilter,
     inboundPathFilter, setInboundPathFilter,
     statusFilters, setStatusFilters,
+    secondaryStatusFilter, setSecondaryStatusFilter,
+    tertiaryStatusFilter, setTertiaryStatusFilter,
     sortOrder, setSortOrder,
     layoutMode, setLayoutMode,
     viewMode, setViewMode,
     partners, inboundPaths, statuses,
+    secondaryStatuses, tertiaryStatuses,
     onOpenImportModal, onOpenStatusVisibilityModal, onResetPage
 }) => {
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = React.useState(false);
@@ -199,6 +208,30 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         >
                             <Settings size={18} />
                         </button>
+
+                        {/* [NEW] 2차/3차 상태 필터 (사무장 접수 선택 시) */}
+                        {statusFilters.includes('사무장 접수') && (
+                            <>
+                                <select
+                                    className="border p-2 rounded-lg text-sm bg-purple-50 border-purple-300 text-purple-800 min-w-[100px]"
+                                    value={secondaryStatusFilter}
+                                    onChange={(e) => { setSecondaryStatusFilter(e.target.value); setTertiaryStatusFilter(''); onResetPage(); }}
+                                >
+                                    <option value="">전체 2차</option>
+                                    {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                                {secondaryStatusFilter && (tertiaryStatuses[secondaryStatusFilter] || []).length > 0 && (
+                                    <select
+                                        className="border p-2 rounded-lg text-sm bg-amber-50 border-amber-300 text-amber-800 min-w-[100px]"
+                                        value={tertiaryStatusFilter}
+                                        onChange={(e) => { setTertiaryStatusFilter(e.target.value); onResetPage(); }}
+                                    >
+                                        <option value="">전체 3차</option>
+                                        {(tertiaryStatuses[secondaryStatusFilter] || []).map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                )}
+                            </>
+                        )}
                     </div>
 
                     {/* Group 2: Sort, Actions, Trash */}

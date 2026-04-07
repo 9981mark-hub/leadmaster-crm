@@ -46,6 +46,7 @@ interface DbCase {
     updated_at: string;
     status: string;
     secondary_status: string | null;
+    tertiary_status: string | null;
     is_viewed: boolean;
     deleted_at: string | null;
     customer_name: string;
@@ -106,6 +107,7 @@ export const dbToCase = (row: DbCase): Case => ({
     updatedAt: row.updated_at,
     status: row.status,
     secondaryStatus: row.secondary_status || undefined,
+    tertiaryStatus: row.tertiary_status || undefined,
     isViewed: row.is_viewed,
     deletedAt: row.deleted_at || undefined,
     customerName: row.customer_name,
@@ -163,6 +165,7 @@ export const caseToDb = (c: Partial<Case>): Partial<DbCase> => {
     if (c.updatedAt !== undefined) result.updated_at = c.updatedAt;
     if (c.status !== undefined) result.status = c.status;
     if (c.secondaryStatus !== undefined) result.secondary_status = c.secondaryStatus || null;
+    if (c.tertiaryStatus !== undefined) result.tertiary_status = c.tertiaryStatus || null;
     if (c.isViewed !== undefined) result.is_viewed = c.isViewed;
     if (c.deletedAt !== undefined) result.deleted_at = c.deletedAt || null;
     if (c.customerName !== undefined) result.customer_name = c.customerName;

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layout } from 'lucide-react';
 import { Case, CaseStatus, ReminderItem, MemoItem, RecordingItem } from '../types';
-import { useCase, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useUpdateCaseMutation } from '../services/queries';
+import { useCase, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation } from '../services/queries';
 import { calculateCommission, generateAiSummary, convertToPlayableUrl } from '../utils';
 import { CommandPalette } from '../components/CommandPalette';
 // Sub-components
@@ -23,6 +23,7 @@ export default function CaseDetail() {
     const { data: inboundPaths = [] } = useInboundPaths();
     const { data: statuses = [] } = useStatuses();
     const { data: globalSecondaryStatuses = [] } = useSecondaryStatuses();
+    const { data: globalTertiaryStatuses = {} } = useTertiaryStatuses();
     const updateCaseMutation = useUpdateCaseMutation();
 
     // UI State
@@ -34,6 +35,11 @@ export default function CaseDetail() {
     const [isSecondaryStatusModalOpen, setIsSecondaryStatusModalOpen] = useState(false);
     const [pendingSecondaryStatus, setPendingSecondaryStatus] = useState<string | null>(null);
     const [secondaryStatusChangeReason, setSecondaryStatusChangeReason] = useState('');
+
+    // [NEW] Tertiary Status Modal State
+    const [isTertiaryStatusModalOpen, setIsTertiaryStatusModalOpen] = useState(false);
+    const [pendingTertiaryStatus, setPendingTertiaryStatus] = useState<string | null>(null);
+    const [tertiaryStatusChangeReason, setTertiaryStatusChangeReason] = useState('');
     const [secondaryStatuses, setSecondaryStatuses] = useState<string[]>([]);
 
     // [New] Primary Status Change Modal State
@@ -172,7 +178,7 @@ export default function CaseDetail() {
             updates: {
                 status: pendingPrimaryStatus,
                 statusLogs: [log, ...(c.statusLogs || [])],
-                ...(pendingPrimaryStatus !== '사무장 접수' ? { secondaryStatus: undefined } : {}),
+                ...(pendingPrimaryStatus !== '사무장 접수' ? { secondaryStatus: undefined, tertiaryStatus: undefined } : {}),
                 // [NEW] 이탈 사유 저장
                 ...(isDropOff ? {
                     dropOffReason: selectedDropOffReason,
@@ -217,10 +223,12 @@ export default function CaseDetail() {
 
         // We need to update multiple fields: secondaryStatus, statusLogs, specialMemo
         // useUpdateCaseMutation handles merging updates.
+        // [NEW] Reset tertiary status when secondary status changes
         updateCaseMutation.mutate({
             id: c.caseId,
             updates: {
                 secondaryStatus: pendingSecondaryStatus,
+                tertiaryStatus: undefined,
                 statusLogs: [log, ...(c.statusLogs || [])],
                 specialMemo: [newMemo, ...(c.specialMemo || [])]
             }
@@ -229,6 +237,47 @@ export default function CaseDetail() {
         setIsSecondaryStatusModalOpen(false);
         setPendingSecondaryStatus(null);
         showToast('2차 상태가 변경되었습니다.');
+    };
+
+    // [NEW] Tertiary Status Change Handlers
+    const handleTertiaryStatusChangeStart = (status: string | null) => {
+        if (status === c?.tertiaryStatus) return;
+        setPendingTertiaryStatus(status);
+        setTertiaryStatusChangeReason('');
+        setIsTertiaryStatusModalOpen(true);
+    };
+
+    const confirmTertiaryStatusChange = () => {
+        if (!c || pendingTertiaryStatus === null) return;
+
+        const log = {
+            logId: Date.now().toString(),
+            fromStatus: `${c.status} (${c.secondaryStatus || '없음'}) [${c.tertiaryStatus || '없음'}]`,
+            toStatus: `${c.status} (${c.secondaryStatus || '없음'}) [${pendingTertiaryStatus || '없음'}]`,
+            changedAt: new Date().toISOString(),
+            changedBy: 'User',
+            memo: tertiaryStatusChangeReason
+        };
+
+        const memoContent = `[3차 상태 변경] ${c.tertiaryStatus || '없음'} → ${pendingTertiaryStatus || '없음'}${tertiaryStatusChangeReason ? `\n사유: ${tertiaryStatusChangeReason}` : ''}`;
+        const newMemo: MemoItem = {
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            content: memoContent
+        };
+
+        updateCaseMutation.mutate({
+            id: c.caseId,
+            updates: {
+                tertiaryStatus: pendingTertiaryStatus || undefined,
+                statusLogs: [log, ...(c.statusLogs || [])],
+                specialMemo: [newMemo, ...(c.specialMemo || [])]
+            }
+        });
+
+        setIsTertiaryStatusModalOpen(false);
+        setPendingTertiaryStatus(null);
+        showToast('3차 상태가 변경되었습니다.');
     };
 
     // Audio & AI Handlers
@@ -414,8 +463,10 @@ export default function CaseDetail() {
                     partner={currentPartner}
                     statuses={statuses}
                     secondaryStatuses={secondaryStatuses}
+                    tertiaryStatuses={globalTertiaryStatuses}
                     onStatusChangeStart={handleStatusChangeStart}
                     onSecondaryStatusChangeStart={handleSecondaryStatusChangeStart}
+                    onTertiaryStatusChangeStart={handleTertiaryStatusChangeStart}
                 />
 
                 {/* Primary Status Modal */}
@@ -520,6 +571,41 @@ export default function CaseDetail() {
                                 <button
                                     onClick={confirmSecondaryStatusChange}
                                     className="px-4 py-2 bg-purple-600 rounded text-white font-medium hover:bg-purple-700"
+                                >
+                                    변경하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Tertiary Status Modal */}
+                {isTertiaryStatusModalOpen && pendingTertiaryStatus !== null && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl border-t-4 border-amber-500">
+                            <h3 className="text-lg font-bold mb-4 text-amber-700">3차 상태 변경 확인</h3>
+                            <p className="mb-4 text-gray-700">
+                                3차 상태를 <span className="font-bold text-amber-600">{c.tertiaryStatus || '없음'}</span>에서 <span className="font-bold text-amber-600">{pendingTertiaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
+                            </p>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">변경 사유 / 메모</label>
+                                <textarea
+                                    className="w-full p-2 border border-amber-200 rounded resize-none h-24 focus:ring-2 focus:ring-amber-500 outline-none"
+                                    placeholder="상태 변경 사유를 입력하세요..."
+                                    value={tertiaryStatusChangeReason}
+                                    onChange={e => setTertiaryStatusChangeReason(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => { setIsTertiaryStatusModalOpen(false); setPendingTertiaryStatus(null); }}
+                                    className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    onClick={confirmTertiaryStatusChange}
+                                    className="px-4 py-2 bg-amber-600 rounded text-white font-medium hover:bg-amber-700"
                                 >
                                     변경하기
                                 </button>

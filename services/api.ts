@@ -33,6 +33,7 @@ let localLogs: CaseStatusLog[] = [...MOCK_LOGS];
 let localInboundPaths: string[] = [];
 let localStatuses: CaseStatus[] = [];
 let localSecondaryStatuses: string[] = []; // [NEW] 2차 상태 목록
+let localTertiaryStatuses: Record<string, string[]> = {}; // [NEW] 3차 상태 목록 (2차상태 → 3차상태[])
 let localAllowedEmails: string[] = ['9981mark@gmail.com', '2882a@naver.com']; // Default
 let localExpenses: ExpenseItem[] = []; // [NEW] 지출 목록
 let expensesInitialized = false; // [NEW] 지출 초기화 여부
@@ -57,6 +58,7 @@ const CACHE_KEYS = {
   PATHS: 'lm_paths',
   STATUSES: 'lm_statuses',
   SECONDARY_STATUSES: 'lm_secondary_statuses', // [NEW] 2차 상태
+  TERTIARY_STATUSES: 'lm_tertiary_statuses', // [NEW] 3차 상태
   EMAILS: 'lm_allowed_emails',
   LOGS: 'lm_logs',
   EMAIL_NOTIFICATION: 'lm_email_notification',
@@ -71,6 +73,7 @@ const loadFromStorage = () => {
     const storedPaths = localStorage.getItem(CACHE_KEYS.PATHS);
     const storedStatuses = localStorage.getItem(CACHE_KEYS.STATUSES);
     const storedSecondaryStatuses = localStorage.getItem(CACHE_KEYS.SECONDARY_STATUSES);
+    const storedTertiaryStatuses = localStorage.getItem(CACHE_KEYS.TERTIARY_STATUSES);
     const storedEmails = localStorage.getItem(CACHE_KEYS.EMAILS);
     const storedLogs = localStorage.getItem(CACHE_KEYS.LOGS);
 
@@ -104,6 +107,7 @@ const loadFromStorage = () => {
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
     if (storedStatuses) localStatuses = JSON.parse(storedStatuses);
     if (storedSecondaryStatuses) localSecondaryStatuses = JSON.parse(storedSecondaryStatuses);
+    if (storedTertiaryStatuses) localTertiaryStatuses = JSON.parse(storedTertiaryStatuses);
     if (storedEmails) localAllowedEmails = JSON.parse(storedEmails);
     const storedEmailNotification = localStorage.getItem(CACHE_KEYS.EMAIL_NOTIFICATION);
     if (storedEmailNotification) {
@@ -125,6 +129,7 @@ const saveToStorage = () => {
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
     localStorage.setItem(CACHE_KEYS.SECONDARY_STATUSES, JSON.stringify(localSecondaryStatuses));
+    localStorage.setItem(CACHE_KEYS.TERTIARY_STATUSES, JSON.stringify(localTertiaryStatuses));
     localStorage.setItem(CACHE_KEYS.EMAILS, JSON.stringify(localAllowedEmails));
     // Email notification settings are saved separately in saveEmailNotificationSettings
     // localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs)); // Deprecated: Logs are inside Case
@@ -389,6 +394,7 @@ const setupRealtimeSubscription = () => {
           if (settings.inboundPaths) localInboundPaths = settings.inboundPaths;
           if (settings.statuses) localStatuses = settings.statuses;
           if (settings.secondaryStatuses) localSecondaryStatuses = settings.secondaryStatuses;
+          if (settings.tertiaryStatuses) localTertiaryStatuses = settings.tertiaryStatuses;
           console.log('[Realtime] Settings refreshed');
         }
 
@@ -466,6 +472,10 @@ const performBackgroundFetch = async () => {
       // [NEW] Load secondary statuses from server
       if (settingsData.secondaryStatuses) localSecondaryStatuses = settingsData.secondaryStatuses;
       else if (localSecondaryStatuses.length === 0) localSecondaryStatuses = ['고객취소', '진행불가', '연락안받음', '출장예약', '방문예약', '고민중', '계약서작성', '관리중', '착수금입금', '기준비용입금'];
+
+      // [NEW] Load tertiary statuses from server
+      if (settingsData.tertiaryStatuses) localTertiaryStatuses = settingsData.tertiaryStatuses;
+      else if (Object.keys(localTertiaryStatuses).length === 0) localTertiaryStatuses = {};
 
       if (settingsData.allowedEmails) localAllowedEmails = settingsData.allowedEmails;
 
@@ -799,19 +809,66 @@ export const addSecondaryStatus = async (status: string): Promise<string[]> => {
 export const deleteSecondaryStatus = async (status: string): Promise<string[]> => {
   localSecondaryStatuses = localSecondaryStatuses.filter(s => s !== status);
   // Clear secondaryStatus from cases that have this status
-  localCases = localCases.map(c => { // Keeping original map logic as per instructions
+  localCases = localCases.map(c => {
     if (c.secondaryStatus === status) {
-      const updated = { ...c, secondaryStatus: undefined, updatedAt: new Date().toISOString() };
-      updateCase(c.caseId, { secondaryStatus: undefined });
+      const updated = { ...c, secondaryStatus: undefined, tertiaryStatus: undefined, updatedAt: new Date().toISOString() };
+      updateCase(c.caseId, { secondaryStatus: undefined, tertiaryStatus: undefined });
       return updated;
     }
     return c;
   });
 
+  // [NEW] Also remove tertiary statuses mapped to this secondary status
+  if (localTertiaryStatuses[status]) {
+    delete localTertiaryStatuses[status];
+    syncToSheet({ target: 'settings', action: 'update', key: 'tertiaryStatuses', value: localTertiaryStatuses });
+    saveSettingToSupabase('tertiaryStatuses', localTertiaryStatuses);
+  }
+
   // [FIX] Save to Google Sheets & Supabase
   syncToSheet({ target: 'settings', action: 'update', key: 'secondaryStatuses', value: localSecondaryStatuses });
   saveSettingToSupabase('secondaryStatuses', localSecondaryStatuses);
   return [...localSecondaryStatuses];
+};
+
+// --- Tertiary Statuses (3차 상태) ---
+export const fetchTertiaryStatuses = async (): Promise<Record<string, string[]>> => {
+  if (!isInitialized) await initializeData();
+  return { ...localTertiaryStatuses };
+};
+
+export const addTertiaryStatus = async (secondaryStatus: string, status: string): Promise<Record<string, string[]>> => {
+  if (!localTertiaryStatuses[secondaryStatus]) {
+    localTertiaryStatuses[secondaryStatus] = [];
+  }
+  if (!localTertiaryStatuses[secondaryStatus].includes(status)) {
+    localTertiaryStatuses[secondaryStatus].push(status);
+    syncToSheet({ target: 'settings', action: 'update', key: 'tertiaryStatuses', value: localTertiaryStatuses });
+    saveSettingToSupabase('tertiaryStatuses', localTertiaryStatuses);
+  }
+  return { ...localTertiaryStatuses };
+};
+
+export const deleteTertiaryStatus = async (secondaryStatus: string, status: string): Promise<Record<string, string[]>> => {
+  if (localTertiaryStatuses[secondaryStatus]) {
+    localTertiaryStatuses[secondaryStatus] = localTertiaryStatuses[secondaryStatus].filter(s => s !== status);
+    if (localTertiaryStatuses[secondaryStatus].length === 0) {
+      delete localTertiaryStatuses[secondaryStatus];
+    }
+  }
+  // Clear tertiaryStatus from cases that have this status under the given secondaryStatus
+  localCases = localCases.map(c => {
+    if (c.secondaryStatus === secondaryStatus && c.tertiaryStatus === status) {
+      const updated = { ...c, tertiaryStatus: undefined, updatedAt: new Date().toISOString() };
+      updateCase(c.caseId, { tertiaryStatus: undefined });
+      return updated;
+    }
+    return c;
+  });
+
+  syncToSheet({ target: 'settings', action: 'update', key: 'tertiaryStatuses', value: localTertiaryStatuses });
+  saveSettingToSupabase('tertiaryStatuses', localTertiaryStatuses);
+  return { ...localTertiaryStatuses };
 };
 
 

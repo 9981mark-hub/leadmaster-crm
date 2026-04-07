@@ -10,7 +10,7 @@ import { format } from 'date-fns';
 import { Case, MissedCallIntervalTier } from '../types';
 
 // React Query Hooks
-import { useCases, usePartners, useInboundPaths, useStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
+import { useCases, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
 import { restoreCase, updateCase, refreshData } from '../services/api'; // Keep specific API calls if hooks not ready or for specific logic
 
 // New Components
@@ -28,6 +28,8 @@ export default function CaseList() {
     const { data: partners = [] } = usePartners();
     const { data: inboundPaths = [] } = useInboundPaths();
     const { data: statuses = [] } = useStatuses();
+    const { data: secondaryStatusesList = [] } = useSecondaryStatuses();
+    const { data: tertiaryStatusesMap = {} } = useTertiaryStatuses();
 
     const updateCaseMutation = useUpdateCaseMutation();
     const deleteCaseMutation = useDeleteCaseMutation();
@@ -89,6 +91,10 @@ export default function CaseList() {
     const [showNewOnly, setShowNewOnly] = useState(() => sessionStorage.getItem('lm_showNewOnly') === 'true');
     const [showOverdueMissedOnly, setShowOverdueMissedOnly] = useState(() => sessionStorage.getItem('lm_showOverdueMissed') === 'true');
 
+    // [NEW] Secondary/Tertiary Status Filters
+    const [secondaryStatusFilter, setSecondaryStatusFilter] = useState(() => sessionStorage.getItem('lm_secondaryStatusFilter') || '');
+    const [tertiaryStatusFilter, setTertiaryStatusFilter] = useState(() => sessionStorage.getItem('lm_tertiaryStatusFilter') || '');
+
     // Persistence Effect
     useEffect(() => {
         sessionStorage.setItem('lm_search', search);
@@ -101,7 +107,9 @@ export default function CaseList() {
         sessionStorage.setItem('lm_showNewOnly', String(showNewOnly));
         sessionStorage.setItem('lm_showOverdueMissed', String(showOverdueMissedOnly));
         sessionStorage.setItem('lm_viewMode', viewMode);
-    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, showOverdueMissedOnly, viewMode]);
+        sessionStorage.setItem('lm_secondaryStatusFilter', secondaryStatusFilter);
+        sessionStorage.setItem('lm_tertiaryStatusFilter', tertiaryStatusFilter);
+    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, showOverdueMissedOnly, viewMode, secondaryStatusFilter, tertiaryStatusFilter]);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState<number>(() => {
@@ -156,9 +164,21 @@ export default function CaseList() {
                 if (!isOverdueMissed) return false;
             }
 
-            return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew;
+            // [NEW] 2차/3차 상태 필터 (사무장 접수 선택 시)
+            let matchesSecondary = true;
+            let matchesTertiary = true;
+            if (statusFilters.includes('사무장 접수') && c.status === '사무장 접수') {
+                if (secondaryStatusFilter) {
+                    matchesSecondary = c.secondaryStatus === secondaryStatusFilter;
+                }
+                if (tertiaryStatusFilter && matchesSecondary) {
+                    matchesTertiary = c.tertiaryStatus === tertiaryStatusFilter;
+                }
+            }
+
+            return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew && matchesSecondary && matchesTertiary;
         });
-    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, missedCallStatus, missedCallIntervalTiers]);
+    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, missedCallStatus, missedCallIntervalTiers, secondaryStatusFilter, tertiaryStatusFilter]);
 
     const sortedCases = useMemo(() => {
         return [...filteredCases].sort((a, b) => {
@@ -391,12 +411,16 @@ export default function CaseList() {
                 partnerFilter={partnerFilter} setPartnerFilter={setPartnerFilter}
                 inboundPathFilter={inboundPathFilter} setInboundPathFilter={setInboundPathFilter}
                 statusFilters={statusFilters} setStatusFilters={setStatusFilters}
+                secondaryStatusFilter={secondaryStatusFilter} setSecondaryStatusFilter={setSecondaryStatusFilter}
+                tertiaryStatusFilter={tertiaryStatusFilter} setTertiaryStatusFilter={setTertiaryStatusFilter}
                 sortOrder={sortOrder} setSortOrder={setSortOrder}
                 layoutMode={layoutMode} setLayoutMode={setLayoutMode}
                 viewMode={viewMode} setViewMode={setViewMode}
                 partners={partners}
                 inboundPaths={inboundPaths}
                 statuses={statuses}
+                secondaryStatuses={secondaryStatusesList}
+                tertiaryStatuses={tertiaryStatusesMap}
                 onOpenImportModal={() => setIsImportModalOpen(true)}
                 onOpenStatusVisibilityModal={() => setIsVisibilityModalOpen(true)}
                 onResetPage={() => setCurrentPage(1)}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, saveGlobalSettings } from '../services/api';
-import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation } from '../services/queries';
+import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, saveGlobalSettings } from '../services/api';
+import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAddTertiaryStatusMutation, useDeleteTertiaryStatusMutation } from '../services/queries';
 import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare } from 'lucide-react';
 import { getDayName, loadMissedCallTiers } from '../utils';
@@ -23,6 +23,11 @@ export default function SettingsPage() {
     // [NEW] Secondary Statuses (2차 상태)
     const [secondaryStatuses, setSecondaryStatuses] = useState<string[]>([]);
     const [newSecondaryStatus, setNewSecondaryStatus] = useState('');
+
+    // [NEW] Tertiary Statuses (3차 상태)
+    const [tertiaryStatuses, setTertiaryStatuses] = useState<Record<string, string[]>>({});
+    const [selectedTertiarySecondary, setSelectedTertiarySecondary] = useState<string>(''); // which 2차 상태 is selected for editing
+    const [newTertiaryStatus, setNewTertiaryStatus] = useState('');
 
     const [managerName, setManagerName] = useState('Mark');
     // [Missed Call Settings] saved in localStorage
@@ -79,16 +84,19 @@ export default function SettingsPage() {
 
     const addSecondaryStatusMutation = useAddSecondaryStatusMutation();
     const deleteSecondaryStatusMutation = useDeleteSecondaryStatusMutation();
+    const addTertiaryStatusMutation = useAddTertiaryStatusMutation();
+    const deleteTertiaryStatusMutation = useDeleteTertiaryStatusMutation();
 
 
 
     useEffect(() => {
-        Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses()]).then(([pData, cData, iData, sData, ssData]) => {
+        Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses(), fetchTertiaryStatuses()]).then(([pData, cData, iData, sData, ssData, tsData]) => {
             setPartners(pData);
             setCases(cData);
             setInboundPaths(iData);
             setStatuses(sData);
             setSecondaryStatuses(ssData);
+            setTertiaryStatuses(tsData);
             if (pData.length > 0) {
                 // Select the first partner initially
                 setSelectedPartnerId(pData[0].partnerId);
@@ -990,6 +998,137 @@ export default function SettingsPage() {
                             <p className="text-xs text-gray-400">등록된 2차 상태가 없습니다.</p>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* 3차 상태 관리 (2차 상태별 세부 단계) */}
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                    <ListChecks className="mr-2 text-amber-600" size={20} /> 3차 상태 관리
+                    <span className="ml-2 text-xs font-normal text-gray-500 bg-amber-50 px-2 py-0.5 rounded-full">2차 상태별 세부 단계</span>
+                </h3>
+                <p className="text-sm text-gray-500 mb-3">"사무장 접수" → 2차 상태 이후의 세부 관리 단계를 설정합니다. 2차 상태를 선택한 뒤 3차 상태를 추가하세요.</p>
+                <div className="space-y-4">
+                    {/* 2차 상태 선택 드롭다운 */}
+                    <div className="flex gap-2 items-end">
+                        <div className="flex-1">
+                            <label className="block text-xs font-medium text-purple-600 mb-1">2차 상태 선택</label>
+                            <select
+                                className="w-full p-2 border border-purple-300 rounded bg-purple-50 text-purple-800 font-medium"
+                                value={selectedTertiarySecondary}
+                                onChange={e => { setSelectedTertiarySecondary(e.target.value); setNewTertiaryStatus(''); }}
+                            >
+                                <option value="">-- 2차 상태를 선택하세요 --</option>
+                                {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* 3차 상태 추가 (2차 상태가 선택된 경우에만) */}
+                    {selectedTertiarySecondary && (
+                        <>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder={`"${selectedTertiarySecondary}"의 새 3차 상태 (예: 일정확인)`}
+                                    className="flex-1 p-2 border rounded border-amber-300 focus:ring-2 focus:ring-amber-500 outline-none"
+                                    value={newTertiaryStatus}
+                                    onChange={e => setNewTertiaryStatus(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' && newTertiaryStatus.trim()) {
+                                            addTertiaryStatusMutation.mutate(
+                                                { secondaryStatus: selectedTertiarySecondary, status: newTertiaryStatus.trim() },
+                                                {
+                                                    onSuccess: (updatedMap) => {
+                                                        setTertiaryStatuses(updatedMap);
+                                                        setNewTertiaryStatus('');
+                                                    }
+                                                }
+                                            );
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (newTertiaryStatus.trim()) {
+                                            addTertiaryStatusMutation.mutate(
+                                                { secondaryStatus: selectedTertiarySecondary, status: newTertiaryStatus.trim() },
+                                                {
+                                                    onSuccess: (updatedMap) => {
+                                                        setTertiaryStatuses(updatedMap);
+                                                        setNewTertiaryStatus('');
+                                                    }
+                                                }
+                                            );
+                                        }
+                                    }}
+                                    className="bg-amber-600 text-white px-4 rounded hover:bg-amber-700"
+                                >
+                                    <Plus size={20} />
+                                </button>
+                            </div>
+
+                            {/* 현재 선택된 2차 상태의 3차 상태 목록 */}
+                            <div>
+                                <p className="text-xs text-gray-500 font-medium mb-2">
+                                    📋 "{selectedTertiarySecondary}"의 3차 상태 ({(tertiaryStatuses[selectedTertiarySecondary] || []).length}개)
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {(tertiaryStatuses[selectedTertiarySecondary] || []).map(status => (
+                                        <div key={status} className="flex items-center bg-amber-50 rounded-full px-3 py-1.5 text-sm text-amber-700 border border-amber-200">
+                                            {status}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (confirm(`"${status}" 3차 상태를 삭제하시겠습니까?`)) {
+                                                        deleteTertiaryStatusMutation.mutate(
+                                                            { secondaryStatus: selectedTertiarySecondary, status },
+                                                            {
+                                                                onSuccess: (updatedMap) => setTertiaryStatuses(updatedMap)
+                                                            }
+                                                        );
+                                                    }
+                                                }}
+                                                className="ml-2 text-amber-400 hover:text-red-500"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {(tertiaryStatuses[selectedTertiarySecondary] || []).length === 0 && (
+                                        <p className="text-xs text-gray-400">등록된 3차 상태가 없습니다. 위에서 추가해주세요.</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 전체 매핑 요약 */}
+                            {Object.keys(tertiaryStatuses).length > 0 && (
+                                <div className="mt-4 pt-3 border-t border-gray-100">
+                                    <p className="text-xs text-gray-500 font-medium mb-2">📊 전체 3차 상태 매핑 요약</p>
+                                    <div className="space-y-1">
+                                        {(Object.entries(tertiaryStatuses) as [string, string[]][]).map(([sec, list]) => (
+                                            <div key={sec} className="flex items-center gap-2 text-xs">
+                                                <span className={`px-2 py-0.5 rounded-full font-medium ${sec === selectedTertiarySecondary ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-gray-100 text-gray-600'}`}>
+                                                    {sec}
+                                                </span>
+                                                <span className="text-gray-400">→</span>
+                                                <span className="text-amber-700">{list.join(', ')}</span>
+                                                <span className="text-gray-400 ml-1">({list.length}개)</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {!selectedTertiarySecondary && secondaryStatuses.length > 0 && (
+                        <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded">💡 위에서 2차 상태를 선택하면 해당 상태의 3차 상태를 관리할 수 있습니다.</p>
+                    )}
+                    {secondaryStatuses.length === 0 && (
+                        <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded">⚠️ 먼저 2차 상태를 등록해주세요.</p>
+                    )}
                 </div>
             </div>
 

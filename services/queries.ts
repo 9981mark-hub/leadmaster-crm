@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus } from './api';
+import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus } from './api';
 import { useToast } from '../contexts/ToastContext';
 
 // Keys
@@ -8,6 +8,7 @@ export const QUERY_KEYS = {
     case: (id: string) => ['case', id],
     statuses: ['statuses'],
     secondaryStatuses: ['secondaryStatuses'], // [New]
+    tertiaryStatuses: ['tertiaryStatuses'], // [New] 3차 상태
     partners: ['partners'],
     inboundPaths: ['inboundPaths'],
 };
@@ -146,7 +147,55 @@ export const useDeleteSecondaryStatusMutation = () => {
         onSuccess: (updatedList) => {
             queryClient.setQueryData(QUERY_KEYS.secondaryStatuses, updatedList);
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.secondaryStatuses });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tertiaryStatuses }); // Also refresh tertiary
             showToast('2차 상태가 삭제되었습니다.');
+        },
+        onError: (error) => {
+            console.error(error);
+            showToast('삭제에 실패했습니다.', 'error');
+        }
+    });
+};
+
+// --- Tertiary Statuses (3차 상태) ---
+export const useTertiaryStatuses = () => {
+    return useQuery({
+        queryKey: QUERY_KEYS.tertiaryStatuses,
+        queryFn: fetchTertiaryStatuses,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+};
+
+export const useAddTertiaryStatusMutation = () => {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: ({ secondaryStatus, status }: { secondaryStatus: string; status: string }) =>
+            addTertiaryStatus(secondaryStatus, status),
+        onSuccess: (updatedMap) => {
+            queryClient.setQueryData(QUERY_KEYS.tertiaryStatuses, updatedMap);
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tertiaryStatuses });
+            showToast('3차 상태가 추가되었습니다.');
+        },
+        onError: (error) => {
+            console.error(error);
+            showToast('추가에 실패했습니다.', 'error');
+        }
+    });
+};
+
+export const useDeleteTertiaryStatusMutation = () => {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: ({ secondaryStatus, status }: { secondaryStatus: string; status: string }) =>
+            deleteTertiaryStatus(secondaryStatus, status),
+        onSuccess: (updatedMap) => {
+            queryClient.setQueryData(QUERY_KEYS.tertiaryStatuses, updatedMap);
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tertiaryStatuses });
+            showToast('3차 상태가 삭제되었습니다.');
         },
         onError: (error) => {
             console.error(error);

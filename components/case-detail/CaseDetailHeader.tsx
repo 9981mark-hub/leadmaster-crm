@@ -9,8 +9,10 @@ interface CaseDetailHeaderProps {
     partner: Partner | undefined;
     statuses: CaseStatus[];
     secondaryStatuses: string[];
+    tertiaryStatuses: Record<string, string[]>;
     onStatusChangeStart: (status: CaseStatus) => void;
     onSecondaryStatusChangeStart: (status: string | null) => void;
+    onTertiaryStatusChangeStart: (status: string | null) => void;
 }
 
 export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
@@ -18,10 +20,17 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     partner,
     statuses,
     secondaryStatuses,
+    tertiaryStatuses,
     onStatusChangeStart,
-    onSecondaryStatusChangeStart
+    onSecondaryStatusChangeStart,
+    onTertiaryStatusChangeStart
 }) => {
     const warnings = getCaseWarnings(c, partner);
+
+    // Get available tertiary statuses for the current secondary status
+    const availableTertiaryStatuses = c.secondaryStatus
+        ? (tertiaryStatuses[c.secondaryStatus] || [])
+        : [];
 
     return (
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-0 z-10">
@@ -70,6 +79,20 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             >
                                 <option value="">선택 안함</option>
                                 {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
+                    )}
+                    {/* 3차 상태 (2차 상태가 선택되고, 해당 2차에 3차 목록이 있을 때만 표시) */}
+                    {c.status === '사무장 접수' && c.secondaryStatus && availableTertiaryStatuses.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs text-amber-600 font-medium">3차 상태</label>
+                            <select
+                                className="p-2 border border-amber-300 rounded font-semibold outline-none min-w-[140px] bg-amber-50 text-amber-800"
+                                value={c.tertiaryStatus || ''}
+                                onChange={(e) => onTertiaryStatusChangeStart(e.target.value || null)}
+                            >
+                                <option value="">선택 안함</option>
+                                {availableTertiaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
                     )}

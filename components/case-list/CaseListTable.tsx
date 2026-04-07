@@ -466,7 +466,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         className="flex items-center gap-1 group"
                                                     >
                                                         {c.status === '사무장 접수' && c.secondaryStatus ? (
-                                                            // 2차 상태가 있을 때: 복합 뱃지 (상태별 색상 적용)
+                                                            // 2차/3차 상태가 있을 때: 복합 뱃지
                                                             <span className="inline-flex items-center px-2 py-1 rounded text-xs whitespace-nowrap bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200">
                                                                 <span className="text-green-700 font-medium">✓사무장</span>
                                                                 <span className="text-gray-400 mx-0.5">›</span>
@@ -480,6 +480,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                                                             c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
                                                                                                 'text-purple-700'
                                                                     }`}>{c.secondaryStatus}</span>
+                                                                {c.tertiaryStatus && (
+                                                                    <>
+                                                                        <span className="text-gray-400 mx-0.5">›</span>
+                                                                        <span className="font-medium text-amber-700">{c.tertiaryStatus}</span>
+                                                                    </>
+                                                                )}
                                                             </span>
                                                         ) : (
                                                             // 일반 상태 표시
