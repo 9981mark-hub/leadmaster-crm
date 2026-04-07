@@ -396,75 +396,85 @@ export default function SettingsPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">재통화 알림 주기 (등록일 기준)</label>
-                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
+                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-3">
                                 {missedCallIntervalTiers.map((tier, idx) => (
-                                    <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded border border-gray-100">
-                                        <div className="flex items-center gap-1 flex-1 min-w-0">
-                                            <input
-                                                type="number"
-                                                className="w-14 p-1.5 border rounded text-sm text-center"
-                                                value={tier.minDays}
-                                                min={0}
-                                                onChange={e => {
-                                                    const newTiers = [...missedCallIntervalTiers];
-                                                    newTiers[idx] = { ...tier, minDays: Number(e.target.value) };
-                                                    // Auto-update label
-                                                    const max = newTiers[idx].maxDays;
-                                                    newTiers[idx].label = max === 0
-                                                        ? `${newTiers[idx].minDays}일 이상 (장기)`
-                                                        : `${newTiers[idx].minDays}일~${max}일`;
-                                                    setMissedCallIntervalTiers(newTiers);
-                                                }}
-                                            />
-                                            <span className="text-xs text-gray-500">일 ~</span>
-                                            <input
-                                                type="number"
-                                                className="w-14 p-1.5 border rounded text-sm text-center"
-                                                value={tier.maxDays}
-                                                min={0}
-                                                placeholder="∞"
-                                                onChange={e => {
-                                                    const newTiers = [...missedCallIntervalTiers];
-                                                    newTiers[idx] = { ...tier, maxDays: Number(e.target.value) };
-                                                    // Auto-update label
-                                                    const max = newTiers[idx].maxDays;
-                                                    newTiers[idx].label = max === 0
-                                                        ? `${newTiers[idx].minDays}일 이상 (장기)`
-                                                        : newTiers[idx].minDays === 0
-                                                            ? `${max}일 미만 (신규)`
+                                    <div key={idx} className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-xs font-bold text-gray-500">{idx + 1}단계</span>
+                                            {missedCallIntervalTiers.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx));
+                                                    }}
+                                                    className="text-red-400 hover:text-red-600 p-0.5 rounded hover:bg-red-50"
+                                                    title="구간 삭제"
+                                                >
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <div className="flex items-center gap-1 bg-gray-50 px-2 py-1.5 rounded border border-gray-200">
+                                                <span className="text-xs text-gray-500 whitespace-nowrap">등록 후</span>
+                                                <input
+                                                    type="number"
+                                                    className="w-12 p-1 border rounded text-sm text-center bg-white"
+                                                    value={tier.minDays}
+                                                    min={0}
+                                                    onChange={e => {
+                                                        const newTiers = [...missedCallIntervalTiers];
+                                                        newTiers[idx] = { ...tier, minDays: Number(e.target.value) };
+                                                        const max = newTiers[idx].maxDays;
+                                                        newTiers[idx].label = max === 0
+                                                            ? `${newTiers[idx].minDays}일 이상 (장기)`
                                                             : `${newTiers[idx].minDays}일~${max}일`;
-                                                    setMissedCallIntervalTiers(newTiers);
-                                                }}
-                                            />
-                                            <span className="text-xs text-gray-500">일</span>
+                                                        setMissedCallIntervalTiers(newTiers);
+                                                    }}
+                                                />
+                                                <span className="text-xs text-gray-400">~</span>
+                                                <input
+                                                    type="number"
+                                                    className="w-12 p-1 border rounded text-sm text-center bg-white"
+                                                    value={tier.maxDays}
+                                                    min={0}
+                                                    placeholder="∞"
+                                                    onChange={e => {
+                                                        const newTiers = [...missedCallIntervalTiers];
+                                                        newTiers[idx] = { ...tier, maxDays: Number(e.target.value) };
+                                                        const max = newTiers[idx].maxDays;
+                                                        newTiers[idx].label = max === 0
+                                                            ? `${newTiers[idx].minDays}일 이상 (장기)`
+                                                            : newTiers[idx].minDays === 0
+                                                                ? `${max}일 미만 (신규)`
+                                                                : `${newTiers[idx].minDays}일~${max}일`;
+                                                        setMissedCallIntervalTiers(newTiers);
+                                                    }}
+                                                />
+                                                <span className="text-xs text-gray-500 whitespace-nowrap">일</span>
+                                            </div>
+                                            <span className="text-gray-400 font-bold">→</span>
+                                            <div className="flex items-center gap-1 bg-blue-50 px-2 py-1.5 rounded border border-blue-200">
+                                                <input
+                                                    type="number"
+                                                    className="w-12 p-1 border border-blue-300 rounded text-sm text-center font-bold bg-white"
+                                                    value={tier.interval}
+                                                    min={1}
+                                                    onChange={e => {
+                                                        const newTiers = [...missedCallIntervalTiers];
+                                                        newTiers[idx] = { ...tier, interval: Number(e.target.value) };
+                                                        setMissedCallIntervalTiers(newTiers);
+                                                    }}
+                                                />
+                                                <span className="text-xs text-blue-600 font-medium whitespace-nowrap">일 후 알림</span>
+                                            </div>
                                         </div>
-                                        <span className="text-xs text-gray-400">→</span>
-                                        <div className="flex items-center gap-1">
-                                            <input
-                                                type="number"
-                                                className="w-14 p-1.5 border border-blue-300 rounded text-sm text-right font-bold"
-                                                value={tier.interval}
-                                                min={1}
-                                                onChange={e => {
-                                                    const newTiers = [...missedCallIntervalTiers];
-                                                    newTiers[idx] = { ...tier, interval: Number(e.target.value) };
-                                                    setMissedCallIntervalTiers(newTiers);
-                                                }}
-                                            />
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">일 후</span>
-                                        </div>
-                                        {missedCallIntervalTiers.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx));
-                                                }}
-                                                className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50"
-                                                title="구간 삭제"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
+                                        <p className="text-[10px] text-gray-400 mt-1.5">
+                                            {tier.maxDays === 0
+                                                ? `등록 ${tier.minDays}일 이상 경과 → ${tier.interval}일마다 알림`
+                                                : `등록 ${tier.minDays}일~${tier.maxDays}일 → ${tier.interval}일마다 알림`
+                                            }
+                                        </p>
                                     </div>
                                 ))}
                                 <button
@@ -481,13 +491,13 @@ export default function SettingsPage() {
                                             { minDays: newMinDays, maxDays: 0, interval: 21, label: `${newMinDays}일 이상 (장기)` }
                                         ]);
                                     }}
-                                    className="w-full py-1.5 border border-dashed border-gray-300 rounded text-xs text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1"
+                                    className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-xs text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1"
                                 >
                                     <Plus size={14} /> 구간 추가
                                 </button>
                             </div>
                             <p className="text-xs text-gray-500 mt-1">
-                                등록일 기준 경과일에 따라 알림 주기가 다르게 적용됩니다. (maxDays 0 = 무한)
+                                최초 등록일 기준 경과일에 따라 알림 주기가 다르게 적용됩니다.
                             </p>
                         </div>
                     </div>
