@@ -363,7 +363,7 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                     <User className="mr-2 text-gray-600" size={20} /> 공통 설정
                 </h3>
-                <div className="max-w-md space-y-4">
+                <div className="max-w-2xl space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">담당자 이름</label>
                         <input
