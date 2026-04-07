@@ -62,8 +62,8 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
             showToast('날짜와 시간을 선택해주세요.', 'error');
             return;
         }
-        if (reminders.length >= 5) {
-            showToast('리마인더는 최대 5개까지 등록할 수 있습니다.', 'error');
+        if (reminders.length >= 10) {
+            showToast('리마인더는 최대 10개까지 등록할 수 있습니다.', 'error');
             return;
         }
         const newReminder: ReminderItem = {
@@ -224,7 +224,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                 <div className="grid md:grid-cols-2 gap-4">
                     {/* Reminder Settings */}
                     <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
-                        <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/5)</label>
+                        <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/10)</label>
                         <div className="flex flex-col md:flex-row gap-2 mb-3">
                             <div className="flex flex-col gap-2 flex-[2]">
                                 <input
@@ -232,14 +232,14 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                     className="w-full p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                     value={remDate}
                                     onChange={e => setRemDate(e.target.value)}
-                                    disabled={(reminders.length || 0) >= 5}
+                                    disabled={(reminders.length || 0) >= 10}
                                 />
                                 <div className="flex gap-1">
                                     <select
                                         className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                         value={remHour}
                                         onChange={e => setRemHour(e.target.value)}
-                                        disabled={(reminders.length || 0) >= 5}
+                                        disabled={(reminders.length || 0) >= 10}
                                     >
                                         {Array.from({ length: 24 }).map((_, i) => {
                                             const h = i.toString().padStart(2, '0');
@@ -250,7 +250,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                         className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                         value={remMinute}
                                         onChange={e => setRemMinute(e.target.value)}
-                                        disabled={(reminders.length || 0) >= 5}
+                                        disabled={(reminders.length || 0) >= 10}
                                     >
                                         {['00', '10', '20', '30', '40', '50'].map(m => (
                                             <option key={m} value={m}>{m}분</option>
@@ -280,14 +280,14 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                             />
                             <button
                                 onClick={handleAddReminder}
-                                disabled={(reminders.length || 0) >= 5}
+                                disabled={(reminders.length || 0) >= 10}
                                 className="bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 whitespace-nowrap disabled:bg-gray-400"
                             >
                                 추가
                             </button>
                         </div>
 
-                        <div className="space-y-2 mt-2">
+                        <div className="space-y-2 mt-2 max-h-72 overflow-y-auto">
                             {sortedReminders.length === 0 ? (
                                 <div className="text-center py-2 text-xs text-gray-400 bg-gray-50 rounded border border-gray-100 border-dashed">
                                     지정된 일정이 없습니다.
