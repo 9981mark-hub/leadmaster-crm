@@ -466,26 +466,27 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         className="flex items-center gap-1 group"
                                                     >
                                                         {c.status === '사무장 접수' && c.secondaryStatus ? (
-                                                            // 2차/3차 상태가 있을 때: 복합 뱃지
-                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs whitespace-nowrap bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200">
-                                                                <span className="text-green-700 font-medium">✓사무장</span>
-                                                                <span className="text-gray-400 mx-0.5">›</span>
-                                                                <span className={`font-medium ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
-                                                                    c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
-                                                                        c.secondaryStatus === '출장예약' ? 'text-green-600' :
-                                                                            c.secondaryStatus === '방문예약' ? 'text-blue-600' :
-                                                                                c.secondaryStatus === '고민중' ? 'text-yellow-600' :
-                                                                                    c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
-                                                                                        c.secondaryStatus === '관리중' ? 'text-indigo-600' :
-                                                                                            c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
-                                                                                                'text-purple-700'
-                                                                    }`}>{c.secondaryStatus}</span>
-                                                                {c.tertiaryStatus && (
-                                                                    <>
-                                                                        <span className="text-gray-400 mx-0.5">›</span>
-                                                                        <span className="font-medium text-amber-700">{c.tertiaryStatus}</span>
-                                                                    </>
-                                                                )}
+                                                            // 2차/3차 상태: 세로 스택 뱃지
+                                                            <span className="inline-flex flex-col px-2 py-1 rounded text-xs bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200 max-w-[120px]">
+                                                                <span className="text-green-700 font-medium whitespace-nowrap">✓사무장</span>
+                                                                <span className="flex items-center gap-0.5 mt-0.5">
+                                                                    <span className={`font-medium truncate ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
+                                                                        c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
+                                                                            c.secondaryStatus === '출장예약' ? 'text-green-600' :
+                                                                                c.secondaryStatus === '방문예약' ? 'text-blue-600' :
+                                                                                    c.secondaryStatus === '고민중' ? 'text-yellow-600' :
+                                                                                        c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
+                                                                                            c.secondaryStatus === '관리중' ? 'text-indigo-600' :
+                                                                                                c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
+                                                                                                    'text-purple-700'
+                                                                        }`}>{c.secondaryStatus}</span>
+                                                                    {c.tertiaryStatus && (
+                                                                        <>
+                                                                            <span className="text-gray-400">›</span>
+                                                                            <span className="font-medium text-amber-700 truncate">{c.tertiaryStatus}</span>
+                                                                        </>
+                                                                    )}
+                                                                </span>
                                                             </span>
                                                         ) : (
                                                             // 일반 상태 표시
