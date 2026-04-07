@@ -821,6 +821,7 @@ export const deleteSecondaryStatus = async (status: string): Promise<string[]> =
   // [NEW] Also remove tertiary statuses mapped to this secondary status
   if (localTertiaryStatuses[status]) {
     delete localTertiaryStatuses[status];
+    localStorage.setItem(CACHE_KEYS.TERTIARY_STATUSES, JSON.stringify(localTertiaryStatuses));
     syncToSheet({ target: 'settings', action: 'update', key: 'tertiaryStatuses', value: localTertiaryStatuses });
     saveSettingToSupabase('tertiaryStatuses', localTertiaryStatuses);
   }
@@ -843,6 +844,8 @@ export const addTertiaryStatus = async (secondaryStatus: string, status: string)
   }
   if (!localTertiaryStatuses[secondaryStatus].includes(status)) {
     localTertiaryStatuses[secondaryStatus].push(status);
+    // [FIX] Save to all storage layers
+    localStorage.setItem(CACHE_KEYS.TERTIARY_STATUSES, JSON.stringify(localTertiaryStatuses));
     syncToSheet({ target: 'settings', action: 'update', key: 'tertiaryStatuses', value: localTertiaryStatuses });
     saveSettingToSupabase('tertiaryStatuses', localTertiaryStatuses);
   }
@@ -866,6 +869,8 @@ export const deleteTertiaryStatus = async (secondaryStatus: string, status: stri
     return c;
   });
 
+  // [FIX] Save to all storage layers
+  localStorage.setItem(CACHE_KEYS.TERTIARY_STATUSES, JSON.stringify(localTertiaryStatuses));
   syncToSheet({ target: 'settings', action: 'update', key: 'tertiaryStatuses', value: localTertiaryStatuses });
   saveSettingToSupabase('tertiaryStatuses', localTertiaryStatuses);
   return { ...localTertiaryStatuses };
