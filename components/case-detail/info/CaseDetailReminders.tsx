@@ -27,7 +27,11 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
     showToast
 }) => {
     // Reminder State
-    const [remDate, setRemDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [remDate, setRemDate] = useState(() => {
+        const now = new Date();
+        const kst = new Date(now.getTime() + (9 * 60 - now.getTimezoneOffset()) * 60000);
+        return kst.toISOString().split('T')[0];
+    });
     const [remHour, setRemHour] = useState('09');
     const [remMinute, setRemMinute] = useState('00');
     const [newReminderDateTime, setNewReminderDateTime] = useState('');
