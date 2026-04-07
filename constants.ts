@@ -132,9 +132,10 @@ export const AVAILABLE_FIELDS_CONFIG = [
 ];
 
 export const AVAILABLE_AI_MODELS = [
-  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (추천)', description: '음성 변환/요약 최적. 빠르고 안정적입니다. 무료 250~500 RPD.' },
-  { id: 'gemini-3-flash', label: 'Gemini 3 Flash (최신)', description: '최신 3세대 Flash 모델. 성능 향상.' },
+  { id: 'gemini-3-flash', label: 'Gemini 3 Flash (추천)', description: '최신 3세대. 음성 변환/요약 최고 성능. 무료 ~250 RPD.' },
+  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (안정)', description: '검증된 안정 버전. 빠르고 안정적. 무료 ~500 RPD.' },
   { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (경량)', description: '초고속, 대량 처리용. 무료 1,000 RPD.' },
   { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (고성능)', description: '복잡한 분석에 적합. 무료 100 RPD.' },
   { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite (최신 경량)', description: '최신 3.1세대 경량 모델.' },
 ];
+
