@@ -693,7 +693,7 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const selectedModel = localStorage.getItem('lm_geminiModel') || 'gemini-2.0-flash';
+    const selectedModel = localStorage.getItem('lm_geminiModel') || 'gemini-2.5-flash';
     const model = genAI.getGenerativeModel({ model: selectedModel });
 
     // Convert file to compatible format (Base64)

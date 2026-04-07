@@ -67,7 +67,7 @@ export default function SettingsPage() {
     const [isEditingGeminiKey, setIsEditingGeminiKey] = useState(false);
 
     // [New] AI Model State
-    const [geminiModel, setGeminiModel] = useState(localStorage.getItem('lm_geminiModel') || 'gemini-2.0-flash');
+    const [geminiModel, setGeminiModel] = useState(localStorage.getItem('lm_geminiModel') || 'gemini-2.5-flash');
 
     const addSecondaryStatusMutation = useAddSecondaryStatusMutation();
     const deleteSecondaryStatusMutation = useDeleteSecondaryStatusMutation();
