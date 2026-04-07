@@ -67,7 +67,15 @@ export default function SettingsPage() {
     const [isEditingGeminiKey, setIsEditingGeminiKey] = useState(false);
 
     // [New] AI Model State
-    const [geminiModel, setGeminiModel] = useState(localStorage.getItem('lm_geminiModel') || 'gemini-2.5-flash');
+    const [geminiModel, setGeminiModel] = useState(() => {
+        const stored = localStorage.getItem('lm_geminiModel') || 'gemini-2.5-flash';
+        const isValid = AVAILABLE_AI_MODELS.some(m => m.id === stored);
+        if (!isValid) {
+            localStorage.setItem('lm_geminiModel', 'gemini-2.5-flash');
+            return 'gemini-2.5-flash';
+        }
+        return stored;
+    });
 
     const addSecondaryStatusMutation = useAddSecondaryStatusMutation();
     const deleteSecondaryStatusMutation = useDeleteSecondaryStatusMutation();

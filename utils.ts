@@ -693,8 +693,17 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const selectedModel = localStorage.getItem('lm_geminiModel') || 'gemini-2.5-flash';
-    const model = genAI.getGenerativeModel({ model: selectedModel });
+    
+    // [Auto-Migration] Fix invalid model names stored in localStorage
+    const VALID_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite-preview'];
+    const FALLBACK_MODEL = 'gemini-2.5-flash';
+    let selectedModel = localStorage.getItem('lm_geminiModel') || FALLBACK_MODEL;
+    
+    if (!VALID_MODELS.includes(selectedModel)) {
+      console.warn(`[AI] Invalid model "${selectedModel}" found, migrating to "${FALLBACK_MODEL}"`);
+      selectedModel = FALLBACK_MODEL;
+      localStorage.setItem('lm_geminiModel', FALLBACK_MODEL);
+    }
 
     // Convert file to compatible format (Base64)
     const base64Data = await fileToBase64(file);
@@ -713,7 +722,7 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
       promptToUse = contextInfo + "\n" + promptToUse;
     }
 
-    const result = await model.generateContent([
+    const contentPayload = [
       promptToUse,
       {
         inlineData: {
@@ -721,10 +730,29 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
           mimeType: file.type || "audio/mp3",
         },
       },
-    ]);
+    ];
 
-    const response = await result.response;
-    return response.text();
+    // Try with selected model
+    try {
+      const model = genAI.getGenerativeModel({ model: selectedModel });
+      const result = await model.generateContent(contentPayload);
+      const response = await result.response;
+      return response.text();
+    } catch (firstError: any) {
+      const firstMsg = firstError?.message || '';
+      
+      // [Auto-Fallback] If 404/not found, retry with fallback model
+      if ((firstMsg.includes('404') || firstMsg.includes('not found')) && selectedModel !== FALLBACK_MODEL) {
+        console.warn(`[AI] Model "${selectedModel}" failed (404), retrying with "${FALLBACK_MODEL}"...`);
+        localStorage.setItem('lm_geminiModel', FALLBACK_MODEL);
+        
+        const fallbackModel = genAI.getGenerativeModel({ model: FALLBACK_MODEL });
+        const result = await fallbackModel.generateContent(contentPayload);
+        const response = await result.response;
+        return `[모델 자동 전환: ${selectedModel} → ${FALLBACK_MODEL}]\n\n` + response.text();
+      }
+      throw firstError; // Re-throw for other errors
+    }
   } catch (error) {
     console.error("Gemini AI Error:", error);
     let errorMsg = error instanceof Error ? error.message : "알 수 없는 오류";
