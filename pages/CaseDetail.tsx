@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layout } from 'lucide-react';
 import { Case, CaseStatus, ReminderItem, MemoItem, RecordingItem } from '../types';
@@ -278,11 +278,29 @@ export default function CaseDetail() {
             };
             const summary = await generateAiSummary(currentAudioFile || new File([], "mock.mp3"), customPrompt, context);
             setAiSummaryText(summary);
-            setAiSummaryEditMode(true);
+            setAiSummaryEditMode(false); // No need for edit mode - auto pipeline
 
-            // Auto save
+            // [Step 1] Auto save AI summary
             handleUpdate('aiSummary', summary);
-            showToast('AI 요약이 완료되었습니다.');
+
+            // [Step 2] Auto send to consultation memo
+            // Extract special notes directly from summary variable (not state, which is async)
+            let memoContent = '';
+            const specialMatch = summary.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
+            if (specialMatch && specialMatch[1]) {
+                memoContent = specialMatch[1].trim().slice(0, 1000);
+            } else {
+                memoContent = `[AI 요약 전체]\n${summary.slice(0, 1000)}`;
+            }
+
+            const newMemo: MemoItem = {
+                id: Date.now().toString(),
+                createdAt: new Date().toISOString(),
+                content: memoContent
+            };
+            handleUpdateMemos([newMemo, ...(c?.specialMemo || [])]);
+
+            showToast('✅ AI 요약 → 저장 → 상담 이력 전송 완료!');
         } catch (error) {
             console.error(error);
             showToast('AI 요약 생성 중 오류가 발생했습니다.', 'error');
