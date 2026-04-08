@@ -33,10 +33,13 @@ export const isOverdueMissedCall = (
   tiers: MissedCallIntervalTier[]
 ): boolean => {
   if (c.status !== missedCallStatus) return false;
-  if (!c.lastMissedCallAt) return false;
 
   const interval = getMissedCallInterval(c.createdAt, tiers);
-  const elapsed = Date.now() - new Date(c.lastMissedCallAt).getTime();
+  // Use lastMissedCallAt if available, otherwise use createdAt as baseline
+  const baseDate = c.lastMissedCallAt || c.createdAt;
+  if (!baseDate) return false;
+
+  const elapsed = Date.now() - new Date(baseDate).getTime();
   return elapsed > interval * 24 * 60 * 60 * 1000;
 };
 

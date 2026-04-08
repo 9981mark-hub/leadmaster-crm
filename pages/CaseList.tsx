@@ -76,6 +76,21 @@ export default function CaseList() {
     const [missedCallStatus, setMissedCallStatus] = useState(() => localStorage.getItem('lm_missedStatus') || '부재');
     const [missedCallIntervalTiers, setMissedCallIntervalTiers] = useState<MissedCallIntervalTier[]>(() => loadMissedCallTiers());
 
+    // [FIX] Re-read settings from localStorage when page gains focus (e.g. after Settings page)
+    useEffect(() => {
+        const handleFocus = () => {
+            setMissedCallStatus(localStorage.getItem('lm_missedStatus') || '부재');
+            setMissedCallIntervalTiers(loadMissedCallTiers());
+        };
+        window.addEventListener('focus', handleFocus);
+        // Also re-read on storage event (cross-tab sync)
+        window.addEventListener('storage', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('storage', handleFocus);
+        };
+    }, []);
+
     const [search, setSearch] = useState(() => sessionStorage.getItem('lm_search') || '');
     const [statusFilters, setStatusFilters] = useState<string[]>(() => {
         const stored = sessionStorage.getItem('lm_statusFilters');
