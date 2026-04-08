@@ -173,6 +173,9 @@ export default function CaseDetail() {
                 : primaryStatusChangeReason
         };
 
+        const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
+        const now = new Date().toISOString();
+
         updateCaseMutation.mutate({
             id: c.caseId,
             updates: {
@@ -183,6 +186,14 @@ export default function CaseDetail() {
                 ...(isDropOff ? {
                     dropOffReason: selectedDropOffReason,
                     dropOffDetail: primaryStatusChangeReason || undefined
+                } : {}),
+                // [FIX] 부재로 변경 시 부재 카운트/시간 초기화
+                ...(pendingPrimaryStatus === missedCallStatus && !c.missedCallCount ? {
+                    missedCallCount: 1,
+                    lastMissedCallAt: now
+                } : {}),
+                ...(pendingPrimaryStatus === missedCallStatus && c.missedCallCount ? {
+                    lastMissedCallAt: c.lastMissedCallAt || now
                 } : {})
             }
         });

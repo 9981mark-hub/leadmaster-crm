@@ -354,8 +354,10 @@ export default function CaseList() {
         };
 
         if (newStatus === missedCallStatus) {
-            updates.missedCallCount = 1;
-            updates.lastMissedCallAt = now;
+            const targetCase = cases.find(c => c.caseId === caseId);
+            const existingCount = targetCase?.missedCallCount || 0;
+            updates.missedCallCount = existingCount > 0 ? existingCount : 1;
+            updates.lastMissedCallAt = targetCase?.lastMissedCallAt || now;
         }
 
         updateCaseMutation.mutate({ id: caseId, updates });
