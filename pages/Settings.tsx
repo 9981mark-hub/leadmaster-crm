@@ -680,6 +680,7 @@ export default function SettingsPage() {
                                     const newModel = e.target.value;
                                     setGeminiModel(newModel);
                                     localStorage.setItem('lm_geminiModel', newModel);
+                                    saveGlobalSettings({ geminiModel: newModel });
                                     showToast(`AI 모델이 변경되었습니다: ${AVAILABLE_AI_MODELS.find(m => m.id === newModel)?.label}`);
                                 }}
                             >

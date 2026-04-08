@@ -488,10 +488,14 @@ const performBackgroundFetch = async () => {
 
       // [NEW] Load Global Missed Call Settings
       if (settingsData.missedCallSettings) {
-        const { status, interval } = settingsData.missedCallSettings;
-        if (status) localStorage.setItem('lm_missedStatus', status);
+        const { status, interval, intervalTiers } = settingsData.missedCallSettings;
         if (status) localStorage.setItem('lm_missedStatus', status);
         if (interval) localStorage.setItem('lm_missedInterval', String(interval));
+        // [FIX] Sync intervalTiers from server to localStorage (PC↔Mobile sync)
+        if (intervalTiers && Array.isArray(intervalTiers) && intervalTiers.length > 0) {
+          localStorage.setItem('lm_missedIntervalTiers', JSON.stringify(intervalTiers));
+          console.log(`[Sync] Loaded ${intervalTiers.length} missed call interval tiers from server.`);
+        }
       }
 
       // [NEW] Load Settlement Batches from server
@@ -506,6 +510,11 @@ const performBackgroundFetch = async () => {
       // [NEW] Load Gemini API Key
       if (settingsData.geminiApiKey) {
         localStorage.setItem('lm_geminiApiKey', settingsData.geminiApiKey);
+      }
+
+      // [FIX] Load Gemini Model selection from server
+      if (settingsData.geminiModel) {
+        localStorage.setItem('lm_geminiModel', settingsData.geminiModel);
       }
     }
 
@@ -1032,7 +1041,7 @@ export const saveGlobalSettings = async (settings: {
   missedCallInterval?: number,
   missedCallIntervalTiers?: MissedCallIntervalTier[],
   geminiApiKey?: string,
-
+  geminiModel?: string,
 }) => {
   const updates: any = {};
 
@@ -1057,6 +1066,12 @@ export const saveGlobalSettings = async (settings: {
   // [Fix] Save Gemini API Key
   if (settings.geminiApiKey !== undefined) {
     localStorage.setItem('lm_geminiApiKey', settings.geminiApiKey);
+  }
+
+  // [FIX] Save Gemini Model selection
+  if (settings.geminiModel) {
+    localStorage.setItem('lm_geminiModel', settings.geminiModel);
+    await saveSettingToSupabase('geminiModel', settings.geminiModel);
   }
 
   if (settings.managerName) await saveSettingToSupabase('managerName', settings.managerName);
