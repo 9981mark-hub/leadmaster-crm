@@ -57,7 +57,7 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
 
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
       <div className="relative">
         <input
           type={type === 'number' && !isCurrency ? 'text' : 'text'}
@@ -77,7 +77,7 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
 
 const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
   <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
     <div className="flex gap-2 flex-wrap">
       {options.map((opt: string) => {
         const isSelected = isMulti ? value?.includes(opt) : value === opt;
@@ -86,7 +86,7 @@ const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`px-3 py-2 text-sm rounded-md border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+            className={`px-3 py-1.5 text-xs rounded border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
           >
             {opt}
           </button>
@@ -381,7 +381,7 @@ export default function NewCase() {
       <h3 className="text-lg font-semibold mb-4 text-blue-600">1. 기본 정보</h3>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">거래처 (법률사무소)</label>
+        <label className="block text-xs font-medium text-gray-500 mb-1">거래처 (법률사무소)</label>
         <div className="relative">
           <select
             className="w-full p-2 pl-8 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50 text-blue-900 font-bold"
@@ -397,7 +397,7 @@ export default function NewCase() {
       <Select label="사건 유형" value={formData.caseType} onChange={(v: any) => handleChange('caseType', v)} options={CASE_TYPES} />
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">유입 경로</label>
+        <label className="block text-xs font-medium text-gray-500 mb-1">유입 경로</label>
         <select
           className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={formData.inboundPath}
@@ -412,7 +412,7 @@ export default function NewCase() {
 
       {formData.preInfo && (
         <div className="mb-4 animate-fade-in">
-          <label className="block text-sm font-medium text-gray-700 mb-1">사전 고객 정보 (리드 수집 정보)</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">사전 고객 정보 (리드 수집 정보)</label>
           <div className="w-full p-3 border border-indigo-100 rounded-lg text-sm bg-indigo-50 text-gray-700 whitespace-pre-wrap leading-relaxed shadow-sm">
             {formData.preInfo.split(/\s\/\s|\n/).filter((line: string) => {
               const lower = line.toLowerCase();
@@ -480,7 +480,7 @@ export default function NewCase() {
 
       {['기혼', '이혼'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">미성년 자녀 수</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">미성년 자녀 수</label>
           <div className="flex gap-2 flex-wrap">
             {[0, 1, 2, 3, 4, 5, 6, 7].map(num => (
               <button key={num} type="button" onClick={() => handleChange('childrenCount', num)}
@@ -519,7 +519,7 @@ export default function NewCase() {
           </div>
           <Input label="월세" value={formData.rent} onChange={(v: any) => handleChange('rent', v)} type="number" suffix="만원" isCurrency={true} />
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">임대차 계약인</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">임대차 계약인</label>
             <div className="flex gap-2">
               {RENT_CONTRACTORS.map(opt => (
                 <button key={opt} type="button" onClick={() => handleChange('rentContractor', opt)}
@@ -608,7 +608,7 @@ export default function NewCase() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">담보 대출 내용 (자동 집계 + 추가)</label>
+        <label className="block text-xs font-medium text-gray-500 mb-1">담보 대출 내용 (자동 집계 + 추가)</label>
         <div className="bg-gray-50 p-2 rounded text-sm text-blue-800 font-medium mb-1">자동 집계: {getAutoCollateralString()}</div>
         <input type="text" className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" value={formData.collateralLoanMemo} onChange={e => handleChange('collateralLoanMemo', e.target.value)} placeholder="추가로 작성할 담보 대출 내용" />
       </div>
@@ -628,7 +628,7 @@ export default function NewCase() {
 
       {isFieldVisible('history') && (
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">개인회생/파산/회복 이력</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">개인회생/파산/회복 이력</label>
           <div className="flex gap-2 mb-2 flex-wrap">
             {HISTORY_TYPES.map(opt => (
               <button key={opt} type="button" onClick={() => handleChange('historyType', opt)}
@@ -648,7 +648,7 @@ export default function NewCase() {
     <div>
       <h3 className="text-lg font-semibold mb-4 text-blue-600">{isDesktop ? '5. 상담 특이사항' : '5. 마무리'}</h3>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">상담 특이사항</label>
+        <label className="block text-xs font-medium text-gray-500 mb-1">상담 특이사항</label>
         <textarea
           className="w-full p-2 border border-gray-300 rounded-md h-32 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={formData.specialMemo}
@@ -668,7 +668,7 @@ export default function NewCase() {
   // ===== PC Layout =====
   if (isDesktop) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
