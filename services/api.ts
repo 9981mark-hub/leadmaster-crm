@@ -2604,3 +2604,30 @@ export const getTodayTaxAlerts = (): { reminder: TaxReminder; daysLeft: number }
   return alerts;
 };
 
+// =====================================================
+// 구글 드라이브 파일 업로드 기능
+// =====================================================
+export const uploadFileToDrive = async (base64Data: string, filename: string, mimeType: string): Promise<{ status: string; url: string; id: string; viewUrl: string }> => {
+  if (!GOOGLE_SCRIPT_URL) throw new Error("Google Script URL is not configured");
+
+  const payload = {
+    target: 'upload',
+    data: base64Data,
+    filename: filename,
+    mimeType: mimeType
+  };
+
+  // Preflight(옵션 요청) 방영을 피하기 위해 application/json을 쓰지 않고 일반 텍스트 POST 방식을 취함
+  const response = await fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) throw new Error('Network error during upload');
+  
+  const result = await response.json();
+  if (result.status === 'error') {
+    throw new Error(result.message || 'Upload failed');
+  }
+  return result;
+};

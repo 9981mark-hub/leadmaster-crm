@@ -300,22 +300,32 @@ export default function CaseDetail() {
 
             setIsFileUploading(true);
             try {
-                // Mock upload delay
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // 1. 파일을 Base64 화
+                const base64Data = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+
+                // 2. 구글 드라이브로 업로드 전송
+                const { uploadFileToDrive } = await import('../services/api');
+                const result = await uploadFileToDrive(base64Data, file.name, file.type || 'audio/mp3');
 
                 const newRecording: RecordingItem = {
                     id: Date.now().toString(),
                     filename: file.name,
-                    url: URL.createObjectURL(file), // In real app, this would be cloud URL
+                    url: result.viewUrl, // 스트리밍 전용 구글 드라이브 주소 저장
                     uploadDate: new Date().toISOString(),
                     mimeType: file.type || 'audio/mp3',
                     duration: 0
                 };
 
                 handleUpdate('recordings', [newRecording, ...(c?.recordings || [])]);
-                showToast('녹음 파일이 업로드되었습니다.');
+                showToast('녹음 파일이 구글 드라이브에 안전하게 저장되었습니다.');
             } catch (err) {
-                showToast('파일 업로드 실패', 'error');
+                console.error("Upload Error:", err);
+                showToast('구글 드라이브 업로드 실패', 'error');
             } finally {
                 setIsFileUploading(false);
             }
