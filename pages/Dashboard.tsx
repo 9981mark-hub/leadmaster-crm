@@ -5,7 +5,7 @@ import { fetchCases, fetchPartners, fetchSettlementBatches } from '../services/a
 import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X, DollarSign, FileText, Bell } from 'lucide-react';
+import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X, DollarSign, FileText, Bell, MessageSquare } from 'lucide-react';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
@@ -257,6 +257,7 @@ export default function Dashboard() {
                           {type === '방문미팅' && <MapPin size={16} className="text-purple-600" />}
                           {type === '입금' && <Wallet size={16} className="text-emerald-600" />}
                           {type === '기타' && <MoreHorizontal size={16} className="text-gray-600" />}
+                          {type === '문자' && <MessageSquare size={16} className="text-gray-600" />}
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
                       </div>
