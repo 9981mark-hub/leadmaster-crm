@@ -266,6 +266,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                         onChange={e => setNewReminderType(e.target.value as any)}
                                     >
                                         <option value="통화">통화</option>
+                                        <option value="문자">문자</option>
                                         <option value="출장미팅">출장미팅</option>
                                         <option value="방문미팅">방문미팅</option>
                                         <option value="입금">입금</option>
