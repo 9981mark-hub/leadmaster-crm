@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, TouchEvent } from 'react';
 import { createCase, updateCase, fetchCases, fetchInboundPaths, fetchPartners, markCaseAsSeen } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { formatPhone, CASE_TYPES, MANAGER_NAME } from '../constants';
-import { ChevronRight, ChevronLeft, Save, Plus, Trash2, Building } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Save, Plus, Trash2, Building, User, Briefcase, Home, Wallet, MessageSquare, AlertCircle } from 'lucide-react';
 import { JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_TYPES, ASSET_OWNERS, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS } from '../constants';
 import { normalizeBirthYear, checkIsDuplicate } from '../utils';
 import { AssetItem, Partner, CreditLoanItem, Case } from '../types';
@@ -56,28 +56,28 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
   };
 
   return (
-    <div className="mb-4">
-      <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+    <div className="mb-5">
+      <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
       <div className="relative">
         <input
           type={type === 'number' && !isCurrency ? 'text' : 'text'}
           autoComplete="off"
-          className={"w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : '')}
+          className={`w-full px-3.5 py-3 bg-gray-50 dark:bg-gray-800/50 border border-transparent rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm ${readOnly ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
           value={displayValue || ''}
           onChange={!readOnly ? handleInputChange : undefined}
           onBlur={onBlur}
           placeholder={placeholder}
           readOnly={readOnly}
         />
-        {suffix && <span className="absolute right-3 top-2 text-gray-500 text-sm">{suffix}</span>}
+        {suffix && <span className="absolute right-3.5 top-3 text-gray-500 dark:text-gray-400 text-sm font-medium">{suffix}</span>}
       </div>
     </div>
   );
 };
 
 const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
-  <div className="mb-4">
-    <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+  <div className="mb-5">
+    <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
     <div className="flex gap-2 flex-wrap">
       {options.map((opt: string) => {
         const isSelected = isMulti ? value?.includes(opt) : value === opt;
@@ -86,7 +86,11 @@ const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`px-3 py-1.5 text-xs rounded border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+            className={`px-4 py-2 text-sm rounded-full font-medium transition-all duration-200 border ${
+              isSelected 
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 border-transparent hover:bg-indigo-700' 
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
+            }`}
           >
             {opt}
           </button>
@@ -378,28 +382,30 @@ export default function NewCase() {
 
   const renderSectionBasicInfo = () => (
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-blue-600">1. 기본 정보</h3>
+      <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3">
+        <User size={20} className="text-indigo-500" /> 기본 정보
+      </h3>
 
-      <div className="mb-4">
-        <label className="block text-xs font-medium text-gray-500 mb-1">거래처 (법률사무소)</label>
+      <div className="mb-5">
+        <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">거래처 (법률사무소)</label>
         <div className="relative">
           <select
-            className="w-full p-2 pl-8 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50 text-blue-900 font-bold"
+            className="w-full px-3.5 py-3 pl-10 bg-indigo-50/50 dark:bg-indigo-900/20 border border-transparent rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 focus:outline-none transition-all text-indigo-900 dark:text-indigo-300 font-bold text-sm shadow-sm"
             value={formData.partnerId}
             onChange={e => handleChange('partnerId', e.target.value)}
           >
             {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
           </select>
-          <Building className="absolute left-2.5 top-2.5 text-blue-500" size={18} />
+          <Building className="absolute left-3.5 top-3 text-indigo-500" size={18} />
         </div>
       </div>
 
       <Select label="사건 유형" value={formData.caseType} onChange={(v: any) => handleChange('caseType', v)} options={CASE_TYPES} />
 
-      <div className="mb-4">
-        <label className="block text-xs font-medium text-gray-500 mb-1">유입 경로</label>
+      <div className="mb-5">
+        <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">유입 경로</label>
         <select
-          className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full px-3.5 py-3 bg-gray-50 dark:bg-gray-800/50 border border-transparent rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 focus:outline-none transition-all text-sm shadow-sm text-gray-900 dark:text-gray-100"
           value={formData.inboundPath}
           onChange={e => handleChange('inboundPath', e.target.value)}
         >
@@ -408,7 +414,7 @@ export default function NewCase() {
         </select>
       </div>
 
-      <hr className="my-4 border-gray-100" />
+      <div className="my-6 border-t border-gray-100 dark:border-gray-800" />
 
       {formData.preInfo && (
         <div className="mb-4 animate-fade-in">
@@ -462,7 +468,9 @@ export default function NewCase() {
 
   const renderSectionJobFamily = () => (
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-blue-600">2. 직업/소득/가족</h3>
+      <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3">
+        <Briefcase size={20} className="text-indigo-500" /> 직업/소득/가족
+      </h3>
       <Select label="직업 (복수선택 가능)" value={formData.jobTypes} onChange={handleJobTypeChange} options={JOB_TYPES} isMulti={true} />
 
       {formData.jobTypes?.includes('직장인') &&
@@ -479,12 +487,12 @@ export default function NewCase() {
       <Select label="결혼여부" value={formData.maritalStatus} onChange={(v: any) => handleChange('maritalStatus', v)} options={['미혼', '기혼', '이혼']} />
 
       {['기혼', '이혼'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
-        <div className="mb-4">
-          <label className="block text-xs font-medium text-gray-500 mb-1">미성년 자녀 수</label>
+        <div className="mb-5">
+          <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">미성년 자녀 수</label>
           <div className="flex gap-2 flex-wrap">
             {[0, 1, 2, 3, 4, 5, 6, 7].map(num => (
               <button key={num} type="button" onClick={() => handleChange('childrenCount', num)}
-                className={`px-3 py-2 border rounded-md text-sm ${formData.childrenCount === num ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                className={`w-11 h-11 rounded-full font-medium transition-all text-sm border ${formData.childrenCount === num ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 border-transparent hover:bg-indigo-700' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}`}
               >{num}명</button>
             ))}
           </div>
@@ -495,7 +503,9 @@ export default function NewCase() {
 
   const renderSectionHousing = () => (
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-blue-600">3. 주거</h3>
+      <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3">
+        <Home size={20} className="text-indigo-500" /> 주거
+      </h3>
       <Select label="거주형태" value={formData.housingType} onChange={(v: any) => handleChange('housingType', v)} options={HOUSING_TYPES} />
       <Select label="주거타입" value={formData.housingDetail} onChange={(v: any) => handleChange('housingDetail', v)} options={HOUSING_DETAILS} />
 
@@ -518,12 +528,12 @@ export default function NewCase() {
             )}
           </div>
           <Input label="월세" value={formData.rent} onChange={(v: any) => handleChange('rent', v)} type="number" suffix="만원" isCurrency={true} />
-          <div className="mb-4">
-            <label className="block text-xs font-medium text-gray-500 mb-1">임대차 계약인</label>
+          <div className="mb-5">
+            <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">임대차 계약인</label>
             <div className="flex gap-2">
               {RENT_CONTRACTORS.map(opt => (
                 <button key={opt} type="button" onClick={() => handleChange('rentContractor', opt)}
-                  className={`flex-1 py-2 text-sm rounded-md border ${formData.rentContractor === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+                  className={`flex-1 py-2.5 text-sm rounded-xl font-medium transition-all duration-200 border ${formData.rentContractor === opt ? 'bg-indigo-600 text-white shadow-md border-transparent hover:bg-indigo-700' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}`}
                 >{opt}</button>
               ))}
             </div>
@@ -536,11 +546,15 @@ export default function NewCase() {
 
   const renderSectionAssets = () => (
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-blue-600">4. 자산/부채</h3>
+      <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3">
+        <Wallet size={20} className="text-indigo-500" /> 자산/부채
+      </h3>
 
       {isFieldVisible('assets') && (
-        <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
-          <h4 className="font-bold text-gray-700 mb-2 text-sm">자산 목록 (본인/배우자 포함)</h4>
+        <div className="mb-8 bg-gray-50 dark:bg-gray-800/50 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+          {/* Subtle accent border top */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/20"></div>
+          <h4 className="font-bold text-gray-800 dark:text-gray-100 mb-4 text-[13px] flex items-center gap-1.5"><AlertCircle size={14} className="text-indigo-500" />자산 목록 (본인/배우자 포함)</h4>
           <div className="space-y-2 mb-3">
             {formData.assets.length === 0 && <p className="text-xs text-gray-400 text-center py-2">등록된 자산이 없습니다.</p>}
             {formData.assets.map((asset: AssetItem) => (
@@ -574,16 +588,18 @@ export default function NewCase() {
             </div>
           )}
           <div className="flex gap-2 mb-2">
-            <input type="text" placeholder="상세 내용 (예: 차종 등)" className="flex-1 p-2 border rounded text-sm" value={newAsset.desc || ''} onChange={e => setNewAsset({ ...newAsset, desc: e.target.value })} />
-            <button type="button" onClick={handleAddAsset} className="w-24 bg-blue-600 text-white rounded text-sm font-bold flex justify-center items-center hover:bg-blue-700">
+            <input type="text" placeholder="상세 내용 (예: 차종 등)" className="flex-1 px-3.5 py-3 border border-transparent rounded-xl text-sm shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500" value={newAsset.desc || ''} onChange={e => setNewAsset({ ...newAsset, desc: e.target.value })} />
+            <button type="button" onClick={handleAddAsset} className="w-24 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20 text-sm font-bold flex justify-center items-center hover:bg-indigo-700 transition-all">
               <Plus size={16} className="mr-1" /> 추가
             </button>
           </div>
         </div>
       )}
 
-      <div className="mb-6 bg-pink-50 p-4 rounded-lg border border-pink-200">
-        <h4 className="font-bold text-gray-700 mb-2 text-sm">신용대출 목록</h4>
+      <div className="mb-8 bg-gray-50 dark:bg-gray-800/50 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+        {/* Subtle accent border top */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/20"></div>
+        <h4 className="font-bold text-gray-800 dark:text-gray-100 mb-4 text-[13px] flex items-center gap-1.5"><AlertCircle size={14} className="text-rose-500" />신용대출 목록</h4>
         <div className="space-y-2 mb-3">
           {(formData.creditLoan || []).length === 0 && <p className="text-xs text-gray-400 text-center py-2">등록된 신용대출이 없습니다.</p>}
           {formData.creditLoan?.map((loan: CreditLoanItem) => (
@@ -597,20 +613,20 @@ export default function NewCase() {
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2 mb-2">
-          <input type="text" placeholder="대출 내용 (예: 햇살론)" className="w-full p-2 border rounded text-sm col-span-2" value={newCreditLoan.desc || ''} onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })} />
+          <input type="text" placeholder="대출 내용 (예: 햇살론)" className="w-full px-3.5 py-3 border border-transparent rounded-xl text-sm shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all col-span-2 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500" value={newCreditLoan.desc || ''} onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })} />
           <Input label="금액" value={newCreditLoan.amount} onChange={(v: any) => setNewCreditLoan({ ...newCreditLoan, amount: v })} type="number" suffix="만원" isCurrency={true} />
           <div className="h-full flex flex-col justify-end">
-            <button type="button" onClick={handleAddCreditLoan} className="w-full py-2 bg-blue-600 text-white rounded text-sm font-bold flex justify-center items-center hover:bg-blue-700 mb-4">
+            <button type="button" onClick={handleAddCreditLoan} className="w-full py-3 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20 text-sm font-bold flex justify-center items-center hover:bg-indigo-700 transition-all mb-5">
               <Plus size={16} className="mr-1" /> 신용대출 추가
             </button>
           </div>
         </div>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-xs font-medium text-gray-500 mb-1">담보 대출 내용 (자동 집계 + 추가)</label>
-        <div className="bg-gray-50 p-2 rounded text-sm text-blue-800 font-medium mb-1">자동 집계: {getAutoCollateralString()}</div>
-        <input type="text" className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" value={formData.collateralLoanMemo} onChange={e => handleChange('collateralLoanMemo', e.target.value)} placeholder="추가로 작성할 담보 대출 내용" />
+      <div className="mb-5">
+        <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">담보 대출 내용 (자동 집계 + 추가)</label>
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl text-[13px] text-indigo-800 dark:text-indigo-300 font-medium mb-2 shadow-sm border border-indigo-100 dark:border-indigo-800/30">자동 집계: {getAutoCollateralString()}</div>
+        <input type="text" className="w-full px-3.5 py-3 bg-gray-50 dark:bg-gray-800/50 border border-transparent rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm text-gray-900 dark:text-gray-100" value={formData.collateralLoanMemo} onChange={e => handleChange('collateralLoanMemo', e.target.value)} placeholder="추가로 작성할 담보 대출 내용" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -646,11 +662,13 @@ export default function NewCase() {
 
   const renderSectionFinish = () => (
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-blue-600">{isDesktop ? '5. 상담 특이사항' : '5. 마무리'}</h3>
-      <div className="mb-4">
-        <label className="block text-xs font-medium text-gray-500 mb-1">상담 특이사항</label>
+      <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3">
+        <MessageSquare size={20} className="text-indigo-500" /> {isDesktop ? '상담 특이사항' : '마무리'}
+      </h3>
+      <div className="mb-5">
+        <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">상담 특이사항</label>
         <textarea
-          className="w-full p-2 border border-gray-300 rounded-md h-32 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full p-4 bg-gray-50 dark:bg-gray-800/50 border border-transparent rounded-xl h-32 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:bg-white dark:focus:bg-gray-800 text-gray-900 dark:text-gray-100"
           value={formData.specialMemo}
           onChange={e => handleChange('specialMemo', e.target.value)}
           placeholder="상담 내용을 자유롭게 기록하세요."
@@ -660,7 +678,7 @@ export default function NewCase() {
   );
 
   const renderSaveButton = () => (
-    <button onClick={handleSubmit} className="flex items-center bg-green-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm">
+    <button onClick={handleSubmit} className="flex items-center bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/20">
       <Save size={18} className="mr-2" /> 저장하기
     </button>
   );
