@@ -484,10 +484,10 @@ export default function SettingsPage() {
                             <b>Webhook Endpoint 설정 방법:</b><br />
                             <ol className="list-decimal pl-5 mt-1 space-y-1 text-gray-600">
                                 <li>Supabase 프로젝트의 Edge Functions URL을 확인합니다.<br />
-                                    <code className="bg-gray-100 px-1 py-0.5 rounded text-xs select-all">https://[PROJECT_ID].supabase.co/functions/v1/telegram-webhook</code>
+                                    <code className="bg-gray-100 p-2 rounded text-[11px] select-all block mt-1 break-all text-indigo-700">https://[PROJECT_ID].supabase.co/functions/v1/telegram-webhook</code>
                                 </li>
                                 <li>브라우저에 아래 주소를 입력하여 Webhook을 등록합니다.<br />
-                                    <code className="bg-gray-100 px-1 py-0.5 rounded text-xs select-all block mt-1 overflow-x-auto whitespace-nowrap">
+                                    <code className="bg-gray-100 p-2 rounded text-[11px] select-all block mt-1 break-all text-indigo-700">
                                         https://api.telegram.org/bot[봇토큰]/setWebhook?url=[EdgeFunction_URL]
                                     </code>
                                 </li>
