@@ -131,15 +131,17 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                 <Select label="사건 유형" value={c.caseType} onChange={(v: any) => onUpdate('caseType', v)} options={CASE_TYPES} />
             </div>
 
-            <SmartInput label="이름" value={c.customerName} onChange={(v: any) => onUpdate('customerName', v)} updateOnBlur={true} />
-            <SmartInput
-                label="연락처"
-                value={c.phone}
-                onChange={(v: any) => onUpdate('phone', v)}
-                placeholder="010-0000-0000"
-                isPhone={true}
-                updateOnBlur={true}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <SmartInput label="이름" value={c.customerName} onChange={(v: any) => onUpdate('customerName', v)} updateOnBlur={true} />
+                <SmartInput
+                    label="연락처"
+                    value={c.phone}
+                    onChange={(v: any) => onUpdate('phone', v)}
+                    placeholder="010-0000-0000"
+                    isPhone={true}
+                    updateOnBlur={true}
+                />
+            </div>
             <div className="grid grid-cols-2 gap-2">
                 <SmartInput
                     label="출생년도 (2자리)"

@@ -433,25 +433,26 @@ export default function NewCase() {
         </div>
       )}
 
-      <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
-
-      <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
         <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="010-0000-0000" isPhone={true} />
-        {duplicateCase && (
-          <div className="mb-4 -mt-3 animate-pulse">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-red-700 font-bold">
-                <span className="text-lg">⚠️</span> 이미 등록된 연락처입니다!
-              </div>
-              <div className="text-gray-600 pl-7 text-xs">
-                <p>등록된 고객명: <b>{duplicateCase.customerName}</b></p>
-                <p>담당자: <b>{duplicateCase.managerName}</b></p>
-                <p>현재 상태: <span className="font-medium text-red-600">{duplicateCase.status}</span></p>
-              </div>
+      </div>
+
+      {duplicateCase && (
+        <div className="mb-4 -mt-1 animate-pulse">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm flex flex-col gap-1">
+            <div className="flex items-center gap-2 text-red-700 font-bold">
+              <span className="text-lg">⚠️</span> 이미 등록된 연락처입니다!
+            </div>
+            <div className="text-gray-600 pl-7 text-xs">
+              <p>등록된 고객명: <b>{duplicateCase.customerName}</b></p>
+              <p>담당자: <b>{duplicateCase.managerName}</b></p>
+              <p>현재 상태: <span className="font-medium text-red-600">{duplicateCase.status}</span></p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="출생년도 (2자리)"
