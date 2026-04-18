@@ -56,28 +56,28 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
   };
 
   return (
-    <div className="mb-5 md:mb-4">
-      <label className="block text-[13px] md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-1">{label}</label>
+    <div className="mb-4">
+      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       <div className="relative">
         <input
           type={type === 'number' && !isCurrency ? 'text' : 'text'}
           autoComplete="off"
-          className={`w-full px-3.5 py-3 md:px-3 md:py-2 bg-gray-50 md:bg-white dark:bg-gray-800/50 border border-transparent md:border-gray-300 rounded-xl md:rounded focus:bg-white dark:focus:bg-gray-800 focus:ring-2 md:focus:ring-1 focus:ring-indigo-500/40 md:focus:ring-blue-500 focus:border-indigo-400 md:focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm md:text-sm shadow-sm md:shadow-none ${readOnly ? 'bg-gray-100 md:bg-gray-50 text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
+          className={`w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 rounded focus:bg-white dark:focus:bg-gray-800 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-none ${readOnly ? 'bg-gray-50 text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
           value={displayValue || ''}
           onChange={!readOnly ? handleInputChange : undefined}
           onBlur={onBlur}
           placeholder={placeholder}
           readOnly={readOnly}
         />
-        {suffix && <span className="absolute right-3.5 md:right-3 top-3 md:top-2.5 text-gray-500 dark:text-gray-400 text-sm font-medium">{suffix}</span>}
+        {suffix && <span className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400 text-sm font-medium">{suffix}</span>}
       </div>
     </div>
   );
 };
 
 const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
-  <div className="mb-5 md:mb-4">
-    <label className="block text-[13px] md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-1">{label}</label>
+  <div className="mb-4">
+    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
     <div className="flex gap-2 flex-wrap">
       {options.map((opt: string) => {
         const isSelected = isMulti ? value?.includes(opt) : value === opt;
@@ -86,12 +86,10 @@ const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`transition-all duration-200 border 
-            px-4 py-2 text-sm rounded-full font-medium
-            md:px-3 md:py-1.5 md:text-sm md:rounded md:font-semibold
-            ${isSelected 
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 border-transparent hover:bg-indigo-700 md:bg-blue-600 md:shadow-none md:border-blue-600 md:hover:bg-blue-700' 
-                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 md:bg-white md:border-gray-300 md:text-gray-600 md:hover:bg-gray-50'
+            className={`transition-all duration-200 border px-3 py-1.5 text-sm rounded font-semibold ${
+              isSelected 
+                ? 'bg-blue-600 text-white shadow-none border-blue-600 hover:bg-blue-700' 
+                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
             }`}
           >
             {opt}
@@ -680,8 +678,8 @@ export default function NewCase() {
   );
 
   const renderSaveButton = () => (
-    <button onClick={handleSubmit} className="flex items-center bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/20 md:px-5 md:py-2 md:rounded md:text-sm md:bg-blue-600 md:hover:bg-blue-700 md:shadow-none">
-      <Save size={18} className="mr-2 md:mr-1.5 md:w-4 md:h-4" /> 저장하기
+    <button onClick={handleSubmit} className="flex items-center justify-center bg-blue-600 text-white px-5 py-2 rounded font-bold hover:bg-blue-700 transition-all shadow-none text-sm w-full md:w-auto">
+      <Save size={16} className="mr-1.5" /> 저장하기
     </button>
   );
 
@@ -739,7 +737,7 @@ export default function NewCase() {
 
   // ===== Mobile Layout (Existing Step Wizard) =====
   return (
-    <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <div className="max-w-xl mx-auto bg-[#f8fafc] p-6 rounded-lg shadow-sm border border-slate-200">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-800">신규 상담 입력</h2>
         <div className="flex gap-1 mt-2">
@@ -769,21 +767,19 @@ export default function NewCase() {
         )}
       </div>
 
-      <div className="flex justify-between mt-6 pt-4 border-t border-gray-100">
+      <div className="flex justify-between mt-6 pt-4 border-t border-slate-200">
         {step > 1 ? (
-          <button onClick={handleBack} className="flex items-center text-gray-600 font-medium px-4 py-2 hover:bg-gray-100 rounded-lg">
-            <ChevronLeft size={18} /> 이전
+          <button onClick={handleBack} className="flex items-center text-gray-600 font-medium px-4 py-2 hover:bg-gray-100 rounded text-sm transition-colors border border-gray-300 bg-white shadow-sm">
+            <ChevronLeft size={16} /> 이전
           </button>
         ) : <div />}
 
         {step < 5 ? (
-          <button onClick={handleNext} className="flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700">
-            다음 <ChevronRight size={18} />
+          <button onClick={handleNext} className="flex items-center bg-blue-600 text-white px-5 py-2 rounded font-medium hover:bg-blue-700 text-sm shadow-none transition-colors">
+            다음 <ChevronRight size={16} />
           </button>
         ) : (
-          <button onClick={handleSubmit} className="flex items-center bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700">
-            <Save size={18} className="mr-2" /> 저장하기
-          </button>
+          renderSaveButton()
         )}
       </div>
     </div>
