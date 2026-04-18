@@ -90,7 +90,6 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                     partners={partners}
                     inboundPaths={inboundPaths}
                     onUpdate={onUpdate}
-                    statusLogs={statusLogs}
                 />
 
                 <CaseDetailJobFamily
@@ -98,6 +97,7 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                     onUpdate={onUpdate}
                     onIncomeChange={onIncomeChange}
                     onJobTypeChange={onJobTypeChange}
+                    statusLogs={statusLogs}
                 />
             </div>
 
