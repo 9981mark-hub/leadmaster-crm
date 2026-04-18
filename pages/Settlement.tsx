@@ -1,4 +1,4 @@
-﻿
+
 import React, { useEffect, useState, useRef } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday, fetchExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, EXPENSE_CATEGORIES, parseBankExcel, matchTransactionsWithPartners, fetchBankTransactions, saveBankTransactions, updateBankTransaction, deleteBankTransaction, getBankTransactionStats, TRANSACTION_CATEGORIES } from '../services/api';
@@ -3367,16 +3367,17 @@ export default function Settlement() {
             {/* Notification Center */}
             <div className="space-y-2 mb-4">
                 {totalOverdueCount > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between animate-pulse">
-                        <div className="flex items-center gap-2 text-red-700">
-                            <span className="font-bold">🚨 긴급</span>
-                            <span className="text-sm">현재 30일 이상 장기 미수금 건이 <span className="font-bold underline">{totalOverdueCount}건</span> 있습니다.</span>
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between gap-3 animate-pulse">
+                        <div className="flex items-start sm:items-center gap-2 text-red-700">
+                            <span className="font-bold shrink-0 whitespace-nowrap pt-0.5 sm:pt-0">🚨 긴급</span>
+                            <span className="text-[13px] sm:text-sm leading-snug break-keep">현재 30일 이상 장기 미수금 건이 <span className="font-bold underline">{totalOverdueCount}건</span> 있습니다.</span>
                         </div>
                         <button
                             onClick={() => { setActiveTab('report'); }}
-                            className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold hover:bg-red-200"
+                            className="shrink-0 flex flex-col items-center justify-center text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-md font-bold hover:bg-red-200 leading-tight gap-0.5"
                         >
-                            확인하기
+                            <span>확인</span>
+                            <span>하기</span>
                         </button>
                     </div>
                 )}
