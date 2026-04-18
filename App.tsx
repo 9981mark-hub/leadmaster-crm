@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone } from 'lucide-react';
 // Lazy Load Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const CaseList = lazy(() => import('./pages/CaseList'));
@@ -11,6 +11,7 @@ const SettingsPage = lazy(() => import('./pages/Settings'));
 const Statistics = lazy(() => import('./pages/Statistics'));
 const MyPage = lazy(() => import('./pages/MyPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const TelegramSync = lazy(() => import('./pages/TelegramSync'));
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -19,6 +20,7 @@ import { useToast } from './contexts/ToastContext'; // Import hook
 import { ReminderProvider } from './contexts/ReminderContext';
 import ReminderNotificationContainer from './components/ReminderNotificationContainer';
 import NewCasePopup from './components/NewCasePopup';
+import { fetchPendingCount, subscribeTelegramFeedbacks } from './services/telegramFeedback';
 
 
 // *** 중요: Google Cloud Console에서 발급받은 실제 Client ID로 교체해야 합니다 ***
@@ -50,6 +52,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
   const { theme, toggleTheme } = useTheme();
+  const [pendingTgCount, setPendingTgCount] = React.useState(0);
+
+  React.useEffect(() => {
+    fetchPendingCount().then(res => setPendingTgCount(res.total));
+    const channel = subscribeTelegramFeedbacks((fb) => {
+      if (fb.applyMode === 'pending' && !fb.isConfirmed) {
+         setPendingTgCount(prev => prev + 1);
+      }
+    });
+    return () => { if(channel) channel.unsubscribe(); }
+  }, []);
 
   React.useEffect(() => {
     const container = document.getElementById('main-scroll-container');
@@ -148,6 +161,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
     { to: '/cases', icon: Users, label: '케이스' },
     { to: '/new', icon: PlusCircle, label: '신규등록' },
+    { to: '/telegram', icon: Smartphone, label: 'TG연동', badge: pendingTgCount > 0 ? pendingTgCount : undefined },
     { to: '/settlement', icon: Calculator, label: '정산' },
     { to: '/settings', icon: Settings, label: '설정' },
     { to: '/mypage', icon: User, label: '마이페이지' },
@@ -223,6 +237,7 @@ const ProtectedRoutes = () => {
           <Route path="/cases" element={<CaseList />} />
           <Route path="/new" element={<NewCase />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />
+          <Route path="/telegram" element={<TelegramSync />} />
           <Route path="/settlement" element={<Settlement />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/settings" element={<SettingsPage />} />

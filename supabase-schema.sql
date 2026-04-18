@@ -165,3 +165,35 @@ CREATE TRIGGER partners_updated_at
   BEFORE UPDATE ON partners
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- 7. Telegram Feedbacks Table
+-- ============================================
+CREATE TABLE IF NOT EXISTS telegram_feedbacks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  message_id BIGINT UNIQUE NOT NULL,
+  reply_to_message_id BIGINT,
+  sender_name TEXT NOT NULL,
+  customer_name TEXT,
+  feedback_type TEXT NOT NULL,
+  feedback_content TEXT NOT NULL,
+  matched_case_id TEXT REFERENCES cases(case_id),
+  is_applied BOOLEAN DEFAULT FALSE,
+  is_confirmed BOOLEAN DEFAULT FALSE,
+  apply_mode TEXT DEFAULT 'pending' CHECK (apply_mode IN ('auto', 'pending')),
+  urgency TEXT DEFAULT 'info' CHECK (urgency IN ('critical', 'high', 'normal', 'info')),
+  ai_classification JSONB,
+  applied_at TIMESTAMPTZ,
+  applied_by TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for common queries
+CREATE INDEX IF NOT EXISTS idx_tg_feedback_case ON telegram_feedbacks(matched_case_id);
+CREATE INDEX IF NOT EXISTS idx_tg_feedback_pending ON telegram_feedbacks(is_confirmed) WHERE is_confirmed = FALSE;
+CREATE INDEX IF NOT EXISTS idx_tg_feedback_urgency ON telegram_feedbacks(urgency) WHERE is_confirmed = FALSE;
+
+-- RLS Policy
+ALTER TABLE telegram_feedbacks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all for authenticated" ON telegram_feedbacks
+  FOR ALL USING (true) WITH CHECK (true);

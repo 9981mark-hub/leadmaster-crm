@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, saveGlobalSettings } from '../services/api';
 import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAddTertiaryStatusMutation, useDeleteTertiaryStatusMutation } from '../services/queries';
 import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS } from '../types';
-import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare } from 'lucide-react';
+import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle } from 'lucide-react';
 import { getDayName, loadMissedCallTiers } from '../utils';
 import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS } from '../constants';
 import Modal from '../components/Modal';
@@ -459,6 +459,44 @@ export default function SettingsPage() {
                     <div className="pt-2">
                         <button type="button" onClick={handleSaveManagerName} className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 w-full md:w-auto">
                             설정 저장
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Telegram Integration Settings */}
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-indigo-100 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                    <MessageCircle size={100} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center relative z-10">
+                    <MessageCircle className="mr-2 text-indigo-500" size={20} /> 텔레그램 연동 관리
+                </h3>
+                <div className="max-w-2xl space-y-4 relative z-10">
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                        <h4 className="font-bold text-indigo-800 mb-2">Supabase Edge Function 기반 하이브리드 연동</h4>
+                        <p className="text-sm text-indigo-700 mb-2">
+                            현장에서 들어온 텔레그램 봇 피드백을 수신하여 AI가 자동으로 케이스 상태를 분류하고 CRM에 반영합니다.
+                            <br />- <b>[자동 반영]</b> 부재, 명함발송, 재통화요청 등
+                            <br />- <b>[승인 대기]</b> 미팅취소, 타사무소선택, 계약완료 등 중요 변경사항
+                        </p>
+                        <div className="bg-white p-3 rounded border border-indigo-100 text-sm mt-3">
+                            <b>Webhook Endpoint 설정 방법:</b><br />
+                            <ol className="list-decimal pl-5 mt-1 space-y-1 text-gray-600">
+                                <li>Supabase 프로젝트의 Edge Functions URL을 확인합니다.<br />
+                                    <code className="bg-gray-100 px-1 py-0.5 rounded text-xs select-all">https://[PROJECT_ID].supabase.co/functions/v1/telegram-webhook</code>
+                                </li>
+                                <li>브라우저에 아래 주소를 입력하여 Webhook을 등록합니다.<br />
+                                    <code className="bg-gray-100 px-1 py-0.5 rounded text-xs select-all block mt-1 overflow-x-auto whitespace-nowrap">
+                                        https://api.telegram.org/bot[봇토큰]/setWebhook?url=[EdgeFunction_URL]
+                                    </code>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" onClick={() => window.location.hash = '#/telegram'} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full md:w-auto transition-colors font-medium">
+                            대기 중인 피드백 관리 센터로 이동 →
                         </button>
                     </div>
                 </div>

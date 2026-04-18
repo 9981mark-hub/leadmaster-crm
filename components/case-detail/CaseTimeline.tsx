@@ -3,12 +3,12 @@ import { format, parseISO, isToday, isYesterday, isThisWeek, isThisMonth } from 
 import { ko } from 'date-fns/locale';
 import {
     ArrowRightLeft, MessageSquare, Banknote, Phone, Mic,
-    Calendar, Filter, ChevronDown, ChevronUp
+    Calendar, Filter, ChevronDown, ChevronUp, Smartphone, AlertTriangle
 } from 'lucide-react';
-import { Case, CaseStatusLog, MemoItem, ReminderItem, RecordingItem } from '../../types';
+import { Case, CaseStatusLog, MemoItem, ReminderItem, RecordingItem, TelegramFeedback } from '../../types';
 
 // 타임라인 이벤트 유형
-type TimelineEventType = 'status' | 'memo' | 'deposit' | 'reminder' | 'recording';
+type TimelineEventType = 'status' | 'memo' | 'deposit' | 'reminder' | 'recording' | 'telegram' | 'telegram_pending';
 
 interface TimelineEvent {
     id: string;
@@ -23,6 +23,8 @@ interface TimelineEvent {
 interface CaseTimelineProps {
     c: Case;
     statusLogs: CaseStatusLog[];
+    telegramFeedbacks?: TelegramFeedback[];
+    onConfirmTelegram?: (feedback: TelegramFeedback) => void;
 }
 
 // 유형별 스타일 설정
@@ -79,6 +81,24 @@ const EVENT_CONFIG: Record<TimelineEventType, {
         textColor: 'text-gray-700 dark:text-gray-300',
         borderColor: 'border-gray-200 dark:border-gray-600',
         emoji: '🎙️'
+    },
+    telegram: {
+        icon: Smartphone,
+        label: 'TG 피드백',
+        bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+        dotColor: 'bg-indigo-500',
+        textColor: 'text-indigo-700 dark:text-indigo-300',
+        borderColor: 'border-indigo-200 dark:border-indigo-700',
+        emoji: '📱'
+    },
+    telegram_pending: {
+        icon: AlertTriangle,
+        label: '승인 대기',
+        bgColor: 'bg-rose-50 dark:bg-rose-900/20',
+        dotColor: 'bg-rose-500',
+        textColor: 'text-rose-700 dark:text-rose-300',
+        borderColor: 'border-rose-200 dark:border-rose-700',
+        emoji: '⚠️'
     }
 };
 
@@ -96,9 +116,9 @@ function getDateGroup(datetime: string): string {
     }
 }
 
-export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs }) => {
+export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, telegramFeedbacks, onConfirmTelegram }) => {
     const [activeFilters, setActiveFilters] = useState<Set<TimelineEventType>>(
-        new Set(['status', 'memo', 'deposit', 'reminder', 'recording'])
+        new Set(['status', 'memo', 'deposit', 'reminder', 'recording', 'telegram', 'telegram_pending'])
     );
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -172,10 +192,26 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs }) => 
             });
         });
 
+        // 6. 텔레그램 피드백
+        (telegramFeedbacks || []).forEach(tf => {
+            const isPending = tf.applyMode === 'pending' && !tf.isConfirmed;
+            events.push({
+                id: `tg-${tf.id}`,
+                type: isPending ? 'telegram_pending' : 'telegram',
+                datetime: tf.createdAt,
+                title: `${tf.senderName} (${tf.feedbackType})`,
+                description: tf.feedbackContent,
+                meta: {
+                    originalData: JSON.stringify(tf),
+                    isPending: isPending ? 'true' : 'false'
+                }
+            });
+        });
+
         // 날짜 기준 최신순 정렬
         events.sort((a, b) => b.datetime.localeCompare(a.datetime));
         return events;
-    }, [c, statusLogs]);
+    }, [c, statusLogs, telegramFeedbacks]);
 
     // 필터 적용
     const filteredEvents = useMemo(() =>
@@ -215,10 +251,10 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs }) => 
     };
 
     const toggleAll = () => {
-        if (activeFilters.size === 5) {
+        if (activeFilters.size === 7) {
             setActiveFilters(new Set(['status']));
         } else {
-            setActiveFilters(new Set(['status', 'memo', 'deposit', 'reminder', 'recording']));
+            setActiveFilters(new Set(['status', 'memo', 'deposit', 'reminder', 'recording', 'telegram', 'telegram_pending']));
         }
     };
 
@@ -279,7 +315,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs }) => 
                 <div className="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <button
                         onClick={toggleAll}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilters.size === 5
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilters.size === 7
                                 ? 'bg-gray-800 text-white dark:bg-white dark:text-gray-800'
                                 : 'bg-white text-gray-500 border border-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
                             }`}
@@ -384,6 +420,22 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs }) => 
                                                                 >
                                                                     {isExpanded ? '접기 ↑' : '더보기 ↓'}
                                                                 </button>
+                                                            )}
+                                                            
+                                                            {event.type === 'telegram_pending' && event.meta?.isPending === 'true' && onConfirmTelegram && (
+                                                                <div className="mt-3 flex gap-2">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            if (event.meta?.originalData) {
+                                                                                onConfirmTelegram(JSON.parse(event.meta.originalData));
+                                                                            }
+                                                                        }}
+                                                                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-md shadow-sm transition-colors"
+                                                                    >
+                                                                        선택하여 승인 처리
+                                                                    </button>
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>

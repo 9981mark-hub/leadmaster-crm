@@ -496,3 +496,96 @@ export const DEFAULT_INTERVAL_TIERS: MissedCallIntervalTier[] = [
   { minDays: 30, maxDays: 0,  interval: 14, label: '30일 이상 (장기)' },
 ];
 
+// ============================================
+// 텔레그램 피드백 연동 Types
+// ============================================
+
+export type TelegramFeedbackType =
+  | '부재'
+  | '지속부재'
+  | '진행불가'
+  | '고객거부'
+  | '통화예약'
+  | '출장예약'
+  | '방문예약'
+  | '상담완료'
+  | '계약완료'
+  | '명함발송'
+  | '재통화요청'
+  | '미팅취소'
+  | '출장방문취소'
+  | '진행거부'
+  | '타사무소선택'
+  | '계약취소시도'
+  | '비용부담거절'
+  | '자산포기불가'
+  | '일반메모'
+  | '비피드백';
+
+export type TelegramFeedbackUrgency = 'critical' | 'high' | 'normal' | 'info';
+
+/** 하이브리드 규칙: 자동 반영 vs 승인 대기 */
+export type TelegramApplyMode = 'auto' | 'pending';
+
+export interface TelegramFeedback {
+  id: string;
+  messageId: number;
+  replyToMessageId?: number;
+  senderName: string;
+  customerName: string;
+  feedbackType: TelegramFeedbackType;
+  feedbackContent: string;        // 원문
+  matchedCaseId?: string;
+  isApplied: boolean;             // CRM 반영 완료 여부
+  isConfirmed: boolean;           // 사용자 확인 완료 여부
+  applyMode: TelegramApplyMode;   // auto=자동반영됨, pending=승인대기
+  urgency: TelegramFeedbackUrgency;
+  aiClassification?: {
+    suggestedStatus?: string;         // 제안 상태값
+    suggestedStatusLevel?: '1차' | '2차' | '3차'; // 어떤 상태를 변경할지
+    suggestedDropOffReason?: string;  // 이탈 사유
+    suggestedMemo?: string;
+    suggestedReminder?: {
+      type: ReminderType;
+      datetime: string;
+    };
+    suggestedContract?: {
+      fee: number;
+      deposits: { date: string; amount: number }[];
+    };
+    confidence: number;               // 0~1 AI 확신도
+  };
+  createdAt: string;
+  appliedAt?: string;
+  appliedBy?: string;               // 'auto' | 사용자명
+}
+
+/** 피드백 유형별 자동/승인 규칙 & 긴급도 설정 */
+export const TELEGRAM_FEEDBACK_RULES: Record<TelegramFeedbackType, {
+  applyMode: TelegramApplyMode;
+  urgency: TelegramFeedbackUrgency;
+  statusLevel: '1차' | '2차' | 'none';
+  label: string;
+}> = {
+  '부재':         { applyMode: 'auto',    urgency: 'info',     statusLevel: '2차', label: '부재' },
+  '지속부재':     { applyMode: 'auto',    urgency: 'info',     statusLevel: '2차', label: '지속 부재' },
+  '명함발송':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '명함 발송' },
+  '재통화요청':   { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '재통화 요청' },
+  '통화예약':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '통화 예약' },
+  '일반메모':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '일반 메모' },
+  '상담완료':     { applyMode: 'pending', urgency: 'info',     statusLevel: '2차', label: '상담 완료' },
+  '고객거부':     { applyMode: 'pending', urgency: 'info',     statusLevel: '2차', label: '고객 고민중' },
+  '출장예약':     { applyMode: 'pending', urgency: 'info',     statusLevel: '2차', label: '출장 예약' },
+  '방문예약':     { applyMode: 'pending', urgency: 'info',     statusLevel: '2차', label: '방문 예약' },
+  '미팅취소':     { applyMode: 'pending', urgency: 'high',     statusLevel: '2차', label: '미팅 취소' },
+  '출장방문취소': { applyMode: 'pending', urgency: 'high',     statusLevel: '2차', label: '출장/방문 취소' },
+  '진행불가':     { applyMode: 'pending', urgency: 'normal',   statusLevel: '1차', label: '진행불가' },
+  '진행거부':     { applyMode: 'pending', urgency: 'normal',   statusLevel: '1차', label: '진행 거부' },
+  '타사무소선택': { applyMode: 'pending', urgency: 'high',     statusLevel: '1차', label: '타사무소 선택' },
+  '비용부담거절': { applyMode: 'pending', urgency: 'normal',   statusLevel: '1차', label: '비용부담 거절' },
+  '자산포기불가': { applyMode: 'pending', urgency: 'normal',   statusLevel: '1차', label: '자산포기 불가' },
+  '계약취소시도': { applyMode: 'pending', urgency: 'critical', statusLevel: '2차', label: '⚠ 계약 취소 시도' },
+  '계약완료':     { applyMode: 'pending', urgency: 'info',     statusLevel: '1차', label: '계약 완료' },
+  '비피드백':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '비피드백 (무시)' },
+};
+

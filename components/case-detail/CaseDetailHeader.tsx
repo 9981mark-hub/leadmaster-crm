@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Smartphone } from 'lucide-react';
 import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
 import { STATUS_COLOR_MAP } from '../../constants';
@@ -10,9 +10,11 @@ interface CaseDetailHeaderProps {
     statuses: CaseStatus[];
     secondaryStatuses: string[];
     tertiaryStatuses: Record<string, string[]>;
+    pendingFeedbackCount?: number;
     onStatusChangeStart: (status: CaseStatus) => void;
     onSecondaryStatusChangeStart: (status: string | null) => void;
     onTertiaryStatusChangeStart: (status: string | null) => void;
+    onClickPendingFeedbacks?: () => void;
 }
 
 export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
@@ -21,9 +23,11 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     statuses,
     secondaryStatuses,
     tertiaryStatuses,
+    pendingFeedbackCount = 0,
     onStatusChangeStart,
     onSecondaryStatusChangeStart,
-    onTertiaryStatusChangeStart
+    onTertiaryStatusChangeStart,
+    onClickPendingFeedbacks
 }) => {
     const warnings = getCaseWarnings(c, partner);
 
@@ -45,6 +49,16 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         </span>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900 whitespace-nowrap">{c.customerName}</h1>
                         <span className="text-gray-500 whitespace-nowrap">{c.phone}</span>
+                        {pendingFeedbackCount > 0 && (
+                            <button
+                                onClick={onClickPendingFeedbacks}
+                                className="ml-2 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-200 shadow-sm flex items-center gap-1 transition-colors"
+                                title="승인 대기 중인 텔레그램 피드백"
+                            >
+                                <Smartphone size={14} className="animate-pulse" />
+                                TG 대기 <span className="bg-rose-500 text-white rounded-full px-1.5 py-0.5 ml-0.5">{pendingFeedbackCount}</span>
+                            </button>
+                        )}
                     </div>
                     {warnings.length > 0 && (
                         <div className="flex gap-2 mt-2">
