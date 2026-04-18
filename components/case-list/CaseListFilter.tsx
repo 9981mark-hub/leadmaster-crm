@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2 } from 'lucide-react';
+import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle } from 'lucide-react';
 import { Partner, CaseStatus } from '../../types';
 
 interface CaseListFilterProps {
@@ -68,10 +68,19 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     <input
                         type="text"
                         placeholder="이름 또는 번호 검색"
-                        className="pl-10 pr-4 py-2 border rounded-lg text-sm w-full xl:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                        className="pl-10 pr-10 py-2 border rounded-lg text-sm w-full xl:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                         value={search}
                         onChange={withReset(setSearch)}
                     />
+                    {search && (
+                        <button
+                            type="button"
+                            onClick={() => { setSearch(''); onResetPage(); }}
+                            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        >
+                            <XCircle size={18} />
+                        </button>
+                    )}
                 </div>
                 {/* Cloud Upload Button (Mobile Only) */}
                 <button
