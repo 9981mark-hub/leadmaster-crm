@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Edit2, FileText, Send, Sparkles } from 'lucide-react';
+import { Copy, Edit2, FileText, Send, Sparkles, X } from 'lucide-react';
 import { Case, Partner } from '../../types';
 import { generateSummary, injectSummaryMetadata } from '../../utils';
 
@@ -25,39 +25,25 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
     return (
         <div className="grid md:grid-cols-2 gap-4 h-full min-h-[400px] md:min-h-[500px]">
             {/* LEFT: Basic Summary */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full relative">
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="font-bold text-gray-700 flex items-center gap-2">
                         <FileText size={18} /> 기본 요약문
                     </h3>
                     <div className="flex gap-2">
-                        {isManualSummaryEdit ? (
-                            <>
-                                <button onClick={() => setIsManualSummaryEdit(false)} className="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">취소</button>
-                            </>
-                        ) : (
-                            <button onClick={() => {
-                                setManualSummary(generateSummary(c, currentPartner?.summaryTemplate));
-                                setIsManualSummaryEdit(true);
-                            }} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1">
-                                <Edit2 size={12} /> 수정
-                            </button>
-                        )}
+                        <button onClick={() => {
+                            setManualSummary(generateSummary(c, currentPartner?.summaryTemplate));
+                            setIsManualSummaryEdit(true);
+                        }} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1">
+                            <Edit2 size={12} /> 수정
+                        </button>
                     </div>
                 </div>
 
                 <div className="flex-1 relative h-full">
-                    {isManualSummaryEdit ? (
-                        <textarea
-                            className="w-full h-full p-4 border rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-blue-500 outline-none min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] overflow-y-auto"
-                            value={manualSummary}
-                            onChange={e => setManualSummary(e.target.value)}
-                        />
-                    ) : (
-                        <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]">
-                            {generateSummary(c, currentPartner?.summaryTemplate)}
-                        </div>
-                    )}
+                    <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]">
+                        {isManualSummaryEdit ? manualSummary : generateSummary(c, currentPartner?.summaryTemplate)}
+                    </div>
                 </div>
 
                 <div className="mt-4 flex justify-center">
@@ -72,18 +58,13 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
             </div>
 
             {/* RIGHT: AI Summary */}
-            <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 shadow-sm flex flex-col h-full">
+            <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 shadow-sm flex flex-col h-full relative">
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="font-bold text-purple-800 flex items-center gap-2">
                         <Sparkles size={18} /> AI 요약문
                     </h3>
                     <div className="flex gap-2">
-                        {aiSummaryEditMode ? (
-                            <>
-                                <button onClick={handleUpdateAiSummaryText} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 font-bold">저장</button>
-                                <button onClick={() => setAiSummaryEditMode(false)} className="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">취소</button>
-                            </>
-                        ) : (
+                        {aiSummaryText && (
                             <button onClick={() => {
                                 setAiSummaryText(injectSummaryMetadata(aiSummaryText || '', c));
                                 setAiSummaryEditMode(true);
@@ -96,29 +77,15 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
 
                 <div className="flex-1 relative h-full">
                     {aiSummaryText ? (
-                        aiSummaryEditMode ? (
-                            <textarea
-                                className="w-full h-full p-4 border border-purple-200 rounded-lg text-sm leading-relaxed resize-none focus:ring-2 focus:ring-purple-500 outline-none min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] overflow-y-auto"
-                                value={aiSummaryText}
-                                onChange={e => setAiSummaryText(e.target.value)}
-                            />
-                        ) : (
-                            <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]"
-                                onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
-                            >
-                                {aiSummaryText}
-                            </div>
-                        )
+                        <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]"
+                            onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
+                        >
+                            {aiSummaryText}
+                        </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4 min-h-[200px]">
                             <Sparkles size={48} className="opacity-20" />
                             <p className="text-center text-sm">AI 요약 결과가 없습니다.<br />'정보 수정' 탭에서 녹음 파일을 업로드하고<br />AI 요약을 실행해보세요.</p>
-                            {/* Note: Logic to switch tab is in parent, but we can't easily do it here unless we pass setActiveTab. 
-                                For now, I'll remove the button or just show message. 
-                                Actually, checking original code: it had a button to switch tab. 
-                                I'll skip the button for simplicity or I'd need to pass setActiveTab.
-                                Let's pass a simplified message.
-                            */}
                             <p className="text-center text-xs text-purple-500">정보 수정 탭에서 생성할 수 있습니다.</p>
                         </div>
                     )}
@@ -146,6 +113,46 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* FULLSCREEN OVERLAY FOR MANUAL SUMMARY EDIT */}
+            {isManualSummaryEdit && (
+                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in zoom-in duration-200">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 shadow-sm">
+                        <h3 className="font-bold text-gray-800 flex items-center gap-2"><FileText size={18} /> 기본 요약문 수정</h3>
+                        <div className="flex gap-2">
+                            <button onClick={() => setIsManualSummaryEdit(false)} className="px-5 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-bold active:scale-95 transition-all">취소</button>
+                            <button onClick={() => setIsManualSummaryEdit(false)} className="px-5 py-2 text-sm text-white bg-gray-800 rounded-lg hover:bg-gray-900 font-bold active:scale-95 transition-all">완료</button>
+                        </div>
+                    </div>
+                    <textarea
+                        className="flex-1 w-full p-4 resize-none outline-none text-base leading-relaxed bg-white"
+                        value={manualSummary}
+                        onChange={e => setManualSummary(e.target.value)}
+                        placeholder="요약 내용을 입력하세요..."
+                        autoFocus
+                    />
+                </div>
+            )}
+
+            {/* FULLSCREEN OVERLAY FOR AI SUMMARY EDIT */}
+            {aiSummaryEditMode && (
+                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in zoom-in duration-200">
+                    <div className="flex items-center justify-between p-4 border-b border-purple-200 bg-purple-50 shadow-sm">
+                        <h3 className="font-bold text-purple-800 flex items-center gap-2"><Sparkles size={18} /> AI 요약문 직접 수정</h3>
+                        <div className="flex gap-2">
+                            <button onClick={() => setAiSummaryEditMode(false)} className="px-5 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-bold active:scale-95 transition-all">취소</button>
+                            <button onClick={() => { handleUpdateAiSummaryText(); setAiSummaryEditMode(false); }} className="px-5 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold active:scale-95 transition-all">저장</button>
+                        </div>
+                    </div>
+                    <textarea
+                        className="flex-1 w-full p-4 resize-none outline-none text-base leading-relaxed bg-white"
+                        value={aiSummaryText || ''}
+                        onChange={e => setAiSummaryText(e.target.value)}
+                        placeholder="AI 요약문을 입력하세요..."
+                        autoFocus
+                    />
+                </div>
+            )}
         </div>
     );
 };
