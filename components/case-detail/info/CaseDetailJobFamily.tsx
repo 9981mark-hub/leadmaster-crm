@@ -23,9 +23,9 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
 }) => {
     return (
         <div>
-            {/* Status History Section */}
+            {/* Status History Section - PC ONLY */}
             {statusLogs.length > 0 && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6 hidden md:block">
                     <h4 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
                         <CalendarClock size={16} /> 상태 변경 이력
                     </h4>

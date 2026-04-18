@@ -90,6 +90,7 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                     partners={partners}
                     inboundPaths={inboundPaths}
                     onUpdate={onUpdate}
+                    statusLogs={statusLogs}
                 />
 
                 <CaseDetailJobFamily

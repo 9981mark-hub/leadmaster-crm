@@ -12,13 +12,15 @@ interface CaseDetailPersonalInfoProps {
     partners: Partner[];
     inboundPaths: string[];
     onUpdate: (field: string, value: any) => void;
+    statusLogs: CaseStatusLog[];
 }
 
 export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
     c,
     partners,
     inboundPaths,
-    onUpdate
+    onUpdate,
+    statusLogs
 }) => {
     return (
         <div>
@@ -88,6 +90,36 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                 </div>
             </div>
 
+            {/* Status History Section - Mobile ONLY */}
+            {statusLogs.length > 0 && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6 md:hidden">
+                    <h4 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                        <CalendarClock size={16} /> 상태 변경 이력
+                    </h4>
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        {statusLogs.map(log => (
+                            <div key={log.logId} className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm text-sm">
+                                <div className="flex justify-between items-center mb-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-gray-400 line-through text-xs px-2 py-0.5 bg-gray-100 rounded">{log.fromStatus}</span>
+                                        <span className="text-gray-400">→</span>
+                                        <span className="font-bold text-blue-600 text-xs px-2 py-0.5 bg-blue-50 rounded border border-blue-100">{log.toStatus}</span>
+                                    </div>
+                                    <span className="text-[10px] text-gray-400">{format(new Date(log.changedAt), 'yy.MM.dd HH:mm')}</span>
+                                </div>
+                                {log.memo && (
+                                    <div className="mt-2 text-gray-600 bg-gray-50 p-2 rounded text-xs leading-relaxed">
+                                        {log.memo}
+                                    </div>
+                                )}
+                                <div className="mt-1 text-right">
+                                    <span className="text-[10px] text-gray-400">Changed by {log.changedBy}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <SmartInput
                 label="최초 등록일시"
