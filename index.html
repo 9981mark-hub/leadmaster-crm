@@ -36,11 +36,13 @@
     /* [Global Fix] Enforce instant scrolling to prevent smooth-scroll interference during restoration */
     html,
     body,
-    #main-scroll-container,
-    * {
+    #main-scroll-container {
       scroll-behavior: auto !important;
       overscroll-behavior-y: none;
       /* Prevent rubber-banding */
+    }
+    * {
+      scroll-behavior: auto !important;
     }
   </style>
   <script>
