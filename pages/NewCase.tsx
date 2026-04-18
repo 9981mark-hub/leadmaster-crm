@@ -78,7 +78,7 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
 const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
   <div className="mb-4">
     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-1.5 flex-wrap">
       {options.map((opt: string) => {
         const isSelected = isMulti ? value?.includes(opt) : value === opt;
         return (
@@ -86,7 +86,7 @@ const Select = ({ label, value, onChange, options, isMulti = false }: any) => (
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`transition-all duration-200 border px-3 py-1.5 text-sm rounded font-semibold ${
+            className={`flex-1 whitespace-nowrap transition-all duration-200 border px-1.5 py-1.5 text-[13px] tracking-tight rounded font-semibold ${
               isSelected 
                 ? 'bg-blue-600 text-white shadow-none border-blue-600 hover:bg-blue-700' 
                 : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
