@@ -433,7 +433,7 @@ export default function NewCase() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
         <Input label="고객명" value={formData.customerName} onChange={(v: any) => handleChange('customerName', v)} />
         <Input label="연락처" value={formData.phone} onChange={(v: any) => handleChange('phone', v)} placeholder="010-0000-0000" isPhone={true} />
       </div>
