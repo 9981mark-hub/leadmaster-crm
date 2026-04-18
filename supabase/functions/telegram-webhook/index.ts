@@ -58,13 +58,21 @@ function extractCustomerName(text: string): { customerName: string; feedbackText
     return { customerName: slashMatch[1].trim(), feedbackText: slashMatch[2].trim() };
   }
 
-  // Pattern 2: "고객명\n피드백" (첫 줄이 2~4글자 한글 이름)
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  if (lines.length >= 2 && /^[가-힣]{2,4}$/.test(lines[0])) {
-    return { customerName: lines[0], feedbackText: lines.slice(1).join('\n') };
+  if (lines.length >= 1) {
+    // Pattern 2: "고객명/부산/회복" - starts with name followed by /
+    const singleSlashMatch = lines[0].match(/^([가-힣]{2,4})\s*\//);
+    if (singleSlashMatch) {
+      return { customerName: singleSlashMatch[1], feedbackText: text };
+    }
+
+    // Pattern 3: First line is JUST 2~4 char Korean name
+    if (/^[가-힣]{2,4}$/.test(lines[0])) {
+      return { customerName: lines[0], feedbackText: lines.slice(1).join('\n') };
+    }
   }
 
-  // Pattern 3: 이름 없음 (일반 메시지)
+  // Pattern 4: Name missing or unrecognizable format
   return { customerName: '', feedbackText: text };
 }
 
@@ -170,20 +178,22 @@ async function classifyWithGemini(
 // 4. Customer Matching Engine
 // ============================================
 
-async function matchCustomerToCase(customerName: string): Promise<string | null> {
-  if (!customerName) return null;
+async function matchCustomerToCase(customerName: string): Promise<{ matchedCaseId: string | null; candidates: any[] }> {
+  if (!customerName) return { matchedCaseId: null, candidates: [] };
 
   // Strategy 1: Exact name match on active cases
   const { data: exactMatches } = await supabase
     .from('cases')
-    .select('case_id, status, created_at')
+    .select('case_id, customer_name, status, created_at')
     .eq('customer_name', customerName)
     .in('status', ['사무장 접수', '상담중', '재통화 예정', '계약 완료', '1차 입금완료', '2차 입금완료'])
-    .order('created_at', { ascending: false })
-    .limit(1);
+    .order('created_at', { ascending: false });
 
-  if (exactMatches && exactMatches.length > 0) {
-    return exactMatches[0].case_id;
+  if (exactMatches && exactMatches.length === 1) {
+    return { matchedCaseId: exactMatches[0].case_id, candidates: exactMatches };
+  }
+  if (exactMatches && exactMatches.length > 1) {
+    return { matchedCaseId: null, candidates: exactMatches };
   }
 
   // Strategy 2: Fuzzy match (contains)
@@ -192,14 +202,16 @@ async function matchCustomerToCase(customerName: string): Promise<string | null>
     .select('case_id, customer_name, status, created_at')
     .ilike('customer_name', `%${customerName}%`)
     .in('status', ['사무장 접수', '상담중', '재통화 예정'])
-    .order('created_at', { ascending: false })
-    .limit(1);
+    .order('created_at', { ascending: false });
 
-  if (fuzzyMatches && fuzzyMatches.length > 0) {
-    return fuzzyMatches[0].case_id;
+  if (fuzzyMatches && fuzzyMatches.length === 1) {
+    return { matchedCaseId: fuzzyMatches[0].case_id, candidates: fuzzyMatches };
+  }
+  if (fuzzyMatches && fuzzyMatches.length > 1) {
+    return { matchedCaseId: null, candidates: fuzzyMatches };
   }
 
-  return null;
+  return { matchedCaseId: null, candidates: [] };
 }
 
 // ============================================
@@ -337,10 +349,13 @@ serve(async (req: Request) => {
     }
 
     // Match to CRM case
-    const matchedCaseId = await matchCustomerToCase(customerName);
+    const { matchedCaseId, candidates } = await matchCustomerToCase(customerName);
+    classification.candidates = candidates;
 
-    // Determine apply mode and urgency
-    const isAutoApply = AUTO_APPLY_TYPES.has(classification.feedbackType);
+    // Determine apply mode and urgency (Never auto apply if multiple matches / null id)
+    const isAutoApplyInfo = AUTO_APPLY_TYPES.has(classification.feedbackType);
+    const isAutoApply = isAutoApplyInfo && !!matchedCaseId;
+    const applyMode = isAutoApply ? 'auto' : 'pending';
     const urgency = URGENCY_MAP[classification.feedbackType] || 'info';
 
     // Store in telegram_feedbacks table
@@ -354,9 +369,9 @@ serve(async (req: Request) => {
         feedback_type: classification.feedbackType,
         feedback_content: parsed.text,
         matched_case_id: matchedCaseId,
-        is_applied: isAutoApply && !!matchedCaseId,
+        is_applied: isAutoApply,
         is_confirmed: isAutoApply,
-        apply_mode: isAutoApply ? 'auto' : 'pending',
+        apply_mode: applyMode,
         urgency,
         ai_classification: classification,
       });

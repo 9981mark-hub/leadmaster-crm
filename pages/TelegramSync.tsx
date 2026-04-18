@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Smartphone, CheckCircle, Clock, AlertTriangle, MessageSquare, ChevronRight, Check, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { TelegramFeedback } from '../types';
 import { fetchPendingFeedbacks, confirmFeedback, dismissFeedback, subscribeTelegramFeedbacks } from '../services/telegramFeedback';
 import { useToast } from '../contexts/ToastContext';
@@ -127,9 +128,15 @@ export default function TelegramSync() {
                                             {f.customerName && (
                                                 <>
                                                     <ChevronRight size={14} className="text-gray-400" />
-                                                    <span className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                                                        {f.customerName} 고객
-                                                    </span>
+                                                    {f.matchedCaseId ? (
+                                                        <Link to={`/case/${f.matchedCaseId}`} className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition">
+                                                            {f.customerName} 고객
+                                                        </Link>
+                                                    ) : (
+                                                        <span className="text-sm font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
+                                                            {f.customerName} (미연동)
+                                                        </span>
+                                                    )}
                                                 </>
                                             )}
                                             <span className="text-xs font-medium text-gray-400 ml-auto">
@@ -140,6 +147,21 @@ export default function TelegramSync() {
                                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                                             <p className="text-gray-700 font-medium whitespace-pre-wrap">{f.feedbackContent}</p>
                                         </div>
+
+                                        {!f.matchedCaseId && f.aiClassification?.candidates && f.aiClassification.candidates.length > 1 && (
+                                            <div className="mt-2 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                                                <p className="text-xs text-yellow-800 font-bold mb-2 flex items-center gap-1">
+                                                    <AlertTriangle size={14} /> 동명이인이 여러 명 발견되어 자동 연동되지 않았습니다.
+                                                </p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {f.aiClassification.candidates.map((c: any, idx: number) => (
+                                                        <Link key={idx} to={`/case/${c.case_id}`} className="text-xs bg-white text-blue-600 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50 shadow-sm transition font-medium">
+                                                            🔍 {c.customer_name} ({c.status}) 확인하기
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {f.aiClassification?.suggestedStatus && (
                                             <div className="flex items-center gap-2 text-sm text-gray-600 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
