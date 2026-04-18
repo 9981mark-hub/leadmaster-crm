@@ -625,9 +625,8 @@ export default function NewCase() {
       </div>
 
       <div className="mb-5">
-        <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">담보 대출 내용 (자동 집계 + 추가)</label>
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl text-[13px] text-indigo-800 dark:text-indigo-300 font-medium mb-2 shadow-sm border border-indigo-100 dark:border-indigo-800/30">자동 집계: {getAutoCollateralString()}</div>
-        <input type="text" className="w-full px-3.5 py-3 bg-gray-50 dark:bg-gray-800/50 border border-transparent rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm text-gray-900 dark:text-gray-100" value={formData.collateralLoanMemo} onChange={e => handleChange('collateralLoanMemo', e.target.value)} placeholder="추가로 작성할 담보 대출 내용" />
+        <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">담보 대출 내용 (자동 집계)</label>
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl text-[13px] text-indigo-800 dark:text-indigo-300 font-medium shadow-sm border border-indigo-100 dark:border-indigo-800/30">자동 집계: {getAutoCollateralString()}</div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

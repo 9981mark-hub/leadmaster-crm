@@ -204,17 +204,10 @@ export const CaseDetailAssets: React.FC<CaseDetailAssetsProps> = ({
             </div>
 
             <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-500 mb-1">담보 대출 내용 (자동 집계 + 추가)</label>
-                <div className="bg-gray-50 p-2 rounded text-xs text-blue-800 font-medium mb-1">
+                <label className="block text-xs font-medium text-gray-500 mb-1">담보 대출 내용 (자동 집계)</label>
+                <div className="bg-gray-50 p-2 rounded text-xs text-blue-800 font-medium">
                     자동 집계: {autoCollateralString}
                 </div>
-                <input
-                    type="text"
-                    className="w-full p-2 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
-                    value={c.collateralLoanMemo || ''}
-                    onChange={e => onUpdate('collateralLoanMemo', e.target.value)}
-                    placeholder="추가로 작성할 담보 대출 내용"
-                />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
