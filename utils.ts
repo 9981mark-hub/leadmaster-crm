@@ -346,10 +346,10 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
   const sortedMemos = c.specialMemo
     ? [...c.specialMemo]
       .filter(m => !m.content.startsWith('[상태변경]')) // Filter out status changes
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .sort((a, b) => String(b.createdAt || (b as any).datetime || '').localeCompare(String(a.createdAt || (a as any).datetime || '')))
     : [];
   const allMemosContent = sortedMemos.length > 0
-    ? sortedMemos.map(memo => `[${format(new Date(memo.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}]\n${memo.content}`).join('\n\n')
+    ? sortedMemos.map(memo => `[${safeFormat(memo.createdAt || (memo as any).datetime, 'yyyy-MM-dd HH:mm', '-')}]\n${memo.content}`).join('\n\n')
     : '없음';
 
   const jobTypesStr = c.jobTypes && c.jobTypes.length > 0 ? c.jobTypes.join(', ') : '정보 없음';
