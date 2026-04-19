@@ -89,6 +89,21 @@ export async function fetchPendingFeedbacks(): Promise<TelegramFeedback[]> {
   return (data || []).map(dbToFrontend);
 }
 
+/** 모든 텔레그램 피드백 (히스토리용) */
+export async function fetchAllFeedbacks(): Promise<TelegramFeedback[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('telegram_feedbacks')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[TG] fetchAllFeedbacks error:', error);
+    return [];
+  }
+  return (data || []).map(dbToFrontend);
+}
+
 /** 승인 대기 중인 피드백 수 (배지용) */
 export async function fetchPendingCount(): Promise<{ total: number; critical: number }> {
   if (!supabase) return { total: 0, critical: 0 };
@@ -162,6 +177,27 @@ export async function dismissFeedback(feedbackId: string): Promise<boolean> {
 
   if (error) {
     console.error('[TG] dismissFeedback error:', error);
+    return false;
+  }
+  return true;
+}
+
+// ============================================
+// Delete Operations
+// ============================================
+
+/** 특정 기간의 피드백 영구 삭제 (Hard Delete) */
+export async function deleteFeedbacksByDateRange(startDate: string, endDate: string): Promise<boolean> {
+  if (!supabase) return false;
+  
+  const { error } = await supabase
+    .from('telegram_feedbacks')
+    .delete()
+    .gte('created_at', startDate)
+    .lte('created_at', endDate);
+
+  if (error) {
+    console.error('[TG] deleteFeedbacksByDateRange error:', error);
     return false;
   }
   return true;
