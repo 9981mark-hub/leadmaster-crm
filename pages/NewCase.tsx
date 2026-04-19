@@ -767,20 +767,22 @@ export default function NewCase() {
         )}
       </div>
 
-      <div className="flex justify-between mt-6 pt-4 border-t border-slate-200">
+      <div className="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-200">
         {step > 1 ? (
-          <button onClick={handleBack} className="flex items-center text-gray-600 font-medium px-4 py-2 hover:bg-gray-100 rounded text-sm transition-colors border border-gray-300 bg-white shadow-sm">
+          <button onClick={handleBack} className="flex-shrink-0 whitespace-nowrap flex items-center text-gray-600 font-medium px-4 py-2 hover:bg-gray-100 rounded text-sm transition-colors border border-gray-300 bg-white shadow-sm">
             <ChevronLeft size={16} /> 이전
           </button>
         ) : <div />}
 
-        {step < 5 ? (
-          <button onClick={handleNext} className="flex items-center bg-blue-600 text-white px-5 py-2 rounded font-medium hover:bg-blue-700 text-sm shadow-none transition-colors">
-            다음 <ChevronRight size={16} />
-          </button>
-        ) : (
-          renderSaveButton()
-        )}
+        <div className="flex-1 flex justify-end">
+          {step < 5 ? (
+            <button onClick={handleNext} className="flex items-center bg-blue-600 text-white px-5 py-2 rounded font-medium hover:bg-blue-700 text-sm shadow-none transition-colors">
+              다음 <ChevronRight size={16} />
+            </button>
+          ) : (
+            renderSaveButton()
+          )}
+        </div>
       </div>
     </div>
   );
