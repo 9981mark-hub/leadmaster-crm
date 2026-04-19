@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { Archive, Edit2, Mic, PlayCircle, Send, Sparkles, Trash2, X } from 'lucide-react';
+import { Archive, Edit2, Mic, PlayCircle, Send, Sparkles, Trash2, X, MessageCircle } from 'lucide-react';
 import { Case, RecordingItem } from '../../../types';
 import { CustomAudioPlayer } from '../../CustomAudioPlayer'; // Assuming this is in components/case-detail, OR check path. If CustomAudioPlayer is in components root, then ../../Callback... wait. 
 // CustomAudioPlayer seems to be in reusable components. If in components root: ../../../components/CustomAudioPlayer or ../../CustomAudioPlayer if subfolder is sibling?
 // From components/case-detail/info: 
 // ../.. -> components. 
-import { convertToPlayableUrl, injectSummaryMetadata, safeFormat } from '../../../utils';
+import { convertToPlayableUrl, injectSummaryMetadata, safeFormat, loadTelegramRooms } from '../../../utils';
+import { useToast } from '../../../contexts/ToastContext';
 import { format } from 'date-fns';
 
 interface CaseDetailAiSummaryProps {
@@ -48,6 +49,39 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
     onPlayRecording,
     onDeleteRecording
 }) => {
+    const { showToast } = useToast();
+    const [telegramRooms] = React.useState(() => loadTelegramRooms());
+    const [isTelegramModalOpen, setIsTelegramModalOpen] = React.useState(false);
+
+    const handleTelegramSendClick = () => {
+        if (!aiSummaryText) return;
+
+        if (telegramRooms.length === 0) {
+            showToast('설정 페이지에서 텔레그램 방을 먼저 등록해 주세요.', 'error');
+            return;
+        }
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(aiSummaryText).then(() => {
+            if (telegramRooms.length === 1) {
+                // If only 1 room, open immediately
+                window.open(telegramRooms[0].url, '_blank');
+                showToast('텔레그램 방이 열렸습니다. 붙여넣기(Paste)로 전송해 주세요.');
+            } else {
+                // If more than 1 room, open selection modal
+                setIsTelegramModalOpen(true);
+            }
+        }).catch(err => {
+            console.error('Clipboard copy failed:', err);
+            showToast('클립보드 복사에 실패했습니다.', 'error');
+        });
+    };
+
+    const handleRoomSelect = (url: string) => {
+        window.open(url, '_blank');
+        setIsTelegramModalOpen(false);
+        showToast('텔레그램 방이 열렸습니다. 붙여넣기(Paste)로 전송해 주세요.');
+    };
     const audioInputRef = useRef<HTMLInputElement>(null);
 
     // Helper to trigger the hidden input from the parent's ref concept
@@ -171,6 +205,49 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                     >
                         <Send size={14} /> 상담 내용으로 보내기 (특이사항 추가)
                     </button>
+                    <button
+                        onClick={handleTelegramSendClick}
+                        className="flex items-center gap-1 text-xs bg-indigo-600 text-white px-3 py-2 rounded font-bold hover:bg-indigo-700 transition-colors ml-2 shadow-sm"
+                    >
+                        <MessageCircle size={14} /> 텔레그램 전송
+                    </button>
+                </div>
+            )}
+
+            {/* Telegram Room Selection Modal */}
+            {isTelegramModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-xl w-80 overflow-hidden transform scale-100 transition-transform">
+                        <div className="bg-indigo-600 p-4 shrink-0 flex justify-between items-center text-white">
+                            <h3 className="font-bold flex items-center gap-2">
+                                <MessageCircle size={18} /> 전송할 방 선택
+                            </h3>
+                            <button onClick={() => setIsTelegramModalOpen(false)} className="text-indigo-200 hover:text-white transition-colors">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div className="p-4 space-y-2">
+                            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+                                내용이 클립보드에 자동 복사되었습니다.<br/>
+                                전송할 방을 선택하시고 화면이 열리면 붙여넣기 해 주세요.
+                            </p>
+                            <div className="max-h-60 overflow-y-auto space-y-2 no-scrollbar">
+                                {telegramRooms.map(room => (
+                                    <button
+                                        key={room.id}
+                                        onClick={() => handleRoomSelect(room.url)}
+                                        className="w-full text-left p-3 border border-indigo-100 flex items-center justify-between rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors group"
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-sm text-indigo-900 group-hover:text-indigo-700">{room.name}</span>
+                                            <span className="text-[10px] text-indigo-400 mt-0.5 truncate max-w-[200px]">{room.url}</span>
+                                        </div>
+                                        <Send size={14} className="text-indigo-400 group-hover:text-indigo-600" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

@@ -1,5 +1,5 @@
 
-import { Case, CommissionRule, CaseStatus, SettlementConfig, Partner, MemoItem, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS } from './types';
+import { Case, CommissionRule, CaseStatus, SettlementConfig, Partner, MemoItem, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from './types';
 import { differenceInDays, parse, format, isValid, isToday, isPast, nextDay, addWeeks, setDay, startOfWeek, endOfWeek, isAfter, isBefore } from 'date-fns';
 import { REMINDER_REQUIRED_STATUSES, CONTRACT_COMPLETED_STATUSES, DEFAULT_SUMMARY_TEMPLATE } from './constants';
 import { ko } from 'date-fns/locale';
@@ -57,6 +57,23 @@ export const loadMissedCallTiers = (): MissedCallIntervalTier[] => {
     console.warn('Failed to parse missedCallIntervalTiers:', e);
   }
   return [...DEFAULT_INTERVAL_TIERS];
+};
+
+export const loadTelegramRooms = (): TelegramRoomTarget[] => {
+  try {
+    const stored = localStorage.getItem('lm_telegramRooms');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {
+    console.warn('Failed to parse telegramRooms:', e);
+  }
+  return [];
+};
+
+export const saveTelegramRooms = (rooms: TelegramRoomTarget[]) => {
+  localStorage.setItem('lm_telegramRooms', JSON.stringify(rooms));
 };
 
 export const getMatchingRule = (fee: number, rules: CommissionRule[]): CommissionRule | undefined => {

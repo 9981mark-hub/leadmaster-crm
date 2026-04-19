@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, saveGlobalSettings } from '../services/api';
 import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAddTertiaryStatusMutation, useDeleteTertiaryStatusMutation } from '../services/queries';
-import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS } from '../types';
+import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle } from 'lucide-react';
-import { getDayName, loadMissedCallTiers } from '../utils';
+import { getDayName, loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
 import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS } from '../constants';
 import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
@@ -33,6 +33,11 @@ export default function SettingsPage() {
     // [Missed Call Settings] saved in localStorage
     const [missedCallStatus, setMissedCallStatus] = useState('부재');
     const [missedCallIntervalTiers, setMissedCallIntervalTiers] = useState<MissedCallIntervalTier[]>(() => loadMissedCallTiers());
+
+    // [NEW] Telegram Rooms
+    const [telegramRooms, setTelegramRooms] = useState<TelegramRoomTarget[]>(() => loadTelegramRooms());
+    const [newTelegramRoomName, setNewTelegramRoomName] = useState('');
+    const [newTelegramRoomUrl, setNewTelegramRoomUrl] = useState('');
 
     // Email Notification Settings
     const [emailNotificationEnabled, setEmailNotificationEnabled] = useState(false);
@@ -472,7 +477,91 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center relative z-10">
                     <MessageCircle className="mr-2 text-indigo-500" size={20} /> 텔레그램 연동 관리
                 </h3>
-                <div className="max-w-2xl space-y-4 relative z-10">
+                <div className="max-w-2xl space-y-6 relative z-10">
+                    {/* [NEW] 텔레그램 수동 전송 방 관리 */}
+                    <div className="space-y-3 border-b border-indigo-50 pb-6">
+                        <h4 className="font-bold text-indigo-800 text-sm">텔레그램 직접 전송 (AI 요약문 출력용 방 설정)</h4>
+                        <div className="flex flex-col md:flex-row gap-2">
+                            <input 
+                                type="text" 
+                                placeholder="방 이름 (예: 직원 공유방)" 
+                                className="flex-1 p-2 text-sm border rounded outline-none focus:ring-2 focus:ring-indigo-300"
+                                value={newTelegramRoomName}
+                                onChange={e => setNewTelegramRoomName(e.target.value)}
+                            />
+                            <input 
+                                type="text" 
+                                placeholder="방 URL (https://t.me/...)" 
+                                className="flex-[2] p-2 text-sm border rounded outline-none focus:ring-2 focus:ring-indigo-300"
+                                value={newTelegramRoomUrl}
+                                onChange={e => setNewTelegramRoomUrl(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        if (!newTelegramRoomName.trim() || !newTelegramRoomUrl.trim()) {
+                                            showToast('방 이름과 주소를 모두 입력해주세요.', 'error');
+                                            return;
+                                        }
+                                        const updated = [...telegramRooms, {
+                                            id: Date.now().toString(),
+                                            name: newTelegramRoomName.trim(),
+                                            url: newTelegramRoomUrl.trim()
+                                        }];
+                                        setTelegramRooms(updated);
+                                        saveTelegramRooms(updated);
+                                        setNewTelegramRoomName('');
+                                        setNewTelegramRoomUrl('');
+                                        showToast('텔레그램 방이 추가되었습니다.');
+                                    }
+                                }}
+                            />
+                            <button 
+                                type="button"
+                                onClick={() => {
+                                    if (!newTelegramRoomName.trim() || !newTelegramRoomUrl.trim()) {
+                                        showToast('방 이름과 주소를 모두 입력해주세요.', 'error');
+                                        return;
+                                    }
+                                    const updated = [...telegramRooms, {
+                                        id: Date.now().toString(),
+                                        name: newTelegramRoomName.trim(),
+                                        url: newTelegramRoomUrl.trim()
+                                    }];
+                                    setTelegramRooms(updated);
+                                    saveTelegramRooms(updated);
+                                    setNewTelegramRoomName('');
+                                    setNewTelegramRoomUrl('');
+                                    showToast('텔레그램 방이 추가되었습니다.');
+                                }}
+                                className="bg-indigo-600 text-white px-3 py-2 text-sm rounded hover:bg-indigo-700 whitespace-nowrap"
+                            >
+                                추가
+                            </button>
+                        </div>
+                        {telegramRooms.length > 0 && (
+                            <div className="bg-white border rounded">
+                                {telegramRooms.map((room, idx) => (
+                                    <div key={room.id} className={`flex items-center justify-between p-3 ${idx < telegramRooms.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-sm text-gray-700">{room.name}</span>
+                                            <span className="text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-md">{room.url}</span>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                const updated = telegramRooms.filter(r => r.id !== room.id);
+                                                setTelegramRooms(updated);
+                                                saveTelegramRooms(updated);
+                                                showToast('텔레그램 방이 삭제되었습니다.');
+                                            }}
+                                            className="text-gray-400 hover:text-red-500 p-2"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                         <h4 className="font-bold text-indigo-800 mb-2">Supabase Edge Function 기반 하이브리드 연동</h4>
                         <p className="text-sm text-indigo-700 mb-2">

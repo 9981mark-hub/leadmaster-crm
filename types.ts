@@ -589,3 +589,9 @@ export const TELEGRAM_FEEDBACK_RULES: Record<TelegramFeedbackType, {
   '비피드백':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '비피드백 (무시)' },
 };
 
+export interface TelegramRoomTarget {
+  id: string;
+  name: string;
+  url: string;
+}
+
