@@ -40,7 +40,7 @@ const StatusHistoryTooltipContent = ({ caseId }: { caseId: string }) => {
                     .map(m => {
                         const match = m.content.match(/\[2차 상태 변경\] (.+?) → (.+?)(\n|$)/);
                         return {
-                            date: m.createdAt,
+                            date: m.createdAt || (m as any).datetime,
                             from: match?.[1] || '없음',
                             to: match?.[2] || '없음',
                             memo: m.content.includes('사유:') ? m.content.split('사유:')[1]?.trim() : undefined
@@ -110,8 +110,8 @@ const getLastConsultationDate = (c: Case): string => {
     if (!c.specialMemo || !Array.isArray(c.specialMemo) || c.specialMemo.length === 0) {
         return c.updatedAt;
     }
-    const sortedMemos = [...c.specialMemo].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-    return sortedMemos[0]?.createdAt || c.updatedAt;
+    const sortedMemos = [...c.specialMemo].sort((a, b) => String(b.createdAt || (b as any).datetime || '').localeCompare(String(a.createdAt || (a as any).datetime || '')));
+    return sortedMemos[0]?.createdAt || (sortedMemos[0] as any)?.datetime || c.updatedAt;
 };
 
 
@@ -348,7 +348,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         .slice(0, 5)
                                                         .map((m, i) => (
                                                             <div key={i} className="text-[11px] leading-relaxed border-b border-gray-700 last:border-0 pb-1">
-                                                                <span className="text-blue-300 mr-1">[{m.createdAt?.split('T')[0] || ''}]</span>
+                                                                <span className="text-blue-300 mr-1">[{(m.createdAt || (m as any).datetime)?.split('T')[0]?.split(' ')[0] || ''}]</span>
                                                                 {m.content}
                                                             </div>
                                                         ))
@@ -435,7 +435,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                                 .slice(0, 3)
                                                                 .map((m, i) => (
                                                                     <div key={i} className="text-[11px] leading-relaxed">
-                                                                        <span className="text-blue-300 mr-1">[{m.createdAt?.split('T')[0] || ''}]</span>
+                                                                        <span className="text-blue-300 mr-1">[{(m.createdAt || (m as any).datetime)?.split('T')[0]?.split(' ')[0] || ''}]</span>
                                                                         {m.content}
                                                                     </div>
                                                                 ))

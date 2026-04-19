@@ -144,7 +144,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
             events.push({
                 id: `memo-${memo.id}`,
                 type: 'memo',
-                datetime: memo.createdAt,
+                datetime: memo.createdAt || (memo as any).datetime,
                 title: memo.content.length > 60 ? memo.content.substring(0, 60) + '...' : memo.content,
                 description: memo.content.length > 60 ? memo.content : undefined
             });

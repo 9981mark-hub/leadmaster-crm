@@ -151,7 +151,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
     };
 
     const sortedReminders = [...reminders].sort((a, b) => String(a.datetime || '').localeCompare(String(b.datetime || '')));
-    const sortedMemos = [...memos].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    const sortedMemos = [...memos].sort((a, b) => String(b.createdAt || (b as any).datetime || '').localeCompare(String(a.createdAt || (a as any).datetime || '')));
 
     const currentStatusColor = statusColors[resultModal.status] || statusColors['취소'];
 
@@ -402,7 +402,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                 {sortedMemos.map(memo => (
                                     <div key={memo.id} className="bg-white p-3 rounded text-xs shadow-sm border border-yellow-100">
                                         <div className="flex justify-between items-start mb-1">
-                                            <p className="font-bold text-gray-500 text-[10px]">{safeFormat(memo.createdAt, 'yyyy-MM-dd HH:mm')}</p>
+                                            <p className="font-bold text-gray-500 text-[10px]">{safeFormat(memo.createdAt || (memo as any).datetime, 'yyyy-MM-dd HH:mm')}</p>
                                             <div className="flex gap-1">
                                                 {editingMemoId === memo.id ? (
                                                     <>

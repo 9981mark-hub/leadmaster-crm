@@ -220,8 +220,8 @@ export default function CaseList() {
 
             const getLastConsultationDate = (c: Case) => {
                 if (!c.specialMemo || !Array.isArray(c.specialMemo) || c.specialMemo.length === 0) return c.updatedAt;
-                const sortedMemos = [...c.specialMemo].sort((m1, m2) => String(m2.createdAt || '').localeCompare(String(m1.createdAt || '')));
-                return sortedMemos[0]?.createdAt || c.updatedAt;
+                const sortedMemos = [...c.specialMemo].sort((m1, m2) => String(m2.createdAt || (m2 as any).datetime || '').localeCompare(String(m1.createdAt || (m1 as any).datetime || '')));
+                return sortedMemos[0]?.createdAt || (sortedMemos[0] as any)?.datetime || c.updatedAt;
             };
 
             if (key === 'lastConsultation') {
