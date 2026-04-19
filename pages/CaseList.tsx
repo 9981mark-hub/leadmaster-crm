@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useLayoutEffect } from 'react';
+import React, { useEffect, useState, useMemo, useLayoutEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { ListSkeleton } from '../components/Skeleton';
@@ -260,6 +260,39 @@ export default function CaseList() {
         }
     }, [totalPages, currentPage]);
 
+    // Swipe Gesture for Page Navigation (Mobile)
+    const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+    const swipeHandled = useRef(false);
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        const touch = e.touches[0];
+        touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+        swipeHandled.current = false;
+    }, []);
+
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        if (!touchStartRef.current || swipeHandled.current) return;
+        const touch = e.changedTouches[0];
+        const deltaX = touch.clientX - touchStartRef.current.x;
+        const deltaY = touch.clientY - touchStartRef.current.y;
+        const elapsed = Date.now() - touchStartRef.current.time;
+
+        // Minimum 50px horizontal, must be more horizontal than vertical, within 500ms
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5 && elapsed < 500) {
+            swipeHandled.current = true;
+            if (deltaX < 0 && currentPage < totalPages) {
+                // Swipe left → next page
+                setCurrentPage(prev => prev + 1);
+                document.getElementById('main-scroll-container')?.scrollTo({ top: 0, behavior: 'instant' });
+            } else if (deltaX > 0 && currentPage > 1) {
+                // Swipe right → previous page
+                setCurrentPage(prev => prev - 1);
+                document.getElementById('main-scroll-container')?.scrollTo({ top: 0, behavior: 'instant' });
+            }
+        }
+        touchStartRef.current = null;
+    }, [currentPage, totalPages]);
+
 
     // Scroll Restoration (Simplified with React Query)
     useLayoutEffect(() => {
@@ -466,7 +499,10 @@ export default function CaseList() {
                     onUpdateStatus={(caseId, newStatus) => handleUpdate(caseId, { status: newStatus })}
                 />
             ) : (
-                <>
+                <div
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                >
                     <CaseListTable
                         cases={currentCases}
                         partners={partners}
@@ -488,7 +524,7 @@ export default function CaseList() {
                             document.getElementById('main-scroll-container')?.scrollTo({ top: 0, behavior: 'instant' });
                         }}
                     />
-                </>
+                </div>
             )}
 
             {/* [NEW] 이탈 사유 모달 (빠른 상태 변경 시) */}
