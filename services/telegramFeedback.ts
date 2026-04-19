@@ -20,6 +20,8 @@ interface DbTelegramFeedback {
   customer_name: string | null;
   feedback_type: string;
   feedback_content: string;
+  chat_id: string | null;
+  chat_title: string | null;
   matched_case_id: string | null;
   is_applied: boolean;
   is_confirmed: boolean;
