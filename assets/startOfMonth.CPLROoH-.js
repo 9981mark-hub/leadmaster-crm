@@ -1,0 +1,1 @@
+import{aA as a}from"./index.De8VHahS.js";function s(r,e){const t=a(r,e==null?void 0:e.in),n=t.getMonth();return t.setFullYear(t.getFullYear(),n+1,0),t.setHours(23,59,59,999),t}function c(r,e){const t=a(r,e==null?void 0:e.in);return t.setDate(1),t.setHours(0,0,0,0),t}export{s as e,c as s};
