@@ -5,6 +5,7 @@ import { Case, CaseStatusLog } from '../../../types';
 import { JOB_TYPES } from '../../../constants';
 import { format } from 'date-fns';
 import { CalendarClock } from 'lucide-react';
+import { safeFormat } from '../../../utils';
 
 interface CaseDetailJobFamilyProps {
     c: Case;
@@ -38,7 +39,7 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
                                         <span className="text-gray-400">→</span>
                                         <span className="font-bold text-blue-600 text-xs px-2 py-0.5 bg-blue-50 rounded border border-blue-100">{log.toStatus}</span>
                                     </div>
-                                    <span className="text-[10px] text-gray-400">{format(new Date(log.changedAt), 'yy.MM.dd HH:mm')}</span>
+                                    <span className="text-[10px] text-gray-400">{safeFormat(log.changedAt, 'yy.MM.dd HH:mm')}</span>
                                 </div>
                                 {log.memo && (
                                     <div className="mt-2 text-gray-600 bg-gray-50 p-2 rounded text-xs leading-relaxed">

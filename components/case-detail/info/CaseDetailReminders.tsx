@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CalendarClock, Check, Edit2, Trash2, X, MessageSquare } from 'lucide-react';
 import { Case, MemoItem, ReminderItem, ReminderType } from '../../../types';
-import { format } from 'date-fns';
+import { safeFormat } from '../../../utils';
 
 interface CaseDetailRemindersProps {
     reminders: ReminderItem[];
@@ -402,7 +402,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                 {sortedMemos.map(memo => (
                                     <div key={memo.id} className="bg-white p-3 rounded text-xs shadow-sm border border-yellow-100">
                                         <div className="flex justify-between items-start mb-1">
-                                            <p className="font-bold text-gray-500 text-[10px]">{format(new Date(memo.createdAt), 'yyyy-MM-dd HH:mm')}</p>
+                                            <p className="font-bold text-gray-500 text-[10px]">{safeFormat(memo.createdAt, 'yyyy-MM-dd HH:mm')}</p>
                                             <div className="flex gap-1">
                                                 {editingMemoId === memo.id ? (
                                                     <>

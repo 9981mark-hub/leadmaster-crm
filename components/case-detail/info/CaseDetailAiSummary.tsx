@@ -5,8 +5,7 @@ import { CustomAudioPlayer } from '../../CustomAudioPlayer'; // Assuming this is
 // CustomAudioPlayer seems to be in reusable components. If in components root: ../../../components/CustomAudioPlayer or ../../CustomAudioPlayer if subfolder is sibling?
 // From components/case-detail/info: 
 // ../.. -> components. 
-// So ../../CustomAudioPlayer is correct IF CustomAudioPlayer is in components/
-import { convertToPlayableUrl, injectSummaryMetadata } from '../../../utils';
+import { convertToPlayableUrl, injectSummaryMetadata, safeFormat } from '../../../utils';
 import { format } from 'date-fns';
 
 interface CaseDetailAiSummaryProps {
@@ -122,7 +121,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                     />
                                     <div className="truncate">
                                         <span className="font-medium">{rec.filename}</span>
-                                        <span className="text-gray-400 text-[10px] ml-1">{format(new Date(rec.uploadDate), 'yy.MM.dd HH:mm')}</span>
+                                        <span className="text-gray-400 text-[10px] ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
                                     </div>
                                 </div>
                                 <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-400 hover:text-red-500">
