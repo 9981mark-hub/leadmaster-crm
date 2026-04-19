@@ -96,15 +96,17 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 onClick={() => { navigator.clipboard.writeText(aiSummaryText); showToast('복사되었습니다.'); }}
-                                className="bg-gray-700 text-white px-4 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-gray-800 shadow-sm transition-all active:scale-95 text-xs md:text-sm"
+                                className="bg-gray-700 text-white px-4 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-gray-800 shadow-sm transition-all active:scale-95 text-xs md:text-sm leading-tight"
                             >
-                                <Copy className="mr-2" size={16} /> 전체 복사
+                                <Copy className="mr-1.5 md:mr-2 flex-shrink-0" size={16} />
+                                <span className="text-center">전체 복사</span>
                             </button>
                             <button
                                 onClick={handleSaveSummaryToMemo}
-                                className="bg-indigo-600 text-white px-4 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-indigo-700 w-full shadow-sm transition-all active:scale-95 text-xs md:text-sm"
+                                className="bg-indigo-600 text-white px-4 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-indigo-700 w-full shadow-sm transition-all active:scale-95 text-xs md:text-sm leading-tight"
                             >
-                                <Send className="mr-2" size={16} /> 상담이력 전송
+                                <Send className="mr-1.5 md:mr-2 flex-shrink-0" size={16} />
+                                <span className="text-center">상담이력<br className="block sm:hidden" /><span className="hidden sm:inline"> </span>전송</span>
                             </button>
                         </div>
                         <p className="text-[10px] text-center text-purple-400">
