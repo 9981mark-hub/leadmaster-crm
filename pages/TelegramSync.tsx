@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Smartphone, CheckCircle, Clock, AlertTriangle, MessageSquare, ChevronRight, Check, X, History, Trash2, Calendar } from 'lucide-react';
+import { Smartphone, CheckCircle, Clock, AlertTriangle, MessageSquare, ChevronRight, ChevronLeft, Check, X, History, Trash2, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TelegramFeedback } from '../types';
 import { 
@@ -29,6 +29,10 @@ export default function TelegramSync() {
     const [deleteDate, setDeleteDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
     const [deleteMonth, setDeleteMonth] = useState<string>(format(new Date(), 'yyyy-MM'));
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Pagination for history tab
+    const ITEMS_PER_PAGE = 10;
+    const [historyPage, setHistoryPage] = useState(1);
 
     const loadData = async () => {
         setIsLoading(true);
@@ -222,6 +226,18 @@ export default function TelegramSync() {
     const filteredPendingFeedbacks = getFilteredFeedbacks(pendingFeedbacks);
     const filteredHistoryFeedbacks = getFilteredFeedbacks(historyFeedbacks);
 
+    // Pagination calculations
+    const totalHistoryPages = Math.max(1, Math.ceil(filteredHistoryFeedbacks.length / ITEMS_PER_PAGE));
+    const paginatedHistoryFeedbacks = filteredHistoryFeedbacks.slice(
+        (historyPage - 1) * ITEMS_PER_PAGE,
+        historyPage * ITEMS_PER_PAGE
+    );
+
+    // Reset page when filter changes
+    useEffect(() => {
+        setHistoryPage(1);
+    }, [selectedChatTitle]);
+
     return (
         <div className="max-w-5xl mx-auto space-y-6">
             <div className="flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-lg relative overflow-hidden">
@@ -387,9 +403,50 @@ export default function TelegramSync() {
                                 <p className="font-bold text-gray-600">히스토리가 없습니다.</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-gray-100">
-                                {filteredHistoryFeedbacks.map(f => renderFeedbackCard(f, true))}
-                            </div>
+                            <>
+                                <div className="divide-y divide-gray-100">
+                                    {paginatedHistoryFeedbacks.map(f => renderFeedbackCard(f, true))}
+                                </div>
+
+                                {/* Pagination Controls */}
+                                {totalHistoryPages > 1 && (
+                                    <div className="flex items-center justify-center gap-2 p-4 border-t border-gray-100 bg-gray-50/50">
+                                        <button
+                                            onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                                            disabled={historyPage === 1}
+                                            className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            <ChevronLeft size={16} />
+                                        </button>
+
+                                        {Array.from({ length: totalHistoryPages }, (_, i) => i + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                onClick={() => setHistoryPage(page)}
+                                                className={`w-9 h-9 rounded-lg text-sm font-bold transition ${
+                                                    page === historyPage
+                                                        ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
+                                                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+
+                                        <button
+                                            onClick={() => setHistoryPage(p => Math.min(totalHistoryPages, p + 1))}
+                                            disabled={historyPage === totalHistoryPages}
+                                            className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+
+                                        <span className="text-xs text-gray-400 font-medium ml-3">
+                                            {(historyPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(historyPage * ITEMS_PER_PAGE, filteredHistoryFeedbacks.length)} / {filteredHistoryFeedbacks.length}건
+                                        </span>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
