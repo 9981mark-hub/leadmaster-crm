@@ -34,7 +34,7 @@ const ReminderNotificationContainer: React.FC = () => {
                     </h4>
 
                     <div className="text-sm text-gray-600 dark:text-gray-300 mb-3 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                        <p className="font-mono font-bold">{n.reminder.datetime.split(' ')[1]}</p>
+                        <p className="font-mono font-bold">{n.reminder.datetime?.split(' ')[1] || ''}</p>
                         <p>{n.reminder.type || '일정'} - {n.reminder.content || '내용 없음'}</p>
                     </div>
 

@@ -223,7 +223,7 @@ export default function Dashboard() {
           ) : (
             <div className="grid gap-3">
               {selectedDayEvents.map((item, idx) => {
-                const timeStr = item.reminder.datetime.split(' ')[1];
+                const timeStr = item.reminder.datetime?.split(' ')[1] || '';
                 const type = item.reminder.type || '통화'; // Fallback
 
                 // Color coding based on Type
@@ -343,7 +343,7 @@ export default function Dashboard() {
           todayEvents.push({
             type: 'reminder',
             title: `${item.caseData.customerName} (${item.reminder.type || '통화'})`,
-            time: item.reminder.datetime?.split(' ')[1],
+            time: item.reminder.datetime?.split(' ')[1] || '',
             color: 'blue'
           });
         });
