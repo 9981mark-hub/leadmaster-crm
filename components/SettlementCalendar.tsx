@@ -219,7 +219,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                 isExpected: isAfter(parseISO(d.date), today)
             })),
             ...(caseItem.expectedDeposits || []).map(d => ({ ...d, isExpected: true }))
-        ].sort((a, b) => a.date.localeCompare(b.date));
+        ].sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
         let cumulativeDeposit = 0;
         let firstPayoutTriggered = false;

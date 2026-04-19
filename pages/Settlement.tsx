@@ -552,7 +552,7 @@ export default function Settlement() {
             const secondPayoutAmount = totalCommission - firstPayoutAmount;
 
             // 모든 입금 내역
-            const allDeposits = (c.depositHistory || []).sort((a, b) => a.date.localeCompare(b.date));
+            const allDeposits = (c.depositHistory || []).sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
             let cumulativeDeposit = 0;
             let firstPayoutTriggered = false;
@@ -615,7 +615,7 @@ export default function Settlement() {
         });
 
         // 가장 빠른 지급 예정일 찾기
-        const sortedPayouts = expectedPayouts.sort((a, b) => a.date.localeCompare(b.date));
+        const sortedPayouts = expectedPayouts.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
         const nextPayoutDate = sortedPayouts.length > 0 ? sortedPayouts[0].date : null;
 
         return { expectedCount, expectedAmount, nextPayoutDate, payouts: sortedPayouts };
@@ -1584,7 +1584,7 @@ export default function Settlement() {
                 });
 
                 // Sort by deposit date
-                futureDeposits.sort((a, b) => a.depositDate.localeCompare(b.depositDate));
+                futureDeposits.sort((a, b) => String(a.depositDate || '').localeCompare(String(b.depositDate || '')));
 
                 // Take only next 60 days
                 const sixtyDaysLater = new Date(today);
@@ -2424,7 +2424,7 @@ export default function Settlement() {
                                     // Add income transactions
                                     bankTransactions
                                         .filter(tx => tx.type === 'income')
-                                        .sort((a, b) => a.date.localeCompare(b.date))
+                                        .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')))
                                         .forEach(tx => {
                                             rows.push([tx.date, '입금', tx.counterparty || '', tx.category, tx.amount.toString()]);
                                         });
@@ -2441,7 +2441,7 @@ export default function Settlement() {
                                     // Add expense transactions from bank
                                     bankTransactions
                                         .filter(tx => tx.type === 'expense')
-                                        .sort((a, b) => a.date.localeCompare(b.date))
+                                        .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')))
                                         .forEach(tx => {
                                             rows.push([tx.date, '출금', tx.counterparty || tx.description, tx.category, tx.amount.toString()]);
                                         });
@@ -3534,7 +3534,7 @@ export default function Settlement() {
                                 </tr>
                             ) : (
                                 statsCases
-                                    .sort((a, b) => (b.contractAt || '').localeCompare(a.contractAt || ''))
+                                    .sort((a, b) => String(b.contractAt || '').localeCompare(String(a.contractAt || '')))
                                     .map(c => {
                                         const commission = getCommissionForCase(c);
                                         return (

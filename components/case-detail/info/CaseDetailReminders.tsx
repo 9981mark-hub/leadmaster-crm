@@ -150,8 +150,8 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
         setResultModal({ isOpen: false, reminderId: '', status: '', note: '' });
     };
 
-    const sortedReminders = [...reminders].sort((a, b) => a.datetime.localeCompare(b.datetime));
-    const sortedMemos = [...memos].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const sortedReminders = [...reminders].sort((a, b) => String(a.datetime || '').localeCompare(String(b.datetime || '')));
+    const sortedMemos = [...memos].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
 
     const currentStatusColor = statusColors[resultModal.status] || statusColors['취소'];
 

@@ -209,7 +209,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
         });
 
         // 날짜 기준 최신순 정렬
-        events.sort((a, b) => b.datetime.localeCompare(a.datetime));
+        events.sort((a, b) => String(b.datetime || '').localeCompare(String(a.datetime || '')));
         return events;
     }, [c, statusLogs, telegramFeedbacks]);
 

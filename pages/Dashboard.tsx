@@ -153,7 +153,7 @@ export default function Dashboard() {
   const selectedDayEvents = allRemindersWithCase.filter(item => {
     if (!item.reminder.datetime) return false;
     return item.reminder.datetime.startsWith(selectedDateStr);
-  }).sort((a, b) => a.reminder.datetime.localeCompare(b.reminder.datetime));
+  }).sort((a, b) => String(a.reminder?.datetime || '').localeCompare(String(b.reminder?.datetime || '')));
 
   const formatDateTitle = (d: Date) => {
     const days = ['일', '월', '화', '수', '목', '금', '토'];

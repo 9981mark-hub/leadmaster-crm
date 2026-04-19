@@ -287,7 +287,7 @@ export default function CalendarWidget({
             isExpected: isAfter(parseISO(d.date), today)
           })),
           ...(caseItem.expectedDeposits || []).map(d => ({ ...d, isExpected: true }))
-        ].sort((a, b) => a.date.localeCompare(b.date));
+        ].sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
         let cumulativeDeposit = 0;
         let firstPayoutTriggered = false;
@@ -411,7 +411,7 @@ export default function CalendarWidget({
   const getEventsForDay = (date: Date): UnifiedEvent[] => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return unifiedEvents.filter(ev => ev.date === dateStr)
-      .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+      .sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
   };
 
   const getColorClass = (color: string, type: 'bg' | 'text' | 'border' = 'bg') => {
@@ -499,7 +499,7 @@ export default function CalendarWidget({
     const today = format(new Date(), 'yyyy-MM-dd');
     return unifiedEvents
       .filter(ev => ev.date >= today)
-      .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''))
+      .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')) || String(a.time || '').localeCompare(String(b.time || '')))
       .slice(0, 20);
   }, [unifiedEvents]);
 
