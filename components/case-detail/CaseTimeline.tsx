@@ -290,23 +290,29 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
         <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Calendar size={20} className="text-gray-500" />
-                    <h3 className="font-bold text-gray-700 dark:text-gray-200">커뮤니케이션 타임라인</h3>
-                    <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 px-2 py-0.5 rounded-full">
-                        {filteredEvents.length}/{allEvents.length}건
-                    </span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex-shrink-0">
+                        <Calendar size={20} className="text-gray-500" />
+                    </div>
+                    <h3 className="font-bold text-gray-700 dark:text-gray-200 leading-tight">
+                        커뮤니케이션<br className="block sm:hidden" /><span className="hidden sm:inline"> </span>타임라인
+                    </h3>
+                    <div className="flex-shrink-0">
+                        <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 px-2 py-0.5 rounded-full whitespace-nowrap">
+                            {filteredEvents.length}/{allEvents.length}건
+                        </span>
+                    </div>
                 </div>
                 <button
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isFilterOpen
+                    className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isFilterOpen
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                             : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200'
                         }`}
                 >
-                    <Filter size={14} />
-                    필터
-                    {isFilterOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    <Filter size={14} className="flex-shrink-0" />
+                    <span className="whitespace-nowrap">필터</span>
+                    {isFilterOpen ? <ChevronUp size={14} className="flex-shrink-0" /> : <ChevronDown size={14} className="flex-shrink-0" />}
                 </button>
             </div>
 
