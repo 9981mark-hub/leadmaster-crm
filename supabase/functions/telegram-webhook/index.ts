@@ -29,6 +29,8 @@ interface ParsedMessage {
   senderName: string;
   text: string;
   timestamp: string;
+  chatId: string;
+  chatTitle: string;
 }
 
 function parseTelegramUpdate(update: any): ParsedMessage | null {
@@ -37,6 +39,7 @@ function parseTelegramUpdate(update: any): ParsedMessage | null {
 
   const sender = msg.from;
   const senderName = [sender?.first_name, sender?.last_name].filter(Boolean).join(' ');
+  const chat = msg.chat;
 
   return {
     messageId: msg.message_id,
@@ -44,6 +47,8 @@ function parseTelegramUpdate(update: any): ParsedMessage | null {
     senderName,
     text: msg.text,
     timestamp: new Date(msg.date * 1000).toISOString(),
+    chatId: String(chat?.id || ''),
+    chatTitle: chat?.title || senderName || '',
   };
 }
 
@@ -152,16 +157,34 @@ async function classifyWithGemini(
 // 4. Customer Matching Engine
 // ============================================
 
-async function matchCustomerToCase(customerName: string): Promise<{ matchedCaseId: string | null; candidates: any[] }> {
+async function getMappedPartnerId(chatId: string): Promise<string | null> {
+  try {
+    const { data } = await supabase.from('settings').select('value').eq('key', 'partners').single();
+    if (data && Array.isArray(data.value)) {
+      const partner = data.value.find((p: any) => p.telegramChatId === chatId);
+      if (partner) return partner.partnerId;
+    }
+  } catch (err) {
+    console.error('[TG-Webhook] Failed to fetch partners settings:', err);
+  }
+  return null;
+}
+
+async function matchCustomerToCase(customerName: string, partnerId?: string | null): Promise<{ matchedCaseId: string | null; candidates: any[] }> {
   if (!customerName) return { matchedCaseId: null, candidates: [] };
 
   // Strategy 1: Exact name match on active cases
-  const { data: exactMatches } = await supabase
+  let queryExact = supabase
     .from('cases')
     .select('case_id, customer_name, status, created_at')
     .eq('customer_name', customerName)
-    .in('status', ['사무장 접수', '상담중', '재통화 예정', '계약 완료', '1차 입금완료', '2차 입금완료'])
-    .order('created_at', { ascending: false });
+    .in('status', ['사무장 접수', '상담중', '재통화 예정', '계약 완료', '1차 입금완료', '2차 입금완료']);
+    
+  if (partnerId) {
+    queryExact = queryExact.eq('partner_id', partnerId);
+  }
+  
+  const { data: exactMatches } = await queryExact.order('created_at', { ascending: false });
 
   if (exactMatches && exactMatches.length === 1) {
     return { matchedCaseId: exactMatches[0].case_id, candidates: exactMatches };
@@ -171,12 +194,17 @@ async function matchCustomerToCase(customerName: string): Promise<{ matchedCaseI
   }
 
   // Strategy 2: Fuzzy match (contains)
-  const { data: fuzzyMatches } = await supabase
+  let queryFuzzy = supabase
     .from('cases')
     .select('case_id, customer_name, status, created_at')
     .ilike('customer_name', `%${customerName}%`)
-    .in('status', ['사무장 접수', '상담중', '재통화 예정'])
-    .order('created_at', { ascending: false });
+    .in('status', ['사무장 접수', '상담중', '재통화 예정']);
+    
+  if (partnerId) {
+    queryFuzzy = queryFuzzy.eq('partner_id', partnerId);
+  }
+  
+  const { data: fuzzyMatches } = await queryFuzzy.order('created_at', { ascending: false });
 
   if (fuzzyMatches && fuzzyMatches.length === 1) {
     return { matchedCaseId: fuzzyMatches[0].case_id, candidates: fuzzyMatches };
@@ -320,8 +348,11 @@ serve(async (req: Request) => {
 
     const customerName = classification.customerName;
 
+    // Get Partner Mapping from Chat ID
+    const mappedPartnerId = await getMappedPartnerId(parsed.chatId);
+
     // Match to CRM case
-    const { matchedCaseId, candidates } = await matchCustomerToCase(customerName);
+    const { matchedCaseId, candidates } = await matchCustomerToCase(customerName, mappedPartnerId);
     classification.candidates = candidates;
 
     // Determine apply mode and urgency (Never auto apply if multiple matches / null id)
@@ -340,6 +371,8 @@ serve(async (req: Request) => {
         customer_name: customerName,
         feedback_type: classification.feedbackType,
         feedback_content: parsed.text,
+        chat_id: parsed.chatId,
+        chat_title: parsed.chatTitle,
         matched_case_id: matchedCaseId,
         is_applied: isAutoApply,
         is_confirmed: isAutoApply,

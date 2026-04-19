@@ -1416,6 +1416,27 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
+                        {/* [NEW] Telegram Webhook Mapping Section */}
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-blue-100">
+                            <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                                <MessageCircle className="mr-2 text-blue-500" size={20} /> 텔레그램 수신 연동 (웹훅)
+                            </h3>
+                            <p className="text-sm text-gray-500 mb-4">
+                                해당 거래처의 텔레그램 채팅방 고유 ID를 입력해두면, 자동 매칭 시 해당 거래처 소속 고객 내에서만 검색하도록 제한되어 정확도가 향상됩니다.
+                            </p>
+                            <label className="text-xs text-gray-500 block mb-1">채팅방 고유 ID (Chat ID)</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-200 outline-none"
+                                placeholder="예: -1001234567890"
+                                value={editingPartner.telegramChatId || ''}
+                                onChange={e => setEditingPartner({ ...editingPartner, telegramChatId: e.target.value })}
+                            />
+                            <p className="text-xs text-blue-500 mt-2">
+                                💡 Telegram 그룹/채널의 ID는 주로 마이너스(-)로 시작하는 긴 숫자입니다. (예: -100...)
+                            </p>
+                        </div>
+
                         {/* Deposit Names Section - Bank Transaction Matching */}
                         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-indigo-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">

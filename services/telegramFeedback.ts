@@ -40,6 +40,8 @@ function dbToFrontend(row: DbTelegramFeedback): TelegramFeedback {
     customerName: row.customer_name || '',
     feedbackType: row.feedback_type as TelegramFeedbackType,
     feedbackContent: row.feedback_content,
+    chatId: row.chat_id ?? undefined,
+    chatTitle: row.chat_title ?? undefined,
     matchedCaseId: row.matched_case_id ?? undefined,
     isApplied: row.is_applied,
     isConfirmed: row.is_confirmed,

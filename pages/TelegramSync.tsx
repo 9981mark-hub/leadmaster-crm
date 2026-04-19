@@ -23,6 +23,8 @@ export default function TelegramSync() {
     const [isLoading, setIsLoading] = useState(true);
     const { showToast } = useToast();
 
+    const [selectedChatTitle, setSelectedChatTitle] = useState<string>('all');
+
     // Deletion states
     const [deleteDate, setDeleteDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
     const [deleteMonth, setDeleteMonth] = useState<string>(format(new Date(), 'yyyy-MM'));
@@ -128,6 +130,11 @@ export default function TelegramSync() {
                                 <AlertTriangle size={12} /> 긴급
                             </span>
                         )}
+                        {f.chatTitle && (
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                💬 {f.chatTitle}
+                            </span>
+                        )}
                         <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
                             {f.feedbackType}
                         </span>
@@ -205,6 +212,16 @@ export default function TelegramSync() {
         </div>
     );
 
+    const uniqueChatTitles = Array.from(new Set([...pendingFeedbacks, ...historyFeedbacks].map(f => f.chatTitle).filter(Boolean))) as string[];
+
+    const getFilteredFeedbacks = (feedbacks: TelegramFeedback[]) => {
+        if (selectedChatTitle === 'all') return feedbacks;
+        return feedbacks.filter(f => f.chatTitle === selectedChatTitle);
+    };
+
+    const filteredPendingFeedbacks = getFilteredFeedbacks(pendingFeedbacks);
+    const filteredHistoryFeedbacks = getFilteredFeedbacks(historyFeedbacks);
+
     return (
         <div className="max-w-5xl mx-auto space-y-6">
             <div className="flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-lg relative overflow-hidden">
@@ -251,13 +268,31 @@ export default function TelegramSync() {
                 </button>
             </div>
 
+            {/* Room Filter */}
+            {uniqueChatTitles.length > 0 && (
+                <div className="flex items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <MessageSquare size={18} className="text-gray-500" />
+                    <span className="text-sm font-bold text-gray-700">채팅방 필터:</span>
+                    <select
+                        className="p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-100"
+                        value={selectedChatTitle}
+                        onChange={(e) => setSelectedChatTitle(e.target.value)}
+                    >
+                        <option value="all">모든 채팅방 보기</option>
+                        {uniqueChatTitles.map(title => (
+                            <option key={title} value={title}>{title}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
             {/* Tab Contents */}
             {activeTab === 'pending' && (
                 <div className="bg-white rounded-2xl rounded-tl-none shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                             <MessageSquare className="text-indigo-500" size={20} />대기 목록
-                            <span className="text-sm font-medium text-gray-500 ml-2">총 {pendingFeedbacks.length}건</span>
+                            <span className="text-sm font-medium text-gray-500 ml-2">총 {filteredPendingFeedbacks.length}건</span>
                         </h3>
                         <button onClick={loadData} className="text-sm text-indigo-600 font-medium hover:text-indigo-800 transition-colors">
                             새로고침
@@ -269,7 +304,7 @@ export default function TelegramSync() {
                             <div className="animate-spin inline-block w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-4"></div>
                             <p className="font-medium text-sm">피드백 데이터를 불러오는 중...</p>
                         </div>
-                    ) : pendingFeedbacks.length === 0 ? (
+                    ) : filteredPendingFeedbacks.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-16 text-gray-400">
                             <CheckCircle size={48} className="text-emerald-400 mb-4 opacity-50" />
                             <p className="font-bold text-gray-600">모든 피드백이 처리되었습니다.</p>
@@ -277,7 +312,7 @@ export default function TelegramSync() {
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-100">
-                            {pendingFeedbacks.map(f => renderFeedbackCard(f, false))}
+                            {filteredPendingFeedbacks.map(f => renderFeedbackCard(f, false))}
                         </div>
                     )}
                 </div>
@@ -334,7 +369,7 @@ export default function TelegramSync() {
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                 <History className="text-indigo-500" size={20} />전체 히스토리
-                                <span className="text-sm font-medium text-gray-500 ml-2">총 {historyFeedbacks.length}건</span>
+                                <span className="text-sm font-medium text-gray-500 ml-2">총 {filteredHistoryFeedbacks.length}건</span>
                             </h3>
                             <button onClick={loadData} className="text-sm text-indigo-600 font-medium hover:text-indigo-800 transition-colors">
                                 새로고침
@@ -346,14 +381,14 @@ export default function TelegramSync() {
                                 <div className="animate-spin inline-block w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-4"></div>
                                 <p className="font-medium text-sm">데이터를 불러오는 중...</p>
                             </div>
-                        ) : historyFeedbacks.length === 0 ? (
+                        ) : filteredHistoryFeedbacks.length === 0 ? (
                             <div className="flex flex-col items-center justify-center p-16 text-gray-400">
                                 <History size={48} className="text-gray-300 mb-4" />
                                 <p className="font-bold text-gray-600">히스토리가 없습니다.</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-gray-100">
-                                {historyFeedbacks.map(f => renderFeedbackCard(f, true))}
+                                {filteredHistoryFeedbacks.map(f => renderFeedbackCard(f, true))}
                             </div>
                         )}
                     </div>

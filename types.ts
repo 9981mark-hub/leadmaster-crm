@@ -235,6 +235,9 @@ export interface Partner {
 
   // [NEW] 은행 거래내역 자동 매칭용
   depositNames?: string[];           // 입금 시 표시되는 이름들 (예: ["안철형", "명율"])
+
+  // [NEW] 텔레그램 연동 방 관리
+  telegramChatId?: string;           // 텔레그램 수신 연동 방 ID (채팅방 고유 ID)
 }
 
 // 지급 파트너 프리셋 (설정에서 미리 저장)
@@ -535,6 +538,8 @@ export interface TelegramFeedback {
   customerName: string;
   feedbackType: TelegramFeedbackType;
   feedbackContent: string;        // 원문
+  chatId?: string;                // 채팅방 고유 ID
+  chatTitle?: string;             // 채팅방 이름
   matchedCaseId?: string;
   isApplied: boolean;             // CRM 반영 완료 여부
   isConfirmed: boolean;           // 사용자 확인 완료 여부
