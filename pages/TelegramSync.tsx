@@ -13,6 +13,67 @@ import {
 import { useToast } from '../contexts/ToastContext';
 import { format, parseISO, startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { supabase } from '../services/supabase';
+
+const ManualLinker = ({ onLink }: { onLink: (caseId: string) => void }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [results, setResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return;
+        setIsSearching(true);
+        const { data } = await supabase
+            .from('cases')
+            .select('case_id, customer_name, status, phone_number')
+            .ilike('customer_name', `%${searchQuery}%`)
+            .limit(5);
+        setResults(data || []);
+        setIsSearching(false);
+    };
+
+    return (
+        <div className="mt-2 text-sm bg-gray-50 border border-gray-200 rounded p-3">
+            <p className="text-gray-700 font-bold mb-2 flex items-center gap-1">
+                <AlertTriangle size={14} className="text-yellow-600" />
+                자동 연동에 실패했습니다. 수동으로 고객을 검색해 주세요.
+            </p>
+            <div className="flex gap-2 mb-2">
+                <input 
+                    type="text" 
+                    placeholder="고객 이름 검색..." 
+                    className="border border-gray-300 p-1.5 rounded grow text-xs font-medium"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                />
+                <button 
+                    onClick={handleSearch} 
+                    className="bg-gray-200 text-gray-700 font-bold px-3 rounded hover:bg-gray-300 text-xs transition"
+                >
+                    {isSearching ? '검색 중..' : '검색'}
+                </button>
+            </div>
+            {results.length > 0 && (
+                <div className="flex flex-col gap-1 mt-2">
+                    {results.map(r => (
+                        <div key={r.case_id} className="flex justify-between items-center bg-white p-2 border border-blue-100 rounded">
+                            <span className="font-medium text-xs text-gray-800">
+                                {r.customer_name} <span className="text-gray-400">({r.status})</span> - {r.phone_number?.slice(-4) || '번호없음'}
+                            </span>
+                            <button 
+                                onClick={() => onLink(r.case_id)} 
+                                className="text-blue-600 bg-blue-50 px-2 py-1 flex items-center gap-1 rounded text-xs font-bold hover:bg-blue-100 transition"
+                            >
+                                <Check size={12} /> 연동 및 승인
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 type TabType = 'pending' | 'history';
 
@@ -174,28 +235,36 @@ export default function TelegramSync() {
                             {format(parseISO(f.createdAt), 'yyyy.MM.dd HH:mm', { locale: ko })}
                         </span>
                     </div>
-                    
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                         <p className="text-gray-700 font-medium whitespace-pre-wrap">{f.feedbackContent}</p>
                     </div>
 
-                    {!isHistory && !f.matchedCaseId && (f.aiClassification as any)?.candidates && (f.aiClassification as any).candidates.length > 1 && (
-                        <div className="mt-2 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                            <p className="text-xs text-yellow-800 font-bold mb-2 flex items-center gap-1">
-                                <AlertTriangle size={14} /> 동명이인이 여러 명 발견되어 자동 연동되지 않았습니다.
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {(f.aiClassification as any).candidates.map((c: any, idx: number) => (
-                                    <button 
-                                        key={idx} 
-                                        onClick={() => handleConfirm(f, c.case_id)}
-                                        className="text-xs bg-white text-blue-600 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50 shadow-sm transition font-medium flex items-center gap-1"
-                                    >
-                                        <Check size={12} /> {c.customer_name} ({c.status}) 님께 승인연동
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                    {!isHistory && !f.matchedCaseId && (
+                        <>
+                            {((f.aiClassification as any)?.candidates && (f.aiClassification as any).candidates.length > 0) ? (
+                                <div className="mt-2 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                                    <p className="text-xs text-yellow-800 font-bold mb-2 flex items-center gap-1">
+                                        <AlertTriangle size={14} /> 동명이인이 여러 명 발견되어 자동 연동되지 않았습니다. 적용할 고객을 선택해주세요.
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {(f.aiClassification as any).candidates.map((c: any, idx: number) => (
+                                            <button 
+                                                key={idx} 
+                                                onClick={() => handleConfirm(f, c.case_id)}
+                                                className="text-xs bg-white text-blue-600 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50 shadow-sm transition font-medium flex items-center gap-1"
+                                            >
+                                                <Check size={12} /> {c.customer_name} ({c.status}) 님께 승인연동
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="mt-3 pt-3 border-t border-yellow-200/50">
+                                        <ManualLinker onLink={(caseId) => handleConfirm(f, caseId)} />
+                                    </div>
+                                </div>
+                            ) : (
+                                <ManualLinker onLink={(caseId) => handleConfirm(f, caseId)} />
+                            )}
+                        </>
                     )}
 
                     {!isHistory && f.aiClassification?.suggestedStatus && (
