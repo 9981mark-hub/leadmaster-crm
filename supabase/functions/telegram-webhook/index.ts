@@ -356,6 +356,13 @@ serve(async (req: Request) => {
       });
     }
 
+    // [SKIP] 관리자(mark jin)가 직업 보낸 메시지는 수집하지 않고 스킵
+    if (parsed.senderName.toLowerCase().replace(/ /g, '') === 'markjin' || parsed.senderName.includes('마크진')) {
+      return new Response(JSON.stringify({ ok: true, skipped: 'admin sent message' }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Trivial skip for meaningless short texts to save AI calls
     if (parsed.text.trim().length <= 2) {
       return new Response(JSON.stringify({ ok: true, skipped: 'too short' }), {
