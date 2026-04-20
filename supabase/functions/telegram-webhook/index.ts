@@ -108,6 +108,47 @@ reminder 형식 (있을 경우):
 contract 형식 (있을 경우):
 { "fee": 440, "deposits": [{ "date": "2026-04-17", "amount": 30 }] }`;
 
+// AI 모델 우선순위 (최신 → 레거시 fallback)
+const GEMINI_MODELS = [
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash',
+];
+
+async function callGeminiWithFallback(prompt: string): Promise<string> {
+  for (const model of GEMINI_MODELS) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              { role: 'user', parts: [{ text: prompt }] }
+            ],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 500,
+              responseMimeType: 'application/json',
+            },
+          }),
+        }
+      );
+
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        console.log(`[TG-Webhook] AI success with model: ${model}`);
+        return text;
+      }
+      console.warn(`[TG-Webhook] Empty response from ${model}, trying fallback...`);
+    } catch (err) {
+      console.warn(`[TG-Webhook] ${model} failed:`, err);
+    }
+  }
+  throw new Error('All Gemini models returned empty responses');
+}
+
 async function classifyWithGemini(
   senderName: string,
   feedbackText: string
@@ -115,28 +156,7 @@ async function classifyWithGemini(
   const userMessage = `발신자: ${senderName}\n메시지 원본: "${feedbackText}"`;
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            { role: 'user', parts: [{ text: CLASSIFICATION_PROMPT + '\n\n' + userMessage }] }
-          ],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 500,
-            responseMimeType: 'application/json',
-          },
-        }),
-      }
-    );
-
-    const result = await response.json();
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error('Empty AI response');
-
+    const text = await callGeminiWithFallback(CLASSIFICATION_PROMPT + '\n\n' + userMessage);
     return JSON.parse(text);
   } catch (err) {
     console.error('[TG-Webhook] Gemini classification error:', err);
@@ -150,6 +170,7 @@ async function classifyWithGemini(
       reminder: null,
       contract: null,
       confidence: 0,
+      _aiError: true,
     };
   }
 }
@@ -348,9 +369,10 @@ serve(async (req: Request) => {
       parsed.text
     );
 
-    // Skip non-feedback messages or messages with no customer
-    if (!classification.customerName || classification.feedbackType === '비피드백') {
-      return new Response(JSON.stringify({ ok: true, skipped: 'non-feedback or no customer name' }), {
+    // Skip only confirmed non-feedback messages (NOT AI errors)
+    // AI 에러로 customerName이 null인 경우에도 원본 메시지를 DB에 저장
+    if (classification.feedbackType === '비피드백' && !classification._aiError) {
+      return new Response(JSON.stringify({ ok: true, skipped: 'non-feedback' }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
