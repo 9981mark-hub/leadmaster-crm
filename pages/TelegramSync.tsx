@@ -216,9 +216,19 @@ export default function TelegramSync() {
                         </span>
                         
                         {isHistory && (
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${f.isConfirmed ? (f.isApplied ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-700 border-gray-200') : 'bg-orange-100 text-orange-700 border-orange-200'}`}>
-                                {f.isConfirmed ? (f.isApplied ? '승인됨' : '무시됨') : '대기중'}
-                            </span>
+                            f.isConfirmed && f.isApplied && f.matchedCaseId ? (
+                                <Link 
+                                    to={`/case/${f.matchedCaseId}`}
+                                    title="상세페이지로 이동"
+                                    className="px-2.5 py-1 rounded-full text-xs font-bold border bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200 hover:shadow-sm transition cursor-pointer flex items-center gap-0.5"
+                                >
+                                    승인됨 <ChevronRight size={10} className="opacity-70" />
+                                </Link>
+                            ) : (
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${f.isConfirmed ? (f.isApplied ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-700 border-gray-200') : 'bg-orange-100 text-orange-700 border-orange-200'}`}>
+                                    {f.isConfirmed ? (f.isApplied ? '승인됨' : '무시됨') : '대기중'}
+                                </span>
+                            )
                         )}
 
                         <span className="text-sm font-bold text-gray-900">{f.senderName}</span>
