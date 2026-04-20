@@ -235,6 +235,25 @@ async function matchCustomerToCase(customerName: string, partnerId?: string | nu
     return { matchedCaseId: null, candidates: fuzzyMatches };
   }
 
+  // Strategy 3: Global Exact match (any status)
+  let queryGlobal = supabase
+    .from('cases')
+    .select('case_id, customer_name, status, created_at')
+    .eq('customer_name', customerName);
+    
+  if (partnerId) {
+    queryGlobal = queryGlobal.eq('partner_id', partnerId);
+  }
+  
+  const { data: globalMatches } = await queryGlobal.order('created_at', { ascending: false });
+
+  if (globalMatches && globalMatches.length === 1) {
+    return { matchedCaseId: globalMatches[0].case_id, candidates: globalMatches };
+  }
+  if (globalMatches && globalMatches.length > 1) {
+    return { matchedCaseId: null, candidates: globalMatches };
+  }
+
   return { matchedCaseId: null, candidates: [] };
 }
 
