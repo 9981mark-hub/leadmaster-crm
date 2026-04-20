@@ -16,6 +16,7 @@ const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN')!;
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const TELEGRAM_WEBHOOK_SECRET = Deno.env.get('TELEGRAM_WEBHOOK_SECRET') || '';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -314,6 +315,14 @@ async function autoApplyFeedback(
 serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response('OK', { status: 200 });
+  }
+
+  // [SECURITY] Telegram Secret Token 검증 — 텔레그램 외 요청 차단
+  if (TELEGRAM_WEBHOOK_SECRET) {
+    const secretHeader = req.headers.get('x-telegram-bot-api-secret-token');
+    if (secretHeader !== TELEGRAM_WEBHOOK_SECRET) {
+      return new Response('Forbidden', { status: 403 });
+    }
   }
 
   try {
