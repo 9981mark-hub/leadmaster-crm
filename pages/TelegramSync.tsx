@@ -26,8 +26,8 @@ const ManualLinker = ({ onLink }: { onLink: (caseId: string) => void }) => {
         setIsSearching(true);
         const { data, error } = await supabase
             .from('cases')
-            .select('case_id, customer_name, status, phone_number')
-            .or(`customer_name.ilike.%${term}%,phone_number.ilike.%${term}%`)
+            .select('case_id, customer_name, status, phone')
+            .or(`customer_name.ilike.%${term}%,phone.ilike.%${term}%`)
             .limit(10);
             
         if (error) {
@@ -64,7 +64,7 @@ const ManualLinker = ({ onLink }: { onLink: (caseId: string) => void }) => {
                     {results.map(r => (
                         <div key={r.case_id} className="flex justify-between items-center bg-white p-2 border border-blue-100 rounded">
                             <span className="font-medium text-xs text-gray-800">
-                                {r.customer_name} <span className="text-gray-400">({r.status})</span> - {r.phone_number?.slice(-4) || '번호없음'}
+                                {r.customer_name} <span className="text-gray-400">({r.status})</span> - {r.phone?.slice(-4) || '번호없음'}
                             </span>
                             <button 
                                 onClick={() => onLink(r.case_id)} 
