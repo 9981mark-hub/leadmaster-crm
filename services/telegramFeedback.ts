@@ -193,17 +193,15 @@ export async function confirmFeedback(
     }
 
     const currentLogs = getArray(caseData.status_logs);
-    if (suggestedStatus) {
-      const log = {
-        logId: Date.now().toString(),
-        fromStatus: `${caseData.status} (${caseData.secondary_status || '없음'})`,
-        toStatus: `${caseData.status} (${suggestedStatus})`,
-        changedAt: new Date().toISOString(),
-        changedBy: `TG-${feedback.senderName}`,
-        memo: memoContent.substring(0, 200),
-      };
-      updates.status_logs = [log, ...currentLogs];
-    }
+    const log = {
+      logId: Date.now().toString(),
+      fromStatus: `${caseData.status} (${caseData.secondary_status || '없음'})`,
+      toStatus: `${caseData.status} (${suggestedStatus || caseData.secondary_status || '없음'})`,
+      changedAt: new Date().toISOString(),
+      changedBy: `TG-${feedback.senderName}`,
+      memo: memoContent.substring(0, 200),
+    };
+    updates.status_logs = [log, ...currentLogs];
 
     if (classification.reminder) {
       const currentReminders = getArray(caseData.reminders);

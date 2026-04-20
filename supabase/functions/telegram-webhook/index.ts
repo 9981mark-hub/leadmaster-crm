@@ -296,8 +296,9 @@ async function autoApplyFeedback(
 
   if (!caseData) return;
 
+  const getArray = (val: any) => Array.isArray(val) ? val : (typeof val === 'string' ? JSON.parse(val) : []);
   const updates: Record<string, any> = {};
-  const currentMemos = caseData.special_memo ? JSON.parse(caseData.special_memo) : [];
+  const currentMemos = getArray(caseData.special_memo);
 
   // Always add memo
   const newMemo = {
@@ -305,7 +306,7 @@ async function autoApplyFeedback(
     createdAt: new Date().toISOString(),
     content: `${memoPrefix} ${memoContent}`,
   };
-  updates.special_memo = JSON.stringify([newMemo, ...currentMemos]);
+  updates.special_memo = [newMemo, ...currentMemos];
 
   // Status updates (2차 상태 for most feedback)
   if (feedbackType === '부재' || feedbackType === '지속부재') {
@@ -314,23 +315,21 @@ async function autoApplyFeedback(
     updates.last_missed_call_at = new Date().toISOString();
   }
 
-  // Add status log
-  const currentLogs = caseData.status_logs ? JSON.parse(caseData.status_logs) : [];
-  if (suggestedStatus) {
-    const log = {
-      logId: Date.now().toString(),
-      fromStatus: `${caseData.status} (${caseData.secondary_status || '없음'})`,
-      toStatus: `${caseData.status} (${suggestedStatus})`,
-      changedAt: new Date().toISOString(),
-      changedBy: `TG-${senderName}`,
-      memo: memoContent.substring(0, 200),
-    };
-    updates.status_logs = JSON.stringify([log, ...currentLogs]);
-  }
+  // Add status log ALWAYS
+  const currentLogs = getArray(caseData.status_logs);
+  const log = {
+    logId: Date.now().toString(),
+    fromStatus: `${caseData.status} (${caseData.secondary_status || '없음'})`,
+    toStatus: `${caseData.status} (${suggestedStatus || caseData.secondary_status || '없음'})`,
+    changedAt: new Date().toISOString(),
+    changedBy: `TG-${senderName}`,
+    memo: memoContent.substring(0, 200),
+  };
+  updates.status_logs = [log, ...currentLogs];
 
   // Reminder creation
   if (classification.reminder) {
-    const currentReminders = caseData.reminders ? JSON.parse(caseData.reminders) : [];
+    const currentReminders = getArray(caseData.reminders);
     const newReminder = {
       id: `tg-${Date.now()}`,
       datetime: classification.reminder.datetime,
@@ -338,7 +337,7 @@ async function autoApplyFeedback(
       content: `[TG] ${memoContent}`,
       isCompleted: false,
     };
-    updates.reminders = JSON.stringify([newReminder, ...currentReminders]);
+    updates.reminders = [newReminder, ...currentReminders];
   }
 
   // Apply updates

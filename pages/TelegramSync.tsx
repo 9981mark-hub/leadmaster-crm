@@ -232,20 +232,21 @@ export default function TelegramSync() {
                         )}
 
                         <span className="text-sm font-bold text-gray-900">{f.senderName}</span>
-                        {f.customerName && (
+                        {f.matchedCaseId ? (
                             <>
                                 <ChevronRight size={14} className="text-gray-400" />
-                                {f.matchedCaseId ? (
-                                    <Link to={`/case/${f.matchedCaseId}`} className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition">
-                                        {f.customerName} 고객
-                                    </Link>
-                                ) : (
-                                    <span className="text-sm font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
-                                        {f.customerName} (미연동)
-                                    </span>
-                                )}
+                                <Link to={`/case/${f.matchedCaseId}`} className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition">
+                                    {f.customerName || '연동된 고객'}
+                                </Link>
                             </>
-                        )}
+                        ) : f.customerName ? (
+                            <>
+                                <ChevronRight size={14} className="text-gray-400" />
+                                <span className="text-sm font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
+                                    {f.customerName} (미연동)
+                                </span>
+                            </>
+                        ) : null}
                         <span className="text-xs font-medium text-gray-400 ml-auto">
                             {format(parseISO(f.createdAt), 'yyyy.MM.dd HH:mm', { locale: ko })}
                         </span>
