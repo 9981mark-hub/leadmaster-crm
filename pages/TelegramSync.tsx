@@ -70,13 +70,19 @@ export default function TelegramSync() {
         };
     }, [activeTab]);
 
-    const handleConfirm = async (id: string) => {
-        const success = await confirmFeedback(id);
+    const handleConfirm = async (feedback: TelegramFeedback, caseId?: string) => {
+        const targetCaseId = caseId || feedback.matchedCaseId;
+        if (!targetCaseId) {
+            showToast('연동할 고객(Case)을 선택해 주세요.', 'error');
+            return;
+        }
+
+        const success = await confirmFeedback(feedback, 'User', targetCaseId);
         if (success) {
-            showToast('적용 승인되었습니다.');
-            setPendingFeedbacks(prev => prev.filter(f => f.id !== id));
+            showToast('고객 상세페이지에 성공적으로 반영되었습니다.');
+            setPendingFeedbacks(prev => prev.filter(f => f.id !== feedback.id));
         } else {
-            showToast('승인에 실패했습니다.', 'error');
+            showToast('승인 처리에 실패했습니다.', 'error');
         }
     };
 
@@ -180,9 +186,13 @@ export default function TelegramSync() {
                             </p>
                             <div className="flex flex-wrap gap-2">
                                 {(f.aiClassification as any).candidates.map((c: any, idx: number) => (
-                                    <Link key={idx} to={`/case/${c.case_id}`} className="text-xs bg-white text-blue-600 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50 shadow-sm transition font-medium">
-                                        🔍 {c.customer_name} ({c.status}) 확인하기
-                                    </Link>
+                                    <button 
+                                        key={idx} 
+                                        onClick={() => handleConfirm(f, c.case_id)}
+                                        className="text-xs bg-white text-blue-600 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50 shadow-sm transition font-medium flex items-center gap-1"
+                                    >
+                                        <Check size={12} /> {c.customer_name} ({c.status}) 님께 승인연동
+                                    </button>
                                 ))}
                             </div>
                         </div>
@@ -198,12 +208,14 @@ export default function TelegramSync() {
 
                 {!isHistory && (
                     <div className="flex flex-col gap-2 w-32 shrink-0">
-                        <button
-                            onClick={() => handleConfirm(f.id)}
-                            className="w-full px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-sm shadow-indigo-200 hover:bg-indigo-700 transition flex items-center justify-center gap-1.5"
-                        >
-                            <Check size={16} /> 승인하기
-                        </button>
+                        {f.matchedCaseId ? (
+                            <button
+                                onClick={() => handleConfirm(f)}
+                                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-sm shadow-indigo-200 hover:bg-indigo-700 transition flex items-center justify-center gap-1.5"
+                            >
+                                <Check size={16} /> 승인하기
+                            </button>
+                        ) : null}
                         <button
                             onClick={() => handleDismiss(f.id)}
                             className="w-full px-4 py-2 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 hover:border-gray-300 transition flex items-center justify-center gap-1.5"

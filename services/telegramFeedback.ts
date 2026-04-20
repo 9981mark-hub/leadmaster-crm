@@ -145,25 +145,109 @@ export async function fetchCasePendingCount(caseId: string): Promise<number> {
 
 /** 피드백 승인 (CRM 반영 완료 표시) */
 export async function confirmFeedback(
-  feedbackId: string,
-  appliedBy: string = 'User'
+  feedback: TelegramFeedback,
+  appliedBy: string = 'User',
+  selectedCaseId?: string
 ): Promise<boolean> {
   if (!supabase) return false;
-  const { error } = await supabase
-    .from('telegram_feedbacks')
-    .update({
-      is_confirmed: true,
-      is_applied: true,
-      applied_at: new Date().toISOString(),
-      applied_by: appliedBy,
-    })
-    .eq('id', feedbackId);
 
-  if (error) {
-    console.error('[TG] confirmFeedback error:', error);
+  const targetCaseId = selectedCaseId || feedback.matchedCaseId;
+  if (!targetCaseId) {
+    console.error('[TG] Cannot apply feedback without a target Case ID');
     return false;
   }
-  return true;
+
+  try {
+    // 1. Fetch current case data
+    const { data: caseData, error: caseError } = await supabase
+      .from('cases')
+      .select('*')
+      .eq('case_id', targetCaseId)
+      .single();
+
+    if (!caseData || caseError) {
+      console.error('[TG] confirmFeedback case fetch error:', caseError);
+      return false;
+    }
+
+    const updates: Record<string, any> = {};
+    const classification = feedback.aiClassification || {} as any;
+    const { feedbackType, suggestedStatus, suggestedMemo } = classification;
+    const memoPrefix = `[TG-조작] ${feedback.senderName}:`;
+    const memoContent = suggestedMemo || feedback.feedbackContent;
+
+    const currentMemos = caseData.special_memo ? JSON.parse(caseData.special_memo) : [];
+    const newMemo = {
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      content: `${memoPrefix} ${memoContent}`,
+    };
+    updates.special_memo = JSON.stringify([newMemo, ...currentMemos]);
+
+    if (feedbackType === '부재' || feedbackType === '지속부재') {
+      updates.secondary_status = '부재';
+      updates.missed_call_count = (caseData.missed_call_count || 0) + 1;
+      updates.last_missed_call_at = new Date().toISOString();
+    }
+
+    const currentLogs = caseData.status_logs ? JSON.parse(caseData.status_logs) : [];
+    if (suggestedStatus) {
+      const log = {
+        logId: Date.now().toString(),
+        fromStatus: `${caseData.status} (${caseData.secondary_status || '없음'})`,
+        toStatus: `${caseData.status} (${suggestedStatus})`,
+        changedAt: new Date().toISOString(),
+        changedBy: `TG-${feedback.senderName}`,
+        memo: memoContent.substring(0, 200),
+      };
+      updates.status_logs = JSON.stringify([log, ...currentLogs]);
+    }
+
+    if (classification.reminder) {
+      const currentReminders = caseData.reminders ? JSON.parse(caseData.reminders) : [];
+      const newReminder = {
+        id: `tg-${Date.now()}`,
+        datetime: classification.reminder.datetime,
+        type: classification.reminder.type,
+        content: `[TG] ${memoContent}`,
+        isCompleted: false,
+      };
+      updates.reminders = JSON.stringify([newReminder, ...currentReminders]);
+    }
+
+    // 2. Update case
+    const { error: caseUpdateError } = await supabase
+      .from('cases')
+      .update(updates)
+      .eq('case_id', targetCaseId);
+
+    if (caseUpdateError) {
+      console.error('[TG] confirmFeedback case update error:', caseUpdateError);
+      return false;
+    }
+
+    // 3. Update feedback state
+    const { error: feedbackError } = await supabase
+      .from('telegram_feedbacks')
+      .update({
+        matched_case_id: targetCaseId,
+        is_confirmed: true,
+        is_applied: true,
+        applied_at: new Date().toISOString(),
+        applied_by: appliedBy,
+      })
+      .eq('id', feedback.id);
+
+    if (feedbackError) {
+      console.error('[TG] confirmFeedback feedback update error:', feedbackError);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[TG] confirmFeedback generic error:', err);
+    return false;
+  }
 }
 
 /** 피드백 무시 (확인만 하고 CRM 반영하지 않음) */
