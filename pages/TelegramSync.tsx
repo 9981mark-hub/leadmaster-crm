@@ -21,13 +21,18 @@ const ManualLinker = ({ onLink }: { onLink: (caseId: string) => void }) => {
     const [isSearching, setIsSearching] = useState(false);
 
     const handleSearch = async () => {
-        if (!searchQuery.trim()) return;
+        const term = searchQuery.trim();
+        if (!term) return;
         setIsSearching(true);
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('cases')
             .select('case_id, customer_name, status, phone_number')
-            .ilike('customer_name', `%${searchQuery}%`)
-            .limit(5);
+            .or(`customer_name.ilike.%${term}%,phone_number.ilike.%${term}%`)
+            .limit(10);
+            
+        if (error) {
+            console.error('[ManualLinker] Search error:', error);
+        }
         setResults(data || []);
         setIsSearching(false);
     };
