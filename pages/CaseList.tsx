@@ -438,6 +438,8 @@ export default function CaseList() {
         <div className="max-w-7xl mx-auto space-y-6">
             <CaseListHeader
                 totalItems={totalItems}
+                currentPage={currentPage}
+                totalPages={totalPages}
                 newCaseCount={newCaseCount}
                 showNewOnly={showNewOnly}
                 setShowNewOnly={setShowNewOnly}

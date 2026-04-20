@@ -4,6 +4,8 @@ import { MissedCallIntervalTier } from '../../types';
 
 interface CaseListHeaderProps {
     totalItems: number;
+    currentPage: number;
+    totalPages: number;
     newCaseCount: number;
     showNewOnly: boolean;
     setShowNewOnly: (show: boolean) => void;
@@ -19,6 +21,8 @@ interface CaseListHeaderProps {
 
 export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     totalItems,
+    currentPage,
+    totalPages,
     newCaseCount,
     showNewOnly,
     setShowNewOnly,
@@ -124,7 +128,12 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                         </span>
                     )}
                 </h2>
-                <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">총 {totalItems}건</span>
+                <div className="flex items-center gap-1.5">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">총 {totalItems}건</span>
+                    {totalPages > 1 && (
+                        <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">({currentPage}/{totalPages}p)</span>
+                    )}
+                </div>
             </div>
         </div>
     );
