@@ -170,19 +170,21 @@ export async function confirmFeedback(
       return false;
     }
 
+    const getArray = (val: any) => Array.isArray(val) ? val : (typeof val === 'string' ? JSON.parse(val) : []);
+
     const updates: Record<string, any> = {};
     const classification = feedback.aiClassification || {} as any;
     const { feedbackType, suggestedStatus, suggestedMemo } = classification;
     const memoPrefix = `[TG-조작] ${feedback.senderName}:`;
     const memoContent = suggestedMemo || feedback.feedbackContent;
 
-    const currentMemos = caseData.special_memo ? JSON.parse(caseData.special_memo) : [];
+    const currentMemos = getArray(caseData.special_memo);
     const newMemo = {
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       content: `${memoPrefix} ${memoContent}`,
     };
-    updates.special_memo = JSON.stringify([newMemo, ...currentMemos]);
+    updates.special_memo = [newMemo, ...currentMemos];
 
     if (feedbackType === '부재' || feedbackType === '지속부재') {
       updates.secondary_status = '부재';
@@ -190,7 +192,7 @@ export async function confirmFeedback(
       updates.last_missed_call_at = new Date().toISOString();
     }
 
-    const currentLogs = caseData.status_logs ? JSON.parse(caseData.status_logs) : [];
+    const currentLogs = getArray(caseData.status_logs);
     if (suggestedStatus) {
       const log = {
         logId: Date.now().toString(),
@@ -200,11 +202,11 @@ export async function confirmFeedback(
         changedBy: `TG-${feedback.senderName}`,
         memo: memoContent.substring(0, 200),
       };
-      updates.status_logs = JSON.stringify([log, ...currentLogs]);
+      updates.status_logs = [log, ...currentLogs];
     }
 
     if (classification.reminder) {
-      const currentReminders = caseData.reminders ? JSON.parse(caseData.reminders) : [];
+      const currentReminders = getArray(caseData.reminders);
       const newReminder = {
         id: `tg-${Date.now()}`,
         datetime: classification.reminder.datetime,
@@ -212,7 +214,7 @@ export async function confirmFeedback(
         content: `[TG] ${memoContent}`,
         isCompleted: false,
       };
-      updates.reminders = JSON.stringify([newReminder, ...currentReminders]);
+      updates.reminders = [newReminder, ...currentReminders];
     }
 
     // 2. Update case
