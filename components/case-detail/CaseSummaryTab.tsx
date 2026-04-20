@@ -34,16 +34,31 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                         <button onClick={() => {
                             setManualSummary(generateSummary(c, currentPartner?.summaryTemplate));
                             setIsManualSummaryEdit(true);
-                        }} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1">
+                        }} className={`text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1 ${isManualSummaryEdit ? 'md:hidden' : ''}`}>
                             <Edit2 size={12} /> 수정
                         </button>
+                        {isManualSummaryEdit && (
+                            <div className="hidden md:flex gap-2 animate-in fade-in">
+                                <button onClick={() => setIsManualSummaryEdit(false)} className="text-xs bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50 flex items-center shadow-sm">취소</button>
+                                <button onClick={() => setIsManualSummaryEdit(false)} className="text-xs bg-gray-800 text-white px-3 py-1.5 rounded hover:bg-gray-900 flex items-center shadow-sm">완료</button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 <div className="flex-1 relative h-full">
-                    <div className="w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]">
+                    <div className={`w-full h-full p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${isManualSummaryEdit ? 'md:hidden' : ''}`}>
                         {isManualSummaryEdit ? manualSummary : generateSummary(c, currentPartner?.summaryTemplate)}
                     </div>
+                    {isManualSummaryEdit && (
+                        <textarea
+                            className="hidden md:block w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-gray-300 outline-none resize-none focus:ring-2 focus:ring-gray-200 transition-shadow min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]"
+                            value={manualSummary}
+                            onChange={e => setManualSummary(e.target.value)}
+                            placeholder="요약 내용을 입력하세요..."
+                            autoFocus
+                        />
+                    )}
                 </div>
 
                 <div className="mt-4 flex justify-center">
@@ -65,23 +80,42 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     </h3>
                     <div className="flex gap-2">
                         {aiSummaryText && (
-                            <button onClick={() => {
-                                setAiSummaryText(injectSummaryMetadata(aiSummaryText || '', c));
-                                setAiSummaryEditMode(true);
-                            }} className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded hover:bg-purple-200 flex items-center gap-1">
-                                <Edit2 size={12} /> 수정
-                            </button>
+                            <>
+                                <button onClick={() => {
+                                    setAiSummaryText(injectSummaryMetadata(aiSummaryText || '', c));
+                                    setAiSummaryEditMode(true);
+                                }} className={`text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded hover:bg-purple-200 flex items-center gap-1 ${aiSummaryEditMode ? 'md:hidden' : ''}`}>
+                                    <Edit2 size={12} /> 수정
+                                </button>
+                                {aiSummaryEditMode && (
+                                    <div className="hidden md:flex gap-2 animate-in fade-in">
+                                        <button onClick={() => setAiSummaryEditMode(false)} className="text-xs bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50 flex items-center shadow-sm">취소</button>
+                                        <button onClick={() => { handleUpdateAiSummaryText(); setAiSummaryEditMode(false); }} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 flex items-center shadow-sm">저장</button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
 
                 <div className="flex-1 relative h-full">
                     {aiSummaryText ? (
-                        <div className="w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]"
-                            onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
-                        >
-                            {aiSummaryText}
-                        </div>
+                        <>
+                            <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'md:hidden' : ''}`}
+                                onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
+                            >
+                                {aiSummaryText}
+                            </div>
+                            {aiSummaryEditMode && (
+                                <textarea
+                                    className="hidden md:block w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-300 outline-none resize-none focus:ring-2 focus:ring-purple-200 transition-shadow min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]"
+                                    value={aiSummaryText || ''}
+                                    onChange={e => setAiSummaryText(e.target.value)}
+                                    placeholder="AI 요약문을 입력하세요..."
+                                    autoFocus
+                                />
+                            )}
+                        </>
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4 min-h-[200px]">
                             <Sparkles size={48} className="opacity-20" />
@@ -116,9 +150,9 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                 )}
             </div>
 
-            {/* FULLSCREEN OVERLAY FOR MANUAL SUMMARY EDIT */}
+            {/* FULLSCREEN OVERLAY FOR MANUAL SUMMARY EDIT (Mobile Only) */}
             {isManualSummaryEdit && (
-                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in zoom-in duration-200 md:hidden">
                     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 shadow-sm">
                         <h3 className="font-bold text-gray-800 flex items-center gap-2"><FileText size={18} /> 기본 요약문 수정</h3>
                         <div className="flex gap-2">
@@ -136,9 +170,9 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                 </div>
             )}
 
-            {/* FULLSCREEN OVERLAY FOR AI SUMMARY EDIT */}
+            {/* FULLSCREEN OVERLAY FOR AI SUMMARY EDIT (Mobile Only) */}
             {aiSummaryEditMode && (
-                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in zoom-in duration-200 md:hidden">
                     <div className="flex items-center justify-between p-4 border-b border-purple-200 bg-purple-50 shadow-sm">
                         <h3 className="font-bold text-purple-800 flex items-center gap-2"><Sparkles size={18} /> AI 요약문 직접 수정</h3>
                         <div className="flex gap-2">
