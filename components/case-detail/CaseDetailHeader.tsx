@@ -109,6 +109,19 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                 </button>
                             )}
                         </div>
+                        {isMissedStatus && (c.missedCallCount || 0) > 0 && (
+                            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-orange-600 font-medium">
+                                <span className="bg-orange-100 px-1.5 py-0.5 rounded font-bold">{c.missedCallCount}회</span>
+                                {c.lastMissedCallAt && (
+                                    <span className="text-orange-400">
+                                        {(() => {
+                                            const d = new Date(c.lastMissedCallAt);
+                                            return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                                        })()}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                     {/* 2차 상태 (사무장 접수 이후에만 표시) */}
                     {c.status === '사무장 접수' && (
