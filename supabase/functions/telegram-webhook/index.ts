@@ -396,7 +396,9 @@ serve(async (req: Request) => {
 
     // Skip only confirmed non-feedback messages (NOT AI errors)
     // AI 에러로 customerName이 null인 경우에도 원본 메시지를 DB에 저장
-    if (classification.feedbackType === '비피드백' && !classification._aiError) {
+    // "이름 // 내용" 패턴이 있으면 비피드백이라도 스킵하지 않음
+    const hasNamePattern = /^[가-힣]{2,4}\s*\/\//.test(parsed.text.trim());
+    if (classification.feedbackType === '비피드백' && !classification._aiError && !hasNamePattern && !classification.customerName) {
       return new Response(JSON.stringify({ ok: true, skipped: 'non-feedback' }), {
         headers: { 'Content-Type': 'application/json' },
       });
