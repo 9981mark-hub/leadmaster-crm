@@ -136,17 +136,43 @@ async function callGeminiWithFallback(prompt: string): Promise<string> {
       );
 
       const result = await response.json();
+      
+      // 상세 에러 로깅
+      if (!response.ok) {
+        console.error(`[TG-Webhook] ${model} HTTP ${response.status}:`, JSON.stringify(result));
+        continue;
+      }
+
       const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text) {
         console.log(`[TG-Webhook] AI success with model: ${model}`);
         return text;
       }
-      console.warn(`[TG-Webhook] Empty response from ${model}, trying fallback...`);
+      
+      // 빈 응답 상세 로깅
+      const blockReason = result.candidates?.[0]?.finishReason || result.promptFeedback?.blockReason;
+      console.warn(`[TG-Webhook] Empty response from ${model}, reason: ${blockReason}, full: ${JSON.stringify(result).substring(0, 500)}`);
     } catch (err) {
       console.warn(`[TG-Webhook] ${model} failed:`, err);
     }
   }
   throw new Error('All Gemini models returned empty responses');
+}
+
+/**
+ * 정규식 기반 고객 이름 추출 (AI 실패 시 fallback)
+ * "홍선우 // 내용..." 또는 "이형관// 부재입니다" 패턴에서 이름 추출
+ */
+function extractCustomerNameByRegex(text: string): string | null {
+  // 패턴 1: "이름 // 내용" 또는 "이름// 내용"
+  const slashMatch = text.trim().match(/^([가-힣]{2,4})\s*\/\//);
+  if (slashMatch) return slashMatch[1];
+  
+  // 패턴 2: "이름 / 내용" (단일 슬래시)
+  const singleSlash = text.trim().match(/^([가-힣]{2,4})\s*\/\s/);
+  if (singleSlash) return singleSlash[1];
+
+  return null;
 }
 
 async function classifyWithGemini(
@@ -160,16 +186,25 @@ async function classifyWithGemini(
     return JSON.parse(text);
   } catch (err) {
     console.error('[TG-Webhook] Gemini classification error:', err);
+    
+    // AI 실패 시 정규식으로 고객 이름 추출 시도
+    const regexName = extractCustomerNameByRegex(feedbackText);
+    console.log(`[TG-Webhook] Regex fallback name extraction: "${regexName}"`);
+    
+    // "이름 // 내용" 패턴이면 부재/일반메모 자동 판별
+    let feedbackType = '일반메모';
+    if (feedbackText.includes('부재')) feedbackType = '부재';
+    
     return {
-      customerName: null,
-      feedbackType: '일반메모',
+      customerName: regexName,
+      feedbackType,
       suggestedStatus: null,
       suggestedStatusLevel: null,
       suggestedDropOffReason: null,
       suggestedMemo: feedbackText,
       reminder: null,
       contract: null,
-      confidence: 0,
+      confidence: regexName ? 0.5 : 0,
       _aiError: true,
     };
   }
