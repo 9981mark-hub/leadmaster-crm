@@ -136,6 +136,21 @@ export default function CaseDetail() {
         handleUpdate('specialMemo', memos);
     };
 
+    // Missed Call Increment Handler (+ button)
+    const handleMissedCallIncrement = () => {
+        if (!c) return;
+        const now = new Date().toISOString();
+        const nextCount = (c.missedCallCount || 0) + 1;
+        updateCaseMutation.mutate({
+            id: c.caseId,
+            updates: {
+                missedCallCount: nextCount,
+                lastMissedCallAt: now
+            }
+        });
+        showToast(`부재 ${nextCount}회 기록됨 (${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })})`);
+    };
+
     // Status Change Logic
     const handleStatusChangeStart = (newStatus: CaseStatus) => {
         if (newStatus === c?.status) return;
@@ -488,6 +503,7 @@ export default function CaseDetail() {
                     onStatusChangeStart={handleStatusChangeStart}
                     onSecondaryStatusChangeStart={handleSecondaryStatusChangeStart}
                     onTertiaryStatusChangeStart={handleTertiaryStatusChangeStart}
+                    onMissedCallIncrement={handleMissedCallIncrement}
                 />
 
                 {/* Primary Status Modal */}
