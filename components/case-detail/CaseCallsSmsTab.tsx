@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, MessageSquare, Plus, Save, Send } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, MessageSquare, Plus, Save, Send } from 'lucide-react';
 import { Case } from '../../types';
 import { useCommunicationLogs, useSmsTemplates, useSaveSmsTemplateMutation, useEnqueueSmsMutation } from '../../services/queries';
 import { format } from 'date-fns';
@@ -48,57 +48,120 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
       {/* 왼쪽: 통화 및 문자 타임라인 */}
-      <div className="flex flex-col h-full bg-gray-50 rounded-lg p-4 border border-gray-100">
-        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <div className="flex flex-col h-full bg-gray-50/50 rounded-xl p-5 border border-gray-200/60 shadow-sm">
+        <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-blue-500" />
           통화 및 문자 기록
         </h3>
         
-        <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+        <div className="flex-1 overflow-y-auto pr-3 space-y-6 custom-scrollbar">
           {logsLoading ? (
-            <div className="text-center text-gray-500 py-10">기록을 불러오는 중...</div>
+            <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+              기록을 불러오는 중...
+            </div>
           ) : logs.length === 0 ? (
-            <div className="text-center text-gray-500 py-10">
+            <div className="flex flex-col items-center justify-center h-40 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+              <MessageSquare className="w-8 h-8 text-gray-300 mb-2" />
               해당 고객과의 통화 및 문자 기록이 없습니다.
-              <br/>
-              <span className="text-xs mt-2 block">(스마트폰 앱에서 자동으로 동기화됩니다)</span>
+              <span className="text-xs mt-1 text-gray-400">(스마트폰 앱에서 자동으로 동기화됩니다)</span>
             </div>
           ) : (
-            logs.map(log => {
+            logs.map((log, index) => {
+              const date = new Date(log.timestamp);
+              const dateStr = format(date, 'yyyy년 M월 d일 eeee', { locale: ko });
+              const prevLogInArray = index > 0 ? logs[index - 1] : null;
+              const prevDateStrInArray = prevLogInArray ? format(new Date(prevLogInArray.timestamp), 'yyyy년 M월 d일 eeee', { locale: ko }) : null;
+              const showDateSeparator = dateStr !== prevDateStrInArray;
+
               const isCall = log.type.includes('CALL');
               const isMissed = log.type === 'CALL_MISSED';
               const isInbound = log.type.includes('IN') || isMissed;
-              const date = new Date(log.timestamp);
               
+              const formatDuration = (seconds: number) => {
+                if (!seconds) return '';
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                if (m === 0) return `${s}초`;
+                return `${m}분 ${s}초`;
+              };
+
               return (
-                <div key={log.id} className={`flex ${isInbound ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-2 shadow-sm ${
-                    isCall 
-                      ? isMissed ? 'bg-red-50 text-red-900 border border-red-100' : 'bg-gray-100 text-gray-800'
-                      : isInbound ? 'bg-white border border-gray-200' : 'bg-blue-500 text-white'
-                  }`}>
-                    <div className="flex items-center gap-2 mb-1 opacity-80 text-xs font-medium">
-                      {isCall ? <Phone className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
-                      <span>
-                        {isCall ? (
-                          isMissed ? '부재중 통화' : 
-                          isInbound ? '수신 통화' : '발신 통화'
-                        ) : (
-                          isInbound ? '수신 문자' : '발신 문자'
-                        )}
-                        {isCall && !isMissed && log.duration && ` (${Math.floor(log.duration / 60)}분 ${log.duration % 60}초)`}
-                      </span>
+                <React.Fragment key={log.id}>
+                  {showDateSeparator && (
+                    <div className="flex justify-center my-6">
+                      <div className="bg-gray-200/70 text-gray-600 text-[11px] font-semibold px-4 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
+                        {dateStr}
+                      </div>
                     </div>
-                    {log.content && (
-                      <div className="text-sm whitespace-pre-wrap break-words mb-1">
-                        {log.content}
+                  )}
+                  
+                  <div className={`flex w-full ${isInbound ? 'justify-start' : 'justify-end'}`}>
+                    {isCall ? (
+                      /* 통화 기록 UI */
+                      <div className="flex flex-col mb-1 w-full max-w-[85%]">
+                        <div className={`flex items-center gap-3 p-3.5 rounded-2xl shadow-sm border ${
+                          isMissed 
+                            ? 'bg-red-50/80 border-red-100 text-red-900' 
+                            : isInbound
+                              ? 'bg-white border-gray-200 text-gray-800'
+                              : 'bg-white border-gray-200 text-gray-800 flex-row-reverse'
+                        }`}>
+                          <div className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 ${
+                            isMissed ? 'bg-red-100 text-red-600' :
+                            isInbound ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
+                          }`}>
+                            {isMissed ? <PhoneMissed className="w-5 h-5" /> : 
+                             isInbound ? <PhoneIncoming className="w-5 h-5" /> : <PhoneOutgoing className="w-5 h-5" />}
+                          </div>
+                          
+                          <div className={`flex flex-col flex-1 ${!isInbound && !isMissed ? 'items-end' : 'items-start'}`}>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm">
+                                {isMissed ? '부재중 전화' : isInbound ? '수신 통화' : '발신 통화'}
+                              </span>
+                              {!isMissed && log.duration > 0 && (
+                                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-md text-gray-600 font-medium">
+                                  {formatDuration(log.duration)}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] opacity-60 mt-0.5">
+                              {format(date, 'a h:mm', { locale: ko })}
+                            </span>
+                            {log.content && (
+                              <div className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100 w-full text-left">
+                                {log.content}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* 문자 기록 UI */
+                      <div className={`flex items-end gap-2 max-w-[80%] ${isInbound ? 'flex-row' : 'flex-row-reverse'}`}>
+                        {/* 시간 (말풍선 바깥쪽 아래) */}
+                        <span className="text-[10px] text-gray-400 mb-1 whitespace-nowrap">
+                          {format(date, 'a h:mm', { locale: ko })}
+                        </span>
+                        
+                        <div className={`px-4 py-3 rounded-2xl shadow-sm text-sm break-words whitespace-pre-wrap ${
+                          isInbound 
+                            ? 'bg-white border border-gray-200 text-gray-800 rounded-bl-sm' 
+                            : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white border border-blue-400/50 rounded-br-sm'
+                        }`}>
+                          {log.content === '(사진/첨부파일)' ? (
+                            <div className="flex items-center gap-2 italic opacity-80">
+                              <MessageSquare className="w-4 h-4" /> 사진/첨부파일
+                            </div>
+                          ) : (
+                            log.content
+                          )}
+                        </div>
                       </div>
                     )}
-                    <div className={`text-[10px] text-right ${isInbound && !isCall ? 'text-gray-400' : 'opacity-70'}`}>
-                      {format(date, 'yyyy년 M월 d일 a h:mm', { locale: ko })}
-                    </div>
                   </div>
-                </div>
+                </React.Fragment>
               );
             })
           )}

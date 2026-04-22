@@ -1,7 +1,8 @@
 -- 1. 통화 및 문자 기록 테이블 (communication_logs)
+DROP TABLE IF EXISTS communication_logs CASCADE;
 CREATE TABLE communication_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    case_id UUID REFERENCES cases(case_id) ON DELETE SET NULL, -- CRM의 cases 테이블과 연결 (선택)
+    case_id TEXT REFERENCES cases(case_id) ON DELETE SET NULL, -- CRM의 cases 테이블과 연결 (선택)
     phone_number TEXT NOT NULL,
     type TEXT NOT NULL, -- 'CALL_IN', 'CALL_OUT', 'CALL_MISSED', 'SMS_IN', 'SMS_OUT'
     content TEXT, -- 문자 내용 또는 통화 메모
@@ -16,6 +17,7 @@ CREATE INDEX idx_communication_logs_case ON communication_logs(case_id);
 CREATE INDEX idx_communication_logs_timestamp ON communication_logs(timestamp DESC);
 
 -- 2. CRM 문자 발송 대기열 테이블 (pending_sms)
+DROP TABLE IF EXISTS pending_sms CASCADE;
 CREATE TABLE pending_sms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone_number TEXT NOT NULL,
@@ -29,6 +31,7 @@ CREATE TABLE pending_sms (
 CREATE INDEX idx_pending_sms_status ON pending_sms(status);
 
 -- 3. 자주 쓰는 문자 템플릿 테이블 (sms_templates)
+DROP TABLE IF EXISTS sms_templates CASCADE;
 CREATE TABLE sms_templates (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title TEXT NOT NULL,
