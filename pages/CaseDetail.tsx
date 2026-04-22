@@ -11,6 +11,7 @@ import { CaseInfoTab } from '../components/case-detail/info/CaseInfoTab';
 import { CaseSummaryTab } from '../components/case-detail/CaseSummaryTab';
 import { CaseSettlementTab } from '../components/case-detail/CaseSettlementTab';
 import { CaseTimeline } from '../components/case-detail/CaseTimeline';
+import { CaseCallsSmsTab } from '../components/case-detail/CaseCallsSmsTab';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -27,7 +28,7 @@ export default function CaseDetail() {
     const updateCaseMutation = useUpdateCaseMutation();
 
     // UI State
-    const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline'>('info');
+    const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline' | 'calls_sms'>('info');
     const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
     const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
 
@@ -657,7 +658,8 @@ export default function CaseDetail() {
                         { id: 'info', label: '정보 수정' },
                         { id: 'timeline', label: '타임라인' },
                         { id: 'summary', label: '요약문' },
-                        { id: 'settlement', label: '수임료/정산' }
+                        { id: 'settlement', label: '수임료/정산' },
+                        { id: 'calls_sms', label: '통화 및 문자' }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -730,6 +732,10 @@ export default function CaseDetail() {
                             commission={commission}
                             onUpdate={handleUpdate}
                         />
+                    )}
+
+                    {activeTab === 'calls_sms' && (
+                        <CaseCallsSmsTab c={c} />
                     )}
                 </div>
             </div>

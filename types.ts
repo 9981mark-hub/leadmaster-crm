@@ -600,3 +600,36 @@ export interface TelegramRoomTarget {
   url: string;
 }
 
+// ============================================
+// 통화 및 문자 내역 동기화 Types
+// ============================================
+
+export type CommunicationType = 'CALL_IN' | 'CALL_OUT' | 'CALL_MISSED' | 'SMS_IN' | 'SMS_OUT';
+
+export interface CommunicationLog {
+  id: string;
+  phoneNumber: string;
+  type: CommunicationType;
+  duration?: number;      // 통화 시간 (초)
+  content?: string;       // 문자 내용 (이미지는 [이미지 첨부] 처리)
+  timestamp: string;      // 발생 일시 (ISO)
+  createdAt: string;
+}
+
+export interface SmsTemplate {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PendingSms {
+  id: string;
+  phoneNumber: string;
+  content: string;
+  status: 'pending' | 'sent' | 'failed';
+  sentAt?: string;
+  createdAt: string;
+}
+

@@ -8,7 +8,7 @@
  */
 
 import { createClient, SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
-import { Case, Partner } from '../types';
+import { Case, Partner, CommunicationLog, SmsTemplate, PendingSms } from '../types';
 
 // Environment Variables
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
@@ -607,3 +607,101 @@ export const bulkInsertCases = async (cases: Case[]): Promise<number> => {
 
 // Export check function
 export const isSupabaseEnabled = () => isSupabaseConfigured && DATA_MODE !== 'sheets';
+
+// ============================================
+// Communication Logs & SMS
+// ============================================
+
+export const fetchCommunicationLogsFromSupabase = async (phone: string): Promise<CommunicationLog[]> => {
+    if (!supabase) return [];
+    try {
+        const { data, error } = await supabase
+            .from('communication_logs')
+            .select('*')
+            .eq('phone_number', phone)
+            .order('timestamp', { ascending: false });
+        if (error) throw error;
+        return (data || []).map(row => ({
+            id: row.id,
+            phoneNumber: row.phone_number,
+            type: row.type,
+            duration: row.duration,
+            content: row.content,
+            timestamp: row.timestamp,
+            createdAt: row.created_at
+        }));
+    } catch (e) {
+        console.error('[Supabase] fetchCommunicationLogs error:', e);
+        return [];
+    }
+};
+
+export const fetchSmsTemplatesFromSupabase = async (): Promise<SmsTemplate[]> => {
+    if (!supabase) return [];
+    try {
+        const { data, error } = await supabase
+            .from('sms_templates')
+            .select('*')
+            .order('created_at', { ascending: true });
+        if (error) throw error;
+        return (data || []).map(row => ({
+            id: row.id,
+            title: row.title,
+            content: row.content,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
+        }));
+    } catch (e) {
+        console.error('[Supabase] fetchSmsTemplates error:', e);
+        return [];
+    }
+};
+
+export const saveSmsTemplateToSupabase = async (template: Partial<SmsTemplate>): Promise<SmsTemplate | null> => {
+    if (!supabase) return null;
+    try {
+        const dbData: any = {
+            title: template.title,
+            content: template.content,
+            updated_at: new Date().toISOString()
+        };
+        if (template.id) {
+            dbData.id = template.id;
+        }
+
+        const { data, error } = await supabase
+            .from('sms_templates')
+            .upsert(dbData)
+            .select()
+            .single();
+        if (error) throw error;
+        return {
+            id: data.id,
+            title: data.title,
+            content: data.content,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+        };
+    } catch (e) {
+        console.error('[Supabase] saveSmsTemplate error:', e);
+        return null;
+    }
+};
+
+export const enqueueSmsToSupabase = async (phone: string, content: string): Promise<boolean> => {
+    if (!supabase) return false;
+    try {
+        const { error } = await supabase
+            .from('pending_sms')
+            .insert([{
+                phone_number: phone,
+                content: content,
+                status: 'pending'
+            }]);
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error('[Supabase] enqueueSms error:', e);
+        return false;
+    }
+};

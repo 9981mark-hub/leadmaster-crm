@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus } from './api';
+import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, fetchCommunicationLogs, fetchSmsTemplates, saveSmsTemplate, enqueueSms } from './api';
 import { useToast } from '../contexts/ToastContext';
 
 // Keys
@@ -11,6 +11,8 @@ export const QUERY_KEYS = {
     tertiaryStatuses: ['tertiaryStatuses'], // [New] 3차 상태
     partners: ['partners'],
     inboundPaths: ['inboundPaths'],
+    communicationLogs: (phone: string) => ['communicationLogs', phone],
+    smsTemplates: ['smsTemplates'],
 };
 
 // Hooks
@@ -200,6 +202,54 @@ export const useDeleteTertiaryStatusMutation = () => {
         onError: (error) => {
             console.error(error);
             showToast('삭제에 실패했습니다.', 'error');
+        }
+    });
+};
+
+// --- Communication Logs & SMS ---
+export const useCommunicationLogs = (phone: string | undefined) => {
+    return useQuery({
+        queryKey: QUERY_KEYS.communicationLogs(phone || ''),
+        queryFn: () => fetchCommunicationLogs(phone || ''),
+        enabled: !!phone,
+    });
+};
+
+export const useSmsTemplates = () => {
+    return useQuery({
+        queryKey: QUERY_KEYS.smsTemplates,
+        queryFn: fetchSmsTemplates,
+    });
+};
+
+export const useSaveSmsTemplateMutation = () => {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: saveSmsTemplate,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.smsTemplates });
+            showToast('템플릿이 저장되었습니다.');
+        },
+        onError: (error) => {
+            console.error(error);
+            showToast('템플릿 저장에 실패했습니다.', 'error');
+        }
+    });
+};
+
+export const useEnqueueSmsMutation = () => {
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: ({ phone, content }: { phone: string; content: string }) => enqueueSms(phone, content),
+        onSuccess: () => {
+            showToast('문자 발송이 예약되었습니다. (스마트폰 앱에서 처리됩니다)');
+        },
+        onError: (error) => {
+            console.error(error);
+            showToast('문자 발송 예약에 실패했습니다.', 'error');
         }
     });
 };
