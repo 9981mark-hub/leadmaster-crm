@@ -613,12 +613,13 @@ export const isSupabaseEnabled = () => isSupabaseConfigured && DATA_MODE !== 'sh
 // ============================================
 
 export const fetchCommunicationLogsFromSupabase = async (phone: string): Promise<CommunicationLog[]> => {
-    if (!supabase) return [];
+    if (!supabase || !phone) return [];
     try {
+        const normalizedPhone = phone.replace(/[^0-9]/g, '');
         const { data, error } = await supabase
             .from('communication_logs')
             .select('*')
-            .eq('phone_number', phone)
+            .eq('phone_number', normalizedPhone)
             .order('timestamp', { ascending: false });
         if (error) throw error;
         return (data || []).map(row => ({
