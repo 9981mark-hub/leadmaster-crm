@@ -48,13 +48,13 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
       {/* 왼쪽: 통화 및 문자 타임라인 */}
-      <div className="flex flex-col h-full bg-gray-50/50 rounded-xl p-5 border border-gray-200/60 shadow-sm">
-        <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2">
+      <div className="flex flex-col bg-gray-50/50 rounded-xl p-5 border border-gray-200/60 shadow-sm" style={{ maxHeight: '600px' }}>
+        <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 shrink-0">
           <MessageSquare className="w-5 h-5 text-blue-500" />
           통화 및 문자 기록
         </h3>
         
-        <div className="flex-1 overflow-y-auto pr-3 space-y-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto pr-3 space-y-6 custom-scrollbar" style={{ minHeight: 0 }}>
           {logsLoading ? (
             <div className="flex flex-col items-center justify-center h-40 text-gray-400">
               <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
