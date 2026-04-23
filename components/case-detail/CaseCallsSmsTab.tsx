@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, MessageSquare, Plus, Save, Send } from 'lucide-react';
 import { Case } from '../../types';
 import { useCommunicationLogs, useSmsTemplates, useSaveSmsTemplateMutation, useEnqueueSmsMutation } from '../../services/queries';
@@ -17,6 +17,12 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
 
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [editingTemplate, setEditingTemplate] = useState<{ id?: string, title: string, content: string } | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]);
 
   const handleSendSms = (content: string) => {
     if (!content.trim()) return;
@@ -67,12 +73,13 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
               <span className="text-xs mt-1 text-gray-400">(스마트폰 앱에서 자동으로 동기화됩니다)</span>
             </div>
           ) : (
-            logs.map((log, index) => {
-              const date = new Date(log.timestamp);
-              const dateStr = format(date, 'yyyy년 M월 d일 eeee', { locale: ko });
-              const prevLogInArray = index > 0 ? logs[index - 1] : null;
-              const prevDateStrInArray = prevLogInArray ? format(new Date(prevLogInArray.timestamp), 'yyyy년 M월 d일 eeee', { locale: ko }) : null;
-              const showDateSeparator = dateStr !== prevDateStrInArray;
+            <>
+              {[...logs].reverse().map((log, index, arr) => {
+                const date = new Date(log.timestamp);
+                const dateStr = format(date, 'yyyy년 M월 d일 eeee', { locale: ko });
+                const prevLogInArray = index > 0 ? arr[index - 1] : null;
+                const prevDateStrInArray = prevLogInArray ? format(new Date(prevLogInArray.timestamp), 'yyyy년 M월 d일 eeee', { locale: ko }) : null;
+                const showDateSeparator = dateStr !== prevDateStrInArray;
 
               const isCall = log.type.includes('CALL');
               const isMissed = log.type === 'CALL_MISSED';
@@ -163,8 +170,10 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                   </div>
                 </React.Fragment>
               );
-            })
+            })}
+            </>
           )}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
