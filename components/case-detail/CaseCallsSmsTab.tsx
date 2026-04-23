@@ -172,8 +172,10 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
       <div className="flex flex-col h-full bg-white rounded-lg p-4 border border-gray-100">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-gray-800 flex items-center gap-2">
-            <Send className="w-5 h-5 text-blue-500" />
-            문자 템플릿 및 발송
+            <Send className="w-5 h-5 text-blue-500 shrink-0" />
+            <span>
+              문자 템플릿 <span className="block sm:inline">및 발송</span>
+            </span>
           </h3>
           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
             스마트폰 연동 발송
