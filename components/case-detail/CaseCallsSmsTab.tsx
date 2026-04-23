@@ -148,7 +148,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                         <div className={`px-4 py-3 rounded-2xl shadow-sm text-sm break-words whitespace-pre-wrap ${
                           isInbound 
                             ? 'bg-white border border-gray-200 text-gray-800 rounded-bl-sm' 
-                            : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white border border-blue-400/50 rounded-br-sm'
+                            : 'bg-blue-500 text-white rounded-br-sm'
                         }`}>
                           {log.content === '(사진/첨부파일)' ? (
                             <div className="flex items-center gap-2 italic opacity-80">
