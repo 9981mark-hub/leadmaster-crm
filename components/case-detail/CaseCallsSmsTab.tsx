@@ -51,6 +51,22 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
     });
   };
 
+  const handleScrollTouchStart = () => {
+    // @ts-ignore
+    if (window.AndroidBridge?.setSwipeRefreshEnabled) {
+      // @ts-ignore
+      window.AndroidBridge.setSwipeRefreshEnabled(false);
+    }
+  };
+
+  const handleScrollTouchEnd = () => {
+    // @ts-ignore
+    if (window.AndroidBridge?.setSwipeRefreshEnabled) {
+      // @ts-ignore
+      window.AndroidBridge.setSwipeRefreshEnabled(true);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
       {/* 왼쪽: 통화 및 문자 타임라인 */}
@@ -60,7 +76,13 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
           통화 및 문자 기록
         </h3>
         
-        <div className="flex-1 overflow-y-auto pr-3 space-y-6 custom-scrollbar" style={{ minHeight: 0 }}>
+        <div 
+          className="flex-1 overflow-y-auto pr-3 space-y-6 custom-scrollbar" 
+          style={{ minHeight: 0 }}
+          onTouchStart={handleScrollTouchStart}
+          onTouchEnd={handleScrollTouchEnd}
+          onTouchCancel={handleScrollTouchEnd}
+        >
           {logsLoading ? (
             <div className="flex flex-col items-center justify-center h-40 text-gray-400">
               <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
