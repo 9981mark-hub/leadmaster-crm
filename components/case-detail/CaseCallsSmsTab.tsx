@@ -15,8 +15,9 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
   const saveTemplateMutation = useSaveSmsTemplateMutation();
   const enqueueSmsMutation = useEnqueueSmsMutation();
 
-  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>('custom');
   const [editingTemplate, setEditingTemplate] = useState<{ id?: string, title: string, content: string } | null>(null);
+  const [customMessage, setCustomMessage] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -208,6 +209,19 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <button
+                onClick={() => {
+                  setActiveTemplateId('custom');
+                  setEditingTemplate(null);
+                }}
+                className={`p-2 text-sm rounded border text-center transition-colors flex items-center justify-center gap-1 ${
+                  activeTemplateId === 'custom' 
+                    ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' 
+                    : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" /> 직접 입력
+              </button>
               {templates.map(template => (
                 <button
                   key={template.id}
@@ -267,8 +281,35 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
               </div>
             )}
 
-            {activeTemplateId && !editingTemplate && (
-              <div className="border border-blue-100 rounded-lg p-4 bg-blue-50 flex flex-col h-full">
+            {activeTemplateId === 'custom' && !editingTemplate && (
+              <div className="border border-blue-100 rounded-lg p-4 bg-blue-50 flex flex-col h-full min-h-[300px]">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-bold text-blue-900">
+                    직접 입력하여 발송
+                  </span>
+                </div>
+                <textarea
+                  className="flex-1 bg-white p-3 rounded border border-blue-100 whitespace-pre-wrap text-sm text-gray-700 overflow-y-auto resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="발송할 문자 내용을 입력하세요."
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                />
+                <button
+                  onClick={() => {
+                    handleSendSms(customMessage);
+                    setCustomMessage('');
+                  }}
+                  disabled={enqueueSmsMutation.isPending || !customMessage.trim()}
+                  className="mt-4 w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4" />
+                  스마트폰으로 발송 요청
+                </button>
+              </div>
+            )}
+
+            {activeTemplateId && activeTemplateId !== 'custom' && !editingTemplate && (
+              <div className="border border-blue-100 rounded-lg p-4 bg-blue-50 flex flex-col h-full min-h-[300px]">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-bold text-blue-900">
                     {templates.find(t => t.id === activeTemplateId)?.title}
