@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS cases (
   status TEXT DEFAULT '신규접수',
   secondary_status TEXT,
   is_viewed BOOLEAN DEFAULT FALSE,
+  is_starred BOOLEAN DEFAULT FALSE,
   deleted_at TIMESTAMPTZ,
   
   -- 고객 정보
