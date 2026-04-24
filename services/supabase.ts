@@ -664,12 +664,12 @@ export const fetchSmsTemplatesFromSupabase = async (): Promise<SmsTemplate[]> =>
 
 export const saveSmsTemplateToSupabase = async (template: Partial<SmsTemplate>): Promise<SmsTemplate | null> => {
     if (!supabase) {
-        alert('[DEBUG] supabase 클라이언트가 null입니다!');
+        console.error('[DEBUG] supabase 클라이언트가 null입니다!');
         throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
     }
     
     const isUpdate = !!template.id;
-    alert(`[DEBUG v2] 저장 시작: ${isUpdate ? 'UPDATE' : 'INSERT'}, title="${template.title}", id=${template.id || 'new'}`);
+    console.log(`[DEBUG v2] 저장 시작: ${isUpdate ? 'UPDATE' : 'INSERT'}, title="${template.title}", id=${template.id || 'new'}`);
     
     try {
         let data: any;
@@ -701,16 +701,16 @@ export const saveSmsTemplateToSupabase = async (template: Partial<SmsTemplate>):
         }
 
         if (error) {
-            alert(`[DEBUG] Supabase 에러: ${error.message} (code: ${error.code})`);
+            console.error(`[DEBUG] Supabase 에러: ${error.message} (code: ${error.code})`);
             throw error;
         }
 
         if (!data) {
-            alert('[DEBUG] Supabase 데이터 없음 (null). RLS 문제 가능성.');
+            console.error('[DEBUG] Supabase 데이터 없음 (null). RLS 문제 가능성.');
             throw new Error('저장 후 데이터를 반환받지 못했습니다.');
         }
 
-        alert(`[DEBUG] 저장 성공! DB 반환 title="${data.title}", content="${data.content?.substring(0, 30)}..."`);
+        console.log(`[DEBUG] 저장 성공! DB 반환 title="${data.title}", content="${data.content?.substring(0, 30)}..."`);
         
         return {
             id: data.id,
@@ -720,7 +720,7 @@ export const saveSmsTemplateToSupabase = async (template: Partial<SmsTemplate>):
             updatedAt: data.updated_at || data.created_at, 
         };
     } catch (e: any) {
-        alert(`[DEBUG] 저장 실패 예외: ${e?.message || e}`);
+        console.error(`[DEBUG] 저장 실패 예외: ${e?.message || e}`);
         throw e;
     }
 };
