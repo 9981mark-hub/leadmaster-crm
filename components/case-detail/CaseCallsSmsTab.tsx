@@ -127,6 +127,11 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                               <span className="font-bold text-sm">
                                 {isMissed ? '부재중 전화' : isInbound ? '수신 통화' : '발신 통화'}
                               </span>
+                              {log.lineInfo === '투넘버' ? (
+                                <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">투넘버</span>
+                              ) : (
+                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">기본</span>
+                              )}
                               {!isMissed && log.duration > 0 && (
                                 <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-md text-gray-600 font-medium">
                                   {formatDuration(log.duration)}
@@ -147,10 +152,17 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                     ) : (
                       /* 문자 기록 UI */
                       <div className={`flex items-end gap-2 max-w-[80%] ${isInbound ? 'flex-row' : 'flex-row-reverse'}`}>
-                        {/* 시간 (말풍선 바깥쪽 아래) */}
-                        <span className="text-[10px] text-gray-400 mb-1 whitespace-nowrap">
-                          {format(date, 'a h:mm', { locale: ko })}
-                        </span>
+                        {/* 라인 정보 및 시간 (말풍선 바깥쪽 아래) */}
+                        <div className={`flex flex-col mb-1 ${isInbound ? 'items-start' : 'items-end'}`}>
+                          {log.lineInfo === '투넘버' ? (
+                            <span className="text-[9px] bg-purple-100 text-purple-700 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">투넘버</span>
+                          ) : (
+                            <span className="text-[9px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">기본</span>
+                          )}
+                          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                            {format(date, 'a h:mm', { locale: ko })}
+                          </span>
+                        </div>
                         
                         <div className={`px-4 py-3 rounded-2xl shadow-sm text-sm break-words whitespace-pre-wrap ${
                           isInbound 

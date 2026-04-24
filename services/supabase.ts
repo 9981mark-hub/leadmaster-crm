@@ -632,7 +632,8 @@ export const fetchCommunicationLogsFromSupabase = async (phone: string): Promise
             duration: row.duration,
             content: row.content,
             timestamp: row.timestamp,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            lineInfo: row.line_info || '기본'
         }));
     } catch (e) {
         console.error('[Supabase] fetchCommunicationLogs error:', e);

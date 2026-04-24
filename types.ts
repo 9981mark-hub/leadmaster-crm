@@ -615,6 +615,7 @@ export interface CommunicationLog {
   content?: string;       // 문자 내용 (이미지는 [이미지 첨부] 처리)
   timestamp: string;      // 발생 일시 (ISO)
   createdAt: string;
+  lineInfo?: string;      // '기본' | '투넘버'
 }
 
 export interface SmsTemplate {
