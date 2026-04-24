@@ -48,6 +48,7 @@ interface DbCase {
     secondary_status: string | null;
     tertiary_status: string | null;
     is_viewed: boolean;
+    is_starred: boolean;
     deleted_at: string | null;
     customer_name: string;
     phone: string;
@@ -109,6 +110,7 @@ export const dbToCase = (row: DbCase): Case => ({
     secondaryStatus: row.secondary_status || undefined,
     tertiaryStatus: row.tertiary_status || undefined,
     isViewed: row.is_viewed,
+    isStarred: row.is_starred || false,
     deletedAt: row.deleted_at || undefined,
     customerName: row.customer_name,
     phone: row.phone,
@@ -167,6 +169,7 @@ export const caseToDb = (c: Partial<Case>): Partial<DbCase> => {
     if (c.secondaryStatus !== undefined) result.secondary_status = c.secondaryStatus || null;
     if (c.tertiaryStatus !== undefined) result.tertiary_status = c.tertiaryStatus || null;
     if (c.isViewed !== undefined) result.is_viewed = c.isViewed;
+    if (c.isStarred !== undefined) result.is_starred = c.isStarred;
     if (c.deletedAt !== undefined) result.deleted_at = c.deletedAt || null;
     if (c.customerName !== undefined) result.customer_name = c.customerName;
     if (c.phone !== undefined) result.phone = c.phone;
@@ -650,7 +653,7 @@ export const fetchSmsTemplatesFromSupabase = async (): Promise<SmsTemplate[]> =>
             title: row.title,
             content: row.content,
             createdAt: row.created_at,
-            updatedAt: row.updated_at
+            updatedAt: row.updated_at || row.created_at
         }));
     } catch (e) {
         console.error('[Supabase] fetchSmsTemplates error:', e);
@@ -659,33 +662,65 @@ export const fetchSmsTemplatesFromSupabase = async (): Promise<SmsTemplate[]> =>
 };
 
 export const saveSmsTemplateToSupabase = async (template: Partial<SmsTemplate>): Promise<SmsTemplate | null> => {
-    if (!supabase) return null;
+    if (!supabase) {
+        alert('[DEBUG] supabase 클라이언트가 null입니다!');
+        throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+    }
+    
+    const isUpdate = !!template.id;
+    alert(`[DEBUG v2] 저장 시작: ${isUpdate ? 'UPDATE' : 'INSERT'}, title="${template.title}", id=${template.id || 'new'}`);
+    
     try {
-        const dbData: any = {
-            title: template.title,
-            content: template.content,
-            updated_at: new Date().toISOString()
-        };
-        if (template.id) {
-            dbData.id = template.id;
+        let data: any;
+        let error: any;
+
+        if (isUpdate) {
+            const result = await supabase
+                .from('sms_templates')
+                .update({
+                    title: template.title,
+                    content: template.content,
+                })
+                .eq('id', template.id!)
+                .select()
+                .single();
+            data = result.data;
+            error = result.error;
+        } else {
+            const result = await supabase
+                .from('sms_templates')
+                .insert({
+                    title: template.title,
+                    content: template.content,
+                })
+                .select()
+                .single();
+            data = result.data;
+            error = result.error;
         }
 
-        const { data, error } = await supabase
-            .from('sms_templates')
-            .upsert(dbData)
-            .select()
-            .single();
-        if (error) throw error;
+        if (error) {
+            alert(`[DEBUG] Supabase 에러: ${error.message} (code: ${error.code})`);
+            throw error;
+        }
+
+        if (!data) {
+            alert('[DEBUG] Supabase 데이터 없음 (null). RLS 문제 가능성.');
+            throw new Error('저장 후 데이터를 반환받지 못했습니다.');
+        }
+
+        alert(`[DEBUG] 저장 성공! DB 반환 title="${data.title}", content="${data.content?.substring(0, 30)}..."`);
+        
         return {
             id: data.id,
             title: data.title,
             content: data.content,
             createdAt: data.created_at,
-            updatedAt: data.updated_at
+            updatedAt: data.updated_at || data.created_at, 
         };
-    } catch (e) {
-        console.error('[Supabase] saveSmsTemplate error:', e);
-        return null;
+    } catch (e: any) {
+        alert(`[DEBUG] 저장 실패 예외: ${e?.message || e}`);
+        throw e;
     }
 };
 

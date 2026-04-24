@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { Case } from '../types';
 
 /**
  * Export data to Excel file
@@ -27,6 +28,26 @@ export const exportToExcel = (filename: string, data: any[], sheetName: string =
 
     // Save file
     XLSX.writeFile(wb, `${filename}.xlsx`);
+};
+
+/**
+ * Export cases with status '부재', '진행불가', or '고객취소' to Excel.
+ * Includes fields: createdAt, customerName, phone, preInfo.
+ */
+/**
+ * Export cases with status '부재', '진행불가', or '고객취소' to Excel.
+ * Includes fields: createdAt, customerName, phone, preInfo.
+ */
+export const exportSpecialCases = (cases: Case[], filename: string = 'special_cases') => {
+    const targetStatuses = ['부재', '진행불가', '고객취소'];
+    const filtered = cases.filter(c => targetStatuses.includes(c.status));
+    const data = filtered.map(c => ({
+        createdAt: c.createdAt,
+        customerName: c.customerName,
+        phone: c.phone,
+        preInfo: c.preInfo ?? ''
+    }));
+    exportToExcel(filename, data);
 };
 
 /**

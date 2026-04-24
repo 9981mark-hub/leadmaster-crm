@@ -11,9 +11,8 @@ import { Case, MissedCallIntervalTier } from '../types';
 
 // React Query Hooks
 import { useCases, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
-import { restoreCase, updateCase, refreshData } from '../services/api'; // Keep specific API calls if hooks not ready or for specific logic
-
-// New Components
+import { restoreCase, refreshData } from '../services/api';
+import { exportSpecialCases } from '../utils/xlsxExport';
 import { CaseListHeader } from '../components/case-list/CaseListHeader';
 import { CaseListFilter } from '../components/case-list/CaseListFilter';
 import { CaseListTable } from '../components/case-list/CaseListTable';
@@ -105,6 +104,7 @@ export default function CaseList() {
     );
     const [showNewOnly, setShowNewOnly] = useState(() => sessionStorage.getItem('lm_showNewOnly') === 'true');
     const [showOverdueMissedOnly, setShowOverdueMissedOnly] = useState(() => sessionStorage.getItem('lm_showOverdueMissed') === 'true');
+    const [showStarredOnly, setShowStarredOnly] = useState(() => sessionStorage.getItem('lm_showStarredOnly') === 'true');
 
     // [NEW] Secondary/Tertiary Status Filters
     const [secondaryStatusFilter, setSecondaryStatusFilter] = useState(() => sessionStorage.getItem('lm_secondaryStatusFilter') || '');
@@ -121,10 +121,11 @@ export default function CaseList() {
         sessionStorage.setItem('lm_sortOrder', sortOrder);
         sessionStorage.setItem('lm_showNewOnly', String(showNewOnly));
         sessionStorage.setItem('lm_showOverdueMissed', String(showOverdueMissedOnly));
+        sessionStorage.setItem('lm_showStarredOnly', String(showStarredOnly));
         sessionStorage.setItem('lm_viewMode', viewMode);
         sessionStorage.setItem('lm_secondaryStatusFilter', secondaryStatusFilter);
         sessionStorage.setItem('lm_tertiaryStatusFilter', tertiaryStatusFilter);
-    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, showOverdueMissedOnly, viewMode, secondaryStatusFilter, tertiaryStatusFilter]);
+    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, showOverdueMissedOnly, showStarredOnly, viewMode, secondaryStatusFilter, tertiaryStatusFilter]);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState<number>(() => {
@@ -179,6 +180,9 @@ export default function CaseList() {
                 if (!isOverdueMissed) return false;
             }
 
+            // [NEW] Starred filter
+            if (showStarredOnly && !c.isStarred) return false;
+
             // [NEW] 2차/3차 상태 필터 (사무장 접수 선택 시)
             let matchesSecondary = true;
             let matchesTertiary = true;
@@ -193,7 +197,7 @@ export default function CaseList() {
 
             return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew && matchesSecondary && matchesTertiary;
         });
-    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, missedCallStatus, missedCallIntervalTiers, secondaryStatusFilter, tertiaryStatusFilter]);
+    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, showStarredOnly, missedCallStatus, missedCallIntervalTiers, secondaryStatusFilter, tertiaryStatusFilter]);
 
     const sortedCases = useMemo(() => {
         return [...filteredCases].sort((a, b) => {
@@ -208,6 +212,11 @@ export default function CaseList() {
 
             if (sortOrder === 'inboundPath_asc') {
                 return String(a.inboundPath || '').localeCompare(String(b.inboundPath || ''));
+            }
+
+            if (sortOrder === 'isStarred_desc') {
+                if (a.isStarred && !b.isStarred) return -1;
+                if (!a.isStarred && b.isStarred) return 1;
             }
 
             if (sortOrder === 'createdAt_desc') {
@@ -348,6 +357,15 @@ export default function CaseList() {
         }
     };
 
+    const handleToggleStar = async (caseId: string, currentStarred: boolean) => {
+        updateCaseMutation.mutate({
+            id: caseId,
+            updates: {
+                isStarred: !currentStarred
+            }
+        });
+    };
+
     const handleMissedCall = async (e: React.MouseEvent, c: Case) => {
         e.preventDefault();
         e.stopPropagation();
@@ -447,13 +465,14 @@ export default function CaseList() {
                 showOverdueMissedOnly={showOverdueMissedOnly}
                 setShowOverdueMissedOnly={setShowOverdueMissedOnly}
                 missedCallIntervalTiers={missedCallIntervalTiers}
-                updateAvailable={false} // React Query handles auto-refetch, so manual banner is less critical. Removed for simplicity or can be re-added if using polling.
+                updateAvailable={false}
                 newLeadsCount={0}
                 onManualRefresh={async () => {
                     await refreshData();
                     refetchCases();
                 }}
                 onResetPage={() => setCurrentPage(1)}
+                onExportSpecialCases={() => exportSpecialCases(cases)}
             />
 
             <CaseListFilter
@@ -468,6 +487,7 @@ export default function CaseList() {
                 sortOrder={sortOrder} setSortOrder={setSortOrder}
                 layoutMode={layoutMode} setLayoutMode={setLayoutMode}
                 viewMode={viewMode} setViewMode={setViewMode}
+                showStarredOnly={showStarredOnly} setShowStarredOnly={setShowStarredOnly}
                 partners={partners}
                 inboundPaths={inboundPaths}
                 statuses={statuses}
@@ -516,6 +536,7 @@ export default function CaseList() {
                         onRestore={handleRestore}
                         onMissedCall={handleMissedCall}
                         onStatusChange={handleQuickStatusChange}
+                        onToggleStar={handleToggleStar}
                     />
 
                     <CaseListPagination

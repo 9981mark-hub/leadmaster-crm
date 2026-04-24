@@ -17,6 +17,7 @@ interface CaseListHeaderProps {
     newLeadsCount: number;
     onManualRefresh: () => void;
     onResetPage: () => void;
+    onExportSpecialCases: () => void;
 }
 
 export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
@@ -33,7 +34,8 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     updateAvailable,
     newLeadsCount,
     onManualRefresh,
-    onResetPage
+    onResetPage,
+    onExportSpecialCases
 }) => {
     return (
         <div className="space-y-4">
@@ -92,6 +94,12 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                         className="px-4 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 transition-colors shadow-sm whitespace-nowrap"
                     >
                         확인하기
+                    </button>
+                    <button
+                        className="ml-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-colors"
+                        onClick={onExportSpecialCases}
+                    >
+                        특수 케이스 내보내기
                     </button>
                 </div>
             )}

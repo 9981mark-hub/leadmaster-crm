@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star } from 'lucide-react';
 import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
 import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
@@ -126,6 +126,7 @@ interface CaseListTableProps {
     onRestore: (id: string, e: React.MouseEvent) => void;
     onMissedCall: (e: React.MouseEvent, c: Case) => void;
     onStatusChange: (caseId: string, newStatus: string, oldStatus: string) => void; // [NEW]
+    onToggleStar: (caseId: string, currentStarred: boolean) => void; // [NEW] 중요 표시
 }
 
 export const CaseListTable: React.FC<CaseListTableProps> = ({
@@ -138,7 +139,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     onDelete,
     onRestore,
     onMissedCall,
-    onStatusChange
+    onStatusChange,
+    onToggleStar
 }) => {
     // [NEW] State for status dropdown
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -169,9 +171,17 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                     const partner = partners.find(p => p.partnerId === c.partnerId);
                     const warnings = getCaseWarnings(c, partner);
                     return (
-                        <div key={c.caseId} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg flex flex-col gap-2 relative">
+                        <div key={c.caseId} className={`bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg flex flex-col gap-2 relative ${c.isStarred ? 'ring-1 ring-amber-300 dark:ring-amber-500/50' : ''}`}>
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-2 relative">
+                                    {/* [NEW] Star Toggle (Mobile) */}
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
+                                        className={`p-0.5 transition-all active:scale-125 ${c.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-500'}`}
+                                        title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
+                                    >
+                                        <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
+                                    </button>
                                     {/* [NEW] Mobile Status with Long Press to Change */}
                                     <div
                                         className="relative"
@@ -377,9 +387,10 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                 <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300 table-fixed">
                     <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
                         <tr>
-                            <th className="px-4 py-3 w-[15%]">유형/경로/거래처</th>
-                            <th className="px-4 py-3 w-[12%]">고객명</th>
-                            <th className="px-4 py-3 w-[13%]">연락처</th>
+                            <th className="px-2 py-3 w-[3%] text-center"><Star size={14} className="inline text-gray-400" /></th>
+                            <th className="px-4 py-3 w-[14%]">유형/경로/거래처</th>
+                            <th className="px-4 py-3 w-[11%]">고객명</th>
+                            <th className="px-4 py-3 w-[12%]">연락처</th>
                             <th className="px-4 py-3 w-[10%]">상태</th>
                             <th className="px-4 py-3 w-[10%]">등록일</th>
                             <th className="px-4 py-3 w-[10%]">최종상담일</th>
@@ -400,8 +411,18 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
                                     key={`${c.caseId}_${index}`}
-                                    className="border-b border-gray-50 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors"
+                                    className={`border-b border-gray-50 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors ${c.isStarred ? 'bg-amber-50/40 dark:bg-amber-900/10' : ''}`}
                                 >
+                                    {/* [NEW] Star Column */}
+                                    <td className="px-2 py-3 text-center">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
+                                            className={`p-1 rounded-full transition-all hover:scale-110 ${c.isStarred ? 'text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-amber-300 dark:text-gray-600 dark:hover:text-amber-400'}`}
+                                            title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
+                                        >
+                                            <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
+                                        </button>
+                                    </td>
                                     <td className="px-4 py-3">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>

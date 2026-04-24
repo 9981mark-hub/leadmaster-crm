@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle } from 'lucide-react';
+import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star } from 'lucide-react';
 import { Partner, CaseStatus } from '../../types';
 
 interface CaseListFilterProps {
@@ -25,6 +25,8 @@ interface CaseListFilterProps {
     setLayoutMode: (val: 'list' | 'kanban') => void;
     viewMode: 'active' | 'trash';
     setViewMode: (val: 'active' | 'trash') => void;
+    showStarredOnly: boolean;
+    setShowStarredOnly: (val: boolean) => void;
     partners: Partner[];
     inboundPaths: string[];
     statuses: CaseStatus[];
@@ -47,6 +49,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     sortOrder, setSortOrder,
     layoutMode, setLayoutMode,
     viewMode, setViewMode,
+    showStarredOnly, setShowStarredOnly,
     partners, inboundPaths, statuses,
     secondaryStatuses, tertiaryStatuses,
     onOpenImportModal, onOpenStatusVisibilityModal, onResetPage
@@ -82,6 +85,15 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         </button>
                     )}
                 </div>
+                {/* Star Filter Toggle */}
+                <button
+                    type="button"
+                    onClick={() => { setShowStarredOnly(!showStarredOnly); onResetPage(); }}
+                    className={`flex items-center justify-center p-2 border rounded-lg transition-colors shadow-sm shrink-0 ${showStarredOnly ? 'bg-amber-50 border-amber-300 text-amber-500' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                    title="중요 표시된 항목만 보기"
+                >
+                    <Star size={18} fill={showStarredOnly ? 'currentColor' : 'none'} />
+                </button>
                 {/* Cloud Upload Button (Mobile Only) */}
                 <button
                     type="button"
@@ -254,6 +266,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             >
                                 <option value="createdAt_desc">최신 등록순</option>
                                 <option value="createdAt_asc">오래된 등록순</option>
+                                <option value="isStarred_desc">중요 표시순</option>
                                 <option value="updatedAt_desc">최근 수정순</option>
                                 <option value="updatedAt_asc">오래된 수정순</option>
                                 <option value="lastConsultation_desc">최근 상담순</option>
