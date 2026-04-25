@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Smartphone, Plus } from 'lucide-react';
+import { AlertTriangle, Smartphone, Plus, Phone } from 'lucide-react';
 import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
 import { STATUS_COLOR_MAP } from '../../constants';
+import CallConfirmPopup from '../CallConfirmPopup';
 
 interface CaseDetailHeaderProps {
     c: Case;
@@ -33,6 +34,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
 }) => {
     const warnings = getCaseWarnings(c, partner);
     const [plusAnim, setPlusAnim] = useState(false);
+    const [showCallPopup, setShowCallPopup] = useState(false);
 
     // Missed call status from settings
     const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
@@ -63,7 +65,13 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             {partner?.name || '거래처 미정'}
                         </span>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900 whitespace-nowrap">{c.customerName}</h1>
-                        <span className="text-gray-500 whitespace-nowrap">{c.phone}</span>
+                        <button
+                            onClick={() => setShowCallPopup(true)}
+                            className="text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors whitespace-nowrap flex items-center gap-1 cursor-pointer"
+                        >
+                            <Phone size={14} className="text-green-500" />
+                            {c.phone}
+                        </button>
                         {pendingFeedbackCount > 0 && (
                             <button
                                 onClick={onClickPendingFeedbacks}
@@ -153,6 +161,18 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                     )}
                 </div>
             </div>
+
+            {/* Call Confirm Popup */}
+            <CallConfirmPopup
+                isOpen={showCallPopup}
+                customerName={c.customerName}
+                phoneNumber={c.phone}
+                onConfirm={() => {
+                    window.location.href = `tel:${c.phone}`;
+                    setShowCallPopup(false);
+                }}
+                onCancel={() => setShowCallPopup(false)}
+            />
         </div>
     );
 };

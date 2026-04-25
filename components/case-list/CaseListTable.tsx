@@ -5,6 +5,7 @@ import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, Map
 import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
 import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
+import CallConfirmPopup from '../CallConfirmPopup';
 import { STATUS_COLOR_MAP } from '../../constants';
 import { fetchCaseStatusLogs, fetchCases } from '../../services/api';
 
@@ -146,6 +147,22 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const dropdownRef = React.useRef<HTMLDivElement>(null);
 
+    // [NEW] State for call confirm popup
+    const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
+
+    const handlePhoneClick = (e: React.MouseEvent, customerName: string, phone: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCallTarget({ name: customerName, phone });
+    };
+
+    const handleCallConfirm = () => {
+        if (callTarget) {
+            window.location.href = `tel:${callTarget.phone}`;
+        }
+        setCallTarget(null);
+    };
+
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -263,7 +280,10 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     {c.customerName}
                                 </Link>
                                 <div className="flex flex-col items-end gap-1">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.phone}</span>
+                                    <button
+                                        onClick={(e) => handlePhoneClick(e, c.customerName, c.phone)}
+                                        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors"
+                                    >{c.phone}</button>
 
                                     {/* [Mobile] Missed Call Management */}
                                     {c.status === missedCallStatus && (
@@ -339,9 +359,9 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <span>{partner?.name}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <a href={`tel:${c.phone}`} className="p-2 bg-green-100 text-green-600 rounded-full">
+                                    <button onClick={(e) => handlePhoneClick(e, c.customerName, c.phone)} className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 active:scale-95 transition-all">
                                         <Phone size={16} />
-                                    </a>
+                                    </button>
                                     <HoverCheckTooltip
                                         mobileAlign="right"
                                         trigger={
@@ -473,7 +493,14 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <td className={`px-4 py-3 font-medium ${c.status === '진행불가' || c.status === '고객취소'
                                         ? 'text-red-600 dark:text-red-400'
                                         : ''
-                                        }`}>{c.phone}</td>
+                                        }`}>
+                                        <button
+                                            onClick={(e) => handlePhoneClick(e, c.customerName, c.phone)}
+                                            className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                                        >
+                                            {c.phone}
+                                        </button>
+                                    </td>
                                     <td className="px-4 py-3 relative">
                                         {/* [NEW] Status with Click-to-Change Dropdown */}
                                         <div className="relative" ref={openDropdownId === c.caseId ? dropdownRef : null}>
@@ -657,6 +684,15 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                     </tbody>
                 </table>
             </div>
+
+            {/* Call Confirm Popup */}
+            <CallConfirmPopup
+                isOpen={!!callTarget}
+                customerName={callTarget?.name || ''}
+                phoneNumber={callTarget?.phone || ''}
+                onConfirm={handleCallConfirm}
+                onCancel={() => setCallTarget(null)}
+            />
         </div>
     );
 };
