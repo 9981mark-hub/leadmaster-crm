@@ -167,10 +167,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                 isOpen={showCallPopup}
                 customerName={c.customerName}
                 phoneNumber={c.phone}
-                onConfirm={() => {
-                    window.location.href = `tel:${c.phone}`;
-                    setShowCallPopup(false);
-                }}
+                onConfirm={() => setShowCallPopup(false)}
                 onCancel={() => setShowCallPopup(false)}
             />
         </div>

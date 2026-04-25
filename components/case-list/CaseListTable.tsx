@@ -157,9 +157,6 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     };
 
     const handleCallConfirm = () => {
-        if (callTarget) {
-            window.location.href = `tel:${callTarget.phone}`;
-        }
         setCallTarget(null);
     };
 

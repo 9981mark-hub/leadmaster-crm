@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { Phone, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,6 +9,24 @@ interface CallConfirmPopupProps {
     onConfirm: () => void;
     onCancel: () => void;
 }
+
+/**
+ * Initiate a phone call using a native <a href="tel:"> click.
+ * This is the standard way to trigger the phone dialer directly on mobile
+ * browsers / PWAs without the "choose an app" dialog appearing.
+ * window.location.href = 'tel:...' is treated as a generic URL navigation,
+ * which triggers the Android intent chooser instead.
+ */
+const triggerPhoneCall = (phoneNumber: string) => {
+    const cleaned = phoneNumber.replace(/[^0-9+]/g, '');
+    const a = document.createElement('a');
+    a.href = `tel:${cleaned}`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    // Small delay before removal to ensure the click is fully processed
+    setTimeout(() => document.body.removeChild(a), 100);
+};
 
 const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
     isOpen,
@@ -41,6 +59,11 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
         }
         return phone;
     };
+
+    const handleConfirmCall = useCallback(() => {
+        triggerPhoneCall(phoneNumber);
+        onConfirm();
+    }, [phoneNumber, onConfirm]);
 
     return (
         <AnimatePresence>
@@ -103,7 +126,7 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                             </button>
                             <div className="w-px bg-gray-100 dark:bg-gray-700" />
                             <button
-                                onClick={onConfirm}
+                                onClick={handleConfirmCall}
                                 className="flex-1 py-3.5 text-sm font-bold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center justify-center gap-1.5"
                             >
                                 <Phone size={14} />
