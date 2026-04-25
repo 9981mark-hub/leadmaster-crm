@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Phone, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,24 +9,6 @@ interface CallConfirmPopupProps {
     onConfirm: () => void;
     onCancel: () => void;
 }
-
-/**
- * Initiate a phone call using a native <a href="tel:"> click.
- * This is the standard way to trigger the phone dialer directly on mobile
- * browsers / PWAs without the "choose an app" dialog appearing.
- * window.location.href = 'tel:...' is treated as a generic URL navigation,
- * which triggers the Android intent chooser instead.
- */
-const triggerPhoneCall = (phoneNumber: string) => {
-    const cleaned = phoneNumber.replace(/[^0-9+]/g, '');
-    const a = document.createElement('a');
-    a.href = `tel:${cleaned}`;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    // Small delay before removal to ensure the click is fully processed
-    setTimeout(() => document.body.removeChild(a), 100);
-};
 
 const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
     isOpen,
@@ -60,10 +42,8 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
         return phone;
     };
 
-    const handleConfirmCall = useCallback(() => {
-        triggerPhoneCall(phoneNumber);
-        onConfirm();
-    }, [phoneNumber, onConfirm]);
+    // Clean phone number for tel: URI (digits and + only)
+    const cleanPhone = phoneNumber.replace(/[^0-9+]/g, '');
 
     return (
         <AnimatePresence>
@@ -125,13 +105,21 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                                 취소
                             </button>
                             <div className="w-px bg-gray-100 dark:bg-gray-700" />
-                            <button
-                                onClick={handleConfirmCall}
-                                className="flex-1 py-3.5 text-sm font-bold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center justify-center gap-1.5"
+                            {/*
+                              핵심: <a href="tel:..."> 태그를 직접 사용
+                              사용자의 실제 탭이 tel: 링크 위에서 발생해야
+                              Android Chrome이 전화앱을 직접 열어줌.
+                              window.location.href나 프로그래밍적 .click()은
+                              "신뢰되지 않은 제스처"로 처리되어 앱 선택 다이얼로그가 뜸.
+                            */}
+                            <a
+                                href={`tel:${cleanPhone}`}
+                                onClick={() => setTimeout(onConfirm, 300)}
+                                className="flex-1 py-3.5 text-sm font-bold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center justify-center gap-1.5 no-underline"
                             >
                                 <Phone size={14} />
                                 전화 걸기
-                            </button>
+                            </a>
                         </div>
                     </motion.div>
                 </>
@@ -141,3 +129,4 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
 };
 
 export default CallConfirmPopup;
+
