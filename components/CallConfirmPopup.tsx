@@ -1,11 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import { Phone, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Phone, X, Smartphone, Monitor, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { enqueuePendingCall } from '../services/supabase';
 
 interface CallConfirmPopupProps {
     isOpen: boolean;
     customerName: string;
     phoneNumber: string;
+    caseId?: string;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -14,10 +16,21 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
     isOpen,
     customerName,
     phoneNumber,
+    caseId,
     onConfirm,
     onCancel
 }) => {
     const popupRef = useRef<HTMLDivElement>(null);
+    const [sending, setSending] = useState(false);
+    const [sent, setSent] = useState(false);
+
+    // Reset state when popup opens
+    useEffect(() => {
+        if (isOpen) {
+            setSending(false);
+            setSent(false);
+        }
+    }, [isOpen]);
 
     // Close on Escape key
     useEffect(() => {
@@ -42,8 +55,32 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
         return phone;
     };
 
-    // Clean phone number for tel: URI (digits and + only)
+    // Clean phone number for tel: URI
     const cleanPhone = phoneNumber.replace(/[^0-9+]/g, '');
+
+    // Detect if on mobile device
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    // Handle "전화 걸기 (모바일로 전송)" for PC users
+    const handleSendToMobile = async () => {
+        setSending(true);
+        try {
+            const success = await enqueuePendingCall(phoneNumber, customerName, caseId);
+            if (success) {
+                setSent(true);
+                setTimeout(() => {
+                    onConfirm();
+                }, 1500);
+            } else {
+                alert('전화 요청 전송에 실패했습니다.');
+                setSending(false);
+            }
+        } catch (e) {
+            console.error('Failed to enqueue pending call:', e);
+            alert('전화 요청 전송에 실패했습니다.');
+            setSending(false);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -65,7 +102,7 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 10 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[300px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[320px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
                     >
                         {/* Header */}
                         <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-4 flex items-center justify-between">
@@ -91,36 +128,71 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                             <p className="text-green-600 dark:text-green-400 font-mono text-xl font-bold tracking-wide">
                                 {formatPhone(phoneNumber)}
                             </p>
-                            <p className="text-gray-400 dark:text-gray-500 text-xs mt-3">
-                                이 고객에게 전화를 거시겠습니까?
-                            </p>
+
+                            {/* 성공 메시지 */}
+                            {sent && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-3 flex items-center justify-center gap-1.5 text-green-600"
+                                >
+                                    <Check size={16} />
+                                    <span className="text-sm font-medium">핸드폰으로 전송 완료!</span>
+                                </motion.div>
+                            )}
+
+                            {!sent && (
+                                <p className="text-gray-400 dark:text-gray-500 text-xs mt-3">
+                                    {isMobile
+                                        ? '이 고객에게 전화를 거시겠습니까?'
+                                        : '핸드폰으로 전화 요청을 보냅니다'}
+                                </p>
+                            )}
                         </div>
 
                         {/* Buttons */}
-                        <div className="flex border-t border-gray-100 dark:border-gray-700">
-                            <button
-                                onClick={onCancel}
-                                className="flex-1 py-3.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                            >
-                                취소
-                            </button>
-                            <div className="w-px bg-gray-100 dark:bg-gray-700" />
-                            {/*
-                              핵심: <a href="tel:..."> 태그를 직접 사용
-                              사용자의 실제 탭이 tel: 링크 위에서 발생해야
-                              Android Chrome이 전화앱을 직접 열어줌.
-                              window.location.href나 프로그래밍적 .click()은
-                              "신뢰되지 않은 제스처"로 처리되어 앱 선택 다이얼로그가 뜸.
-                            */}
-                            <a
-                                href={`tel:${cleanPhone}`}
-                                onClick={() => setTimeout(onConfirm, 300)}
-                                className="flex-1 py-3.5 text-sm font-bold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center justify-center gap-1.5 no-underline"
-                            >
-                                <Phone size={14} />
-                                전화 걸기
-                            </a>
-                        </div>
+                        {!sent && (
+                            <div className="flex border-t border-gray-100 dark:border-gray-700">
+                                <button
+                                    onClick={onCancel}
+                                    className="flex-1 py-3.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                >
+                                    취소
+                                </button>
+                                <div className="w-px bg-gray-100 dark:bg-gray-700" />
+
+                                {isMobile ? (
+                                    /* 모바일: 직접 tel: 링크로 전화앱 실행 */
+                                    <a
+                                        href={`tel:${cleanPhone}`}
+                                        onClick={() => setTimeout(onConfirm, 300)}
+                                        className="flex-1 py-3.5 text-sm font-bold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center justify-center gap-1.5 no-underline"
+                                    >
+                                        <Phone size={14} />
+                                        전화 걸기
+                                    </a>
+                                ) : (
+                                    /* PC: Supabase에 pending call 기록 → Android 앱이 감지 */
+                                    <button
+                                        onClick={handleSendToMobile}
+                                        disabled={sending}
+                                        className="flex-1 py-3.5 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                    >
+                                        {sending ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                                                전송 중...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Smartphone size={14} />
+                                                핸드폰으로 전화
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </motion.div>
                 </>
             )}
@@ -129,4 +201,3 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
 };
 
 export default CallConfirmPopup;
-

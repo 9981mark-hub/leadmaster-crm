@@ -742,3 +742,32 @@ export const enqueueSmsToSupabase = async (phone: string, content: string): Prom
         return false;
     }
 };
+
+// ============================================
+// Pending Calls (PC → Mobile 전화 걸기)
+// ============================================
+
+/**
+ * PC에서 전화 걸기 요청 → Supabase에 기록 → Android 앱이 감지하여 다이얼러 실행
+ */
+export const enqueuePendingCall = async (phoneNumber: string, customerName: string, caseId?: string): Promise<boolean> => {
+    if (!supabase) return false;
+    try {
+        const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+        const { error } = await supabase
+            .from('pending_calls')
+            .insert([{
+                phone_number: cleanPhone,
+                customer_name: customerName,
+                case_id: caseId || null,
+                status: 'pending'
+            }]);
+        if (error) throw error;
+        console.log(`[PendingCall] Enqueued call to ${customerName} (${cleanPhone})`);
+        return true;
+    } catch (e) {
+        console.error('[Supabase] enqueuePendingCall error:', e);
+        return false;
+    }
+};
+
