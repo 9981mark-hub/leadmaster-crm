@@ -66,7 +66,14 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         </span>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900 whitespace-nowrap">{c.customerName}</h1>
                         <button
-                            onClick={() => setShowCallPopup(true)}
+                            onClick={() => {
+                                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                                if (isMobile) {
+                                    window.location.href = `tel:${(c.phone || '').replace(/[^0-9+]/g, '')}`;
+                                    return;
+                                }
+                                setShowCallPopup(true);
+                            }}
                             className="text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors whitespace-nowrap flex items-center gap-1 cursor-pointer"
                         >
                             <Phone size={14} className="text-green-500" />

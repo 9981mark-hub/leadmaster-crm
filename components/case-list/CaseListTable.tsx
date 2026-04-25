@@ -153,6 +153,13 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     const handlePhoneClick = (e: React.MouseEvent, customerName: string, phone: string) => {
         e.preventDefault();
         e.stopPropagation();
+        // 모바일에서는 팝업 없이 바로 전화 연결 (Android 앱 WebView에서 tel: 처리)
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isMobile) {
+            window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
+            return;
+        }
+        // PC에서만 확인 팝업 표시
         setCallTarget({ name: customerName, phone });
     };
 
