@@ -2750,7 +2750,7 @@ export default function Settlement() {
                                     })
                                     .reduce((sum, c) => {
                                         // 정산된 수수료
-                                        return sum + (c.commission || 0);
+                                        return sum + getPaidCommissionInfo(c).paidCommission;
                                     }, 0) * 10000;
 
                                 // 은행 수입
