@@ -1625,6 +1625,11 @@ export const getWeekMonday = (date: Date): Date => {
   return d;
 };
 
+// Helper: Format date to local YYYY-MM-DD
+export const formatDateLocal = (d: Date): string => {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 // Helper: Get Sunday of the week
 export const getWeekSunday = (date: Date): Date => {
   const monday = getWeekMonday(date);
@@ -1659,8 +1664,8 @@ export const createSettlementBatch = async (batch: Partial<SettlementBatch>): Pr
     batchId: `batch_${Date.now()}`,
     partnerId: batch.partnerId || '',
     weekLabel: batch.weekLabel || getWeekLabel(new Date()),
-    startDate: batch.startDate || getWeekMonday(new Date()).toISOString().split('T')[0],
-    endDate: batch.endDate || getWeekSunday(new Date()).toISOString().split('T')[0],
+    startDate: batch.startDate || formatDateLocal(getWeekMonday(new Date())),
+    endDate: batch.endDate || formatDateLocal(getWeekSunday(new Date())),
     status: batch.status || 'draft',
     dealIds: batch.dealIds || [],
     totalContractFee: batch.totalContractFee || 0,
@@ -1776,8 +1781,8 @@ export const generateWeeklyBatch = async (partnerId: string, weekStart: Date): P
   const monday = getWeekMonday(weekStart);
   const sunday = getWeekSunday(weekStart);
   const weekLabel = getWeekLabel(weekStart);
-  const startDateStr = monday.toISOString().split('T')[0];
-  const endDateStr = sunday.toISOString().split('T')[0];
+  const startDateStr = formatDateLocal(monday);
+  const endDateStr = formatDateLocal(sunday);
 
   // Check if batch already exists
   const existing = localSettlementBatches.find(
@@ -2811,8 +2816,8 @@ export const getTossAdsWeeklySummary = (weekStart: Date): TossAdsWeeklySummary =
   const monday = getWeekMonday(weekStart);
   const sunday = getWeekSunday(weekStart);
   const weekLabel = getWeekLabel(weekStart);
-  const startDateStr = monday.toISOString().split('T')[0];
-  const endDateStr = sunday.toISOString().split('T')[0];
+  const startDateStr = formatDateLocal(monday);
+  const endDateStr = formatDateLocal(sunday);
 
   loadTossAdsRecords();
   
