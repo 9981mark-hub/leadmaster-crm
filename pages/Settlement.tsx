@@ -286,12 +286,12 @@ export default function Settlement() {
             return;
         }
 
-        const confirm = window.confirm(`이번 주(${tossAdsWeeklySummary.weekLabel}) 토스 애즈 광고비 ${tossAdsWeeklySummary.totalSpendIncVat.toLocaleString()}원을 시스템 지출에 일괄 등록하시겠습니까? (부가세 포함 금액)`);
+        const confirm = window.confirm(`이번 주(${tossAdsWeeklySummary.weekLabel}) 토스 애즈 광고비 ${tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원을 시스템 지출에 일괄 등록하시겠습니까? (소진비용 기준)`);
         if (!confirm) return;
 
         try {
             // 만원 단위로 환산 (반올림)
-            const amountInManwon = Math.max(1, Math.round(Number(tossAdsWeeklySummary.totalSpendIncVat) / 10000));
+            const amountInManwon = Math.max(1, Math.round(Number(tossAdsWeeklySummary.totalSpendExVat) / 10000));
             
             const expenseData: Partial<ExpenseItem> = {
                 category: '광고비',
