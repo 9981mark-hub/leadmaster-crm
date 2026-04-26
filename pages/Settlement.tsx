@@ -36,7 +36,8 @@ export default function Settlement() {
     const [loadingBatches, setLoadingBatches] = useState(false);
 
     // Modal State
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    type KpiModalType = 'contract' | 'revenue' | 'actualDeposit' | 'expectedDeposit' | 'paidCommission' | 'expectedCommission' | 'installment' | 'depositRate';
+    const [activeModalType, setActiveModalType] = useState<KpiModalType | null>(null);
     const [copiedTemplate, setCopiedTemplate] = useState(false);
 
     // Expenses State
@@ -1338,7 +1339,7 @@ export default function Settlement() {
             {/* Row 1: Main KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('contract')}
                     className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -1349,7 +1350,7 @@ export default function Settlement() {
                     <p className="text-xs text-blue-500 mt-1 hidden md:block">상세 보기 →</p>
                 </div>
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('revenue')}
                     className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -1360,7 +1361,7 @@ export default function Settlement() {
                     <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">수임료 합계 · 상세 보기 →</p>
                 </div>
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('actualDeposit')}
                     className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -1371,7 +1372,7 @@ export default function Settlement() {
                     <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">오늘까지 확정 · 상세 보기 →</p>
                 </div>
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('expectedDeposit')}
                     className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -1386,7 +1387,7 @@ export default function Settlement() {
             {/* Row 2: Commission KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('paidCommission')}
                     className="bg-gradient-to-br from-green-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-green-200 cursor-pointer hover:bg-green-50 hover:border-green-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -1397,7 +1398,7 @@ export default function Settlement() {
                     <p className="text-xs text-green-500 mt-1 hidden md:block group-hover:text-green-600">입금 확정 기준 · 상세 보기 →</p>
                 </div>
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('expectedCommission')}
                     className="bg-gradient-to-br from-emerald-50 to-white p-3 md:p-5 rounded-xl shadow-sm border-2 border-dashed border-emerald-300 cursor-pointer hover:bg-emerald-50 hover:border-emerald-400 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -1410,7 +1411,7 @@ export default function Settlement() {
                     </p>
                 </div>
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('installment')}
                     className="bg-gradient-to-br from-indigo-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-indigo-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -1421,7 +1422,7 @@ export default function Settlement() {
                     <p className="text-xs text-indigo-500 mt-1 hidden md:block group-hover:text-indigo-600">추가 입금 대기 · 상세 보기 →</p>
                 </div>
                 <div
-                    onClick={() => setIsDetailModalOpen(true)}
+                    onClick={() => setActiveModalType('depositRate')}
                     className="bg-gradient-to-br from-blue-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-blue-200 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
@@ -3601,6 +3602,335 @@ export default function Settlement() {
             weeklyTaskAlert = { type: 'warning', msg: '수요일입니다. 파트너 수수료 지급을 진행해주세요.' };
     }
 
+    const renderDynamicModalContent = () => {
+        switch (activeModalType) {
+            case 'contract':
+            case 'revenue':
+                return (
+                    <>
+                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                            <tr>
+                                <th className="px-4 py-2">계약일</th>
+                                <th className="px-4 py-2">고객명</th>
+                                <th className="px-4 py-2">거래처</th>
+                                <th className="px-4 py-2">상태</th>
+                                <th className="px-4 py-2 text-right">{activeModalType === 'revenue' ? '수임료(매출)' : '수임료'}</th>
+                                <th className="px-4 py-2 text-right">수당(Rule)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {statsCases.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                                        해당 기간에 완료된 계약 건이 없습니다.
+                                    </td>
+                                </tr>
+                            ) : (
+                                statsCases
+                                    .sort((a, b) => String(b.contractAt || '').localeCompare(String(a.contractAt || '')))
+                                    .map(c => {
+                                        const commission = getCommissionForCase(c);
+                                        return (
+                                            <tr key={c.caseId} className="hover:bg-gray-50">
+                                                <td className="px-4 py-2 text-gray-600">{c.contractAt}</td>
+                                                <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                                <td className="px-4 py-2 text-gray-500">{getPartnerName(c.partnerId)}</td>
+                                                <td className="px-4 py-2">
+                                                    <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 border border-gray-200">
+                                                        {c.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2 text-right text-blue-600 font-medium">
+                                                    {c.contractFee?.toLocaleString()}만원
+                                                </td>
+                                                <td className="px-4 py-2 text-right text-green-600 font-bold">
+                                                    {commission.toLocaleString()}만원
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                            )}
+                        </tbody>
+                        {statsCases.length > 0 && (
+                            <tfoot className="bg-gray-50 font-bold">
+                                <tr>
+                                    <td colSpan={4} className="px-4 py-2 text-center text-gray-700">합계</td>
+                                    <td className="px-4 py-2 text-right text-blue-700">{totalRevenue.toLocaleString()}만원</td>
+                                    <td className="px-4 py-2 text-right text-green-700">{totalCommission.toLocaleString()}만원</td>
+                                </tr>
+                            </tfoot>
+                        )}
+                    </>
+                );
+
+            case 'actualDeposit': {
+                const depositCases = statsCases.filter(c => getDepositInfo(c).actualDeposit > 0);
+                const totalDep = depositCases.reduce((sum, c) => sum + getDepositInfo(c).actualDeposit, 0);
+                return (
+                    <>
+                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                            <tr>
+                                <th className="px-4 py-2">고객명</th>
+                                <th className="px-4 py-2 text-right">수임료</th>
+                                <th className="px-4 py-2 text-right">총 입금액</th>
+                                <th className="px-4 py-2 text-right">미납금</th>
+                                <th className="px-4 py-2 text-center">입금율</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {depositCases.length === 0 ? (
+                                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">실제 입금 내역이 없습니다.</td></tr>
+                            ) : (
+                                depositCases.map(c => {
+                                    const { actualDeposit } = getDepositInfo(c);
+                                    const fee = c.contractFee || 0;
+                                    const uncollectedAmount = Math.max(0, fee - actualDeposit);
+                                    const rate = fee > 0 ? Math.round((actualDeposit / fee) * 100) : 0;
+                                    return (
+                                        <tr key={c.caseId} className="hover:bg-gray-50">
+                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                            <td className="px-4 py-2 text-right text-gray-600">{fee.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2 text-right text-green-600 font-bold">{actualDeposit.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2 text-right text-red-500">{uncollectedAmount > 0 ? `${uncollectedAmount.toLocaleString()}만원` : '-'}</td>
+                                            <td className="px-4 py-2 text-center text-blue-600 font-medium">{rate}%</td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                        {depositCases.length > 0 && (
+                            <tfoot className="bg-gray-50 font-bold">
+                                <tr>
+                                    <td colSpan={2} className="px-4 py-2 text-center text-gray-700">합계</td>
+                                    <td className="px-4 py-2 text-right text-green-700">{totalDep.toLocaleString()}만원</td>
+                                    <td colSpan={2}></td>
+                                </tr>
+                            </tfoot>
+                        )}
+                    </>
+                );
+            }
+
+            case 'expectedDeposit': {
+                const monthPrefix = month === 'all' ? `${year}-` : `${year}-${String(month).padStart(2, '0')}`;
+                const today = new Date().toISOString().slice(0, 10);
+                const expectedDeposits: { date: string; expectedAmount: number; customerName: string; remainingAmount: number }[] = [];
+                
+                partnerCases.forEach(c => {
+                    const deposits = (c.depositHistory && c.depositHistory.length > 0)
+                        ? c.depositHistory
+                        : [
+                            { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+                            { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+                        ];
+
+                    deposits.forEach((d: any) => {
+                        if (d.date && d.date.startsWith(monthPrefix) && d.date > today && d.amount > 0) {
+                            const { actualDeposit } = getDepositInfo(c);
+                            expectedDeposits.push({
+                                date: d.date,
+                                expectedAmount: d.amount,
+                                customerName: c.customerName || '',
+                                remainingAmount: Math.max(0, (c.contractFee || 0) - actualDeposit)
+                            });
+                        }
+                    });
+                });
+                
+                expectedDeposits.sort((a, b) => a.date.localeCompare(b.date));
+
+                return (
+                    <>
+                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                            <tr>
+                                <th className="px-4 py-2">입금 예정일</th>
+                                <th className="px-4 py-2">고객명</th>
+                                <th className="px-4 py-2 text-right">예상 입금액</th>
+                                <th className="px-4 py-2 text-right">총 미납 잔금</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {expectedDeposits.length === 0 ? (
+                                <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">예정된 입금 스케줄이 없습니다.</td></tr>
+                            ) : (
+                                expectedDeposits.map((ed, idx) => (
+                                    <tr key={idx} className="hover:bg-gray-50">
+                                        <td className="px-4 py-2 text-gray-600 font-medium">{ed.date}</td>
+                                        <td className="px-4 py-2 font-medium text-gray-900">{ed.customerName}</td>
+                                        <td className="px-4 py-2 text-right text-orange-500 font-bold">{ed.expectedAmount.toLocaleString()}만원</td>
+                                        <td className="px-4 py-2 text-right text-gray-500">{ed.remainingAmount.toLocaleString()}만원</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </>
+                );
+            }
+
+            case 'paidCommission': {
+                const paidCases = statsCases.filter(c => getPaidCommissionInfo(c).paidCommission > 0);
+                const totalPaid = paidCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
+                return (
+                    <>
+                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                            <tr>
+                                <th className="px-4 py-2">고객명</th>
+                                <th className="px-4 py-2 text-right">총 예상 수수료</th>
+                                <th className="px-4 py-2 text-right">지급 확정 수수료</th>
+                                <th className="px-4 py-2 text-right">잔여 수수료</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {paidCases.length === 0 ? (
+                                <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">지급 확정된 수수료가 없습니다.</td></tr>
+                            ) : (
+                                paidCases.map(c => {
+                                    const info = getPaidCommissionInfo(c);
+                                    return (
+                                        <tr key={c.caseId} className="hover:bg-gray-50">
+                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                            <td className="px-4 py-2 text-right text-gray-600">{info.totalCommission.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2 text-right text-green-600 font-bold">{info.paidCommission.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2 text-right text-orange-500">{(info.totalCommission - info.paidCommission).toLocaleString()}만원</td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                        {paidCases.length > 0 && (
+                            <tfoot className="bg-gray-50 font-bold">
+                                <tr>
+                                    <td colSpan={2} className="px-4 py-2 text-center text-gray-700">합계</td>
+                                    <td className="px-4 py-2 text-right text-green-700">{totalPaid.toLocaleString()}만원</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        )}
+                    </>
+                );
+            }
+
+            case 'expectedCommission': {
+                const { payouts } = getMonthlyExpectedCommission();
+                return (
+                    <>
+                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                            <tr>
+                                <th className="px-4 py-2">지급 예정일</th>
+                                <th className="px-4 py-2">고객명</th>
+                                <th className="px-4 py-2 text-right">수령 예상 수수료</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {payouts.length === 0 ? (
+                                <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">예정된 수령 수수료가 없습니다.</td></tr>
+                            ) : (
+                                payouts.map((ep, idx) => (
+                                    <tr key={idx} className="hover:bg-gray-50">
+                                        <td className="px-4 py-2 text-gray-600 font-medium">{ep.date}</td>
+                                        <td className="px-4 py-2 font-medium text-gray-900">{ep.customerName}</td>
+                                        <td className="px-4 py-2 text-right text-emerald-600 font-bold">{ep.amount.toLocaleString()}만원</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </>
+                );
+            }
+
+            case 'installment': {
+                const installmentCases = statsCases.filter(c => (c.installmentMonths || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission);
+                return (
+                    <>
+                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                            <tr>
+                                <th className="px-4 py-2">고객명</th>
+                                <th className="px-4 py-2 text-center">진행 개월 수</th>
+                                <th className="px-4 py-2 text-right">총 수임료</th>
+                                <th className="px-4 py-2 text-right">현재 입금액</th>
+                                <th className="px-4 py-2 text-right">잔여 미납액</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {installmentCases.length === 0 ? (
+                                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">분납 진행중인 건이 없습니다.</td></tr>
+                            ) : (
+                                installmentCases.map(c => {
+                                    const { actualDeposit } = getDepositInfo(c);
+                                    const fee = c.contractFee || 0;
+                                    const uncollectedAmount = Math.max(0, fee - actualDeposit);
+                                    return (
+                                        <tr key={c.caseId} className="hover:bg-gray-50">
+                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                            <td className="px-4 py-2 text-center text-indigo-600">{c.installmentMonths}개월</td>
+                                            <td className="px-4 py-2 text-right text-gray-600">{c.contractFee?.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2 text-right text-green-600 font-medium">{actualDeposit.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2 text-right text-red-500 font-bold">{uncollectedAmount.toLocaleString()}만원</td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </>
+                );
+            }
+
+            case 'depositRate': {
+                return (
+                    <>
+                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                            <tr>
+                                <th className="px-4 py-2">고객명</th>
+                                <th className="px-4 py-2 text-center">입금 상태</th>
+                                <th className="px-4 py-2 text-right">수임료</th>
+                                <th className="px-4 py-2 text-right">입금액</th>
+                                <th className="px-4 py-2 w-32">달성률</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {statsCases.length === 0 ? (
+                                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">계약 건이 없습니다.</td></tr>
+                            ) : (
+                                [...statsCases].sort((a, b) => {
+                                    const rateA = (a.contractFee || 0) > 0 ? getDepositInfo(a).actualDeposit / (a.contractFee || 1) : 0;
+                                    const rateB = (b.contractFee || 0) > 0 ? getDepositInfo(b).actualDeposit / (b.contractFee || 1) : 0;
+                                    return rateB - rateA;
+                                }).map(c => {
+                                    const { actualDeposit } = getDepositInfo(c);
+                                    const fee = c.contractFee || 0;
+                                    const isFullyPaid = actualDeposit >= fee;
+                                    const rate = fee > 0 ? Math.round((actualDeposit / fee) * 100) : 0;
+                                    return (
+                                        <tr key={c.caseId} className="hover:bg-gray-50">
+                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                            <td className="px-4 py-2 text-center">
+                                                <span className={`px-2 py-0.5 rounded text-xs border ${isFullyPaid ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
+                                                    {isFullyPaid ? '완납' : '미납/분납'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-2 text-right text-gray-600">{fee.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2 text-right text-green-600 font-medium">{actualDeposit.toLocaleString()}만원</td>
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                        <div className={`h-full rounded-full ${isFullyPaid ? 'bg-blue-500' : 'bg-orange-400'}`} style={{ width: `${rate}%` }} />
+                                                    </div>
+                                                    <span className="text-xs text-gray-500 w-8">{rate}%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </>
+                );
+            }
+
+            default: return null;
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto space-y-6">
             {/* Header */}
@@ -3767,69 +4097,26 @@ export default function Settlement() {
 
             {/* Detail Breakdown Modal */}
             <Modal
-                isOpen={isDetailModalOpen}
-                onClose={() => setIsDetailModalOpen(false)}
-                title={`${year}년 ${month === 'all' ? '전체' : month + '월'} 계약 및 정산 상세 내역`}
+                isOpen={activeModalType !== null}
+                onClose={() => setActiveModalType(null)}
+                title={
+                    activeModalType === 'contract' || activeModalType === 'revenue' ? `${year}년 ${month === 'all' ? '전체' : month + '월'} 계약 및 정산 내역` :
+                    activeModalType === 'actualDeposit' ? '실제 입금 완료 내역' :
+                    activeModalType === 'expectedDeposit' ? '예상 입금 스케줄' :
+                    activeModalType === 'paidCommission' ? '지급 확정 수수료 내역' :
+                    activeModalType === 'expectedCommission' ? '예상 수령 수수료 스케줄' :
+                    activeModalType === 'installment' ? '분납 진행중 상세 내역' :
+                    activeModalType === 'depositRate' ? '계약별 입금 달성 현황' : ''
+                }
             >
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left whitespace-nowrap">
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
-                            <tr>
-                                <th className="px-4 py-2">계약일</th>
-                                <th className="px-4 py-2">고객명</th>
-                                <th className="px-4 py-2">거래처</th>
-                                <th className="px-4 py-2">상태</th>
-                                <th className="px-4 py-2 text-right">수임료</th>
-                                <th className="px-4 py-2 text-right">수당(Rule)</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {statsCases.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                                        해당 기간에 완료된 계약 건이 없습니다.
-                                    </td>
-                                </tr>
-                            ) : (
-                                statsCases
-                                    .sort((a, b) => String(b.contractAt || '').localeCompare(String(a.contractAt || '')))
-                                    .map(c => {
-                                        const commission = getCommissionForCase(c);
-                                        return (
-                                            <tr key={c.caseId} className="hover:bg-gray-50">
-                                                <td className="px-4 py-2 text-gray-600">{c.contractAt}</td>
-                                                <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
-                                                <td className="px-4 py-2 text-gray-500">{getPartnerName(c.partnerId)}</td>
-                                                <td className="px-4 py-2">
-                                                    <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 border border-gray-200">
-                                                        {c.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-2 text-right text-blue-600 font-medium">
-                                                    {c.contractFee?.toLocaleString()}만원
-                                                </td>
-                                                <td className="px-4 py-2 text-right text-green-600 font-bold">
-                                                    {commission.toLocaleString()}만원
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                            )}
-                        </tbody>
-                        {statsCases.length > 0 && (
-                            <tfoot className="bg-gray-50 font-bold">
-                                <tr>
-                                    <td colSpan={4} className="px-4 py-2 text-center text-gray-700">합계</td>
-                                    <td className="px-4 py-2 text-right text-blue-700">{totalRevenue.toLocaleString()}만원</td>
-                                    <td className="px-4 py-2 text-right text-green-700">{totalCommission.toLocaleString()}만원</td>
-                                </tr>
-                            </tfoot>
-                        )}
+                        {renderDynamicModalContent()}
                     </table>
                 </div>
                 <div className="mt-4 flex justify-end">
                     <button
-                        onClick={() => setIsDetailModalOpen(false)}
+                        onClick={() => setActiveModalType(null)}
                         className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium"
                     >
                         닫기
