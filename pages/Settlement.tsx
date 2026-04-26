@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
-import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday, fetchExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, EXPENSE_CATEGORIES, parseBankExcel, matchTransactionsWithPartners, fetchBankTransactions, saveBankTransactions, updateBankTransaction, deleteBankTransaction, getBankTransactionStats, TRANSACTION_CATEGORIES } from '../services/api';
-import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory } from '../types';
+import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday, fetchExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, EXPENSE_CATEGORIES, parseBankExcel, matchTransactionsWithPartners, fetchBankTransactions, saveBankTransactions, updateBankTransaction, deleteBankTransaction, getBankTransactionStats, TRANSACTION_CATEGORIES, parseTossAdsCsv, saveTossAdsRecords, fetchTossAdsRecords, getTossAdsWeeklySummary } from '../services/api';
+import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, TossAdsRecord, TossAdsWeeklySummary } from '../types';
 import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
 import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download } from 'lucide-react';
@@ -53,6 +53,12 @@ export default function Settlement() {
     const [uploadingFile, setUploadingFile] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Toss Ads State
+    const [tossAdsRecords, setTossAdsRecords] = useState<TossAdsRecord[]>([]);
+    const [tossAdsWeeklySummary, setTossAdsWeeklySummary] = useState<TossAdsWeeklySummary | null>(null);
+    const tossAdsFileInputRef = useRef<HTMLInputElement>(null);
+    const [uploadingTossAds, setUploadingTossAds] = useState(false);
+
     useEffect(() => {
         const loadData = async () => {
             // Initial load (may get cached/empty data)
@@ -92,19 +98,28 @@ export default function Settlement() {
 
     // Load expenses when tab is expenses or year/partner changes
     useEffect(() => {
-        const loadExpenses = async () => {
-            if (activeTab !== 'expenses') return;
-            setLoadingExpenses(true);
-            const [expenseList, stats] = await Promise.all([
-                fetchExpenses(selectedPartnerId, year),
-                getExpenseStats(year, month, selectedPartnerId)
-            ]);
-            setExpenses(expenseList);
-            setExpenseStats(stats);
-            setLoadingExpenses(false);
+        const loadExpensesAndTossAds = async () => {
+            if (activeTab === 'expenses') {
+                setLoadingExpenses(true);
+                const [expenseList, stats] = await Promise.all([
+                    fetchExpenses(selectedPartnerId, year),
+                    getExpenseStats(year, month, selectedPartnerId)
+                ]);
+                setExpenses(expenseList);
+                setExpenseStats(stats);
+                setLoadingExpenses(false);
+                
+                // Load Toss Ads Records
+                const records = fetchTossAdsRecords(year, month);
+                setTossAdsRecords(records);
+            }
+            
+            // Load Weekly Summary for the selected week
+            const summary = getTossAdsWeeklySummary(selectedWeekStart);
+            setTossAdsWeeklySummary(summary);
         };
-        loadExpenses();
-    }, [activeTab, year, month, selectedPartnerId]);
+        loadExpensesAndTossAds();
+    }, [activeTab, selectedPartnerId, year, month, selectedWeekStart]);
 
     // Load bank transactions when tab is expenses
     useEffect(() => {
@@ -198,6 +213,94 @@ export default function Settlement() {
         const updated = updateBankTransaction(id, { category, isVerified: true });
         if (updated) {
             setBankTransactions(prev => prev.map(tx => tx.id === id ? updated : tx));
+        }
+    };
+
+    // 토스 애즈 CSV 파일 업로드
+    const handleTossAdsFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingTossAds(true);
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target?.result as ArrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // header: 1로 설정하여 2차원 배열 형태로 가져옴
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                    header: 1,
+                    raw: false,
+                    defval: ''
+                }) as any[][];
+
+                const records = parseTossAdsCsv(jsonData);
+                const { added, updated, skipped } = saveTossAdsRecords(records);
+
+                // 새로고침
+                const refreshed = fetchTossAdsRecords(year, month);
+                setTossAdsRecords(refreshed);
+                setTossAdsWeeklySummary(getTossAdsWeeklySummary(selectedWeekStart));
+
+                showToast(`토스 애즈 광고비 연동 완료: ${added}건 추가, ${updated}건 업데이트 ${skipped > 0 ? `(${skipped}건 중복)` : ''}`, 'success');
+            } catch (err: any) {
+                console.error('토스 애즈 CSV 파싱 오류:', err);
+                showToast(`파일 파싱 실패: ${err.message || '올바른 형식인지 확인해주세요.'}`, 'error');
+            } finally {
+                setUploadingTossAds(false);
+                if (tossAdsFileInputRef.current) tossAdsFileInputRef.current.value = '';
+            }
+        };
+
+        reader.onerror = () => {
+            showToast('파일을 읽는 중 오류가 발생했습니다.', 'error');
+            setUploadingTossAds(false);
+            if (tossAdsFileInputRef.current) tossAdsFileInputRef.current.value = '';
+        };
+
+        reader.readAsArrayBuffer(file);
+    };
+
+    // 토스 애즈 광고비를 ExpenseItem으로 등록 (주간 단위 합산 권장)
+    const handleRegisterTossAdsExpense = async () => {
+        if (!tossAdsWeeklySummary || tossAdsWeeklySummary.totalSpendExVat === 0) {
+            showToast('등록할 이번 주 광고비가 없습니다.', 'error');
+            return;
+        }
+
+        const confirm = window.confirm(`이번 주(${tossAdsWeeklySummary.weekLabel}) 토스 애즈 광고비 ${tossAdsWeeklySummary.totalSpendIncVat.toLocaleString()}원을 시스템 지출에 일괄 등록하시겠습니까? (부가세 포함 금액)`);
+        if (!confirm) return;
+
+        try {
+            // 만원 단위로 환산 (반올림)
+            const amountInManwon = Math.round(tossAdsWeeklySummary.totalSpendIncVat / 10000);
+            
+            const expenseData: Partial<ExpenseItem> = {
+                category: '광고비',
+                amount: amountInManwon,
+                date: tossAdsWeeklySummary.startDate, // 월요일 기준 등록
+                partnerId: 'all', // 공통 지출
+                description: `토스 애즈 광고비 (${tossAdsWeeklySummary.weekLabel})`,
+                memo: `[토스애즈] 소진비용 ${tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원 + VAT. | 잠재고객 ${tossAdsWeeklySummary.totalLeads}명 | CPL ${tossAdsWeeklySummary.avgCpl.toLocaleString()}원`,
+                paymentMethod: '법인카드', // 임의 지정
+            };
+
+            await createExpense(expenseData);
+            
+            // 지출 내역 리로드
+            const expenseList = await fetchExpenses(selectedPartnerId, year);
+            const stats = await getExpenseStats(year, month, selectedPartnerId);
+            setExpenses(expenseList);
+            setExpenseStats(stats);
+            
+            showToast(`${tossAdsWeeklySummary.weekLabel} 광고비가 지출 항목에 성공적으로 등록되었습니다.`, 'success');
+        } catch (error) {
+            console.error('광고비 등록 오류:', error);
+            showToast('광고비 지출 등록에 실패했습니다.', 'error');
         }
     };
 
@@ -1703,6 +1806,52 @@ export default function Settlement() {
                     </div>
                 );
             })()}
+
+            {/* [NEW] Toss Ads Weekly Summary */}
+            {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden mb-6">
+                    <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <h3 className="font-bold text-blue-800 flex items-center gap-2">
+                            <span className="text-lg">📢</span> 이번 주 토스 애즈 광고비 현황
+                        </h3>
+                        <p className="text-xs text-blue-600 mt-1">이번 주 지출된 광고비 및 성과 요약</p>
+                    </div>
+                    <div className="p-4">
+                        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                            <div className="flex-1">
+                                <p className="text-sm text-gray-500 font-medium mb-2">{tossAdsWeeklySummary.weekLabel} 성과 지표</p>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
+                                        <p className="font-bold text-blue-600 text-lg">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p className="text-[10px] text-gray-500">잠재고객 수</p>
+                                        <p className="font-bold text-indigo-600 text-lg">{tossAdsWeeklySummary.totalLeads}명</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p className="text-[10px] text-gray-500">평균 CPL</p>
+                                        <p className="font-bold text-purple-600 text-lg">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p className="text-[10px] text-gray-500">총 노출</p>
+                                        <p className="font-bold text-gray-700 text-lg">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex justify-end items-end md:items-center">
+                                <button
+                                    onClick={() => setActiveTab('expenses')}
+                                    className="px-4 py-2 bg-white text-blue-600 border border-blue-200 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 transition-colors flex items-center gap-1"
+                                >
+                                    지출 관리로 이동 
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Weekly Batch Status Overview */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

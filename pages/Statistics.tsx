@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, differenceInDays, parseISO } from 'date-fns';
-import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords } from '../services/api';
 import { Case, Partner, CaseStatus } from '../types';
 import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle } from 'lucide-react';
 import {
@@ -312,6 +312,30 @@ export default function Statistics() {
                 aggregatedSpend[path] = (aggregatedSpend[path] || 0) + amount;
             });
         });
+
+        // Add Toss Ads spend
+        try {
+            // "토스" 또는 "토스애즈" 경로를 찾아서 합산 (보통 InboundPath가 '토스' 등으로 등록되어 있다고 가정)
+            const tossAdsRecords = fetchTossAdsRecords();
+            let tossAdsTotalSpendInManwon = 0;
+            
+            tossAdsRecords.forEach(record => {
+                // 부가세 포함 금액을 만원 단위로
+                tossAdsTotalSpendInManwon += Math.round(record.spendIncVat / 10000);
+            });
+
+            if (tossAdsTotalSpendInManwon > 0) {
+                // 토스 경로를 찾거나 기본 키 사용
+                const tossPath = inboundPaths.find(p => p.includes('토스')) || '토스';
+                aggregatedSpend[tossPath] = (aggregatedSpend[tossPath] || 0) + tossAdsTotalSpendInManwon;
+                // inboundPaths에 없다면 임시로 추가
+                if (!inboundPaths.includes(tossPath)) {
+                    inboundPaths.push(tossPath);
+                }
+            }
+        } catch (e) {
+            console.error('Error integrating Toss Ads data into ROI:', e);
+        }
 
         const pathCounts: Record<string, { leads: number; contracts: number; fee: number; spend: number }> = {};
         inboundPaths.forEach(p => {
@@ -687,7 +711,8 @@ export default function Statistics() {
                     {/* Ad Spend Input Toggle */}
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            유입경로별 광고비를 입력하면 CPA, CPC, ROAS를 자동 계산합니다.
+                            유입경로별 광고비를 입력하면 CPA, CPC, ROAS를 자동 계산합니다. <br/>
+                            <span className="text-blue-600 dark:text-blue-400 font-medium">* 토스 애즈 광고비는 [주간정산센터]에서 업로드된 데이터가 자동 합산됩니다.</span>
                         </p>
                         <button
                             onClick={() => setShowAdSpendInput(!showAdSpendInput)}

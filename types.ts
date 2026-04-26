@@ -635,3 +635,42 @@ export interface PendingSms {
   createdAt: string;
 }
 
+// ============================================
+// 토스 애즈 광고 데이터 Types
+// ============================================
+
+export interface TossAdsRecord {
+  id: string;
+  campaignId: string;        // 캠페인 ID (예: "336305")
+  campaignName: string;      // 캠페인 명 (예: "명율1차 0105")
+  date: string;              // 광고 집행 일시 "YYYY-MM-DD"
+  spendExVat: number;        // 소진 비용 (부가세 미포함, 원 단위)
+  spendIncVat: number;       // 소진 비용 (부가세 포함, 원 단위) = spendExVat * 1.1
+  impressions: number;       // 노출 수
+  clicks: number;            // 클릭 수
+  ctr: number;               // CTR (%)
+  reach: number;             // 도달 수
+  cpm: number;               // CPM (원)
+  cpc: number;               // CPC (원)
+  costPerReach: number;      // 도달 당 비용 (원)
+  leads: number;             // 잠재고객 수
+  costPerLead: number;       // 잠재고객 제출 당 비용 (원)
+  leadRate: number;          // 잠재고객 제출률 (%)
+  importedAt: string;        // 임포트 시각 (ISO)
+}
+
+export interface TossAdsWeeklySummary {
+  weekLabel: string;         // "2026-W06"
+  startDate: string;
+  endDate: string;
+  totalSpendExVat: number;   // 주간 소진 합계 (부가세 미포함)
+  totalSpendIncVat: number;  // 주간 소진 합계 (부가세 포함)
+  totalImpressions: number;
+  totalClicks: number;
+  totalReach: number;
+  totalLeads: number;
+  avgCtr: number;
+  avgCpl: number;            // 평균 잠재고객 당 비용
+  dailyRecords: TossAdsRecord[];
+}
+

@@ -1,5 +1,5 @@
 
-import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType, TaxInvoice, TaxInvoiceType, TaxReminder, TaxReminderType, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS } from '../types';
+import { Case, CommissionRule, CaseStatusLog, CaseStatus, SettlementConfig, Partner, MemoItem, RecordingItem, SettlementBatch, SettlementBatchStatus, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, BankType, TaxInvoice, TaxInvoiceType, TaxReminder, TaxReminderType, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TossAdsRecord, TossAdsWeeklySummary } from '../types';
 import { MOCK_CASES, MOCK_LOGS, MOCK_INBOUND_PATHS, MOCK_PARTNERS } from './mockData';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -2638,3 +2638,209 @@ export const fetchCommunicationLogs = async (phone: string) => fetchCommunicatio
 export const fetchSmsTemplates = async () => fetchSmsTemplatesFromSupabase();
 export const saveSmsTemplate = async (template: any) => saveSmsTemplateToSupabase(template);
 export const enqueueSms = async (phone: string, content: string) => enqueueSmsToSupabase(phone, content);
+
+// ============================================
+// 토스 애즈 연동 API
+// ============================================
+
+const CACHE_KEYS_TOSS_ADS = 'leadmaster_toss_ads_records';
+let localTossAdsRecords: TossAdsRecord[] = [];
+let tossAdsInitialized = false;
+
+// 로컬스토리지에서 토스 애즈 레코드 로드
+const loadTossAdsRecords = (): TossAdsRecord[] => {
+  if (tossAdsInitialized) return localTossAdsRecords;
+  try {
+    const stored = localStorage.getItem(CACHE_KEYS_TOSS_ADS);
+    if (stored) {
+      localTossAdsRecords = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.warn('Failed to load toss ads records from localStorage:', e);
+  }
+  tossAdsInitialized = true;
+  return localTossAdsRecords;
+};
+
+// 로컬스토리지에 토스 애즈 레코드 저장
+const saveTossAdsRecordsToLocal = () => {
+  try {
+    localStorage.setItem(CACHE_KEYS_TOSS_ADS, JSON.stringify(localTossAdsRecords));
+    // Supabase 설정으로도 동기화
+    saveSettingToSupabase('tossAdsRecords', localTossAdsRecords);
+  } catch (e) {
+    console.warn('Failed to save toss ads records to localStorage:', e);
+  }
+};
+
+// CSV 파싱
+export const parseTossAdsCsv = (data: any[][]): TossAdsRecord[] => {
+  const records: TossAdsRecord[] = [];
+  
+  // 헤더 찾기 (캠페인 ID 컬럼 기준)
+  let headerRowIdx = -1;
+  for (let i = 0; i < Math.min(10, data.length); i++) {
+    const row = data[i];
+    if (row && row.length > 0 && String(row[0]).trim() === '캠페인 ID') {
+      headerRowIdx = i;
+      break;
+    }
+  }
+
+  if (headerRowIdx === -1) {
+    throw new Error('올바른 토스 애즈 성과보고서 형식이 아닙니다 (헤더 없음).');
+  }
+
+  for (let i = headerRowIdx + 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length < 14 || !row[0]) continue;
+
+    const campaignId = String(row[0]).trim();
+    const campaignName = String(row[1]).trim();
+    const date = String(row[2]).trim();
+    
+    // 날짜 형식 검증 (YYYY-MM-DD)
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+    // 숫자 파싱 유틸리티
+    const parseNum = (val: any) => {
+      if (!val) return 0;
+      const str = String(val).replace(/[,원%]/g, '').trim();
+      const num = parseFloat(str);
+      return isNaN(num) ? 0 : num;
+    };
+
+    const spendExVat = parseNum(row[3]);
+    const spendIncVat = Math.round(spendExVat * 1.1); // 부가세 10% 포함 (반올림)
+    const impressions = parseNum(row[4]);
+    const clicks = parseNum(row[5]);
+    const ctr = parseNum(row[6]);
+    const reach = parseNum(row[7]);
+    const cpm = parseNum(row[8]);
+    const cpc = parseNum(row[9]);
+    const costPerReach = parseNum(row[10]);
+    const leads = parseNum(row[11]);
+    const costPerLead = parseNum(row[12]);
+    const leadRate = parseNum(row[13]);
+
+    records.push({
+      id: `${campaignId}_${date}`,
+      campaignId,
+      campaignName,
+      date,
+      spendExVat,
+      spendIncVat,
+      impressions,
+      clicks,
+      ctr,
+      reach,
+      cpm,
+      cpc,
+      costPerReach,
+      leads,
+      costPerLead,
+      leadRate,
+      importedAt: new Date().toISOString()
+    });
+  }
+
+  return records;
+};
+
+// 레코드 저장 (중복 체크)
+export const saveTossAdsRecords = (records: TossAdsRecord[]): { added: number; updated: number; skipped: number } => {
+  loadTossAdsRecords();
+  
+  let added = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  for (const record of records) {
+    const existingIdx = localTossAdsRecords.findIndex(r => r.campaignId === record.campaignId && r.date === record.date);
+    
+    if (existingIdx >= 0) {
+      const existing = localTossAdsRecords[existingIdx];
+      // 내용이 다르면 업데이트 (소진 비용, 노출수 등 변동 가능성)
+      if (existing.spendExVat !== record.spendExVat || existing.impressions !== record.impressions) {
+        localTossAdsRecords[existingIdx] = { ...record, importedAt: new Date().toISOString() };
+        updated++;
+      } else {
+        skipped++;
+      }
+    } else {
+      localTossAdsRecords.push(record);
+      added++;
+    }
+  }
+
+  if (added > 0 || updated > 0) {
+    saveTossAdsRecordsToLocal();
+  }
+
+  return { added, updated, skipped };
+};
+
+// 레코드 조회
+export const fetchTossAdsRecords = (year?: number, month?: number | 'all'): TossAdsRecord[] => {
+  loadTossAdsRecords();
+  
+  let filtered = [...localTossAdsRecords];
+  
+  if (year) {
+    filtered = filtered.filter(r => r.date.startsWith(String(year)));
+  }
+  
+  if (month && month !== 'all') {
+    const monthStr = String(month).padStart(2, '0');
+    filtered = filtered.filter(r => r.date.slice(5, 7) === monthStr);
+  }
+  
+  return filtered.sort((a, b) => b.date.localeCompare(a.date));
+};
+
+// 주간 요약 가져오기
+export const getTossAdsWeeklySummary = (weekStart: Date): TossAdsWeeklySummary => {
+  const monday = getWeekMonday(weekStart);
+  const sunday = getWeekSunday(weekStart);
+  const weekLabel = getWeekLabel(weekStart);
+  const startDateStr = monday.toISOString().split('T')[0];
+  const endDateStr = sunday.toISOString().split('T')[0];
+
+  loadTossAdsRecords();
+  
+  const weeklyRecords = localTossAdsRecords.filter(r => r.date >= startDateStr && r.date <= endDateStr);
+  
+  let totalSpendExVat = 0;
+  let totalSpendIncVat = 0;
+  let totalImpressions = 0;
+  let totalClicks = 0;
+  let totalReach = 0;
+  let totalLeads = 0;
+  
+  weeklyRecords.forEach(r => {
+    totalSpendExVat += r.spendExVat;
+    totalSpendIncVat += r.spendIncVat;
+    totalImpressions += r.impressions;
+    totalClicks += r.clicks;
+    totalReach += r.reach;
+    totalLeads += r.leads;
+  });
+  
+  const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+  const avgCpl = totalLeads > 0 ? Math.round(totalSpendIncVat / totalLeads) : 0;
+  
+  return {
+    weekLabel,
+    startDate: startDateStr,
+    endDate: endDateStr,
+    totalSpendExVat,
+    totalSpendIncVat,
+    totalImpressions,
+    totalClicks,
+    totalReach,
+    totalLeads,
+    avgCtr: parseFloat(avgCtr.toFixed(2)),
+    avgCpl,
+    dailyRecords: weeklyRecords.sort((a, b) => b.date.localeCompare(a.date))
+  };
+};
