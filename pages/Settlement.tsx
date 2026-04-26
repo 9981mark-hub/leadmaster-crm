@@ -2201,6 +2201,68 @@ export default function Settlement() {
                     </div>
                 </div>
 
+                {/* Toss Ads Dashboard Section */}
+                <div className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden">
+                    <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 className="font-bold text-blue-800 flex items-center gap-2">
+                                <span className="text-xl">📢</span> 토스 애즈 광고비 연동
+                            </h3>
+                            <p className="text-xs text-blue-600 mt-1">토스 애즈 성과보고서(CSV)를 업로드하여 시스템에 쉽게 반영하세요.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="file"
+                                accept=".csv,.xlsx,.xls"
+                                className="hidden"
+                                ref={tossAdsFileInputRef}
+                                onChange={handleTossAdsFileUpload}
+                            />
+                            <button
+                                onClick={() => tossAdsFileInputRef.current?.click()}
+                                disabled={uploadingTossAds}
+                                className="px-4 py-2 bg-white text-blue-700 border border-blue-300 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+                            >
+                                {uploadingTossAds ? '업로드 중...' : 'CSV 업로드'}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
+                        <div className="p-4 bg-gray-50 border-b border-gray-100">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div>
+                                    <h4 className="font-bold text-gray-800 text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
+                                    <div className="flex gap-4 mt-2">
+                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center">
+                                            <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
+                                            <p className="font-bold text-blue-600">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
+                                        </div>
+                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center">
+                                            <p className="text-[10px] text-gray-500">잠재고객</p>
+                                            <p className="font-bold text-indigo-600">{tossAdsWeeklySummary.totalLeads}명</p>
+                                        </div>
+                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center hidden sm:block">
+                                            <p className="text-[10px] text-gray-500">평균 CPL</p>
+                                            <p className="font-bold text-purple-600">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
+                                        </div>
+                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center hidden md:block">
+                                            <p className="text-[10px] text-gray-500">총 노출</p>
+                                            <p className="font-bold text-gray-700">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleRegisterTossAdsExpense}
+                                    className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold shadow hover:bg-blue-700 transition-colors"
+                                >
+                                    주간 광고비 지출 등록
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* Add Expense Button */}
                 <div className="flex justify-end">
                     <button
