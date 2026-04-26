@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, differenceInDays, parseISO } from 'date-fns';
 import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords } from '../services/api';
 import { Case, Partner, CaseStatus } from '../types';
+import { calculatePayableCommission } from '../utils';
 import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -305,23 +306,36 @@ export default function Statistics() {
     }, [adSpendMonth, adSpendData, inboundPaths]);
 
     const roiData = useMemo(() => {
+        let startDate: Date | null = null;
+        const now = new Date();
+        switch (periodFilter) {
+            case '1m': startDate = subMonths(now, 1); break;
+            case '3m': startDate = subMonths(now, 3); break;
+            case '6m': startDate = subMonths(now, 6); break;
+            case '1y': startDate = subMonths(now, 12); break;
+            default: startDate = null;
+        }
+
         // Aggregate ad spend for the filtered period
         const aggregatedSpend: Record<string, number> = {};
-        Object.entries(adSpendData).forEach(([month, paths]) => {
+        Object.entries(adSpendData).forEach(([monthStr, paths]) => {
+            const monthDate = parseISO(`${monthStr}-01`);
+            if (startDate && endOfMonth(monthDate) < startDate) return; // Skip months outside filter
+
             Object.entries(paths).forEach(([path, amount]) => {
                 aggregatedSpend[path] = (aggregatedSpend[path] || 0) + amount;
             });
         });
 
-        // Add Toss Ads spend
+        // Add Toss Ads spend (using spendExVat for purely commission-based ROI)
         try {
-            // "토스" 또는 "토스애즈" 경로를 찾아서 합산 (보통 InboundPath가 '토스' 등으로 등록되어 있다고 가정)
             const tossAdsRecords = fetchTossAdsRecords();
             let tossAdsTotalSpendInManwon = 0;
             
             tossAdsRecords.forEach(record => {
-                // 부가세 포함 금액을 만원 단위로
-                tossAdsTotalSpendInManwon += Math.round(record.spendIncVat / 10000);
+                if (startDate && new Date(record.date) < startDate) return; // Filter by selected period
+                // 소진비용(spendExVat) 사용!
+                tossAdsTotalSpendInManwon += Math.round(record.spendExVat / 10000);
             });
 
             if (tossAdsTotalSpendInManwon > 0) {
@@ -337,18 +351,25 @@ export default function Statistics() {
             console.error('Error integrating Toss Ads data into ROI:', e);
         }
 
-        const pathCounts: Record<string, { leads: number; contracts: number; fee: number; spend: number }> = {};
+        const pathCounts: Record<string, { leads: number; contracts: number; fee: number; commission: number; spend: number }> = {};
         inboundPaths.forEach(p => {
-            pathCounts[p] = { leads: 0, contracts: 0, fee: 0, spend: aggregatedSpend[p] || 0 };
+            pathCounts[p] = { leads: 0, contracts: 0, fee: 0, commission: 0, spend: aggregatedSpend[p] || 0 };
         });
 
         filteredCases.forEach(c => {
             const path = c.inboundPath || '미분류';
-            if (!pathCounts[path]) pathCounts[path] = { leads: 0, contracts: 0, fee: 0, spend: 0 };
+            if (!pathCounts[path]) pathCounts[path] = { leads: 0, contracts: 0, fee: 0, commission: 0, spend: 0 };
             pathCounts[path].leads++;
             if (c.contractAt) {
                 pathCounts[path].contracts++;
                 pathCounts[path].fee += c.contractFee || 0;
+                
+                // Calculate commission
+                const partner = partners.find(p => p.partnerId === c.partnerId);
+                if (partner) {
+                    const { payable } = calculatePayableCommission(c, partner.commissionRules, partner.settlementConfig);
+                    pathCounts[path].commission += payable;
+                }
             }
         });
 
@@ -359,13 +380,14 @@ export default function Statistics() {
                 리드: d.leads,
                 계약: d.contracts,
                 수임료: d.fee,
+                수수료: d.commission,
                 광고비: d.spend,
                 CPA: d.spend > 0 && d.leads > 0 ? Math.round(d.spend / d.leads) : 0,
                 CPC: d.spend > 0 && d.contracts > 0 ? Math.round(d.spend / d.contracts) : 0,
-                ROAS: d.spend > 0 ? Math.round((d.fee / d.spend) * 100) : 0,
+                ROAS: d.spend > 0 ? Math.round((d.commission / d.spend) * 100) : 0,
             }))
             .sort((a, b) => b.ROAS - a.ROAS);
-    }, [filteredCases, adSpendData, inboundPaths]);
+    }, [filteredCases, adSpendData, inboundPaths, periodFilter, partners]);
 
     // ============ [NEW] Drop-Off Analysis ============
     const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
@@ -772,9 +794,10 @@ export default function Statistics() {
                                             <th className="text-right py-2 px-2 text-gray-500">리드</th>
                                             <th className="text-right py-2 px-2 text-gray-500">계약</th>
                                             <th className="text-right py-2 px-2 text-gray-500">수임료</th>
+                                            <th className="text-right py-2 px-2 text-gray-500">수수료</th>
                                             <th className="text-right py-2 px-2 text-gray-500">CPA</th>
                                             <th className="text-right py-2 px-2 text-gray-500">CPC</th>
-                                            <th className="text-right py-2 px-2 text-gray-500 font-bold">ROAS</th>
+                                            <th className="text-right py-2 px-2 text-gray-500 font-bold">ROAS<span className="text-xs font-normal text-gray-400 block">(수수료 기준)</span></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -785,6 +808,7 @@ export default function Statistics() {
                                                 <td className="py-2 px-2 text-right">{d.리드}</td>
                                                 <td className="py-2 px-2 text-right text-green-600">{d.계약}</td>
                                                 <td className="py-2 px-2 text-right text-purple-600">{d.수임료 > 0 ? `${d.수임료.toLocaleString()}만원` : '-'}</td>
+                                                <td className="py-2 px-2 text-right font-bold text-blue-600">{d.수수료 > 0 ? `${d.수수료.toLocaleString()}만원` : '-'}</td>
                                                 <td className="py-2 px-2 text-right">{d.CPA > 0 ? `${d.CPA.toLocaleString()}만원` : '-'}</td>
                                                 <td className="py-2 px-2 text-right">{d.CPC > 0 ? `${d.CPC.toLocaleString()}만원` : '-'}</td>
                                                 <td className={`py-2 px-2 text-right font-bold ${d.ROAS >= 300 ? 'text-green-600' : d.ROAS >= 100 ? 'text-blue-600' : 'text-red-600'}`}>
