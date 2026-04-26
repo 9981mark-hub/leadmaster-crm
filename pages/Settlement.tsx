@@ -282,30 +282,31 @@ export default function Settlement() {
 
         try {
             // 만원 단위로 환산 (반올림)
-            const amountInManwon = Math.round(tossAdsWeeklySummary.totalSpendIncVat / 10000);
+            const amountInManwon = Math.max(1, Math.round(Number(tossAdsWeeklySummary.totalSpendIncVat) / 10000));
             
             const expenseData: Partial<ExpenseItem> = {
                 category: '광고비',
                 amount: amountInManwon,
-                date: tossAdsWeeklySummary.startDate, // 월요일 기준 등록
-                partnerId: 'all', // 공통 지출
+                date: tossAdsWeeklySummary.startDate || new Date().toISOString().split('T')[0],
+                partnerId: undefined, // 공통 지출은 undefined로 처리
                 description: `토스 애즈 광고비 (${tossAdsWeeklySummary.weekLabel})`,
                 memo: `[토스애즈] 소진비용 ${tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원 + VAT. | 잠재고객 ${tossAdsWeeklySummary.totalLeads}명 | CPL ${tossAdsWeeklySummary.avgCpl.toLocaleString()}원`,
-                paymentMethod: '법인카드', // 임의 지정
+                paymentMethod: '법인카드',
             };
 
             await createExpense(expenseData);
             
-            // 지출 내역 리로드
+            // 데이터 강제 새로고침
             const expenseList = await fetchExpenses(selectedPartnerId, year);
             const stats = await getExpenseStats(year, month, selectedPartnerId);
+            
             setExpenses(expenseList);
             setExpenseStats(stats);
             
-            showToast(`${tossAdsWeeklySummary.weekLabel} 광고비가 지출 항목에 성공적으로 등록되었습니다.`, 'success');
-        } catch (error) {
+            showToast(`${tossAdsWeeklySummary.weekLabel} 광고비(${amountInManwon}만원)가 지출 항목에 등록되었습니다.`, 'success');
+        } catch (error: any) {
             console.error('광고비 등록 오류:', error);
-            showToast('광고비 지출 등록에 실패했습니다.', 'error');
+            showToast(`등록 실패: ${error.message || '알 수 없는 오류'}`, 'error');
         }
     };
 
