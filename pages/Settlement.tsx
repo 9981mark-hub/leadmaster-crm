@@ -78,6 +78,10 @@ export default function Settlement() {
                     console.log('[Settlement] Re-fetched cases:', safeFreshCases.length);
                     setCases(safeFreshCases);
                 }
+                
+                // [NEW] Refresh Toss Ads data from updated in-memory store
+                setTossAdsRecords(fetchTossAdsRecords(year, month));
+                setTossAdsWeeklySummary(getTossAdsWeeklySummary(selectedWeekStart));
             }, 1500);
         };
         loadData();

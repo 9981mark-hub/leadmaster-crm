@@ -516,6 +516,14 @@ const performBackgroundFetch = async () => {
       if (settingsData.geminiModel) {
         localStorage.setItem('lm_geminiModel', settingsData.geminiModel);
       }
+
+      // [NEW] Load Toss Ads Records from server
+      if (settingsData.tossAdsRecords && Array.isArray(settingsData.tossAdsRecords)) {
+        localTossAdsRecords = settingsData.tossAdsRecords;
+        tossAdsInitialized = true;
+        localStorage.setItem('leadmaster_toss_ads_records', JSON.stringify(settingsData.tossAdsRecords));
+        console.log(`[Sync] Loaded ${settingsData.tossAdsRecords.length} Toss Ads records from server.`);
+      }
     }
 
     // 2. Process Cases with Smart Merge (Conflict Resolution)
