@@ -221,6 +221,15 @@ export default function Settlement() {
         }
     };
 
+    const handleBankTransactionDelete = (id: string) => {
+        if (!confirm('해당 거래내역을 정말 삭제하시겠습니까?')) return;
+        const success = deleteBankTransaction(id);
+        if (success) {
+            setBankTransactions(prev => prev.filter(tx => tx.id !== id));
+            showToast('거래내역이 삭제되었습니다.', 'success');
+        }
+    };
+
     // 토스 애즈 CSV 파일 업로드
     const handleTossAdsFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -2492,16 +2501,17 @@ export default function Settlement() {
                                     <th className="py-3 px-3 text-left">상대방</th>
                                     <th className="py-3 px-3 text-left">분류</th>
                                     <th className="py-3 px-3 text-right">금액</th>
+                                    <th className="py-3 px-3 text-center w-12">관리</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loadingTransactions ? (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-gray-400">로딩중...</td>
+                                        <td colSpan={6} className="py-8 text-center text-gray-400">로딩중...</td>
                                     </tr>
                                 ) : bankTransactions.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-gray-400">
+                                        <td colSpan={6} className="py-8 text-center text-gray-400">
                                             <div className="flex flex-col items-center gap-2">
                                                 <span className="text-2xl">📤</span>
                                                 <span>은행 거래내역 엑셀 파일을 업로드하세요</span>
@@ -2546,6 +2556,15 @@ export default function Settlement() {
                                                 </td>
                                                 <td className={`py-2 px-3 text-right font-bold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                                                     {tx.type === 'income' ? '+' : '-'}{tx.amount.toLocaleString()}원
+                                                </td>
+                                                <td className="py-2 px-3 text-center">
+                                                    <button
+                                                        onClick={() => handleBankTransactionDelete(tx.id)}
+                                                        className="text-gray-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
+                                                        title="삭제"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))
