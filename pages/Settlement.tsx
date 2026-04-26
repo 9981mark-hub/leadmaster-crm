@@ -1348,48 +1348,91 @@ export default function Settlement() {
                     <p className="text-lg md:text-2xl font-bold text-gray-800 mt-1">{totalCount}건</p>
                     <p className="text-xs text-blue-500 mt-1 hidden md:block">상세 보기 →</p>
                 </div>
-                <div className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-xs md:text-sm text-gray-500">💰 총 매출</p>
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs md:text-sm text-gray-500">💰 총 매출</p>
+                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                    </div>
                     <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1 hidden md:block">수임료 합계</p>
+                    <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">수임료 합계 · 상세 보기 →</p>
                 </div>
-                <div className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-xs md:text-sm text-gray-500">✅ 실제 입금액</p>
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs md:text-sm text-gray-500">✅ 실제 입금액</p>
+                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                    </div>
                     <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1 hidden md:block">오늘까지 확정</p>
+                    <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">오늘까지 확정 · 상세 보기 →</p>
                 </div>
-                <div className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-xs md:text-sm text-gray-500">📅 예상 입금액</p>
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs md:text-sm text-gray-500">📅 예상 입금액</p>
+                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                    </div>
                     <p className="text-lg md:text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1 hidden md:block">{monthlyExpectedCount}건 입금 예정</p>
+                    <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">{monthlyExpectedCount}건 입금 예정 · 상세 보기 →</p>
                 </div>
             </div>
 
             {/* Row 2: Commission KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-                <div className="bg-gradient-to-br from-green-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-green-200">
-                    <p className="text-xs md:text-sm text-green-700">💵 지급된 수수료</p>
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-gradient-to-br from-green-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-green-200 cursor-pointer hover:bg-green-50 hover:border-green-300 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs md:text-sm text-green-700">💵 지급된 수수료</p>
+                        <Search size={14} className="text-green-300 group-hover:text-green-500 hidden md:block" />
+                    </div>
                     <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
-                    <p className="text-xs text-green-500 mt-1 hidden md:block">입금 확정 기준</p>
+                    <p className="text-xs text-green-500 mt-1 hidden md:block group-hover:text-green-600">입금 확정 기준 · 상세 보기 →</p>
                 </div>
-                <div className="bg-gradient-to-br from-emerald-50 to-white p-3 md:p-5 rounded-xl shadow-sm border-2 border-dashed border-emerald-300">
-                    <p className="text-xs md:text-sm text-emerald-700">📅 예상 수령 수수료</p>
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-gradient-to-br from-emerald-50 to-white p-3 md:p-5 rounded-xl shadow-sm border-2 border-dashed border-emerald-300 cursor-pointer hover:bg-emerald-50 hover:border-emerald-400 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs md:text-sm text-emerald-700">📅 예상 수령 수수료</p>
+                        <Search size={14} className="text-emerald-300 group-hover:text-emerald-500 hidden md:block" />
+                    </div>
                     <p className="text-lg md:text-2xl font-bold text-emerald-600 mt-1">{monthlyExpectedCommission.toLocaleString()}만원</p>
-                    <p className="text-xs text-emerald-500 mt-1 hidden md:block">
-                        {nextPayoutDate ? `${nextPayoutDate.slice(5).replace('-', '/')} 지급 예정` : '지급 예정 없음'}
+                    <p className="text-xs text-emerald-500 mt-1 hidden md:block group-hover:text-emerald-600">
+                        {nextPayoutDate ? `${nextPayoutDate.slice(5).replace('-', '/')} 지급 예정` : '지급 예정 없음'} · 상세 보기 →
                     </p>
                 </div>
-                <div className="bg-gradient-to-br from-indigo-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-indigo-200">
-                    <p className="text-xs md:text-sm text-indigo-700">📊 분납 진행중</p>
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-gradient-to-br from-indigo-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-indigo-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs md:text-sm text-indigo-700">📊 분납 진행중</p>
+                        <Search size={14} className="text-indigo-300 group-hover:text-indigo-500 hidden md:block" />
+                    </div>
                     <p className="text-lg md:text-2xl font-bold text-indigo-600 mt-1">{installmentInProgress}건</p>
-                    <p className="text-xs text-indigo-500 mt-1 hidden md:block">추가 입금 대기</p>
+                    <p className="text-xs text-indigo-500 mt-1 hidden md:block group-hover:text-indigo-600">추가 입금 대기 · 상세 보기 →</p>
                 </div>
-                <div className="bg-gradient-to-br from-blue-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-blue-200">
-                    <p className="text-xs md:text-sm text-blue-700">📈 입금 완료율</p>
+                <div
+                    onClick={() => setIsDetailModalOpen(true)}
+                    className="bg-gradient-to-br from-blue-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-blue-200 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all group"
+                >
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs md:text-sm text-blue-700">📈 입금 완료율</p>
+                        <Search size={14} className="text-blue-300 group-hover:text-blue-500 hidden md:block" />
+                    </div>
                     <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1">{depositRate}%</p>
                     <div className="mt-1 md:mt-2 h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full" style={{ width: `${depositRate}%` }} />
                     </div>
+                    <p className="text-xs text-blue-500 mt-1 hidden md:block group-hover:text-blue-600">상세 보기 →</p>
                 </div>
             </div>
 
