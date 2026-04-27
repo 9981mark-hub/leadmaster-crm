@@ -1146,7 +1146,20 @@ export default function Settlement() {
             const collectionInfo = { collectedAt: today, amount: currentBatch.totalCommission };
             await updateSettlementBatch(currentBatch.batchId, { collectionInfo, status: 'collected' as any });
             setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, collectionInfo, status: 'collected' as any } : b));
-            showToast('수금 완료 처리되었습니다.', 'success');
+            
+            // [NEW] Payback Auto-registration based on weekly batch
+            const paybackAmount = Math.round(currentBatch.totalCommission * 0.05);
+            if (paybackAmount > 0) {
+                await createExpense({
+                    category: '페이백',
+                    amount: paybackAmount,
+                    description: `페이백 (5%) - ${currentBatch.weekLabel}`,
+                    date: today,
+                    partnerId: currentBatch.partnerId !== 'all' ? currentBatch.partnerId : undefined
+                });
+            }
+            
+            showToast('수금 완료 및 주간 페이백이 지출에 자동 등록되었습니다.', 'success');
         };
 
         const handleInvoiceReceived = async () => {
@@ -2165,35 +2178,6 @@ export default function Settlement() {
         '페이백': '#d946ef'
     };
 
-    // Auto-register payback
-    const handleAutoRegisterPayback = async () => {
-        const paybackAmount = Math.round(totalPaidCommission * 0.05);
-        if (paybackAmount <= 0) {
-            showToast('계산할 페이백 금액이 없습니다.', 'error');
-            return;
-        }
-        
-        if (!confirm(`받은 수수료의 5%인 ${paybackAmount.toLocaleString()}만원을 페이백 지출 항목으로 자동 등록하시겠습니까?`)) return;
-
-        const dateStr = month === 'all' ? new Date().toISOString().split('T')[0] : `${year}-${String(month).padStart(2, '0')}-01`;
-        await createExpense({
-            category: '페이백',
-            amount: paybackAmount,
-            description: '수수료 페이백 (5%) 자동 등록',
-            date: dateStr,
-            partnerId: selectedPartnerId !== 'all' ? selectedPartnerId : undefined
-        });
-        
-        showToast('페이백이 자동 등록되었습니다.', 'success');
-        
-        const [expenseList, stats] = await Promise.all([
-            fetchExpenses(selectedPartnerId, year),
-            getExpenseStats(year, month, selectedPartnerId)
-        ]);
-        setExpenses(expenseList);
-        setExpenseStats(stats);
-    };
-
     // Expense handlers
     const handleSaveExpense = async () => {
         if (!expenseForm.amount || !expenseForm.description) {
@@ -2356,12 +2340,6 @@ export default function Settlement() {
 
                 {/* Add Expense Button */}
                 <div className="flex justify-end gap-2">
-                    <button
-                        onClick={handleAutoRegisterPayback}
-                        className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-fuchsia-700 flex items-center gap-2 transition-colors shadow-sm"
-                    >
-                        <RefreshCw size={18} /> 페이백 자동 등록
-                    </button>
                     <button
                         onClick={() => {
                             setEditingExpense(null);
