@@ -351,7 +351,7 @@ export interface SettlementAdjustment {
 // ============================================
 
 // 지출 카테고리
-export type ExpenseCategory = '광고비' | '마케팅비' | '사무비용' | '인건비' | '교통비' | '식대' | '기타';
+export type ExpenseCategory = '광고비' | '마케팅비' | '사무비용' | '인건비' | '교통비' | '식대' | '기타' | '페이백';
 
 // 결제수단 타입
 export type PaymentMethod = '현금' | '법인카드' | '개인카드' | '계좌이체' | '기타';

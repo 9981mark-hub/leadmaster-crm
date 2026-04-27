@@ -1888,7 +1888,7 @@ const saveExpenses = () => {
 };
 
 // Default expense categories
-export const EXPENSE_CATEGORIES: ExpenseCategory[] = ['광고비', '마케팅비', '사무비용', '인건비', '교통비', '식대', '기타'];
+export const EXPENSE_CATEGORIES: ExpenseCategory[] = ['광고비', '마케팅비', '사무비용', '인건비', '교통비', '식대', '기타', '페이백'];
 
 // Fetch all expenses (optionally filter by partner and/or year)
 export const fetchExpenses = async (partnerId?: string, year?: number): Promise<ExpenseItem[]> => {
@@ -1997,7 +1997,8 @@ export const getExpenseStats = async (year: number, month?: number | 'all', part
     '인건비': 0,
     '교통비': 0,
     '식대': 0,
-    '기타': 0
+    '기타': 0,
+    '페이백': 0
   };
 
   filtered.forEach(e => {

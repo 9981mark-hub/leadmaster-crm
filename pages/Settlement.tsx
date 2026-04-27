@@ -46,7 +46,10 @@ export default function Settlement() {
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
     const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
     const [expenseForm, setExpenseForm] = useState<Partial<ExpenseItem>>({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
-    const [expenseStats, setExpenseStats] = useState<{ total: number; byCategory: Record<ExpenseCategory, number>; byMonth: { month: string; amount: number }[] }>({ total: 0, byCategory: { '광고비': 0, '마케팅비': 0, '사무비용': 0, '인건비': 0, '교통비': 0, '식대': 0, '기타': 0 }, byMonth: [] });
+    const [expenseStats, setExpenseStats] = useState<{ total: number; byCategory: Record<ExpenseCategory, number>; byMonth: { month: string; amount: number }[] }>({ total: 0, byCategory: { '광고비': 0, '마케팅비': 0, '사무비용': 0, '인건비': 0, '교통비': 0, '식대': 0, '기타': 0, '페이백': 0 }, byMonth: [] });
+
+    // KPI Modal State for Expenses Tab
+    const [activeExpenseKpiModal, setActiveExpenseKpiModal] = useState<'commission' | 'expense' | 'ad_ratio' | 'net_profit' | null>(null);
 
     // Bank Transactions State
     const [bankTransactions, setBankTransactions] = useState<BankTransaction[]>([]);
@@ -2158,7 +2161,37 @@ export default function Settlement() {
         '인건비': '#22c55e',
         '교통비': '#3b82f6',
         '식대': '#8b5cf6',
-        '기타': '#6b7280'
+        '기타': '#6b7280',
+        '페이백': '#d946ef'
+    };
+
+    // Auto-register payback
+    const handleAutoRegisterPayback = async () => {
+        const paybackAmount = Math.round(totalPaidCommission * 0.05);
+        if (paybackAmount <= 0) {
+            showToast('계산할 페이백 금액이 없습니다.', 'error');
+            return;
+        }
+        
+        if (!confirm(`받은 수수료의 5%인 ${paybackAmount.toLocaleString()}만원을 페이백 지출 항목으로 자동 등록하시겠습니까?`)) return;
+
+        const dateStr = month === 'all' ? new Date().toISOString().split('T')[0] : `${year}-${String(month).padStart(2, '0')}-01`;
+        await createExpense({
+            category: '페이백',
+            amount: paybackAmount,
+            description: '수수료 페이백 (5%) 자동 등록',
+            date: dateStr,
+            partnerId: selectedPartnerId !== 'all' ? selectedPartnerId : undefined
+        });
+        
+        showToast('페이백이 자동 등록되었습니다.', 'success');
+        
+        const [expenseList, stats] = await Promise.all([
+            fetchExpenses(selectedPartnerId, year),
+            getExpenseStats(year, month, selectedPartnerId)
+        ]);
+        setExpenses(expenseList);
+        setExpenseStats(stats);
     };
 
     // Expense handlers
@@ -2235,24 +2268,24 @@ export default function Settlement() {
             <div className="space-y-6">
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200">
+                    <div onClick={() => setActiveExpenseKpiModal('commission')} className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200 cursor-pointer hover:shadow-md transition-all active:scale-95">
                         <p className="text-sm text-green-700">💵 받은 수수료</p>
                         <p className="text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
                         <p className="text-xs text-green-500 mt-1">{year}년 누적</p>
                     </div>
-                    <div className="bg-gradient-to-br from-red-50 to-white p-5 rounded-xl shadow-sm border border-red-200">
+                    <div onClick={() => setActiveExpenseKpiModal('expense')} className="bg-gradient-to-br from-red-50 to-white p-5 rounded-xl shadow-sm border border-red-200 cursor-pointer hover:shadow-md transition-all active:scale-95">
                         <p className="text-sm text-red-700">💸 총 지출</p>
                         <p className="text-2xl font-bold text-red-600 mt-1">{expenseStats.total.toLocaleString()}만원</p>
                         <p className="text-xs text-red-500 mt-1">{month === 'all' ? '전체 월' : `${month}월`}: {thisMonthExpenses.toLocaleString()}만원</p>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200">
+                    <div onClick={() => setActiveExpenseKpiModal('ad_ratio')} className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition-all active:scale-95">
                         <p className="text-sm text-blue-700">📊 광고비 비중</p>
                         <p className="text-2xl font-bold text-blue-600 mt-1">
                             {expenseStats.total > 0 ? Math.round((expenseStats.byCategory['광고비'] / expenseStats.total) * 100) : 0}%
                         </p>
                         <p className="text-xs text-blue-500 mt-1">{expenseStats.byCategory['광고비'].toLocaleString()}만원</p>
                     </div>
-                    <div className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-white border-green-200' : 'from-red-50 to-white border-red-200'} p-5 rounded-xl shadow-sm border`}>
+                    <div onClick={() => setActiveExpenseKpiModal('net_profit')} className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-white border-green-200' : 'from-red-50 to-white border-red-200'} p-5 rounded-xl shadow-sm border cursor-pointer hover:shadow-md transition-all active:scale-95`}>
                         <p className={`text-sm ${netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>💰 순이익</p>
                         <p className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{netProfit.toLocaleString()}만원</p>
                         <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>수수료수익 - 지출</p>
@@ -2322,14 +2355,20 @@ export default function Settlement() {
                 </div>
 
                 {/* Add Expense Button */}
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                    <button
+                        onClick={handleAutoRegisterPayback}
+                        className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-fuchsia-700 flex items-center gap-2 transition-colors shadow-sm"
+                    >
+                        <RefreshCw size={18} /> 페이백 자동 등록
+                    </button>
                     <button
                         onClick={() => {
                             setEditingExpense(null);
                             setExpenseForm({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
                             setIsExpenseModalOpen(true);
                         }}
-                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 flex items-center gap-2"
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 flex items-center gap-2 shadow-sm transition-colors"
                     >
                         <Plus size={18} /> 지출 등록
                     </button>
@@ -4233,6 +4272,132 @@ export default function Settlement() {
                             취소
                         </button>
                     </div>
+                </div>
+            </Modal>
+
+            {/* KPI Detailed Modal */}
+            <Modal
+                isOpen={activeExpenseKpiModal !== null}
+                onClose={() => setActiveExpenseKpiModal(null)}
+                title={
+                    activeExpenseKpiModal === 'commission' ? '💵 받은 수수료 상세내역' :
+                    activeExpenseKpiModal === 'expense' ? '💸 총 지출 상세내역' :
+                    activeExpenseKpiModal === 'ad_ratio' ? '📊 광고비 비중 상세' :
+                    activeExpenseKpiModal === 'net_profit' ? '💰 순이익 요약표' : ''
+                }
+            >
+                <div className="p-4 space-y-4">
+                    {activeExpenseKpiModal === 'commission' && (
+                        <div>
+                            <p className="text-sm text-gray-500 mb-4">선택된 기간({month === 'all' ? year + '년 전체' : year + '년 ' + month + '월'})에 발생한 수수료 내역입니다.</p>
+                            <div className="overflow-y-auto max-h-[500px]">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th className="py-2 px-3 text-left">고객명</th>
+                                            <th className="py-2 px-3 text-left">파트너사</th>
+                                            <th className="py-2 px-3 text-center">계약일</th>
+                                            <th className="py-2 px-3 text-right">지급 수수료</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {statsCases.map(c => {
+                                            const { paidCommission } = getPaidCommissionInfo(c);
+                                            if (paidCommission <= 0) return null;
+                                            return (
+                                                <tr key={c.caseId} className="border-b border-gray-100">
+                                                    <td className="py-2 px-3">{c.customerName}</td>
+                                                    <td className="py-2 px-3">{partners.find(p => p.partnerId === c.partnerId)?.name || '알수없음'}</td>
+                                                    <td className="py-2 px-3 text-center">{c.contractAt}</td>
+                                                    <td className="py-2 px-3 text-right font-bold text-green-600">{paidCommission.toLocaleString()}만원</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                    {activeExpenseKpiModal === 'expense' && (
+                        <div>
+                            <p className="text-sm text-gray-500 mb-4">이번 기간의 등록된 지출 상세 리스트입니다.</p>
+                            <div className="overflow-y-auto max-h-[500px]">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th className="py-2 px-3 text-center">날짜</th>
+                                            <th className="py-2 px-3 text-center">카테고리</th>
+                                            <th className="py-2 px-3 text-left">내용</th>
+                                            <th className="py-2 px-3 text-right">금액</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {expenses.filter(e => month === 'all' ? true : (e.date && e.date.startsWith(`${year}-${String(month).padStart(2, '0')}`))).map(e => (
+                                            <tr key={e.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                                <td className="py-2 px-3 text-center">{e.date}</td>
+                                                <td className="py-2 px-3 text-center"><span className="px-2 py-1 rounded text-xs text-white" style={{ backgroundColor: CATEGORY_COLORS[e.category] }}>{e.category}</span></td>
+                                                <td className="py-2 px-3 text-left">{e.description}</td>
+                                                <td className="py-2 px-3 text-right font-bold text-red-600">{e.amount.toLocaleString()}만원</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                    {activeExpenseKpiModal === 'ad_ratio' && (
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-500">총 지출 중 광고비가 차지하는 비율입니다.</p>
+                            <div className="flex gap-4 p-4 bg-blue-50 rounded-lg items-center">
+                                <div className="flex-1">
+                                    <p className="text-sm text-blue-700 font-bold">전체 지출</p>
+                                    <p className="text-xl text-blue-900">{expenseStats.total.toLocaleString()}만원</p>
+                                </div>
+                                <div className="flex-1 border-l border-blue-200 pl-4">
+                                    <p className="text-sm text-red-700 font-bold">광고비 합계</p>
+                                    <p className="text-xl text-red-600">{expenseStats.byCategory['광고비'].toLocaleString()}만원</p>
+                                </div>
+                                <div className="flex-1 border-l border-blue-200 pl-4">
+                                    <p className="text-sm text-blue-700 font-bold">광고비 비중</p>
+                                    <p className="text-xl text-blue-900">{expenseStats.total > 0 ? Math.round((expenseStats.byCategory['광고비'] / expenseStats.total) * 100) : 0}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {activeExpenseKpiModal === 'net_profit' && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="border border-green-200 rounded-lg p-4 bg-green-50">
+                                    <h4 className="font-bold text-green-800 mb-2 border-b border-green-200 pb-2">➕ 유입 (수익)</h4>
+                                    <div className="flex justify-between text-sm py-1">
+                                        <span>받은 수수료 총액</span>
+                                        <span className="font-bold text-green-700">{totalPaidCommission.toLocaleString()}만원</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm py-1 text-gray-400">
+                                        <span>파트너사 페이아웃</span>
+                                        <span>- {0}만원</span>
+                                    </div>
+                                </div>
+                                <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                                    <h4 className="font-bold text-red-800 mb-2 border-b border-red-200 pb-2">➖ 유출 (지출)</h4>
+                                    {Object.entries(expenseStats.byCategory).filter(([_, v]) => (v as number) > 0).map(([cat, val]) => (
+                                        <div key={cat} className="flex justify-between text-sm py-1">
+                                            <span>{cat}</span>
+                                            <span className="text-red-600">{(val as number).toLocaleString()}만원</span>
+                                        </div>
+                                    ))}
+                                    <div className="flex justify-between text-sm py-1 mt-2 border-t border-red-200 pt-2 font-bold">
+                                        <span>지출 합계</span>
+                                        <span className="text-red-700">{expenseStats.total.toLocaleString()}만원</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-gray-800 text-white rounded-lg p-4 flex justify-between items-center mt-2">
+                                <span className="font-bold">최종 순이익</span>
+                                <span className="text-2xl font-bold text-green-400">{(totalPaidCommission - expenseStats.total).toLocaleString()}만원</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </Modal>
         </div>
