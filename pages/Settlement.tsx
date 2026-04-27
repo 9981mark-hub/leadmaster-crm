@@ -4290,14 +4290,14 @@ export default function Settlement() {
                     {activeExpenseKpiModal === 'commission' && (
                         <div>
                             <p className="text-sm text-gray-500 mb-4">선택된 기간({month === 'all' ? year + '년 전체' : year + '년 ' + month + '월'})에 발생한 수수료 내역입니다.</p>
-                            <div className="overflow-y-auto max-h-[500px]">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 sticky top-0">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+                                <table className="w-full text-sm min-w-max">
+                                    <thead className="bg-gray-50 sticky top-0 z-10">
                                         <tr>
-                                            <th className="py-2 px-3 text-left">고객명</th>
-                                            <th className="py-2 px-3 text-left">파트너사</th>
-                                            <th className="py-2 px-3 text-center">계약일</th>
-                                            <th className="py-2 px-3 text-right">지급 수수료</th>
+                                            <th className="py-2 px-3 text-left whitespace-nowrap">고객명</th>
+                                            <th className="py-2 px-3 text-left whitespace-nowrap">파트너사</th>
+                                            <th className="py-2 px-3 text-center whitespace-nowrap">계약일</th>
+                                            <th className="py-2 px-3 text-right whitespace-nowrap">지급 수수료</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -4306,10 +4306,10 @@ export default function Settlement() {
                                             if (paidCommission <= 0) return null;
                                             return (
                                                 <tr key={c.caseId} className="border-b border-gray-100">
-                                                    <td className="py-2 px-3">{c.customerName}</td>
-                                                    <td className="py-2 px-3">{partners.find(p => p.partnerId === c.partnerId)?.name || '알수없음'}</td>
-                                                    <td className="py-2 px-3 text-center">{c.contractAt}</td>
-                                                    <td className="py-2 px-3 text-right font-bold text-green-600">{paidCommission.toLocaleString()}만원</td>
+                                                    <td className="py-2 px-3 whitespace-nowrap">{c.customerName}</td>
+                                                    <td className="py-2 px-3 whitespace-nowrap">{partners.find(p => p.partnerId === c.partnerId)?.name || '알수없음'}</td>
+                                                    <td className="py-2 px-3 text-center whitespace-nowrap">{c.contractAt}</td>
+                                                    <td className="py-2 px-3 text-right font-bold text-green-600 whitespace-nowrap">{paidCommission.toLocaleString()}만원</td>
                                                 </tr>
                                             );
                                         })}
@@ -4321,23 +4321,23 @@ export default function Settlement() {
                     {activeExpenseKpiModal === 'expense' && (
                         <div>
                             <p className="text-sm text-gray-500 mb-4">이번 기간의 등록된 지출 상세 리스트입니다.</p>
-                            <div className="overflow-y-auto max-h-[500px]">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 sticky top-0">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+                                <table className="w-full text-sm min-w-max">
+                                    <thead className="bg-gray-50 sticky top-0 z-10">
                                         <tr>
-                                            <th className="py-2 px-3 text-center">날짜</th>
-                                            <th className="py-2 px-3 text-center">카테고리</th>
-                                            <th className="py-2 px-3 text-left">내용</th>
-                                            <th className="py-2 px-3 text-right">금액</th>
+                                            <th className="py-2 px-3 text-center whitespace-nowrap">날짜</th>
+                                            <th className="py-2 px-3 text-center whitespace-nowrap">카테고리</th>
+                                            <th className="py-2 px-3 text-left whitespace-nowrap min-w-[150px]">내용</th>
+                                            <th className="py-2 px-3 text-right whitespace-nowrap">금액</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {expenses.filter(e => month === 'all' ? true : (e.date && e.date.startsWith(`${year}-${String(month).padStart(2, '0')}`))).map(e => (
                                             <tr key={e.id} className="border-b border-gray-100 hover:bg-gray-50">
-                                                <td className="py-2 px-3 text-center">{e.date}</td>
-                                                <td className="py-2 px-3 text-center"><span className="px-2 py-1 rounded text-xs text-white" style={{ backgroundColor: CATEGORY_COLORS[e.category] }}>{e.category}</span></td>
-                                                <td className="py-2 px-3 text-left">{e.description}</td>
-                                                <td className="py-2 px-3 text-right font-bold text-red-600">{e.amount.toLocaleString()}만원</td>
+                                                <td className="py-2 px-3 text-center whitespace-nowrap">{e.date}</td>
+                                                <td className="py-2 px-3 text-center whitespace-nowrap"><span className="px-2 py-1 rounded text-xs text-white whitespace-nowrap inline-block" style={{ backgroundColor: CATEGORY_COLORS[e.category] }}>{e.category}</span></td>
+                                                <td className="py-2 px-3 text-left whitespace-nowrap">{e.description}</td>
+                                                <td className="py-2 px-3 text-right font-bold text-red-600 whitespace-nowrap">{e.amount.toLocaleString()}만원</td>
                                             </tr>
                                         ))}
                                     </tbody>
