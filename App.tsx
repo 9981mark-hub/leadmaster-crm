@@ -160,13 +160,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const navs = [
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
-    { to: '/schedule', icon: Calendar, label: '오늘의 일정' },
+    { to: '/schedule', icon: Calendar, label: '일정' },
     { to: '/cases', icon: Users, label: '케이스' },
     { to: '/new', icon: PlusCircle, label: '신규등록' },
     { to: '/telegram', icon: Smartphone, label: 'TG연동', badge: pendingTgCount > 0 ? pendingTgCount : undefined },
     { to: '/settlement', icon: Calculator, label: '정산' },
     { to: '/settings', icon: Settings, label: '설정' },
-    { to: '/mypage', icon: User, label: '마이페이지' },
+    { to: '/mypage', icon: User, label: '마이' },
   ];
 
   return (
