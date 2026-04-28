@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { Calendar, Clock, MapPin, Phone, Wallet, Briefcase, MessageSquare, MoreHorizontal, ChevronLeft, ChevronRight, Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import { useCases, useUpdateCaseMutation } from '../services/queries';
+import { useCases, useUpdateCaseMutation, useStatuses } from '../services/queries';
 import { CaseDetailReminders } from '../components/case-detail/info/CaseDetailReminders';
 import { useToast } from '../contexts/ToastContext';
 import { Case, ReminderItem } from '../types';
@@ -11,11 +11,16 @@ import { getReminderStatus } from '../utils';
 
 type SortOption = 'time_asc' | 'createdAt_desc' | 'updatedAt_desc';
 
+const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
+const DROP_OFF_REASONS = ['비용 부담', '타 사무소 선택', '연락 두절', '자격 미달', '본인 의사 취소', '시기 미정', '기타'];
+
 export default function SchedulePage() {
   const { data: cases = [], isLoading } = useCases();
   const updateCaseMutation = useUpdateCaseMutation();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  
+  const { data: statuses = [] } = useStatuses();
   
   const [sortOrder, setSortOrder] = useState<SortOption>('time_asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,6 +28,66 @@ export default function SchedulePage() {
   
   // Accordion state
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+
+  // Drop-off Modal State
+  const [isDropOffModalOpen, setIsDropOffModalOpen] = useState(false);
+  const [dropOffCaseId, setDropOffCaseId] = useState<string>('');
+  const [dropOffNewStatus, setDropOffNewStatus] = useState<string>('');
+  const [dropOffOldStatus, setDropOffOldStatus] = useState<string>('');
+  const [dropOffReason, setDropOffReason] = useState<string>('');
+  const [dropOffDetail, setDropOffDetail] = useState<string>('');
+
+  const handleQuickStatusChange = async (caseId: string, newStatus: string, oldStatus: string) => {
+    if (newStatus === oldStatus) return;
+    
+    if (DROP_OFF_STATUSES.includes(newStatus)) {
+        setDropOffCaseId(caseId);
+        setDropOffNewStatus(newStatus);
+        setDropOffOldStatus(oldStatus);
+        setDropOffReason('');
+        setDropOffDetail('');
+        setIsDropOffModalOpen(true);
+        return;
+    }
+
+    const now = new Date().toISOString();
+    updateCaseMutation.mutate({ 
+        id: caseId, 
+        updates: { status: newStatus, statusUpdatedAt: now } 
+    });
+    showToast(`상태가 "${newStatus}"(으)로 변경되었습니다.`);
+  };
+
+  const confirmDropOffStatusChange = () => {
+    if (!dropOffReason) {
+        showToast('이탈 사유를 선택해주세요.', 'error');
+        return;
+    }
+    const now = new Date().toISOString();
+    const log = {
+        logId: Date.now().toString(),
+        fromStatus: dropOffOldStatus,
+        toStatus: dropOffNewStatus,
+        changedAt: now,
+        changedBy: 'User',
+        memo: `[이탈사유: ${dropOffReason}] ${dropOffDetail}`.trim()
+    };
+    
+    const targetCase = cases.find(c => c.caseId === dropOffCaseId);
+    
+    updateCaseMutation.mutate({
+        id: dropOffCaseId,
+        updates: {
+            status: dropOffNewStatus,
+            statusUpdatedAt: now,
+            statusLogs: [log, ...(targetCase?.statusLogs || [])],
+            dropOffReason: dropOffReason,
+            dropOffDetail: dropOffDetail || undefined,
+        }
+    });
+    showToast(`상태가 "${dropOffNewStatus}"(으)로 변경되었습니다.`);
+    setIsDropOffModalOpen(false);
+  };
 
   // 모든 리마인더 평탄화 (FlatMap) 및 오늘 날짜 필터링
   const todayReminders = useMemo(() => {
@@ -160,9 +225,19 @@ export default function SchedulePage() {
                         {item.caseData.customerName}
                       </span>
                       <span className="text-sm text-gray-500">{item.caseData.phone}</span>
-                      <span className="ml-2 text-[10px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300">
-                        {item.caseData.status}
-                      </span>
+                      <select
+                        className="ml-2 text-[10px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-800 dark:text-gray-200 border border-transparent hover:border-gray-300 dark:hover:border-gray-500 outline-none cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        value={item.caseData.status}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleQuickStatusChange(item.caseData.caseId, e.target.value, item.caseData.status);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {statuses.filter(s => s !== '휴지통').map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm truncate">
                       {item.reminder.content || '내용 없음'}
@@ -243,6 +318,62 @@ export default function SchedulePage() {
             <ChevronRight size={20} />
           </button>
         </div>
+      )}
+
+      {/* 이탈 사유 모달 */}
+      {isDropOffModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-[440px] shadow-xl border-t-4 border-red-500">
+                  <h3 className="text-lg font-bold mb-4 text-red-700">⚠ 상담 중단 확인</h3>
+                  <p className="mb-4 text-gray-700">
+                      상태를 <span className="font-bold text-blue-600">{dropOffOldStatus}</span>에서{' '}
+                      <span className="font-bold text-red-600">{dropOffNewStatus}</span>(으)로 변경하시겠습니까?
+                  </p>
+                  <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                          이탈 사유 <span className="text-red-500">*필수</span>
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                          {DROP_OFF_REASONS.map(reason => (
+                              <button
+                                  key={reason}
+                                  type="button"
+                                  onClick={() => setDropOffReason(reason)}
+                                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${dropOffReason === reason
+                                          ? 'bg-red-600 text-white border-red-600 shadow-sm'
+                                          : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-600'
+                                      }`}
+                              >
+                                  {reason}
+                              </button>
+                          ))}
+                      </div>
+                  </div>
+                  <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">상세 메모 (선택)</label>
+                      <textarea
+                          className="w-full p-2 border border-red-200 rounded resize-none h-20 focus:ring-2 focus:ring-red-500 outline-none"
+                          placeholder="추가 메모를 입력하세요..."
+                          value={dropOffDetail}
+                          onChange={e => setDropOffDetail(e.target.value)}
+                      />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                      <button
+                          onClick={() => setIsDropOffModalOpen(false)}
+                          className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                      >
+                          취소
+                      </button>
+                      <button
+                          onClick={confirmDropOffStatusChange}
+                          className="px-4 py-2 bg-red-600 rounded text-white font-medium hover:bg-red-700"
+                      >
+                          변경하기
+                      </button>
+                  </div>
+              </div>
+          </div>
       )}
     </div>
   );
