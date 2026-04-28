@@ -299,9 +299,47 @@ export default function SchedulePage() {
                   </button>
                 </div>
 
-                {/* Expanded Content (CaseDetailReminders) */}
+                {/* Expanded Content (CaseDetailReminders & PreInfo) */}
                 {isExpanded && (
                   <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 animate-in slide-in-from-top-2 duration-200">
+                    
+                    {/* 사전 고객 정보 (리드 수집 정보) */}
+                    <div className="mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        사전 고객 정보 (리드 수집 정보)
+                      </h4>
+                      <div className={`text-sm ${!item.caseData.preInfo ? 'text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {item.caseData.preInfo ? item.caseData.preInfo.split(/\s\/\s|\n/).filter((line: string) => {
+                            const lower = line.toLowerCase();
+                            return !lower.includes('[referrer]') &&
+                                !lower.includes('[marketing_consent]') &&
+                                !lower.includes('[third_party_consent]') &&
+                                !lower.includes('[user_agent]') &&
+                                line.trim() !== '';
+                        }).map((line: string, idx: number) => {
+                            const trimmed = line.trim();
+                            const colonIdx = trimmed.indexOf(':');
+                            if (colonIdx > 0 && colonIdx < trimmed.length - 1) {
+                                const label = trimmed.substring(0, colonIdx).trim();
+                                const value = trimmed.substring(colonIdx + 1).trim();
+                                return (
+                                    <div key={idx} className="flex items-start gap-2 mb-1.5 last:mb-0">
+                                        <span className="text-blue-600 dark:text-blue-400 font-bold whitespace-nowrap min-w-[70px]">{label}:</span>
+                                        <span className="text-gray-800 dark:text-gray-200 break-keep">{value}</span>
+                                    </div>
+                                );
+                            }
+                            return (
+                                <div key={idx} className="flex items-start gap-2 mb-1.5 last:mb-0">
+                                    <span className="text-blue-500 font-bold mt-0.5">•</span>
+                                    <span className="text-gray-800 dark:text-gray-200 break-keep">{trimmed}</span>
+                                </div>
+                            );
+                        }) : <span className="italic text-gray-400">사전 정보 없음</span>}
+                      </div>
+                    </div>
+
                     <CaseDetailReminders
                       reminders={item.caseData.reminders || []}
                       memos={item.caseData.specialMemo || []}
