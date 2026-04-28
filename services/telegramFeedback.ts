@@ -191,6 +191,9 @@ export async function confirmFeedback(
       updates.missed_call_count = (caseData.missed_call_count || 0) + 1;
       updates.last_missed_call_at = new Date().toISOString();
     }
+    if (feedbackType === '진행불가') {
+      updates.secondary_status = '진행불가';
+    }
 
     const currentLogs = getArray(caseData.status_logs);
     const log = {
