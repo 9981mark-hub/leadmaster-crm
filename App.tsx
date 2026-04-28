@@ -1,8 +1,9 @@
 import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar } from 'lucide-react';
 // Lazy Load Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 const CaseList = lazy(() => import('./pages/CaseList'));
 const NewCase = lazy(() => import('./pages/NewCase'));
 const CaseDetail = lazy(() => import('./pages/CaseDetail'));
@@ -159,6 +160,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const navs = [
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
+    { to: '/schedule', icon: Calendar, label: '오늘의 일정' },
     { to: '/cases', icon: Users, label: '케이스' },
     { to: '/new', icon: PlusCircle, label: '신규등록' },
     { to: '/telegram', icon: Smartphone, label: 'TG연동', badge: pendingTgCount > 0 ? pendingTgCount : undefined },
@@ -234,6 +236,7 @@ const ProtectedRoutes = () => {
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/cases" element={<CaseList />} />
           <Route path="/new" element={<NewCase />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />
