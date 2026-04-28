@@ -13,7 +13,7 @@ export default function SchedulePage() {
   const { data: cases = [], isLoading } = useCases();
   const [sortOrder, setSortOrder] = useState<SortOption>('time_asc');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
 
   // 모든 리마인더 평탄화 (FlatMap) 및 오늘 날짜 필터링
   const todayReminders = useMemo(() => {
