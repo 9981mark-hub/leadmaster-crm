@@ -5,6 +5,7 @@ import { ko } from 'date-fns/locale';
 import { Calendar, Clock, MapPin, Phone, Wallet, Briefcase, MessageSquare, MoreHorizontal, ChevronLeft, ChevronRight, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCases, useUpdateCaseMutation, useStatuses } from '../services/queries';
 import { CaseDetailReminders } from '../components/case-detail/info/CaseDetailReminders';
+import CallConfirmPopup from '../components/CallConfirmPopup';
 import { useToast } from '../contexts/ToastContext';
 import { Case, ReminderItem } from '../types';
 import { getReminderStatus } from '../utils';
@@ -36,6 +37,24 @@ export default function SchedulePage() {
   const [dropOffOldStatus, setDropOffOldStatus] = useState<string>('');
   const [dropOffReason, setDropOffReason] = useState<string>('');
   const [dropOffDetail, setDropOffDetail] = useState<string>('');
+
+  // Call Confirm State
+  const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
+
+  const handlePhoneClick = (e: React.MouseEvent, customerName: string, phone: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
+          window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
+          return;
+      }
+      setCallTarget({ name: customerName, phone });
+  };
+
+  const handleCallConfirm = () => {
+      setCallTarget(null);
+  };
 
   const handleQuickStatusChange = async (caseId: string, newStatus: string, oldStatus: string) => {
     if (newStatus === oldStatus) return;
@@ -224,7 +243,12 @@ export default function SchedulePage() {
                       <span className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">
                         {item.caseData.customerName}
                       </span>
-                      <span className="text-sm text-gray-500">{item.caseData.phone}</span>
+                      <button
+                        onClick={(e) => handlePhoneClick(e, item.caseData.customerName, item.caseData.phone)}
+                        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors"
+                      >
+                        {item.caseData.phone}
+                      </button>
                       <select
                         className="ml-2 text-[10px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-800 dark:text-gray-200 border border-transparent hover:border-gray-300 dark:hover:border-gray-500 outline-none cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                         value={item.caseData.status}
@@ -375,6 +399,15 @@ export default function SchedulePage() {
               </div>
           </div>
       )}
+
+      {/* Call Confirm Popup */}
+      <CallConfirmPopup
+          isOpen={!!callTarget}
+          customerName={callTarget?.name || ''}
+          phoneNumber={callTarget?.phone || ''}
+          onConfirm={handleCallConfirm}
+          onCancel={() => setCallTarget(null)}
+      />
     </div>
   );
 }
