@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, Phone, Wallet, Briefcase, MessageSquare, MoreHorizontal, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-import { useCases } from '../services/queries';
+import { Calendar, Clock, MapPin, Phone, Wallet, Briefcase, MessageSquare, MoreHorizontal, ChevronLeft, ChevronRight, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { useCases, useUpdateCaseMutation } from '../services/queries';
+import { CaseDetailReminders } from '../components/case-detail/info/CaseDetailReminders';
+import { useToast } from '../contexts/ToastContext';
 import { Case, ReminderItem } from '../types';
 import { getReminderStatus } from '../utils';
 
@@ -11,9 +13,16 @@ type SortOption = 'time_asc' | 'createdAt_desc' | 'updatedAt_desc';
 
 export default function SchedulePage() {
   const { data: cases = [], isLoading } = useCases();
+  const updateCaseMutation = useUpdateCaseMutation();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  
   const [sortOrder, setSortOrder] = useState<SortOption>('time_asc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  // Accordion state
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
   // 모든 리마인더 평탄화 (FlatMap) 및 오늘 날짜 필터링
   const todayReminders = useMemo(() => {
@@ -115,13 +124,18 @@ export default function SchedulePage() {
             else if (type === '방문미팅') typeColor = 'bg-purple-50 text-purple-700 border-purple-200';
             else if (type === '입금') typeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
 
+            const isExpanded = expandedCardId === item.reminder.id;
+
             return (
-              <Link
+              <div
                 key={`${item.reminder.id}-${idx}`}
-                to={`/case/${item.caseData.caseId}`}
-                className="block group glass-panel bg-white dark:bg-gray-800 hover:shadow-md transition-all rounded-xl border border-transparent hover:border-indigo-300 overflow-hidden"
+                className="group glass-panel bg-white dark:bg-gray-800 hover:shadow-md transition-all rounded-xl border border-transparent hover:border-indigo-300 overflow-hidden"
               >
-                <div className="p-4 flex flex-col md:flex-row md:items-center gap-4">
+                {/* Main Card Content (Click to navigate) */}
+                <div 
+                  className="p-4 flex flex-col md:flex-row md:items-center gap-4 cursor-pointer"
+                  onClick={() => navigate(`/case/${item.caseData.caseId}`)}
+                >
                   {/* 시간 및 타입 바지 */}
                   <div className="flex md:flex-col items-center md:items-start gap-3 md:gap-1 md:w-32 flex-shrink-0">
                     <div className="font-mono text-lg font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
@@ -142,7 +156,7 @@ export default function SchedulePage() {
                   {/* 고객 정보 및 내용 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-lg text-gray-900 dark:text-white">
+                      <span className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">
                         {item.caseData.customerName}
                       </span>
                       <span className="text-sm text-gray-500">{item.caseData.phone}</span>
@@ -168,7 +182,41 @@ export default function SchedulePage() {
                     </div>
                   </div>
                 </div>
-              </Link>
+
+                {/* Expand Toggle Button */}
+                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-center">
+                  <button 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setExpandedCardId(isExpanded ? null : item.reminder.id); 
+                    }}
+                    className="w-full py-2.5 flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                  >
+                    {isExpanded ? (
+                      <><ChevronUp size={16} /> 접기</>
+                    ) : (
+                      <><ChevronDown size={16} /> 펼쳐보기 (리마인더 및 상담 이력)</>
+                    )}
+                  </button>
+                </div>
+
+                {/* Expanded Content (CaseDetailReminders) */}
+                {isExpanded && (
+                  <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 animate-in slide-in-from-top-2 duration-200">
+                    <CaseDetailReminders
+                      reminders={item.caseData.reminders || []}
+                      memos={item.caseData.specialMemo || []}
+                      onUpdateReminders={(newReminders) => {
+                        updateCaseMutation.mutate({ id: item.caseData.caseId, updates: { reminders: newReminders } });
+                      }}
+                      onUpdateMemos={(newMemos) => {
+                        updateCaseMutation.mutate({ id: item.caseData.caseId, updates: { specialMemo: newMemos } });
+                      }}
+                      showToast={showToast}
+                    />
+                  </div>
+                )}
+              </div>
             );
           })
         )}
