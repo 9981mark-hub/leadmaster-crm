@@ -392,7 +392,8 @@ const setupRealtimeSubscription = () => {
 
         if (settings) {
           if (settings.inboundPaths) localInboundPaths = settings.inboundPaths;
-          if (settings.statuses) localStatuses = settings.statuses;
+          if (settings.statusStages) localStatuses = settings.statusStages;
+          else if (settings.statuses) localStatuses = settings.statuses;
           if (settings.secondaryStatuses) localSecondaryStatuses = settings.secondaryStatuses;
           if (settings.tertiaryStatuses) localTertiaryStatuses = settings.tertiaryStatuses;
           console.log('[Realtime] Settings refreshed');
@@ -466,7 +467,8 @@ const performBackgroundFetch = async () => {
       if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
       else if (localInboundPaths.length === 0) localInboundPaths = [...MOCK_INBOUND_PATHS];
 
-      if (settingsData.statuses) localStatuses = settingsData.statuses;
+      if (settingsData.statusStages) localStatuses = settingsData.statusStages;
+      else if (settingsData.statuses) localStatuses = settingsData.statuses;
       else if (localStatuses.length === 0) localStatuses = [...DEFAULT_STATUS_LIST];
 
       // [NEW] Load secondary statuses from server
