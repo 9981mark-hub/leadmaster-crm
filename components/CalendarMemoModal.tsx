@@ -12,6 +12,14 @@ interface CalendarMemoModalProps {
     editingMemo?: CalendarMemo | null;
 }
 
+const REPEAT_OPTIONS = [
+    { value: 'none', label: '반복 안함' },
+    { value: 'weekly', label: '매주' },
+    { value: 'monthly', label: '매월' },
+    { value: 'yearly', label: '매년 (양력)' },
+    { value: 'lunar_yearly', label: '매년 (음력)' },
+];
+
 const COLORS: { value: CalendarMemo['color']; label: string; className: string }[] = [
     { value: 'blue', label: '파랑', className: 'bg-blue-500' },
     { value: 'green', label: '초록', className: 'bg-green-500' },
@@ -45,6 +53,7 @@ export default function CalendarMemoModal({
     const [color, setColor] = useState<CalendarMemo['color']>('blue');
     const [hasNotification, setHasNotification] = useState(false);
     const [notifyMinutesBefore, setNotifyMinutesBefore] = useState(30);
+    const [repeatType, setRepeatType] = useState<'none' | 'weekly' | 'monthly' | 'yearly' | 'lunar_yearly'>('none');
 
     useEffect(() => {
         if (editingMemo) {
@@ -56,6 +65,7 @@ export default function CalendarMemoModal({
             setColor(editingMemo.color || 'blue');
             setHasNotification(editingMemo.hasNotification || false);
             setNotifyMinutesBefore(editingMemo.notifyMinutesBefore || 30);
+            setRepeatType(editingMemo.repeatType || 'none');
         } else {
             setTitle('');
             setContent('');
@@ -65,6 +75,7 @@ export default function CalendarMemoModal({
             setColor('blue');
             setHasNotification(false);
             setNotifyMinutesBefore(30);
+            setRepeatType('none');
         }
     }, [editingMemo, initialDate, isOpen]);
 
@@ -80,6 +91,7 @@ export default function CalendarMemoModal({
             isAllDay,
             hasNotification,
             notifyMinutesBefore: hasNotification ? notifyMinutesBefore : undefined,
+            repeatType: repeatType === 'none' ? undefined : repeatType,
         });
     };
 
@@ -113,15 +125,29 @@ export default function CalendarMemoModal({
                         />
                     </div>
 
-                    {/* Date */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                    {/* Date and Repeat */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                            <input
+                                type="date"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">반복 설정</label>
+                            <select
+                                value={repeatType}
+                                onChange={(e) => setRepeatType(e.target.value as any)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                {REPEAT_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     {/* All Day Toggle */}

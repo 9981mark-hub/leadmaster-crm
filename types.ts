@@ -479,6 +479,7 @@ export interface CalendarMemo {
   isAllDay?: boolean;
   hasNotification?: boolean;
   notifyMinutesBefore?: number;   // 몇 분 전 알림
+  repeatType?: 'none' | 'weekly' | 'monthly' | 'yearly' | 'lunar_yearly'; // 반복 주기
   createdAt: string;
   updatedAt: string;
 }

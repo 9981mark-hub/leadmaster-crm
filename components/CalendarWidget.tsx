@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { fetchCalendarMemos, createCalendarMemo, updateCalendarMemo, deleteCalendarMemo } from '../services/calendarMemoService';
 import { fetchKoreanHolidays, HolidayEvent, downloadICS } from '../services/icsService';
 import CalendarMemoModal from './CalendarMemoModal';
+import KoreanLunarCalendar from 'korean-lunar-calendar';
 
 interface CalendarWidgetProps {
   cases: Case[];
@@ -377,17 +378,87 @@ export default function CalendarWidget({
 
     // 4. User memos
     if (filters.memo) {
+      const startYear = currentDate.getFullYear() - 1;
+      const endYear = currentDate.getFullYear() + 2;
+      const viewStart = new Date(startYear, 0, 1);
+      const viewEnd = new Date(endYear, 11, 31);
+
       memos.forEach(m => {
-        events.push({
-          id: `memo-${m.id}`,
-          type: 'memo',
-          date: m.date,
-          time: m.time,
-          title: m.title,
-          subtitle: m.content?.substring(0, 20),
-          color: m.color || 'purple',
-          icon: <Edit size={12} />
-        });
+        if (!m.repeatType || m.repeatType === 'none') {
+          events.push({
+            id: `memo-${m.id}`,
+            type: 'memo',
+            date: m.date,
+            time: m.time,
+            title: m.title,
+            subtitle: m.content?.substring(0, 20),
+            color: m.color || 'purple',
+            icon: <Edit size={12} />
+          });
+        } else {
+          const memoDateObj = parseISO(m.date);
+          const memoYear = memoDateObj.getFullYear();
+          const memoMonth = memoDateObj.getMonth();
+          const memoDay = memoDateObj.getDate();
+          let occurrences: string[] = [];
+
+          if (m.repeatType === 'weekly') {
+            let cur = memoDateObj;
+            if (isBefore(cur, viewStart)) {
+                const diffWeeks = Math.floor((viewStart.getTime() - cur.getTime()) / (7 * 24 * 60 * 60 * 1000));
+                cur = addWeeks(cur, diffWeeks);
+                while (isBefore(cur, viewStart)) cur = addWeeks(cur, 1);
+            }
+            while (isBefore(cur, viewEnd) || isSameDay(cur, viewEnd)) {
+                occurrences.push(format(cur, 'yyyy-MM-dd'));
+                cur = addWeeks(cur, 1);
+            }
+          } else if (m.repeatType === 'monthly') {
+            const startY = Math.max(memoYear, startYear);
+            for (let y = startY; y <= endYear; y++) {
+                for (let mo = (y === memoYear ? memoMonth : 0); mo < 12; mo++) {
+                    const d = new Date(y, mo, memoDay);
+                    if (d.getMonth() === mo) {
+                        occurrences.push(format(d, 'yyyy-MM-dd'));
+                    }
+                }
+            }
+          } else if (m.repeatType === 'yearly') {
+            const startY = Math.max(memoYear, startYear);
+            for (let y = startY; y <= endYear; y++) {
+                const d = new Date(y, memoMonth, memoDay);
+                if (d.getMonth() === memoMonth) {
+                    occurrences.push(format(d, 'yyyy-MM-dd'));
+                }
+            }
+          } else if (m.repeatType === 'lunar_yearly') {
+            const startY = Math.max(memoYear, startYear);
+            const lunarMonth = memoMonth + 1;
+            const lunarDay = memoDay;
+            const calendar = new KoreanLunarCalendar();
+            for (let y = startY; y <= endYear; y++) {
+                calendar.setLunarDate(y, lunarMonth, lunarDay, false);
+                const solar = calendar.getSolarCalendar();
+                if (solar && solar.year && solar.month && solar.day) {
+                    const d = new Date(solar.year, solar.month - 1, solar.day);
+                    occurrences.push(format(d, 'yyyy-MM-dd'));
+                }
+            }
+          }
+
+          occurrences.forEach((occDate, idx) => {
+            events.push({
+              id: `memo-${m.id}-${idx}`,
+              type: 'memo',
+              date: occDate,
+              time: m.time,
+              title: m.title + (m.repeatType === 'lunar_yearly' ? ' (음력)' : ''),
+              subtitle: m.content?.substring(0, 20),
+              color: m.color || 'purple',
+              icon: <Edit size={12} />
+            });
+          });
+        }
       });
     }
 

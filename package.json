@@ -26,6 +26,7 @@
     "framer-motion": "^12.29.2",
     "ical.js": "^2.2.1",
     "jwt-decode": "^4.0.0",
+    "korean-lunar-calendar": "^0.3.6",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
