@@ -698,7 +698,8 @@ export default function CalendarWidget({
                   className={`flex items-center gap-3 p-3 rounded-lg border ${getColorClass(ev.color, 'border')} ${getColorClass(ev.color, 'bg')} cursor-pointer hover:opacity-80`}
                   onClick={() => {
                     if (ev.type === 'memo' && ev.id.startsWith('memo-')) {
-                      handleEditMemo(ev.id.replace('memo-', ''));
+                      const memoId = ev.id.replace('memo-', '').replace(/-\d+$/, '');
+                      handleEditMemo(memoId);
                     }
                   }}
                 >
@@ -838,7 +839,8 @@ export default function CalendarWidget({
                           onClick={(e) => {
                             e.stopPropagation();
                             if (ev.type === 'memo') {
-                              handleEditMemo(ev.id.replace('memo-', ''));
+                              const memoId = ev.id.replace('memo-', '').replace(/-\d+$/, '');
+                              handleEditMemo(memoId);
                             }
                           }}
                           className={`text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1
