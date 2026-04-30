@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, TouchEvent } from 'react';
 import { createCase, updateCase, fetchCases, fetchInboundPaths, fetchPartners, markCaseAsSeen } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { formatPhone, CASE_TYPES, MANAGER_NAME } from '../constants';
-import { ChevronRight, ChevronLeft, Save, Plus, Trash2, Building, User, Briefcase, Home, Wallet, MessageSquare, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Save, Plus, Trash2, Building, User, Briefcase, Home, Wallet, MessageSquare, AlertCircle } from 'lucide-react';
 import { JOB_TYPES, HOUSING_TYPES, HOUSING_DETAILS, ASSET_TYPES, ASSET_OWNERS, RENT_CONTRACTORS, HISTORY_TYPES, FREE_HOUSING_OWNERS } from '../constants';
 import { normalizeBirthYear, checkIsDuplicate } from '../utils';
 import { AssetItem, Partner, CreditLoanItem, Case } from '../types';
@@ -105,15 +105,8 @@ export default function NewCase() {
   const [searchParams] = useSearchParams();
   const leadId = searchParams.get('leadId');
   const { showToast } = useToast();
-  const [step, setStep] = useState(1);
   const [inboundPaths, setInboundPaths] = useState<string[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
-
-  // Swipe gesture state
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
-  const isSwiping = useRef<boolean>(false);
-  const SWIPE_THRESHOLD = 80; // Minimum distance for swipe
 
   const [formData, setFormData] = useState<any>({
     partnerId: '',
@@ -133,17 +126,8 @@ export default function NewCase() {
   const [newAsset, setNewAsset] = useState<Partial<AssetItem>>({ owner: '본인', type: '자동차', amount: 0, loanAmount: 0, desc: '' });
   const [newCreditLoan, setNewCreditLoan] = useState<Partial<CreditLoanItem>>({ amount: 0, desc: '' });
 
-  // [Added] Duplicate Check State
   const [allCases, setAllCases] = useState<Case[]>([]);
   const [duplicateCase, setDuplicateCase] = useState<Case | undefined>(undefined);
-
-  // [NEW] PC/Mobile responsive detection
-  const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' && window.innerWidth >= 768);
-  useEffect(() => {
-    const handler = () => setIsDesktop(window.innerWidth >= 768);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -269,40 +253,7 @@ export default function NewCase() {
     handleChange('creditLoan', formData.creditLoan.filter((l: CreditLoanItem) => l.id !== id));
   };
 
-  // Swipe gesture handlers
-  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchEndX.current = e.touches[0].clientX; // Reset to prevent tap-as-swipe
-    isSwiping.current = true;
-  };
 
-  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
-    if (!isSwiping.current) return;
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!isSwiping.current) return;
-    isSwiping.current = false;
-
-    const swipeDistance = touchStartX.current - touchEndX.current;
-
-    // Swipe left -> Next step
-    if (swipeDistance > SWIPE_THRESHOLD && step < 5) {
-      setStep(prev => prev + 1);
-    }
-    // Swipe right -> Previous step
-    else if (swipeDistance < -SWIPE_THRESHOLD && step > 1) {
-      setStep(prev => prev - 1);
-    }
-
-    // Reset
-    touchStartX.current = 0;
-    touchEndX.current = 0;
-  };
-
-  const handleNext = () => setStep(prev => prev + 1);
-  const handleBack = () => setStep(prev => prev - 1);
 
   const handleSubmit = async () => {
     try {
@@ -663,7 +614,7 @@ export default function NewCase() {
   const renderSectionFinish = () => (
     <div>
       <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3">
-        <MessageSquare size={20} className="text-indigo-500" /> {isDesktop ? '상담 특이사항' : '마무리'}
+        <MessageSquare size={20} className="text-indigo-500" /> 상담 특이사항
       </h3>
       <div className="mb-5">
         <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">상담 특이사항</label>
@@ -683,105 +634,47 @@ export default function NewCase() {
     </button>
   );
 
-  // ===== PC Layout =====
-  if (isDesktop) {
-    return (
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">신규 상담 입력</h2>
-            <p className="text-sm text-gray-500 mt-1">모든 항목을 한 페이지에서 입력할 수 있습니다.</p>
-          </div>
-          {renderSaveButton()}
-        </div>
-
-        {/* 2-Column Grid */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-6">
-            <div className="bg-white md:bg-[#f8fafc] p-6 md:p-5 rounded-xl md:rounded-lg shadow-sm md:shadow-none border border-gray-100 md:border-slate-200">
-              {renderSectionBasicInfo()}
-            </div>
-            <div className="bg-white md:bg-[#f8fafc] p-6 md:p-5 rounded-xl md:rounded-lg shadow-sm md:shadow-none border border-gray-100 md:border-slate-200">
-              {renderSectionJobFamily()}
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            <div className="bg-white md:bg-[#f8fafc] p-6 md:p-5 rounded-xl md:rounded-lg shadow-sm md:shadow-none border border-gray-100 md:border-slate-200">
-              {renderSectionHousing()}
-            </div>
-            <div className="bg-white md:bg-[#f8fafc] p-6 md:p-5 rounded-xl md:rounded-lg shadow-sm md:shadow-none border border-gray-100 md:border-slate-200">
-              {renderSectionAssets()}
-            </div>
-          </div>
-        </div>
-
-        {/* Full-width: Finish Section */}
-        <div className="mt-6 bg-white md:bg-[#f8fafc] p-6 md:p-5 rounded-xl md:rounded-lg shadow-sm md:shadow-none border border-gray-100 md:border-slate-200">
-          {renderSectionFinish()}
-          <div className="bg-blue-50 p-4 rounded-lg mt-2">
-            <p className="text-sm text-blue-800 font-medium text-center">작성을 완료하고 케이스를 생성합니다.</p>
-          </div>
-        </div>
-
-        {/* Bottom Save */}
-        <div className="flex justify-end mt-6 pt-4 border-t border-gray-100">
-          {renderSaveButton()}
-        </div>
-      </div>
-    );
-  }
-
-  // ===== Mobile Layout (Existing Step Wizard) =====
+  // ===== Responsive Single Layout (Matching CaseDetail) =====
   return (
-    <div className="max-w-xl mx-auto bg-[#f8fafc] p-6 rounded-lg shadow-sm border border-slate-200">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-800">신규 상담 입력</h2>
-        <div className="flex gap-1 mt-2">
-          {[1, 2, 3, 4, 5].map(s => (
-            <div key={s} className={`h-1 flex-1 rounded-full ${s <= step ? 'bg-blue-600' : 'bg-gray-200'}`} />
-          ))}
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header / Nav */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors">
+            <ArrowLeft size={20} />
+          </button>
+          <span className="font-bold text-gray-700 text-lg">신규 상담 입력</span>
+        </div>
+        <div className="flex gap-2">
+          {renderSaveButton()}
         </div>
       </div>
 
-      <div
-        className="min-h-[300px]"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {step === 1 && renderSectionBasicInfo()}
-        {step === 2 && renderSectionJobFamily()}
-        {step === 3 && renderSectionHousing()}
-        {step === 4 && renderSectionAssets()}
-        {step === 5 && (
-          <div>
-            {renderSectionFinish()}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-800 font-medium text-center">작성을 완료하고 케이스를 생성합니다.</p>
-            </div>
+      <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 min-h-[600px] space-y-8">
+          <div className="grid md:grid-cols-2 gap-8">
+            {renderSectionBasicInfo()}
+            {renderSectionJobFamily()}
           </div>
-        )}
-      </div>
 
-      <div className="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-200">
-        {step > 1 ? (
-          <button onClick={handleBack} className="flex-shrink-0 whitespace-nowrap flex items-center text-gray-600 font-medium px-4 py-2 hover:bg-gray-100 rounded text-sm transition-colors border border-gray-300 bg-white shadow-sm">
-            <ChevronLeft size={16} /> 이전
-          </button>
-        ) : <div />}
+          <hr className="border-gray-100 dark:border-gray-800" />
 
-        <div className="flex-1 flex justify-end">
-          {step < 5 ? (
-            <button onClick={handleNext} className="flex items-center bg-blue-600 text-white px-5 py-2 rounded font-medium hover:bg-blue-700 text-sm shadow-none transition-colors">
-              다음 <ChevronRight size={16} />
-            </button>
-          ) : (
-            renderSaveButton()
-          )}
+          <div className="grid md:grid-cols-2 gap-8">
+            {renderSectionHousing()}
+            {renderSectionAssets()}
+          </div>
+
+          <hr className="border-gray-100 dark:border-gray-800" />
+
+          {renderSectionFinish()}
+
+          <div className="bg-blue-50 p-4 rounded-lg mt-2">
+            <p className="text-sm text-blue-800 font-medium text-center">모든 항목 작성을 완료한 후 저장하여 케이스를 생성하세요.</p>
+          </div>
+
+          <div className="flex justify-end mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+            {renderSaveButton()}
+          </div>
         </div>
       </div>
     </div>
