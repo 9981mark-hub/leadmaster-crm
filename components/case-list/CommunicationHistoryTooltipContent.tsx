@@ -25,23 +25,23 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'incoming_call': return <PhoneIncoming size={14} className="text-blue-400" />;
-            case 'outgoing_call': return <PhoneOutgoing size={14} className="text-green-400" />;
-            case 'missed_call': return <PhoneMissed size={14} className="text-red-400" />;
-            case 'incoming_sms': return <MessageSquare size={14} className="text-blue-400" />;
-            case 'outgoing_sms': return <MessageSquare size={14} className="text-green-400" />;
+            case 'CALL_IN': return <PhoneIncoming size={14} className="text-blue-400" />;
+            case 'CALL_OUT': return <PhoneOutgoing size={14} className="text-green-400" />;
+            case 'CALL_MISSED': return <PhoneMissed size={14} className="text-red-400" />;
+            case 'SMS_IN': return <MessageSquare size={14} className="text-blue-400" />;
+            case 'SMS_OUT': return <MessageSquare size={14} className="text-green-400" />;
             default: return <Phone size={14} />;
         }
     };
 
     const getLabel = (type: string) => {
         switch (type) {
-            case 'incoming_call': return '수신 통화';
-            case 'outgoing_call': return '발신 통화';
-            case 'missed_call': return '부재중 통화';
-            case 'incoming_sms': return '수신 문자';
-            case 'outgoing_sms': return '발신 문자';
-            default: return '알 수 없음';
+            case 'CALL_IN': return '수신 통화';
+            case 'CALL_OUT': return '발신 통화';
+            case 'CALL_MISSED': return '부재중 통화';
+            case 'SMS_IN': return '수신 문자';
+            case 'SMS_OUT': return '발신 문자';
+            default: return type;
         }
     };
 
@@ -66,9 +66,10 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
                         </span>
                     </div>
                     
-                    {log.duration !== undefined && log.duration > 0 && log.type.includes('call') && (
-                        <div className="text-gray-300 mt-1">
-                            통화 시간: {formatDuration(log.duration)}
+                    
+                    {log.duration !== undefined && log.duration > 0 && log.type.startsWith('CALL') && (
+                        <div className="text-gray-300 mt-1 font-medium bg-gray-700/30 inline-block px-1.5 py-0.5 rounded text-[11px]">
+                            ⏱ 통화 시간: {formatDuration(log.duration)}
                         </div>
                     )}
                     
