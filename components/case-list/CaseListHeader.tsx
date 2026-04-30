@@ -116,28 +116,30 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                 </div>
             )}
 
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    케이스 관리
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex flex-wrap items-center gap-2">
+                    <span className="whitespace-nowrap">케이스 관리</span>
                     {showNewOnly && (
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200 cursor-pointer hover:bg-red-200" onClick={() => { setShowNewOnly(false); onResetPage(); }}>
+                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200 cursor-pointer hover:bg-red-200 whitespace-nowrap" onClick={() => { setShowNewOnly(false); onResetPage(); }}>
                             필터링됨: 신규 접수 건 <span className="ml-1 font-bold">×</span>
                         </span>
                     )}
                     {showOverdueMissedOnly && (
-                        <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full border border-orange-200 cursor-pointer hover:bg-orange-200" onClick={() => { setShowOverdueMissedOnly(false); onResetPage(); }}>
+                        <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full border border-orange-200 cursor-pointer hover:bg-orange-200 whitespace-nowrap" onClick={() => { setShowOverdueMissedOnly(false); onResetPage(); }}>
                             필터링됨: 재통화 필요 <span className="ml-1 font-bold">×</span>
                         </span>
                     )}
                 </h2>
-                <div className="flex items-center gap-1.5">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">총 {totalItems}건</span>
-                    {totalPages > 1 && (
-                        <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">({currentPage}/{totalPages}p)</span>
-                    )}
+                <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">총 {totalItems}건</span>
+                        {totalPages > 1 && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
+                        )}
+                    </div>
                     <button
                         onClick={onExportClick}
-                        className="ml-2 px-3 py-1.5 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition-colors shadow-sm flex items-center gap-1"
+                        className="px-3 py-1.5 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap"
                     >
                         데이터 내보내기
                     </button>
