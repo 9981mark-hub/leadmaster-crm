@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 interface HoverCheckTooltipProps {
     trigger: React.ReactNode;
-    content: React.ReactNode;
+    content: React.ReactNode | (() => React.ReactNode);
     delay?: number; // ms to wait before showing
     className?: string; // wrapper class
     mobileAlign?: 'left' | 'right';
@@ -148,7 +148,7 @@ export default function HoverCheckTooltip({
                     <div className="relative">
                         {/* Triangle Arrow */}
                         <div className={`absolute -top-[18px] border-8 border-transparent border-b-gray-900/90 ${getArrowClasses()}`} />
-                        {content}
+                        {typeof content === 'function' ? content() : content}
                     </div>
                 </div>
             )}
