@@ -17,7 +17,7 @@ interface CaseListHeaderProps {
     newLeadsCount: number;
     onManualRefresh: () => void;
     onResetPage: () => void;
-    onExportSpecialCases: () => void;
+    onExportClick: () => void;
 }
 
 export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
@@ -35,7 +35,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     newLeadsCount,
     onManualRefresh,
     onResetPage,
-    onExportSpecialCases
+    onExportClick
 }) => {
     return (
         <div className="space-y-4">
@@ -95,12 +95,6 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                     >
                         확인하기
                     </button>
-                    <button
-                        className="ml-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-colors"
-                        onClick={onExportSpecialCases}
-                    >
-                        특수 케이스 내보내기
-                    </button>
                 </div>
             )}
 
@@ -141,6 +135,12 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                     {totalPages > 1 && (
                         <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">({currentPage}/{totalPages}p)</span>
                     )}
+                    <button
+                        onClick={onExportClick}
+                        className="ml-2 px-3 py-1.5 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition-colors shadow-sm flex items-center gap-1"
+                    >
+                        데이터 내보내기
+                    </button>
                 </div>
             </div>
         </div>

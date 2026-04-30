@@ -17,6 +17,7 @@ import { CaseListHeader } from '../components/case-list/CaseListHeader';
 import { CaseListFilter } from '../components/case-list/CaseListFilter';
 import { CaseListTable } from '../components/case-list/CaseListTable';
 import { CaseListPagination } from '../components/case-list/CaseListPagination';
+import { ExportCaseModal } from '../components/case-list/ExportCaseModal';
 
 export default function CaseList() {
     const navigate = useNavigate();
@@ -35,6 +36,7 @@ export default function CaseList() {
 
     // State
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
     const [layoutMode, setLayoutMode] = useState<'list' | 'kanban'>('list');
 
@@ -472,7 +474,7 @@ export default function CaseList() {
                     refetchCases();
                 }}
                 onResetPage={() => setCurrentPage(1)}
-                onExportSpecialCases={() => exportSpecialCases(cases)}
+                onExportClick={() => setIsExportModalOpen(true)}
             />
 
             <CaseListFilter
@@ -512,6 +514,14 @@ export default function CaseList() {
                 onSuccess={() => { refetchCases(); setCurrentPage(1); }}
                 partners={partners}
                 inboundPaths={inboundPaths}
+            />
+
+            <ExportCaseModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                allCases={cases}
+                currentListCases={filteredCases}
+                statuses={statuses}
             />
 
             {layoutMode === 'kanban' ? (

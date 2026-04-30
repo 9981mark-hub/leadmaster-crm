@@ -59,8 +59,59 @@ export const formatDateForExcel = (dateString?: string) => {
 };
 
 /**
- * Format currency for Excel
+ * Export custom cases based on modal selection
  */
+export const exportCustomCases = (cases: Case[], filename: string = 'cases_export', targetType: 'all' | 'special' | 'current', selectedStatuses: string[], dateType: 'createdAt' | 'contractAt', dateRange: 'all' | 'month' | 'custom', selectedMonth: string, customStartDate: string, customEndDate: string) => {
+    
+    let filtered = [...cases];
+
+    // 1. Target Scope
+    if (targetType === 'special') {
+        const specialStatuses = ['부재', '진행불가', '고객취소'];
+        filtered = filtered.filter(c => specialStatuses.includes(c.status));
+    }
+
+    // 2. Status Filter
+    if (selectedStatuses.length > 0) {
+        filtered = filtered.filter(c => selectedStatuses.includes(c.status));
+    }
+
+    // 3. Date Range
+    if (dateRange !== 'all') {
+        filtered = filtered.filter(c => {
+            const dateStr = dateType === 'contractAt' ? c.contractAt : c.createdAt;
+            if (!dateStr) return false;
+            
+            const caseDate = dateStr.split('T')[0];
+            
+            if (dateRange === 'month' && selectedMonth) {
+                return caseDate.startsWith(selectedMonth);
+            }
+            
+            if (dateRange === 'custom') {
+                if (customStartDate && caseDate < customStartDate) return false;
+                if (customEndDate && caseDate > customEndDate) return false;
+                return true;
+            }
+            return true;
+        });
+    }
+
+    // Map to export data format (can be expanded later)
+    const data = filtered.map(c => ({
+        등록일: formatDateForExcel(c.createdAt),
+        계약일: formatDateForExcel(c.contractAt),
+        상태: c.status,
+        고객명: c.customerName,
+        연락처: c.phone,
+        유입경로: c.inboundPath ?? '',
+        사전정보: c.preInfo ?? '',
+        수임료: formatCurrencyForExcel(c.contractFee),
+    }));
+
+    exportToExcel(filename, data);
+};
+
 export const formatCurrencyForExcel = (amount?: number) => {
     if (amount === undefined || amount === null) return 0;
     return amount;
