@@ -463,7 +463,7 @@ export default function NewCase() {
 
       {formData.housingType === '자가' ? (
         <>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-4">
             <Input label="집 시세" value={formData.ownHousePrice} onChange={(v: any) => handleChange('ownHousePrice', v)} type="number" suffix="만원" isCurrency={true} />
             <Input label="집 담보 대출" value={formData.ownHouseLoan} onChange={(v: any) => handleChange('ownHouseLoan', v)} type="number" suffix="만원" isCurrency={true} />
           </div>
@@ -473,7 +473,7 @@ export default function NewCase() {
         <Select label="집 명의자" value={formData.freeHousingOwner} onChange={(v: any) => handleChange('freeHousingOwner', v)} options={FREE_HOUSING_OWNERS} />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-4">
             <Input label="보증금" value={formData.deposit} onChange={(v: any) => handleChange('deposit', v)} type="number" suffix="만원" isCurrency={true} />
             {isFieldVisible('depositLoan') && (
               <Input label="보증금 대출" value={formData.depositLoanAmount} onChange={(v: any) => handleChange('depositLoanAmount', v)} type="number" suffix="만원" isCurrency={true} />
@@ -507,30 +507,34 @@ export default function NewCase() {
           {/* Subtle accent border top */}
           <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/20"></div>
           <h4 className="font-bold text-gray-800 dark:text-gray-100 mb-4 text-[13px] flex items-center gap-1.5"><AlertCircle size={14} className="text-indigo-500" />자산 목록 (본인/배우자 포함)</h4>
-          <div className="space-y-2 mb-3">
+          <div className="space-y-3 mb-4">
             {formData.assets.length === 0 && <p className="text-xs text-gray-400 text-center py-2">등록된 자산이 없습니다.</p>}
             {formData.assets.map((asset: AssetItem) => (
-              <div key={asset.id} className="bg-white p-2 rounded border flex justify-between items-center text-sm">
-                <div className="flex-1">
-                  <span className="font-bold text-blue-600 mr-2">[{asset.owner}]</span>
-                  <span className="font-semibold mr-2">{asset.type}</span>
-                  <span className="text-gray-800 mr-2">시세 {asset.amount > 0 ? `${asset.amount.toLocaleString()}만원` : '0원'}</span>
-                  {asset.loanAmount > 0 && <span className="text-red-500 mr-2">담보 {asset.loanAmount.toLocaleString()}만원</span>}
-                  {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-orange-600 mr-2">전세금 {asset.rentDeposit.toLocaleString()}만원</span>}
+              <div key={asset.id} className="bg-white p-3.5 rounded-xl border flex justify-between items-center text-sm shadow-sm">
+                <div className="flex flex-col sm:flex-row flex-1 gap-1">
+                  <div>
+                    <span className="font-bold text-blue-600 mr-2">[{asset.owner}]</span>
+                    <span className="font-semibold mr-2">{asset.type}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-2 text-[13px] sm:text-sm mt-1 sm:mt-0">
+                    <span className="text-gray-800">시세 {asset.amount > 0 ? `${asset.amount.toLocaleString()}만원` : '0원'}</span>
+                    {asset.loanAmount > 0 && <span className="text-red-500">담보 {asset.loanAmount.toLocaleString()}만원</span>}
+                    {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-orange-600">전세금 {asset.rentDeposit.toLocaleString()}만원</span>}
+                  </div>
                 </div>
-                <button type="button" onClick={() => handleRemoveAsset(asset.id)} className="text-red-500 p-1"><Trash2 size={16} /></button>
+                <button type="button" onClick={() => handleRemoveAsset(asset.id)} className="text-red-500 p-2 ml-2 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <select className="p-2 border rounded text-sm bg-white" value={newAsset.owner} onChange={e => setNewAsset({ ...newAsset, owner: e.target.value as any })}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+            <select className="p-3 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200" value={newAsset.owner} onChange={e => setNewAsset({ ...newAsset, owner: e.target.value as any })}>
               {ASSET_OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
-            <select className="p-2 border rounded text-sm bg-white" value={newAsset.type} onChange={e => setNewAsset({ ...newAsset, type: e.target.value })}>
+            <select className="p-3 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200" value={newAsset.type} onChange={e => setNewAsset({ ...newAsset, type: e.target.value })}>
               {ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-4">
             <Input label="시세" value={newAsset.amount} onChange={(v: any) => setNewAsset({ ...newAsset, amount: v })} type="number" suffix="만원" isCurrency={true} placeholder="시세" />
             <Input label="담보대출" value={newAsset.loanAmount} onChange={(v: any) => setNewAsset({ ...newAsset, loanAmount: v })} type="number" suffix="만원" isCurrency={true} placeholder="담보대출" />
           </div>
@@ -539,10 +543,10 @@ export default function NewCase() {
               <Input label="전세금액" value={newAsset.rentDeposit} onChange={(v: any) => setNewAsset({ ...newAsset, rentDeposit: v })} type="number" suffix="만원" isCurrency={true} placeholder="전세금액" />
             </div>
           )}
-          <div className="flex gap-2 mb-2">
-            <input type="text" placeholder="상세 내용 (예: 차종 등)" className="flex-1 px-3.5 py-3 border border-transparent rounded-xl text-sm shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500" value={newAsset.desc || ''} onChange={e => setNewAsset({ ...newAsset, desc: e.target.value })} />
-            <button type="button" onClick={handleAddAsset} className="w-24 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20 text-sm font-bold flex justify-center items-center hover:bg-indigo-700 transition-all">
-              <Plus size={16} className="mr-1" /> 추가
+          <div className="flex flex-col sm:flex-row gap-2 mb-2">
+            <input type="text" placeholder="상세 내용 (예: 차종 등)" className="w-full sm:flex-1 px-3.5 py-3.5 border border-transparent rounded-xl text-sm shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500" value={newAsset.desc || ''} onChange={e => setNewAsset({ ...newAsset, desc: e.target.value })} />
+            <button type="button" onClick={handleAddAsset} className="w-full sm:w-28 py-3.5 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20 text-sm font-bold flex justify-center items-center hover:bg-indigo-700 transition-all">
+              <Plus size={16} className="mr-1" /> 자산 추가
             </button>
           </div>
         </div>
@@ -552,23 +556,27 @@ export default function NewCase() {
         {/* Subtle accent border top */}
         <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/20"></div>
         <h4 className="font-bold text-gray-800 dark:text-gray-100 mb-4 text-[13px] flex items-center gap-1.5"><AlertCircle size={14} className="text-rose-500" />신용대출 목록</h4>
-        <div className="space-y-2 mb-3">
+          <div className="space-y-3 mb-4">
           {(formData.creditLoan || []).length === 0 && <p className="text-xs text-gray-400 text-center py-2">등록된 신용대출이 없습니다.</p>}
           {formData.creditLoan?.map((loan: CreditLoanItem) => (
-            <div key={loan.id} className="bg-white p-2 rounded border flex justify-between items-center text-sm">
-              <div className="flex-1">
+            <div key={loan.id} className="bg-white p-3.5 rounded-xl border flex justify-between items-center text-sm shadow-sm">
+              <div className="flex flex-col sm:flex-row flex-1 gap-1">
                 <span className="font-semibold mr-2">{loan.desc}</span>
                 <span className="text-gray-800">{loan.amount.toLocaleString()}만원</span>
               </div>
-              <button type="button" onClick={() => handleRemoveCreditLoan(loan.id)} className="text-red-500 p-1"><Trash2 size={16} /></button>
+              <button type="button" onClick={() => handleRemoveCreditLoan(loan.id)} className="text-red-500 p-2 ml-2 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-2 mb-2">
-          <input type="text" placeholder="대출 내용 (예: 햇살론)" className="w-full px-3.5 py-3 border border-transparent rounded-xl text-sm shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all col-span-2 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500" value={newCreditLoan.desc || ''} onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })} />
-          <Input label="금액" value={newCreditLoan.amount} onChange={(v: any) => setNewCreditLoan({ ...newCreditLoan, amount: v })} type="number" suffix="만원" isCurrency={true} />
-          <div className="h-full flex flex-col justify-end">
-            <button type="button" onClick={handleAddCreditLoan} className="w-full py-3 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20 text-sm font-bold flex justify-center items-center hover:bg-indigo-700 transition-all mb-5">
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2 mb-2 items-end">
+          <div className="sm:col-span-2">
+            <input type="text" placeholder="대출 내용 (예: 햇살론)" className="w-full px-3.5 py-3.5 border border-transparent rounded-xl text-sm shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition-all dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500" value={newCreditLoan.desc || ''} onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })} />
+          </div>
+          <div className="w-full">
+            <Input label="금액" value={newCreditLoan.amount} onChange={(v: any) => setNewCreditLoan({ ...newCreditLoan, amount: v })} type="number" suffix="만원" isCurrency={true} />
+          </div>
+          <div className="w-full h-full flex flex-col justify-end">
+            <button type="button" onClick={handleAddCreditLoan} className="w-full py-3.5 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20 text-sm font-bold flex justify-center items-center hover:bg-indigo-700 transition-all mb-4">
               <Plus size={16} className="mr-1" /> 신용대출 추가
             </button>
           </div>
