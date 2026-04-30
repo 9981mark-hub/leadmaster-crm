@@ -282,15 +282,20 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                             </div>
 
                             <div className="flex justify-between items-center mt-1">
-                                <HoverCheckTooltip
-                                    mobileAlign="left"
-                                    trigger={
-                                        <Link to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
-                                            {c.customerName}
-                                        </Link>
-                                    }
-                                    content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
-                                />
+                                <div className="flex items-center gap-2">
+                                    <Link to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
+                                        {c.customerName}
+                                    </Link>
+                                    <HoverCheckTooltip
+                                        mobileAlign="left"
+                                        trigger={
+                                            <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full cursor-pointer active:bg-blue-100 dark:active:bg-blue-800 transition-colors">
+                                                <MessageSquare size={16} className="text-blue-500 dark:text-blue-400" />
+                                            </div>
+                                        }
+                                        content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
+                                    />
+                                </div>
                                 <div className="flex flex-col items-end gap-1">
                                     <button
                                         onClick={(e) => handlePhoneClick(e, c.customerName, c.phone)}
@@ -463,21 +468,26 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         </div>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <HoverCheckTooltip
-                                            desktopAlign="left"
-                                            trigger={
-                                                <Link
-                                                    to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
-                                                    className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                                                >
-                                                    <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
-                                                        {c.customerName}
-                                                    </span>
-                                                    {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
-                                                </Link>
-                                            }
-                                            content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
-                                        />
+                                        <div className="flex items-center gap-1.5">
+                                            <Link
+                                                to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
+                                                className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                            >
+                                                <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
+                                                    {c.customerName}
+                                                </span>
+                                                {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
+                                            </Link>
+                                            <HoverCheckTooltip
+                                                desktopAlign="left"
+                                                trigger={
+                                                    <div className="p-1 bg-blue-50 dark:bg-blue-900/30 rounded-full cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
+                                                        <MessageSquare size={13} className="text-blue-500 dark:text-blue-400" />
+                                                    </div>
+                                                }
+                                                content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
+                                            />
+                                        </div>
 
                                         {/* Hover Tooltip for Quick Memo View */}
                                         <div className="ml-1 inline-block">
