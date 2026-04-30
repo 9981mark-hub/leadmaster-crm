@@ -12,6 +12,7 @@ import { Case, MissedCallIntervalTier } from '../types';
 // React Query Hooks
 import { useCases, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
 import { restoreCase, refreshData } from '../services/api';
+import { searchCommunicationLogsPhones } from '../services/supabase';
 import { exportSpecialCases } from '../utils/xlsxExport';
 import { CaseListHeader } from '../components/case-list/CaseListHeader';
 import { CaseListFilter } from '../components/case-list/CaseListFilter';
@@ -112,6 +113,21 @@ export default function CaseList() {
     const [secondaryStatusFilter, setSecondaryStatusFilter] = useState(() => sessionStorage.getItem('lm_secondaryStatusFilter') || '');
     const [tertiaryStatusFilter, setTertiaryStatusFilter] = useState(() => sessionStorage.getItem('lm_tertiaryStatusFilter') || '');
 
+    // [NEW] SMS Content Search
+    const [matchingSmsPhones, setMatchingSmsPhones] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (search.trim().length >= 2) {
+            const timeoutId = setTimeout(async () => {
+                const phones = await searchCommunicationLogsPhones(search.trim());
+                setMatchingSmsPhones(phones);
+            }, 500); // 500ms debounce
+            return () => clearTimeout(timeoutId);
+        } else {
+            setMatchingSmsPhones([]);
+        }
+    }, [search]);
+
     // Persistence Effect
     useEffect(() => {
         sessionStorage.setItem('lm_search', search);
@@ -151,7 +167,9 @@ export default function CaseList() {
                 // 상담이력(메모) 검색
                 (c.specialMemo || []).some(m => String(m.content || '').toLowerCase().includes(searchLower)) ||
                 // 리마인더 검색
-                (c.reminders || []).some(r => String(r.content || '').toLowerCase().includes(searchLower));
+                (c.reminders || []).some(r => String(r.content || '').toLowerCase().includes(searchLower)) ||
+                // [NEW] 문자 내용 검색
+                matchingSmsPhones.includes(String(c.phone || '').replace(/[^0-9]/g, ''));
 
             const isHiddenGlobally = hiddenStatuses.includes(c.status);
             const matchesStatus = statusFilters.length === 0
@@ -199,7 +217,7 @@ export default function CaseList() {
 
             return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew && matchesSecondary && matchesTertiary;
         });
-    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, showStarredOnly, missedCallStatus, missedCallIntervalTiers, secondaryStatusFilter, tertiaryStatusFilter]);
+    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, showStarredOnly, missedCallStatus, missedCallIntervalTiers, secondaryStatusFilter, tertiaryStatusFilter, matchingSmsPhones]);
 
     const sortedCases = useMemo(() => {
         return [...filteredCases].sort((a, b) => {

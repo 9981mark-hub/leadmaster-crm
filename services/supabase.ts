@@ -615,6 +615,21 @@ export const isSupabaseEnabled = () => isSupabaseConfigured && DATA_MODE !== 'sh
 // Communication Logs & SMS
 // ============================================
 
+export const searchCommunicationLogsPhones = async (query: string): Promise<string[]> => {
+    if (!supabase || !query || query.length < 2) return [];
+    try {
+        const { data, error } = await supabase
+            .from('communication_logs')
+            .select('phone_number')
+            .ilike('content', `%${query}%`);
+        if (error) throw error;
+        return Array.from(new Set((data || []).map(r => r.phone_number)));
+    } catch (e) {
+        console.error('[Supabase] searchCommunicationLogsPhones error:', e);
+        return [];
+    }
+};
+
 export const fetchCommunicationLogsFromSupabase = async (phone: string): Promise<CommunicationLog[]> => {
     if (!supabase || !phone) return [];
     try {
