@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star } from 'lucide-react';
+import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History } from 'lucide-react';
 import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
 import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
@@ -290,7 +290,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         mobileAlign="left"
                                         trigger={
                                             <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full cursor-pointer active:bg-blue-100 dark:active:bg-blue-800 transition-colors">
-                                                <MessageSquare size={16} className="text-blue-500 dark:text-blue-400" />
+                                                <History size={16} className="text-blue-500 dark:text-blue-400" />
                                             </div>
                                         }
                                         content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
@@ -481,8 +481,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <HoverCheckTooltip
                                                 desktopAlign="left"
                                                 trigger={
-                                                    <div className="p-1 bg-blue-50 dark:bg-blue-900/30 rounded-full cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
-                                                        <MessageSquare size={13} className="text-blue-500 dark:text-blue-400" />
+                                                    <div className="p-1 bg-blue-50 dark:bg-blue-900/30 rounded-full cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors" title="통화 및 문자 기록">
+                                                        <History size={13} className="text-blue-500 dark:text-blue-400" />
                                                     </div>
                                                 }
                                                 content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
