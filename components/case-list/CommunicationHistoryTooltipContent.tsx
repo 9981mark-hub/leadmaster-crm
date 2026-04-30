@@ -54,7 +54,7 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
 
     return (
         <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-3">
-            {logs.map((log) => (
+            {[...logs].reverse().map((log) => (
                 <div key={log.id} className="bg-gray-800/50 rounded p-2 text-xs border border-gray-700/50">
                     <div className="flex justify-between items-start mb-1">
                         <div className="flex items-center gap-1.5 font-semibold">
