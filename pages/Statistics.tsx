@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, differenceInDays, parseISO } from 'date-fns';
-import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords, fetchTaxInvoices } from '../services/api';
 import { Case, Partner, CaseStatus } from '../types';
 import { calculatePayableCommission } from '../utils';
 import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle } from 'lucide-react';
@@ -305,88 +305,120 @@ export default function Statistics() {
         setAdSpendEditing(editing);
     }, [adSpendMonth, adSpendData, inboundPaths]);
 
-    const roiData = useMemo(() => {
-        let startDate: Date | null = null;
-        const now = new Date();
-        switch (periodFilter) {
-            case '1m': startDate = subMonths(now, 1); break;
-            case '3m': startDate = subMonths(now, 3); break;
-            case '6m': startDate = subMonths(now, 6); break;
-            case '1y': startDate = subMonths(now, 12); break;
-            default: startDate = null;
-        }
+    const [roiData, setRoiData] = useState<{ name: string; 리드: number; 계약: number; 수임료: number; 수수료: number; 광고비: number; CPA: number; CPC: number; ROAS: number }[]>([]);
 
-        // Aggregate ad spend for the filtered period
-        const aggregatedSpend: Record<string, number> = {};
-        Object.entries(adSpendData).forEach(([monthStr, paths]) => {
-            const monthDate = parseISO(`${monthStr}-01`);
-            if (startDate && endOfMonth(monthDate) < startDate) return; // Skip months outside filter
-
-            Object.entries(paths).forEach(([path, amount]) => {
-                aggregatedSpend[path] = (aggregatedSpend[path] || 0) + amount;
-            });
-        });
-
-        // Add Toss Ads spend (using spendExVat for purely commission-based ROI)
-        try {
-            const tossAdsRecords = fetchTossAdsRecords();
-            let tossAdsTotalSpendInManwon = 0;
-            
-            tossAdsRecords.forEach(record => {
-                if (startDate && new Date(record.date) < startDate) return; // Filter by selected period
-                // 소진비용(spendExVat) 사용!
-                tossAdsTotalSpendInManwon += Math.round(record.spendExVat / 10000);
-            });
-
-            if (tossAdsTotalSpendInManwon > 0) {
-                // 토스 경로를 찾거나 기본 키 사용
-                const tossPath = inboundPaths.find(p => p.includes('토스')) || '토스';
-                aggregatedSpend[tossPath] = (aggregatedSpend[tossPath] || 0) + tossAdsTotalSpendInManwon;
-                // inboundPaths에 없다면 임시로 추가
-                if (!inboundPaths.includes(tossPath)) {
-                    inboundPaths.push(tossPath);
-                }
+    useEffect(() => {
+        const calculateRoi = async () => {
+            let startDate: Date | null = null;
+            const now = new Date();
+            switch (periodFilter) {
+                case '1m': startDate = subMonths(now, 1); break;
+                case '3m': startDate = subMonths(now, 3); break;
+                case '6m': startDate = subMonths(now, 6); break;
+                case '1y': startDate = subMonths(now, 12); break;
+                default: startDate = null;
             }
-        } catch (e) {
-            console.error('Error integrating Toss Ads data into ROI:', e);
-        }
 
-        const pathCounts: Record<string, { leads: number; contracts: number; fee: number; commission: number; spend: number }> = {};
-        inboundPaths.forEach(p => {
-            pathCounts[p] = { leads: 0, contracts: 0, fee: 0, commission: 0, spend: aggregatedSpend[p] || 0 };
-        });
+            // Aggregate ad spend for the filtered period
+            const aggregatedSpend: Record<string, number> = {};
+            Object.entries(adSpendData).forEach(([monthStr, paths]) => {
+                const monthDate = parseISO(`${monthStr}-01`);
+                if (startDate && endOfMonth(monthDate) < startDate) return;
 
-        filteredCases.forEach(c => {
-            const path = c.inboundPath || '미분류';
-            if (!pathCounts[path]) pathCounts[path] = { leads: 0, contracts: 0, fee: 0, commission: 0, spend: 0 };
-            pathCounts[path].leads++;
-            if (c.contractAt) {
-                pathCounts[path].contracts++;
-                pathCounts[path].fee += c.contractFee || 0;
+                Object.entries(paths).forEach(([path, amount]) => {
+                    aggregatedSpend[path] = (aggregatedSpend[path] || 0) + amount;
+                });
+            });
+
+            // Add Toss Ads spend (using spendExVat for purely commission-based ROI)
+            try {
+                const tossAdsRecords = fetchTossAdsRecords();
+                let tossAdsTotalSpendInManwon = 0;
                 
-                // Calculate commission
-                const partner = partners.find(p => p.partnerId === c.partnerId);
-                if (partner) {
-                    const { payable } = calculatePayableCommission(c, partner.commissionRules, partner.settlementConfig);
-                    pathCounts[path].commission += payable;
-                }
-            }
-        });
+                tossAdsRecords.forEach(record => {
+                    if (startDate && new Date(record.date) < startDate) return;
+                    tossAdsTotalSpendInManwon += Math.round(record.spendExVat / 10000);
+                });
 
-        return Object.entries(pathCounts)
-            .filter(([_, d]) => d.leads > 0 || d.spend > 0)
-            .map(([name, d]) => ({
-                name,
-                리드: d.leads,
-                계약: d.contracts,
-                수임료: d.fee,
-                수수료: d.commission,
-                광고비: d.spend,
-                CPA: d.spend > 0 && d.leads > 0 ? Math.round(d.spend / d.leads) : 0,
-                CPC: d.spend > 0 && d.contracts > 0 ? Math.round(d.spend / d.contracts) : 0,
-                ROAS: d.spend > 0 ? Math.round((d.commission / d.spend) * 100) : 0,
-            }))
-            .sort((a, b) => b.ROAS - a.ROAS);
+                if (tossAdsTotalSpendInManwon > 0) {
+                    const tossPath = inboundPaths.find(p => p.includes('토스')) || '토스';
+                    aggregatedSpend[tossPath] = (aggregatedSpend[tossPath] || 0) + tossAdsTotalSpendInManwon;
+                    if (!inboundPaths.includes(tossPath)) {
+                        inboundPaths.push(tossPath);
+                    }
+                }
+            } catch (e) {
+                console.error('Error integrating Toss Ads data into ROI:', e);
+            }
+
+            // Add purchase invoice ad spend (매입 세금계산서 광고비 반영)
+            try {
+                const purchaseInvoices = await fetchTaxInvoices(undefined, '매입');
+                const filteredInvoices = purchaseInvoices.filter(inv => {
+                    if (!startDate) return true;
+                    return new Date(inv.issueDate) >= startDate;
+                });
+
+                const adKeywords = ['광고', '토스', 'toss', '배너', 'CPS', 'CPA', '마케팅', 'marketing'];
+                filteredInvoices.forEach(inv => {
+                    const desc = (inv.description || '').toLowerCase();
+                    const company = (inv.companyName || '').toLowerCase();
+                    const isAdSpend = adKeywords.some(k => desc.includes(k.toLowerCase()) || company.includes(k.toLowerCase()));
+                    if (isAdSpend) {
+                        let matchedPath = '';
+                        if (desc.includes('토스') || company.includes('토스') || company.includes('비바리퍼블리카') || company.includes('toss')) {
+                            matchedPath = inboundPaths.find(p => p.includes('토스')) || '토스';
+                        } else {
+                            matchedPath = inboundPaths.find(p => desc.includes(p.toLowerCase()) || company.includes(p.toLowerCase())) || '기타광고';
+                        }
+                        const amountInManwon = Math.round(inv.totalAmount / 10000);
+                        aggregatedSpend[matchedPath] = (aggregatedSpend[matchedPath] || 0) + amountInManwon;
+                    }
+                });
+            } catch (e) {
+                console.error('Error integrating purchase invoices into ROI:', e);
+            }
+
+            const pathCounts: Record<string, { leads: number; contracts: number; fee: number; commission: number; spend: number }> = {};
+            inboundPaths.forEach(p => {
+                pathCounts[p] = { leads: 0, contracts: 0, fee: 0, commission: 0, spend: aggregatedSpend[p] || 0 };
+            });
+
+            filteredCases.forEach(c => {
+                const path = c.inboundPath || '미분류';
+                if (!pathCounts[path]) pathCounts[path] = { leads: 0, contracts: 0, fee: 0, commission: 0, spend: 0 };
+                pathCounts[path].leads++;
+                if (c.contractAt) {
+                    pathCounts[path].contracts++;
+                    pathCounts[path].fee += c.contractFee || 0;
+                    
+                    const partner = partners.find(p => p.partnerId === c.partnerId);
+                    if (partner) {
+                        const { payable } = calculatePayableCommission(c, partner.commissionRules, partner.settlementConfig);
+                        pathCounts[path].commission += payable;
+                    }
+                }
+            });
+
+            const result = Object.entries(pathCounts)
+                .filter(([_, d]) => d.leads > 0 || d.spend > 0)
+                .map(([name, d]) => ({
+                    name,
+                    리드: d.leads,
+                    계약: d.contracts,
+                    수임료: d.fee,
+                    수수료: d.commission,
+                    광고비: d.spend,
+                    CPA: d.spend > 0 && d.leads > 0 ? Math.round(d.spend / d.leads) : 0,
+                    CPC: d.spend > 0 && d.contracts > 0 ? Math.round(d.spend / d.contracts) : 0,
+                    ROAS: d.spend > 0 ? Math.round((d.commission / d.spend) * 100) : 0,
+                }))
+                .sort((a, b) => b.ROAS - a.ROAS);
+
+            setRoiData(result);
+        };
+
+        calculateRoi();
     }, [filteredCases, adSpendData, inboundPaths, periodFilter, partners]);
 
     // ============ [NEW] Drop-Off Analysis ============

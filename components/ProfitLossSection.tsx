@@ -24,6 +24,7 @@ interface MonthlyPL {
 const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementData }) => {
     const [viewMode, setViewMode] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
     const [monthlyData, setMonthlyData] = useState<MonthlyPL[]>([]);
+    const [dataSource, setDataSource] = useState<'invoice' | 'settlement' | 'none'>('none');
     const [summary, setSummary] = useState({
         totalRevenue: 0,
         totalExpenses: 0,
@@ -37,7 +38,7 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
     }, [year, settlementData]);
 
     const calculatePL = async () => {
-        // 지출 데이터 가져오기
+        // 1. 지출 데이터 가져오기
         const expenses = await fetchExpenses();
         const yearExpenses = expenses.filter(e => e.date.startsWith(String(year)));
 
@@ -52,29 +53,44 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
             monthlyExpenses[month] += exp.amount;
         });
 
-        // 월별 수익 (정산 데이터 또는 세금계산서 매출)
-        const taxInvoices = await fetchTaxInvoices(year);
-        const salesInvoices = taxInvoices.filter(inv => inv.type === '매출');
+        // 2. 세금계산서 데이터 (매출 + 매입)
+        const allInvoices = await fetchTaxInvoices(year);
+        const salesInvoices = allInvoices.filter(inv => inv.type === '매출');
+        const purchaseInvoices = allInvoices.filter(inv => inv.type === '매입');
 
+        // 3. 월별 수익 결정 (세금계산서 우선 → 정산 데이터 폴백)
         const monthlyRevenue: Record<number, number> = {};
         for (let i = 1; i <= 12; i++) {
             monthlyRevenue[i] = 0;
         }
 
-        // 정산 데이터가 있으면 사용, 없으면 세금계산서 매출 사용
-        if (settlementData?.monthlyData) {
-            settlementData.monthlyData.forEach(item => {
-                const month = parseInt(item.month.replace('월', ''));
-                monthlyRevenue[month] = item.amount;
-            });
-        } else {
+        const hasInvoiceData = salesInvoices.length > 0;
+
+        if (hasInvoiceData) {
+            // ✅ 실제 세금계산서 데이터 사용 (가장 정확)
             salesInvoices.forEach(inv => {
                 const month = parseInt(inv.issueDate.split('-')[1]);
                 monthlyRevenue[month] += inv.totalAmount;
             });
+            setDataSource('invoice');
+        } else if (settlementData?.monthlyData) {
+            // 폴백: CRM 정산 데이터
+            settlementData.monthlyData.forEach(item => {
+                const month = parseInt(item.month.replace('월', ''));
+                monthlyRevenue[month] = item.amount;
+            });
+            setDataSource('settlement');
+        } else {
+            setDataSource('none');
         }
 
-        // 월별 손익 계산
+        // 4. 매입 세금계산서를 비용에 추가 (광고비 등)
+        purchaseInvoices.forEach(inv => {
+            const month = parseInt(inv.issueDate.split('-')[1]);
+            monthlyExpenses[month] += inv.totalAmount;
+        });
+
+        // 5. 월별 손익 계산
         const monthly: MonthlyPL[] = [];
         let totalRev = 0;
         let totalExp = 0;
@@ -102,9 +118,9 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
         const margin = totalRev > 0 ? (netProfit / totalRev) * 100 : 0;
 
         setSummary({
-            totalRevenue: settlementData?.totalRevenue || totalRev,
+            totalRevenue: totalRev,
             totalExpenses: totalExp,
-            netProfit: (settlementData?.totalRevenue || totalRev) - totalExp,
+            netProfit,
             profitMargin: margin
         });
     };
@@ -159,6 +175,12 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                     <div>
                         <h3 className="font-bold text-emerald-700 flex items-center gap-2 text-sm md:text-base">
                             📊 손익계산서 (P&L)
+                            {dataSource === 'invoice' && (
+                                <span className="px-1.5 py-0.5 bg-green-100 text-green-600 text-[10px] rounded-full font-normal">실제 세금계산서 기반</span>
+                            )}
+                            {dataSource === 'settlement' && (
+                                <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-[10px] rounded-full font-normal">CRM 추정치</span>
+                            )}
                         </h3>
                         <p className="text-xs text-emerald-500 mt-0.5">{year}년 수익/비용/순이익 현황</p>
                     </div>
