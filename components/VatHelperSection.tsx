@@ -36,8 +36,8 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
         calculateQuarterlyVat();
     }, [year]);
 
-    const calculateQuarterlyVat = () => {
-        const allInvoices = fetchTaxInvoices(year);
+    const calculateQuarterlyVat = async () => {
+        const allInvoices = await fetchTaxInvoices(year);
         setInvoices(allInvoices);
 
         const quarterly: QuarterlyVat[] = quarterInfo.map(q => {

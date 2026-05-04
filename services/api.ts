@@ -2401,14 +2401,15 @@ export const TRANSACTION_CATEGORIES: TransactionCategory[] = [
 ];
 
 // =====================================================
-// 세금계산서 관리 (Tax Invoice)
+// 세금계산서 관리 (Tax Invoice) - Supabase 기반
 // =====================================================
 
+// localStorage 캐시 (Supabase 폴백 + 성능)
 const CACHE_KEYS_TAX_INVOICES = 'leadmaster_tax_invoices';
 let localTaxInvoices: TaxInvoice[] = [];
 let taxInvoicesInitialized = false;
 
-const loadTaxInvoices = (): TaxInvoice[] => {
+const loadTaxInvoicesFromCache = (): TaxInvoice[] => {
   if (taxInvoicesInitialized) return localTaxInvoices;
   try {
     const stored = localStorage.getItem(CACHE_KEYS_TAX_INVOICES);
@@ -2422,7 +2423,7 @@ const loadTaxInvoices = (): TaxInvoice[] => {
   return localTaxInvoices;
 };
 
-const saveTaxInvoices = () => {
+const saveTaxInvoicesToCache = () => {
   try {
     localStorage.setItem(CACHE_KEYS_TAX_INVOICES, JSON.stringify(localTaxInvoices));
   } catch (e) {
@@ -2430,74 +2431,184 @@ const saveTaxInvoices = () => {
   }
 };
 
-// 세금계산서 조회
-export const fetchTaxInvoices = (year?: number, type?: TaxInvoiceType): TaxInvoice[] => {
-  loadTaxInvoices();
+// DB → Frontend 변환
+const dbToTaxInvoice = (row: any): TaxInvoice => ({
+  id: row.id,
+  type: row.type,
+  issueDate: row.issue_date,
+  supplyAmount: row.supply_amount || 0,
+  vatAmount: row.vat_amount || 0,
+  totalAmount: row.total_amount || 0,
+  businessNumber: row.business_number || '',
+  companyName: row.company_name || '',
+  description: row.description || '',
+  approvalNumber: row.approval_number || '',
+  isElectronic: row.is_electronic ?? true,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at
+});
 
+// Frontend → DB 변환
+const taxInvoiceToDb = (inv: Partial<TaxInvoice>): any => {
+  const result: any = {};
+  if (inv.type !== undefined) result.type = inv.type;
+  if (inv.issueDate !== undefined) result.issue_date = inv.issueDate;
+  if (inv.supplyAmount !== undefined) result.supply_amount = inv.supplyAmount;
+  if (inv.vatAmount !== undefined) result.vat_amount = inv.vatAmount;
+  if (inv.totalAmount !== undefined) result.total_amount = inv.totalAmount;
+  if (inv.businessNumber !== undefined) result.business_number = inv.businessNumber;
+  if (inv.companyName !== undefined) result.company_name = inv.companyName;
+  if (inv.description !== undefined) result.description = inv.description;
+  if (inv.approvalNumber !== undefined) result.approval_number = inv.approvalNumber;
+  if (inv.isElectronic !== undefined) result.is_electronic = inv.isElectronic;
+  return result;
+};
+
+// 세금계산서 조회 (Supabase 우선, 폴백 localStorage)
+export const fetchTaxInvoices = async (year?: number, type?: TaxInvoiceType): Promise<TaxInvoice[]> => {
+  if (supabase && isSupabaseEnabled()) {
+    try {
+      let query = supabase.from('tax_invoices').select('*');
+      if (year) {
+        query = query.gte('issue_date', `${year}-01-01`).lte('issue_date', `${year}-12-31`);
+      }
+      if (type) {
+        query = query.eq('type', type);
+      }
+      const { data, error } = await query.order('issue_date', { ascending: false });
+      if (error) throw error;
+      const invoices = (data || []).map(dbToTaxInvoice);
+      // 캐시 업데이트
+      localTaxInvoices = invoices;
+      saveTaxInvoicesToCache();
+      return invoices;
+    } catch (e) {
+      console.warn('[TaxInvoice] Supabase fetch failed, falling back to cache:', e);
+    }
+  }
+
+  // 폴백: localStorage
+  loadTaxInvoicesFromCache();
   let filtered = [...localTaxInvoices];
-
-  if (year) {
-    filtered = filtered.filter(inv => inv.issueDate.startsWith(String(year)));
-  }
-
-  if (type) {
-    filtered = filtered.filter(inv => inv.type === type);
-  }
-
+  if (year) filtered = filtered.filter(inv => inv.issueDate.startsWith(String(year)));
+  if (type) filtered = filtered.filter(inv => inv.type === type);
   return filtered.sort((a, b) => b.issueDate.localeCompare(a.issueDate));
 };
 
 // 세금계산서 생성
-export const createTaxInvoice = (data: Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>): TaxInvoice => {
-  loadTaxInvoices();
+export const createTaxInvoice = async (data: Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<TaxInvoice> => {
+  if (supabase && isSupabaseEnabled()) {
+    try {
+      const dbData = taxInvoiceToDb(data);
+      const { data: row, error } = await supabase
+        .from('tax_invoices')
+        .insert([dbData])
+        .select()
+        .single();
+      if (error) throw error;
+      const invoice = dbToTaxInvoice(row);
+      localTaxInvoices.push(invoice);
+      saveTaxInvoicesToCache();
+      return invoice;
+    } catch (e) {
+      console.warn('[TaxInvoice] Supabase create failed, saving to cache:', e);
+    }
+  }
 
+  // 폴백
+  loadTaxInvoicesFromCache();
   const now = new Date().toISOString();
-  const newInvoice: TaxInvoice = {
-    ...data,
-    id: uuidv4(),
-    createdAt: now,
-    updatedAt: now
-  };
-
+  const newInvoice: TaxInvoice = { ...data, id: uuidv4(), createdAt: now, updatedAt: now };
   localTaxInvoices.push(newInvoice);
-  saveTaxInvoices();
-
+  saveTaxInvoicesToCache();
   return newInvoice;
 };
 
-// 세금계산서 수정
-export const updateTaxInvoice = (id: string, updates: Partial<TaxInvoice>): TaxInvoice | null => {
-  loadTaxInvoices();
+// 세금계산서 대량 생성 (홈택스 엑셀 업로드용)
+export const bulkCreateTaxInvoices = async (invoices: Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>[]): Promise<{ added: number; skipped: number }> => {
+  let added = 0;
+  let skipped = 0;
 
+  // 기존 데이터 로드 (중복 체크용)
+  const existing = await fetchTaxInvoices();
+
+  for (const inv of invoices) {
+    // 중복 체크: 같은 승인번호
+    const isDuplicate = inv.approvalNumber && existing.some(e => e.approvalNumber === inv.approvalNumber);
+    if (isDuplicate) {
+      skipped++;
+      continue;
+    }
+
+    try {
+      await createTaxInvoice(inv);
+      added++;
+    } catch (e) {
+      console.warn('[TaxInvoice] Failed to create invoice:', e);
+      skipped++;
+    }
+  }
+
+  return { added, skipped };
+};
+
+// 세금계산서 수정
+export const updateTaxInvoice = async (id: string, updates: Partial<TaxInvoice>): Promise<TaxInvoice | null> => {
+  if (supabase && isSupabaseEnabled()) {
+    try {
+      const dbData = taxInvoiceToDb(updates);
+      dbData.updated_at = new Date().toISOString();
+      const { data: row, error } = await supabase
+        .from('tax_invoices')
+        .update(dbData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      const invoice = dbToTaxInvoice(row);
+      const idx = localTaxInvoices.findIndex(inv => inv.id === id);
+      if (idx !== -1) localTaxInvoices[idx] = invoice;
+      saveTaxInvoicesToCache();
+      return invoice;
+    } catch (e) {
+      console.warn('[TaxInvoice] Supabase update failed:', e);
+    }
+  }
+
+  // 폴백
+  loadTaxInvoicesFromCache();
   const idx = localTaxInvoices.findIndex(inv => inv.id === id);
   if (idx === -1) return null;
-
-  localTaxInvoices[idx] = {
-    ...localTaxInvoices[idx],
-    ...updates,
-    updatedAt: new Date().toISOString()
-  };
-
-  saveTaxInvoices();
+  localTaxInvoices[idx] = { ...localTaxInvoices[idx], ...updates, updatedAt: new Date().toISOString() };
+  saveTaxInvoicesToCache();
   return localTaxInvoices[idx];
 };
 
 // 세금계산서 삭제
-export const deleteTaxInvoice = (id: string): boolean => {
-  loadTaxInvoices();
+export const deleteTaxInvoice = async (id: string): Promise<boolean> => {
+  if (supabase && isSupabaseEnabled()) {
+    try {
+      const { error } = await supabase.from('tax_invoices').delete().eq('id', id);
+      if (error) throw error;
+      localTaxInvoices = localTaxInvoices.filter(inv => inv.id !== id);
+      saveTaxInvoicesToCache();
+      return true;
+    } catch (e) {
+      console.warn('[TaxInvoice] Supabase delete failed:', e);
+    }
+  }
 
+  loadTaxInvoicesFromCache();
   const idx = localTaxInvoices.findIndex(inv => inv.id === id);
   if (idx === -1) return false;
-
   localTaxInvoices.splice(idx, 1);
-  saveTaxInvoices();
-
+  saveTaxInvoicesToCache();
   return true;
 };
 
 // 세금계산서 통계
-export const getTaxInvoiceStats = (year: number) => {
-  const invoices = fetchTaxInvoices(year);
+export const getTaxInvoiceStats = async (year: number) => {
+  const invoices = await fetchTaxInvoices(year);
 
   const salesInvoices = invoices.filter(inv => inv.type === '매출');
   const purchaseInvoices = invoices.filter(inv => inv.type === '매입');
@@ -2517,6 +2628,178 @@ export const getTaxInvoiceStats = (year: number) => {
     purchaseVat,
     vatPayable: salesVat - purchaseVat
   };
+};
+
+// =====================================================
+// 홈택스 세금계산서 엑셀 파서
+// =====================================================
+
+// 날짜 문자열 보정 (홈택스에서 가끔 앞자리 누락)
+const normalizeHometaxDate = (raw: any): string => {
+  if (!raw) return '';
+  const str = String(raw).trim();
+  // yyyy-MM-dd 형식이면 그대로
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  // 0이나 2가 누락된 경우 (예: "026-02-03" → "2026-02-03")
+  if (/^\d{3}-\d{2}-\d{2}$/.test(str)) return '2' + str;
+  // Excel serial number
+  if (/^\d{5}$/.test(str)) {
+    const d = new Date((parseInt(str) - 25569) * 86400000);
+    return d.toISOString().split('T')[0];
+  }
+  // 기타: 점(.) 구분자 등
+  const cleaned = str.replace(/\./g, '-').replace(/\s/g, '');
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(cleaned)) {
+    const parts = cleaned.split('-');
+    return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+  }
+  return str;
+};
+
+// 금액 파싱 (쉼표 제거, 숫자 변환)
+const parseAmount = (raw: any): number => {
+  if (!raw) return 0;
+  if (typeof raw === 'number') return Math.round(raw);
+  return Math.round(parseFloat(String(raw).replace(/[,\s]/g, '')) || 0);
+};
+
+/**
+ * 홈택스 매출 세금계산서 엑셀 파싱
+ * 컬럼: A=작성일자, B=승인번호, L=거래처사업자번호, O=합계금액, P=공급가액, Q=세액, AB=품목명
+ */
+export const parseHometaxSalesExcel = (data: any[][]): Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>[] => {
+  const invoices: Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>[] = [];
+
+  // 데이터 행 찾기: "작성일자" 텍스트가 포함된 행 이후부터 데이터
+  let dataStartRow = 3; // 기본 4행 (0-indexed 3)
+  for (let i = 0; i < Math.min(10, data.length); i++) {
+    if (data[i] && String(data[i][0] || '').includes('작성일자')) {
+      dataStartRow = i + 1;
+      break;
+    }
+  }
+
+  for (let i = dataStartRow; i < data.length; i++) {
+    const row = data[i];
+    if (!row || !row[0]) continue; // 빈 행 스킵
+
+    const issueDate = normalizeHometaxDate(row[0]);  // A: 작성일자
+    if (!issueDate || issueDate.length < 8) continue;
+
+    const approvalNumber = String(row[1] || '').trim();  // B: 승인번호
+    const businessNumber = String(row[11] || '').trim();  // L: 거래처 사업자번호 (index 11)
+    const totalAmount = parseAmount(row[14]);  // O: 합계금액 (index 14)
+    const supplyAmount = parseAmount(row[15]);  // P: 공급가액 (index 15)
+    const vatAmount = parseAmount(row[16]);    // Q: 세액 (index 16)
+    const description = String(row[27] || '').trim();  // AB: 품목명 (index 27)
+
+    // 거래처 상호 찾기 (N열 근처 - 세부 구조에 따라 조정 필요)
+    let companyName = '';
+    // 여러 위치에서 거래처명 탐색
+    for (const idx of [13, 12, 6]) { // N, M, G
+      const val = String(row[idx] || '').trim();
+      if (val && val.length > 1 && !val.match(/^\d/)) {
+        companyName = val;
+        break;
+      }
+    }
+
+    invoices.push({
+      type: '매출',
+      issueDate,
+      supplyAmount,
+      vatAmount,
+      totalAmount: totalAmount || (supplyAmount + vatAmount),
+      businessNumber,
+      companyName,
+      description: description || '광고 대행',
+      approvalNumber,
+      isElectronic: true
+    });
+  }
+
+  return invoices;
+};
+
+/**
+ * 홈택스 매입 세금계산서 엑셀 파싱
+ * 컬럼 1칸 밀림: A=작성일자, B=승인번호, E=공급자사업자번호, G=공급자상호, P=합계금액, Q=공급가액, R=세액, AC=품목명
+ */
+export const parseHometaxPurchaseExcel = (data: any[][]): Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>[] => {
+  const invoices: Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>[] = [];
+
+  let dataStartRow = 3;
+  for (let i = 0; i < Math.min(10, data.length); i++) {
+    if (data[i] && String(data[i][0] || '').includes('작성일자')) {
+      dataStartRow = i + 1;
+      break;
+    }
+  }
+
+  for (let i = dataStartRow; i < data.length; i++) {
+    const row = data[i];
+    if (!row || !row[0]) continue;
+
+    const issueDate = normalizeHometaxDate(row[0]);  // A: 작성일자
+    if (!issueDate || issueDate.length < 8) continue;
+
+    const approvalNumber = String(row[1] || '').trim();  // B: 승인번호
+    const businessNumber = String(row[4] || '').trim();   // E: 공급자 사업자번호 (index 4)
+    const companyName = String(row[6] || '').trim();      // G: 공급자 상호 (index 6)
+    const totalAmount = parseAmount(row[15]);  // P: 합계금액 (index 15)
+    const supplyAmount = parseAmount(row[16]);  // Q: 공급가액 (index 16)
+    const vatAmount = parseAmount(row[17]);    // R: 세액 (index 17)
+    const description = String(row[28] || '').trim();  // AC: 품목명 (index 28)
+
+    invoices.push({
+      type: '매입',
+      issueDate,
+      supplyAmount,
+      vatAmount,
+      totalAmount: totalAmount || (supplyAmount + vatAmount),
+      businessNumber,
+      companyName,
+      description: description || '',
+      approvalNumber,
+      isElectronic: true
+    });
+  }
+
+  return invoices;
+};
+
+/**
+ * 홈택스 엑셀 자동 감지 파싱 (매출/매입 자동 판별)
+ */
+export const parseHometaxExcel = (data: any[][], fileName: string): {
+  type: TaxInvoiceType;
+  invoices: Omit<TaxInvoice, 'id' | 'createdAt' | 'updatedAt'>[];
+} => {
+  // 파일명 기반 판별
+  const isSales = fileName.includes('매출') || fileName.includes('sales');
+  const isPurchase = fileName.includes('매입') || fileName.includes('purchase');
+
+  if (isPurchase) {
+    return { type: '매입', invoices: parseHometaxPurchaseExcel(data) };
+  }
+  if (isSales) {
+    return { type: '매출', invoices: parseHometaxSalesExcel(data) };
+  }
+
+  // 데이터 구조 기반 판별: 매입은 E열(index 4)에 공급자 사업자번호, 매출은 L열(index 11)
+  // 헤더 행에서 "공급자" vs "공급받는자" 키워드 확인
+  for (let i = 0; i < Math.min(5, data.length); i++) {
+    const row = data[i];
+    if (!row) continue;
+    const rowStr = row.map(c => String(c || '')).join(' ');
+    if (rowStr.includes('공급자사업자') && !rowStr.includes('공급받는자사업자')) {
+      // 매입: 공급자가 먼저 나옴
+      return { type: '매입', invoices: parseHometaxPurchaseExcel(data) };
+    }
+  }
+
+  // 기본값: 매출
+  return { type: '매출', invoices: parseHometaxSalesExcel(data) };
 };
 
 // =====================================================

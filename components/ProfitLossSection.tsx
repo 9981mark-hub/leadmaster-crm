@@ -53,7 +53,7 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
         });
 
         // 월별 수익 (정산 데이터 또는 세금계산서 매출)
-        const taxInvoices = fetchTaxInvoices(year);
+        const taxInvoices = await fetchTaxInvoices(year);
         const salesInvoices = taxInvoices.filter(inv => inv.type === '매출');
 
         const monthlyRevenue: Record<number, number> = {};

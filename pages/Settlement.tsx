@@ -10,6 +10,7 @@ import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
 import ReceiptOcrSection from '../components/ReceiptOcrSection';
 import TaxInvoiceSection from '../components/TaxInvoiceSection';
+import ReconciliationSection from '../components/ReconciliationSection';
 import ProfitLossSection from '../components/ProfitLossSection';
 import VatHelperSection from '../components/VatHelperSection';
 import BudgetManagementSection from '../components/BudgetManagementSection';
@@ -2151,6 +2152,9 @@ export default function Settlement() {
 
             {/* 🧾 부가세 신고 도우미 */}
             <VatHelperSection year={year} />
+
+            {/* 🔍 정산 대사 (Reconciliation) */}
+            <ReconciliationSection year={year} batches={batches} />
 
             {/* 📜 세금계산서 관리 */}
             <TaxInvoiceSection year={year} onDataChanged={() => window.location.reload()} />

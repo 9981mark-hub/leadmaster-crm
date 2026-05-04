@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { fetchTaxInvoices, createTaxInvoice, deleteTaxInvoice, getTaxInvoiceStats } from '../services/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { fetchTaxInvoices, createTaxInvoice, deleteTaxInvoice, getTaxInvoiceStats, bulkCreateTaxInvoices, parseHometaxExcel } from '../services/api';
 import { TaxInvoice, TaxInvoiceType } from '../types';
+import * as XLSX from 'xlsx';
 
 interface TaxInvoiceSectionProps {
     year: number;
@@ -19,6 +20,10 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
         vatPayable: 0
     });
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'all' | '매출' | '매입'>('all');
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadResult, setUploadResult] = useState<{ added: number; skipped: number; type: string } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [formData, setFormData] = useState({
         type: '매출' as TaxInvoiceType,
         issueDate: new Date().toISOString().split('T')[0],
@@ -31,11 +36,16 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
         isElectronic: true
     });
 
-    // 데이터 로드
-    const loadData = () => {
-        const loaded = fetchTaxInvoices(year);
-        setInvoices(loaded);
-        setStats(getTaxInvoiceStats(year));
+    // 데이터 로드 (async)
+    const loadData = async () => {
+        try {
+            const loaded = await fetchTaxInvoices(year);
+            setInvoices(loaded);
+            const s = await getTaxInvoiceStats(year);
+            setStats(s);
+        } catch (e) {
+            console.error('Failed to load tax invoices:', e);
+        }
     };
 
     useEffect(() => {
@@ -43,13 +53,13 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
     }, [year]);
 
     // 세금계산서 등록
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!formData.companyName || !formData.supplyAmount) {
             alert('거래처명과 공급가액을 입력해주세요.');
             return;
         }
 
-        createTaxInvoice({
+        await createTaxInvoice({
             type: formData.type,
             issueDate: formData.issueDate,
             companyName: formData.companyName,
@@ -74,15 +84,15 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
             approvalNumber: '',
             isElectronic: true
         });
-        loadData();
+        await loadData();
         onDataChanged?.();
     };
 
     // 세금계산서 삭제
-    const handleDelete = (id: string, companyName: string) => {
+    const handleDelete = async (id: string, companyName: string) => {
         if (confirm(`"${companyName}" 세금계산서를 삭제하시겠습니까?`)) {
-            deleteTaxInvoice(id);
-            loadData();
+            await deleteTaxInvoice(id);
+            await loadData();
             onDataChanged?.();
         }
     };
@@ -96,6 +106,54 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
         }));
     };
 
+    // 홈택스 엑셀 업로드 처리
+    const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        setUploadResult(null);
+
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const data = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
+
+            // 홈택스 포맷 파싱 (매출/매입 자동 판별)
+            const result = parseHometaxExcel(data, file.name);
+
+            if (result.invoices.length === 0) {
+                alert('파싱된 세금계산서가 없습니다. 파일 형식을 확인해주세요.');
+                setIsUploading(false);
+                return;
+            }
+
+            // 대량 저장
+            const saveResult = await bulkCreateTaxInvoices(result.invoices);
+            setUploadResult({
+                added: saveResult.added,
+                skipped: saveResult.skipped,
+                type: result.type
+            });
+
+            await loadData();
+            onDataChanged?.();
+        } catch (err) {
+            console.error('Excel upload error:', err);
+            alert('엑셀 파일 처리 중 오류가 발생했습니다.');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    // 필터링된 목록
+    const filteredInvoices = activeTab === 'all'
+        ? invoices
+        : invoices.filter(inv => inv.type === activeTab);
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
             <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
@@ -106,16 +164,58 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                         </h3>
                         <p className="text-xs text-rose-500 mt-1">{year}년 매입/매출 세금계산서</p>
                     </div>
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="px-3 py-1.5 bg-rose-600 text-white text-sm rounded-lg hover:bg-rose-700"
-                    >
-                        + 세금계산서 등록
-                    </button>
+                    <div className="flex gap-2">
+                        {/* 홈택스 엑셀 업로드 버튼 */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".xlsx,.xls,.csv"
+                            onChange={handleExcelUpload}
+                            className="hidden"
+                        />
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1"
+                        >
+                            {isUploading ? (
+                                <><span className="animate-spin">⏳</span> 처리중...</>
+                            ) : (
+                                <>📥 홈택스 엑셀</>
+                            )}
+                        </button>
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="px-3 py-1.5 bg-rose-600 text-white text-sm rounded-lg hover:bg-rose-700"
+                        >
+                            + 수동 등록
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div className="p-4">
+                {/* 업로드 결과 알림 */}
+                {uploadResult && (
+                    <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">✅</span>
+                            <div>
+                                <p className="text-sm font-bold text-emerald-700">
+                                    홈택스 {uploadResult.type} 세금계산서 업로드 완료
+                                </p>
+                                <p className="text-xs text-emerald-600">
+                                    {uploadResult.added}건 추가 / {uploadResult.skipped}건 중복 스킵
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setUploadResult(null)}
+                            className="text-emerald-400 hover:text-emerald-600"
+                        >×</button>
+                    </div>
+                )}
+
                 {/* 통계 요약 */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     <div className="bg-green-50 p-3 rounded-lg border border-green-200">
@@ -140,8 +240,27 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                     </div>
                 </div>
 
+                {/* 탭 필터 */}
+                <div className="flex gap-1 mb-3">
+                    {(['all', '매출', '매입'] as const).map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                                activeTab === tab
+                                    ? tab === '매출' ? 'bg-green-100 text-green-700 font-bold'
+                                        : tab === '매입' ? 'bg-red-100 text-red-700 font-bold'
+                                        : 'bg-rose-100 text-rose-700 font-bold'
+                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                            }`}
+                        >
+                            {tab === 'all' ? `전체 (${invoices.length})` : `${tab} (${invoices.filter(i => i.type === tab).length})`}
+                        </button>
+                    ))}
+                </div>
+
                 {/* 세금계산서 목록 */}
-                {invoices.length > 0 ? (
+                {filteredInvoices.length > 0 ? (
                     <div className="overflow-x-auto max-h-60 overflow-y-auto" style={{ overscrollBehavior: 'auto' }}>
                         <table className="w-full text-sm">
                             <thead className="bg-rose-50 text-rose-700 sticky top-0">
@@ -149,25 +268,27 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                                     <th className="py-2 px-2 text-left">유형</th>
                                     <th className="py-2 px-2 text-left">발행일</th>
                                     <th className="py-2 px-2 text-left">거래처</th>
+                                    <th className="py-2 px-2 text-left">품목</th>
                                     <th className="py-2 px-2 text-right">공급가액</th>
                                     <th className="py-2 px-2 text-right">세액</th>
-                                    <th className="py-2 px-2 text-center">전자</th>
+                                    <th className="py-2 px-2 text-right">합계</th>
                                     <th className="py-2 px-2"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {invoices.map((inv) => (
+                                {filteredInvoices.map((inv) => (
                                     <tr key={inv.id} className="border-b border-gray-100 hover:bg-gray-50">
                                         <td className="py-2 px-2">
                                             <span className={`px-2 py-0.5 rounded text-xs ${inv.type === '매출' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                 {inv.type}
                                             </span>
                                         </td>
-                                        <td className="py-2 px-2">{inv.issueDate}</td>
-                                        <td className="py-2 px-2">{inv.companyName}</td>
-                                        <td className="py-2 px-2 text-right">{inv.supplyAmount.toLocaleString()}</td>
-                                        <td className="py-2 px-2 text-right">{inv.vatAmount.toLocaleString()}</td>
-                                        <td className="py-2 px-2 text-center">{inv.isElectronic ? '✓' : ''}</td>
+                                        <td className="py-2 px-2 whitespace-nowrap">{inv.issueDate}</td>
+                                        <td className="py-2 px-2 max-w-[120px] truncate" title={inv.companyName}>{inv.companyName}</td>
+                                        <td className="py-2 px-2 max-w-[100px] truncate text-gray-500" title={inv.description}>{inv.description || '-'}</td>
+                                        <td className="py-2 px-2 text-right whitespace-nowrap">{inv.supplyAmount.toLocaleString()}</td>
+                                        <td className="py-2 px-2 text-right whitespace-nowrap text-gray-500">{inv.vatAmount.toLocaleString()}</td>
+                                        <td className="py-2 px-2 text-right whitespace-nowrap font-medium">{inv.totalAmount.toLocaleString()}</td>
                                         <td className="py-2 px-2">
                                             <button
                                                 onClick={() => handleDelete(inv.id, inv.companyName)}
@@ -183,7 +304,8 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                     </div>
                 ) : (
                     <div className="text-center py-8 text-gray-400">
-                        등록된 세금계산서가 없습니다.
+                        {activeTab === 'all' ? '등록된 세금계산서가 없습니다.' : `${activeTab} 세금계산서가 없습니다.`}
+                        <p className="text-xs mt-2">홈택스에서 다운로드한 엑셀 파일을 업로드하거나 수동으로 등록해주세요.</p>
                     </div>
                 )}
             </div>
@@ -193,7 +315,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-4 border-b bg-gradient-to-r from-rose-50 to-pink-50">
-                            <h3 className="font-bold text-rose-700">📜 세금계산서 등록</h3>
+                            <h3 className="font-bold text-rose-700">📜 세금계산서 수동 등록</h3>
                         </div>
                         <div className="p-4 space-y-4">
                             {/* 유형 */}
