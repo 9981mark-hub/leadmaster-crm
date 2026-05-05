@@ -13,6 +13,8 @@ import TaxInvoiceSection from '../components/TaxInvoiceSection';
 import ReconciliationSection from '../components/ReconciliationSection';
 import ProfitLossSection from '../components/ProfitLossSection';
 import VatHelperSection from '../components/VatHelperSection';
+import TaxCalendarSection from '../components/TaxCalendarSection';
+import WithholdingTaxSection from '../components/WithholdingTaxSection';
 import BudgetManagementSection from '../components/BudgetManagementSection';
 import FixedCostSection from '../components/FixedCostSection';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
@@ -2144,13 +2146,19 @@ export default function Settlement() {
                 </div>
             )}
 
+            {/* 🗓️ 세무 캘린더 2026 */}
+            <TaxCalendarSection />
+
+            {/* 💸 원천세·외주비 관리표 */}
+            <WithholdingTaxSection year={year} />
+
             {/* Settlement History Calendar */}
             <SettlementCalendar batches={batches} cases={partnerCases} partners={partners} />
 
             {/* 📊 손익계산서 */}
             <ProfitLossSection year={year} />
 
-            {/* 🧾 부가세 신고 도우미 */}
+            {/* 🧾 부가세 신고 도우미 (개인 일반과세자 반기 기준) */}
             <VatHelperSection year={year} />
 
             {/* 🔍 정산 대사 (Reconciliation) */}
