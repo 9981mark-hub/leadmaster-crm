@@ -41,7 +41,8 @@ function saveRecords(records: WithholdingRecord[]) {
 function calcRecord(
     payDate: string,
     payAmount: number,
-    incomeType: IncomeType
+    incomeType: IncomeType,
+    isSemiAnnual: boolean
 ): Pick<WithholdingRecord, 'withholdingTax' | 'localIncomeTax' | 'netAmount' | 'filingMonth'> {
     const rate = INCOME_RATES[incomeType];
     const withholdingTax = Math.floor(payAmount * rate);
@@ -51,8 +52,18 @@ function calcRecord(
     let filingMonth = '';
     if (payDate) {
         const d = new Date(payDate);
-        d.setMonth(d.getMonth() + 1);
-        filingMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (isSemiAnnual) {
+            // 반기납: 1~6월 지급분은 7월 신고, 7~12월 지급분은 다음해 1월 신고
+            if (d.getMonth() < 6) {
+                filingMonth = `${d.getFullYear()}-07`;
+            } else {
+                filingMonth = `${d.getFullYear() + 1}-01`;
+            }
+        } else {
+            // 월별납: 지급일의 다음 달 신고
+            d.setMonth(d.getMonth() + 1);
+            filingMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
     }
     return { withholdingTax, localIncomeTax, netAmount, filingMonth };
 }
@@ -69,13 +80,30 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
     const [records, setRecords] = useState<WithholdingRecord[]>([]);
     const [form, setForm] = useState({ ...EMPTY_FORM });
     const [showForm, setShowForm] = useState(false);
+    const [isSemiAnnual, setIsSemiAnnual] = useState(false);
 
     useEffect(() => {
         setRecords(loadRecords().filter(r => r.payDate.startsWith(String(year))));
+        const semiAnnualSetting = localStorage.getItem('leadmaster_withholding_semi_annual') === 'true';
+        setIsSemiAnnual(semiAnnualSetting);
     }, [year]);
 
     const refreshFromStorage = () => {
         setRecords(loadRecords().filter(r => r.payDate.startsWith(String(year))));
+    };
+
+    const toggleSemiAnnual = () => {
+        const newVal = !isSemiAnnual;
+        setIsSemiAnnual(newVal);
+        localStorage.setItem('leadmaster_withholding_semi_annual', String(newVal));
+        
+        // 기존 레코드들의 신고월 재계산
+        const all = loadRecords().map(r => ({
+            ...r,
+            ...calcRecord(r.payDate, r.payAmount, r.incomeType, newVal)
+        }));
+        saveRecords(all);
+        refreshFromStorage();
     };
 
     const handleAdd = () => {
@@ -83,7 +111,7 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
             alert('이름, 지급일, 지급액을 모두 입력해주세요.');
             return;
         }
-        const calc = calcRecord(form.payDate, form.payAmount, form.incomeType);
+        const calc = calcRecord(form.payDate, form.payAmount, form.incomeType, isSemiAnnual);
         const newRecord: WithholdingRecord = {
             id: Date.now().toString(),
             ...form,
@@ -148,6 +176,18 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
                         <p className="text-xs text-purple-500 mt-0.5">{year}년 · 프리랜서/외주 지급 시 원천징수 자동 계산</p>
                     </div>
                     <div className="flex gap-2">
+                        <div className="flex items-center gap-2 mr-4 bg-white/50 px-3 py-1.5 rounded-lg border border-purple-200">
+                            <input 
+                                type="checkbox" 
+                                id="semi-annual-toggle"
+                                checked={isSemiAnnual}
+                                onChange={toggleSemiAnnual}
+                                className="w-4 h-4 text-purple-600 rounded cursor-pointer"
+                            />
+                            <label htmlFor="semi-annual-toggle" className="text-xs font-bold text-purple-800 cursor-pointer">
+                                반기납 대상자 (7월/1월 신고)
+                            </label>
+                        </div>
                         <button onClick={handleExport} className="px-3 py-1.5 bg-white border border-purple-300 text-purple-700 text-xs rounded-lg hover:bg-purple-50 flex items-center gap-1">
                             <Download size={13} /> Excel
                         </button>
@@ -234,13 +274,13 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
                         </div>
                         <div className="flex items-end">
                             {form.payAmount > 0 && (() => {
-                                const c = calcRecord(form.payDate, form.payAmount, form.incomeType);
+                                const c = calcRecord(form.payDate, form.payAmount, form.incomeType, isSemiAnnual);
                                 return (
                                     <div className="text-xs text-purple-700 bg-white border border-purple-200 rounded-lg p-2 w-full">
                                         <p>원천세: <strong>{c.withholdingTax.toLocaleString()}원</strong></p>
                                         <p>지방소득세: <strong>{c.localIncomeTax.toLocaleString()}원</strong></p>
                                         <p>실지급액: <strong>{c.netAmount.toLocaleString()}원</strong></p>
-                                        <p className="text-gray-500">신고월: {c.filingMonth}</p>
+                                        <p className="text-gray-500">신고월: {c.filingMonth} {isSemiAnnual ? '(반기납)' : ''}</p>
                                     </div>
                                 );
                             })()}

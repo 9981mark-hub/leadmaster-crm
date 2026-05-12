@@ -2931,12 +2931,13 @@ export const uploadFileToDrive = async (base64Data: string, filename: string, mi
   return result;
 };
 
-import { fetchCommunicationLogsFromSupabase, fetchSmsTemplatesFromSupabase, saveSmsTemplateToSupabase, enqueueSmsToSupabase } from './supabase';
+import { fetchCommunicationLogsFromSupabase, fetchSmsTemplatesFromSupabase, saveSmsTemplateToSupabase, enqueueSmsToSupabase, fetchPhonesWithSmsOut } from './supabase';
 
 export const fetchCommunicationLogs = async (phone: string) => fetchCommunicationLogsFromSupabase(phone);
 export const fetchSmsTemplates = async () => fetchSmsTemplatesFromSupabase();
 export const saveSmsTemplate = async (template: any) => saveSmsTemplateToSupabase(template);
 export const enqueueSms = async (phone: string, content: string) => enqueueSmsToSupabase(phone, content);
+export { fetchPhonesWithSmsOut };
 
 // ============================================
 // 토스 애즈 연동 API

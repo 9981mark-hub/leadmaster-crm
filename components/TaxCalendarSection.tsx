@@ -12,6 +12,8 @@ interface TaxEvent {
     tag: '신고마감' | '자료준비' | '매출정산' | '인건비' | '증빙점검' | '세무사전달';
     period?: string;
     isDone?: boolean;
+    actionLabel?: string;
+    actionSection?: string;
 }
 
 const TAG_STYLE: Record<string, string> = {
@@ -25,22 +27,22 @@ const TAG_STYLE: Record<string, string> = {
 
 const TAX_EVENTS_2026: TaxEvent[] = [
     // ── 1월 ──
-    { id:'e1',  date:'2026-01-25', title:'2025년 2기 부가세 확정신고·납부', description:'2025.7~12월분. 개업일(11/29) 이후분만 해당. 홈택스 전자신고.', layer:'deadline', tag:'신고마감', period:'2025 7~12월' },
-    { id:'e2',  date:'2026-01-05', title:'2025년 2기 부가세 자료 수집 시작', description:'플랫폼 정산자료 다운로드, 카드매출/현금영수증/세금계산서 취합.', layer:'prep', tag:'자료준비', period:'' },
-    { id:'e3',  date:'2026-01-15', title:'매출·매입 세금계산서 최종 확인', description:'누락 세금계산서 재요청, 매입공제 항목 분류.', layer:'prep', tag:'증빙점검', period:'' },
+    { id:'e1',  date:'2026-01-25', title:'2025년 2기 부가세 확정신고·납부', description:'2025.7~12월분. 개업일(11/29) 이후분만 해당. 홈택스 전자신고.', layer:'deadline', tag:'신고마감', period:'2025 7~12월', actionLabel: '예상 부가세 확인', actionSection: 'VAT' },
+    { id:'e2',  date:'2026-01-05', title:'2025년 2기 부가세 자료 수집 시작', description:'플랫폼 정산자료 다운로드, 카드매출/현금영수증/세금계산서 취합.', layer:'prep', tag:'자료준비', period:'', actionLabel: '매출/매입 자료 대사', actionSection: 'RECONCILIATION' },
+    { id:'e3',  date:'2026-01-15', title:'매출·매입 세금계산서 최종 확인', description:'누락 세금계산서 재요청, 매입공제 항목 분류.', layer:'prep', tag:'증빙점검', period:'', actionLabel: '세금계산서 수집 현황', actionSection: 'TAX_INVOICE' },
 
     // ── 매월 10일 원천세 ──
-    { id:'m1',  date:'2026-02-10', title:'원천세 신고·납부 (2월)', description:'1월 지급분 원천징수세액. 사업소득 3.3%, 근로소득 간이세액표.', layer:'routine', tag:'인건비', period:'1월 지급분' },
-    { id:'m2',  date:'2026-03-10', title:'원천세 신고·납부 (3월)', description:'2월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'2월 지급분' },
-    { id:'m3',  date:'2026-04-10', title:'원천세 신고·납부 (4월)', description:'3월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'3월 지급분' },
-    { id:'m4',  date:'2026-05-11', title:'원천세 신고·납부 (5월)', description:'4월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'4월 지급분' },
-    { id:'m5',  date:'2026-06-10', title:'원천세 신고·납부 (6월)', description:'5월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'5월 지급분' },
-    { id:'m6',  date:'2026-07-10', title:'원천세 신고·납부 (7월)', description:'6월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'6월 지급분' },
-    { id:'m7',  date:'2026-08-10', title:'원천세 신고·납부 (8월)', description:'7월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'7월 지급분' },
-    { id:'m8',  date:'2026-09-10', title:'원천세 신고·납부 (9월)', description:'8월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'8월 지급분' },
-    { id:'m9',  date:'2026-10-12', title:'원천세 신고·납부 (10월)', description:'9월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'9월 지급분' },
-    { id:'m10', date:'2026-11-10', title:'원천세 신고·납부 (11월)', description:'10월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'10월 지급분' },
-    { id:'m11', date:'2026-12-10', title:'원천세 신고·납부 (12월)', description:'11월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'11월 지급분' },
+    { id:'m1',  date:'2026-02-10', title:'원천세 신고·납부 (2월)', description:'1월 지급분 원천징수세액. 사업소득 3.3%, 근로소득 간이세액표.', layer:'routine', tag:'인건비', period:'1월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m2',  date:'2026-03-10', title:'원천세 신고·납부 (3월)', description:'2월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'2월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m3',  date:'2026-04-10', title:'원천세 신고·납부 (4월)', description:'3월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'3월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m4',  date:'2026-05-11', title:'원천세 신고·납부 (5월)', description:'4월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'4월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m5',  date:'2026-06-10', title:'원천세 신고·납부 (6월)', description:'5월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'5월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m6',  date:'2026-07-10', title:'원천세 신고·납부 (7월)', description:'6월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'6월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m7',  date:'2026-08-10', title:'원천세 신고·납부 (8월)', description:'7월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'7월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m8',  date:'2026-09-10', title:'원천세 신고·납부 (9월)', description:'8월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'8월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m9',  date:'2026-10-12', title:'원천세 신고·납부 (10월)', description:'9월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'9월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m10', date:'2026-11-10', title:'원천세 신고·납부 (11월)', description:'10월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'10월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
+    { id:'m11', date:'2026-12-10', title:'원천세 신고·납부 (12월)', description:'11월 지급분 원천징수세액.', layer:'routine', tag:'인건비', period:'11월 지급분', actionLabel: '원천세 내역 확인', actionSection: 'WITHHOLDING' },
 
     // ── 4월 예정신고 ──
     { id:'e4',  date:'2026-04-13', title:'1기 부가세 예정신고 자료 준비', description:'1~3월 매출·매입 자료 취합. 광고비·플랫폼 정산 확인.', layer:'prep', tag:'자료준비', period:'2026 1~3월' },
@@ -84,7 +86,11 @@ const LAYER_META = {
     saving:   { label: '절세 점검',      color: 'bg-green-500', icon: '💡' },
 };
 
-export default function TaxCalendarSection() {
+interface TaxCalendarSectionProps {
+    onActionClick?: (section: string) => void;
+}
+
+export default function TaxCalendarSection({ onActionClick }: TaxCalendarSectionProps = {}) {
     const today = new Date();
     const [filterLayer, setFilterLayer] = useState<string>('all');
     const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
@@ -225,12 +231,25 @@ export default function TaxCalendarSection() {
                             {isExpanded && (
                                 <div className="px-4 pb-3 pt-0 border-t border-gray-100">
                                     <p className="text-sm text-gray-600 mt-2">{event.description}</p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                        <Clock size={12} className="text-gray-400" />
-                                        <span className="text-xs text-gray-400">
-                                            {format(parseISO(event.date), 'yyyy년 M월 d일 (EEEE)', { locale: ko })}
-                                        </span>
+                                    <div className="mt-2 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Clock size={12} className="text-gray-400" />
+                                            <span className="text-xs text-gray-400">
+                                                {format(parseISO(event.date), 'yyyy년 M월 d일 (EEEE)', { locale: ko })}
+                                            </span>
+                                        </div>
                                     </div>
+                                    {event.actionLabel && event.actionSection && (
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (onActionClick) onActionClick(event.actionSection!);
+                                            }}
+                                            className="mt-3 w-full py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg text-sm font-bold hover:bg-rose-100 transition-colors"
+                                        >
+                                            {event.actionLabel} &rarr;
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>

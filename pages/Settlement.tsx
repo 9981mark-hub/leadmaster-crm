@@ -14,6 +14,7 @@ import ReconciliationSection from '../components/ReconciliationSection';
 import ProfitLossSection from '../components/ProfitLossSection';
 import VatHelperSection from '../components/VatHelperSection';
 import TaxCalendarSection from '../components/TaxCalendarSection';
+import TaxRiskDashboardSection from '../components/TaxRiskDashboardSection';
 import WithholdingTaxSection from '../components/WithholdingTaxSection';
 import BudgetManagementSection from '../components/BudgetManagementSection';
 import FixedCostSection from '../components/FixedCostSection';
@@ -2146,26 +2147,48 @@ export default function Settlement() {
                 </div>
             )}
 
+            {/* 🚨 세무 리스크 대시보드 */}
+            <div id="section-tax-risk">
+                <TaxRiskDashboardSection cases={partnerCases} batches={batches} partners={partners} />
+            </div>
+
             {/* 🗓️ 세무 캘린더 2026 */}
-            <TaxCalendarSection />
+            <div id="section-tax-calendar">
+                <TaxCalendarSection onActionClick={(section) => {
+                    const el = document.getElementById(`section-${section.toLowerCase()}`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }} />
+            </div>
 
             {/* 💸 원천세·외주비 관리표 */}
-            <WithholdingTaxSection year={year} />
+            <div id="section-withholding">
+                <WithholdingTaxSection year={year} />
+            </div>
 
             {/* Settlement History Calendar */}
             <SettlementCalendar batches={batches} cases={partnerCases} partners={partners} />
 
             {/* 📊 손익계산서 */}
-            <ProfitLossSection year={year} />
+            <div id="section-profitloss">
+                <ProfitLossSection year={year} />
+            </div>
 
             {/* 🧾 부가세 신고 도우미 (개인 일반과세자 반기 기준) */}
-            <VatHelperSection year={year} />
+            <div id="section-vat">
+                <VatHelperSection year={year} />
+            </div>
 
             {/* 🔍 정산 대사 (Reconciliation) */}
-            <ReconciliationSection year={year} batches={batches} />
+            <div id="section-reconciliation">
+                <ReconciliationSection year={year} batches={batches} />
+            </div>
 
             {/* 📜 세금계산서 관리 */}
-            <TaxInvoiceSection year={year} onDataChanged={() => window.location.reload()} />
+            <div id="section-tax_invoice">
+                <TaxInvoiceSection year={year} onDataChanged={() => window.location.reload()} />
+            </div>
 
             {/* 📷 영수증 OCR 스캔 */}
             <ReceiptOcrSection onExpenseSaved={() => window.location.reload()} />

@@ -9,7 +9,7 @@ import CommunicationHistoryTooltipContent from './CommunicationHistoryTooltipCon
 
 import CallConfirmPopup from '../CallConfirmPopup';
 import { STATUS_COLOR_MAP } from '../../constants';
-import { fetchCaseStatusLogs, fetchCases } from '../../services/api';
+import { fetchCaseStatusLogs, fetchCases, fetchPhonesWithSmsOut } from '../../services/api';
 
 // --- Shared Helper Components ---
 // Copied from CaseList.tsx
@@ -152,6 +152,26 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     // [NEW] State for call confirm popup
     const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
 
+    // [NEW] SMS_OUT 존재 여부 (History 아이콘 색상용)
+    const [phonesWithSmsOut, setPhonesWithSmsOut] = useState<Set<string>>(new Set());
+
+    // 1차 상태가 이 목록에 해당하면 SMS_OUT 없어도 빨간색 표시 안 함
+    const SMS_OUT_EXEMPT_STATUSES = ['신규접수', '사무장 접수', '수신정지'];
+
+    // 배치로 SMS_OUT 존재 여부 조회
+    useEffect(() => {
+        const phones = cases.map(c => c.phone).filter(Boolean);
+        if (phones.length === 0) return;
+        fetchPhonesWithSmsOut(phones).then(setPhonesWithSmsOut);
+    }, [cases]);
+
+    // History 아이콘이 빨간색이어야 하는지 판단하는 헬퍼
+    const shouldShowRedHistory = (phone: string, status: string): boolean => {
+        if (SMS_OUT_EXEMPT_STATUSES.includes(status)) return false;
+        const normalizedPhone = phone.replace(/[^0-9]/g, '');
+        return !phonesWithSmsOut.has(normalizedPhone);
+    };
+
     const handlePhoneClick = (e: React.MouseEvent, customerName: string, phone: string) => {
         e.preventDefault();
         e.stopPropagation();
@@ -289,8 +309,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <HoverCheckTooltip
                                         mobileAlign="left"
                                         trigger={
-                                            <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full cursor-pointer active:bg-blue-100 dark:active:bg-blue-800 transition-colors">
-                                                <History size={16} className="text-blue-500 dark:text-blue-400" />
+                                            <div className={`p-1.5 rounded-full cursor-pointer transition-colors ${
+                                                shouldShowRedHistory(c.phone, c.status)
+                                                    ? 'bg-red-50 dark:bg-red-900/30 active:bg-red-100 dark:active:bg-red-800'
+                                                    : 'bg-blue-50 dark:bg-blue-900/30 active:bg-blue-100 dark:active:bg-blue-800'
+                                            }`}>
+                                                <History size={16} className={shouldShowRedHistory(c.phone, c.status) ? 'text-red-500 dark:text-red-400' : 'text-blue-500 dark:text-blue-400'} />
                                             </div>
                                         }
                                         content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
@@ -481,8 +505,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <HoverCheckTooltip
                                                 desktopAlign="left"
                                                 trigger={
-                                                    <div className="p-1 bg-blue-50 dark:bg-blue-900/30 rounded-full cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors" title="통화 및 문자 기록">
-                                                        <History size={13} className="text-blue-500 dark:text-blue-400" />
+                                                    <div className={`p-1 rounded-full cursor-pointer transition-colors ${
+                                                        shouldShowRedHistory(c.phone, c.status)
+                                                            ? 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-800'
+                                                            : 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800'
+                                                    }`} title={shouldShowRedHistory(c.phone, c.status) ? '발신 문자 없음 - 통화 및 문자 기록' : '통화 및 문자 기록'}>
+                                                        <History size={13} className={shouldShowRedHistory(c.phone, c.status) ? 'text-red-500 dark:text-red-400' : 'text-blue-500 dark:text-blue-400'} />
                                                     </div>
                                                 }
                                                 content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}

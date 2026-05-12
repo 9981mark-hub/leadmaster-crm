@@ -759,6 +759,31 @@ export const enqueueSmsToSupabase = async (phone: string, content: string): Prom
 };
 
 // ============================================
+// Batch SMS_OUT existence check (for History icon color)
+// ============================================
+
+/**
+ * 주어진 전화번호 목록에 대해 SMS_OUT 기록이 있는 전화번호 Set을 반환합니다.
+ * 케이스 목록에서 History 아이콘 색상을 결정하는 데 사용됩니다.
+ */
+export const fetchPhonesWithSmsOut = async (phones: string[]): Promise<Set<string>> => {
+    if (!supabase || phones.length === 0) return new Set();
+    try {
+        const normalizedPhones = phones.map(p => p.replace(/[^0-9]/g, ''));
+        const { data, error } = await supabase
+            .from('communication_logs')
+            .select('phone_number')
+            .in('phone_number', normalizedPhones)
+            .eq('type', 'SMS_OUT');
+        if (error) throw error;
+        return new Set((data || []).map(r => r.phone_number));
+    } catch (e) {
+        console.error('[Supabase] fetchPhonesWithSmsOut error:', e);
+        return new Set();
+    }
+};
+
+// ============================================
 // Pending Calls (PC → Mobile 전화 걸기)
 // ============================================
 
