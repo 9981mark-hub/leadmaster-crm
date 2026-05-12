@@ -7,6 +7,7 @@ import { useCases, useUpdateCaseMutation, useStatuses } from '../services/querie
 import { CaseDetailReminders } from '../components/case-detail/info/CaseDetailReminders';
 import CallConfirmPopup from '../components/CallConfirmPopup';
 import { useToast } from '../contexts/ToastContext';
+import { useActiveCall } from '../contexts/ActiveCallContext';
 import { Case, ReminderItem } from '../types';
 import { getReminderStatus } from '../utils';
 
@@ -20,6 +21,7 @@ export default function SchedulePage() {
   const updateCaseMutation = useUpdateCaseMutation();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { startCall } = useActiveCall();
   
   const { data: statuses = [] } = useStatuses();
   
@@ -46,6 +48,7 @@ export default function SchedulePage() {
       e.stopPropagation();
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
+          startCall(customerName, phone);
           window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
           return;
       }

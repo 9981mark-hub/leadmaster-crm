@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Phone, X, Smartphone, Monitor, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { enqueuePendingCall } from '../services/supabase';
+import { useActiveCall } from '../contexts/ActiveCallContext';
 
 interface CallConfirmPopupProps {
     isOpen: boolean;
@@ -23,6 +24,7 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
     const popupRef = useRef<HTMLDivElement>(null);
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
+    const { startCall } = useActiveCall();
 
     // Reset state when popup opens
     useEffect(() => {
@@ -68,9 +70,11 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
             const success = await enqueuePendingCall(phoneNumber, customerName, caseId);
             if (success) {
                 setSent(true);
+                // ActiveCallPopup으로 이어받기
+                startCall(customerName, phoneNumber, caseId);
                 setTimeout(() => {
                     onConfirm();
-                }, 1500);
+                }, 1000);
             } else {
                 alert('전화 요청 전송에 실패했습니다.');
                 setSending(false);

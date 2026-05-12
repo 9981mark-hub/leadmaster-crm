@@ -4,6 +4,7 @@ import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
 import { STATUS_COLOR_MAP } from '../../constants';
 import CallConfirmPopup from '../CallConfirmPopup';
+import { useActiveCall } from '../../contexts/ActiveCallContext';
 
 interface CaseDetailHeaderProps {
     c: Case;
@@ -35,6 +36,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     const warnings = getCaseWarnings(c, partner);
     const [plusAnim, setPlusAnim] = useState(false);
     const [showCallPopup, setShowCallPopup] = useState(false);
+    const { startCall } = useActiveCall();
 
     // Missed call status from settings
     const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
@@ -69,6 +71,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             onClick={() => {
                                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
                                 if (isMobile) {
+                                    startCall(c.customerName, c.phone, c.caseId);
                                     window.location.href = `tel:${(c.phone || '').replace(/[^0-9+]/g, '')}`;
                                     return;
                                 }

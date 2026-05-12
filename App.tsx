@@ -19,7 +19,9 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useToast } from './contexts/ToastContext'; // Import hook
 import { ReminderProvider } from './contexts/ReminderContext';
+import { ActiveCallProvider } from './contexts/ActiveCallContext';
 import ReminderNotificationContainer from './components/ReminderNotificationContainer';
+import ActiveCallPopup from './components/ActiveCallPopup';
 import NewCasePopup from './components/NewCasePopup';
 import { fetchPendingCount, subscribeTelegramFeedbacks } from './services/telegramFeedback';
 
@@ -276,6 +278,7 @@ export default function App() {
             <ThemeProvider>
               <AuthProvider>
                 <ReminderProvider>
+                  <ActiveCallProvider>
                   <Suspense fallback={
                     <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
                       <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
@@ -286,8 +289,10 @@ export default function App() {
                       <Route path="/*" element={<ProtectedRoutes />} />
                     </Routes>
                     <ReminderNotificationContainer />
+                    <ActiveCallPopup />
                     <NewCasePopup />
                   </Suspense>
+                  </ActiveCallProvider>
                 </ReminderProvider>
               </AuthProvider>
             </ThemeProvider>
