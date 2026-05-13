@@ -53,9 +53,13 @@ const findCustomerByPhone = async (phone: string): Promise<{ name: string; caseI
     return null;
 };
 
+// 전화번호 정규화 유틸
+const normalizePhone = (phone: string) => phone.replace(/[^0-9]/g, '');
+
 export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [callState, setCallState] = useState<ActiveCallState>(initialState);
     const channelRef = useRef<any>(null);
+    const pendingCallChannelRef = useRef<any>(null);
 
     // 발신 시작
     const startCall = useCallback((name: string, phone: string, caseId?: string) => {
@@ -134,12 +138,67 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }
             )
             .subscribe((status: string) => {
-                console.log('[ActiveCall] Realtime status:', status);
+                console.log('[ActiveCall] Realtime communication_logs status:', status);
             });
 
         return () => {
             if (channelRef.current && supabase) {
                 supabase.removeChannel(channelRef.current);
+            }
+        };
+    }, []);
+
+    // ============================================
+    // Supabase Realtime: pending_calls 구독
+    // Android가 pending_calls 상태를 업데이트하면 즉시 감지
+    // dialed → calling 모드, ended → ended 모드 (자동 dismiss)
+    // ============================================
+    useEffect(() => {
+        if (!supabase) return;
+
+        pendingCallChannelRef.current = supabase
+            .channel('pending-call-monitor')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'pending_calls' },
+                (payload: any) => {
+                    const row = payload.new;
+                    if (!row) return;
+
+                    const status = row.status;
+                    const rowPhone = normalizePhone(row.phone_number || '');
+
+                    setCallState(prev => {
+                        if (!prev.isActive) return prev;
+
+                        const prevPhone = normalizePhone(prev.phoneNumber);
+
+                        // 전화번호가 매칭되는 경우만 처리
+                        if (rowPhone && prevPhone && rowPhone !== prevPhone) return prev;
+
+                        if (status === 'dialed' && prev.mode === 'pending') {
+                            // Android가 다이얼러를 열었음 → 통화중
+                            console.log('[ActiveCall] pending_calls: dialed → calling mode');
+                            return { ...prev, mode: 'calling' };
+                        }
+
+                        if (status === 'ended') {
+                            // Android가 통화 종료를 감지함 → ended
+                            console.log('[ActiveCall] pending_calls: ended → ended mode');
+                            return { ...prev, mode: 'ended' };
+                        }
+
+                        return prev;
+                    });
+                }
+            )
+            .subscribe((status: string) => {
+                console.log('[ActiveCall] Realtime pending_calls status:', status);
+            });
+
+        return () => {
+            if (pendingCallChannelRef.current && supabase) {
+                supabase.removeChannel(pendingCallChannelRef.current);
             }
         };
     }, []);
