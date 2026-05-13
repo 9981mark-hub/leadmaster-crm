@@ -180,7 +180,6 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
         // 모바일에서는 팝업 없이 바로 전화 연결 (Android 앱 WebView에서 tel: 처리)
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isMobile) {
-            startCall(customerName, phone);
             window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
             return;
         }

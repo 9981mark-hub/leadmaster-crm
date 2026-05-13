@@ -48,7 +48,6 @@ export default function SchedulePage() {
       e.stopPropagation();
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
-          startCall(customerName, phone);
           window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
           return;
       }

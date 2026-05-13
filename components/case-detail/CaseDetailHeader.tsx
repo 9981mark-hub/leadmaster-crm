@@ -71,7 +71,6 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             onClick={() => {
                                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
                                 if (isMobile) {
-                                    startCall(c.customerName, c.phone, c.caseId);
                                     window.location.href = `tel:${(c.phone || '').replace(/[^0-9+]/g, '')}`;
                                     return;
                                 }
