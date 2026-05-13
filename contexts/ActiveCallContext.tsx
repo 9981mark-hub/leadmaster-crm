@@ -144,6 +144,33 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         };
     }, []);
 
+    // ============================================
+    // 통화 종료 후 자동 dismiss (5초)
+    // ============================================
+    useEffect(() => {
+        if (callState.mode !== 'ended') return;
+
+        const timer = setTimeout(() => {
+            setCallState(initialState);
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [callState.mode]);
+
+    // ============================================
+    // pending/calling 모드 안전 타임아웃 (2분)
+    // Realtime 이벤트 누락으로 팝업이 stuck되는 것 방지
+    // ============================================
+    useEffect(() => {
+        if (!callState.isActive || callState.mode === 'ended') return;
+
+        const safetyTimer = setTimeout(() => {
+            setCallState(initialState);
+        }, 2 * 60 * 1000); // 2분
+
+        return () => clearTimeout(safetyTimer);
+    }, [callState.isActive, callState.mode]);
+
     // CALL_OUT 감지 후 통화 종료 판단:
     // communication_logs에 duration이 업데이트되면 ended로 전환
     useEffect(() => {
