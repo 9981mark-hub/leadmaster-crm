@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Smartphone, Plus, Phone } from 'lucide-react';
+import { AlertTriangle, Smartphone, Plus, Phone, MessageSquare } from 'lucide-react';
 import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
 import { STATUS_COLOR_MAP } from '../../constants';
@@ -81,6 +81,15 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             <Phone size={14} className="text-green-500" />
                             {c.phone}
                         </button>
+                        {/* 모바일 전용 문자 아이콘 */}
+                        <a
+                            href={`sms:${(c.phone || '').replace(/[^0-9+]/g, '')}`}
+                            className="md:hidden inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 active:bg-blue-200 transition-colors"
+                            title="문자 보내기"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <MessageSquare size={16} className="text-blue-500" />
+                        </a>
                         {pendingFeedbackCount > 0 && (
                             <button
                                 onClick={onClickPendingFeedbacks}
