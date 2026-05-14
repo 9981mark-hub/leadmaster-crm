@@ -5,7 +5,7 @@ import { supabase } from '../services/supabase';
 // Active Call State Management
 // ============================================
 
-export type ActiveCallMode = 'pending' | 'calling' | 'ended';
+export type ActiveCallMode = 'pending' | 'dialing' | 'calling' | 'ended';
 
 interface ActiveCallState {
     isActive: boolean;
@@ -177,9 +177,9 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         if (rowPhone && prevPhone && rowPhone !== prevPhone) return prev;
 
                         if (status === 'dialed' && prev.mode === 'pending') {
-                            // Android가 다이얼러를 열었음 → 통화중
-                            console.log('[ActiveCall] pending_calls: dialed → calling mode');
-                            return { ...prev, mode: 'calling' };
+                            // Android가 다이얼러를 열었음 → 연결 대기 (아직 통화 시작 아님)
+                            console.log('[ActiveCall] pending_calls: dialed → dialing mode');
+                            return { ...prev, mode: 'dialing' };
                         }
 
                         if (status === 'ended') {
@@ -233,7 +233,7 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // CALL_OUT 감지 후 통화 종료 판단:
     // communication_logs에 duration이 업데이트되면 ended로 전환
     useEffect(() => {
-        if (!supabase || callState.mode !== 'calling') return;
+        if (!supabase || (callState.mode !== 'calling' && callState.mode !== 'dialing')) return;
 
         const updateChannel = supabase
             .channel('call-duration-monitor')

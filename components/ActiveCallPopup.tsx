@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, PhoneOff, X, ExternalLink, Loader2 } from 'lucide-react';
+import { Phone, PhoneOff, X, ExternalLink, Loader2, PhoneCall } from 'lucide-react';
 import { useActiveCall } from '../contexts/ActiveCallContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -90,8 +90,35 @@ const ActiveCallPopup: React.FC = () => {
     }
 
     // ========================================
-    // 풀 팝업 (pending / calling 모드)
+    // 풀 팝업 (pending / dialing / calling 모드)
     // ========================================
+
+    const getHeaderGradient = () => {
+        switch (callState.mode) {
+            case 'pending': return 'bg-gradient-to-r from-blue-500 to-indigo-500';
+            case 'dialing': return 'bg-gradient-to-r from-amber-500 to-orange-500';
+            case 'calling': return 'bg-gradient-to-r from-green-500 to-emerald-500';
+            default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
+        }
+    };
+
+    const getHeaderIcon = () => {
+        switch (callState.mode) {
+            case 'pending': return <Loader2 size={16} className="text-white animate-spin" />;
+            case 'dialing': return <PhoneCall size={16} className="text-white" />;
+            case 'calling': return <Phone size={16} className="text-white" />;
+            default: return <Phone size={16} className="text-white" />;
+        }
+    };
+
+    const getHeaderLabel = () => {
+        switch (callState.mode) {
+            case 'pending': return '전화 전송 중';
+            case 'dialing': return '전화 연결 대기';
+            case 'calling': return '통화 중';
+            default: return '';
+        }
+    };
     return (
         <AnimatePresence>
             <motion.div
@@ -102,21 +129,13 @@ const ActiveCallPopup: React.FC = () => {
                 className="fixed bottom-20 md:bottom-6 right-4 z-[9990] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden w-[280px]"
             >
                 {/* 상단 바 */}
-                <div className={`px-4 py-3 flex items-center justify-between ${
-                    callState.mode === 'pending'
-                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500'
-                        : 'bg-gradient-to-r from-green-500 to-emerald-500'
-                }`}>
+                <div className={`px-4 py-3 flex items-center justify-between ${getHeaderGradient()}`}>
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                            {callState.mode === 'pending' ? (
-                                <Loader2 size={16} className="text-white animate-spin" />
-                            ) : (
-                                <Phone size={16} className="text-white" />
-                            )}
+                            {getHeaderIcon()}
                         </div>
                         <span className="text-white font-bold text-sm">
-                            {callState.mode === 'pending' ? '전화 전송 중' : '통화 중'}
+                            {getHeaderLabel()}
                         </span>
                     </div>
                     <button
@@ -144,6 +163,13 @@ const ActiveCallPopup: React.FC = () => {
                                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
                             <span className="text-xs font-medium">핸드폰 대기 중</span>
+                        </div>
+                    )}
+
+                    {callState.mode === 'dialing' && (
+                        <div className="mt-3 flex items-center justify-center gap-2 text-amber-500">
+                            <PhoneCall size={14} className="animate-pulse" />
+                            <span className="text-xs font-medium">통화 버튼을 눌러주세요</span>
                         </div>
                     )}
 
