@@ -176,10 +176,16 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         // 전화번호가 매칭되는 경우만 처리
                         if (rowPhone && prevPhone && rowPhone !== prevPhone) return prev;
 
-                        if (status === 'dialed' && prev.mode === 'pending') {
-                            // Android가 다이얼러를 열었음 → 연결 대기 (아직 통화 시작 아님)
-                            console.log('[ActiveCall] pending_calls: dialed → dialing mode');
-                            return { ...prev, mode: 'dialing' };
+                        if (status === 'dialed') {
+                            if (prev.mode === 'pending') {
+                                // Android가 다이얼러를 열었음 → 연결 대기 (아직 통화 시작 아님)
+                                console.log('[ActiveCall] pending_calls: dialed → dialing mode');
+                                return { ...prev, mode: 'dialing' };
+                            } else if (prev.mode === 'dialing') {
+                                // 이미 연결 대기 중인데 또 dialed 업데이트가 옴 -> Android가 통화 시작(OFFHOOK) 감지!
+                                console.log('[ActiveCall] pending_calls: dialed (again) → calling mode');
+                                return { ...prev, mode: 'calling', startTime: new Date() };
+                            }
                         }
 
                         if (status === 'ended') {
