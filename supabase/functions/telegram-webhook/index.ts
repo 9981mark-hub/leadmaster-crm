@@ -60,7 +60,23 @@ function parseTelegramUpdate(update: any): ParsedMessage | null {
 const CLASSIFICATION_PROMPT = `당신은 법률 사무소 CRM 시스템의 피드백 분류 AI입니다.
 텔레그램 그룹에서 사무장/직원이 보낸 아래 메시지를 분석하여 고객의 이름과 피드백 내용을 JSON으로 출력하세요.
 
-중요: 담당자들이 보통 "고객이름 // 전달내용" 또는 "고객이름/전달내용" 형태로 메시지를 보냅니다. 슬래시(/)나 띄어쓰기 앞부분의 가장 첫 번째 등장하는 이름을 고객명(customerName)으로 최우선 추출하세요. (예: "홍선우 // 채권사목록 전달..." -> "홍선우", "이희수// 아느곳에..." -> "이희수"). 고객명이 안 보이거나 단순 인사말이면 null.
+중요: 담당자들이 고객 피드백을 보낼 때 여러 형태를 사용합니다. 메시지 첫 부분의 한글 이름(2~4글자)을 고객명(customerName)으로 추출하세요.
+
+추출 우선순위:
+1. "고객이름 // 내용" 또는 "고객이름/내용" (슬래시 구분)
+   예: "홍선우 // 채권사목록 전달..." → "홍선우"
+   예: "이희수// 아느곳에..." → "이희수"
+2. "고객이름\n내용" (줄바꿈 구분 — 첫 줄이 한글 2~4자 이름만)
+   예: "김우인\n5/19일 오후2시 출장예정이였으나..." → "김우인"
+   예: "박영국\n신용카드 1년반정도 못쓰는..." → "박영국"
+3. "고객이름님 내용" (이름 뒤 '님' + 바로 내용)
+   예: "김경희님 몸이 너무 아파서..." → "김경희"
+4. "고객이름+내용" (이름 뒤 띄어쓰기 없이 바로 피드백)
+   예: "박현승등기부등본 발급해보니..." → "박현승"
+   예: "손승완바쁘시다하셔서..." → "손승완"
+
+단, "* 담당자 :" 로 시작하는 접수서(앞지)는 "고객이름" 필드에서 이름을 추출하세요.
+고객명이 안 보이거나 단순 인사말이면 null.
 
 피드백 유형 목록 (정확히 하나만 선택):
 - 부재: 전화 안 받음, 부재
@@ -164,13 +180,28 @@ async function callGeminiWithFallback(prompt: string): Promise<string> {
  * "홍선우 // 내용..." 또는 "이형관// 부재입니다" 패턴에서 이름 추출
  */
 function extractCustomerNameByRegex(text: string): string | null {
+  const trimmed = text.trim();
+  
   // 패턴 1: "이름 // 내용" 또는 "이름// 내용"
-  const slashMatch = text.trim().match(/^([가-힣]{2,4})\s*\/\//);
+  const slashMatch = trimmed.match(/^([가-힣]{2,4})\s*\/\//);
   if (slashMatch) return slashMatch[1];
   
   // 패턴 2: "이름 / 내용" (단일 슬래시)
-  const singleSlash = text.trim().match(/^([가-힣]{2,4})\s*\/\s/);
+  const singleSlash = trimmed.match(/^([가-힣]{2,4})\s*\/\s/);
   if (singleSlash) return singleSlash[1];
+
+  // 패턴 3: "이름\n내용" (줄바꿈 구분 — 첫 줄이 한글 이름 2~4자만)
+  const newlineMatch = trimmed.match(/^([가-힣]{2,4})(?:님)?\s*\n/);
+  if (newlineMatch) return newlineMatch[1];
+
+  // 패턴 4: "이름님 내용" 또는 "이름+동사" (이름 뒤 바로 피드백)
+  // 접수서("* 담당자 :")는 제외
+  if (!trimmed.startsWith('*')) {
+    const inlineMatch = trimmed.match(
+      /^([가-힣]{2,4})(?:님)?\s*(?:몸이|수임료|비용|등기|체납|현재|바쁘|문자|집|부재|전화|진행|출장|상담|비대면|계약|내방|미팅|채권|신용|오전|오후|내일|금요|월요|화요|수요|목요|토요|일요|혹시|신복|새출발|신용회복|아들|어머니|아버지|배우자|남편|아내|\d)/
+    );
+    if (inlineMatch) return inlineMatch[1];
+  }
 
   return null;
 }
@@ -443,7 +474,8 @@ serve(async (req: Request) => {
     // Skip only confirmed non-feedback messages (NOT AI errors)
     // AI 에러로 customerName이 null인 경우에도 원본 메시지를 DB에 저장
     // "이름 // 내용" 패턴이 있으면 비피드백이라도 스킵하지 않음
-    const hasNamePattern = /^[가-힣]{2,4}\s*\/\//.test(parsed.text.trim());
+    const hasNamePattern = /^[가-힣]{2,4}\s*\/\//.test(parsed.text.trim())
+        || /^[가-힣]{2,4}(?:님)?\s*\n/.test(parsed.text.trim());
     if (classification.feedbackType === '비피드백' && !classification._aiError && !hasNamePattern && !classification.customerName) {
       return new Response(JSON.stringify({ ok: true, skipped: 'non-feedback' }), {
         headers: { 'Content-Type': 'application/json' },

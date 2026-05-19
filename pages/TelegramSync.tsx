@@ -15,19 +15,19 @@ import { format, parseISO, startOfDay, endOfDay, startOfMonth, endOfMonth } from
 import { ko } from 'date-fns/locale';
 import { supabase } from '../services/supabase';
 
-const ManualLinker = ({ onLink }: { onLink: (caseId: string) => void }) => {
-    const [searchQuery, setSearchQuery] = useState('');
+const ManualLinker = ({ onLink, prefillName }: { onLink: (caseId: string) => void; prefillName?: string }) => {
+    const [searchQuery, setSearchQuery] = useState(prefillName || '');
     const [results, setResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
-    const handleSearch = async () => {
-        const term = searchQuery.trim();
-        if (!term) return;
+    const handleSearch = async (term?: string) => {
+        const q = (term || searchQuery).trim();
+        if (!q) return;
         setIsSearching(true);
         const { data, error } = await supabase
             .from('cases')
             .select('case_id, customer_name, status, phone')
-            .or(`customer_name.ilike.%${term}%,phone.ilike.%${term}%`)
+            .or(`customer_name.ilike.%${q}%,phone.ilike.%${q}%`)
             .limit(10);
             
         if (error) {
@@ -36,6 +36,13 @@ const ManualLinker = ({ onLink }: { onLink: (caseId: string) => void }) => {
         setResults(data || []);
         setIsSearching(false);
     };
+
+    // prefillName이 있으면 마운트 시 자동 검색 실행
+    useEffect(() => {
+        if (prefillName && prefillName.trim().length >= 2) {
+            handleSearch(prefillName.trim());
+        }
+    }, []);
 
     return (
         <div className="mt-2 text-sm bg-gray-50 border border-gray-200 rounded p-3">
@@ -53,7 +60,7 @@ const ManualLinker = ({ onLink }: { onLink: (caseId: string) => void }) => {
                     onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 />
                 <button 
-                    onClick={handleSearch} 
+                    onClick={() => handleSearch()} 
                     className="bg-gray-200 text-gray-700 font-bold px-3 rounded hover:bg-gray-300 text-xs transition"
                 >
                     {isSearching ? '검색 중..' : '검색'}
@@ -274,11 +281,11 @@ export default function TelegramSync() {
                                         ))}
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-yellow-200/50">
-                                        <ManualLinker onLink={(caseId) => handleConfirm(f, caseId)} />
+                                        <ManualLinker onLink={(caseId) => handleConfirm(f, caseId)} prefillName={f.customerName || undefined} />
                                     </div>
                                 </div>
                             ) : (
-                                <ManualLinker onLink={(caseId) => handleConfirm(f, caseId)} />
+                                <ManualLinker onLink={(caseId) => handleConfirm(f, caseId)} prefillName={f.customerName || undefined} />
                             )}
                         </>
                     )}
