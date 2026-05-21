@@ -224,6 +224,7 @@ export const caseToDb = (c: Partial<Case>): Partial<DbCase> => {
 
 /**
  * Fetch all cases from Supabase
+ * [Fix] Paginate to avoid PostgREST default 1,000-row limit
  */
 export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
     if (!supabase) {
@@ -232,20 +233,38 @@ export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
     }
 
     try {
-        const { data, error } = await supabase
-            .from('cases')
-            .select('*')
-            .order('created_at', { ascending: false });
+        const PAGE_SIZE = 1000;
+        let allData: any[] = [];
+        let from = 0;
+        let hasMore = true;
 
-        if (error) {
-            console.error('[Supabase] Fetch error:', error);
-            throw error; // [Fix] Propagate error
+        while (hasMore) {
+            const { data, error } = await supabase
+                .from('cases')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .range(from, from + PAGE_SIZE - 1);
+
+            if (error) {
+                console.error('[Supabase] Fetch error:', error);
+                throw error;
+            }
+
+            const rows = data || [];
+            allData = allData.concat(rows);
+
+            if (rows.length < PAGE_SIZE) {
+                hasMore = false; // Last page
+            } else {
+                from += PAGE_SIZE;
+            }
         }
 
-        return (data || []).map(dbToCase);
+        console.log(`[Supabase] Fetched total ${allData.length} cases (paginated)`);
+        return allData.map(dbToCase);
     } catch (err) {
         console.error('[Supabase] Fetch failed:', err);
-        throw err; // [Fix] Propagate error
+        throw err;
     }
 };
 
