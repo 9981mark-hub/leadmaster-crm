@@ -223,6 +223,64 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, [callState.mode]);
 
     // ============================================
+    // Polling Fallback: Realtime 연결 끊김 및 복제 누락 대비
+    // ============================================
+    useEffect(() => {
+        if (!supabase || !callState.isActive || callState.mode === 'ended') return;
+
+        const cleanPhone = normalizePhone(callState.phoneNumber);
+        if (!cleanPhone) return;
+
+        const pollInterval = setInterval(async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('pending_calls')
+                    .select('status, dialed_at')
+                    .eq('phone_number', cleanPhone)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (error || !data || data.length === 0) return;
+
+                const latestCall = data[0];
+                const status = latestCall.status;
+
+                setCallState(prev => {
+                    if (!prev.isActive) return prev;
+
+                    // 데이터베이스 상태와 현재 모드가 일치하면 변경 없음
+                    if (status === 'pending' && prev.mode === 'pending') return prev;
+                    if (status === 'dialed' && prev.mode === 'dialing' && !latestCall.dialed_at) return prev;
+                    if (status === 'dialed' && prev.mode === 'calling' && latestCall.dialed_at) return prev;
+                    if (status === 'ended' && prev.mode === 'ended') return prev;
+
+                    if (status === 'dialed') {
+                        if (prev.mode === 'pending') {
+                            console.log('[ActiveCall Poll] pending_calls: dialed → dialing mode');
+                            return { ...prev, mode: 'dialing' };
+                        } else if (prev.mode === 'dialing' && latestCall.dialed_at) {
+                            // dialed_at이 기록되었으면 통화가 실제로 시작된 것
+                            console.log('[ActiveCall Poll] pending_calls: dialed_at set → calling mode');
+                            return { ...prev, mode: 'calling', startedAt: new Date(latestCall.dialed_at) };
+                        }
+                    }
+
+                    if (status === 'ended') {
+                        console.log('[ActiveCall Poll] pending_calls: ended → ended mode');
+                        return { ...prev, mode: 'ended' };
+                    }
+
+                    return prev;
+                });
+            } catch (e) {
+                console.error('[ActiveCall Poll] Failed to poll call status:', e);
+            }
+        }, 2000); // 2초 간격으로 폴링
+
+        return () => clearInterval(pollInterval);
+    }, [callState.isActive, callState.mode, callState.phoneNumber]);
+
+    // ============================================
     // pending/calling 모드 안전 타임아웃 (2분)
     // Realtime 이벤트 누락으로 팝업이 stuck되는 것 방지
     // ============================================
