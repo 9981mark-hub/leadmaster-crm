@@ -14,6 +14,7 @@ interface ActiveCallState {
     phoneNumber: string;
     caseId?: string;
     startedAt?: Date;
+    dialedAt?: string;
 }
 
 interface ActiveCallContextType {
@@ -177,14 +178,22 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         if (rowPhone && prevPhone && rowPhone !== prevPhone) return prev;
 
                         if (status === 'dialed') {
-                            if (prev.mode === 'pending') {
+                            const dbDialedAt = row.dialed_at;
+                            if (prev.mode === 'pending' || (prev.mode === 'dialing' && !prev.dialedAt)) {
                                 // Android가 다이얼러를 열었음 → 연결 대기 (아직 통화 시작 아님)
-                                console.log('[ActiveCall] pending_calls: dialed → dialing mode');
-                                return { ...prev, mode: 'dialing' };
+                                console.log('[ActiveCall] pending_calls: dialed → dialing mode, dialedAt:', dbDialedAt);
+                                return { ...prev, mode: 'dialing', dialedAt: dbDialedAt };
                             } else if (prev.mode === 'dialing') {
-                                // 이미 연결 대기 중인데 또 dialed 업데이트가 옴 -> Android가 통화 시작(OFFHOOK) 감지!
-                                console.log('[ActiveCall] pending_calls: dialed (again) → calling mode');
-                                return { ...prev, mode: 'calling', startTime: new Date() };
+                                // 이미 연결 대기 중인데 dialed_at이 업데이트 됨 -> Android가 통화 시작(OFFHOOK) 감지!
+                                if (dbDialedAt && prev.dialedAt !== dbDialedAt) {
+                                    console.log('[ActiveCall] pending_calls: dialed_at changed → calling mode, new dialedAt:', dbDialedAt);
+                                    return { 
+                                        ...prev, 
+                                        mode: 'calling', 
+                                        startedAt: new Date(dbDialedAt), 
+                                        dialedAt: dbDialedAt 
+                                    };
+                                }
                             }
                         }
 
@@ -248,20 +257,29 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 setCallState(prev => {
                     if (!prev.isActive) return prev;
 
-                    // 데이터베이스 상태와 현재 모드가 일치하면 변경 없음
+                    const dbDialedAt = latestCall.dialed_at;
+
+                    // 데이터베이스 상태와 현재 모드가 일치하며 dialed_at까지 같은 경우 변경 없음
                     if (status === 'pending' && prev.mode === 'pending') return prev;
-                    if (status === 'dialed' && prev.mode === 'dialing' && !latestCall.dialed_at) return prev;
-                    if (status === 'dialed' && prev.mode === 'calling' && latestCall.dialed_at) return prev;
+                    if (status === 'dialed' && prev.mode === 'dialing' && prev.dialedAt === dbDialedAt) return prev;
+                    if (status === 'dialed' && prev.mode === 'calling' && prev.dialedAt === dbDialedAt) return prev;
                     if (status === 'ended' && prev.mode === 'ended') return prev;
 
                     if (status === 'dialed') {
-                        if (prev.mode === 'pending') {
-                            console.log('[ActiveCall Poll] pending_calls: dialed → dialing mode');
-                            return { ...prev, mode: 'dialing' };
-                        } else if (prev.mode === 'dialing' && latestCall.dialed_at) {
-                            // dialed_at이 기록되었으면 통화가 실제로 시작된 것
-                            console.log('[ActiveCall Poll] pending_calls: dialed_at set → calling mode');
-                            return { ...prev, mode: 'calling', startedAt: new Date(latestCall.dialed_at) };
+                        if (prev.mode === 'pending' || (prev.mode === 'dialing' && !prev.dialedAt)) {
+                            console.log('[ActiveCall Poll] pending_calls: dialed → dialing mode, dialedAt:', dbDialedAt);
+                            return { ...prev, mode: 'dialing', dialedAt: dbDialedAt };
+                        } else if (prev.mode === 'dialing') {
+                            if (dbDialedAt && prev.dialedAt !== dbDialedAt) {
+                                // dialed_at이 새로 갱신된 경우만 통화 시작으로 간주
+                                console.log('[ActiveCall Poll] pending_calls: dialed_at updated → calling mode, new dialedAt:', dbDialedAt);
+                                return { 
+                                    ...prev, 
+                                    mode: 'calling', 
+                                    startedAt: new Date(dbDialedAt), 
+                                    dialedAt: dbDialedAt 
+                                };
+                            }
                         }
                     }
 
