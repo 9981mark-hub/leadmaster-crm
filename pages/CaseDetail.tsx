@@ -75,6 +75,21 @@ export default function CaseDetail() {
         }
     }, [c, globalSecondaryStatuses]);
 
+    // Reset audio and UI states when caseId changes to prevent state leakage from previous case
+    useEffect(() => {
+        setCurrentAudioFile(null);
+        setAudioUrl(null);
+        setIsFileUploading(false);
+        setIsAiLoading(false);
+        setAiSummaryEditMode(false);
+        setIsPrimaryStatusModalOpen(false);
+        setIsSecondaryStatusModalOpen(false);
+        setIsTertiaryStatusModalOpen(false);
+        setPendingPrimaryStatus(null);
+        setPendingSecondaryStatus(null);
+        setPendingTertiaryStatus(null);
+    }, [caseId]);
+
     // [Refactor Restore] Mark as viewed on mount
 
 
@@ -344,6 +359,8 @@ export default function CaseDetail() {
                 showToast('구글 드라이브 업로드 실패', 'error');
             } finally {
                 setIsFileUploading(false);
+                // Reset file input value to allow selecting the same file again
+                e.target.value = '';
             }
         }
     };
