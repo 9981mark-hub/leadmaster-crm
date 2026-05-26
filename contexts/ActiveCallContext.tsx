@@ -299,15 +299,20 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, [callState.isActive, callState.mode, callState.phoneNumber]);
 
     // ============================================
-    // pending/calling 모드 안전 타임아웃 (2분)
+    // pending/dialing 모드 안전 타임아웃 (2분) 및 calling 모드 안전 타임아웃 (1시간)
     // Realtime 이벤트 누락으로 팝업이 stuck되는 것 방지
     // ============================================
     useEffect(() => {
         if (!callState.isActive || callState.mode === 'ended') return;
 
+        const timeoutMs = callState.mode === 'calling'
+            ? 60 * 60 * 1000 // 통화 중일 때는 1시간 안전 대기
+            : 2 * 60 * 1000; // 대기/발신 중일 때는 2분 안전 대기
+
         const safetyTimer = setTimeout(() => {
+            console.log(`[ActiveCall] Safety timeout triggered for mode: ${callState.mode}`);
             setCallState(initialState);
-        }, 2 * 60 * 1000); // 2분
+        }, timeoutMs);
 
         return () => clearTimeout(safetyTimer);
     }, [callState.isActive, callState.mode]);
