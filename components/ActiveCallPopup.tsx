@@ -319,7 +319,7 @@ const ActiveCallPopup: React.FC = () => {
                                         </span>
                                     </div>
                                     <div className="bg-blue-50/50 dark:bg-blue-900/10 p-2.5 rounded-xl border border-blue-100/50 dark:border-blue-900/20 text-xs text-gray-700 dark:text-gray-300">
-                                        <p className="line-clamp-3 leading-relaxed whitespace-pre-wrap">
+                                        <p className="line-clamp-5 leading-relaxed whitespace-pre-wrap">
                                             {latestMemo.content}
                                         </p>
                                     </div>
