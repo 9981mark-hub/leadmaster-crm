@@ -36,6 +36,8 @@ jobs:
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_GOOGLE_SCRIPT_URL: ${{ secrets.VITE_GOOGLE_SCRIPT_URL }}
+          VITE_GOOGLE_SCRIPT_TOKEN: ${{ secrets.VITE_GOOGLE_SCRIPT_TOKEN }}
           VITE_DATA_MODE: hybrid
 
       - name: Setup Pages

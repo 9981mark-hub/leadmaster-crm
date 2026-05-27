@@ -10,6 +10,16 @@
  * 4. 트리거 설정: checkAndSendReminderEmails 함수를 5분마다 실행
  * ============================================
  */
+// ============================================
+// SECURITY CONFIGURATION (보안 설정)
+// ============================================
+// [중요] 토큰값을 본인만 아는 복잡한 임의의 문자열로 수정한 후, Vercel/로컬 환경변수의 VITE_GOOGLE_SCRIPT_TOKEN에도 동일하게 등록하세요.
+var API_TOKEN = 'LM_SECRET_SECURE_TOKEN_2026';
+
+function validateToken(token) {
+  if (!API_TOKEN || API_TOKEN === 'YOUR_SECRET_TOKEN_HERE') return true; 
+  return String(token) === String(API_TOKEN);
+}
 
 var LEADS_SHEET = 'Leads';
 var SETTINGS_SHEET = 'Settings';
@@ -17,6 +27,12 @@ var VISITS_SHEET = 'Visits';
 
 function doGet(e) {
   var params = e.parameter;
+  
+  // API 토큰 보안 검증
+  if (!validateToken(params.token)) {
+    return response(JSON.stringify({result: "Error", message: "Unauthorized: Invalid API Token"}), 401);
+  }
+  
   var target = params.target || params.type || 'leads'; 
 
   if (target === 'proxy_font') return handleFontProxy(params);
@@ -48,6 +64,13 @@ function doPost(e) {
   }
   
   var target = params.target || params.type || 'leads';
+  
+  // 외부 랜딩페이지 접수(POST)는 토큰 검증 예외 처리
+  var isLandingPageSubmit = (target === 'leads' && (params.action === 'create_external' || params.landing_id));
+  
+  if (!isLandingPageSubmit && !validateToken(params.token)) {
+    return response(JSON.stringify({result: "Error", message: "Unauthorized: Invalid API Token"}), 401);
+  }
   
   if (target === 'upload') return handleFileUpload(params);
   if (target === 'upload_image') return handleImageUpload(params);

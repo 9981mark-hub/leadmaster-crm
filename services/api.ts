@@ -24,7 +24,8 @@ import {
 
 // --- CONFIGURATION ---
 // Google Apps Script URL (환경변수 우선, 없으면 기본값 사용)
-export const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbyv68G12Kd0g8RThZGpXToV2m_PjN7IsaBXwzDkPvA1TqsgFTIjQFuuC0G0_Xitsxm8/exec";
+export const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzv9cZBunN0db6kabqL7tIpeBHirVGUOwso6vxLxgcZaPVekTvTH4hxKKiyvCjjg4eafw/exec";
+export const GOOGLE_SCRIPT_TOKEN = import.meta.env.VITE_GOOGLE_SCRIPT_TOKEN || "";
 
 // --- LOCAL CACHE & STATE MANAGEMENT ---
 let localCases: Case[] = [];
@@ -172,11 +173,12 @@ export const isCaseSeen = (caseId: string): boolean => {
 const syncToSheet = async (payload: any) => {
   if (!GOOGLE_SCRIPT_URL) return;
   try {
+    const payloadWithAuth = { ...payload, token: GOOGLE_SCRIPT_TOKEN };
     await fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payloadWithAuth),
     });
   } catch (error) {
     console.error("Sync Failed:", error);
@@ -188,7 +190,7 @@ const fetchFromSheet = async (target: 'leads' | 'settings') => {
   if (!GOOGLE_SCRIPT_URL) return null;
   const apiType = target;
   try {
-    const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}&_t=${Date.now()}`);
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}&token=${encodeURIComponent(GOOGLE_SCRIPT_TOKEN)}&_t=${Date.now()}`);
     if (!response.ok) throw new Error('Network error');
     return await response.json();
   } catch (error) {
@@ -1543,7 +1545,8 @@ export const uploadRecording = async (file: File): Promise<{ url: string, id: st
       target: 'upload',
       filename: file.name,
       mimeType: file.type,
-      data: base64Data
+      data: base64Data,
+      token: GOOGLE_SCRIPT_TOKEN
     })
   });
 
@@ -2913,7 +2916,8 @@ export const uploadFileToDrive = async (base64Data: string, filename: string, mi
     target: 'upload',
     data: base64Data,
     filename: filename,
-    mimeType: mimeType
+    mimeType: mimeType,
+    token: GOOGLE_SCRIPT_TOKEN
   };
 
   // Preflight(옵션 요청) 방영을 피하기 위해 application/json을 쓰지 않고 일반 텍스트 POST 방식을 취함
