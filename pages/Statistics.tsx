@@ -94,6 +94,14 @@ export default function Statistics() {
     const [isEditingTarget, setIsEditingTarget] = useState(false);
     const [targetInput, setTargetInput] = useState(targetContracts.toString());
 
+    // Pagination for Drop-off Customer Feedbacks
+    const [dropOffPage, setDropOffPage] = useState(1);
+
+    // Reset drop-off page when filters change
+    useEffect(() => {
+        setDropOffPage(1);
+    }, [periodFilter, partnerFilter, pathFilter]);
+
     useEffect(() => {
         Promise.all([fetchCases(), fetchPartners(), fetchInboundPaths(), fetchStatuses()]).then(([cData, pData, iData, sData]) => {
             setCases(cData.filter(c => c.status !== '휴지통'));
@@ -579,6 +587,13 @@ export default function Statistics() {
     }, [filteredCases]);
 
     const totalDropOff = dropOffCases.length;
+
+    const dropOffItemsPerPage = 10;
+    const totalDropOffPages = Math.ceil(dropOffCases.length / dropOffItemsPerPage);
+    const paginatedDropOffCases = useMemo(() => {
+        const start = (dropOffPage - 1) * dropOffItemsPerPage;
+        return dropOffCases.slice(start, start + dropOffItemsPerPage);
+    }, [dropOffCases, dropOffPage]);
 
     const dropOffReasonData = useMemo(() => {
         const counts: Record<string, number> = {};
@@ -1385,7 +1400,7 @@ export default function Statistics() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {dropOffCases.map((c, idx) => (
+                                                {paginatedDropOffCases.map((c, idx) => (
                                                     <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                                         <td className="py-2 px-3 font-semibold">
                                                             <Link to={`/case/${c.caseId}`} className="text-blue-600 dark:text-blue-400 hover:underline">
@@ -1414,6 +1429,29 @@ export default function Statistics() {
                                                 ))}
                                             </tbody>
                                         </table>
+                                        
+                                        {/* Pagination Controls */}
+                                        {totalDropOffPages > 1 && (
+                                            <div className="flex items-center justify-center gap-2 mt-4 no-print">
+                                                <button
+                                                    onClick={() => setDropOffPage(prev => Math.max(prev - 1, 1))}
+                                                    disabled={dropOffPage === 1}
+                                                    className="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors font-medium"
+                                                >
+                                                    이전
+                                                </button>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                                    {dropOffPage} / {totalDropOffPages} 페이지
+                                                </span>
+                                                <button
+                                                    onClick={() => setDropOffPage(prev => Math.min(prev + 1, totalDropOffPages))}
+                                                    disabled={dropOffPage === totalDropOffPages}
+                                                    className="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors font-medium"
+                                                >
+                                                    다음
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="text-center py-6 text-gray-400">
