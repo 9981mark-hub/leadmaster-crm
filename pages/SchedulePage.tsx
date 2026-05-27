@@ -33,7 +33,16 @@ export default function SchedulePage() {
   
   // State
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showCompleted, setShowCompleted] = useState<boolean>(true);
+  const [showCompleted, setShowCompleted] = useState<boolean>(() => {
+    const saved = localStorage.getItem('lm_schedule_show_completed');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  const handleToggleShowCompleted = (checked: boolean) => {
+    setShowCompleted(checked);
+    localStorage.setItem('lm_schedule_show_completed', String(checked));
+    setCurrentPage(1);
+  };
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>(ALL_TYPES);
   const [sortOrder, setSortOrder] = useState<SortOption>('time_asc');
@@ -514,10 +523,7 @@ export default function SchedulePage() {
             <input
               type="checkbox"
               checked={showCompleted}
-              onChange={(e) => {
-                setShowCompleted(e.target.checked);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleToggleShowCompleted(e.target.checked)}
               className="sr-only peer"
             />
             <span>완료된 일정 포함</span>
@@ -527,14 +533,20 @@ export default function SchedulePage() {
       </div>
 
       {/* 5. 타임라인 목록 영역 */}
-      <div className="space-y-4 relative pl-0 sm:pl-6">
+      <motion.div 
+        key={selectedDate.toISOString()}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.15 }}
+        className="space-y-4 relative pl-0 sm:pl-6"
+      >
         
         {/* 데스크탑 세로 타임라인 라인 */}
         {currentItems.length > 0 && (
           <div className="hidden sm:block absolute left-2.5 top-5 bottom-5 w-[2px] bg-gradient-to-b from-indigo-300 via-purple-300 to-indigo-100 dark:from-indigo-900 dark:via-purple-900 dark:to-gray-800 border-dashed border-l-[1.5px] border-indigo-200 dark:border-indigo-900" />
         )}
 
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
           {currentItems.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -563,7 +575,6 @@ export default function SchedulePage() {
               return (
                 <motion.div
                   key={`${item.reminder.id}-${idx}`}
-                  layoutId={item.reminder.id}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -759,7 +770,7 @@ export default function SchedulePage() {
             })
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {/* 6. 페이지네이션 (Pagination) */}
       {totalPages > 1 && (
