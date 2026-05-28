@@ -4,7 +4,7 @@ import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO
 import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords, fetchTaxInvoices } from '../services/api';
 import { Case, Partner, CaseStatus } from '../types';
 import { calculatePayableCommission } from '../utils';
-import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle, Download, Printer } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle, Download, Printer, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart as RechartsPie, Pie, Cell, Legend, LineChart, Line, AreaChart, Area,
@@ -71,6 +71,19 @@ const ChartSection = ({ title, children, className = '', headerExtra = null }: {
     </div>
 );
 
+// Helper to get ISO week number
+const getWeekNumber = (d: Date): number => {
+    const target = new Date(d.valueOf());
+    const dayNr = (d.getDay() + 6) % 7; // Monday is 0, Sunday is 6
+    target.setDate(target.getDate() - dayNr + 3); // Nearest Thursday
+    const firstThursday = target.valueOf();
+    target.setMonth(0, 1);
+    if (target.getDay() !== 4) {
+        target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+    }
+    return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+};
+
 export default function Statistics() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -89,6 +102,11 @@ export default function Statistics() {
     const [partnerFilter, setPartnerFilter] = useState<string>('all');
     const [pathFilter, setPathFilter] = useState<string>('all');
     const [trendGroupBy, setTrendGroupBy] = useState<'month' | 'week'>('month');
+
+    // Period performance table sorting state
+    const [tableGroupBy, setTableGroupBy] = useState<'month' | 'week'>('month');
+    const [tableSortBy, setTableSortBy] = useState<'period' | 'leads' | 'contracts' | 'rate' | 'fee'>('period');
+    const [tableSortDir, setTableSortDir] = useState<'asc' | 'desc'>('desc');
 
     // Target Contract Goal State (localStorage linked)
     const [targetContracts, setTargetContracts] = useState<number>(() => {
@@ -336,6 +354,105 @@ export default function Statistics() {
             return last8Weeks;
         }
     }, [filteredCases, trendGroupBy]);
+
+    // ============ Period Performance Data (Grouped by Month/Week with sorting) ============
+    const periodPerformanceData = useMemo(() => {
+        const groups: Record<string, {
+            key: string;
+            label: string;
+            subLabel: string;
+            leads: number;
+            contracts: number;
+            fee: number;
+        }> = {};
+
+        filteredCases.forEach(c => {
+            if (!c.createdAt) return;
+            const date = new Date(c.createdAt);
+            const year = date.getFullYear();
+
+            if (tableGroupBy === 'month') {
+                const month = date.getMonth() + 1;
+                const key = `${year}-${month.toString().padStart(2, '0')}`;
+                if (!groups[key]) {
+                    groups[key] = {
+                        key,
+                        label: `${month}월`,
+                        subLabel: `${year}년`,
+                        leads: 0,
+                        contracts: 0,
+                        fee: 0
+                    };
+                }
+                groups[key].leads++;
+                if (c.contractAt) {
+                    groups[key].contracts++;
+                    groups[key].fee += c.contractFee || 0;
+                }
+            } else {
+                const weekNo = getWeekNumber(date);
+                const key = `${year}-W${weekNo.toString().padStart(2, '0')}`;
+                if (!groups[key]) {
+                    const start = startOfWeek(date, { weekStartsOn: 1 });
+                    const end = endOfWeek(date, { weekStartsOn: 1 });
+                    groups[key] = {
+                        key,
+                        label: `${weekNo}주차`,
+                        subLabel: `(${format(start, 'MM/dd')} ~ ${format(end, 'MM/dd')})`,
+                        leads: 0,
+                        contracts: 0,
+                        fee: 0
+                    };
+                }
+                groups[key].leads++;
+                if (c.contractAt) {
+                    groups[key].contracts++;
+                    groups[key].fee += c.contractFee || 0;
+                }
+            }
+        });
+
+        const dataArray = Object.values(groups);
+
+        dataArray.sort((a, b) => {
+            let comparison = 0;
+            if (tableSortBy === 'period') {
+                comparison = a.key.localeCompare(b.key);
+            } else if (tableSortBy === 'leads') {
+                comparison = a.leads - b.leads;
+            } else if (tableSortBy === 'contracts') {
+                comparison = a.contracts - b.contracts;
+            } else if (tableSortBy === 'rate') {
+                const rateA = a.leads > 0 ? (a.contracts / a.leads) : 0;
+                const rateB = b.leads > 0 ? (b.contracts / b.leads) : 0;
+                comparison = rateA - rateB;
+            } else if (tableSortBy === 'fee') {
+                comparison = a.fee - b.fee;
+            }
+
+            return tableSortDir === 'asc' ? comparison : -comparison;
+        });
+
+        return dataArray;
+    }, [filteredCases, tableGroupBy, tableSortBy, tableSortDir]);
+
+    const handleSort = (field: 'period' | 'leads' | 'contracts' | 'rate' | 'fee') => {
+        if (tableSortBy === field) {
+            setTableSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+        } else {
+            setTableSortBy(field);
+            setTableSortDir('desc'); // Default to descending when changing fields
+        }
+    };
+
+    const renderSortIcon = (field: 'period' | 'leads' | 'contracts' | 'rate' | 'fee') => {
+        if (tableSortBy !== field) {
+            return <ArrowUpDown size={12} className="text-gray-400 dark:text-gray-500 opacity-60 hover:opacity-100 transition-opacity ml-1" />;
+        }
+        return tableSortDir === 'asc' 
+            ? <ArrowUp size={12} className="text-blue-600 dark:text-blue-400 ml-1" />
+            : <ArrowDown size={12} className="text-blue-600 dark:text-blue-400 ml-1" />;
+    };
 
     // ============ Funnel Data ============
     const funnelData = useMemo(() => {
@@ -1056,6 +1173,102 @@ export default function Statistics() {
                                         )}
                                     </div>
                                 </ChartSection>
+                            </div>
+
+                            {/* 📅 기간별 성과 분석 (월별 / 주별) */}
+                            <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel print-full-width">
+                                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                                    <div>
+                                        <h3 className="text-base font-bold text-gray-800 dark:text-white">📅 기간별 성과 분석</h3>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                            {tableGroupBy === 'month' ? '월별' : '주별'} 신규 접수 및 계약 성과와 전환율을 비교 정렬합니다.
+                                        </p>
+                                    </div>
+                                    <div className="flex bg-gray-100 dark:bg-gray-700 p-0.5 rounded-lg text-[11px] font-bold shadow-inner">
+                                        <button 
+                                            onClick={() => setTableGroupBy('month')} 
+                                            className={`px-2.5 py-1 rounded-md transition-all ${tableGroupBy === 'month' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                        >
+                                            월별
+                                        </button>
+                                        <button 
+                                            onClick={() => setTableGroupBy('week')} 
+                                            className={`px-2.5 py-1 rounded-md transition-all ${tableGroupBy === 'week' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                        >
+                                            주별
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm text-left">
+                                        <thead>
+                                            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+                                                <th onClick={() => handleSort('period')} className="py-3 px-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-l-md select-none transition-colors">
+                                                    <div className="flex items-center gap-1">
+                                                        기간 {renderSortIcon('period')}
+                                                    </div>
+                                                </th>
+                                                <th onClick={() => handleSort('leads')} className="py-3 px-3 text-right cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 select-none transition-colors">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        신규 접수 {renderSortIcon('leads')}
+                                                    </div>
+                                                </th>
+                                                <th onClick={() => handleSort('contracts')} className="py-3 px-3 text-right cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 select-none transition-colors">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        계약 건수 {renderSortIcon('contracts')}
+                                                    </div>
+                                                </th>
+                                                <th onClick={() => handleSort('rate')} className="py-3 px-3 text-right cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 select-none transition-colors">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        계약 전환율 {renderSortIcon('rate')}
+                                                    </div>
+                                                </th>
+                                                <th onClick={() => handleSort('fee')} className="py-3 px-3 text-right cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-r-md select-none transition-colors">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        총 수임료 {renderSortIcon('fee')}
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {periodPerformanceData.map((row) => {
+                                                const conversionRate = row.leads > 0 ? ((row.contracts / row.leads) * 100).toFixed(1) : '0.0';
+                                                return (
+                                                    <tr key={row.key} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                                                        <td className="py-3 px-3">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-semibold text-gray-800 dark:text-white text-sm">{row.label}</span>
+                                                                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{row.subLabel}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 px-3 text-right font-medium text-gray-700 dark:text-gray-300">{row.leads}건</td>
+                                                        <td className="py-3 px-3 text-right font-medium text-green-600 dark:text-green-400">{row.contracts}건</td>
+                                                        <td className="py-3 px-3 text-right">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                                                Number(conversionRate) >= 30 ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' :
+                                                                Number(conversionRate) >= 15 ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400' :
+                                                                'bg-gray-50 text-gray-600 dark:bg-gray-700/30 dark:text-gray-400'
+                                                            }`}>
+                                                                {conversionRate}%
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-3 text-right font-bold text-purple-600 dark:text-purple-400">
+                                                            {row.fee.toLocaleString()}만원
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {periodPerformanceData.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={5} className="text-center py-8 text-gray-400">
+                                                        해당 기간에 조회된 데이터가 없습니다.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     )}
