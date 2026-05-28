@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfWeek, endOfWeek } from 'date-fns';
 import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords, fetchTaxInvoices } from '../services/api';
 import { Case, Partner, CaseStatus } from '../types';
 import { calculatePayableCommission } from '../utils';
@@ -61,9 +61,12 @@ const KPICard = ({ title, value, subValue, icon: Icon, color, deltaComponent }: 
 );
 
 // Chart Section Wrapper
-const ChartSection = ({ title, children, className = '' }: { title: string; children: React.ReactNode; className?: string }) => (
+const ChartSection = ({ title, children, className = '', headerExtra = null }: { title: string; children: React.ReactNode; className?: string; headerExtra?: React.ReactNode }) => (
     <div className={`bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel ${className}`}>
-        <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4">{title}</h3>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h3 className="text-base font-bold text-gray-800 dark:text-white">{title}</h3>
+            {headerExtra}
+        </div>
         {children}
     </div>
 );
@@ -85,6 +88,7 @@ export default function Statistics() {
     const [periodFilter, setPeriodFilter] = useState<'1w' | '1m' | '3m' | '6m' | '1y' | 'all'>('6m');
     const [partnerFilter, setPartnerFilter] = useState<string>('all');
     const [pathFilter, setPathFilter] = useState<string>('all');
+    const [trendGroupBy, setTrendGroupBy] = useState<'month' | 'week'>('month');
 
     // Target Contract Goal State (localStorage linked)
     const [targetContracts, setTargetContracts] = useState<number>(() => {
@@ -266,36 +270,72 @@ export default function Statistics() {
         setIsEditingTarget(false);
     };
 
-    // ============ Monthly Trend Data ============
-    const monthlyTrendData = useMemo(() => {
-        const last6Months = Array.from({ length: 6 }, (_, i) => {
-            const date = subMonths(new Date(), 5 - i);
-            return {
-                name: format(date, 'MM월'),
-                start: startOfMonth(date),
-                end: endOfMonth(date),
-                신규: 0,
-                계약: 0,
-                금액: 0
-            };
-        });
+    // ============ Monthly/Weekly Trend Data ============
+    const trendData = useMemo(() => {
+        if (trendGroupBy === 'month') {
+            const last6Months = Array.from({ length: 6 }, (_, i) => {
+                const date = subMonths(new Date(), 5 - i);
+                return {
+                    name: format(date, 'MM월'),
+                    start: startOfMonth(date),
+                    end: endOfMonth(date),
+                    신규: 0,
+                    계약: 0,
+                    금액: 0
+                };
+            });
 
-        filteredCases.forEach(c => {
-            if (c.createdAt) {
-                const created = new Date(c.createdAt);
-                const monthData = last6Months.find(m => isWithinInterval(created, { start: m.start, end: m.end }));
-                if (monthData) {
-                    monthData.신규++;
-                    if (c.contractAt) {
-                        monthData.계약++;
-                        monthData.금액 += c.contractFee || 0;
+            filteredCases.forEach(c => {
+                if (c.createdAt) {
+                    const created = new Date(c.createdAt);
+                    const monthData = last6Months.find(m => isWithinInterval(created, { start: m.start, end: m.end }));
+                    if (monthData) {
+                        monthData.신규++;
+                        if (c.contractAt) {
+                            monthData.계약++;
+                            monthData.금액 += c.contractFee || 0;
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        return last6Months;
-    }, [filteredCases]);
+            return last6Months;
+        } else {
+            // Weekly Trend: Group by past 8 weeks
+            const now = new Date();
+            const last8Weeks = Array.from({ length: 8 }, (_, i) => {
+                // Moving backwards week by week
+                const date = new Date(now.getTime() - (7 * (7 - i)) * 24 * 60 * 60 * 1000);
+                const startOfThisWeek = startOfWeek(date, { weekStartsOn: 1 }); // Monday
+                const endOfThisWeek = endOfWeek(date, { weekStartsOn: 1 }); // Sunday
+                
+                return {
+                    name: `${format(startOfThisWeek, 'MM/dd')}~${format(endOfThisWeek, 'MM/dd')}`,
+                    start: startOfThisWeek,
+                    end: endOfThisWeek,
+                    신규: 0,
+                    계약: 0,
+                    금액: 0
+                };
+            });
+
+            filteredCases.forEach(c => {
+                if (c.createdAt) {
+                    const created = new Date(c.createdAt);
+                    const weekData = last8Weeks.find(w => isWithinInterval(created, { start: w.start, end: w.end }));
+                    if (weekData) {
+                        weekData.신규++;
+                        if (c.contractAt) {
+                            weekData.계약++;
+                            weekData.금액 += c.contractFee || 0;
+                        }
+                    }
+                }
+            });
+
+            return last8Weeks;
+        }
+    }, [filteredCases, trendGroupBy]);
 
     // ============ Funnel Data ============
     const funnelData = useMemo(() => {
@@ -867,10 +907,28 @@ export default function Statistics() {
                     {activeTab === 'overview' && (
                         <div className="space-y-6 print-layout">
                             <div className="grid md:grid-cols-2 gap-4 print-full-width">
-                                <ChartSection title="📈 월별 신규 접수 & 계약 추이 (그라데이션 분석)">
+                                <ChartSection 
+                                    title={`📈 ${trendGroupBy === 'month' ? '월별' : '주별'} 신규 접수 & 계약 추이 (그라데이션 분석)`}
+                                    headerExtra={
+                                        <div className="flex bg-gray-150 dark:bg-gray-750 p-0.5 rounded-lg text-[11px] font-bold shadow-inner">
+                                            <button 
+                                                onClick={() => setTrendGroupBy('month')} 
+                                                className={`px-2.5 py-1 rounded-md transition-all ${trendGroupBy === 'month' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                            >
+                                                월별
+                                            </button>
+                                            <button 
+                                                onClick={() => setTrendGroupBy('week')} 
+                                                className={`px-2.5 py-1 rounded-md transition-all ${trendGroupBy === 'week' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                            >
+                                                주별
+                                            </button>
+                                        </div>
+                                    }
+                                >
                                     <div className="h-[280px]">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <ComposedChart data={monthlyTrendData}>
+                                            <ComposedChart data={trendData}>
                                                 <defs>
                                                     <linearGradient id="colorNew" x1="0" y1="0" x2="0" y2="1">
                                                         <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4} />
