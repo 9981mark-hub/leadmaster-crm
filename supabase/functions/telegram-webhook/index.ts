@@ -126,6 +126,7 @@ contract 형식 (있을 경우):
 
 // AI 모델 우선순위 (최신 → 레거시 fallback)
 const GEMINI_MODELS = [
+  'gemini-3.1-flash-lite',
   'gemini-3-flash-preview',
   'gemini-2.5-flash',
 ];
