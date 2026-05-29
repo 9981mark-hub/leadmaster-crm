@@ -383,11 +383,7 @@ export default function CaseDetail() {
             setAiSummaryText(summary);
             setAiSummaryEditMode(false); // No need for edit mode - auto pipeline
 
-            // [Step 1] Auto save AI summary
-            handleUpdate('aiSummary', summary);
-
-            // [Step 2] Auto send to consultation memo
-            // Extract special notes directly from summary variable (not state, which is async)
+            // [Step 1 & 2 Merge] Auto save AI summary & send to consultation memo in a single mutation to prevent race conditions
             let memoContent = '';
             const specialMatch = summary.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
             if (specialMatch && specialMatch[1]) {
@@ -401,7 +397,17 @@ export default function CaseDetail() {
                 createdAt: new Date().toISOString(),
                 content: memoContent
             };
-            handleUpdateMemos([newMemo, ...(c?.specialMemo || [])]);
+
+            if (c) {
+                updateCaseMutation.mutate({
+                    id: c.caseId,
+                    updates: {
+                        aiSummary: summary,
+                        specialMemo: [newMemo, ...(c.specialMemo || [])]
+                    },
+                    silent: true
+                });
+            }
 
             showToast('✅ AI 요약 → 저장 → 상담 이력 전송 완료!');
         } catch (error) {

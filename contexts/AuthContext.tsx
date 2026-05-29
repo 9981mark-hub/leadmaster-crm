@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       }
     };
 
-    // [Session Recovery] - Non-destructive
+    // [Session Recovery] - Non-destructive with Visibility/Focus triggers
     useEffect(() => {
       const restoreSupabaseSession = async () => {
         if (!isAuthenticated || !supabase) return;
@@ -160,6 +160,20 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       };
 
       restoreSupabaseSession();
+
+      // [Mobile WebView Fix] Auto-recover session when app returns to foreground
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          restoreSupabaseSession();
+        }
+      };
+      window.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('focus', restoreSupabaseSession);
+
+      return () => {
+        window.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('focus', restoreSupabaseSession);
+      };
     }, [isAuthenticated]);
 
 
