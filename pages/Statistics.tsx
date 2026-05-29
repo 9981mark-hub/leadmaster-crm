@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfWeek, endOfWeek } from 'date-fns';
-import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords, fetchTaxInvoices } from '../services/api';
+import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfWeek, endOfWeek, parse } from 'date-fns';
+import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords, fetchTaxInvoices, fetchTossAdsSheetUrl, saveTossAdsSheetUrl, syncTossAdsLive } from '../services/api';
 import { Case, Partner, CaseStatus } from '../types';
 import { calculatePayableCommission } from '../utils';
-import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle, Download, Printer, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle, Download, Printer, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw, Info, ExternalLink, HelpCircle } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart as RechartsPie, Pie, Cell, Legend, LineChart, Line, AreaChart, Area,
@@ -124,13 +125,60 @@ export default function Statistics() {
         setDropOffPage(1);
     }, [periodFilter, partnerFilter, pathFilter]);
 
+    const { showToast } = useToast();
+    // Sub-tab for marketing
+    const [marketingSubTab, setMarketingSubTab] = useState<'roi' | 'toss'>('roi');
+
+    // Toss Ads Sheet state
+    const [sheetUrl, setSheetUrl] = useState(() => fetchTossAdsSheetUrl());
+    const [isEditingUrl, setIsEditingUrl] = useState(false);
+    const [urlInput, setUrlInput] = useState(sheetUrl);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [lastSyncTime, setLastSyncTime] = useState<string>(() => {
+        return localStorage.getItem('lm_toss_ads_last_sync') || '대기 중';
+    });
+    
+    // Toss Ads Records state
+    const [tossRecords, setTossRecords] = useState<any[]>([]);
+    
+    // Toss Ads date range/delay grouping state
+    const [tossTimeGroup, setTossTimeGroup] = useState<'day' | 'week' | 'month'>('week');
+    
+    // Table search/sorting/pagination state
+    const [tossSearch, setTossSearch] = useState('');
+    const [tossPage, setTossPage] = useState(1);
+    const [tossSortBy, setTossSortBy] = useState<'date' | 'spend' | 'leads' | 'cpl' | 'crmLeads' | 'contracts'>('date');
+    const [tossSortDir, setTossSortDir] = useState<'asc' | 'desc'>('desc');
+
     useEffect(() => {
         Promise.all([fetchCases(), fetchPartners(), fetchInboundPaths(), fetchStatuses()]).then(([cData, pData, iData, sData]) => {
             setCases(cData.filter(c => c.status !== '휴지통'));
             setPartners(pData);
             setInboundPaths(iData);
             setStatuses(sData);
+            
+            // Load local toss records
+            const tr = fetchTossAdsRecords();
+            setTossRecords(tr);
+            
             setLoading(false);
+            
+            // Background sync from Google Sheet
+            const runAutoSync = async () => {
+                try {
+                    console.log('[Statistics] Running background sync for Toss Ads...');
+                    const res = await syncTossAdsLive();
+                    const trUpdated = fetchTossAdsRecords();
+                    setTossRecords(trUpdated);
+                    const syncTime = new Date().toLocaleString();
+                    setLastSyncTime(syncTime);
+                    localStorage.setItem('lm_toss_ads_last_sync', syncTime);
+                    console.log(`[Statistics] Toss Ads synced automatically. Added: ${res.added}, Updated: ${res.updated}`);
+                } catch (e) {
+                    console.warn('[Statistics] Toss Ads auto sync failed:', e);
+                }
+            };
+            runAutoSync();
         });
     }, []);
 
@@ -722,6 +770,356 @@ export default function Statistics() {
         calculateRoi();
     }, [filteredCases, adSpendData, inboundPaths, periodFilter, partners]);
 
+    const handleSyncTossAds = async () => {
+        if (isSyncing) return;
+        setIsSyncing(true);
+        try {
+            const res = await syncTossAdsLive(sheetUrl);
+            const trUpdated = fetchTossAdsRecords();
+            setTossRecords(trUpdated);
+            const syncTime = new Date().toLocaleString();
+            setLastSyncTime(syncTime);
+            localStorage.setItem('lm_toss_ads_last_sync', syncTime);
+            showToast(`동기화 완료: ${res.added}건 추가, ${res.updated}건 업데이트`, 'success');
+        } catch (e: any) {
+            console.error(e);
+            showToast(e.message || '동기화 중 오류가 발생했습니다.', 'error');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleSaveSheetUrl = () => {
+        if (!urlInput) {
+            showToast('올바른 URL을 입력해주세요.', 'error');
+            return;
+        }
+        saveTossAdsSheetUrl(urlInput);
+        setSheetUrl(urlInput);
+        setIsEditingUrl(false);
+        showToast('구글 시트 연동 주소가 저장되었습니다.', 'success');
+    };
+
+    const filteredTossRecords = useMemo(() => {
+        const now = new Date();
+        let startDate: Date | null = null;
+
+        switch (periodFilter) {
+            case '1w': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+            case '1m': startDate = subMonths(now, 1); break;
+            case '3m': startDate = subMonths(now, 3); break;
+            case '6m': startDate = subMonths(now, 6); break;
+            case '1y': startDate = subMonths(now, 12); break;
+            default: startDate = null;
+        }
+
+        return tossRecords.filter(r => {
+            if (startDate) {
+                const recDate = new Date(r.date);
+                if (recDate < startDate) return false;
+            }
+            return true;
+        });
+    }, [tossRecords, periodFilter]);
+
+    const tossSummaryKpis = useMemo(() => {
+        let totalSpend = 0;
+        let totalImpressions = 0;
+        let totalClicks = 0;
+        let totalTossLeads = 0;
+        
+        filteredTossRecords.forEach(r => {
+            totalSpend += r.spendExVat;
+            totalImpressions += r.impressions;
+            totalClicks += r.clicks;
+            totalTossLeads += r.leads;
+        });
+
+        const tossPath = inboundPaths.find(p => p.includes('토스')) || '토스';
+        
+        const now = new Date();
+        let startDate: Date | null = null;
+        switch (periodFilter) {
+            case '1w': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+            case '1m': startDate = subMonths(now, 1); break;
+            case '3m': startDate = subMonths(now, 3); break;
+            case '6m': startDate = subMonths(now, 6); break;
+            case '1y': startDate = subMonths(now, 12); break;
+            default: startDate = null;
+        }
+
+        const periodTossCases = cases.filter(c => {
+            if (c.inboundPath !== tossPath) return false;
+            if (startDate && c.createdAt) {
+                const recDate = new Date(c.createdAt);
+                if (recDate < startDate) return false;
+            }
+            return true;
+        });
+
+        const totalCrmLeads = periodTossCases.length;
+        const totalContracts = periodTossCases.filter(c => c.contractAt || c.status === '계약완료').length;
+        const totalCrmRevenue = periodTossCases.reduce((sum, c) => sum + (c.contractFee || 0), 0);
+
+        const avgCtr = totalImpressions > 0 ? parseFloat(((totalClicks / totalImpressions) * 100).toFixed(2)) : 0;
+        const avgCpl = totalTossLeads > 0 ? Math.round(totalSpend / totalTossLeads) : 0;
+        const avgCpc = totalClicks > 0 ? Math.round(totalSpend / totalClicks) : 0;
+        
+        const crmClosingRate = totalCrmLeads > 0 ? parseFloat(((totalContracts / totalCrmLeads) * 100).toFixed(1)) : 0;
+        const matchRate = totalTossLeads > 0 ? parseFloat(((totalCrmLeads / totalTossLeads) * 100).toFixed(1)) : 0;
+        const overallClosingRate = totalTossLeads > 0 ? parseFloat(((totalContracts / totalTossLeads) * 100).toFixed(1)) : 0;
+
+        return {
+            totalSpend,
+            totalImpressions,
+            totalClicks,
+            totalTossLeads,
+            totalCrmLeads,
+            totalContracts,
+            totalCrmRevenue,
+            avgCtr,
+            avgCpl,
+            avgCpc,
+            crmClosingRate,
+            matchRate,
+            overallClosingRate
+        };
+    }, [filteredTossRecords, cases, inboundPaths, periodFilter]);
+
+    const tossPerformanceData = useMemo(() => {
+        const tossPath = inboundPaths.find(p => p.includes('토스')) || '토스';
+        const crmTossCases = cases.filter(c => c.inboundPath === tossPath && c.createdAt);
+
+        if (tossTimeGroup === 'day') {
+            return filteredTossRecords.map(r => {
+                const dayStr = r.date;
+                const dayCases = crmTossCases.filter(c => c.createdAt.startsWith(dayStr));
+                const crmLeads = dayCases.length;
+                const contracts = dayCases.filter(c => c.contractAt || c.status === '계약완료').length;
+                const crmRevenue = dayCases.reduce((sum, c) => sum + (c.contractFee || 0), 0);
+                
+                return {
+                    key: dayStr,
+                    label: dayStr,
+                    rawDate: r.date,
+                    spend: r.spendExVat,
+                    impressions: r.impressions,
+                    clicks: r.clicks,
+                    tossLeads: r.leads,
+                    crmLeads,
+                    contracts,
+                    crmRevenue,
+                    ctr: r.ctr,
+                    cpm: r.cpm,
+                    cpc: r.cpc,
+                    cpl: r.costPerLead,
+                    importedAt: r.importedAt
+                };
+            }).sort((a, b) => b.rawDate.localeCompare(a.rawDate));
+        } else if (tossTimeGroup === 'week') {
+            const weeklyGroups: Record<string, {
+                key: string;
+                label: string;
+                rawDate: string;
+                spend: number;
+                impressions: number;
+                clicks: number;
+                tossLeads: number;
+                crmLeads: number;
+                contracts: number;
+                crmRevenue: number;
+            }> = {};
+
+            filteredTossRecords.forEach(r => {
+                const date = new Date(r.date);
+                const start = startOfWeek(date, { weekStartsOn: 1 });
+                const end = endOfWeek(date, { weekStartsOn: 1 });
+                const weekKey = format(start, 'yyyy-MM-dd');
+                const label = `${format(start, 'MM/dd')}~${format(end, 'MM/dd')}`;
+
+                if (!weeklyGroups[weekKey]) {
+                    weeklyGroups[weekKey] = {
+                        key: weekKey,
+                        label,
+                        rawDate: weekKey,
+                        spend: 0,
+                        impressions: 0,
+                        clicks: 0,
+                        tossLeads: 0,
+                        crmLeads: 0,
+                        contracts: 0,
+                        crmRevenue: 0
+                    };
+                }
+                weeklyGroups[weekKey].spend += r.spendExVat;
+                weeklyGroups[weekKey].impressions += r.impressions;
+                weeklyGroups[weekKey].clicks += r.clicks;
+                weeklyGroups[weekKey].tossLeads += r.leads;
+            });
+
+            crmTossCases.forEach(c => {
+                const date = new Date(c.createdAt);
+                const start = startOfWeek(date, { weekStartsOn: 1 });
+                const weekKey = format(start, 'yyyy-MM-dd');
+
+                if (weeklyGroups[weekKey]) {
+                    weeklyGroups[weekKey].crmLeads++;
+                    if (c.contractAt || c.status === '계약완료') {
+                        weeklyGroups[weekKey].contracts++;
+                        weeklyGroups[weekKey].crmRevenue += c.contractFee || 0;
+                    }
+                }
+            });
+
+            return Object.values(weeklyGroups).map(w => {
+                const ctr = w.impressions > 0 ? parseFloat(((w.clicks / w.impressions) * 100).toFixed(2)) : 0;
+                const cpm = w.impressions > 0 ? Math.round((w.spend / w.impressions) * 1000) : 0;
+                const cpc = w.clicks > 0 ? Math.round(w.spend / w.clicks) : 0;
+                const cpl = w.tossLeads > 0 ? Math.round(w.spend / w.tossLeads) : 0;
+
+                return {
+                    ...w,
+                    ctr,
+                    cpm,
+                    cpc,
+                    cpl
+                };
+            }).sort((a, b) => b.rawDate.localeCompare(a.rawDate));
+        } else {
+            const monthlyGroups: Record<string, {
+                key: string;
+                label: string;
+                rawDate: string;
+                spend: number;
+                impressions: number;
+                clicks: number;
+                tossLeads: number;
+                crmLeads: number;
+                contracts: number;
+                crmRevenue: number;
+            }> = {};
+
+            filteredTossRecords.forEach(r => {
+                const date = new Date(r.date);
+                const monthKey = format(date, 'yyyy-MM');
+                const label = format(date, 'yyyy년 MM월');
+
+                if (!monthlyGroups[monthKey]) {
+                    monthlyGroups[monthKey] = {
+                        key: monthKey,
+                        label,
+                        rawDate: monthKey,
+                        spend: 0,
+                        impressions: 0,
+                        clicks: 0,
+                        tossLeads: 0,
+                        crmLeads: 0,
+                        contracts: 0,
+                        crmRevenue: 0
+                    };
+                }
+                monthlyGroups[monthKey].spend += r.spendExVat;
+                monthlyGroups[monthKey].impressions += r.impressions;
+                monthlyGroups[monthKey].clicks += r.clicks;
+                monthlyGroups[monthKey].tossLeads += r.leads;
+            });
+
+            crmTossCases.forEach(c => {
+                const date = new Date(c.createdAt);
+                const monthKey = format(date, 'yyyy-MM');
+
+                if (monthlyGroups[monthKey]) {
+                    monthlyGroups[monthKey].crmLeads++;
+                    if (c.contractAt || c.status === '계약완료') {
+                        monthlyGroups[monthKey].contracts++;
+                        monthlyGroups[monthKey].crmRevenue += c.contractFee || 0;
+                    }
+                }
+            });
+
+            return Object.values(monthlyGroups).map(m => {
+                const ctr = m.impressions > 0 ? parseFloat(((m.clicks / m.impressions) * 100).toFixed(2)) : 0;
+                const cpm = m.impressions > 0 ? Math.round((m.spend / m.impressions) * 1000) : 0;
+                const cpc = m.clicks > 0 ? Math.round(m.spend / m.clicks) : 0;
+                const cpl = m.tossLeads > 0 ? Math.round(m.spend / m.tossLeads) : 0;
+
+                return {
+                    ...m,
+                    ctr,
+                    cpm,
+                    cpc,
+                    cpl
+                };
+            }).sort((a, b) => b.rawDate.localeCompare(a.rawDate));
+        }
+    }, [filteredTossRecords, cases, inboundPaths, tossTimeGroup]);
+
+    const tossFunnelData = useMemo(() => {
+        return [
+            { name: '1. 토스 잠재고객', value: tossSummaryKpis.totalTossLeads, fill: '#3B82F6' },
+            { name: '2. CRM 실등록', value: tossSummaryKpis.totalCrmLeads, fill: '#10B981' },
+            { name: '3. 계약 완료', value: tossSummaryKpis.totalContracts, fill: '#8B5CF6' }
+        ];
+    }, [tossSummaryKpis]);
+
+    const searchedPerformanceData = useMemo(() => {
+        if (!tossSearch) return tossPerformanceData;
+        const q = tossSearch.toLowerCase();
+        return tossPerformanceData.filter(d => {
+            return d.label.toLowerCase().includes(q) || d.key.toLowerCase().includes(q);
+        });
+    }, [tossPerformanceData, tossSearch]);
+
+    const sortedPerformanceData = useMemo(() => {
+        const sorted = [...searchedPerformanceData];
+        sorted.sort((a, b) => {
+            let comparison = 0;
+            if (tossSortBy === 'date') {
+                comparison = a.rawDate.localeCompare(b.rawDate);
+            } else if (tossSortBy === 'spend') {
+                comparison = a.spend - b.spend;
+            } else if (tossSortBy === 'leads') {
+                comparison = a.tossLeads - b.tossLeads;
+            } else if (tossSortBy === 'cpl') {
+                comparison = a.cpl - b.cpl;
+            } else if (tossSortBy === 'crmLeads') {
+                comparison = a.crmLeads - b.crmLeads;
+            } else if (tossSortBy === 'contracts') {
+                comparison = a.contracts - b.contracts;
+            }
+
+            return tossSortDir === 'asc' ? comparison : -comparison;
+        });
+        return sorted;
+    }, [searchedPerformanceData, tossSortBy, tossSortDir]);
+
+    const tossItemsPerPage = 10;
+    const totalTossPages = Math.ceil(sortedPerformanceData.length / tossItemsPerPage);
+    const paginatedTossData = useMemo(() => {
+        const start = (tossPage - 1) * tossItemsPerPage;
+        return sortedPerformanceData.slice(start, start + tossItemsPerPage);
+    }, [sortedPerformanceData, tossPage]);
+
+    useEffect(() => {
+        setTossPage(1);
+    }, [tossSearch, tossTimeGroup, periodFilter]);
+
+    const exportTossPerformanceCsv = () => {
+        if (!tossPerformanceData || tossPerformanceData.length === 0) return;
+        let csvContent = "\uFEFF기간,소진비용,노출수,클릭수,CTR,토스잠재고객,CPL,CRM접수,CRM계약,계약금\n";
+        tossPerformanceData.forEach(d => {
+            csvContent += `"${d.label}","${d.spend ? `${d.spend.toLocaleString()}원` : '-'}","${d.impressions ? d.impressions.toLocaleString() : '-'}","${d.clicks ? d.clicks.toLocaleString() : '-'}","${d.ctr ? `${d.ctr}%` : '-'}","${d.tossLeads ? `${d.tossLeads}명` : '-'}","${d.cpl ? `${d.cpl.toLocaleString()}원` : '-'}","${d.crmLeads ? `${d.crmLeads}건` : '-'}","${d.contracts ? `${d.contracts}건` : '-'}","${d.crmRevenue ? `${d.crmRevenue}만원` : '-'}"\n`;
+        });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `토스애즈_성과대조_${tossTimeGroup}_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const exportRoiCsv = () => {
         if (!roiData || roiData.length === 0) return;
         let csvContent = "\uFEFF채널,광고비,리드(건),계약(건),수임료,수수료,CPA,CPC,ROAS(수수료 기준)\n";
@@ -1278,194 +1676,618 @@ export default function Statistics() {
                     {/* ========================================================================= */}
                     {activeTab === 'marketing' && (
                         <div className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <ChartSection title="📍 유입경로별 분포">
-                                    <div className="h-[280px]">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <RechartsPie>
-                                                <Pie
-                                                    data={sourceData}
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    innerRadius={55}
-                                                    outerRadius={85}
-                                                    dataKey="건수"
-                                                    label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
-                                                    labelLine={false}
-                                                >
-                                                    {sourceData.map((_, i) => (
-                                                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip />
-                                            </RechartsPie>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </ChartSection>
-
-                                <ChartSection title="📊 유입경로별 계약 전환율">
-                                    <div className="h-[280px]">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={sourceData} layout="vertical">
-                                                <defs>
-                                                    <linearGradient id="colorConv" x1="0" y1="0" x2="1" y2="0">
-                                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.2} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
-                                                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
-                                                <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
-                                                <Tooltip formatter={(v: any) => `${v}%`} />
-                                                <Bar dataKey="전환율" fill="url(#colorConv)" radius={[0, 4, 4, 0]}>
-                                                    <LabelList dataKey="전환율" position="right" formatter={(v: any) => `${v}%`} style={{ fontSize: 10 }} />
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </ChartSection>
+                            {/* Sub-tab Navigation */}
+                            <div className="flex gap-2 border-b border-gray-100 dark:border-gray-700/50 pb-2 mb-4 no-print">
+                                <button
+                                    onClick={() => setMarketingSubTab('roi')}
+                                    className={`px-3.5 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${marketingSubTab === 'roi'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    💰 유입경로 & 광고 ROI
+                                </button>
+                                <button
+                                    onClick={() => setMarketingSubTab('toss')}
+                                    className={`px-3.5 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${marketingSubTab === 'toss'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    📊 토스애즈 상세 성과 분석
+                                </button>
                             </div>
 
-                            {/* ROI Box */}
-                            <ChartSection title="💰 광고 ROI 분석">
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between flex-wrap gap-2 no-print">
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            유입경로별 광고비를 입력하면 CPA, CPC, ROAS를 자동 계산합니다. <br />
-                                            <span className="text-blue-600 dark:text-blue-400 font-medium">* 토스 애즈 및 매입 세금계산서의 광고비는 자동으로 합산 반영됩니다.</span>
-                                        </p>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={exportRoiCsv}
-                                                className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
-                                            >
-                                                <Download size={13} /> 엑셀 다운로드 (CSV)
-                                            </button>
-                                            <button
-                                                onClick={() => setShowAdSpendInput(!showAdSpendInput)}
-                                                className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium dark:bg-blue-900/30 dark:text-blue-400"
-                                            >
-                                                {showAdSpendInput ? '접기' : '광고비 직접 입력'}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {showAdSpendInput && (
-                                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3 no-print">
-                                            <div className="flex items-center gap-3">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">월 선택</label>
-                                                <input
-                                                    type="month"
-                                                    value={adSpendMonth}
-                                                    onChange={e => setAdSpendMonth(e.target.value)}
-                                                    className="p-1.5 border rounded text-sm bg-white dark:bg-gray-700 dark:border-gray-600"
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                                                {inboundPaths.map(path => (
-                                                    <div key={path} className="flex items-center gap-2">
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[60px] truncate" title={path}>{path}</span>
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                type="number"
-                                                                placeholder="0"
-                                                                value={adSpendEditing[path] || ''}
-                                                                onChange={e => handleAdSpendChange(path, e.target.value)}
-                                                                className="w-20 p-1.5 border rounded text-sm text-right bg-white dark:bg-gray-700 dark:border-gray-600"
-                                                            />
-                                                            <span className="text-xs text-gray-500 ml-1">만원</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={saveAdSpend}
-                                                className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                                            >
-                                                <Save size={14} /> 저장
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {roiData.length > 0 && roiData.some(d => d.광고비 > 0) ? (
-                                        <>
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-sm text-left">
-                                                    <thead>
-                                                        <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500">
-                                                            <th className="py-2 px-2">채널</th>
-                                                            <th className="text-right py-2 px-2">광고비</th>
-                                                            <th className="text-right py-2 px-2">리드</th>
-                                                            <th className="text-right py-2 px-2">계약</th>
-                                                            <th className="text-right py-2 px-2">수임료</th>
-                                                            <th className="text-right py-2 px-2 font-semibold text-blue-600">수수료 (매출)</th>
-                                                            <th className="text-right py-2 px-2">CPA</th>
-                                                            <th className="text-right py-2 px-2">CPC</th>
-                                                            <th className="text-right py-2 px-2 font-bold">ROAS <span className="text-[10px] font-normal text-gray-400 block">(수수료 기준)</span></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {roiData.map((d, i) => (
-                                                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                                <td className="py-2 px-2 font-medium">{d.name}</td>
-                                                                <td className="py-2 px-2 text-right text-gray-500">{d.광고비 > 0 ? `${d.광고비.toLocaleString()}만원` : '-'}</td>
-                                                                <td className="py-2 px-2 text-right">{d.리드}건</td>
-                                                                <td className="py-2 px-2 text-right text-green-600 font-semibold">{d.계약}건</td>
-                                                                <td className="py-2 px-2 text-right text-purple-600">{d.수임료 > 0 ? `${d.수임료.toLocaleString()}만원` : '-'}</td>
-                                                                <td className="py-2 px-2 text-right font-bold text-blue-600">{d.수수료 > 0 ? `${d.수수료.toLocaleString()}만원` : '-'}</td>
-                                                                <td className="py-2 px-2 text-right">{d.CPA > 0 ? `${d.CPA.toLocaleString()}만원` : '-'}</td>
-                                                                <td className="py-2 px-2 text-right">{d.CPC > 0 ? `${d.CPC.toLocaleString()}만원` : '-'}</td>
-                                                                <td className={`py-2 px-2 text-right font-bold ${d.ROAS >= 300 ? 'text-green-600 dark:text-green-400' : d.ROAS >= 100 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
-                                                                    {d.ROAS > 0 ? `${d.ROAS}%` : '-'}
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-
-                                            <div className="h-[250px] mt-4">
-                                                <p className="text-xs text-gray-400 mb-2 font-medium">ROAS 비교 (광고수익률 %)</p>
+                            {marketingSubTab === 'roi' ? (
+                                <div className="space-y-6">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <ChartSection title="📍 유입경로별 분포">
+                                            <div className="h-[280px]">
                                                 <ResponsiveContainer width="100%" height="100%">
-                                                    <BarChart data={roiData.filter(d => d.광고비 > 0)}>
+                                                    <RechartsPie>
+                                                        <Pie
+                                                            data={sourceData}
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            innerRadius={55}
+                                                            outerRadius={85}
+                                                            dataKey="건수"
+                                                            label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
+                                                            labelLine={false}
+                                                        >
+                                                            {sourceData.map((_, i) => (
+                                                                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                                            ))}
+                                                        </Pie>
+                                                        <Tooltip />
+                                                    </RechartsPie>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </ChartSection>
+
+                                        <ChartSection title="📊 유입경로별 계약 전환율">
+                                            <div className="h-[280px]">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <BarChart data={sourceData} layout="vertical">
                                                         <defs>
-                                                            <linearGradient id="roasGreen" x1="0" y1="0" x2="0" y2="1">
+                                                            <linearGradient id="colorConv" x1="0" y1="0" x2="1" y2="0">
                                                                 <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
                                                                 <stop offset="95%" stopColor="#10B981" stopOpacity={0.2} />
                                                             </linearGradient>
-                                                            <linearGradient id="roasBlue" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                                                                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.2} />
-                                                            </linearGradient>
-                                                            <linearGradient id="roasRed" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
-                                                                <stop offset="95%" stopColor="#EF4444" stopOpacity={0.2} />
-                                                            </linearGradient>
                                                         </defs>
                                                         <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
-                                                        <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                                                        <YAxis tick={{ fontSize: 11 }} />
-                                                        <Tooltip formatter={(value: any) => `${value}%`} />
-                                                        <Bar dataKey="ROAS" radius={[4, 4, 0, 0]}>
-                                                            {roiData.filter(d => d.광고비 > 0).map((entry, i) => (
-                                                                <Cell
-                                                                    key={i}
-                                                                    fill={entry.ROAS >= 300 ? 'url(#roasGreen)' : entry.ROAS >= 100 ? 'url(#roasBlue)' : 'url(#roasRed)'}
-                                                                />
-                                                            ))}
+                                                        <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
+                                                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
+                                                        <Tooltip formatter={(v: any) => `${v}%`} />
+                                                        <Bar dataKey="전환율" fill="url(#colorConv)" radius={[0, 4, 4, 0]}>
+                                                            <LabelList dataKey="전환율" position="right" formatter={(v: any) => `${v}%`} style={{ fontSize: 10 }} />
                                                         </Bar>
                                                     </BarChart>
                                                 </ResponsiveContainer>
                                             </div>
-                                        </>
-                                    ) : (
-                                        <div className="text-center py-8 text-gray-400">
-                                            <DollarSign size={32} className="mx-auto mb-2 opacity-30" />
-                                            <p className="text-sm">광고비를 입력하면 ROI 분석이 표시됩니다.</p>
+                                        </ChartSection>
+                                    </div>
+
+                                    {/* ROI Box */}
+                                    <ChartSection title="💰 광고 ROI 분석">
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between flex-wrap gap-2 no-print">
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    유입경로별 광고비를 입력하면 CPA, CPC, ROAS를 자동 계산합니다. <br />
+                                                    <span className="text-blue-600 dark:text-blue-400 font-medium">* 토스 애즈 및 매입 세금계산서의 광고비는 자동으로 합산 반영됩니다.</span>
+                                                </p>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={exportRoiCsv}
+                                                        className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                    >
+                                                        <Download size={13} /> 엑셀 다운로드 (CSV)
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setShowAdSpendInput(!showAdSpendInput)}
+                                                        className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium dark:bg-blue-900/30 dark:text-blue-400"
+                                                    >
+                                                        {showAdSpendInput ? '접기' : '광고비 직접 입력'}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {showAdSpendInput && (
+                                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3 no-print">
+                                                    <div className="flex items-center gap-3">
+                                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">월 선택</label>
+                                                        <input
+                                                            type="month"
+                                                            value={adSpendMonth}
+                                                            onChange={e => setAdSpendMonth(e.target.value)}
+                                                            className="p-1.5 border rounded text-sm bg-white dark:bg-gray-700 dark:border-gray-600"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                                        {inboundPaths.map(path => (
+                                                            <div key={path} className="flex items-center gap-2">
+                                                                <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[60px] truncate" title={path}>{path}</span>
+                                                                <div className="flex items-center">
+                                                                    <input
+                                                                        type="number"
+                                                                        placeholder="0"
+                                                                        value={adSpendEditing[path] || ''}
+                                                                        onChange={e => handleAdSpendChange(path, e.target.value)}
+                                                                        className="w-20 p-1.5 border rounded text-sm text-right bg-white dark:bg-gray-700 dark:border-gray-600"
+                                                                    />
+                                                                    <span className="text-xs text-gray-500 ml-1">만원</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button
+                                                        onClick={saveAdSpend}
+                                                        className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                                                    >
+                                                        <Save size={14} /> 저장
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {roiData.length > 0 && roiData.some(d => d.광고비 > 0) ? (
+                                                <>
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-sm text-left">
+                                                            <thead>
+                                                                <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500">
+                                                                    <th className="py-2 px-2">채널</th>
+                                                                    <th className="text-right py-2 px-2">광고비</th>
+                                                                    <th className="text-right py-2 px-2">리드</th>
+                                                                    <th className="text-right py-2 px-2">계약</th>
+                                                                    <th className="text-right py-2 px-2">수임료</th>
+                                                                    <th className="text-right py-2 px-2 font-semibold text-blue-600">수수료 (매출)</th>
+                                                                    <th className="text-right py-2 px-2">CPA</th>
+                                                                    <th className="text-right py-2 px-2">CPC</th>
+                                                                    <th className="text-right py-2 px-2 font-bold">ROAS <span className="text-[10px] font-normal text-gray-400 block">(수수료 기준)</span></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {roiData.map((d, i) => (
+                                                                    <tr key={i} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                                        <td className="py-2 px-2 font-medium">{d.name}</td>
+                                                                        <td className="py-2 px-2 text-right text-gray-500">{d.광고비 > 0 ? `${d.광고비.toLocaleString()}만원` : '-'}</td>
+                                                                        <td className="py-2 px-2 text-right">{d.리드}건</td>
+                                                                        <td className="py-2 px-2 text-right text-green-600 font-semibold">{d.계약}건</td>
+                                                                        <td className="py-2 px-2 text-right text-purple-600">{d.수임료 > 0 ? `${d.수임료.toLocaleString()}만원` : '-'}</td>
+                                                                        <td className="py-2 px-2 text-right font-bold text-blue-600">{d.수수료 > 0 ? `${d.수수료.toLocaleString()}만원` : '-'}</td>
+                                                                        <td className="py-2 px-2 text-right">{d.CPA > 0 ? `${d.CPA.toLocaleString()}만원` : '-'}</td>
+                                                                        <td className="py-2 px-2 text-right">{d.CPC > 0 ? `${d.CPC.toLocaleString()}만원` : '-'}</td>
+                                                                        <td className={`py-2 px-2 text-right font-bold ${d.ROAS >= 300 ? 'text-green-600 dark:text-green-400' : d.ROAS >= 100 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                                            {d.ROAS > 0 ? `${d.ROAS}%` : '-'}
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+
+                                                    <div className="h-[250px] mt-4">
+                                                        <p className="text-xs text-gray-400 mb-2 font-medium">ROAS 비교 (광고수익률 %)</p>
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <BarChart data={roiData.filter(d => d.광고비 > 0)}>
+                                                                <defs>
+                                                                    <linearGradient id="roasGreen" x1="0" y1="0" x2="0" y2="1">
+                                                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
+                                                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.2} />
+                                                                    </linearGradient>
+                                                                    <linearGradient id="roasBlue" x1="0" y1="0" x2="0" y2="1">
+                                                                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                                                                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.2} />
+                                                                    </linearGradient>
+                                                                    <linearGradient id="roasRed" x1="0" y1="0" x2="0" y2="1">
+                                                                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
+                                                                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0.2} />
+                                                                    </linearGradient>
+                                                                </defs>
+                                                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
+                                                                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                                                                <YAxis tick={{ fontSize: 11 }} />
+                                                                <Tooltip formatter={(value: any) => `${value}%`} />
+                                                                <Bar dataKey="ROAS" radius={[4, 4, 0, 0]}>
+                                                                    {roiData.filter(d => d.광고비 > 0).map((entry, i) => (
+                                                                        <Cell
+                                                                            key={i}
+                                                                            fill={entry.ROAS >= 300 ? 'url(#roasGreen)' : entry.ROAS >= 100 ? 'url(#roasBlue)' : 'url(#roasRed)'}
+                                                                        />
+                                                                    ))}
+                                                                </Bar>
+                                                            </BarChart>
+                                                        </ResponsiveContainer>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="text-center py-8 text-gray-400">
+                                                    <DollarSign size={32} className="mx-auto mb-2 opacity-30" />
+                                                    <p className="text-sm">광고비를 입력하면 ROI 분석이 표시됩니다.</p>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    </ChartSection>
                                 </div>
-                            </ChartSection>
+                            ) : (
+                                /* TOSS ADS DETAILED ANALYSIS */
+                                <div className="space-y-6">
+                                    {/* 1. Live Google Sheet Sync Panel */}
+                                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel">
+                                        <div className="flex flex-wrap items-center justify-between gap-4">
+                                            <div className="space-y-1 flex-1 min-w-[280px]">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                                                        <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse block"></span>
+                                                        토스애즈 성과보고서 구글 시트 연동
+                                                    </h4>
+                                                    <span className="text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-bold px-2 py-0.5 rounded-full">
+                                                        CORS 우회 지원
+                                                    </span>
+                                                </div>
+                                                {isEditingUrl ? (
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <input
+                                                            type="text"
+                                                            value={urlInput}
+                                                            onChange={e => setUrlInput(e.target.value)}
+                                                            className="flex-1 text-xs p-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white"
+                                                            placeholder="https://docs.google.com/spreadsheets/d/..."
+                                                        />
+                                                        <button
+                                                            onClick={handleSaveSheetUrl}
+                                                            className="text-xs px-2.5 py-1.5 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 whitespace-nowrap"
+                                                        >
+                                                            저장
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setUrlInput(sheetUrl);
+                                                                setIsEditingUrl(false);
+                                                            }}
+                                                            className="text-xs px-2.5 py-1.5 border rounded hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap"
+                                                        >
+                                                            취소
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                        <a
+                                                            href={sheetUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs text-blue-600 hover:underline flex items-center gap-1 truncate max-w-[400px] font-medium"
+                                                            title={sheetUrl}
+                                                        >
+                                                            {sheetUrl} <ExternalLink size={11} />
+                                                        </a>
+                                                        <button
+                                                            onClick={() => setIsEditingUrl(true)}
+                                                            className="text-[10px] text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5"
+                                                        >
+                                                            연동 주소 변경
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                <p className="text-[10px] text-gray-400 mt-1">
+                                                    최종 동기화 시간: <span className="font-semibold text-gray-600 dark:text-gray-300">{lastSyncTime}</span>
+                                                </p>
+                                            </div>
+
+                                            <button
+                                                onClick={handleSyncTossAds}
+                                                disabled={isSyncing}
+                                                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white shadow-sm transition-all duration-300 ${isSyncing 
+                                                    ? 'bg-blue-400 cursor-not-allowed' 
+                                                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md'}`}
+                                            >
+                                                <RefreshCw size={13} className={isSyncing ? 'animate-spin' : ''} />
+                                                {isSyncing ? '동기화 중...' : '실시간 성과 동기화'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Premium KPI Cards */}
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">누적 소진 비용 (VAT 제외)</p>
+                                            <h4 className="text-xl font-bold text-gray-800 dark:text-white">
+                                                {tossSummaryKpis.totalSpend.toLocaleString()}원
+                                            </h4>
+                                            <p className="text-[10px] text-gray-400 mt-1">
+                                                부가세 10% 포함: <span className="font-medium text-gray-500">{(Math.round(tossSummaryKpis.totalSpend * 1.1)).toLocaleString()}원</span>
+                                            </p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">평균 클릭율 & 단가 (CTR/CPC)</p>
+                                            <h4 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                                                {tossSummaryKpis.avgCtr}%
+                                            </h4>
+                                            <p className="text-[10px] text-gray-400 mt-1">
+                                                클릭 {tossSummaryKpis.totalClicks.toLocaleString()}건 | 평균 CPC: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpc.toLocaleString()}원</span>
+                                            </p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">토스 잠재고객 & 평균 CPL</p>
+                                            <h4 className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                                                {tossSummaryKpis.totalTossLeads}명
+                                            </h4>
+                                            <p className="text-[10px] text-gray-400 mt-1">
+                                                광고비 기준 CPL: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpl.toLocaleString()}원</span>
+                                            </p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel">
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">CRM 실접수 & 최종 계약율</p>
+                                                <div className="group relative">
+                                                    <HelpCircle size={12} className="text-gray-400 cursor-help" />
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 z-10">
+                                                        지연 매칭 등으로 100% 일치하지 않을 수 있으며, 정확한 효율은 주간/월간 뷰로 대조 권장합니다.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h4 className="text-xl font-bold text-green-600 dark:text-green-400">
+                                                {tossSummaryKpis.totalCrmLeads}건 <span className="text-xs text-gray-400 font-normal">➔ {tossSummaryKpis.totalContracts}건</span>
+                                            </h4>
+                                            <p className="text-[10px] text-gray-400 mt-1">
+                                                연동 매칭율: <span className="font-medium">{tossSummaryKpis.matchRate}%</span> | 최종 전환율: <span className="font-bold text-green-600 dark:text-green-400">{tossSummaryKpis.overallClosingRate}%</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Composed Charts & Funnel */}
+                                    <div className="grid lg:grid-cols-3 gap-4">
+                                        <ChartSection 
+                                            title="📊 광고 소진비용 및 획득단가(CPL) 추이" 
+                                            className="lg:col-span-2"
+                                            headerExtra={(
+                                                <div className="flex items-center gap-1.5 no-print">
+                                                    <span className="text-xs text-gray-400 mr-1.5">보기 단위:</span>
+                                                    {[
+                                                        { id: 'day', label: '일별' },
+                                                        { id: 'week', label: '주간별' },
+                                                        { id: 'month', label: '월별' }
+                                                    ].map(g => (
+                                                        <button
+                                                            key={g.id}
+                                                            onClick={() => setTossTimeGroup(g.id as any)}
+                                                            className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all ${tossTimeGroup === g.id
+                                                                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                                                                : 'text-gray-500 border border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                                                        >
+                                                            {g.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        >
+                                            <div className="h-[280px]">
+                                                {tossPerformanceData.length > 0 ? (
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <ComposedChart data={[...tossPerformanceData].reverse()}>
+                                                            <defs>
+                                                                <linearGradient id="tossSpendColor" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                                                                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.2} />
+                                                                </linearGradient>
+                                                            </defs>
+                                                            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
+                                                            <XAxis dataKey="label" tick={{ fontSize: 9 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
+                                                            <YAxis yAxisId="left" tick={{ fontSize: 9 }} stroke="#3B82F6" label={{ value: '소진 비용 (원)', angle: -90, position: 'insideLeft', style: { fontSize: 9, fill: '#3B82F6' } }} />
+                                                            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9 }} stroke="#8B5CF6" label={{ value: '단가 (CPL, 원)', angle: 90, position: 'insideRight', style: { fontSize: 9, fill: '#8B5CF6' } }} />
+                                                            <Tooltip content={<CustomTooltip />} />
+                                                            <Legend wrapperStyle={{ fontSize: 10 }} />
+                                                            <Bar yAxisId="left" dataKey="spend" name="소진 비용" fill="url(#tossSpendColor)" radius={[3, 3, 0, 0]} />
+                                                            <Line yAxisId="right" type="monotone" dataKey="cpl" name="리드 단가 (CPL)" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                                                        </ComposedChart>
+                                                    </ResponsiveContainer>
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-full text-gray-400 text-sm">데이터가 없습니다.</div>
+                                                )}
+                                            </div>
+                                        </ChartSection>
+
+                                        <ChartSection title="🎯 토스애즈 잠재고객 깔깔때기 (Funnel)">
+                                            <div className="flex flex-col justify-center h-[280px] space-y-4 px-2">
+                                                {tossFunnelData.map((stage, idx) => {
+                                                    const percent = tossSummaryKpis.totalTossLeads > 0 
+                                                        ? Math.round((stage.value / tossSummaryKpis.totalTossLeads) * 100)
+                                                        : 0;
+                                                    const colorClass = idx === 0 ? 'bg-blue-600' : idx === 1 ? 'bg-emerald-500' : 'bg-purple-500';
+                                                    const textClass = idx === 0 ? 'text-blue-600 dark:text-blue-400' : idx === 1 ? 'text-emerald-500' : 'text-purple-500';
+                                                    
+                                                    return (
+                                                        <div key={idx} className="space-y-1.5">
+                                                            <div className="flex justify-between items-center text-xs">
+                                                                <span className="font-bold text-gray-700 dark:text-gray-300">{stage.name}</span>
+                                                                <span className={`font-black ${textClass}`}>{stage.value.toLocaleString()}명 / <span className="text-xs font-semibold">{percent}%</span></span>
+                                                            </div>
+                                                            <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-4 overflow-hidden relative shadow-inner">
+                                                                <motion.div 
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${percent}%` }}
+                                                                    transition={{ duration: 0.8, delay: idx * 0.15 }}
+                                                                    className={`h-full ${colorClass} rounded-full flex items-center justify-end pr-2`}
+                                                                >
+                                                                </motion.div>
+                                                            </div>
+                                                            {idx > 0 && (
+                                                                <p className="text-[10px] text-gray-400 dark:text-gray-500 text-right font-medium">
+                                                                    이전 단계 대비 효율: <span className="font-bold text-gray-600 dark:text-gray-300">
+                                                                        {idx === 1 
+                                                                            ? `${tossSummaryKpis.matchRate}% (CRM 등록율)` 
+                                                                            : `${tossSummaryKpis.crmClosingRate}% (계약 성공율)`}
+                                                                    </span>
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </ChartSection>
+                                    </div>
+
+                                    {/* 4. Detailed 성과 대조 데이터 테이블 */}
+                                    <ChartSection 
+                                        title="📋 상세 매칭 및 연동 지표 데이터"
+                                        headerExtra={(
+                                            <div className="flex items-center gap-2 no-print">
+                                                <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 border border-gray-200 dark:border-gray-600">
+                                                    {[
+                                                        { id: 'day', label: '일별' },
+                                                        { id: 'week', label: '주간별' },
+                                                        { id: 'month', label: '월별' }
+                                                    ].map(g => (
+                                                        <button
+                                                            key={g.id}
+                                                            onClick={() => setTossTimeGroup(g.id as any)}
+                                                            className={`text-[10px] font-bold px-2.5 py-1.5 rounded-md transition-all ${tossTimeGroup === g.id
+                                                                ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
+                                                                : 'text-gray-500 hover:text-gray-800'}`}
+                                                        >
+                                                            {g.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <button
+                                                    onClick={exportTossPerformanceCsv}
+                                                    className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
+                                                >
+                                                    <Download size={12} /> CSV 다운로드
+                                                </button>
+                                            </div>
+                                        )}
+                                    >
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between gap-4 flex-wrap no-print">
+                                                <div className="relative flex-1 min-w-[200px] max-w-xs">
+                                                    <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                                                        <Filter size={13} />
+                                                    </span>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="기간 이름 검색..."
+                                                        value={tossSearch}
+                                                        onChange={e => setTossSearch(e.target.value)}
+                                                        className="w-full text-xs pl-8 pr-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center gap-1 text-[10px] text-gray-400 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 px-2 py-1 rounded-md">
+                                                    <Info size={11} className="text-blue-500" />
+                                                    주말/야간 유입은 CRM에 다음 날 접수될 수 있으므로, 정확한 전환율 대조를 위해서는 <strong>주간별/월간별</strong> 뷰를 사용하세요.
+                                                </div>
+                                            </div>
+
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-xs text-left">
+                                                    <thead>
+                                                        <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 uppercase font-semibold">
+                                                            <th className="py-2.5 px-2 cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-gray-700/30" onClick={() => {
+                                                                if (tossSortBy === 'date') setTossSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+                                                                else { setTossSortBy('date'); setTossSortDir('desc'); }
+                                                            }}>
+                                                                기간 {tossSortBy === 'date' && (tossSortDir === 'asc' ? '▲' : '▼')}
+                                                            </th>
+                                                            <th className="text-right py-2.5 px-2 cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-gray-700/30" onClick={() => {
+                                                                if (tossSortBy === 'spend') setTossSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+                                                                else { setTossSortBy('spend'); setTossSortDir('desc'); }
+                                                            }}>
+                                                                소진 광고비 {tossSortBy === 'spend' && (tossSortDir === 'asc' ? '▲' : '▼')}
+                                                            </th>
+                                                            <th className="text-right py-2.5 px-2">노출 수</th>
+                                                            <th className="text-right py-2.5 px-2">클릭 수 / CTR</th>
+                                                            <th className="text-right py-2.5 px-2 cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-gray-700/30" onClick={() => {
+                                                                if (tossSortBy === 'leads') setTossSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+                                                                else { setTossSortBy('leads'); setTossSortDir('desc'); }
+                                                            }}>
+                                                                토스 잠재고객 {tossSortBy === 'leads' && (tossSortDir === 'asc' ? '▲' : '▼')}
+                                                            </th>
+                                                            <th className="text-right py-2.5 px-2 cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-gray-700/30" onClick={() => {
+                                                                if (tossSortBy === 'cpl') setTossSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+                                                                else { setTossSortBy('cpl'); setTossSortDir('desc'); }
+                                                            }}>
+                                                                리드 단가(CPL) {tossSortBy === 'cpl' && (tossSortDir === 'asc' ? '▲' : '▼')}
+                                                            </th>
+                                                            <th className="text-right py-2.5 px-2 cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-gray-700/30 text-indigo-600 dark:text-indigo-400 font-bold" onClick={() => {
+                                                                if (tossSortBy === 'crmLeads') setTossSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+                                                                else { setTossSortBy('crmLeads'); setTossSortDir('desc'); }
+                                                            }}>
+                                                                CRM 실접수 {tossSortBy === 'crmLeads' && (tossSortDir === 'asc' ? '▲' : '▼')}
+                                                            </th>
+                                                            <th className="text-right py-2.5 px-2 cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-gray-700/30 text-green-600 dark:text-green-400 font-bold" onClick={() => {
+                                                                if (tossSortBy === 'contracts') setTossSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+                                                                else { setTossSortBy('contracts'); setTossSortDir('desc'); }
+                                                            }}>
+                                                                CRM 계약 완료 {tossSortBy === 'contracts' && (tossSortDir === 'asc' ? '▲' : '▼')}
+                                                            </th>
+                                                            <th className="text-right py-2.5 px-2">최종 계약율 / 금액</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {paginatedTossData.length > 0 ? (
+                                                            paginatedTossData.map((d, i) => {
+                                                                const dayClosingRate = d.tossLeads > 0 
+                                                                    ? parseFloat(((d.contracts / d.tossLeads) * 100).toFixed(1))
+                                                                    : 0;
+                                                                const dayMatchRate = d.tossLeads > 0
+                                                                    ? parseFloat(((d.crmLeads / d.tossLeads) * 100).toFixed(1))
+                                                                    : 0;
+                                                                
+                                                                return (
+                                                                    <tr key={i} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                                                                        <td className="py-2.5 px-2 font-bold text-gray-700 dark:text-gray-300">{d.label}</td>
+                                                                        <td className="py-2.5 px-2 text-right text-gray-500 font-medium">{d.spend > 0 ? `${d.spend.toLocaleString()}원` : '-'}</td>
+                                                                        <td className="py-2.5 px-2 text-right text-gray-400">{d.impressions > 0 ? d.impressions.toLocaleString() : '-'}</td>
+                                                                        <td className="py-2.5 px-2 text-right">
+                                                                            <span className="font-semibold">{d.clicks > 0 ? d.clicks.toLocaleString() : '-'}</span>
+                                                                            {d.ctr > 0 && <span className="text-[10px] text-gray-400 block">({d.ctr}%)</span>}
+                                                                        </td>
+                                                                        <td className="py-2.5 px-2 text-right font-bold text-purple-600">{d.tossLeads > 0 ? `${d.tossLeads}명` : '-'}</td>
+                                                                        <td className="py-2.5 px-2 text-right text-gray-600 dark:text-gray-400">{d.cpl > 0 ? `${d.cpl.toLocaleString()}원` : '-'}</td>
+                                                                        <td className="py-2.5 px-2 text-right font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/10">
+                                                                            {d.crmLeads > 0 ? `${d.crmLeads}건` : '-'}
+                                                                            {d.tossLeads > 0 && <span className="text-[9px] text-gray-400 block font-normal">매칭 {dayMatchRate}%</span>}
+                                                                        </td>
+                                                                        <td className="py-2.5 px-2 text-right font-bold text-green-600 dark:text-green-400 bg-green-50/10">
+                                                                            {d.contracts > 0 ? `${d.contracts}건` : '-'}
+                                                                        </td>
+                                                                        <td className="py-2.5 px-2 text-right">
+                                                                            <span className={`font-black ${dayClosingRate >= 5 ? 'text-green-600' : 'text-gray-600 dark:text-gray-400'}`}>
+                                                                                {dayClosingRate > 0 ? `${dayClosingRate}%` : '-'}
+                                                                            </span>
+                                                                            {d.crmRevenue > 0 && <span className="text-[10px] text-purple-600 block">({d.crmRevenue.toLocaleString()}만원)</span>}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })
+                                                        ) : (
+                                                            <tr>
+                                                                <td colSpan={9} className="py-8 text-center text-gray-400">데이터가 없습니다.</td>
+                                                            </tr>
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            {/* Table Pagination */}
+                                            {totalTossPages > 1 && (
+                                                <div className="flex items-center justify-between pt-4 no-print border-t border-gray-100 dark:border-gray-700/30">
+                                                    <span className="text-[10px] text-gray-400">
+                                                        총 {sortedPerformanceData.length}개 항목 중 {tossPage} / {totalTossPages} 페이지
+                                                    </span>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => setTossPage(prev => Math.max(1, prev - 1))}
+                                                            disabled={tossPage === 1}
+                                                            className="px-2.5 py-1 text-[11px] border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                        >
+                                                            이전
+                                                        </button>
+                                                        {Array.from({ length: totalTossPages }, (_, i) => i + 1).map(page => (
+                                                            <button
+                                                                key={page}
+                                                                onClick={() => setTossPage(page)}
+                                                                className={`px-2 py-1 text-[11px] border rounded ${tossPage === page
+                                                                    ? 'bg-blue-600 text-white border-blue-600 font-bold'
+                                                                    : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
+                                                            >
+                                                                {page}
+                                                            </button>
+                                                        ))}
+                                                        <button
+                                                            onClick={() => setTossPage(prev => Math.min(totalTossPages, prev + 1))}
+                                                            disabled={tossPage === totalTossPages}
+                                                            className="px-2.5 py-1 text-[11px] border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                        >
+                                                            다음
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </ChartSection>
+                                </div>
+                            )}
                         </div>
                     )}
 

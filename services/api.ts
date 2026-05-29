@@ -528,6 +528,14 @@ const performBackgroundFetch = async () => {
         localStorage.setItem('leadmaster_toss_ads_records', JSON.stringify(settingsData.tossAdsRecords));
         console.log(`[Sync] Loaded ${settingsData.tossAdsRecords.length} Toss Ads records from server.`);
       }
+
+      // [NEW] Load Toss Ads Sheet URL from server
+      if (settingsData.tossAdsSheetUrl) {
+        localTossAdsSheetUrl = settingsData.tossAdsSheetUrl;
+        tossAdsSheetUrlInitialized = true;
+        localStorage.setItem('leadmaster_toss_ads_sheet_url', settingsData.tossAdsSheetUrl);
+        console.log(`[Sync] Loaded Toss Ads sheet URL from server: ${settingsData.tossAdsSheetUrl}`);
+      }
     }
 
     // 2. Process Cases with Smart Merge (Conflict Resolution)
@@ -3146,5 +3154,144 @@ export const getTossAdsWeeklySummary = (weekStart: Date): TossAdsWeeklySummary =
     avgCtr: parseFloat(avgCtr.toFixed(2)),
     avgCpl,
     dailyRecords: weeklyRecords.sort((a, b) => b.date.localeCompare(a.date))
+  };
+};
+
+// ============================================
+// 토스 애즈 구글 시트 연동 고도화 (CORS 우회 실시간 동기화)
+// ============================================
+
+let localTossAdsSheetUrl = 'https://docs.google.com/spreadsheets/d/1jk6fBnxqdgMHiM7B_3Ohld-1TdD022fJSQkmMRAQ1wo/edit?usp=sharing';
+let tossAdsSheetUrlInitialized = false;
+
+export const fetchTossAdsSheetUrl = (): string => {
+  if (tossAdsSheetUrlInitialized) return localTossAdsSheetUrl;
+  try {
+    const stored = localStorage.getItem('leadmaster_toss_ads_sheet_url');
+    if (stored) {
+      localTossAdsSheetUrl = stored;
+    }
+  } catch (e) {
+    console.warn('Failed to load toss ads sheet url from localStorage:', e);
+  }
+  tossAdsSheetUrlInitialized = true;
+  return localTossAdsSheetUrl;
+};
+
+export const saveTossAdsSheetUrl = (url: string) => {
+  localTossAdsSheetUrl = url;
+  try {
+    localStorage.setItem('leadmaster_toss_ads_sheet_url', url);
+    saveSettingToSupabase('tossAdsSheetUrl', url);
+  } catch (e) {
+    console.warn('Failed to save toss ads sheet url to localStorage:', e);
+  }
+};
+
+export const parseCsvStringToMatrix = (csvText: string): any[][] => {
+  const result: any[][] = [];
+  let row: any[] = [];
+  let cell = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const char = csvText[i];
+    const nextChar = csvText[i + 1];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (nextChar === '"') {
+          cell += '"';
+          i++; // skip next quote
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cell += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        row.push(cell);
+        cell = '';
+      } else if (char === '\n' || char === '\r') {
+        row.push(cell);
+        cell = '';
+        if (row.length > 0 || result.length === 0) {
+          result.push(row);
+        }
+        row = [];
+        if (char === '\r' && nextChar === '\n') {
+          i++; // skip \n
+        }
+      } else {
+        cell += char;
+      }
+    }
+  }
+
+  if (cell !== '' || row.length > 0) {
+    row.push(cell);
+    result.push(row);
+  }
+
+  return result.filter(r => r.length > 0 && r.some(c => c !== ''));
+};
+
+export const syncTossAdsLive = async (sheetUrl?: string): Promise<{ added: number; updated: number; skipped: number; totalRecords: number }> => {
+  const activeUrl = sheetUrl || fetchTossAdsSheetUrl();
+  if (!activeUrl) {
+    throw new Error('연동할 구글 시트 주소가 설정되지 않았습니다.');
+  }
+
+  const match = activeUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!match || !match[1]) {
+    throw new Error('올바른 구글 스프레드시트 URL 형식이 아닙니다.');
+  }
+  const spreadsheetId = match[1];
+  const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`;
+
+  let csvText = '';
+  try {
+    const response = await fetch(exportUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    csvText = await response.text();
+  } catch (e) {
+    console.warn('[Sync] Direct fetch failed, falling back to AllOrigins CORS Proxy:', e);
+    try {
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(exportUrl)}`;
+      const response = await fetch(proxyUrl);
+      if (!response.ok) {
+        throw new Error(`Proxy HTTP error! status: ${response.status}`);
+      }
+      csvText = await response.text();
+    } catch (proxyError: any) {
+      console.error('[Sync] AllOrigins proxy fetch also failed:', proxyError);
+      throw new Error(`구글 시트 데이터를 가져오는데 실패했습니다: ${proxyError.message || '네트워크 오류'}`);
+    }
+  }
+
+  if (!csvText || csvText.trim().length === 0) {
+    throw new Error('구글 시트가 비어있거나 데이터를 읽을 수 없습니다.');
+  }
+
+  const matrix = parseCsvStringToMatrix(csvText);
+  const records = parseTossAdsCsv(matrix);
+  if (records.length === 0) {
+    throw new Error('시트에서 유효한 토스애즈 성과 레코드를 찾을 수 없습니다.');
+  }
+
+  const result = saveTossAdsRecords(records);
+
+  if (sheetUrl && sheetUrl !== fetchTossAdsSheetUrl()) {
+    saveTossAdsSheetUrl(sheetUrl);
+  }
+
+  return {
+    ...result,
+    totalRecords: fetchTossAdsRecords().length
   };
 };
