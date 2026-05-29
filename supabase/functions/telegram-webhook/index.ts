@@ -137,7 +137,10 @@ async function callGeminiWithFallback(prompt: string): Promise<string> {
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Referer': 'https://9981mark-hub.github.io/'
+          },
           body: JSON.stringify({
             contents: [
               { role: 'user', parts: [{ text: prompt }] }
