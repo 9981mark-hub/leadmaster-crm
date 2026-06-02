@@ -243,7 +243,7 @@ const ActiveCallPopup: React.FC = () => {
                 {/* 본문 */}
                 <div className="px-4 py-4 text-center">
                     <p className="text-gray-800 dark:text-gray-200 font-bold text-lg">
-                        {callState.customerName}
+                        {callState.customerName ? callState.customerName.replace('::calling', '') : ''}
                     </p>
                     <p className="text-gray-500 dark:text-gray-400 font-mono text-sm mt-0.5">
                         {formatPhone(callState.phoneNumber)}

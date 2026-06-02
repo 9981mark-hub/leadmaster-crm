@@ -179,10 +179,30 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                         if (status === 'dialed') {
                             const dbDialedAt = row.dialed_at;
+                            const dbCustomerName = row.customer_name || '';
+                            const isCallingMarker = dbCustomerName.includes('::calling');
+                            const cleanCustomerName = dbCustomerName.replace('::calling', '');
+
+                            if (isCallingMarker) {
+                                console.log('[ActiveCall] pending_calls: ::calling marker found → calling mode, name:', cleanCustomerName);
+                                return {
+                                    ...prev,
+                                    mode: 'calling',
+                                    customerName: cleanCustomerName || prev.customerName,
+                                    startedAt: dbDialedAt ? new Date(dbDialedAt) : new Date(),
+                                    dialedAt: dbDialedAt
+                                };
+                            }
+
                             if (prev.mode === 'pending' || (prev.mode === 'dialing' && !prev.dialedAt)) {
                                 // Android가 다이얼러를 열었음 → 연결 대기 (아직 통화 시작 아님)
                                 console.log('[ActiveCall] pending_calls: dialed → dialing mode, dialedAt:', dbDialedAt);
-                                return { ...prev, mode: 'dialing', dialedAt: dbDialedAt };
+                                return { 
+                                    ...prev, 
+                                    mode: 'dialing', 
+                                    customerName: cleanCustomerName || prev.customerName,
+                                    dialedAt: dbDialedAt 
+                                };
                             } else if (prev.mode === 'dialing') {
                                 // 이미 연결 대기 중인데 dialed_at이 업데이트 됨 -> Android가 통화 시작(OFFHOOK) 감지!
                                 if (dbDialedAt && prev.dialedAt !== dbDialedAt) {
@@ -190,6 +210,7 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                                     return { 
                                         ...prev, 
                                         mode: 'calling', 
+                                        customerName: cleanCustomerName || prev.customerName,
                                         startedAt: new Date(dbDialedAt), 
                                         dialedAt: dbDialedAt 
                                     };
@@ -244,7 +265,7 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             try {
                 const { data, error } = await supabase
                     .from('pending_calls')
-                    .select('status, dialed_at')
+                    .select('status, dialed_at, customer_name')
                     .eq('phone_number', cleanPhone)
                     .order('created_at', { ascending: false })
                     .limit(1);
@@ -258,17 +279,36 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     if (!prev.isActive) return prev;
 
                     const dbDialedAt = latestCall.dialed_at;
+                    const dbCustomerName = latestCall.customer_name || '';
+                    const isCallingMarker = dbCustomerName.includes('::calling');
+                    const cleanCustomerName = dbCustomerName.replace('::calling', '');
 
-                    // 데이터베이스 상태와 현재 모드가 일치하며 dialed_at까지 같은 경우 변경 없음
+                    // 데이터베이스 상태와 현재 모드가 일치하며 dialed_at 및 이름까지 같은 경우 변경 없음
                     if (status === 'pending' && prev.mode === 'pending') return prev;
-                    if (status === 'dialed' && prev.mode === 'dialing' && prev.dialedAt === dbDialedAt) return prev;
-                    if (status === 'dialed' && prev.mode === 'calling' && prev.dialedAt === dbDialedAt) return prev;
+                    if (status === 'dialed' && prev.mode === 'calling' && prev.customerName === cleanCustomerName && prev.dialedAt === dbDialedAt) return prev;
+                    if (status === 'dialed' && prev.mode === 'dialing' && !isCallingMarker && prev.dialedAt === dbDialedAt) return prev;
                     if (status === 'ended' && prev.mode === 'ended') return prev;
 
                     if (status === 'dialed') {
+                        if (isCallingMarker) {
+                            console.log('[ActiveCall Poll] pending_calls: ::calling marker found → calling mode, name:', cleanCustomerName);
+                            return {
+                                ...prev,
+                                mode: 'calling',
+                                customerName: cleanCustomerName || prev.customerName,
+                                startedAt: dbDialedAt ? new Date(dbDialedAt) : new Date(),
+                                dialedAt: dbDialedAt
+                            };
+                        }
+
                         if (prev.mode === 'pending' || (prev.mode === 'dialing' && !prev.dialedAt)) {
                             console.log('[ActiveCall Poll] pending_calls: dialed → dialing mode, dialedAt:', dbDialedAt);
-                            return { ...prev, mode: 'dialing', dialedAt: dbDialedAt };
+                            return { 
+                                ...prev, 
+                                mode: 'dialing', 
+                                customerName: cleanCustomerName || prev.customerName,
+                                dialedAt: dbDialedAt 
+                            };
                         } else if (prev.mode === 'dialing') {
                             if (dbDialedAt && prev.dialedAt !== dbDialedAt) {
                                 // dialed_at이 새로 갱신된 경우만 통화 시작으로 간주
@@ -276,6 +316,7 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                                 return { 
                                     ...prev, 
                                     mode: 'calling', 
+                                    customerName: cleanCustomerName || prev.customerName,
                                     startedAt: new Date(dbDialedAt), 
                                     dialedAt: dbDialedAt 
                                 };
