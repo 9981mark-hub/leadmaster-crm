@@ -525,6 +525,9 @@ export type TelegramFeedbackType =
   | '비용부담거절'
   | '자산포기불가'
   | '일반메모'
+  | '안부인사'
+  | '마감인사'
+  | '일반대화'
   | '비피드백';
 
 export type TelegramFeedbackUrgency = 'critical' | 'high' | 'normal' | 'info';
@@ -593,6 +596,9 @@ export const TELEGRAM_FEEDBACK_RULES: Record<TelegramFeedbackType, {
   '자산포기불가': { applyMode: 'pending', urgency: 'normal',   statusLevel: '1차', label: '자산포기 불가' },
   '계약취소시도': { applyMode: 'pending', urgency: 'critical', statusLevel: '2차', label: '⚠ 계약 취소 시도' },
   '계약완료':     { applyMode: 'pending', urgency: 'info',     statusLevel: '1차', label: '계약 완료' },
+  '안부인사':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '안부 인사' },
+  '마감인사':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '마감 인사' },
+  '일반대화':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '일반 대화' },
   '비피드백':     { applyMode: 'auto',    urgency: 'info',     statusLevel: 'none', label: '비피드백 (무시)' },
 };
 

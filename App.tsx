@@ -129,21 +129,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   /* 
     Poling Logic removed (handled in CaseList now)
   */
-  // [NEW] Global Focus / Visibility Listener for Immediate Sync
+  // [EGRESS FIX] Window Focus 리스너 제거 - Realtime이 실시간 동기화를 담당하므로
+  // 탭 전환마다 전체 DB를 재다운로드하는 것은 대역폭 낭비
+  // (기존: window focus → refreshData() → 전체 cases 재조회)
+
+  // [CRITICAL] Cache Buster / Force Version Update
   React.useEffect(() => {
-    const handleFocus = () => {
-      if (document.visibilityState === 'visible') {
-        import('./services/api').then(({ refreshData }) => {
-          console.log("[App] Window focused, refreshing data...");
-          refreshData();
-        });
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleFocus);
-
-    // [CRITICAL] Cache Buster / Force Version Update
     const CURRENT_VERSION = "3.25";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
@@ -152,11 +143,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       // Clear potential stale keys if needed, but keeping auth
       window.location.reload();
     }
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleFocus);
-    };
   }, []);
 
 
@@ -264,7 +250,7 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 30, // 30 minutes
       retry: 1,
-      refetchOnWindowFocus: true,
+      refetchOnWindowFocus: false, // [EGRESS FIX] Realtime이 동기화 담당, Focus 재조회 비활성화
     },
   },
 });

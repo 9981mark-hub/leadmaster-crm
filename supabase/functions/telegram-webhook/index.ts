@@ -5,7 +5,7 @@
  * classifies feedback using Gemini AI, matches to CRM cases,
  * and stores results in telegram_feedbacks table.
  * 
- * Deploy: supabase functions deploy telegram-webhook
+ * Deploy: supabase functions deploy telegram-webhook --no-verify-jwt --project-ref cenksfblktflfurxjmtv
  * Set secrets: supabase secrets set TELEGRAM_BOT_TOKEN=xxx GEMINI_API_KEY=xxx
  */
 
@@ -97,7 +97,10 @@ const CLASSIFICATION_PROMPT = `당신은 법률 사무소 CRM 시스템의 피�
 - 계약취소시도: 이미 계약했는데 취소하려 함
 - 비용부담거절: 수임료/비용 부담으로 거절
 - 자산포기불가: 차량/부동산 포기 못해서 불가
-- 일반메모: 위에 해당 안 되는 일반 피드백
+- 안부인사: 아침 인사, 저녁 인사, 주말 안부, 월초 인사, "오늘도 화이팅", "힘내세요" 등 서로 격려하고 주고받는 안부성 인사말 (특정 고객의 피드백이 아님)
+- 마감인사: "퇴근합니다", "오늘 업무 마감합니다", "오늘도 수고 많으셨습니다" 등 퇴근 또는 하루/한 달의 업무 마감을 전하는 메시지 (특정 고객의 피드백이 아님)
+- 일반대화: 고객 피드백이 아닌 일반적인 공지사항, 회의 진행 알림, 질문, 단순 소통 및 회사 업무 전반적인 대화 (특정 고객의 피드백이 아님)
+- 일반메모: 위에 해당 안 되는 일반 고객 피드백
 - 비피드백: 인사, 공지, 질문 등 피드백 아닌 메시지
 
 응답 형식 (JSON만, 마크다운 없이):
@@ -205,6 +208,64 @@ function extractCustomerNameByRegex(text: string): string | null {
       /^([가-힣]{2,4})(?:님)?\s*(?:몸이|수임료|비용|등기|체납|현재|바쁘|문자|집|부재|전화|진행|출장|상담|비대면|계약|내방|미팅|채권|신용|오전|오후|내일|금요|월요|화요|수요|목요|토요|일요|혹시|신복|새출발|신용회복|아들|어머니|아버지|배우자|남편|아내|\d)/
     );
     if (inlineMatch) return inlineMatch[1];
+  }
+
+  return null;
+}
+
+/**
+ * ISO 타임스탬프를 한국 표준시(KST, UTC+9) 시간으로 변환하여 시간과 요일을 반환
+ */
+function getKstHourAndDay(isoString: string): { hour: number; dayOfWeek: number } {
+  const date = new Date(isoString);
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const kstDate = new Date(date.getTime() + kstOffset);
+  return {
+    hour: kstDate.getUTCHours(),
+    dayOfWeek: kstDate.getUTCDay(), // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  };
+}
+
+/**
+ * 로컬 정규식 및 KST 시간대 기반 선검증 heuristic 분류기
+ * 명백한 인사/마감 메시지는 Gemini API 호출 없이 즉시 판별하여 비용 절감 및 응답 속도 최적화
+ */
+function heuristicClassify(text: string, timestamp: string): string | null {
+  const trimmed = text.trim();
+  
+  // 1. 고객명 구분 기호가 있는 패턴(예: "홍길동 // 부재")은 실제 피드백이므로 Heuristic 검사 제외
+  const hasNamePattern = /^[가-힣]{2,4}\s*\/\//.test(trimmed) 
+    || /^[가-힣]{2,4}(?:님)?\s*\n/.test(trimmed)
+    || /^[가-힣]{2,4}\s*\/\s/.test(trimmed);
+  if (hasNamePattern) return null;
+  
+  // 2. EOD 및 마감인사 키워드 검증
+  const isClosingKeywords = /퇴근(합|합니|예정|하겠)|마감(합|합니|하겠)|오늘도\s*수고|수고\s*많으셨|고생\s*많으셨|수고하셨습|고생하셨습|오늘도\s*고생|즐거운\s*저녁|퇴근하겠습/.test(trimmed);
+  if (isClosingKeywords) {
+    return '마감인사';
+  }
+
+  // 3. 아침/주말/응원 안부인사 키워드 검증
+  const isGreetingKeywords = /좋은\s*아침|좋은아침|굿모닝|즐거운\s*주말|행복한\s*주말|주말\s*잘|힘내(세요|자|시죠)|파이팅|화이팅|반갑(습|습니)|인사(드|드립)|새롭게\s*시작|시작하는\s*[가-힣]+|한\s*달\s*시작|한달\s*시작/.test(trimmed);
+  if (isGreetingKeywords) {
+    return '안부인사';
+  }
+
+  // 4. 특정 시간대(KST) Fallback 검증 (고객 이름이 없을 때만 적용)
+  const { hour } = getKstHourAndDay(timestamp);
+  
+  // 아침 인사대 (오전 8시 ~ 10시 KST)
+  if (hour >= 8 && hour < 10) {
+    if (/^[가-힣\s!~^.]{2,45}$/.test(trimmed) && (trimmed.includes('!') || trimmed.includes('~') || trimmed.includes('^') || trimmed.includes('인사') || trimmed.includes('아침') || trimmed.includes('하루') || trimmed.includes('시작'))) {
+      return '안부인사';
+    }
+  }
+
+  // 퇴근/저녁 인사대 (오후 6시 ~ 8시 KST)
+  if (hour >= 18 && hour < 20) {
+    if (/^[가-힣\s!~^.]{2,45}$/.test(trimmed) && (trimmed.includes('!') || trimmed.includes('~') || trimmed.includes('^') || trimmed.includes('수고') || trimmed.includes('퇴근') || trimmed.includes('고생') || trimmed.includes('마감') || trimmed.includes('저녁'))) {
+      return '마감인사';
+    }
   }
 
   return null;
@@ -340,7 +401,7 @@ async function matchCustomerToCase(customerName: string, partnerId?: string | nu
 // ============================================
 
 const AUTO_APPLY_TYPES = new Set([
-  '부재', '지속부재', '명함발송', '재통화요청', '통화예약', '일반메모', '비피드백', '진행불가'
+  '부재', '지속부재', '명함발송', '재통화요청', '통화예약', '일반메모', '비피드백', '진행불가', '안부인사', '마감인사', '일반대화'
 ]);
 
 const URGENCY_MAP: Record<string, string> = {
@@ -408,18 +469,8 @@ async function autoApplyFeedback(
   };
   updates.status_logs = [log, ...currentLogs];
 
-  // Reminder creation
-  if (classification.reminder) {
-    const currentReminders = getArray(caseData.reminders);
-    const newReminder = {
-      id: `tg-${Date.now()}`,
-      datetime: classification.reminder.datetime,
-      type: classification.reminder.type,
-      content: `[TG] ${memoContent}`,
-      isCompleted: false,
-    };
-    updates.reminders = [newReminder, ...currentReminders];
-  }
+  // [REMOVED] Reminder creation — AI가 추출한 날짜가 부정확하여 리마인더 자동 생성 비활성화
+  // 상담 이력(메모/상태 로그)에만 기록됨
 
   // Apply updates
   await supabase
@@ -433,7 +484,51 @@ async function autoApplyFeedback(
 // ============================================
 
 serve(async (req: Request) => {
-  if (req.method !== 'POST') {
+  if (req.method === 'GET') {
+    const url = new URL(req.url);
+    const debugKey = url.searchParams.get('debug_key');
+    if (debugKey === 'check_status_2026') {
+      try {
+        const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo`);
+        const tgData = await tgRes.json();
+        return new Response(JSON.stringify({
+          ok: true,
+          env: {
+            hasBotToken: !!TELEGRAM_BOT_TOKEN,
+            hasGeminiKey: !!GEMINI_API_KEY,
+            hasWebhookSecret: !!TELEGRAM_WEBHOOK_SECRET,
+            supabaseUrl: SUPABASE_URL,
+          },
+          webhookInfo: tgData
+        }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ ok: false, error: String(err) }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 500
+        });
+      }
+    }
+    if (debugKey === 'reset_webhook_2026') {
+      try {
+        const webhookUrl = `https://cenksfblktflfurxjmtv.supabase.co/functions/v1/telegram-webhook`;
+        const registerUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}&secret_token=${encodeURIComponent(TELEGRAM_WEBHOOK_SECRET || '')}`;
+        const tgRes = await fetch(registerUrl);
+        const tgData = await tgRes.json();
+        return new Response(JSON.stringify({
+          ok: true,
+          registerResult: tgData
+        }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ ok: false, error: String(err) }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 500
+        });
+      }
+    }
     return new Response('OK', { status: 200 });
   }
 
@@ -469,17 +564,41 @@ serve(async (req: Request) => {
       });
     }
 
-    // AI Classification directly on raw text
-    const classification = await classifyWithGemini(
-      parsed.senderName,
-      parsed.text
-    );
+    // 1. Heuristic 선검증 필터 (Gemini API 호출 스킵으로 비용 절감 및 응답 속도 최적화)
+    const heuristicType = heuristicClassify(parsed.text, parsed.timestamp);
+    let classification: any;
+
+    if (heuristicType) {
+      console.log(`[TG-Webhook] Heuristic classification success: "${heuristicType}". Skipping Gemini API.`);
+      classification = {
+        customerName: null,
+        feedbackType: heuristicType,
+        suggestedStatus: null,
+        suggestedStatusLevel: null,
+        suggestedDropOffReason: null,
+        suggestedMemo: parsed.text,
+        reminder: null,
+        contract: null,
+        confidence: 1.0,
+        _heuristicUsed: true,
+      };
+    } else {
+      // AI Classification directly on raw text
+      classification = await classifyWithGemini(
+        parsed.senderName,
+        parsed.text
+      );
+    }
 
     // Skip only confirmed non-feedback messages (NOT AI errors)
     // AI 에러로 customerName이 null인 경우에도 원본 메시지를 DB에 저장
     // "이름 // 내용" 패턴이 있으면 비피드백이라도 스킵하지 않음
     const hasNamePattern = /^[가-힣]{2,4}\s*\/\//.test(parsed.text.trim())
-        || /^[가-힣]{2,4}(?:님)?\s*\n/.test(parsed.text.trim());
+        || /^[가-힣]{2,4}(?:님)?\s*\n/.test(parsed.text.trim())
+        || /^[가-힣]{2,4}\s*\/\s/.test(parsed.text.trim());
+        
+    // 비피드백 유형은 무의미한 저장 방지를 위해 DB 저장 스킵 (단, 이름 패턴이 있거나 AI 에러인 경우는 제외)
+    // 안부인사, 마감인사, 일반대화는 히스토리 조회를 위해 DB에 저장함
     if (classification.feedbackType === '비피드백' && !classification._aiError && !hasNamePattern && !classification.customerName) {
       return new Response(JSON.stringify({ ok: true, skipped: 'non-feedback' }), {
         headers: { 'Content-Type': 'application/json' },
@@ -498,7 +617,11 @@ serve(async (req: Request) => {
     // Determine apply mode and urgency (Never auto apply if multiple matches / null id)
     const isAutoApplyInfo = AUTO_APPLY_TYPES.has(classification.feedbackType);
     const isAutoApply = isAutoApplyInfo && !!matchedCaseId;
-    const applyMode = isAutoApply ? 'auto' : 'pending';
+    
+    // 안부인사, 마감인사, 일반대화, 비피드백은 대기목록(pending) 및 알림 배지에서 완전히 제외하기 위해 즉시 확인(is_confirmed = true) 처리
+    const isNonAlertingType = ['안부인사', '마감인사', '일반대화', '비피드백'].includes(classification.feedbackType);
+    const isConfirmed = isNonAlertingType || isAutoApply;
+    const applyMode = isNonAlertingType ? 'auto' : (isAutoApply ? 'auto' : 'pending');
     const urgency = URGENCY_MAP[classification.feedbackType] || 'info';
 
     // Store in telegram_feedbacks table
@@ -515,7 +638,7 @@ serve(async (req: Request) => {
         chat_title: parsed.chatTitle,
         matched_case_id: matchedCaseId,
         is_applied: isAutoApply,
-        is_confirmed: isAutoApply,
+        is_confirmed: isConfirmed,
         apply_mode: applyMode,
         urgency,
         ai_classification: classification,

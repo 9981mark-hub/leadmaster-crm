@@ -430,18 +430,19 @@ export const restoreCaseInSupabase = async (caseId: string): Promise<boolean> =>
 // ============================================
 
 let casesChannel: RealtimeChannel | null = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 /**
- * Subscribe to real-time case updates
- */
-/**
  * Subscribe to real-time updates for Cases, Partners, and Settings
+ * [EGRESS FIX] Cases 이벤트에서 onAnyChange 제거 (자체 핸들러로 처리 완료)
+ * [EGRESS FIX] 재연결 시 지수 백오프 + 최대 재시도 횟수 적용
  */
 export const subscribeToCases = (
     onInsert: (newCase: Case) => void,
     onUpdate: (updatedCase: Case) => void,
     onDelete: (caseId: string) => void,
-    onAnyChange?: () => void // Optional callback for any change (used for simple invalidation of other tables)
+    onAnyChange?: () => void // Partners/Settings 변경 시에만 호출
 ): (() => void) => {
     if (!supabase) {
         console.warn('[Supabase] Real-time not available - client not configured');
@@ -456,13 +457,15 @@ export const subscribeToCases = (
     casesChannel = supabase
         .channel('app-realtime')
         // --- Cases Listeners ---
+        // [EGRESS FIX] Cases 이벤트에서 onAnyChange 제거
+        // onInsert/onUpdate/onDelete가 이미 케이스 데이터를 직접 처리하므로
+        // partners/settings를 불필요하게 재조회할 필요 없음
         .on(
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'cases' },
             (payload) => {
                 console.log('[Supabase] New case:', payload.new);
                 onInsert(dbToCase(payload.new as DbCase));
-                if (onAnyChange) onAnyChange();
             }
         )
         .on(
@@ -471,7 +474,6 @@ export const subscribeToCases = (
             (payload) => {
                 console.log('[Supabase] Updated case:', payload.new);
                 onUpdate(dbToCase(payload.new as DbCase));
-                if (onAnyChange) onAnyChange();
             }
         )
         .on(
@@ -480,7 +482,6 @@ export const subscribeToCases = (
             (payload) => {
                 console.log('[Supabase] Deleted case:', payload.old);
                 onDelete((payload.old as any).case_id);
-                if (onAnyChange) onAnyChange();
             }
         )
         // --- Partners Listeners ---
@@ -504,20 +505,33 @@ export const subscribeToCases = (
         .subscribe((status) => {
             console.log('[Supabase] Realtime status:', status);
 
-            // [SYNC FIX] Auto-reconnect on channel error or timeout
+            if (status === 'SUBSCRIBED') {
+                // 연결 성공 시 재시도 카운터 리셋
+                reconnectAttempts = 0;
+            }
+
+            // [EGRESS FIX] 지수 백오프 + 최대 재시도 횟수로 무한 루프 방지
             if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-                console.warn('[Supabase] Realtime channel error/timeout - attempting reconnect in 3s...');
+                reconnectAttempts++;
+                
+                if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+                    console.error(`[Supabase] Max reconnect attempts (${MAX_RECONNECT_ATTEMPTS}) reached. Stopping reconnection to prevent bandwidth waste.`);
+                    console.error('[Supabase] 수동으로 페이지를 새로고침해주세요.');
+                    return;
+                }
+
+                const delay = Math.min(3000 * Math.pow(2, reconnectAttempts - 1), 60000);
+                console.warn(`[Supabase] Realtime channel error/timeout - reconnect attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${delay / 1000}s...`);
+                
                 setTimeout(() => {
                     if (casesChannel && supabase) {
                         supabase.removeChannel(casesChannel);
                         casesChannel = null;
                     }
-                    // Trigger re-subscription (caller should handle this via exported function)
                     console.log('[Supabase] Attempting to reconnect...');
-                    // Note: The actual re-subscribe needs to be called from api.ts setupRealtimeSubscription
-                    // For immediate effect, we'll call onAnyChange to trigger a manual refresh
-                    if (onAnyChange) onAnyChange();
-                }, 3000);
+                    // [EGRESS FIX] 재연결 시 onAnyChange 호출 제거
+                    // 재연결만 시도하고, 데이터 재조회는 하지 않음 (무한 루프 방지)
+                }, delay);
             }
         });
 
@@ -527,6 +541,7 @@ export const subscribeToCases = (
             supabase.removeChannel(casesChannel);
             casesChannel = null;
         }
+        reconnectAttempts = 0;
     };
 };
 
@@ -655,7 +670,7 @@ export const fetchCommunicationLogsFromSupabase = async (phone: string): Promise
         const normalizedPhone = phone.replace(/[^0-9]/g, '');
         const { data, error } = await supabase
             .from('communication_logs')
-            .select('*')
+            .select('id, phone_number, type, duration, content, timestamp, created_at, line_info') // [EGRESS FIX] select('*') → 필요 컬럼만
             .eq('phone_number', normalizedPhone)
             .order('timestamp', { ascending: false });
         if (error) throw error;

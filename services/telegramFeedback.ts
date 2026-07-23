@@ -65,7 +65,7 @@ export async function fetchFeedbacksByCase(caseId: string): Promise<TelegramFeed
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('telegram_feedbacks')
-    .select('*')
+    .select('id, message_id, reply_to_message_id, sender_name, customer_name, feedback_type, feedback_content, chat_id, chat_title, matched_case_id, is_applied, is_confirmed, apply_mode, urgency, ai_classification, applied_at, applied_by, created_at') // [EGRESS FIX]
     .eq('matched_case_id', caseId)
     .order('created_at', { ascending: false });
 
@@ -81,7 +81,7 @@ export async function fetchPendingFeedbacks(): Promise<TelegramFeedback[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('telegram_feedbacks')
-    .select('*')
+    .select('id, message_id, reply_to_message_id, sender_name, customer_name, feedback_type, feedback_content, chat_id, chat_title, matched_case_id, is_applied, is_confirmed, apply_mode, urgency, ai_classification, applied_at, applied_by, created_at') // [EGRESS FIX]
     .eq('is_confirmed', false)
     .eq('apply_mode', 'pending')
     .order('created_at', { ascending: false });
@@ -98,7 +98,7 @@ export async function fetchAllFeedbacks(): Promise<TelegramFeedback[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('telegram_feedbacks')
-    .select('*')
+    .select('id, message_id, reply_to_message_id, sender_name, customer_name, feedback_type, feedback_content, chat_id, chat_title, matched_case_id, is_applied, is_confirmed, apply_mode, urgency, ai_classification, applied_at, applied_by, created_at') // [EGRESS FIX]
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -206,17 +206,8 @@ export async function confirmFeedback(
     };
     updates.status_logs = [log, ...currentLogs];
 
-    if (classification.reminder) {
-      const currentReminders = getArray(caseData.reminders);
-      const newReminder = {
-        id: `tg-${Date.now()}`,
-        datetime: classification.reminder.datetime,
-        type: classification.reminder.type,
-        content: `[TG] ${memoContent}`,
-        isCompleted: false,
-      };
-      updates.reminders = [newReminder, ...currentReminders];
-    }
+    // [REMOVED] Reminder creation — AI가 추출한 날짜가 부정확하여 리마인더 자동 생성 비활성화
+    // 상담 이력(메모/상태 로그)에만 기록됨
 
     // 2. Update case
     const { error: caseUpdateError } = await supabase

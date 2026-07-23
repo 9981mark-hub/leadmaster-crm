@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { differenceInMinutes, parse, isValid } from 'date-fns';
 import { Case, ReminderItem } from '../types';
 import { fetchCases } from '../services/api';
@@ -19,10 +19,39 @@ interface ReminderContextType {
 
 const ReminderContext = createContext<ReminderContextType | undefined>(undefined);
 
+// ============================================
+// [FIX] localStorage 기반 중복 방지 유틸
+// 페이지 새로고침 후에도 이미 표시된 알림을 다시 표시하지 않음
+// ============================================
+const PROCESSED_KEY = 'lm_processed_reminders';
+
+const loadProcessedReminders = (): Map<string, number> => {
+    try {
+        const stored = localStorage.getItem(PROCESSED_KEY);
+        if (!stored) return new Map();
+        const entries: [string, number][] = JSON.parse(stored);
+        // 24시간 이상 된 항목은 자동 정리
+        const now = Date.now();
+        const DAY_MS = 24 * 60 * 60 * 1000;
+        return new Map(entries.filter(([, ts]) => now - ts < DAY_MS));
+    } catch {
+        return new Map();
+    }
+};
+
+const saveProcessedReminders = (map: Map<string, number>) => {
+    try {
+        localStorage.setItem(PROCESSED_KEY, JSON.stringify(Array.from(map.entries())));
+    } catch {
+        // localStorage full 등 예외 무시
+    }
+};
+
 export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [cases, setCases] = useState<Case[]>([]);
     const [notifications, setNotifications] = useState<ReminderNotification[]>([]);
-    const processedReminders = useRef<Set<string>>(new Set()); // Track processed reminders to avoid double alerts
+    // [FIX] useRef(Set) → localStorage 기반 Map (key: reminderUniqueId, value: timestamp)
+    const processedReminders = useRef<Map<string, number>>(loadProcessedReminders());
 
     // Permission for browser notifications
     useEffect(() => {
@@ -31,27 +60,26 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
     }, []);
 
-    const refreshReminders = async () => {
+    const refreshReminders = useCallback(async () => {
         try {
             const data = await fetchCases();
             setCases(data);
         } catch (error) {
             console.error("Failed to fetch cases for reminders:", error);
         }
-    };
+    }, []);
 
     // Initial fetch and periodic refresh (every 5 mins)
     useEffect(() => {
         refreshReminders();
         const fetchInterval = setInterval(refreshReminders, 5 * 60 * 1000);
         return () => clearInterval(fetchInterval);
-    }, []);
+    }, [refreshReminders]);
 
     // Check queue every 30 seconds
     useEffect(() => {
         const checkReminders = () => {
             const now = new Date();
-            console.log(`[ReminderCheck] Checking ${cases.length} cases at ${now.toLocaleTimeString()}`);
 
             cases.forEach(c => {
                 c.reminders?.forEach(r => {
@@ -60,23 +88,16 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     // Parse date "YYYY-MM-DD HH:mm"
                     let rDate = parse(r.datetime, 'yyyy-MM-dd HH:mm', new Date());
                     if (!isValid(rDate)) {
-                        console.warn(`[ReminderCheck] Invalid date for case ${c.customerName}: ${r.datetime}`);
-                        // Try appending seconds if needed, or fallback logic? 
-                        // Currently assuming standard format.
                         return;
                     }
 
                     const diff = differenceInMinutes(rDate, now);
-                    console.log(`[ReminderCheck] ${c.customerName} - ${r.datetime} (Diff: ${diff}m)`);
-                    // Trigger window: 9 to 11 minutes (target is 10)
-                    // Also check if not already processed
                     const reminderUniqueId = `${c.caseId}-${r.id}`;
 
-                    // Modified logic: Catch anything between 0 and 12 minutes to be safe for testing
-                    // Original: 9 to 11
-                    if (diff >= 0 && diff <= 12 && !processedReminders.current.has(reminderUniqueId)) {
+                    // [FIX] 트리거 윈도우: 8~12분 전 (원래 의도에 가깝게 복원)
+                    // 기존 0~12분은 테스트용이었으나 실서비스에서 너무 넓어 반복 트리거됨
+                    if (diff >= 8 && diff <= 12 && !processedReminders.current.has(reminderUniqueId)) {
                         console.log(`[ReminderCheck] TRIGGERING ALERT for ${c.customerName}`);
-                        // Trigger Notification
                         const newNotification: ReminderNotification = {
                             id: reminderUniqueId,
                             caseId: c.caseId,
@@ -86,24 +107,21 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                         };
 
                         setNotifications(prev => {
-                            // Prevent duplicates in state just in case
                             if (prev.some(n => n.id === newNotification.id)) return prev;
                             return [...prev, newNotification];
                         });
 
-                        processedReminders.current.add(reminderUniqueId);
+                        // [FIX] localStorage에 저장하여 새로고침 후에도 중복 방지
+                        processedReminders.current.set(reminderUniqueId, Date.now());
+                        saveProcessedReminders(processedReminders.current);
 
                         // Browser Notification
                         if ('Notification' in window && Notification.permission === 'granted') {
                             new Notification(`[LeadMaster] 10분 전 알림: ${c.customerName}`, {
                                 body: `${r.datetime.split(' ')[1]} ${r.type || '일정'} - ${r.content || '내용 없음'}`,
-                                icon: '/vite.svg' // Optional icon
+                                icon: '/vite.svg'
                             });
                         }
-
-                        // Optional: Beep sound
-                        // const audio = new Audio('/notification.mp3');
-                        // audio.play().catch(e => console.log("Audio play failed", e));
                     }
                 });
             });
@@ -114,9 +132,11 @@ export const ReminderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [cases]);
 
     const dismissNotification = (id: string) => {
-        // Remove from local state only - user must manually input result in case detail page
         setNotifications(prev => prev.filter(n => n.id !== id));
-        console.log(`[ReminderNotification] Dismissed notification ${id} - no auto-complete, user must input result manually`);
+        // [FIX] dismiss 시에도 processedReminders에 확실히 기록
+        processedReminders.current.set(id, Date.now());
+        saveProcessedReminders(processedReminders.current);
+        console.log(`[ReminderNotification] Dismissed notification ${id}`);
     };
 
     return (

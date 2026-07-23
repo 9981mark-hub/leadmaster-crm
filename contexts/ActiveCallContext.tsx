@@ -138,6 +138,28 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     }
                 }
             )
+            // [EGRESS FIX] call-duration-monitor 채널을 여기에 통합 (5채널 → 4채널)
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'communication_logs' },
+                (payload: any) => {
+                    const row = payload.new;
+                    if (!row || row.type !== 'CALL_OUT') return;
+
+                    const phone = row.phone_number;
+
+                    setCallState(prev => {
+                        if (!prev.isActive || (prev.mode !== 'calling' && prev.mode !== 'dialing')) return prev;
+                        
+                        const normalizedCallPhone = prev.phoneNumber.replace(/[^0-9]/g, '');
+                        if (phone === normalizedCallPhone && row.duration !== null && row.duration !== undefined) {
+                            // duration이 기록됨 → 통화 종료
+                            return { ...prev, mode: 'ended' };
+                        }
+                        return prev;
+                    });
+                }
+            )
             .subscribe((status: string) => {
                 console.log('[ActiveCall] Realtime communication_logs status:', status);
             });
@@ -359,39 +381,8 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, [callState.isActive, callState.mode]);
 
     // CALL_OUT 감지 후 통화 종료 판단:
+    // [EGRESS FIX] 별도 채널 대신 active-call-monitor에 통합 (아래 useEffect에서 처리)
     // communication_logs에 duration이 업데이트되면 ended로 전환
-    useEffect(() => {
-        if (!supabase || (callState.mode !== 'calling' && callState.mode !== 'dialing')) return;
-
-        const updateChannel = supabase
-            .channel('call-duration-monitor')
-            .on(
-                'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'communication_logs' },
-                (payload: any) => {
-                    const row = payload.new;
-                    if (!row || row.type !== 'CALL_OUT') return;
-
-                    const phone = row.phone_number;
-                    const normalizedCallPhone = callState.phoneNumber.replace(/[^0-9]/g, '');
-
-                    if (phone === normalizedCallPhone && row.duration !== null && row.duration !== undefined) {
-                        // duration이 기록됨 → 통화 종료
-                        setCallState(prev => ({
-                            ...prev,
-                            mode: 'ended',
-                        }));
-                    }
-                }
-            )
-            .subscribe();
-
-        return () => {
-            if (supabase) {
-                supabase.removeChannel(updateChannel);
-            }
-        };
-    }, [callState.mode, callState.phoneNumber]);
 
     return (
         <ActiveCallContext.Provider value={{ callState, startCall, dismissCall }}>
