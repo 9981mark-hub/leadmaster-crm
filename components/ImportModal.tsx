@@ -1,12 +1,18 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, Check, Loader2, List, Sparkles } from 'lucide-react';
+import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, Check, Loader2, List, Sparkles, Grid, Trash2 } from 'lucide-react';
 import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase, fetchCases } from '../services/api';
 import { Partner, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
-import { ASSET_TYPES, JOB_TYPES, formatPhone } from '../constants';
+import { ASSET_TYPES, JOB_TYPES, CASE_TYPES, formatPhone } from '../constants';
 import { fileToBase64, checkIsDuplicate } from '../utils';
+
+// 유입경로 약어 매핑 (엑셀 업로드 / 시트 입력 공용)
+const INBOUND_PATH_ALIASES: Record<string, string> = {
+    'fb': '페이스북',
+    'ig': '인스타그램',
+};
 
 interface ImportModalProps {
     isOpen: boolean;
@@ -16,7 +22,15 @@ interface ImportModalProps {
     inboundPaths: string[];
 }
 
-type ImportTab = 'excel' | 'ocr' | 'manual';
+type ImportTab = 'excel' | 'ocr' | 'sheet' | 'manual';
+
+interface SheetRow {
+    customerName: string;
+    phone: string;
+    caseType: string;
+    inboundPath: string;
+    preInfo: string;
+}
 
 export default function ImportModal({ isOpen, onClose, onSuccess, partners, inboundPaths }: ImportModalProps) {
     const { showToast } = useToast();
@@ -29,6 +43,18 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     // Excel State
     const [excelPreview, setExcelPreview] = useState<(Partial<Case> & { duplicateInfo?: Case })[]>([]);
     const excelInputRef = useRef<HTMLInputElement>(null);
+
+    // Sheet State
+    const [sheetRows, setSheetRows] = useState<SheetRow[]>(() =>
+        Array(5).fill(null).map(() => ({
+            customerName: '',
+            phone: '',
+            caseType: '개인회생',
+            inboundPath: '',
+            preInfo: ''
+        }))
+    );
+    const sheetRef = useRef<HTMLTableElement>(null);
 
     // OCR State
     const [ocrFile, setOcrFile] = useState<File | null>(null);
@@ -176,10 +202,6 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     const rawPath = String(row['inboundPath'] || row['유입경로'] || '');
 
                     // 유입경로 약어 자동 변환 (대소문자 무관)
-                    const INBOUND_PATH_ALIASES: Record<string, string> = {
-                        'fb': '페이스북',
-                        'ig': '인스타그램',
-                    };
                     const normalizedPath = INBOUND_PATH_ALIASES[rawPath.trim().toLowerCase()] || rawPath;
 
                     // [Feature] Dynamic preInfo: detect non-system columns and use header name as label
@@ -416,10 +438,107 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         }
     };
 
+    // --- Sheet Logic ---
+    const SHEET_COLUMNS: (keyof SheetRow)[] = ['customerName', 'phone', 'caseType', 'inboundPath', 'preInfo'];
+
+    const handleSheetCellChange = (rowIdx: number, field: keyof SheetRow, value: string) => {
+        if (field === 'phone') value = formatPhone(value);
+        if (field === 'inboundPath') {
+            const alias = INBOUND_PATH_ALIASES[value.trim().toLowerCase()];
+            if (alias) value = alias;
+        }
+        setSheetRows(prev => {
+            const next = [...prev];
+            next[rowIdx] = { ...next[rowIdx], [field]: value };
+            return next;
+        });
+    };
+
+    const handleSheetPaste = (e: React.ClipboardEvent, startRowIdx: number, startColIdx: number) => {
+        const paste = e.clipboardData.getData('text');
+        if (!paste.includes('\t') && !paste.includes('\n')) return; // 단일 셀은 기본 동작
+        e.preventDefault();
+        const lines = paste.split('\n').filter(l => l.trim());
+
+        setSheetRows(prev => {
+            const next = [...prev];
+            lines.forEach((line, ri) => {
+                const cells = line.split('\t');
+                const targetRow = startRowIdx + ri;
+                while (next.length <= targetRow) next.push({
+                    customerName: '', phone: '', caseType: '개인회생',
+                    inboundPath: inboundPaths?.[0] || '', preInfo: ''
+                });
+                cells.forEach((cell, ci) => {
+                    const targetCol = SHEET_COLUMNS[startColIdx + ci];
+                    if (!targetCol) return;
+                    let value = cell.trim();
+                    if (targetCol === 'phone') value = formatPhone(value);
+                    if (targetCol === 'inboundPath') {
+                        value = INBOUND_PATH_ALIASES[value.toLowerCase()] || value;
+                    }
+                    next[targetRow] = { ...next[targetRow], [targetCol]: value };
+                });
+            });
+            return next;
+        });
+    };
+
+    const addSheetRow = () => {
+        setSheetRows(prev => [...prev, {
+            customerName: '', phone: '', caseType: '개인회생',
+            inboundPath: inboundPaths?.[0] || '', preInfo: ''
+        }]);
+    };
+
+    const removeSheetRow = (idx: number) => {
+        setSheetRows(prev => prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx));
+    };
+
+    const getSheetFilledRows = () => sheetRows.filter(r => r.customerName.trim() || r.phone.trim());
+    const getSheetDuplicates = () => {
+        const filled = getSheetFilledRows();
+        return filled.filter(r => r.phone && checkIsDuplicate(formatPhone(r.phone), existingCases));
+    };
+
+    const submitSheet = async () => {
+        const filledRows = getSheetFilledRows();
+        if (filledRows.length === 0) {
+            showToast('입력된 데이터가 없습니다.', 'error');
+            return;
+        }
+        const casesToCreate = filledRows.map(r => ({
+            ...r,
+            phone: formatPhone(r.phone),
+            isNew: true,
+            isViewed: false,
+            managerName: localStorage.getItem('managerName') || '미지정'
+        }));
+        const validCases = casesToCreate.filter(c => !checkIsDuplicate(c.phone, existingCases));
+        const skippedCount = casesToCreate.length - validCases.length;
+
+        if (validCases.length === 0) {
+            showToast('등록 가능한 신규 연락처가 없습니다.', 'error');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            await batchCreateCases(validCases);
+            let message = `${validCases.length}건이 등록되었습니다.`;
+            if (skippedCount > 0) message += ` (중복 ${skippedCount}건 제외)`;
+            showToast(message);
+            onSuccess();
+            onClose();
+        } catch (e) {
+            showToast('일괄 등록 중 오류가 발생했습니다.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className={`bg-white rounded-xl shadow-2xl w-full ${activeTab === 'sheet' ? 'max-w-4xl' : 'max-w-2xl'} max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300`}>
                 {/* Header */}
                 <div className="p-4 border-b flex justify-between items-center bg-gray-50">
                     <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -447,6 +566,14 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     >
                         <div className="flex items-center justify-center gap-2">
                             <ImageIcon size={16} /> 이미지/PDF 인식 (AI)
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('sheet')}
+                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sheet' ? 'border-purple-600 text-purple-600 bg-purple-50/50' : 'border-transparent text-gray-500 hover:bg-gray-50'}`}
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            <Grid size={16} /> 시트 입력
                         </div>
                     </button>
                     <button
@@ -639,6 +766,124 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         <Check size={18} /> 이 정보로 등록하기
                                     </button>
                                 </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'sheet' && (
+                        <div className="space-y-4">
+                            <div className="bg-purple-50 p-3 rounded-lg text-sm text-purple-800 border border-purple-100">
+                                <h4 className="font-bold mb-1 flex items-center gap-2"><Grid size={14} /> 시트 빠른 입력</h4>
+                                <p className="opacity-80 text-xs">표에 직접 입력하거나, 엑셀에서 복사(Ctrl+C)한 데이터를 셀에 붙여넣기(Ctrl+V) 하세요.</p>
+                            </div>
+
+                            <div className="border rounded-lg overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table ref={sheetRef} className="w-full text-sm border-collapse">
+                                        <thead>
+                                            <tr className="bg-gray-100">
+                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r w-8">#</th>
+                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[100px]">고객명 <span className="text-red-500">*</span></th>
+                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[130px]">연락처 <span className="text-red-500">*</span></th>
+                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[100px]">유형</th>
+                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[100px]">유입경로</th>
+                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[140px]">사전정보</th>
+                                                <th className="p-2 w-8"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {sheetRows.map((row, rowIdx) => {
+                                                const isDup = row.phone.trim() && checkIsDuplicate(formatPhone(row.phone), existingCases);
+                                                return (
+                                                    <tr key={rowIdx} className={`border-t ${isDup ? 'bg-red-50' : 'hover:bg-gray-50'} transition-colors`}>
+                                                        <td className="p-1 text-center text-xs text-gray-400 border-r">{rowIdx + 1}</td>
+                                                        <td className="p-0.5 border-r">
+                                                            <input
+                                                                className="w-full px-2 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded"
+                                                                placeholder="이름"
+                                                                value={row.customerName}
+                                                                onChange={e => handleSheetCellChange(rowIdx, 'customerName', e.target.value)}
+                                                                onPaste={e => handleSheetPaste(e, rowIdx, 0)}
+                                                            />
+                                                        </td>
+                                                        <td className="p-0.5 border-r">
+                                                            <input
+                                                                className={`w-full px-2 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded ${isDup ? 'text-red-600 font-bold' : ''}`}
+                                                                placeholder="010-0000-0000"
+                                                                value={row.phone}
+                                                                onChange={e => handleSheetCellChange(rowIdx, 'phone', e.target.value)}
+                                                                onPaste={e => handleSheetPaste(e, rowIdx, 1)}
+                                                            />
+                                                        </td>
+                                                        <td className="p-0.5 border-r">
+                                                            <select
+                                                                className="w-full px-1 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded cursor-pointer"
+                                                                value={row.caseType}
+                                                                onChange={e => handleSheetCellChange(rowIdx, 'caseType', e.target.value)}
+                                                            >
+                                                                {CASE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                                            </select>
+                                                        </td>
+                                                        <td className="p-0.5 border-r">
+                                                            <select
+                                                                className="w-full px-1 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded cursor-pointer"
+                                                                value={row.inboundPath}
+                                                                onChange={e => handleSheetCellChange(rowIdx, 'inboundPath', e.target.value)}
+                                                            >
+                                                                <option value="">선택</option>
+                                                                {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
+                                                            </select>
+                                                        </td>
+                                                        <td className="p-0.5 border-r">
+                                                            <input
+                                                                className="w-full px-2 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded"
+                                                                placeholder="메모"
+                                                                value={row.preInfo}
+                                                                onChange={e => handleSheetCellChange(rowIdx, 'preInfo', e.target.value)}
+                                                                onPaste={e => handleSheetPaste(e, rowIdx, 4)}
+                                                            />
+                                                        </td>
+                                                        <td className="p-0.5 text-center">
+                                                            <button
+                                                                onClick={() => removeSheetRow(rowIdx)}
+                                                                className="p-1 text-gray-300 hover:text-red-500 transition-colors rounded hover:bg-red-50"
+                                                                title="행 삭제"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <button
+                                    onClick={addSheetRow}
+                                    className="text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1 hover:bg-purple-50 px-3 py-1.5 rounded-lg transition-colors"
+                                >
+                                    <Plus size={14} /> 행 추가
+                                </button>
+                                <div className="text-xs text-gray-500">
+                                    {getSheetFilledRows().length}건 입력됨
+                                    {getSheetDuplicates().length > 0 && (
+                                        <span className="text-red-500 ml-2 font-bold">⚠️ 중복 {getSheetDuplicates().length}건</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {getSheetFilledRows().length > 0 && (
+                                <button
+                                    onClick={submitSheet}
+                                    disabled={isLoading}
+                                    className="w-full py-3 bg-purple-600 text-white rounded-lg font-bold text-lg hover:bg-purple-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                                >
+                                    {isLoading ? <Loader2 className="animate-spin" /> : <Check size={20} />}
+                                    {getSheetFilledRows().length - getSheetDuplicates().length}건 일괄 등록하기
+                                </button>
                             )}
                         </div>
                     )}
