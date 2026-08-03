@@ -175,6 +175,13 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     const rawType = String(row['caseType'] || row['유형'] || '개인회생');
                     const rawPath = String(row['inboundPath'] || row['유입경로'] || '');
 
+                    // 유입경로 약어 자동 변환 (대소문자 무관)
+                    const INBOUND_PATH_ALIASES: Record<string, string> = {
+                        'fb': '페이스북',
+                        'ig': '인스타그램',
+                    };
+                    const normalizedPath = INBOUND_PATH_ALIASES[rawPath.trim().toLowerCase()] || rawPath;
+
                     // [Feature] Dynamic preInfo: detect non-system columns and use header name as label
                     const preInfoParts: string[] = [];
 
@@ -211,7 +218,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                         customerName: rawName,
                         phone: phone,
                         caseType: rawType,
-                        inboundPath: rawPath,
+                        inboundPath: normalizedPath,
                         preInfo: rawPre,
                         isNew: true,
 

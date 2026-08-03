@@ -55,7 +55,9 @@ export const formatMoney = (amount: number | undefined) => {
 
 export const formatPhone = (value: string) => {
   if (!value) return value;
-  const clean = value.replace(/[^\d]/g, "");
+  // 국가코드 +82 → 0 변환 (예: +821012345678 → 01012345678)
+  const normalized = value.replace(/^\+82[-\s]?/, '0');
+  const clean = normalized.replace(/[^\d]/g, "");
 
   // 02 Case (Seoul area code)
   if (clean.startsWith('02')) {
