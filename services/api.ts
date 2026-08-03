@@ -246,6 +246,27 @@ export const initializeData = async () => {
     setupRealtimeSubscription();
   }
 
+  // [EGRESS FIX] 탭 비활성 시 Realtime 끊기 / 활성 시 재연결
+  // 보고 있지 않는 탭의 WebSocket 트래픽을 제거하여 대역폭 절감
+  if (isSupabaseEnabled() && typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        // 탭이 비활성화되면 Realtime 구독 해제
+        if (unsubscribeRealtime) {
+          console.log('[Realtime] Tab hidden - disconnecting to save bandwidth');
+          unsubscribeRealtime();
+          unsubscribeRealtime = null;
+        }
+      } else if (document.visibilityState === 'visible') {
+        // 탭이 다시 활성화되면 Realtime 재연결
+        if (!unsubscribeRealtime) {
+          console.log('[Realtime] Tab visible - reconnecting...');
+          setupRealtimeSubscription();
+        }
+      }
+    });
+  }
+
   // [NEW] Check for Daily Backup (Once per day)
   checkAndPerformDailyBackup();
 };
