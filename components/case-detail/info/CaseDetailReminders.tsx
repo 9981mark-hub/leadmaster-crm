@@ -3,6 +3,8 @@ import { CalendarClock, Check, Edit2, Trash2, X, MessageSquare } from 'lucide-re
 import { Case, MemoItem, ReminderItem, ReminderType } from '../../../types';
 import { safeFormat } from '../../../utils';
 
+const MAX_REMINDERS = 20;
+
 interface CaseDetailRemindersProps {
     reminders: ReminderItem[];
     memos: MemoItem[];
@@ -39,6 +41,12 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
     const [newReminderContent, setNewReminderContent] = useState('');
     const [confirmingDeleteReminderId, setConfirmingDeleteReminderId] = useState<string | null>(null);
 
+    // Reminder Edit State
+    const [editingReminderId, setEditingReminderId] = useState<string | null>(null);
+    const [editReminderData, setEditReminderData] = useState<{
+        date: string; hour: string; minute: string; type: ReminderType; content: string;
+    }>({ date: '', hour: '09', minute: '00', type: '통화', content: '' });
+
     // Memo Edit State
     const [editingMemoId, setEditingMemoId] = useState<string | null>(null);
     const [editMemoContent, setEditMemoContent] = useState('');
@@ -66,8 +74,8 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
             showToast('날짜와 시간을 선택해주세요.', 'error');
             return;
         }
-        if (reminders.length >= 10) {
-            showToast('리마인더는 최대 10개까지 등록할 수 있습니다.', 'error');
+        if (reminders.length >= MAX_REMINDERS) {
+            showToast(`리마인더는 최대 ${MAX_REMINDERS}개까지 등록할 수 있습니다.`, 'error');
             return;
         }
         const newReminder: ReminderItem = {
@@ -92,6 +100,41 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
         onUpdateReminders(reminders.filter(r => r.id !== id));
         setConfirmingDeleteReminderId(null);
         showToast('일정이 삭제되었습니다.');
+    };
+
+    // Reminder Edit Handlers
+    const handleEditReminderStart = (reminder: ReminderItem) => {
+        const dt = reminder.datetime || '';
+        const [datePart, timePart] = dt.includes('T') ? dt.split('T') : dt.split(' ');
+        const [h, m] = (timePart || '09:00').split(':');
+        setEditingReminderId(reminder.id);
+        setEditReminderData({
+            date: datePart || '',
+            hour: h || '09',
+            minute: m || '00',
+            type: reminder.type || '통화',
+            content: reminder.content || ''
+        });
+    };
+
+    const handleEditReminderSave = () => {
+        if (!editingReminderId || !editReminderData.date) {
+            showToast('날짜를 선택해주세요.', 'error');
+            return;
+        }
+        const newDatetime = `${editReminderData.date} ${editReminderData.hour}:${editReminderData.minute}`;
+        const updated = reminders.map(r =>
+            r.id === editingReminderId
+                ? { ...r, datetime: newDatetime, type: editReminderData.type, content: editReminderData.content }
+                : r
+        );
+        onUpdateReminders(updated);
+        setEditingReminderId(null);
+        showToast('일정이 수정되었습니다.');
+    };
+
+    const handleEditReminderCancel = () => {
+        setEditingReminderId(null);
     };
 
     const handleAddMemo = () => {
@@ -228,7 +271,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                 <div className="grid md:grid-cols-2 gap-4">
                     {/* Reminder Settings */}
                     <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
-                        <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/10)</label>
+                        <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/{MAX_REMINDERS})</label>
                         <div className="flex flex-col md:flex-row gap-2 mb-3">
                             <div className="flex flex-col gap-2 flex-[2]">
                                 <input
@@ -236,14 +279,14 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                     className="w-full p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                     value={remDate}
                                     onChange={e => setRemDate(e.target.value)}
-                                    disabled={(reminders.length || 0) >= 10}
+                                    disabled={(reminders.length || 0) >= MAX_REMINDERS}
                                 />
                                 <div className="flex gap-1">
                                     <select
                                         className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                         value={remHour}
                                         onChange={e => setRemHour(e.target.value)}
-                                        disabled={(reminders.length || 0) >= 10}
+                                        disabled={(reminders.length || 0) >= MAX_REMINDERS}
                                     >
                                         {Array.from({ length: 24 }).map((_, i) => {
                                             const h = i.toString().padStart(2, '0');
@@ -254,7 +297,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                         className="flex-1 p-2 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
                                         value={remMinute}
                                         onChange={e => setRemMinute(e.target.value)}
-                                        disabled={(reminders.length || 0) >= 10}
+                                        disabled={(reminders.length || 0) >= MAX_REMINDERS}
                                     >
                                         {['00', '10', '20', '30', '40', '50'].map(m => (
                                             <option key={m} value={m}>{m}분</option>
@@ -285,7 +328,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                             />
                             <button
                                 onClick={handleAddReminder}
-                                disabled={(reminders.length || 0) >= 10}
+                                disabled={(reminders.length || 0) >= MAX_REMINDERS}
                                 className="bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 whitespace-nowrap disabled:bg-gray-400"
                             >
                                 추가
@@ -300,76 +343,148 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                             ) : (
                                 sortedReminders.map(reminder => (
                                     <div key={reminder.id} className="bg-blue-50 border border-blue-100 rounded p-2 flex flex-col gap-2">
-                                        <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-2">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
-                                                <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
-                                                    reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
-                                                        'bg-blue-100 text-blue-700'
-                                                    }`}>
-                                                    {reminder.type || '통화'}
-                                                </span>
-                                            </div>
-                                            {reminder.content && (
-                                                <span className="text-xs text-gray-600 break-words w-full md:w-auto md:max-w-[200px]">
-                                                    {reminder.content}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <div className="pt-2 border-t border-blue-100 w-full">
-                                            {reminder.resultStatus ? (
-                                                <div className="flex justify-between items-center text-xs">
-                                                    <span className={`font-bold px-2 py-0.5 rounded ${reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
-                                                        reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
-                                                            reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
-                                                                'bg-gray-100 text-gray-700'
-                                                        }`}>
-                                                        {reminder.resultStatus}
-                                                    </span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-gray-500 truncate max-w-[150px]">{reminder.resultNote}</span>
-                                                        <button onClick={() => {
-                                                            const newReminders = reminders.map(r => r.id === reminder.id ? { ...r, resultStatus: undefined, resultNote: undefined } : r);
-                                                            onUpdateReminders(newReminders);
-                                                        }} className="text-gray-400 hover:text-gray-600 underline whitespace-nowrap">수정</button>
+                                        {editingReminderId === reminder.id ? (
+                                            /* ── Inline Edit Mode ── */
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex flex-col gap-2">
+                                                    <input
+                                                        type="date"
+                                                        className="w-full p-1.5 border border-blue-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                                                        value={editReminderData.date}
+                                                        onChange={e => setEditReminderData(prev => ({ ...prev, date: e.target.value }))}
+                                                    />
+                                                    <div className="flex gap-1">
+                                                        <select
+                                                            className="flex-1 p-1.5 border border-blue-300 rounded text-sm"
+                                                            value={editReminderData.hour}
+                                                            onChange={e => setEditReminderData(prev => ({ ...prev, hour: e.target.value }))}
+                                                        >
+                                                            {Array.from({ length: 24 }).map((_, i) => {
+                                                                const h = i.toString().padStart(2, '0');
+                                                                return <option key={h} value={h}>{h}시</option>;
+                                                            })}
+                                                        </select>
+                                                        <select
+                                                            className="flex-1 p-1.5 border border-blue-300 rounded text-sm"
+                                                            value={editReminderData.minute}
+                                                            onChange={e => setEditReminderData(prev => ({ ...prev, minute: e.target.value }))}
+                                                        >
+                                                            {['00', '10', '20', '30', '40', '50'].map(m => (
+                                                                <option key={m} value={m}>{m}분</option>
+                                                            ))}
+                                                        </select>
+                                                        <select
+                                                            className="flex-1 p-1.5 border border-blue-300 rounded text-sm min-w-[60px]"
+                                                            value={editReminderData.type}
+                                                            onChange={e => setEditReminderData(prev => ({ ...prev, type: e.target.value as ReminderType }))}
+                                                        >
+                                                            <option value="통화">통화</option>
+                                                            <option value="문자">문자</option>
+                                                            <option value="출장미팅">출장미팅</option>
+                                                            <option value="방문미팅">방문미팅</option>
+                                                            <option value="입금">입금</option>
+                                                            <option value="기타">기타</option>
+                                                        </select>
                                                     </div>
                                                 </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                                                    <span className="text-xs text-blue-400 font-bold flex-shrink-0">결과:</span>
-                                                    {['완료', '미연결', '재예약', '취소'].map((status) => (
-                                                        <button
-                                                            key={status}
-                                                            type="button"
-                                                            onClick={() => handleResultStatusClick(reminder.id, status)}
-                                                            className={`text-[10px] px-2 py-1 rounded border flex-shrink-0 transition-colors ${status === '완료' ? 'border-green-200 text-green-700 hover:bg-green-50' :
-                                                                status === '미연결' ? 'border-red-200 text-red-700 hover:bg-red-50' :
-                                                                    status === '재예약' ? 'border-blue-200 text-blue-700 hover:bg-blue-50' :
-                                                                        'border-gray-200 text-gray-600 hover:bg-gray-50'
-                                                                }`}
-                                                        >
-                                                            {status}
-                                                        </button>
-                                                    ))}
-                                                    {confirmingDeleteReminderId === reminder.id ? (
-                                                        <div className="flex gap-2 flex-shrink-0">
-                                                            <button onClick={() => handleDeleteReminder(reminder.id)} className="text-green-600 text-xs font-bold">확인</button>
-                                                            <button onClick={() => setConfirmingDeleteReminderId(null)} className="text-red-500 text-xs">취소</button>
-                                                        </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => setConfirmingDeleteReminderId(reminder.id)}
-                                                            className="text-red-500 p-1 hover:bg-red-50 rounded flex-shrink-0"
-                                                            title="일정 삭제"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        className="flex-1 p-1.5 border border-gray-300 rounded text-sm"
+                                                        placeholder="메모 (선택사항)"
+                                                        value={editReminderData.content}
+                                                        onChange={e => setEditReminderData(prev => ({ ...prev, content: e.target.value }))}
+                                                    />
+                                                    <button onClick={handleEditReminderSave} className="text-green-600 hover:bg-green-50 p-1.5 rounded" title="저장">
+                                                        <Check size={16} />
+                                                    </button>
+                                                    <button onClick={handleEditReminderCancel} className="text-gray-400 hover:bg-gray-100 p-1.5 rounded" title="취소">
+                                                        <X size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* ── View Mode (기존) ── */
+                                            <>
+                                                <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
+                                                        <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
+                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
+                                                            reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
+                                                                'bg-blue-100 text-blue-700'
+                                                            }`}>
+                                                            {reminder.type || '통화'}
+                                                        </span>
+                                                    </div>
+                                                    {reminder.content && (
+                                                        <span className="text-xs text-gray-600 break-words w-full md:w-auto md:max-w-[200px]">
+                                                            {reminder.content}
+                                                        </span>
                                                     )}
                                                 </div>
-                                            )}
-                                        </div>
+
+                                                <div className="pt-2 border-t border-blue-100 w-full">
+                                                    {reminder.resultStatus ? (
+                                                        <div className="flex justify-between items-center text-xs">
+                                                            <span className={`font-bold px-2 py-0.5 rounded ${reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
+                                                                reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
+                                                                    reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
+                                                                        'bg-gray-100 text-gray-700'
+                                                                }`}>
+                                                                {reminder.resultStatus}
+                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-gray-500 truncate max-w-[150px]">{reminder.resultNote}</span>
+                                                                <button onClick={() => {
+                                                                    const newReminders = reminders.map(r => r.id === reminder.id ? { ...r, resultStatus: undefined, resultNote: undefined } : r);
+                                                                    onUpdateReminders(newReminders);
+                                                                }} className="text-gray-400 hover:text-gray-600 underline whitespace-nowrap">수정</button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                                                            <span className="text-xs text-blue-400 font-bold flex-shrink-0">결과:</span>
+                                                            {['완료', '미연결', '재예약', '취소'].map((status) => (
+                                                                <button
+                                                                    key={status}
+                                                                    type="button"
+                                                                    onClick={() => handleResultStatusClick(reminder.id, status)}
+                                                                    className={`text-[10px] px-2 py-1 rounded border flex-shrink-0 transition-colors ${status === '완료' ? 'border-green-200 text-green-700 hover:bg-green-50' :
+                                                                        status === '미연결' ? 'border-red-200 text-red-700 hover:bg-red-50' :
+                                                                            status === '재예약' ? 'border-blue-200 text-blue-700 hover:bg-blue-50' :
+                                                                                'border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                                        }`}
+                                                                >
+                                                                    {status}
+                                                                </button>
+                                                            ))}
+                                                            <button
+                                                                onClick={() => handleEditReminderStart(reminder)}
+                                                                className="text-blue-500 p-1 hover:bg-blue-50 rounded flex-shrink-0"
+                                                                title="일정 수정"
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            {confirmingDeleteReminderId === reminder.id ? (
+                                                                <div className="flex gap-2 flex-shrink-0">
+                                                                    <button onClick={() => handleDeleteReminder(reminder.id)} className="text-green-600 text-xs font-bold">확인</button>
+                                                                    <button onClick={() => setConfirmingDeleteReminderId(null)} className="text-red-500 text-xs">취소</button>
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={() => setConfirmingDeleteReminderId(reminder.id)}
+                                                                    className="text-red-500 p-1 hover:bg-red-50 rounded flex-shrink-0"
+                                                                    title="일정 삭제"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 ))
                             )}
