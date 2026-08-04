@@ -371,40 +371,42 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2">
                             <input
                                 type="text"
-                                className="flex-1 p-2 border border-gray-300 rounded text-sm"
+                                className="w-full p-2 border border-gray-300 rounded text-sm"
                                 placeholder={newReminderType === '기타' ? "일정 내용을 입력하세요" : "메모 (선택사항)"}
                                 value={newReminderContent}
                                 onChange={e => setNewReminderContent(e.target.value)}
                             />
-                            <button
-                                onClick={handleAddReminder}
-                                disabled={(reminders.length || 0) >= MAX_REMINDERS}
-                                className="bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 whitespace-nowrap disabled:bg-gray-400"
-                            >
-                                추가
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (reminders.length === 0) {
-                                        showToast('기존 리마인더가 없습니다. 먼저 일정을 하나 등록해주세요.', 'error');
-                                        return;
-                                    }
-                                    setShowQuickSelect(!showQuickSelect);
-                                }}
-                                disabled={(reminders.length || 0) >= MAX_REMINDERS}
-                                className={`flex items-center gap-1 px-3 py-2 rounded text-sm font-bold whitespace-nowrap transition-all disabled:bg-gray-400 disabled:text-white ${
-                                    showQuickSelect
-                                        ? 'bg-amber-600 text-white shadow-inner'
-                                        : 'bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200'
-                                }`}
-                                title="최근 리마인더 조건으로 빠르게 등록"
-                            >
-                                <Zap size={14} />
-                                빠른선택
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleAddReminder}
+                                    disabled={(reminders.length || 0) >= MAX_REMINDERS}
+                                    className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-bold hover:bg-yellow-600 disabled:bg-gray-400"
+                                >
+                                    추가
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (reminders.length === 0) {
+                                            showToast('기존 리마인더가 없습니다. 먼저 일정을 하나 등록해주세요.', 'error');
+                                            return;
+                                        }
+                                        setShowQuickSelect(!showQuickSelect);
+                                    }}
+                                    disabled={(reminders.length || 0) >= MAX_REMINDERS}
+                                    className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded text-sm font-bold transition-all disabled:bg-gray-400 disabled:text-white ${
+                                        showQuickSelect
+                                            ? 'bg-amber-600 text-white shadow-inner'
+                                            : 'bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200'
+                                    }`}
+                                    title="최근 리마인더 조건으로 빠르게 등록"
+                                >
+                                    <Zap size={14} />
+                                    빠른선택
+                                </button>
+                            </div>
                         </div>
 
                         {/* Quick Select Preset Panel */}
