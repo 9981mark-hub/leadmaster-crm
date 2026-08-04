@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarClock, Check, Edit2, Trash2, X, MessageSquare } from 'lucide-react';
+import { CalendarClock, Check, Edit2, Trash2, X, MessageSquare, Zap } from 'lucide-react';
 import { Case, MemoItem, ReminderItem, ReminderType } from '../../../types';
 import { safeFormat } from '../../../utils';
 
@@ -53,6 +53,9 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
     const [confirmingDeleteMemoId, setConfirmingDeleteMemoId] = useState<string | null>(null);
     const [newMemoContent, setNewMemoContent] = useState('');
 
+    // Quick Select State
+    const [showQuickSelect, setShowQuickSelect] = useState(false);
+
     // Result Modal State
     const [resultModal, setResultModal] = useState<{
         isOpen: boolean;
@@ -94,6 +97,56 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
         setNewReminderContent('');
         setNewReminderType('통화');
         showToast('다음 일정이 추가되었습니다.');
+    };
+
+    // Quick Add Reminder with date presets
+    const quickSelectPresets: { label: string; offset: () => Date }[] = [
+        { label: '내일', offset: () => { const d = new Date(); d.setDate(d.getDate() + 1); return d; } },
+        { label: '모레', offset: () => { const d = new Date(); d.setDate(d.getDate() + 2); return d; } },
+        { label: '일주일', offset: () => { const d = new Date(); d.setDate(d.getDate() + 7); return d; } },
+        { label: '이주일', offset: () => { const d = new Date(); d.setDate(d.getDate() + 14); return d; } },
+        { label: '한달', offset: () => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; } },
+        { label: '두달', offset: () => { const d = new Date(); d.setMonth(d.getMonth() + 2); return d; } },
+        { label: '세달', offset: () => { const d = new Date(); d.setMonth(d.getMonth() + 3); return d; } },
+    ];
+
+    const handleQuickAddReminder = (presetIndex: number) => {
+        if (reminders.length >= MAX_REMINDERS) {
+            showToast(`리마인더는 최대 ${MAX_REMINDERS}개까지 등록할 수 있습니다.`, 'error');
+            return;
+        }
+        // Find the most recent reminder (by datetime, descending)
+        const sorted = [...reminders].sort((a, b) => String(b.datetime || '').localeCompare(String(a.datetime || '')));
+        const latestReminder = sorted[0];
+        if (!latestReminder) {
+            showToast('기존 리마인더가 없습니다. 먼저 일정을 하나 등록해주세요.', 'error');
+            return;
+        }
+
+        // Extract time and type from latest reminder
+        const dt = latestReminder.datetime || '';
+        const [, timePart] = dt.includes('T') ? dt.split('T') : dt.split(' ');
+        const time = timePart || '09:00';
+        const type = latestReminder.type || '통화';
+        const content = latestReminder.content || '';
+
+        // Calculate target date
+        const preset = quickSelectPresets[presetIndex];
+        const targetDate = preset.offset();
+        const yyyy = targetDate.getFullYear();
+        const mm = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+        const dd = targetDate.getDate().toString().padStart(2, '0');
+        const newDateStr = `${yyyy}-${mm}-${dd}`;
+
+        const newReminder: ReminderItem = {
+            id: Date.now().toString(),
+            datetime: `${newDateStr} ${time}`,
+            type,
+            content,
+        };
+        onUpdateReminders([...reminders, newReminder]);
+        setShowQuickSelect(false);
+        showToast(`${preset.label} (${newDateStr} ${time}) 일정이 추가되었습니다.`);
     };
 
     const handleDeleteReminder = (id: string) => {
@@ -333,7 +386,75 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                             >
                                 추가
                             </button>
+                            <button
+                                onClick={() => {
+                                    if (reminders.length === 0) {
+                                        showToast('기존 리마인더가 없습니다. 먼저 일정을 하나 등록해주세요.', 'error');
+                                        return;
+                                    }
+                                    setShowQuickSelect(!showQuickSelect);
+                                }}
+                                disabled={(reminders.length || 0) >= MAX_REMINDERS}
+                                className={`flex items-center gap-1 px-3 py-2 rounded text-sm font-bold whitespace-nowrap transition-all disabled:bg-gray-400 disabled:text-white ${
+                                    showQuickSelect
+                                        ? 'bg-amber-600 text-white shadow-inner'
+                                        : 'bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200'
+                                }`}
+                                title="최근 리마인더 조건으로 빠르게 등록"
+                            >
+                                <Zap size={14} />
+                                빠른선택
+                            </button>
                         </div>
+
+                        {/* Quick Select Preset Panel */}
+                        {showQuickSelect && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-bold text-amber-800 flex items-center gap-1">
+                                        <Zap size={12} className="text-amber-600" />
+                                        빠른 선택 — 최근 리마인더 조건 기준
+                                    </span>
+                                    <button
+                                        onClick={() => setShowQuickSelect(false)}
+                                        className="text-amber-500 hover:text-amber-700 p-0.5 rounded hover:bg-amber-100"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                                {(() => {
+                                    const sorted = [...reminders].sort((a, b) => String(b.datetime || '').localeCompare(String(a.datetime || '')));
+                                    const latest = sorted[0];
+                                    if (!latest) return null;
+                                    const dt = latest.datetime || '';
+                                    const [, tp] = dt.includes('T') ? dt.split('T') : dt.split(' ');
+                                    return (
+                                        <div className="text-[10px] text-amber-600 mb-2 bg-white rounded px-2 py-1 border border-amber-100">
+                                            📋 최근 조건: <span className="font-bold">{tp || '09:00'}</span> · <span className="font-bold">{latest.type || '통화'}</span>
+                                            {latest.content && <> · "{latest.content}"</>}
+                                        </div>
+                                    );
+                                })()}
+                                <div className="flex flex-wrap gap-1.5">
+                                    {quickSelectPresets.map((preset, idx) => {
+                                        const targetDate = preset.offset();
+                                        const mm = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+                                        const dd = targetDate.getDate().toString().padStart(2, '0');
+                                        const dateLabel = `${mm}/${dd}`;
+                                        return (
+                                            <button
+                                                key={preset.label}
+                                                onClick={() => handleQuickAddReminder(idx)}
+                                                className="flex flex-col items-center px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-100 hover:border-amber-400 hover:shadow-sm transition-all active:scale-95"
+                                            >
+                                                <span>{preset.label}</span>
+                                                <span className="text-[9px] font-normal text-amber-500">{dateLabel}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="space-y-2 mt-2 max-h-72 overflow-y-auto">
                             {sortedReminders.length === 0 ? (
