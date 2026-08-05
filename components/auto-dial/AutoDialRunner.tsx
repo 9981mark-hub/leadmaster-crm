@@ -189,17 +189,13 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
     // Update item status to dialing
     await updateItemStatus(nextItem.id, 'dialing');
 
-    // Enqueue pending call for Android
-    const success = await enqueuePendingCall(nextItem.phone, nextItem.customerName, nextItem.id);
-    if (success) {
-      setRunnerState('ringing');
-    } else {
-      // Error enqueueing
-      await updateItemStatus(nextItem.id, 'completed', 'error');
-      await incrementCount('errorCount');
-      showToast(`${nextItem.customerName} 발신 실패`, 'error');
-      startGapWait();
-    }
+    // 자동 통화: autocall: 스킴으로 WebView → Android ACTION_CALL (포그라운드)
+    // pending_calls도 기록용으로 삽입
+    await enqueuePendingCall(nextItem.phone, nextItem.customerName, nextItem.id);
+    
+    // autocall: 스킴으로 바로 전화 걸기
+    window.location.href = `autocall:${nextItem.phone.replace(/[^0-9]/g, '')}`;
+    setRunnerState('ringing');
   };
 
   const handleRingTimeout = async () => {
