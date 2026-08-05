@@ -89,9 +89,10 @@ const AutoDialDashboard: React.FC = () => {
     return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   };
 
-  // 모바일: running 배치 자동 감지 → 러너 자동 진입
+  // 모바일: running 배치 자동 감지 → 러너 자동 진입 (최초 로드 시에만)
+  const userDismissedRef = React.useRef(false);
   useEffect(() => {
-    if (!loading && batches.length > 0 && viewMode === 'dashboard' && isMobileDevice()) {
+    if (!loading && batches.length > 0 && viewMode === 'dashboard' && isMobileDevice() && !userDismissedRef.current) {
       const runningBatch = batches.find(b => b.status === 'running');
       if (runningBatch) {
         console.log('[AutoDial] Auto-entering runner for running batch:', runningBatch.name);
@@ -119,6 +120,7 @@ const AutoDialDashboard: React.FC = () => {
   };
 
   const handleBackToDashboard = () => {
+    userDismissedRef.current = true;  // 자동 진입 차단
     setViewMode('dashboard');
     setActiveBatchId(null);
     loadBatches();
