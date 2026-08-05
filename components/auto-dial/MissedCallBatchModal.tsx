@@ -145,7 +145,7 @@ const MissedCallBatchModal: React.FC<MissedCallBatchModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] md:max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -245,7 +245,7 @@ const MissedCallBatchModal: React.FC<MissedCallBatchModalProps> = ({
               </button>
             </div>
 
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-64 overflow-y-auto">
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-40 md:max-h-64 overflow-y-auto">
               {filteredCases.length === 0 ? (
                 <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                   <Phone size={32} className="mx-auto mb-2 opacity-50" />
@@ -287,7 +287,7 @@ const MissedCallBatchModal: React.FC<MissedCallBatchModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+        <div className="p-3 md:p-5 pb-safe border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
           <button
             onClick={onClose}
             className="px-4 py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"

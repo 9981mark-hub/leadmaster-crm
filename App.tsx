@@ -159,6 +159,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/mypage', icon: User, label: '마이' },
   ];
 
+  const mobileNavs = navs.filter(n => n.to !== '/auto-dial');
+
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900">
       {/* Sidebar (Desktop) */}
@@ -183,13 +185,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Mobile Top Bar */}
+        <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
+          <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
+          <Link to="/auto-dial" className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-full">
+            <PhoneCall size={20} />
+          </Link>
+        </div>
+
         <div id="main-scroll-container" className="flex-1 overflow-y-scroll p-4 md:p-8 pb-40 md:pb-8">
           {children}
         </div>
 
         {/* Bottom Nav (Mobile) */}
         <div className="md:hidden absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-between px-2 pb-safe z-50">
-          {navs.map(n => <MobileNavItem key={n.to} {...n} active={path === n.to || (path.startsWith('/case/') && n.to === '/cases')} />)}
+          {mobileNavs.map(n => <MobileNavItem key={n.to} {...n} active={path === n.to || (path.startsWith('/case/') && n.to === '/cases')} />)}
         </div>
       </main>
     </div>

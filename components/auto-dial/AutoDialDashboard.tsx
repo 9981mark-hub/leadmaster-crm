@@ -170,6 +170,30 @@ const AutoDialDashboard: React.FC = () => {
   // === Dashboard View ===
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+      {/* Running/Paused batch indicator */}
+      {batches.filter(b => b.status === 'running' || b.status === 'paused').map(batch => (
+        <div key={batch.id} className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-3 h-3 rounded-full flex-shrink-0 ${batch.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                {batch.status === 'running' ? '자동 통화 진행 중' : '자동 통화 일시정지'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {batch.name} • {batch.completedCount}/{batch.totalCount}건 완료
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => handleStartRunner(batch.id)}
+            className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 flex-shrink-0"
+          >
+            <Play className="w-4 h-4" />
+            {batch.status === 'running' ? '현황 보기' : '이어서 진행'}
+          </button>
+        </div>
+      ))}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -305,99 +329,115 @@ const AutoDialDashboard: React.FC = () => {
               </p>
             </div>
           ) : (
-            <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
-              <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 font-medium">
-                <tr>
-                  <th className="px-6 py-4 whitespace-nowrap">배치명</th>
-                  <th className="px-6 py-4 whitespace-nowrap">소스</th>
-                  <th className="px-6 py-4 whitespace-nowrap">상태</th>
-                  <th className="px-6 py-4 min-w-[200px]">진행률</th>
-                  <th className="px-6 py-4 text-right whitespace-nowrap">액션</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+            <>
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3 p-4">
                 {batches.map((batch) => {
                   const source = getSourceInfo(batch.source);
                   const progressPercentage = batch.totalCount > 0 
                     ? Math.round((batch.completedCount / batch.totalCount) * 100) 
                     : 0;
-                    
                   return (
-                    <tr key={batch.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition-colors">
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
-                        {batch.name}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-md">
-                            {source.icon}
-                          </span>
-                          <span>{source.label}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
+                    <div key={batch.id} className="bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-100 dark:border-gray-700 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900 dark:text-white text-sm truncate mr-2">{batch.name}</span>
                         {getStatusBadge(batch.status)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                batch.status === 'completed' ? 'bg-blue-500' : 
-                                batch.status === 'running' ? 'bg-emerald-500' :
-                                'bg-indigo-500'
-                              }`}
-                              style={{ width: `${progressPercentage}%` }}
-                            />
-                          </div>
-                          <span className="text-xs font-medium w-12 text-right">
-                            {batch.completedCount}/{batch.totalCount}
-                          </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="p-1 bg-gray-100 dark:bg-gray-700 rounded">{source.icon}</span>
+                        <span>{source.label}</span>
+                        <span>•</span>
+                        <span>{new Date(batch.createdAt).toLocaleDateString('ko-KR')}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${batch.status === 'completed' ? 'bg-blue-500' : batch.status === 'running' ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                            style={{ width: `${progressPercentage}%` }}
+                          />
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-1">
-                          {(batch.status === 'ready' || batch.status === 'paused') && (
-                            <button
-                              onClick={() => handleStartRunner(batch.id)}
-                              className="p-1.5 text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"
-                              title="자동 통화 시작"
-                            >
-                              <Play className="w-4 h-4" />
-                            </button>
-                          )}
-                          {batch.status === 'running' && (
-                            <button
-                              onClick={() => handleStatusChange(batch.id, 'paused')}
-                              className="p-1.5 text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
-                              title="일시정지"
-                            >
-                              <Pause className="w-4 h-4" />
-                            </button>
-                          )}
-                          {(batch.status === 'completed' || batch.status === 'cancelled') && (
-                            <button
-                              onClick={() => handleViewReport(batch.id)}
-                              className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                              title="리포트 보기"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDelete(batch.id)}
-                            className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors ml-1"
-                            title="삭제"
-                          >
-                            <Trash2 className="w-4 h-4" />
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-300 w-14 text-right">{batch.completedCount}/{batch.totalCount}</span>
+                      </div>
+                      <div className="flex items-center gap-2 pt-1 border-t border-gray-100 dark:border-gray-700">
+                        {(batch.status === 'ready' || batch.status === 'paused') && (
+                          <button onClick={() => handleStartRunner(batch.id)} className="flex-1 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center gap-1">
+                            <Play className="w-3.5 h-3.5" /> 시작
                           </button>
-                        </div>
-                      </td>
-                    </tr>
+                        )}
+                        {batch.status === 'running' && (
+                          <button onClick={() => handleStartRunner(batch.id)} className="flex-1 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center gap-1">
+                            <Eye className="w-3.5 h-3.5" /> 현황
+                          </button>
+                        )}
+                        {(batch.status === 'completed' || batch.status === 'cancelled') && (
+                          <button onClick={() => handleViewReport(batch.id)} className="flex-1 py-2 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center gap-1">
+                            <Eye className="w-3.5 h-3.5" /> 리포트
+                          </button>
+                        )}
+                        <button onClick={() => handleDelete(batch.id)} className="py-2 px-3 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center gap-1">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Desktop Table View */}
+              <table className="hidden md:table w-full text-left text-sm text-gray-600 dark:text-gray-300">
+                <thead className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 font-medium">
+                  <tr>
+                    <th className="px-6 py-4 whitespace-nowrap">배치명</th>
+                    <th className="px-6 py-4 whitespace-nowrap">소스</th>
+                    <th className="px-6 py-4 whitespace-nowrap">상태</th>
+                    <th className="px-6 py-4 min-w-[200px]">진행률</th>
+                    <th className="px-6 py-4 text-right whitespace-nowrap">액션</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                  {batches.map((batch) => {
+                    const source = getSourceInfo(batch.source);
+                    const progressPercentage = batch.totalCount > 0 
+                      ? Math.round((batch.completedCount / batch.totalCount) * 100) 
+                      : 0;
+                    return (
+                      <tr key={batch.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition-colors">
+                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{batch.name}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-md">{source.icon}</span>
+                            <span>{source.label}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">{getStatusBadge(batch.status)}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full transition-all duration-500 ${batch.status === 'completed' ? 'bg-blue-500' : batch.status === 'running' ? 'bg-emerald-500' : 'bg-indigo-500'}`} style={{ width: `${progressPercentage}%` }} />
+                            </div>
+                            <span className="text-xs font-medium w-12 text-right">{batch.completedCount}/{batch.totalCount}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-1">
+                            {(batch.status === 'ready' || batch.status === 'paused') && (
+                              <button onClick={() => handleStartRunner(batch.id)} className="p-1.5 text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors" title="자동 통화 시작"><Play className="w-4 h-4" /></button>
+                            )}
+                            {batch.status === 'running' && (
+                              <button onClick={() => handleStatusChange(batch.id, 'paused')} className="p-1.5 text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors" title="일시정지"><Pause className="w-4 h-4" /></button>
+                            )}
+                            {(batch.status === 'completed' || batch.status === 'cancelled') && (
+                              <button onClick={() => handleViewReport(batch.id)} className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="리포트 보기"><Eye className="w-4 h-4" /></button>
+                            )}
+                            <button onClick={() => handleDelete(batch.id)} className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors ml-1" title="삭제"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
       </div>
