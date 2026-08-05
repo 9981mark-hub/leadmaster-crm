@@ -54,6 +54,16 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
   const [resultMemo, setResultMemo] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('상담중');
 
+  // 발신번호 선택 (투넘버)
+  const CARRIER_PREFIXES: Record<string, string> = { skt: '*28#', kt: '*77#', 'lgu+': '*77' };
+  const [callerMode, setCallerMode] = useState<'default' | 'two_number'>(
+    () => (localStorage.getItem('autodial_caller_mode') as any) || 'default'
+  );
+  const [selectedCarrier, setSelectedCarrier] = useState<string>(
+    () => localStorage.getItem('autodial_carrier') || 'skt'
+  );
+  const callerPrefixRef = useRef('');
+
   // Stats
   const stats = {
     total: batch?.totalCount || 0,
@@ -237,9 +247,9 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
     if (androidBridge?.makeCall) {
       // 방법 1: AndroidBridge.makeCall() — ACTION_CALL (가장 확실)
       // pending_calls 삽입하지 않음 (PendingCallWorker의 ACTION_DIAL 중복 방지)
-      console.log('[AutoDial] Using AndroidBridge.makeCall:', cleanPhone);
+      console.log('[AutoDial] Using AndroidBridge.makeCall:', callerPrefixRef.current + cleanPhone);
       callStartTimeRef.current = Date.now();
-      androidBridge.makeCall(cleanPhone);
+      androidBridge.makeCall(callerPrefixRef.current + cleanPhone);
     } else {
       // 방법 2: pending_calls + tel: 링크 (PC 브라우저 또는 구버전 앱)
       await enqueuePendingCall(nextItem.phone, nextItem.customerName, nextItem.id);
@@ -577,11 +587,64 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
             <PhoneCall size={36} className="text-white" />
           </div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">자동 통화 시작</h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
             {stats.total}건의 연락처에 순차적으로 전화합니다
           </p>
+
+          {/* 발신번호 선택 */}
+          <div className="bg-gray-50 dark:bg-gray-750 rounded-xl p-4 mb-6 text-left space-y-3">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">📞 발신 번호 선택</p>
+            <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 transition-colors">
+              <input
+                type="radio"
+                name="callerMode"
+                value="default"
+                checked={callerMode === 'default'}
+                onChange={() => { setCallerMode('default'); localStorage.setItem('autodial_caller_mode', 'default'); }}
+                className="w-4 h-4 text-blue-600"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">기본 번호</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">투넘버 선택 팝업 표시</span>
+              </div>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 transition-colors">
+              <input
+                type="radio"
+                name="callerMode"
+                value="two_number"
+                checked={callerMode === 'two_number'}
+                onChange={() => { setCallerMode('two_number'); localStorage.setItem('autodial_caller_mode', 'two_number'); }}
+                className="w-4 h-4 text-blue-600"
+              />
+              <div className="flex-1">
+                <span className="text-sm font-medium text-gray-900 dark:text-white">투넘버로 발신</span>
+                <span className="text-xs text-green-600 dark:text-green-400 ml-2">팝업 없이 자동 진행</span>
+              </div>
+            </label>
+            {callerMode === 'two_number' && (
+              <div className="ml-9 flex items-center gap-2">
+                <span className="text-xs text-gray-500">통신사:</span>
+                <select
+                  value={selectedCarrier}
+                  onChange={(e) => { setSelectedCarrier(e.target.value); localStorage.setItem('autodial_carrier', e.target.value); }}
+                  className="text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="skt">SKT (넘버플러스)</option>
+                  <option value="kt">KT (투넘버플러스)</option>
+                  <option value="lgu+">LGU+ (듀얼번호)</option>
+                </select>
+                <span className="text-xs text-gray-400">접두사: {CARRIER_PREFIXES[selectedCarrier]}</span>
+              </div>
+            )}
+          </div>
+
           <button
-            onClick={startAutoDial}
+            onClick={() => {
+              callerPrefixRef.current = callerMode === 'two_number' ? CARRIER_PREFIXES[selectedCarrier] || '' : '';
+              console.log('[AutoDial] Caller prefix:', callerPrefixRef.current || '(none)');
+              startAutoDial();
+            }}
             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl font-medium text-lg"
           >
             ▶️ 자동 전화 시작
