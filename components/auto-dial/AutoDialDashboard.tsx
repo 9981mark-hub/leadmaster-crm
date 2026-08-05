@@ -184,13 +184,22 @@ const AutoDialDashboard: React.FC = () => {
               </p>
             </div>
           </div>
-          <button
-            onClick={() => handleStartRunner(batch.id)}
-            className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 flex-shrink-0"
-          >
-            <Play className="w-4 h-4" />
-            {batch.status === 'running' ? '현황 보기' : '이어서 진행'}
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => handleStartRunner(batch.id)}
+              className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            >
+              <Play className="w-4 h-4" />
+              {batch.status === 'running' ? '현황 보기' : '이어서 진행'}
+            </button>
+            <button
+              onClick={() => handleDelete(batch.id)}
+              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+              title="삭제"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       ))}
 

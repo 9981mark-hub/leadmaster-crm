@@ -347,12 +347,34 @@ export const enqueuePendingCall = async (
 export const deleteBatch = async (batchId: string): Promise<boolean> => {
   if (!supabase) return false;
   try {
+    // 1. pending_calls에서 auto_dial_item_id FK 참조 해제 (CASCADE 미설정 대응)
+    const { data: items } = await supabase
+      .from('auto_dial_items')
+      .select('id')
+      .eq('batch_id', batchId);
+    
+    if (items && items.length > 0) {
+      const itemIds = items.map((i: any) => i.id);
+      await supabase
+        .from('pending_calls')
+        .update({ auto_dial_item_id: null })
+        .in('auto_dial_item_id', itemIds);
+    }
+
+    // 2. items 삭제 (CASCADE로도 처리되지만 명시적으로)
+    await supabase
+      .from('auto_dial_items')
+      .delete()
+      .eq('batch_id', batchId);
+
+    // 3. batch 삭제
     const { error } = await supabase
       .from('auto_dial_batches')
       .delete()
       .eq('id', batchId);
       
     if (error) throw error;
+    console.log('[AutoDial] Batch deleted:', batchId);
     return true;
   } catch (error) {
     console.error('[AutoDial] deleteBatch error:', error);
