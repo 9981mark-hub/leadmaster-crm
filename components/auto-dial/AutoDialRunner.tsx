@@ -44,6 +44,7 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
   const [gapTimer, setGapTimer] = useState(0);
   const ringTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const gapTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const callStartTimeRef = useRef<number>(0);
 
   // Queue visibility
   const [showQueue, setShowQueue] = useState(false);
@@ -136,6 +137,45 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
     }
   }, [ringTimer, runnerState, batch]);
 
+  // 앱 복귀 감지 (통화 종료 후 자동 진행)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // 앱으로 돌아왔을 때 통화 중이었으면 자동 처리
+        if ((runnerState === 'ringing' || runnerState === 'dialing') && currentItem) {
+          const elapsed = callStartTimeRef.current > 0 
+            ? Math.round((Date.now() - callStartTimeRef.current) / 1000) 
+            : 0;
+          console.log(`[AutoDial] App resumed after ${elapsed}s - auto-processing call result`);
+          
+          // 짧은 딜레이 후 처리 (앱이 완전히 복귀할 시간)
+          setTimeout(async () => {
+            if (elapsed >= 15) {
+              // 15초 이상이면 통화 연결된 것으로 추정
+              await updateItemStatus(currentItem.id, 'completed', 'connected', {
+                callDurationSeconds: elapsed
+              });
+              await incrementCount('connectedCount');
+              showToast(`${currentItem.customerName} 통화 완료 (${elapsed}초)`, 'success');
+            } else {
+              // 15초 미만이면 미응답/거절
+              await updateItemStatus(currentItem.id, 'completed', 'no_answer', {
+                ringDurationSeconds: elapsed
+              });
+              await incrementCount('noAnswerCount');
+              showToast(`${currentItem.customerName} 미응답 (${elapsed}초)`, 'warning');
+            }
+            callStartTimeRef.current = 0;
+            startGapWait();
+          }, 1000);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [runnerState, currentItem]);
+
   // Gap timer
   useEffect(() => {
     if (runnerState === 'gap_wait') {
@@ -198,11 +238,13 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
       // 방법 1: AndroidBridge.makeCall() — ACTION_CALL (가장 확실)
       // pending_calls 삽입하지 않음 (PendingCallWorker의 ACTION_DIAL 중복 방지)
       console.log('[AutoDial] Using AndroidBridge.makeCall:', cleanPhone);
+      callStartTimeRef.current = Date.now();
       androidBridge.makeCall(cleanPhone);
     } else {
       // 방법 2: pending_calls + tel: 링크 (PC 브라우저 또는 구버전 앱)
       await enqueuePendingCall(nextItem.phone, nextItem.customerName, nextItem.id);
       console.log('[AutoDial] Using tel: link fallback:', cleanPhone);
+      callStartTimeRef.current = Date.now();
       window.location.href = `tel:${cleanPhone}`;
     }
     
