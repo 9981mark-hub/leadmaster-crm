@@ -330,8 +330,9 @@ export const enqueuePendingCall = async (
     const { error } = await supabase
       .from('pending_calls')
       .insert({
-        phone: phoneNumber,
+        phone_number: phoneNumber,
         customer_name: customerName,
+        status: 'pending',
         auto_dial_item_id: autoDialItemId
       });
       
