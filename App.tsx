@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall } from 'lucide-react';
 // Lazy Load Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
@@ -13,6 +13,7 @@ const Statistics = lazy(() => import('./pages/Statistics'));
 const MyPage = lazy(() => import('./pages/MyPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const TelegramSync = lazy(() => import('./pages/TelegramSync'));
+const AutoDial = lazy(() => import('./pages/AutoDial'));
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -152,6 +153,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/cases', icon: Users, label: '케이스' },
     { to: '/new', icon: PlusCircle, label: '신규등록' },
     { to: '/telegram', icon: Smartphone, label: 'TG연동', badge: pendingTgCount > 0 ? pendingTgCount : undefined },
+    { to: '/auto-dial', icon: PhoneCall, label: '자동통화' },
     { to: '/settlement', icon: Calculator, label: '정산' },
     { to: '/settings', icon: Settings, label: '설정' },
     { to: '/mypage', icon: User, label: '마이' },
@@ -229,6 +231,7 @@ const ProtectedRoutes = () => {
           <Route path="/new" element={<NewCase />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />
           <Route path="/telegram" element={<TelegramSync />} />
+          <Route path="/auto-dial" element={<AutoDial />} />
           <Route path="/settlement" element={<Settlement />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/settings" element={<SettingsPage />} />

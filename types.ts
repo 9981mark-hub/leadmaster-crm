@@ -681,3 +681,12 @@ export interface TossAdsWeeklySummary {
   dailyRecords: TossAdsRecord[];
 }
 
+// ============================================
+// 자동 통화 관리 시스템 Types
+// ============================================
+
+export type AutoDialBatchSource = 'missed_calls' | 'excel_upload' | 'image_ocr' | 'sheet_input' | 'manual';
+export type AutoDialBatchStatus = 'ready' | 'running' | 'paused' | 'completed' | 'cancelled';
+export type AutoDialItemStatus = 'pending' | 'dialing' | 'ringing' | 'connected' | 'completed' | 'skipped';
+export type AutoDialItemResult = 'no_answer' | 'busy' | 'rejected' | 'connected' | 'invalid' | 'error';
+
