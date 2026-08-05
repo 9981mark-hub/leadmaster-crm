@@ -89,9 +89,24 @@ const AutoDialDashboard: React.FC = () => {
     return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   };
 
-  const handleStartRunner = (batchId: string) => {
+  // 모바일: running 배치 자동 감지 → 러너 자동 진입
+  useEffect(() => {
+    if (!loading && batches.length > 0 && viewMode === 'dashboard' && isMobileDevice()) {
+      const runningBatch = batches.find(b => b.status === 'running');
+      if (runningBatch) {
+        console.log('[AutoDial] Auto-entering runner for running batch:', runningBatch.name);
+        setActiveBatchId(runningBatch.id);
+        setViewMode('runner');
+      }
+    }
+  }, [loading, batches, viewMode]);
+
+  const handleStartRunner = async (batchId: string) => {
     if (!isMobileDevice()) {
-      showToast('📱 자동 통화는 핸드폰 LeadMaster 앱에서 실행해주세요. 배치가 준비 상태로 저장되어 있습니다.', 'info');
+      // PC: 배치를 'running' 상태로 변경 → 핸드폰에서 자동 감지
+      await updateBatchStatus(batchId, 'running');
+      setBatches(prev => prev.map(b => b.id === batchId ? { ...b, status: 'running' as const } : b));
+      showToast('📱 핸드폰에서 LeadMaster 앱을 열면 자동 통화가 시작됩니다.', 'success');
       return;
     }
     setActiveBatchId(batchId);
