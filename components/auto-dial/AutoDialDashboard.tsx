@@ -83,7 +83,17 @@ const AutoDialDashboard: React.FC = () => {
     }
   };
 
+  const isMobileDevice = () => {
+    const androidBridge = (window as any).AndroidBridge;
+    if (androidBridge?.makeCall) return true;
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  };
+
   const handleStartRunner = (batchId: string) => {
+    if (!isMobileDevice()) {
+      showToast('📱 자동 통화는 핸드폰 LeadMaster 앱에서 실행해주세요. 배치가 준비 상태로 저장되어 있습니다.', 'info');
+      return;
+    }
     setActiveBatchId(batchId);
     setViewMode('runner');
   };
