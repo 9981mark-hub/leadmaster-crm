@@ -9,7 +9,7 @@ import {
   Phone, PhoneOff, PhoneMissed, PhoneCall,
   SkipForward, Pause, Square, Play,
   Clock, User, FileText, ChevronDown, ChevronUp,
-  Loader2, CheckCircle2, XCircle, AlertCircle
+  Loader2, CheckCircle2, XCircle, AlertCircle, ArrowLeft
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import {
@@ -390,6 +390,15 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
+      {/* Back button */}
+      <button
+        onClick={onClose}
+        className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors -mb-2"
+      >
+        <ArrowLeft size={16} />
+        자동통화 관리
+      </button>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
