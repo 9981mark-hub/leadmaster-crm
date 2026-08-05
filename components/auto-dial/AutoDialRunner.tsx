@@ -189,12 +189,27 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
     // Update item status to dialing
     await updateItemStatus(nextItem.id, 'dialing');
 
-    // 자동 통화: autocall: 스킴으로 WebView → Android ACTION_CALL (포그라운드)
+    // 자동 통화: Android Intent URI로 직접 ACTION_CALL 실행
+    // WebView가 intent: 스킴을 기본 지원 — 앱 수정 불필요
     // pending_calls도 기록용으로 삽입
     await enqueuePendingCall(nextItem.phone, nextItem.customerName, nextItem.id);
     
-    // autocall: 스킴으로 바로 전화 걸기
-    window.location.href = `autocall:${nextItem.phone.replace(/[^0-9]/g, '')}`;
+    const cleanPhone = nextItem.phone.replace(/[^0-9]/g, '');
+    
+    // 방법 1: intent: URI (Android WebView 기본 지원 - ACTION_CALL)
+    const intentUri = `intent://call/${cleanPhone}#Intent;scheme=tel;action=android.intent.action.CALL;end`;
+    
+    // iframe으로 호출 (현재 페이지 유지)
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = intentUri;
+    document.body.appendChild(iframe);
+    
+    // 폴백: 일반 tel: 링크 (intent가 안 되면)
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 3000);
+    
     setRunnerState('ringing');
   };
 
