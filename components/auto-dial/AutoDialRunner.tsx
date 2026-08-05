@@ -189,9 +189,6 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
     // Update item status to dialing
     await updateItemStatus(nextItem.id, 'dialing');
 
-    // pending_calls 기록용 삽입
-    await enqueuePendingCall(nextItem.phone, nextItem.customerName, nextItem.id);
-    
     const cleanPhone = nextItem.phone.replace(/[^0-9]/g, '');
     
     // Android WebView에서 직접 전화 걸기 (3단계 폴백)
@@ -199,15 +196,13 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
     
     if (androidBridge?.makeCall) {
       // 방법 1: AndroidBridge.makeCall() — ACTION_CALL (가장 확실)
+      // pending_calls 삽입하지 않음 (PendingCallWorker의 ACTION_DIAL 중복 방지)
       console.log('[AutoDial] Using AndroidBridge.makeCall:', cleanPhone);
       androidBridge.makeCall(cleanPhone);
-    } else if (androidBridge?.isAndroidApp?.()) {
-      // 방법 2: tel: 링크 — 앱에서 ACTION_DIAL (재빌드 전 호환)
-      console.log('[AutoDial] Using tel: link fallback:', cleanPhone);
-      window.location.href = `tel:${cleanPhone}`;
     } else {
-      // 방법 3: PC 브라우저 — tel: 링크
-      console.log('[AutoDial] PC browser, using tel: link:', cleanPhone);
+      // 방법 2: pending_calls + tel: 링크 (PC 브라우저 또는 구버전 앱)
+      await enqueuePendingCall(nextItem.phone, nextItem.customerName, nextItem.id);
+      console.log('[AutoDial] Using tel: link fallback:', cleanPhone);
       window.location.href = `tel:${cleanPhone}`;
     }
     
