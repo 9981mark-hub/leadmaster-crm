@@ -1,12 +1,36 @@
+/**
+ * AutoDialDashboard.tsx — 자동 통화 관리 메인 대시보드
+ * 
+ * 화면 구성:
+ * 1. dashboard: 배치 목록 + 생성 카드 + 통계
+ * 2. runner: 자동 통화 실행 화면
+ * 3. report: 완료 리포트
+ * 
+ * NOTE: 완전 독립 컴포넌트 — 기존 시스템 영향 없음
+ */
 import React, { useState, useEffect, useCallback } from 'react';
-import { Phone, FileSpreadsheet, Camera, Play, Pause, Square, Trash2, BarChart3, CheckSquare, RefreshCw, Clock, PhoneCall, PhoneOff, PhoneMissed, Loader2, Plus } from 'lucide-react';
+import { Phone, FileSpreadsheet, Camera, Play, Pause, Square, Trash2, BarChart3, CheckSquare, RefreshCw, Clock, PhoneCall, PhoneOff, PhoneMissed, Loader2, Plus, Eye } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { fetchBatches, deleteBatch, updateBatchStatus, AutoDialBatch } from '../../services/autoDialService';
+import MissedCallBatchModal from './MissedCallBatchModal';
+import ExcelBatchModal from './ExcelBatchModal';
+import OcrBatchModal from './OcrBatchModal';
+import AutoDialRunner from './AutoDialRunner';
+import AutoDialReport from './AutoDialReport';
+
+// Lazy import cases for MissedCallBatchModal
+import { fetchCases } from '../../services/api';
+import { Case } from '../../types';
+
+type ViewMode = 'dashboard' | 'runner' | 'report';
 
 const AutoDialDashboard: React.FC = () => {
   const [batches, setBatches] = useState<AutoDialBatch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeModal, setActiveModal] = useState<'missed' | 'excel' | 'ocr' | 'manual' | null>(null);
+  const [activeModal, setActiveModal] = useState<'missed' | 'excel' | 'ocr' | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
+  const [cases, setCases] = useState<Case[]>([]);
   const { showToast } = useToast();
 
   const loadBatches = useCallback(async () => {
@@ -25,6 +49,16 @@ const AutoDialDashboard: React.FC = () => {
   useEffect(() => {
     loadBatches();
   }, [loadBatches]);
+
+  // Load cases for missed call modal
+  const loadCases = useCallback(async () => {
+    try {
+      const data = await fetchCases();
+      setCases(data);
+    } catch (e) {
+      console.error('[AutoDial] Failed to load cases:', e);
+    }
+  }, []);
 
   const handleStatusChange = async (id: string, newStatus: AutoDialBatch['status']) => {
     try {
@@ -47,6 +81,27 @@ const AutoDialDashboard: React.FC = () => {
       console.error('Delete error:', error);
       showToast('배치 삭제에 실패했습니다.', 'error');
     }
+  };
+
+  const handleStartRunner = (batchId: string) => {
+    setActiveBatchId(batchId);
+    setViewMode('runner');
+  };
+
+  const handleViewReport = (batchId: string) => {
+    setActiveBatchId(batchId);
+    setViewMode('report');
+  };
+
+  const handleBackToDashboard = () => {
+    setViewMode('dashboard');
+    setActiveBatchId(null);
+    loadBatches();
+  };
+
+  const handleOpenMissedModal = async () => {
+    await loadCases();
+    setActiveModal('missed');
   };
 
   const getSourceInfo = (source: string) => {
@@ -77,16 +132,42 @@ const AutoDialDashboard: React.FC = () => {
     }
   };
 
-  // Calculate today's stats from batches
-  const todayStats = batches.reduce((acc, batch) => {
-    return {
-      total: acc.total + (batch.totalCount || 0),
-      connected: acc.connected + (batch.completedCount || 0), // Simplified assumption for stats
-      noAnswer: acc.noAnswer + 0, // In real app, derived from batch detail stats
-      busy: acc.busy + 0, // In real app, derived from batch detail stats
-    };
-  }, { total: 0, connected: 0, noAnswer: 0, busy: 0 });
+  // Today stats from batches
+  const todayStats = batches.reduce((acc, batch) => ({
+    total: acc.total + (batch.totalCount || 0),
+    connected: acc.connected + (batch.connectedCount || 0),
+    noAnswer: acc.noAnswer + (batch.noAnswerCount || 0),
+    busy: acc.busy + (batch.busyCount || 0),
+  }), { total: 0, connected: 0, noAnswer: 0, busy: 0 });
 
+  // === Runner View ===
+  if (viewMode === 'runner' && activeBatchId) {
+    return (
+      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <AutoDialRunner
+          batchId={activeBatchId}
+          onClose={handleBackToDashboard}
+          onComplete={() => {
+            setViewMode('report');
+          }}
+        />
+      </div>
+    );
+  }
+
+  // === Report View ===
+  if (viewMode === 'report' && activeBatchId) {
+    return (
+      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <AutoDialReport
+          batchId={activeBatchId}
+          onClose={handleBackToDashboard}
+        />
+      </div>
+    );
+  }
+
+  // === Dashboard View ===
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
       {/* Header */}
@@ -113,7 +194,7 @@ const AutoDialDashboard: React.FC = () => {
       {/* Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <button 
-          onClick={() => setActiveModal('missed')}
+          onClick={handleOpenMissedModal}
           className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-6 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
         >
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl transition-all group-hover:bg-white/20"></div>
@@ -150,9 +231,9 @@ const AutoDialDashboard: React.FC = () => {
         >
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl transition-all group-hover:bg-white/20"></div>
           <Camera className="h-8 w-8 text-white/90 mb-4" />
-          <h3 className="text-lg font-bold text-white mb-1">이미지 OCR / 수동 선택</h3>
+          <h3 className="text-lg font-bold text-white mb-1">이미지 OCR</h3>
           <p className="text-amber-100 text-sm line-clamp-2">
-            명함 등의 이미지를 스캔하거나 수동으로 고객을 지정하여 리스트를 만듭니다.
+            명함 등의 이미지를 AI로 스캔하여 연락처를 자동 추출합니다.
           </p>
           <div className="mt-4 flex items-center text-xs font-medium text-white/80">
             <span>새 배치 만들기</span>
@@ -168,11 +249,10 @@ const AutoDialDashboard: React.FC = () => {
             <BarChart3 className="w-5 h-5 md:w-6 md:h-6" />
           </div>
           <div>
-            <p className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">오늘 전체 시도</p>
+            <p className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">전체 시도</p>
             <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{todayStats.total}건</p>
           </div>
         </div>
-        
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
             <PhoneCall className="w-5 h-5 md:w-6 md:h-6" />
@@ -182,7 +262,6 @@ const AutoDialDashboard: React.FC = () => {
             <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{todayStats.connected}건</p>
           </div>
         </div>
-
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
             <PhoneMissed className="w-5 h-5 md:w-6 md:h-6" />
@@ -192,7 +271,6 @@ const AutoDialDashboard: React.FC = () => {
             <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{todayStats.noAnswer}건</p>
           </div>
         </div>
-
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-red-50 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
             <PhoneOff className="w-5 h-5 md:w-6 md:h-6" />
@@ -278,12 +356,12 @@ const AutoDialDashboard: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1">
                           {(batch.status === 'ready' || batch.status === 'paused') && (
                             <button
-                              onClick={() => handleStatusChange(batch.id, 'running')}
+                              onClick={() => handleStartRunner(batch.id)}
                               className="p-1.5 text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"
-                              title="시작"
+                              title="자동 통화 시작"
                             >
                               <Play className="w-4 h-4" />
                             </button>
@@ -297,9 +375,18 @@ const AutoDialDashboard: React.FC = () => {
                               <Pause className="w-4 h-4" />
                             </button>
                           )}
+                          {(batch.status === 'completed' || batch.status === 'cancelled') && (
+                            <button
+                              onClick={() => handleViewReport(batch.id)}
+                              className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                              title="리포트 보기"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDelete(batch.id)}
-                            className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors ml-2"
+                            className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors ml-1"
                             title="삭제"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -314,6 +401,25 @@ const AutoDialDashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <MissedCallBatchModal
+        isOpen={activeModal === 'missed'}
+        onClose={() => setActiveModal(null)}
+        onCreated={() => { setActiveModal(null); loadBatches(); }}
+        cases={cases}
+        missedStatus="부재"
+      />
+      <ExcelBatchModal
+        isOpen={activeModal === 'excel'}
+        onClose={() => setActiveModal(null)}
+        onCreated={() => { setActiveModal(null); loadBatches(); }}
+      />
+      <OcrBatchModal
+        isOpen={activeModal === 'ocr'}
+        onClose={() => setActiveModal(null)}
+        onCreated={() => { setActiveModal(null); loadBatches(); }}
+      />
     </div>
   );
 };
