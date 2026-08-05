@@ -211,21 +211,51 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { useQueryClient } from '@tanstack/react-query';
 import { subscribe } from './services/api';
 import { QUERY_KEYS } from './services/queries';
+import { supabase } from './services/supabase';
+import { useNavigate } from 'react-router-dom';
 
 const ProtectedRoutes = () => {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // [Realtime Sync] Invalidate Cache on Data Change
   React.useEffect(() => {
     const unsubscribe = subscribe(() => {
-      // console.log("[App] Data updated via Realtime/Sync, refreshing UI...");
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cases });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.partners });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inboundPaths });
     });
     return () => unsubscribe();
   }, [queryClient]);
+
+  // [Auto-Dial Sync] 모바일: PC에서 배치 시작 시 자동 이동
+  React.useEffect(() => {
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) 
+      || !!(window as any).AndroidBridge?.makeCall;
+    if (!supabase || !isMobile) return;
+
+    const channel = supabase
+      .channel('auto_dial_remote_start')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'auto_dial_batches',
+        filter: 'status=eq.running',
+      }, (payload: any) => {
+        console.log('[AutoDial] Remote start detected:', payload.new?.name);
+        // 이미 auto-dial 페이지면 AutoDialDashboard의 useEffect가 처리
+        if (location.pathname !== '/auto-dial') {
+          navigate('/auto-dial');
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [navigate, location.pathname]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
