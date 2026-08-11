@@ -100,15 +100,22 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     if (type === 'CALL_OUT') {
                         // 발신 감지 → 통화중 모드로 전환 또는 새 발신자 정보 갱신
                         const customer = await findCustomerByPhone(phone);
+                        const normalizedEventPhone = normalizePhone(phone);
                         setCallState(prev => {
                             if (prev.isActive) {
+                                const normalizedPrevPhone = normalizePhone(prev.phoneNumber);
+                                // 현재 활성 통화의 전화번호와 다른 CALL_OUT이면 무시
+                                // (이전 통화의 CALL_OUT 로그가 지연 도착한 경우)
+                                if (normalizedPrevPhone && normalizedEventPhone && normalizedPrevPhone !== normalizedEventPhone) {
+                                    return prev;
+                                }
                                 // 기존 팝업이 있으면 정보 갱신 + calling 모드
                                 return {
                                     ...prev,
                                     mode: 'calling',
-                                    customerName: customer?.name || phone,
+                                    customerName: customer?.name || prev.customerName || phone,
                                     phoneNumber: phone,
-                                    caseId: customer?.caseId,
+                                    caseId: customer?.caseId || prev.caseId,
                                     startedAt: new Date(),
                                 };
                             } else {

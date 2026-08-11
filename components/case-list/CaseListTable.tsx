@@ -151,7 +151,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     const dropdownRef = React.useRef<HTMLDivElement>(null);
 
     // [NEW] State for call confirm popup
-    const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
+    const [callTarget, setCallTarget] = useState<{ name: string; phone: string; caseId?: string } | null>(null);
     const { startCall } = useActiveCall();
 
     // [NEW] SMS_OUT 존재 여부 (History 아이콘 색상용)
@@ -174,7 +174,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
         return !phonesWithSmsOut.has(normalizedPhone);
     };
 
-    const handlePhoneClick = (e: React.MouseEvent, customerName: string, phone: string) => {
+    const handlePhoneClick = (e: React.MouseEvent, customerName: string, phone: string, caseId?: string) => {
         e.preventDefault();
         e.stopPropagation();
         // 모바일에서는 팝업 없이 바로 전화 연결 (Android 앱 WebView에서 tel: 처리)
@@ -184,7 +184,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
             return;
         }
         // PC에서만 확인 팝업 표시
-        setCallTarget({ name: customerName, phone });
+        setCallTarget({ name: customerName, phone, caseId });
     };
 
     const handleCallConfirm = () => {
@@ -324,7 +324,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                     <button
-                                        onClick={(e) => handlePhoneClick(e, c.customerName, c.phone)}
+                                        onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
                                         className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors"
                                     >{c.phone}</button>
 
@@ -402,7 +402,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <span>{partner?.name}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={(e) => handlePhoneClick(e, c.customerName, c.phone)} className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 active:scale-95 transition-all">
+                                    <button onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)} className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 active:scale-95 transition-all">
                                         <Phone size={16} />
                                     </button>
                                     <HoverCheckTooltip
@@ -553,7 +553,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         : ''
                                         }`}>
                                         <button
-                                            onClick={(e) => handlePhoneClick(e, c.customerName, c.phone)}
+                                            onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
                                             className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
                                         >
                                             {c.phone}
@@ -748,6 +748,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                 isOpen={!!callTarget}
                 customerName={callTarget?.name || ''}
                 phoneNumber={callTarget?.phone || ''}
+                caseId={callTarget?.caseId}
                 onConfirm={handleCallConfirm}
                 onCancel={() => setCallTarget(null)}
             />

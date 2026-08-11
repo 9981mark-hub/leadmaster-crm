@@ -185,6 +185,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                 isOpen={showCallPopup}
                 customerName={c.customerName}
                 phoneNumber={c.phone}
+                caseId={c.caseId}
                 onConfirm={() => setShowCallPopup(false)}
                 onCancel={() => setShowCallPopup(false)}
             />
