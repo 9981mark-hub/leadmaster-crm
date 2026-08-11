@@ -828,6 +828,23 @@ export const enqueuePendingCall = async (phoneNumber: string, customerName: stri
     if (!supabase) return false;
     try {
         const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+
+        // 이전 pending_calls 잔여 row 정리 (stale row가 남아있으면 Android 앱이 잘못된 case_id를 참조)
+        try {
+            await supabase
+                .from('pending_calls')
+                .delete()
+                .in('status', ['ended', 'dialed', 'cancelled']);
+            // 다른 전화번호의 pending 상태도 정리 (동시에 2건 이상 pending이 있으면 안 됨)
+            await supabase
+                .from('pending_calls')
+                .delete()
+                .eq('status', 'pending')
+                .neq('phone_number', cleanPhone);
+        } catch (cleanupErr) {
+            console.warn('[PendingCall] Cleanup failed (non-critical):', cleanupErr);
+        }
+
         const { error } = await supabase
             .from('pending_calls')
             .insert([{
@@ -837,7 +854,7 @@ export const enqueuePendingCall = async (phoneNumber: string, customerName: stri
                 status: 'pending'
             }]);
         if (error) throw error;
-        console.log(`[PendingCall] Enqueued call to ${customerName} (${cleanPhone})`);
+        console.log(`[PendingCall] Enqueued call to ${customerName} (${cleanPhone}), caseId: ${caseId || 'none'}`);
         return true;
     } catch (e) {
         console.error('[Supabase] enqueuePendingCall error:', e);

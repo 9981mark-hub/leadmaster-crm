@@ -269,12 +269,23 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, []);
 
     // ============================================
-    // 통화 종료 후 자동 dismiss (5초)
+    // 통화 종료 후 자동 dismiss (5초) + pending_calls 잔여 row 정리
     // ============================================
     useEffect(() => {
         if (callState.mode !== 'ended') return;
 
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
+            // pending_calls 잔여 row 정리 (Android 앱이 stale case_id를 참조하는 것 방지)
+            if (supabase) {
+                try {
+                    await supabase
+                        .from('pending_calls')
+                        .delete()
+                        .in('status', ['ended', 'dialed', 'cancelled']);
+                } catch (e) {
+                    console.warn('[ActiveCall] pending_calls cleanup failed:', e);
+                }
+            }
             setCallState(initialState);
         }, 5000);
 
