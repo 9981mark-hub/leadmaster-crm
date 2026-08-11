@@ -290,6 +290,30 @@ const ActiveCallPopup: React.FC = () => {
                 {/* 사전 고객 정보 섹션 */}
                 {!isLoading && matchedCase && (
                     <>
+                        {/* 유입 경로 · 최초 등록일시 */}
+                        <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3">
+                            <div className="flex gap-3">
+                                {/* 유입 경로 */}
+                                <div className="flex-1 bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-xl border border-purple-100 dark:border-purple-800/30 text-center">
+                                    <div className="text-[10px] font-semibold text-purple-400 dark:text-purple-500 mb-0.5 uppercase tracking-wider">
+                                        유입 경로
+                                    </div>
+                                    <p className="text-xs font-bold text-purple-700 dark:text-purple-300 truncate">
+                                        {matchedCase.inboundPath || '미지정'}
+                                    </p>
+                                </div>
+                                {/* 최초 등록일시 */}
+                                <div className="flex-1 bg-teal-50 dark:bg-teal-900/20 p-2.5 rounded-xl border border-teal-100 dark:border-teal-800/30 text-center">
+                                    <div className="text-[10px] font-semibold text-teal-400 dark:text-teal-500 mb-0.5 uppercase tracking-wider">
+                                        최초 등록
+                                    </div>
+                                    <p className="text-xs font-bold text-teal-700 dark:text-teal-300">
+                                        {formatMemoDate(matchedCase.createdAt)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         {parsePreInfo(matchedCase.preInfo).length > 0 && (
                             <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3 text-left">
                                 <div className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider">
