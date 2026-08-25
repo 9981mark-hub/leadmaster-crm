@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { format, parseISO, isSameDay, isToday, isBefore } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { fetchCases, fetchPartners, fetchSettlementBatches } from '../services/api';
+import { fetchCases, fetchPartners, fetchSettlementBatches, subscribe } from '../services/api';
 import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { Link } from 'react-router-dom';
@@ -94,6 +94,17 @@ export default function Dashboard() {
     });
   }, []);
 
+  // [FIX] 백그라운드 서버 데이터 도착 시 Dashboard 자동 갱신
+  // 새로고침 직후 빈 캐시로 렌더링 → 서버 데이터 도착 시 정확한 카운트로 업데이트
+  useEffect(() => {
+    const unsubscribe = subscribe(() => {
+      fetchCases().then(data => setCases(data));
+      fetchPartners().then(data => setPartners(data));
+      fetchSettlementBatches().then(data => setBatches(data));
+    });
+    return () => unsubscribe();
+  }, []);
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto space-y-6 pt-6">
@@ -117,20 +128,35 @@ export default function Dashboard() {
   const overdueMissedCallCount = cases.filter(c => isOverdueMissedCall(c, missedCallStatus, missedCallTiers)).length;
 
   // KPIs (Summary)
-  const allRemindersWithCase = cases.flatMap(c =>
+  // [FIX] 삭제된(휴지통) 케이스의 리마인더는 대시보드 카운트에서 제외
+  const activeCases = cases.filter(c => c.status !== '휴지통' && !c.deletedAt);
+  const allRemindersWithCase = activeCases.flatMap(c =>
     (c.reminders || []).map(r => ({ reminder: r, caseData: c }))
   );
 
   const todayReminders = allRemindersWithCase.filter(item =>
     getReminderStatus(item.reminder.datetime) === 'today' &&
     // [FIX] Exclude completed reminders from count
-    !item.reminder.resultStatus
+    !item.reminder.resultStatus &&
+    !item.reminder.isCompleted
   );
-  const overdueReminders = allRemindersWithCase.filter(item =>
-    getReminderStatus(item.reminder.datetime) === 'overdue' &&
-    // [CHANGED] Any result status means it's been handled
-    !item.reminder.resultStatus
-  );
+
+  // [FIX] 지연된 리마인더: resultStatus/isCompleted 처리된 항목 제외 + 30일 이상 지난 미처리 리마인더 제외
+  // 30일 이상 된 리마인더는 이미 처리되었지만 resultStatus가 기록되지 않은 과거 데이터로 간주
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const overdueReminders = allRemindersWithCase.filter(item => {
+    if (getReminderStatus(item.reminder.datetime) !== 'overdue') return false;
+    // 이미 처리된 리마인더 제외
+    if (item.reminder.resultStatus || item.reminder.isCompleted) return false;
+    // 30일 이상 지난 미처리 리마인더 제외 (사실상 방치된 과거 데이터)
+    if (item.reminder.datetime) {
+      const reminderDate = new Date(item.reminder.datetime.replace(' ', 'T'));
+      if (!isNaN(reminderDate.getTime()) && reminderDate < thirtyDaysAgo) return false;
+    }
+    return true;
+  });
 
   // Warnings - with details
   const warningCasesWithDetails = cases.map(c => {
