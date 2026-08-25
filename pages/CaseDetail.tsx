@@ -406,10 +406,15 @@ export default function CaseDetail() {
                         specialMemo: [newMemo, ...(c.specialMemo || [])]
                     },
                     silent: true
+                }, {
+                    onSuccess: () => {
+                        showToast('✅ AI 요약 → 저장 → 상담 이력 전송 완료!');
+                    },
+                    onError: () => {
+                        showToast('⚠️ AI 요약은 생성되었으나 서버 저장에 실패했습니다. 다시 시도해주세요.', 'error');
+                    }
                 });
             }
-
-            showToast('✅ AI 요약 → 저장 → 상담 이력 전송 완료!');
         } catch (error) {
             console.error(error);
             showToast('AI 요약 생성 중 오류가 발생했습니다.', 'error');

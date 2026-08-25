@@ -224,6 +224,8 @@ const ProtectedRoutes = () => {
   React.useEffect(() => {
     const unsubscribe = subscribe(() => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cases });
+      // [SYNC FIX] 개별 케이스 상세 쿼리도 무효화 (접두사 매칭)
+      queryClient.invalidateQueries({ queryKey: ['case'] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.partners });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inboundPaths });
     });

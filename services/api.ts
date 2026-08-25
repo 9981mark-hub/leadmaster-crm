@@ -263,6 +263,9 @@ export const initializeData = async () => {
           console.log('[Realtime] Tab visible - reconnecting...');
           setupRealtimeSubscription();
         }
+        // [SYNC FIX] 탭 비활성 동안 놓친 업데이트 조회
+        console.log('[Sync] Tab visible - fetching missed updates...');
+        performBackgroundFetch();
       }
     });
   }
@@ -1168,19 +1171,36 @@ export const fetchCases = async (): Promise<Case[]> => {
 export const fetchCase = async (id: string): Promise<Case | undefined> => {
   if (!isInitialized) await initializeData();
   const cached = localCases.find(c => c.caseId === id);
-  if (cached) return cached;
 
-  console.log('[API] Case not found locally, fetching from Supabase...', id);
+  // [SYNC FIX] SWR: 로컬 캐시가 있어도 백그라운드에서 서버 최신 데이터 조회
   if (isSupabaseEnabled()) {
-    const remote = await fetchCaseFromSupabase(id);
-    if (remote) {
-      // Add to local cache if found
-      const idx = localCases.findIndex(c => c.caseId === remote.caseId);
-      if (idx > -1) localCases[idx] = remote;
-      else localCases.push(remote);
-      return remote;
+    if (cached) {
+      // SWR: 캐시 즉시 반환 + 백그라운드 서버 갱신
+      fetchCaseFromSupabase(id).then(remote => {
+        if (remote && remote.updatedAt !== cached.updatedAt) {
+          console.log('[API] SWR: Server has newer data for case', id);
+          const idx = localCases.findIndex(c => c.caseId === remote.caseId);
+          if (idx > -1) localCases[idx] = remote;
+          else localCases.push(remote);
+          saveToStorage();
+          notifyListeners();
+        }
+      }).catch(err => console.warn('[API] Background revalidation failed:', err));
+      return cached;
+    } else {
+      // 로컬에 없으면 서버에서 직접 조회
+      console.log('[API] Case not found locally, fetching from Supabase...', id);
+      const remote = await fetchCaseFromSupabase(id);
+      if (remote) {
+        const idx = localCases.findIndex(c => c.caseId === remote.caseId);
+        if (idx > -1) localCases[idx] = remote;
+        else localCases.push(remote);
+        return remote;
+      }
     }
   }
+
+  if (cached) return cached;
   return undefined;
 };
 
