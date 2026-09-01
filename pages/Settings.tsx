@@ -78,11 +78,11 @@ export default function SettingsPage() {
 
     // [New] AI Model State
     const [geminiModel, setGeminiModel] = useState(() => {
-        const stored = localStorage.getItem('lm_geminiModel') || 'gemini-2.5-flash';
+        const stored = localStorage.getItem('lm_geminiModel') || 'gemini-3.5-transcribe';
         const isValid = AVAILABLE_AI_MODELS.some(m => m.id === stored);
         if (!isValid) {
-            localStorage.setItem('lm_geminiModel', 'gemini-2.5-flash');
-            return 'gemini-2.5-flash';
+            localStorage.setItem('lm_geminiModel', 'gemini-3.5-transcribe');
+            return 'gemini-3.5-transcribe';
         }
         return stored;
     });

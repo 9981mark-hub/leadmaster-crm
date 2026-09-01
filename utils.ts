@@ -682,10 +682,7 @@ export const getAutoCollateralString = (c: Case): string => {
 // [NEW] Added for CaseDetailAiSummary.tsx
 // [Restored] Gemini AI Integration
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { DEFAULT_AI_PROMPT } from "./constants";
-
-// Removed top-level constant to ensure runtime updates
-// const GEMINI_API_KEY = ... 
+import { DEFAULT_AI_PROMPT, REHABILITATION_DOMAIN_KEYWORDS } from "./constants";
 
 // [Improved] AI Context Interface
 interface AIContext {
@@ -694,19 +691,99 @@ interface AIContext {
   managerName?: string;
 }
 
+export interface TranscriptLine {
+  id: string;
+  time: string; // "01:23"
+  seconds: number; // 83
+  speaker: string; // "상담원" | "고객" | string
+  text: string;
+}
+
+/**
+ * AI 요약 결과 문자열에서 요약문과 화자별 타임스탬프 대화록을 분리 파싱
+ */
+export const parseAiTranscript = (rawText: string | null | undefined): {
+  summaryText: string;
+  transcriptLines: TranscriptLine[];
+  rawTranscript: string;
+} => {
+  if (!rawText || typeof rawText !== 'string') {
+    return { summaryText: '', transcriptLines: [], rawTranscript: '' };
+  }
+
+  // Look for separator like "[전체 대화록]" or "[녹취록]" or "[대화록]"
+  const splitMatch = rawText.match(/(?:^|\n)(?:\[(?:전체\s*)?(?:대화록|녹취록|전사본)\]|={3,}\s*(?:전체\s*)?(?:대화록|녹취록)\s*={3,})([\s\S]*)$/i);
+
+  let summaryText = rawText;
+  let rawTranscript = '';
+
+  if (splitMatch && splitMatch.index !== undefined) {
+    summaryText = rawText.slice(0, splitMatch.index).trim();
+    rawTranscript = splitMatch[1].trim();
+  } else if (rawText.includes('[00:') || rawText.includes('[01:')) {
+    // If no explicit header but contains timestamp lines
+    const firstTimestampIdx = rawText.search(/(?:^|\n)\[\d{1,2}:\d{2}\]/);
+    if (firstTimestampIdx > -1) {
+      summaryText = rawText.slice(0, firstTimestampIdx).trim();
+      rawTranscript = rawText.slice(firstTimestampIdx).trim();
+    }
+  }
+
+  const lines = rawTranscript.split('\n');
+  const transcriptLines: TranscriptLine[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Pattern: [01:23] 상담원: 내용 or [01:23] [상담원] 내용 or [01:23] 상담원 - 내용
+    const match = line.match(/^\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?\s*(?:\[?([^:\]\-]+)\]?[:\-])?\s*(.*)$/);
+    if (match && match[1]) {
+      const timeStr = match[1];
+      const speakerStr = (match[2] || '화자').trim();
+      const content = (match[3] || '').trim();
+
+      // calculate seconds
+      const parts = timeStr.split(':').map(Number);
+      let sec = 0;
+      if (parts.length === 2) {
+        sec = (parts[0] || 0) * 60 + (parts[1] || 0);
+      } else if (parts.length === 3) {
+        sec = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+      }
+
+      transcriptLines.push({
+        id: `t-${i}-${sec}`,
+        time: timeStr,
+        seconds: sec,
+        speaker: speakerStr,
+        text: content || line
+      });
+    } else if (transcriptLines.length > 0) {
+      // Continuation of previous line
+      transcriptLines[transcriptLines.length - 1].text += ' ' + line;
+    }
+  }
+
+  return {
+    summaryText: summaryText || rawText,
+    transcriptLines,
+    rawTranscript
+  };
+};
+
 export const generateAiSummary = async (file: File, customPrompt?: string, context?: AIContext): Promise<string> => {
   const lsKey = localStorage.getItem('lm_geminiApiKey');
   const envKey = import.meta.env.VITE_GEMINI_API_KEY;
   const apiKey = lsKey || envKey || "";
 
   if (!apiKey || apiKey.trim() === '') {
-    // ... (Keep existing fallback logic) ...
     console.warn("Gemini API Key missing! Fallback to Mock.");
     const debugInfo = `오류 진단 정보:\n- 저장된 키(User): ${lsKey === null ? '없음(Null)' : (lsKey === '' ? '빈값' : `있음(${lsKey.length}자)`)}\n- 기본 키(Env): ${!envKey ? '없음' : `있음(${envKey.length}자)`}`;
 
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(`[데모 모드 v3] API 키가 확인되지 않습니다.\n\n${debugInfo}\n\n설정 페이지의 [AI 설정]에서 '등록된 키가 없습니다' 문구가 뜨는지 확인해주세요.\n[자동 생성 예시] 내용 없음`);
+        resolve(`[데모 모드] API 키가 확인되지 않습니다.\n\n${debugInfo}\n\n설정 페이지의 [AI 설정]에서 '등록된 키가 없습니다' 문구가 뜨는지 확인해주세요.\n[자동 생성 예시] 내용 없음`);
       }, 1000);
     });
   }
@@ -714,13 +791,13 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // [Auto-Migration] Fix invalid model names stored in localStorage
-    const VALID_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite-preview'];
-    const FALLBACK_MODEL = 'gemini-2.5-flash';
+    // [Modern Model List - 3.5 Generation]
+    const VALID_MODELS = ['gemini-3.5-transcribe', 'gemini-3.5-flash', 'gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview', 'gemini-2.5-flash'];
+    const FALLBACK_MODEL = 'gemini-3.5-flash';
     let selectedModel = localStorage.getItem('lm_geminiModel') || FALLBACK_MODEL;
     
     if (!VALID_MODELS.includes(selectedModel)) {
-      console.warn(`[AI] Invalid model "${selectedModel}" found, migrating to "${FALLBACK_MODEL}"`);
+      console.warn(`[AI] Invalid or retired model "${selectedModel}" found, migrating to "${FALLBACK_MODEL}"`);
       selectedModel = FALLBACK_MODEL;
       localStorage.setItem('lm_geminiModel', FALLBACK_MODEL);
     }
@@ -728,22 +805,37 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
     // Convert file to compatible format (Base64)
     const base64Data = await fileToBase64(file);
 
-    let promptToUse = customPrompt && customPrompt.trim().length > 0 ? customPrompt : DEFAULT_AI_PROMPT;
+    const userSummaryPrompt = customPrompt && customPrompt.trim().length > 0 ? customPrompt : DEFAULT_AI_PROMPT;
 
-    // [Context Injection] If we know customer info, tell the AI explicitly
-    if (context) {
-      const contextInfo = `
-[알려진 정보 (고객 정보)]
+    // [Domain Vocabulary Biasing & Instruction Injection]
+    const domainKeywordsStr = REHABILITATION_DOMAIN_KEYWORDS.slice(0, 40).join(', ');
+
+    let fullPrompt = `당신은 법률 사무소(개인회생/파산/신용회복) 전문 상담 보조 AI입니다.
+업로드된 음성 파일을 분석하여 [1. 상담 요약]과 [2. 전체 대화록]을 순서대로 작성하세요.
+
+[도메인 전문 용어 사전 (인식 정확도 보정)]
+${domainKeywordsStr}
+
+${context ? `[고객 및 담당자 기본 정보]
 - 고객이름: ${context.customerName || '알 수 없음'}
 - 연락처: ${context.phone || '알 수 없음'}
 - 담당자: ${context.managerName || '알 수 없음'}
-(위 정보는 고객 관리 시스템에 등록된 확정 정보입니다. 요약 시 이 정보를 최우선으로 반영하세요.)
-`;
-      promptToUse = contextInfo + "\n" + promptToUse;
-    }
+` : ''}
+
+[1. 상담 요약 작성 규칙 - 사용자 지정 지침]
+${userSummaryPrompt}
+
+[2. 전체 대화록(녹취록) 작성 규칙]
+상담 요약 작성이 끝나면, 반드시 구분선 뒤에 화자(상담원, 고객)를 분리하고 대략적인 타임스탬프([MM:SS])를 붙여 전체 대화를 전사하세요.
+형식 예시:
+[전체 대화록]
+[00:02] 상담원: 안녕하세요 OOO 법률사무소입니다.
+[00:06] 고객: 네 개인회생 비용 문의 좀 드리려고 하는데요.
+[00:15] 상담원: 네 고객님 현재 총 채무 금액과 소득이 어떻게 되시나요?
+...`;
 
     const contentPayload = [
-      promptToUse,
+      fullPrompt,
       {
         inlineData: {
           data: base64Data,
@@ -761,9 +853,9 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
     } catch (firstError: any) {
       const firstMsg = firstError?.message || '';
       
-      // [Auto-Fallback] If 404/not found, retry with fallback model
-      if ((firstMsg.includes('404') || firstMsg.includes('not found')) && selectedModel !== FALLBACK_MODEL) {
-        console.warn(`[AI] Model "${selectedModel}" failed (404), retrying with "${FALLBACK_MODEL}"...`);
+      // [Auto-Fallback] If 404/not found or 503, retry with fallback model
+      if ((firstMsg.includes('404') || firstMsg.includes('not found') || firstMsg.includes('503')) && selectedModel !== FALLBACK_MODEL) {
+        console.warn(`[AI] Model "${selectedModel}" failed (${firstMsg}), retrying with fallback "${FALLBACK_MODEL}"...`);
         localStorage.setItem('lm_geminiModel', FALLBACK_MODEL);
         
         const fallbackModel = genAI.getGenerativeModel({ model: FALLBACK_MODEL });
@@ -771,7 +863,7 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
         const response = await result.response;
         return `[모델 자동 전환: ${selectedModel} → ${FALLBACK_MODEL}]\n\n` + response.text();
       }
-      throw firstError; // Re-throw for other errors
+      throw firstError;
     }
   } catch (error) {
     console.error("Gemini AI Error:", error);
@@ -787,10 +879,11 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
           errorMsg += `\n\n[진단 - 사용 가능한 모델 목록]\n${modelNames}`;
         }
       } catch (e) {
-        errorMsg += `\n\n[진단] 모델 목록 조회 실패 (CORS/Network): ${e}`;
+        errorMsg += `\n\n[진단] 모델 목록 조회 실패: ${e}`;
       }
     }
 
     return `[오류 발생] AI 분석 중 문제가 발생했습니다.\n사유: ${errorMsg}`;
   }
 };
+

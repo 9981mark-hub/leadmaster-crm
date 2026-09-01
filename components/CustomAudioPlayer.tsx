@@ -1,7 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Play, Pause, RotateCcw, RotateCw, Volume2, AlertCircle } from 'lucide-react';
 
-interface CustomAudioPlayerProps {
+export interface CustomAudioPlayerRef {
+    seekTo: (seconds: number) => void;
+    play: () => void;
+    pause: () => void;
+}
+
+export interface CustomAudioPlayerProps {
     src: string;
     fileName?: string;
     onClose?: () => void;
@@ -14,12 +20,38 @@ const formatTime = (seconds: number) => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
-export const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ src, fileName }) => {
+export const CustomAudioPlayer = forwardRef<CustomAudioPlayerRef, CustomAudioPlayerProps>(({ src, fileName }, ref) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     const [error, setError] = useState(false);
+
+    useImperativeHandle(ref, () => ({
+        seekTo: (seconds: number) => {
+            if (audioRef.current) {
+                audioRef.current.currentTime = Math.max(0, Math.min(seconds, audioRef.current.duration || seconds));
+                setCurrentTime(audioRef.current.currentTime);
+                audioRef.current.play().then(() => {
+                    setIsPlaying(true);
+                }).catch(err => {
+                    console.warn("Auto-play on seek failed:", err);
+                });
+            }
+        },
+        play: () => {
+            if (audioRef.current && !isPlaying) {
+                audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
+            }
+        },
+        pause: () => {
+            if (audioRef.current && isPlaying) {
+                audioRef.current.pause();
+                setIsPlaying(false);
+            }
+        }
+    }));
+
 
     useEffect(() => {
         // Reset state when src changes
@@ -199,4 +231,6 @@ export const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ src, fileN
             )}
         </div>
     );
-};
+});
+
+CustomAudioPlayer.displayName = 'CustomAudioPlayer';

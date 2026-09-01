@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layout } from 'lucide-react';
 import { Case, CaseStatus, ReminderItem, MemoItem, RecordingItem } from '../types';
 import { useCase, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation } from '../services/queries';
-import { calculateCommission, generateAiSummary, convertToPlayableUrl } from '../utils';
+import { calculateCommission, generateAiSummary, convertToPlayableUrl, parseAiTranscript } from '../utils';
 import { CommandPalette } from '../components/CommandPalette';
 // Sub-components
 import { CaseDetailHeader } from '../components/case-detail/CaseDetailHeader';
@@ -384,12 +384,13 @@ export default function CaseDetail() {
             setAiSummaryEditMode(false); // No need for edit mode - auto pipeline
 
             // [Step 1 & 2 Merge] Auto save AI summary & send to consultation memo in a single mutation to prevent race conditions
+            const { summaryText } = parseAiTranscript(summary);
             let memoContent = '';
-            const specialMatch = summary.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
+            const specialMatch = summaryText.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
             if (specialMatch && specialMatch[1]) {
                 memoContent = specialMatch[1].trim().slice(0, 1000);
             } else {
-                memoContent = `[AI 요약 전체]\n${summary.slice(0, 1000)}`;
+                memoContent = `[AI 요약 전체]\n${summaryText.slice(0, 1000)}`;
             }
 
             const newMemo: MemoItem = {
@@ -442,23 +443,16 @@ export default function CaseDetail() {
     const handleSaveSummaryToMemo = () => {
         if (!aiSummaryText) return;
 
-        // Extract '특이사항' section from the AI summary
-        // Supports: *특이사항, 4. 특이사항, - 특이사항, 특이사항:
+        // Extract '특이사항' section from the AI summary (ignoring transcript)
+        const { summaryText } = parseAiTranscript(aiSummaryText);
         let memoContent = '';
-        const specialNotesMatch = aiSummaryText.match(/(?:^|\n)(?:[\*\-0-9\.\s]*특이사항)[:\s]*([\s\S]*?)(?=\n[0-9]+\.|^$|$)/i);
-        // Note: The regex looks for "Usage" section or EOF as terminator if needed, but usually Special Memo is last.
-        // Simplified regex to just grab everything after "특이사항" header if it's the last section.
-
-        // Robust Regex: Finds "특이사항" (with optional prefixes) and captures everything after it
-        const simpleMatch = aiSummaryText.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
+        const simpleMatch = summaryText.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
 
         if (simpleMatch && simpleMatch[1]) {
-            // Found the special notes section
             const specialNotes = simpleMatch[1].trim();
             memoContent = `${specialNotes.slice(0, 1000)}`;
         } else {
-            // Fallback: If not found, save whole summary with label
-            memoContent = `[AI 요약 전체]\n${aiSummaryText.slice(0, 1000)}`;
+            memoContent = `[AI 요약 전체]\n${summaryText.slice(0, 1000)}`;
         }
 
         const newMemo: MemoItem = {

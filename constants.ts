@@ -133,12 +133,21 @@ export const AVAILABLE_FIELDS_CONFIG = [
   { key: 'assets', label: '자산 상세 입력' }
 ];
 
-export const AVAILABLE_AI_MODELS = [
-  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (추천)', description: '안정적이고 빠름. 음성 변환/요약 최적. 무료 ~500 RPD.' },
-  { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (고성능)', description: '복잡한 분석에 최고 품질. 무료 ~100 RPD.' },
-  { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (경량)', description: '초고속, 대량 처리용. 무료 ~1,000 RPD.' },
-  { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (레거시)', description: '이전 세대. 안정적이나 곧 종료 예정.' },
-  { id: 'gemini-3-flash-preview', label: 'Gemini 3 Flash (프리뷰)', description: '최신 3세대 프리뷰. 성능 우수하나 변경 가능.' },
-  { id: 'gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash Lite (프리뷰)', description: '최신 3.1세대 경량 프리뷰.' },
+export const REHABILITATION_DOMAIN_KEYWORDS = [
+  '개인회생', '파산면책', '금지명령', '중지명령', '개시결정', '변제계획안', '변제인가', '면책결정',
+  '별제권', '우선변제권', '일반우선채권', '후순위채권', '채권자집회', '보정권고', '보정명령',
+  '총 채무액', '원금', '이자', '변제율', '변제기간', '월 변제금', '가용소득', '청산가치',
+  '생계비', '중위소득', '부양가족', '배우자 재산', '임대차보증금', '최우선변제금', '압류', '가압류',
+  '독촉', '추심', '신용회복위원회', '워크아웃', '프리워크아웃', '새출발기금', '대부업체', '저축은행',
+  '카드론', '현금서비스', '마이너스통장', '담보대출', '신용대출', '햇살론', '사채', '일수'
 ];
+
+export const AVAILABLE_AI_MODELS = [
+  { id: 'gemini-3.5-transcribe', label: 'Gemini 3.5 Transcribe (화자분리 전사+정밀요약 추천)', description: '최신 음성인식 특화. 화자분리(상담원/고객), 타임스탬프, 잡음제거, 전문용어 보정.' },
+  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (차세대 추천)', description: '최신 3.5세대 고속 멀티모달. 음성 변환 및 요약에 가장 안정적.' },
+  { id: 'gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash Lite (초고속 경량)', description: '최신 3.1세대 경량 프리뷰. 대량 처리용 초고속 모델.' },
+  { id: 'gemini-3-flash-preview', label: 'Gemini 3 Flash (프리뷰)', description: '3세대 표준 프리뷰.' },
+  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (2026.10 종료 예정)', description: '이전 세대 모델. 2026년 10월 서비스 종료 예정.' },
+];
+
 
