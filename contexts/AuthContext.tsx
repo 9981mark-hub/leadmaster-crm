@@ -132,37 +132,47 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       }
     };
 
-    // [Session Recovery] - Non-destructive with Visibility/Focus triggers
+    // [Session Recovery] - Non-destructive with Supabase refreshSession
     useEffect(() => {
       const restoreSupabaseSession = async () => {
         if (!isAuthenticated || !supabase) return;
 
         try {
+          // 1. 현재 세션 확인
           const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-              // Try to restore
-              const { error } = await supabase.auth.signInWithIdToken({
-                provider: 'google',
-                token: token,
-              });
+          if (session) return;
 
-              if (error) {
-                console.warn("Session restore failed (Token Expired?)", error);
-                alert("로그인 세션이 만료되었습니다. 데이터 보호를 위해 다시 로그인해주세요.");
-                logout();
-              }
+          // 2. Supabase 자체 refresh token으로 세션 복구 시도 (장기 지속)
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (refreshData?.session) {
+            console.log('[Auth] Supabase session restored via refresh token');
+            return;
+          }
+
+          // 3. 저장된 Google 토큰이 있으면 시도
+          const token = localStorage.getItem('authToken');
+          if (token) {
+            const { data: signInData, error } = await supabase.auth.signInWithIdToken({
+              provider: 'google',
+              token: token,
+            });
+            if (signInData?.session && !error) {
+              console.log('[Auth] Supabase session restored via Google token');
+              return;
             }
           }
+
+          // 세션 복구 실패 시에도 alert()나 강제 logout()을 호출하지 않음
+          // 로컬 캐시로 계속 정상 사용 가능하며, 사용자를 강제로 튕겨내지 않음
+          console.warn('[Auth] Background session restore unready; continuing with local state.');
         } catch (e) {
-          console.warn("Supabase session check failed", e);
+          console.warn('[Auth] Supabase session check error:', e);
         }
       };
 
       restoreSupabaseSession();
 
-      // [Mobile WebView Fix] Auto-recover session when app returns to foreground
+      // [Mobile WebView / PC Tab Fix] 탭 복귀 시 조용히 세션 복구
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible') {
           restoreSupabaseSession();
