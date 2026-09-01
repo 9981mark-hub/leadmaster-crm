@@ -772,6 +772,22 @@ export const parseAiTranscript = (rawText: string | null | undefined): {
   };
 };
 
+/**
+ * 도메인 전문 용어 사전 로드 (사용자 설정값 우선, 없으면 기본값)
+ */
+export const getDomainKeywords = (): string[] => {
+  try {
+    const custom = localStorage.getItem('lm_aiKeywords');
+    if (custom && custom.trim().length > 0) {
+      const parsed = custom.split(',').map(s => s.trim()).filter(Boolean);
+      if (parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.warn("Failed to load custom AI keywords", e);
+  }
+  return REHABILITATION_DOMAIN_KEYWORDS;
+};
+
 export const generateAiSummary = async (file: File, customPrompt?: string, context?: AIContext): Promise<string> => {
   const lsKey = localStorage.getItem('lm_geminiApiKey');
   const envKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -808,7 +824,8 @@ export const generateAiSummary = async (file: File, customPrompt?: string, conte
     const userSummaryPrompt = customPrompt && customPrompt.trim().length > 0 ? customPrompt : DEFAULT_AI_PROMPT;
 
     // [Domain Vocabulary Biasing & Instruction Injection]
-    const domainKeywordsStr = REHABILITATION_DOMAIN_KEYWORDS.slice(0, 40).join(', ');
+    const domainKeywordsList = getDomainKeywords();
+    const domainKeywordsStr = domainKeywordsList.join(', ');
 
     let fullPrompt = `당신은 법률 사무소(개인회생/파산/신용회복) 전문 상담 보조 AI입니다.
 업로드된 음성 파일을 분석하여 [1. 상담 요약]과 [2. 전체 대화록]을 순서대로 작성하세요.

@@ -4,7 +4,7 @@ import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAdd
 import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle } from 'lucide-react';
 import { getDayName, loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
-import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS } from '../constants';
+import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS, REHABILITATION_DOMAIN_KEYWORDS } from '../constants';
 import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
 
@@ -86,6 +86,9 @@ export default function SettingsPage() {
         }
         return stored;
     });
+
+    // [New] AI Vocabulary Biasing Keywords State
+    const [aiKeywords, setAiKeywords] = useState(() => localStorage.getItem('lm_aiKeywords') || REHABILITATION_DOMAIN_KEYWORDS.join(', '));
 
     const addSecondaryStatusMutation = useAddSecondaryStatusMutation();
     const deleteSecondaryStatusMutation = useDeleteSecondaryStatusMutation();
@@ -824,6 +827,53 @@ export default function SettingsPage() {
                         <p className="text-xs text-gray-500">
                             ⚠️ "모델이 과부하 상태입니다(503)" 오류 발생 시 다른 모델로 변경해보세요.
                         </p>
+                    </div>
+
+                    <hr className="border-gray-100" />
+
+                    {/* AI Speech Vocabulary Biasing (Domain Keywords) */}
+                    <div>
+                        <div className="flex justify-between items-center mb-1">
+                            <label className="block text-sm font-medium text-gray-700">
+                                🎙️ 음성인식 보정 전문 용어 사전 (단어 등록)
+                            </label>
+                            <button
+                                onClick={() => {
+                                    if (window.confirm('전문 용어 사전을 기본 단어 목록으로 복원하시겠습니까?')) {
+                                        const defaultWords = REHABILITATION_DOMAIN_KEYWORDS.join(', ');
+                                        setAiKeywords(defaultWords);
+                                        localStorage.setItem('lm_aiKeywords', defaultWords);
+                                        saveGlobalSettings({ aiKeywords: defaultWords });
+                                        showToast('기본 단어 목록으로 복원되었습니다.');
+                                    }
+                                }}
+                                className="text-xs text-gray-500 hover:text-purple-600 underline cursor-pointer"
+                            >
+                                기본값 복원
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2">
+                            통화 녹음 전사 시 금융사명(대부업체, 저축은행), 법률 용어 등 인식이 잘 되도록 AI에게 사전 주입할 단어들을 쉼표(,)로 구분하여 등록하세요.
+                        </p>
+                        <textarea
+                            className="w-full h-24 p-2.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none leading-relaxed font-sans"
+                            value={aiKeywords}
+                            onChange={(e) => setAiKeywords(e.target.value)}
+                            placeholder="개인회생, 파산면책, 금지명령, 대부업체명, 저축은행명 등..."
+                        />
+                        <div className="flex justify-end mt-1.5">
+                            <button
+                                onClick={() => {
+                                    const trimmed = aiKeywords.trim();
+                                    localStorage.setItem('lm_aiKeywords', trimmed);
+                                    saveGlobalSettings({ aiKeywords: trimmed });
+                                    showToast('전문 용어 사전이 저장되었습니다.');
+                                }}
+                                className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 font-bold shadow-sm cursor-pointer"
+                            >
+                                단어 사전 저장
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -545,6 +545,11 @@ const performBackgroundFetch = async () => {
         localStorage.setItem('lm_geminiModel', settingsData.geminiModel);
       }
 
+      // [NEW] Load AI Keywords from server
+      if (settingsData.aiKeywords) {
+        localStorage.setItem('lm_aiKeywords', settingsData.aiKeywords);
+      }
+
       // [NEW] Load Toss Ads Records from server
       if (settingsData.tossAdsRecords && Array.isArray(settingsData.tossAdsRecords)) {
         localTossAdsRecords = settingsData.tossAdsRecords;
@@ -1086,6 +1091,7 @@ export const saveGlobalSettings = async (settings: {
   missedCallIntervalTiers?: MissedCallIntervalTier[],
   geminiApiKey?: string,
   geminiModel?: string,
+  aiKeywords?: string,
 }) => {
   const updates: any = {};
 
@@ -1116,6 +1122,12 @@ export const saveGlobalSettings = async (settings: {
   if (settings.geminiModel) {
     localStorage.setItem('lm_geminiModel', settings.geminiModel);
     await saveSettingToSupabase('geminiModel', settings.geminiModel);
+  }
+
+  // [NEW] Save AI Keywords
+  if (settings.aiKeywords !== undefined) {
+    localStorage.setItem('lm_aiKeywords', settings.aiKeywords);
+    await saveSettingToSupabase('aiKeywords', settings.aiKeywords);
   }
 
   if (settings.managerName) await saveSettingToSupabase('managerName', settings.managerName);
