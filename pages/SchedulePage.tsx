@@ -14,6 +14,7 @@ import { CaseDetailReminders } from '../components/case-detail/info/CaseDetailRe
 import CallConfirmPopup from '../components/CallConfirmPopup';
 import { useToast } from '../contexts/ToastContext';
 import { useActiveCall } from '../contexts/ActiveCallContext';
+import { useReminder } from '../contexts/ReminderContext';
 import { Case, ReminderItem } from '../types';
 
 type SortOption = 'time_asc' | 'createdAt_desc' | 'updatedAt_desc';
@@ -28,6 +29,7 @@ export default function SchedulePage() {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const { startCall } = useActiveCall(); // Keep for dependency hook consistency
+  const { dismissNotification } = useReminder(); // [REMINDER FIX] 결과 처리 시 팝업 즉시 제거용
   
   const { data: statuses = [] } = useStatuses();
   
@@ -173,6 +175,10 @@ export default function SchedulePage() {
       
       const isCompleted = updatedReminders.find(r => r.id === reminderId)?.resultStatus === '완료';
       showToast(isCompleted ? '일정이 완료 처리되었습니다.' : '일정 완료 처리가 취소되었습니다.');
+      // [REMINDER FIX] 팝업 알림 즉시 제거
+      if (isCompleted) {
+        dismissNotification(`${caseId}-${reminderId}`);
+      }
     } catch (err) {
       showToast('일정 상태 변경에 실패했습니다.', 'error');
     }
