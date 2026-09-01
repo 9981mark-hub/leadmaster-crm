@@ -5,7 +5,8 @@ import {
   fetchAllowedEmails,
   addAllowedEmail as addAllowedEmailApi,
   removeAllowedEmail as removeAllowedEmailApi,
-  subscribe
+  subscribe,
+  resetInitState
 } from '../services/api';
 import { supabase } from '../services/supabase';
 
@@ -180,6 +181,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
     const logout = async () => {
       if (supabase) await supabase.auth.signOut();
+      resetInitState(); // [SYNC FIX] 재로그인 시 데이터 재초기화를 위해 모듈 상태 리셋
       localStorage.removeItem('authToken');
       localStorage.removeItem('userProfile');
       localStorage.removeItem('isAuthenticated');

@@ -442,9 +442,116 @@ const setupRealtimeSubscription = () => {
   );
 };
 
+// [SYNC FIX] 로그아웃 시 모듈 상태 리셋 (재로그인 시 정상 초기화를 위해)
+export const resetInitState = () => {
+  isInitialized = false;
+  syncStatus = 'ok';
+  lastSyncAt = null;
+  console.log('[Sync] Module state reset for re-login');
+};
+
+// [SYNC FIX] 강제 전체 동기화 (스마트 머지 우회, 서버 데이터로 완전 교체)
 export const refreshData = async () => {
-  return performBackgroundFetch();
-}
+  console.log('[Sync] Force refresh triggered...');
+
+  if (!isSupabaseEnabled() || !supabase) {
+    console.warn('[Sync] Supabase not enabled');
+    return performBackgroundFetch();
+  }
+
+  // 1. 세션 확인 및 복구
+  let hasSession = false;
+  try {
+    const { data } = await supabase.auth.getSession();
+    hasSession = !!data.session;
+  } catch (e) {
+    console.warn('[Sync] Session check failed:', e);
+  }
+
+  if (!hasSession) {
+    try {
+      const { data: refreshResult } = await supabase.auth.refreshSession();
+      hasSession = !!refreshResult?.session;
+    } catch (e) {
+      console.warn('[Sync] Refresh session failed:', e);
+    }
+  }
+
+  if (!hasSession) {
+    try {
+      const storedToken = localStorage.getItem('authToken');
+      if (storedToken) {
+        const { data: signInData, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: storedToken,
+        });
+        hasSession = !!signInData?.session && !error;
+      }
+    } catch (e) {
+      console.warn('[Sync] Google token recovery failed:', e);
+    }
+  }
+
+  if (!hasSession) {
+    console.error('[Sync] All session recovery failed. Cannot force refresh.');
+    syncStatus = 'session_expired';
+    notifyListeners();
+    return;
+  }
+
+  // 2. 서버에서 전체 데이터 조회 (강제)
+  try {
+    const supabaseCases = await fetchCasesFromSupabase();
+    console.log(`[Sync] Force refresh: ${supabaseCases.length} cases from server`);
+
+    if (supabaseCases.length === 0) {
+      console.warn('[Sync] Server returned 0 cases - RLS issue? Aborting force sync to protect local data.');
+      syncStatus = 'fetch_failed';
+      notifyListeners();
+      return;
+    }
+
+    // 3. 스마트 머지 우회 - 서버 데이터로 완전 교체
+    const serverCases = supabaseCases.map(processIncomingCase).filter((c): c is Case => c !== null);
+    localCases = serverCases;
+
+    // 4. Settings도 갱신
+    try {
+      const settings = await fetchSettingsFromSupabase();
+      if (settings && Object.keys(settings).length > 0) {
+        if (settings.partners) localPartners = settings.partners;
+        if (settings.inboundPaths) localInboundPaths = settings.inboundPaths;
+        if (settings.statusStages) localStatuses = settings.statusStages;
+        else if (settings.statuses) localStatuses = settings.statuses;
+        if (settings.secondaryStatuses) localSecondaryStatuses = settings.secondaryStatuses;
+        if (settings.tertiaryStatuses) localTertiaryStatuses = settings.tertiaryStatuses;
+        if (settings.missedCallSettings) {
+          const { status, interval, intervalTiers } = settings.missedCallSettings;
+          if (status) localStorage.setItem('lm_missedStatus', status);
+          if (interval) localStorage.setItem('lm_missedInterval', String(interval));
+          if (intervalTiers && Array.isArray(intervalTiers) && intervalTiers.length > 0) {
+            localStorage.setItem('lm_missedIntervalTiers', JSON.stringify(intervalTiers));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Sync] Settings refresh failed:', e);
+    }
+
+    // 5. 캐시 저장 및 UI 갱신
+    saveToStorage();
+    syncStatus = 'ok';
+    lastSyncAt = new Date().toISOString();
+    notifyListeners();
+    console.log(`[Sync] Force refresh complete: ${localCases.length} cases synced`);
+
+  } catch (error) {
+    console.error('[Sync] Force refresh failed:', error);
+    syncStatus = 'fetch_failed';
+    notifyListeners();
+    throw error;
+  }
+};
 
 const performBackgroundFetch = async () => {
   try {
