@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { format, parseISO, isSameDay, isToday, isBefore } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { fetchCases, fetchPartners, fetchSettlementBatches, subscribe } from '../services/api';
+import { fetchCases, fetchPartners, fetchSettlementBatches, subscribe, getSyncStatus } from '../services/api';
 import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { Link } from 'react-router-dom';
@@ -194,6 +194,27 @@ export default function Dashboard() {
       className="space-y-6 max-w-7xl mx-auto pb-4 md:pb-0"
     >
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white">대시보드</h2>
+
+      {/* [SYNC FIX] 동기화 실패 경고 배너 */}
+      {getSyncStatus().status !== 'ok' && (
+        <div className={`rounded-lg p-3 flex items-center gap-3 text-sm ${
+          getSyncStatus().status === 'session_expired'
+            ? 'bg-red-50 border border-red-200 text-red-700'
+            : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
+        }`}>
+          <AlertCircle size={18} className="flex-shrink-0" />
+          <div className="flex-1">
+            {getSyncStatus().status === 'session_expired' ? (
+              <span>⚠️ 로그인 세션이 만료되어 <strong>최신 데이터를 불러올 수 없습니다.</strong> 마이페이지에서 로그아웃 후 다시 로그인해주세요.</span>
+            ) : (
+              <span>⚠️ 서버 연결에 실패했습니다. 네트워크를 확인하고 새로고침해주세요.</span>
+            )}
+          </div>
+          <Link to="/mypage" className="px-3 py-1 bg-red-600 text-white rounded text-xs font-bold whitespace-nowrap hover:bg-red-700">
+            재로그인
+          </Link>
+        </div>
+      )}
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

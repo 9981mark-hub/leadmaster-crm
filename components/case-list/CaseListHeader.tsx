@@ -1,6 +1,7 @@
 import React from 'react';
-import { Sparkles, Phone, X, ArrowUpDown } from 'lucide-react';
+import { Sparkles, Phone, X, ArrowUpDown, AlertTriangle } from 'lucide-react';
 import { MissedCallIntervalTier } from '../../types';
+import { getSyncStatus } from '../../services/api';
 
 interface CaseListHeaderProps {
     totalItems: number;
@@ -133,6 +134,12 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                 <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
                     <div className="flex items-center gap-1.5">
                         <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">총 {totalItems}건</span>
+                        {getSyncStatus().status !== 'ok' && (
+                            <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full border border-red-200 flex items-center gap-1 whitespace-nowrap" title="서버 동기화 실패 - 재로그인 필요">
+                                <AlertTriangle size={12} />
+                                동기화 필요
+                            </span>
+                        )}
                         {totalPages > 1 && (
                             <span className="text-xs text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
                         )}

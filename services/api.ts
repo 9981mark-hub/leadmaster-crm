@@ -40,6 +40,10 @@ let localExpenses: ExpenseItem[] = []; // [NEW] 지출 목록
 let expensesInitialized = false; // [NEW] 지출 초기화 여부
 let isInitialized = false;
 
+// [SYNC FIX] 동기화 상태 추적
+let syncStatus: 'ok' | 'session_expired' | 'fetch_failed' = 'ok';
+let lastSyncAt: string | null = null;
+
 // Event Listeners for Real-time Updates
 const listeners: Set<() => void> = new Set();
 
@@ -51,6 +55,9 @@ export const subscribe = (callback: () => void) => {
 const notifyListeners = () => {
   listeners.forEach(cb => cb());
 };
+
+// [SYNC FIX] 동기화 상태 조회 함수 (UI에서 사용)
+export const getSyncStatus = () => ({ status: syncStatus, lastSyncAt });
 
 // LocalStorage Helpers
 const CACHE_KEYS = {
@@ -454,6 +461,41 @@ const performBackgroundFetch = async () => {
         hasSession = !!data.session;
       }
 
+      // [SYNC FIX] 세션 없을 때 자동 복구 시도 (모바일 세션 만료 대응)
+      if (!hasSession && supabase) {
+        console.log('[Sync] No session found, attempting auto-recovery...');
+        try {
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (refreshData?.session) {
+            hasSession = true;
+            syncStatus = 'ok';
+            console.log('[Sync] Session auto-recovered via refresh token');
+          }
+        } catch (e) {
+          console.warn('[Sync] Refresh token recovery failed:', e);
+        }
+
+        // refreshSession 실패 시 저장된 Google 토큰으로 재시도
+        if (!hasSession) {
+          try {
+            const storedToken = localStorage.getItem('authToken');
+            if (storedToken) {
+              const { data: signInData, error } = await supabase.auth.signInWithIdToken({
+                provider: 'google',
+                token: storedToken,
+              });
+              if (signInData?.session && !error) {
+                hasSession = true;
+                syncStatus = 'ok';
+                console.log('[Sync] Session recovered via stored Google token');
+              }
+            }
+          } catch (e) {
+            console.warn('[Sync] Google token recovery failed:', e);
+          }
+        }
+      }
+
       if (hasSession) {
         console.log('[Sync] Fetching from Supabase (primary)...');
         try {
@@ -468,11 +510,17 @@ const performBackgroundFetch = async () => {
           // [Fix] Removed fetchPartnersFromSupabase() call - it returns empty commissionRules.
           // Partners with full data (including commissionRules) are loaded from settingsData.partners below.
 
+          // [SYNC FIX] 동기화 성공 기록
+          syncStatus = 'ok';
+          lastSyncAt = new Date().toISOString();
+
         } catch (supabaseError) {
-          console.warn('[Sync] Supabase fetch failed, falling back to Google Sheets:', supabaseError);
+          console.warn('[Sync] Supabase fetch failed:', supabaseError);
+          syncStatus = 'fetch_failed';
         }
       } else {
-        console.warn('[Sync] No Supabase session found. Skipping Supabase fetch to prevent RLS empty data issue. Falling back to Sheets.');
+        console.warn('[Sync] All session recovery attempts failed. Using stale cache.');
+        syncStatus = 'session_expired';
       }
     }
 
