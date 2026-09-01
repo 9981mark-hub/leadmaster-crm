@@ -70,12 +70,41 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
         );
     }, [transcriptLines, transcriptSearch]);
 
+    // Determine active audio URL: passed audioUrl or latest recording in archive
+    const activeAudioUrl = useMemo(() => {
+        if (currentAudioFile) return '';
+        if (audioUrl) return audioUrl;
+        if (c.recordings && c.recordings.length > 0) return c.recordings[0].url;
+        return null;
+    }, [audioUrl, currentAudioFile, c.recordings]);
+
+    const activeFileName = useMemo(() => {
+        if (currentAudioFile) return currentAudioFile.name;
+        if (audioUrl) {
+            const found = c.recordings?.find(r => r.url === audioUrl);
+            if (found) return found.filename;
+        }
+        if (c.recordings && c.recordings.length > 0) {
+            return c.recordings[0].filename;
+        }
+        return '녹음 파일';
+    }, [audioUrl, currentAudioFile, c.recordings]);
+
     const handleSeekToTimestamp = (seconds: number) => {
         if (playerRef.current) {
             playerRef.current.seekTo(seconds);
             showToast(`⏱️ ${Math.floor(seconds / 60)}분 ${seconds % 60}초 구간으로 이동합니다.`);
+        } else if (activeAudioUrl || (c.recordings && c.recordings.length > 0)) {
+            const recToPlay = c.recordings?.find(r => r.url === activeAudioUrl) || c.recordings?.[0];
+            if (recToPlay) onPlayRecording(recToPlay);
+            setTimeout(() => {
+                if (playerRef.current) {
+                    playerRef.current.seekTo(seconds);
+                    showToast(`⏱️ ${Math.floor(seconds / 60)}분 ${seconds % 60}초 구간으로 이동합니다.`);
+                }
+            }, 300);
         } else {
-            showToast('오디오 플레이어가 준비되지 않았습니다.', 'error');
+            showToast('재생할 녹음 파일이 없습니다.', 'error');
         }
     };
 
@@ -160,39 +189,46 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
             </div>
 
             {/* Audio Player for Current or Selected with Ref seeking */}
-            <div className="mb-4">
-                {(audioUrl || currentAudioFile) && (
+            {(activeAudioUrl || currentAudioFile) && (
+                <div className="mb-4">
                     <CustomAudioPlayer
                         ref={playerRef}
-                        src={audioUrl && audioUrl.includes('drive.google.com') ? convertToPlayableUrl(audioUrl) : (audioUrl || '')}
-                        fileName={currentAudioFile ? currentAudioFile.name : `녹음 파일 (ID: ${c.recordings?.find(r => r.url === audioUrl)?.id.substring(0, 8)}...)`}
+                        src={activeAudioUrl && activeAudioUrl.includes('drive.google.com') ? convertToPlayableUrl(activeAudioUrl) : (activeAudioUrl || '')}
+                        fileName={activeFileName}
                     />
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Recording List (Archive) */}
             {(c.recordings && c.recordings.length > 0) && (
                 <div className="mb-4">
                     <h4 className="text-xs font-bold text-gray-600 mb-2 flex items-center"><Archive size={12} className="mr-1" /> 녹음 아카이브</h4>
                     <div className="space-y-1 max-h-32 overflow-y-auto no-scrollbar">
-                        {c.recordings.map(rec => (
-                            <div key={rec.id} className="flex justify-between items-center bg-white p-2 rounded border border-gray-200 text-xs">
-                                <div className="flex items-center gap-2 overflow-hidden">
-                                    <PlayCircle
-                                        size={16}
-                                        className="text-blue-500 cursor-pointer flex-shrink-0"
-                                        onClick={() => onPlayRecording(rec)}
-                                    />
-                                    <div className="truncate">
-                                        <span className="font-medium">{rec.filename}</span>
-                                        <span className="text-gray-400 text-[10px] ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
+                        {c.recordings.map(rec => {
+                            const isSelected = rec.url === activeAudioUrl;
+                            return (
+                                <div
+                                    key={rec.id}
+                                    className={`flex justify-between items-center p-2 rounded border text-xs transition-colors ${
+                                        isSelected ? 'bg-purple-100/70 border-purple-300 font-bold' : 'bg-white border-gray-200'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2 overflow-hidden cursor-pointer flex-1" onClick={() => onPlayRecording(rec)}>
+                                        <PlayCircle
+                                            size={16}
+                                            className={isSelected ? "text-purple-600 flex-shrink-0" : "text-blue-500 flex-shrink-0"}
+                                        />
+                                        <div className="truncate">
+                                            <span className={isSelected ? "text-purple-900" : "font-medium text-gray-800"}>{rec.filename}</span>
+                                            <span className="text-gray-400 text-[10px] ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
+                                        </div>
                                     </div>
+                                    <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-400 hover:text-red-500 ml-2">
+                                        <X size={14} />
+                                    </button>
                                 </div>
-                                <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-400 hover:text-red-500">
-                                    <X size={14} />
-                                </button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}

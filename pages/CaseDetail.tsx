@@ -66,6 +66,9 @@ export default function CaseDetail() {
     useEffect(() => {
         if (c) {
             setAiSummaryText(c.aiSummary || null);
+            if (c.recordings && c.recordings.length > 0 && !audioUrl && !currentAudioFile) {
+                setAudioUrl(c.recordings[0].url);
+            }
             if (c.status === '사무장 접수') {
                 // [Fix] Use global dynamic list instead of hardcoded
                 setSecondaryStatuses(globalSecondaryStatuses.length > 0 ? globalSecondaryStatuses : []);
