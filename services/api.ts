@@ -132,17 +132,49 @@ const loadFromStorage = () => {
 
 const saveToStorage = () => {
   try {
+    // [SYNC FIX] 모바일 localStorage 용량 초과 방지
+    // recordings, statusLogs 등 대용량 필드를 캐시에서 제외
+    // 이 필드들은 Supabase 실시간 조회로 로드됨
+    const slimCases = localCases.map(c => ({
+      ...c,
+      recordings: [], // 대용량 필드 제외 (녹음 파일 메타데이터)
+      statusLogs: [], // 대용량 필드 제외 (상태 변경 이력)
+      aiSummary: '',  // AI 요약 (재생성 가능)
+    }));
+
+    localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(slimCases));
     localStorage.setItem(CACHE_KEYS.PARTNERS, JSON.stringify(localPartners));
-    localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(localCases));
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
     localStorage.setItem(CACHE_KEYS.SECONDARY_STATUSES, JSON.stringify(localSecondaryStatuses));
     localStorage.setItem(CACHE_KEYS.TERTIARY_STATUSES, JSON.stringify(localTertiaryStatuses));
     localStorage.setItem(CACHE_KEYS.EMAILS, JSON.stringify(localAllowedEmails));
-    // Email notification settings are saved separately in saveEmailNotificationSettings
-    // localStorage.setItem(CACHE_KEYS.LOGS, JSON.stringify(localLogs)); // Deprecated: Logs are inside Case
-  } catch (e) {
+  } catch (e: any) {
     console.error("Failed to save to cache", e);
+    // [SYNC FIX] QuotaExceededError 감지 시 추가 정리 시도
+    if (e?.name === 'QuotaExceededError' || e?.code === 22 || e?.code === 1014) {
+      console.warn('[Storage] Quota exceeded! Attempting emergency cleanup...');
+      try {
+        // 최소한 케이스 데이터만이라도 저장 시도 (더 압축)
+        const minimalCases = localCases.map(c => ({
+          caseId: c.caseId, createdAt: c.createdAt, updatedAt: c.updatedAt,
+          status: c.status, secondaryStatus: c.secondaryStatus, tertiaryStatus: c.tertiaryStatus,
+          customerName: c.customerName, phone: c.phone, managerName: c.managerName,
+          partnerId: c.partnerId, inboundPath: c.inboundPath, contractFee: c.contractFee,
+          isViewed: c.isViewed, isStarred: c.isStarred, isNew: c.isNew,
+          deletedAt: c.deletedAt, missedCallCount: c.missedCallCount,
+          lastMissedCallAt: c.lastMissedCallAt,
+          reminders: c.reminders, // 리마인더는 대시보드 KPI에 필요
+          depositHistory: c.depositHistory, // 미수금 계산에 필요
+          specialMemo: c.specialMemo,
+        }));
+        localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(minimalCases));
+        console.log('[Storage] Emergency minimal save succeeded');
+      } catch (e2) {
+        console.error('[Storage] Emergency save also failed:', e2);
+        syncStatus = 'fetch_failed';
+      }
+    }
   }
 };
 
