@@ -126,16 +126,13 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
     return (
         <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-            <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-purple-800 flex items-center gap-2">
-                    <Sparkles size={18} className="flex-shrink-0 text-purple-600" />
-                    <div className="flex flex-col leading-none">
-                        <span>AI 상담 요약 & 전사</span>
-                        <span className="text-[10px] text-purple-500 font-normal">Gemini 3.5 Transcribe</span>
-                    </div>
+            <div className="flex justify-between items-center mb-3 gap-2">
+                <h3 className="font-bold text-purple-800 flex items-center gap-1.5 text-sm md:text-base whitespace-nowrap">
+                    <Sparkles size={16} className="flex-shrink-0 text-purple-600" />
+                    <span>AI 상담 요약</span>
                 </h3>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
                     <input
                         type="file"
                         ref={audioInputRef}
@@ -146,20 +143,18 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                     <button
                         onClick={triggerInput}
                         disabled={isFileUploading}
-                        className={"flex items-center gap-1 text-xs px-2 py-1.5 rounded border " + (currentAudioFile ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-600 border-gray-300') + (isFileUploading ? ' opacity-50 cursor-not-allowed' : '')}
+                        className={"flex items-center gap-1 text-xs px-2.5 py-1.5 rounded border whitespace-nowrap " + (currentAudioFile ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-600 border-gray-300') + (isFileUploading ? ' opacity-50 cursor-not-allowed' : '')}
                     >
-                        <Mic size={14} className="flex-shrink-0" />
-                        <span className="text-center leading-tight">
-                            {isFileUploading ? '업로드중...' : (currentAudioFile ? '파일 변경' : <>녹음파일<br />업로드</>)}
-                        </span>
+                        <Mic size={13} className="flex-shrink-0" />
+                        <span>{isFileUploading ? '업로드중' : (currentAudioFile ? '파일 변경' : '녹음 업로드')}</span>
                     </button>
 
                     <button
                         onClick={onGenerateAiSummary}
                         disabled={isAiLoading}
-                        className="flex items-center gap-1 text-xs bg-purple-600 text-white px-3 py-1.5 rounded font-bold hover:bg-purple-700 disabled:opacity-50 transition-colors shadow-sm"
+                        className="flex items-center gap-1 text-xs bg-purple-600 text-white px-3 py-1.5 rounded font-bold hover:bg-purple-700 disabled:opacity-50 transition-colors shadow-sm whitespace-nowrap"
                     >
-                        {isAiLoading ? '분석 중...' : <span className="text-center leading-tight">AI 분석<br />실행</span>}
+                        {isAiLoading ? '분석 중...' : 'AI 분석'}
                     </button>
                 </div>
             </div>
@@ -203,27 +198,27 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
             )}
 
             {/* Sub Tabs: Summary vs Transcript */}
-            <div className="flex items-center justify-between border-b border-purple-200 mb-2">
-                <div className="flex gap-2">
+            <div className="flex items-center justify-between border-b border-purple-200 mb-2 gap-1">
+                <div className="flex gap-1.5">
                     <button
                         onClick={() => setActiveSubTab('summary')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-t-lg transition-colors ${
+                        className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold whitespace-nowrap rounded-t-lg transition-colors ${
                             activeSubTab === 'summary'
                                 ? 'bg-white text-purple-700 border-t border-l border-r border-purple-200 shadow-sm'
                                 : 'text-gray-500 hover:text-purple-600'
                         }`}
                     >
-                        <FileText size={14} /> 상담 요약문
+                        <FileText size={13} /> 요약문
                     </button>
                     <button
                         onClick={() => setActiveSubTab('transcript')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-t-lg transition-colors ${
+                        className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold whitespace-nowrap rounded-t-lg transition-colors ${
                             activeSubTab === 'transcript'
                                 ? 'bg-white text-purple-700 border-t border-l border-r border-purple-200 shadow-sm'
                                 : 'text-gray-500 hover:text-purple-600'
                         }`}
                     >
-                        <ListOrdered size={14} /> 전체 대화록 (화자/시간)
+                        <ListOrdered size={13} /> 대화록
                         {transcriptLines.length > 0 && (
                             <span className="ml-1 px-1.5 py-0.2 bg-purple-100 text-purple-700 rounded-full text-[10px]">
                                 {transcriptLines.length}
@@ -235,11 +230,11 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                 {activeSubTab === 'transcript' && transcriptLines.length > 0 && (
                     <button
                         onClick={handleCopyTranscript}
-                        className="flex items-center gap-1 text-[11px] text-purple-600 hover:text-purple-800 px-2 py-1 rounded hover:bg-purple-100 transition-colors"
+                        className="flex items-center gap-1 text-[11px] text-purple-600 hover:text-purple-800 px-2 py-1 rounded hover:bg-purple-100 transition-colors whitespace-nowrap shrink-0"
                         title="전체 대화록 복사"
                     >
                         {copiedTranscript ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
-                        <span>{copiedTranscript ? '복사됨' : '대화록 복사'}</span>
+                        <span>{copiedTranscript ? '복사됨' : '복사'}</span>
                     </button>
                 )}
             </div>
