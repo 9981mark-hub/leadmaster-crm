@@ -23,6 +23,102 @@ const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
 const DROP_OFF_REASONS = ['비용 부담', '타 사무소 선택', '연락 두절', '자격 미달', '본인 의사 취소', '시기 미정', '기타'];
 const ALL_TYPES = ['통화', '출장미팅', '방문미팅', '입금', '문자', '기타'];
 
+// 유입경로 추출 헬퍼 (직접 지정값 우선, 없을 시 preInfo에서 탐색)
+export const resolveInboundPath = (caseData: Case): string => {
+  if (caseData.inboundPath && caseData.inboundPath.trim() !== '') {
+    return caseData.inboundPath.trim();
+  }
+  if (caseData.preInfo) {
+    const lines = caseData.preInfo.split(/\s\/\s|\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const match = trimmed.match(/(?:유입경로|인입경로|접수경로|경로|채널)\s*[:\]]\s*([^\s,]+)/i);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+      const utmMatch = trimmed.match(/utm_source=([a-zA-Z0-9_-]+)/i);
+      if (utmMatch && utmMatch[1]) {
+        return utmMatch[1].trim();
+      }
+    }
+  }
+  return '';
+};
+
+// 유입경로별 테마 컬러 및 뱃지 스타일 매핑
+export const getInboundBadgeStyle = (path?: string) => {
+  if (!path || path === '미지정' || path === '없음') {
+    return {
+      bg: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700',
+      dot: 'bg-gray-400'
+    };
+  }
+
+  const p = path.toLowerCase();
+
+  // 인스타그램, 페이스북, SNS
+  if (p.includes('인스타') || p.includes('insta') || p.includes('페이스북') || p.includes('fb') || p.includes('meta') || p.includes('sns')) {
+    return {
+      bg: 'bg-pink-50 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800/60',
+      dot: 'bg-pink-500'
+    };
+  }
+
+  // 당근, 당근마켓
+  if (p.includes('당근') || p.includes('karrot')) {
+    return {
+      bg: 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800/60',
+      dot: 'bg-orange-500'
+    };
+  }
+
+  // 유튜브, 영상
+  if (p.includes('유튜브') || p.includes('youtube') || p.includes('영상')) {
+    return {
+      bg: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/60',
+      dot: 'bg-red-500'
+    };
+  }
+
+  // 네이버, 블로그, 카페, 지식인
+  if (p.includes('네이버') || p.includes('naver') || p.includes('블로그') || p.includes('카페') || p.includes('지식인')) {
+    return {
+      bg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60',
+      dot: 'bg-emerald-500'
+    };
+  }
+
+  // 카카오, 카카오톡
+  if (p.includes('카카오') || p.includes('kakao')) {
+    return {
+      bg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
+      dot: 'bg-amber-500'
+    };
+  }
+
+  // 지인, 소개, 추천
+  if (p.includes('지인') || p.includes('소개') || p.includes('추천')) {
+    return {
+      bg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60',
+      dot: 'bg-purple-500'
+    };
+  }
+
+  // 구글, 검색, 웹
+  if (p.includes('구글') || p.includes('google') || p.includes('웹')) {
+    return {
+      bg: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/60',
+      dot: 'bg-sky-500'
+    };
+  }
+
+  // 기본 (슬레이트/인디고)
+  return {
+    bg: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60',
+    dot: 'bg-indigo-500'
+  };
+};
+
 export default function SchedulePage() {
   const { data: cases = [], isLoading } = useCases();
   const updateCaseMutation = useUpdateCaseMutation();
@@ -274,13 +370,16 @@ export default function SchedulePage() {
         const type = r.type || '통화';
         if (!selectedTypes.includes(type)) return;
 
-        // 검색어 필터 (고객명, 연락처, 일정 메모)
+        // 검색어 필터 (고객명, 연락처, 일정 메모, 유입경로, 사건유형)
         const q = searchQuery.toLowerCase().trim();
         if (q) {
           const nameMatch = c.customerName?.toLowerCase().includes(q);
           const phoneMatch = c.phone?.replace(/-/g, '').includes(q.replace(/-/g, ''));
           const memoMatch = r.content?.toLowerCase().includes(q);
-          if (!nameMatch && !phoneMatch && !memoMatch) return;
+          const resolvedPath = resolveInboundPath(c);
+          const inboundMatch = resolvedPath.toLowerCase().includes(q);
+          const caseTypeMatch = c.caseType?.toLowerCase().includes(q);
+          if (!nameMatch && !phoneMatch && !memoMatch && !inboundMatch && !caseTypeMatch) return;
         }
 
         allReminders.push({ reminder: r, caseData: c });
@@ -483,7 +582,7 @@ export default function SchedulePage() {
           <Search size={16} className="absolute left-3.5 top-3 text-gray-400" />
           <input
             type="text"
-            placeholder="고객명, 연락처 또는 메모 내용으로 검색..."
+            placeholder="고객명, 연락처, 유입경로 또는 메모 내용으로 검색..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -643,7 +742,7 @@ export default function SchedulePage() {
                           </div>
                         </div>
 
-                        {/* 이름 및 연락처 */}
+                        {/* 이름 및 연락처 + 상태 + 유입경로 */}
                         <div className="flex-1 flex flex-wrap items-center gap-2">
                           <span className={`font-bold text-base text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors ${
                             isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : ''
@@ -660,7 +759,7 @@ export default function SchedulePage() {
 
                           {/* 상태 드롭다운 */}
                           <select
-                            className="text-[10px] bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="text-[10px] font-medium bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             value={item.caseData.status}
                             onChange={(e) => {
                               e.stopPropagation();
@@ -672,6 +771,41 @@ export default function SchedulePage() {
                               <option key={s} value={s}>{s}</option>
                             ))}
                           </select>
+
+                          {/* 유입 경로 뱃지 (이력 펼치지 않고도 즉시 식별) */}
+                          {(() => {
+                            const inbound = resolveInboundPath(item.caseData);
+                            const badge = getInboundBadgeStyle(inbound);
+                            if (inbound) {
+                              return (
+                                <span 
+                                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1.5 shadow-2xs ${badge.bg}`}
+                                  title={`유입 경로: ${inbound}`}
+                                >
+                                  <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
+                                  <span>{inbound}</span>
+                                </span>
+                              );
+                            }
+                            return (
+                              <span 
+                                className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700"
+                                title="유입 경로 정보 없음"
+                              >
+                                경로 미지정
+                              </span>
+                            );
+                          })()}
+
+                          {/* 사건 유형 뱃지 (있을 때만) */}
+                          {item.caseData.caseType && (
+                            <span 
+                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40"
+                              title={`사건 유형: ${item.caseData.caseType}`}
+                            >
+                              {item.caseData.caseType}
+                            </span>
+                          )}
                         </div>
 
                         {/* 수정일/등록일 (Desktop) */}
