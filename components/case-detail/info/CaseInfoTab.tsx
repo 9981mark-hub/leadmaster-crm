@@ -126,6 +126,7 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                 <CaseDetailHistory
                     c={c}
                     onUpdate={onUpdate}
+                    statusLogs={statusLogs}
                 />
             </div>
 
@@ -151,52 +152,41 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-                        {/* 좌측 폼 열: 인적사항, 직업/소득/가족, 주거 형태 */}
+                        {/* 좌측 폼 열: 1. 기본 인적사항, 2. 직업/소득/가족, 3. 주거 형태 */}
                         <div className="space-y-4">
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xs">
-                                <CaseDetailPersonalInfo
-                                    c={c}
-                                    partners={partners}
-                                    inboundPaths={inboundPaths}
-                                    onUpdate={onUpdate}
-                                    statusLogs={statusLogs}
-                                />
-                            </div>
+                            <CaseDetailPersonalInfo
+                                c={c}
+                                partners={partners}
+                                inboundPaths={inboundPaths}
+                                onUpdate={onUpdate}
+                            />
 
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xs">
-                                <CaseDetailJobFamily
-                                    c={c}
-                                    onUpdate={onUpdate}
-                                    onIncomeChange={onIncomeChange}
-                                    onJobTypeChange={onJobTypeChange}
-                                    statusLogs={statusLogs}
-                                />
-                            </div>
+                            <CaseDetailJobFamily
+                                c={c}
+                                onUpdate={onUpdate}
+                                onIncomeChange={onIncomeChange}
+                                onJobTypeChange={onJobTypeChange}
+                            />
 
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xs">
-                                <CaseDetailHousing
-                                    c={c}
-                                    onUpdate={onUpdate}
-                                />
-                            </div>
+                            <CaseDetailHousing
+                                c={c}
+                                onUpdate={onUpdate}
+                            />
                         </div>
 
-                        {/* 우측 폼 열: 채무 및 자산 관리, 과거 회생/파산 이력 */}
+                        {/* 우측 폼 열: 4. 채무 및 자산 관리, 5. 과거 회생/파산 이력 & 상태 변경 타임라인 */}
                         <div className="space-y-4">
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xs">
-                                <CaseDetailAssets
-                                    c={c}
-                                    onUpdate={onUpdate}
-                                    showToast={showToast}
-                                />
-                            </div>
+                            <CaseDetailAssets
+                                c={c}
+                                onUpdate={onUpdate}
+                                showToast={showToast}
+                            />
 
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xs">
-                                <CaseDetailHistory
-                                    c={c}
-                                    onUpdate={onUpdate}
-                                />
-                            </div>
+                            <CaseDetailHistory
+                                c={c}
+                                onUpdate={onUpdate}
+                                statusLogs={statusLogs}
+                            />
                         </div>
                     </div>
                 </div>
