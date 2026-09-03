@@ -14,10 +14,10 @@ export const CaseBriefingBanner: React.FC<CaseBriefingBannerProps> = ({
     aiSummaryText,
     showToast
 }) => {
-    // Accordion expand/collapse state (stored in localStorage)
+    // Accordion expand/collapse state (stored in localStorage, default collapsed for clean layout)
     const [isExpanded, setIsExpanded] = useState<boolean>(() => {
         const saved = localStorage.getItem('lm_briefing_expanded');
-        return saved !== null ? saved === 'true' : true; // Default expanded
+        return saved !== null ? saved === 'true' : false; // Default collapsed
     });
 
     const toggleExpanded = () => {
