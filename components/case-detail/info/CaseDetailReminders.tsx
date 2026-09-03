@@ -11,6 +11,7 @@ interface CaseDetailRemindersProps {
     onUpdateReminders: (reminders: ReminderItem[]) => void;
     onUpdateMemos: (memos: MemoItem[]) => void;
     showToast: (msg: string, type?: 'success' | 'error') => void;
+    isStacked?: boolean;
 }
 
 // Status color configurations
@@ -26,7 +27,8 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
     memos,
     onUpdateReminders,
     onUpdateMemos,
-    showToast
+    showToast,
+    isStacked = false
 }) => {
     // Reminder State
     const [remDate, setRemDate] = useState(() => {
@@ -321,7 +323,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
 
             <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
                 <h3 className="font-bold text-yellow-800 mb-2 flex items-center gap-2">📅 리마인더 및 상담 이력</h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className={isStacked ? "flex flex-col gap-4" : "grid md:grid-cols-2 gap-4"}>
                     {/* Reminder Settings */}
                     <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
                         <label className="block text-xs font-bold text-yellow-800 mb-2">다음 일정 등록 ({sortedReminders.length}/{MAX_REMINDERS})</label>
