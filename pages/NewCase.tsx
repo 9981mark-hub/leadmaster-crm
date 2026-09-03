@@ -147,37 +147,37 @@ const CompactInput = ({ label, value, onChange, onBlur, type = "text", placehold
   };
 
   return (
-    <div className="mb-2.5">
+    <div className="mb-3">
       {label && (
-        <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">
+          {label} {required && <span className="text-red-500 font-bold">*</span>}
         </label>
       )}
       <div className="relative">
         <input
           type="text"
           autoComplete="off"
-          className={`w-full px-2.5 py-1.5 bg-white dark:bg-gray-800/80 border border-gray-300 dark:border-gray-600 rounded-lg focus:bg-white dark:focus:bg-gray-800 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-xs shadow-none ${readOnly ? 'bg-gray-50 text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
+          className={`w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm font-medium shadow-none ${readOnly ? 'bg-gray-50 text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
           value={displayValue || ''}
           onChange={!readOnly ? handleInputChange : undefined}
           onBlur={onBlur}
           placeholder={placeholder}
           readOnly={readOnly}
         />
-        {suffix && <span className="absolute right-2.5 top-1.5 text-gray-400 dark:text-gray-400 text-xs font-medium">{suffix}</span>}
+        {suffix && <span className="absolute right-3 top-2.5 text-gray-400 dark:text-gray-400 text-xs font-bold">{suffix}</span>}
       </div>
     </div>
   );
 };
 
 const CompactSelect = ({ label, value, onChange, options, isMulti = false, required = false }: any) => (
-  <div className="mb-2.5">
+  <div className="mb-3">
     {label && (
-      <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
+      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">
+        {label} {required && <span className="text-red-500 font-bold">*</span>}
       </label>
     )}
-    <div className="flex gap-1 flex-wrap">
+    <div className="flex gap-1.5 flex-wrap">
       {options.map((opt: string) => {
         const isSelected = isMulti ? value?.includes(opt) : value === opt;
         return (
@@ -185,10 +185,10 @@ const CompactSelect = ({ label, value, onChange, options, isMulti = false, requi
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`flex-1 whitespace-nowrap transition-all duration-150 border px-1.5 py-1 text-xs tracking-tight rounded-md font-medium ${
+            className={`flex-1 whitespace-nowrap transition-all duration-150 border px-2 py-1.5 text-xs tracking-tight rounded-lg font-semibold ${
               isSelected 
                 ? 'bg-blue-600 text-white border-blue-600 shadow-xs' 
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
             }`}
           >
             {opt}
@@ -843,263 +843,281 @@ export default function NewCase() {
           {/* ========================================================= */}
           <div className="col-span-12 lg:col-span-4 space-y-4">
 
-            {/* Card 1-1: 기본 정보 & 접수 */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs p-4">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2.5 mb-3">
-                <div className="flex items-center gap-1.5 text-gray-800 dark:text-gray-100 font-bold text-xs">
-                  <User size={15} className="text-blue-600 dark:text-blue-400" />
-                  <span>1. 기본 인적사항 및 접수</span>
+            {/* Card 1-1: 기본 정보 & 접수 (BLUE IDENTITY) */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-blue-200/90 dark:border-blue-900/60 shadow-xs overflow-hidden">
+              {/* 컬러 헤더 밴드 */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50/40 dark:from-blue-950/50 dark:to-indigo-950/30 px-4 py-2.5 border-b border-blue-200 dark:border-blue-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                    1
+                  </span>
+                  <h2 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
+                    기본 인적사항 및 접수
+                  </h2>
                 </div>
-                <span className="text-[11px] text-gray-400">필수 항목 *</span>
+                <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/50 px-2 py-0.5 rounded">
+                  필수 항목 *
+                </span>
               </div>
 
-              {/* 거래처 & 유입경로 (인라인 2열) */}
-              <div className="grid grid-cols-2 gap-2.5 mb-2.5">
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">거래처 (법률사무소)</label>
-                  <div className="relative">
+              {/* 카드 본문 */}
+              <div className="p-4 space-y-3">
+                {/* 거래처 & 유입경로 (인라인 2열) */}
+                <div className="grid grid-cols-2 gap-3 mb-1">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">거래처 (법률사무소)</label>
+                    <div className="relative">
+                      <select
+                        className="w-full pl-8 pr-2.5 py-2 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm font-bold text-blue-900 dark:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={formData.partnerId}
+                        onChange={e => handleChange('partnerId', e.target.value)}
+                      >
+                        {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
+                      </select>
+                      <Building className="absolute left-2.5 top-2.5 text-blue-500" size={15} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">유입 경로</label>
                     <select
-                      className="w-full pl-7 pr-2 py-1.5 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold text-blue-900 dark:text-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      value={formData.partnerId}
-                      onChange={e => handleChange('partnerId', e.target.value)}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={formData.inboundPath}
+                      onChange={e => handleChange('inboundPath', e.target.value)}
                     >
-                      {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
+                      <option value="">선택하세요</option>
+                      {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    <Building className="absolute left-2 top-2 text-blue-500" size={13} />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">유입 경로</label>
-                  <select
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    value={formData.inboundPath}
-                    onChange={e => handleChange('inboundPath', e.target.value)}
-                  >
-                    <option value="">선택하세요</option>
-                    {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* 사건 유형 (컴팩트 4분할 버튼) */}
-              <CompactSelect
-                label="사건 유형"
-                value={formData.caseType}
-                onChange={(v: any) => handleChange('caseType', v)}
-                options={CASE_TYPES}
-              />
-
-              {/* 사전 리드 정보 배너 (있을 때만) */}
-              {formData.preInfo && (
-                <div className="mb-3 p-2 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs leading-snug">
-                  <div className="flex items-center gap-1 text-indigo-700 dark:text-indigo-400 font-bold mb-1 text-[11px]">
-                    <AlertCircle size={12} />
-                    <span>웹 사전 수집 정보</span>
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-300 space-y-0.5 text-[11px]">
-                    {formData.preInfo.split(/\s\/\s|\n/).filter((line: string) => {
-                      const lower = line.toLowerCase();
-                      return !lower.includes('[referrer]') && !lower.includes('[marketing_consent]') && !lower.includes('[third_party_consent]') && !lower.includes('[user_agent]') && line.trim() !== '';
-                    }).map((line: string, idx: number) => (
-                      <div key={idx} className="truncate">• {line.trim()}</div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 고객명 & 연락처 (2열) */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <CompactInput
-                  label="고객명"
-                  value={formData.customerName}
-                  onChange={(v: any) => handleChange('customerName', v)}
-                  placeholder="이름 입력"
-                  required={true}
-                />
-                <CompactInput
-                  label="연락처"
-                  value={formData.phone}
-                  onChange={(v: any) => handleChange('phone', v)}
-                  placeholder="010-0000-0000"
-                  isPhone={true}
-                  required={true}
-                />
-              </div>
-
-              {/* 중복 고객 경고 알림 */}
-              {duplicateCase && (
-                <div className="mb-2.5 p-2 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-xs text-red-800 dark:text-red-300 animate-pulse">
-                  <div className="font-bold flex items-center gap-1">
-                    <span>⚠️ 이미 등록된 연락처입니다!</span>
-                  </div>
-                  <div className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
-                    고객명: <b>{duplicateCase.customerName}</b> | 담당: <b>{duplicateCase.managerName}</b> | 상태: <b className="text-red-600">{duplicateCase.status}</b>
-                  </div>
-                </div>
-              )}
-
-              {/* 출생년도 & 성별 (2열) */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <CompactInput
-                  label="출생년도 (2자리)"
-                  value={formData.birth}
-                  onChange={(v: any) => handleChange('birth', v)}
-                  onBlur={handleBirthBlur}
-                  placeholder="예: 85"
-                  suffix={formData.birth.length === 4 ? "년생" : ""}
-                />
+                {/* 사건 유형 (컴팩트 4분할 버튼) */}
                 <CompactSelect
-                  label="성별"
-                  value={formData.gender}
-                  onChange={(v: any) => handleChange('gender', v)}
-                  options={['남', '여']}
+                  label="사건 유형"
+                  value={formData.caseType}
+                  onChange={(v: any) => handleChange('caseType', v)}
+                  options={CASE_TYPES}
+                />
+
+                {/* 사전 리드 정보 배너 (있을 때만) */}
+                {formData.preInfo && (
+                  <div className="mb-3 p-2.5 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs leading-snug">
+                    <div className="flex items-center gap-1.5 text-indigo-700 dark:text-indigo-400 font-bold mb-1 text-xs">
+                      <AlertCircle size={13} />
+                      <span>웹 사전 수집 정보</span>
+                    </div>
+                    <div className="text-gray-700 dark:text-gray-300 space-y-0.5 text-xs">
+                      {formData.preInfo.split(/\s\/\s|\n/).filter((line: string) => {
+                        const lower = line.toLowerCase();
+                        return !lower.includes('[referrer]') && !lower.includes('[marketing_consent]') && !lower.includes('[third_party_consent]') && !lower.includes('[user_agent]') && line.trim() !== '';
+                      }).map((line: string, idx: number) => (
+                        <div key={idx} className="truncate">• {line.trim()}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 고객명 & 연락처 (2열) */}
+                <div className="grid grid-cols-2 gap-3">
+                  <CompactInput
+                    label="고객명"
+                    value={formData.customerName}
+                    onChange={(v: any) => handleChange('customerName', v)}
+                    placeholder="이름 입력"
+                    required={true}
+                  />
+                  <CompactInput
+                    label="연락처"
+                    value={formData.phone}
+                    onChange={(v: any) => handleChange('phone', v)}
+                    placeholder="010-0000-0000"
+                    isPhone={true}
+                    required={true}
+                  />
+                </div>
+
+                {/* 중복 고객 경고 알림 */}
+                {duplicateCase && (
+                  <div className="mb-2.5 p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-800 dark:text-red-300 animate-pulse">
+                    <div className="font-bold flex items-center gap-1">
+                      <span>⚠️ 이미 등록된 연락처입니다!</span>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      고객명: <b>{duplicateCase.customerName}</b> | 담당: <b>{duplicateCase.managerName}</b> | 상태: <b className="text-red-600">{duplicateCase.status}</b>
+                    </div>
+                  </div>
+                )}
+
+                {/* 출생년도 & 성별 (2열) */}
+                <div className="grid grid-cols-2 gap-3">
+                  <CompactInput
+                    label="출생년도 (2자리)"
+                    value={formData.birth}
+                    onChange={(v: any) => handleChange('birth', v)}
+                    onBlur={handleBirthBlur}
+                    placeholder="예: 85"
+                    suffix={formData.birth.length === 4 ? "년생" : ""}
+                  />
+                  <CompactSelect
+                    label="성별"
+                    value={formData.gender}
+                    onChange={(v: any) => handleChange('gender', v)}
+                    options={['남', '여']}
+                  />
+                </div>
+
+                {/* 거주지역 */}
+                <CompactInput
+                  label="거주지역 (관할법원 연계)"
+                  value={formData.region}
+                  onChange={(v: any) => handleChange('region', v)}
+                  placeholder="예: 서울 강남 / 수원 팔달"
                 />
               </div>
-
-              {/* 거주지역 */}
-              <CompactInput
-                label="거주지역 (관할법원 연계)"
-                value={formData.region}
-                onChange={(v: any) => handleChange('region', v)}
-                placeholder="예: 서울 강남 / 수원 팔달"
-              />
             </div>
 
-            {/* Card 1-2: 직업 / 소득 / 가족 */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs p-4">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2.5 mb-3">
-                <div className="flex items-center gap-1.5 text-gray-800 dark:text-gray-100 font-bold text-xs">
-                  <Briefcase size={15} className="text-emerald-600 dark:text-emerald-400" />
-                  <span>2. 직업 · 소득 및 부양가족</span>
+            {/* Card 1-2: 직업 / 소득 / 가족 (EMERALD IDENTITY) */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-emerald-200/90 dark:border-emerald-900/60 shadow-xs overflow-hidden">
+              {/* 컬러 헤더 밴드 */}
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50/40 dark:from-emerald-950/50 dark:to-teal-950/30 px-4 py-2.5 border-b border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                    2
+                  </span>
+                  <h2 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
+                    직업 · 소득 및 부양가족
+                  </h2>
                 </div>
                 {formData.incomeNet > 0 && (
-                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                  <span className="text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/50 px-2 py-0.5 rounded font-bold">
                     월 소득: {formData.incomeNet.toLocaleString()}만원
                   </span>
                 )}
               </div>
 
-              {/* 직업 복수선택 */}
-              <CompactSelect
-                label="직업 (복수선택 가능)"
-                value={formData.jobTypes}
-                onChange={handleJobTypeChange}
-                options={JOB_TYPES}
-                isMulti={true}
-              />
+              {/* 카드 본문 */}
+              <div className="p-4 space-y-3">
+                {/* 직업 복수선택 */}
+                <CompactSelect
+                  label="직업 형태 (복수선택 가능)"
+                  value={formData.jobTypes}
+                  onChange={handleJobTypeChange}
+                  options={JOB_TYPES}
+                  isMulti={true}
+                />
 
-              {/* 직업별 소득 인풋 (조건부) */}
-              {(formData.jobTypes?.includes('직장인') ||
-                formData.jobTypes?.includes('개인사업자') ||
-                formData.jobTypes?.includes('법인사업자') ||
-                formData.jobTypes?.includes('프리랜서')) && (
-                <div className="p-2.5 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 rounded-lg mb-2.5 space-y-2">
-                  {formData.jobTypes?.includes('직장인') && (
-                    <CompactInput
-                      label="직장인 월수입"
-                      value={formData.incomeDetails?.salary}
-                      onChange={(v: any) => handleIncomeChange('salary', v)}
-                      type="number"
-                      suffix="만원"
-                      isCurrency={true}
-                      placeholder="급여 실수령액"
-                    />
-                  )}
-                  {(formData.jobTypes?.includes('개인사업자') || formData.jobTypes?.includes('법인사업자')) && (
-                    <CompactInput
-                      label="사업자 월수입"
-                      value={formData.incomeDetails?.business}
-                      onChange={(v: any) => handleIncomeChange('business', v)}
-                      type="number"
-                      suffix="만원"
-                      isCurrency={true}
-                      placeholder="사업 순소득"
-                    />
-                  )}
-                  {formData.jobTypes?.includes('프리랜서') && (
-                    <CompactInput
-                      label="프리랜서 월수입"
-                      value={formData.incomeDetails?.freelance}
-                      onChange={(v: any) => handleIncomeChange('freelance', v)}
-                      type="number"
-                      suffix="만원"
-                      isCurrency={true}
-                      placeholder="프리랜서 소득"
-                    />
-                  )}
+                {/* 직업별 소득 인풋 (조건부) */}
+                {(formData.jobTypes?.includes('직장인') ||
+                  formData.jobTypes?.includes('개인사업자') ||
+                  formData.jobTypes?.includes('법인사업자') ||
+                  formData.jobTypes?.includes('프리랜서')) && (
+                  <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl mb-2.5 space-y-2.5">
+                    {formData.jobTypes?.includes('직장인') && (
+                      <CompactInput
+                        label="직장인 월수입"
+                        value={formData.incomeDetails?.salary}
+                        onChange={(v: any) => handleIncomeChange('salary', v)}
+                        type="number"
+                        suffix="만원"
+                        isCurrency={true}
+                        placeholder="급여 실수령액"
+                      />
+                    )}
+                    {(formData.jobTypes?.includes('개인사업자') || formData.jobTypes?.includes('법인사업자')) && (
+                      <CompactInput
+                        label="사업자 월수입"
+                        value={formData.incomeDetails?.business}
+                        onChange={(v: any) => handleIncomeChange('business', v)}
+                        type="number"
+                        suffix="만원"
+                        isCurrency={true}
+                        placeholder="사업 순소득"
+                      />
+                    )}
+                    {formData.jobTypes?.includes('프리랜서') && (
+                      <CompactInput
+                        label="프리랜서 월수입"
+                        value={formData.incomeDetails?.freelance}
+                        onChange={(v: any) => handleIncomeChange('freelance', v)}
+                        type="number"
+                        suffix="만원"
+                        isCurrency={true}
+                        placeholder="프리랜서 소득"
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* 4대보험 & 결혼여부 (2열) */}
+                <div className="grid grid-cols-2 gap-3">
+                  <CompactSelect
+                    label="4대보험"
+                    value={formData.insurance4}
+                    onChange={(v: any) => handleChange('insurance4', v)}
+                    options={['가입', '미가입']}
+                  />
+                  <CompactSelect
+                    label="결혼여부"
+                    value={formData.maritalStatus}
+                    onChange={(v: any) => handleChange('maritalStatus', v)}
+                    options={['미혼', '기혼', '이혼']}
+                  />
                 </div>
-              )}
 
-              {/* 4대보험 & 결혼여부 (2열) */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <CompactSelect
-                  label="4대보험"
-                  value={formData.insurance4}
-                  onChange={(v: any) => handleChange('insurance4', v)}
-                  options={['가입', '미가입']}
-                />
-                <CompactSelect
-                  label="결혼여부"
-                  value={formData.maritalStatus}
-                  onChange={(v: any) => handleChange('maritalStatus', v)}
-                  options={['미혼', '기혼', '이혼']}
-                />
+                {/* 미성년 자녀 수 (기혼/이혼 시) */}
+                {['기혼', '이혼'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
+                  <div className="mb-3">
+                    <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">미성년 자녀 수</label>
+                    <div className="flex gap-1 flex-wrap">
+                      {[0, 1, 2, 3, 4, 5, 6, 7].map(num => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => handleChange('childrenCount', num)}
+                          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                            formData.childrenCount === num
+                              ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300'
+                          }`}
+                        >
+                          {num}명
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 회생/파산/회복 과거 이력 */}
+                {isFieldVisible('history') && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">회생 / 파산 / 회복 이력</label>
+                    <div className="grid grid-cols-4 gap-1.5 mb-2">
+                      {HISTORY_TYPES.map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => handleChange('historyType', opt)}
+                          className={`py-1.5 text-xs rounded-lg font-semibold border transition-all ${
+                            formData.historyType === opt
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                    {formData.historyType && formData.historyType !== '없음' && (
+                      <textarea
+                        className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 h-16 leading-snug"
+                        value={formData.historyMemo}
+                        onChange={e => handleChange('historyMemo', e.target.value)}
+                        placeholder="이력 상세 내용을 입력하세요. (사건번호, 법원, 면책여부 등)"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
-
-              {/* 미성년 자녀 수 (기혼/이혼 시) */}
-              {['기혼', '이혼'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
-                <div className="mb-2.5">
-                  <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">미성년 자녀 수</label>
-                  <div className="flex gap-1 flex-wrap">
-                    {[0, 1, 2, 3, 4, 5, 6, 7].map(num => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => handleChange('childrenCount', num)}
-                        className={`flex-1 py-1 rounded-md text-xs font-bold transition-all border ${
-                          formData.childrenCount === num
-                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
-                        }`}
-                      >
-                        {num}명
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 회생/파산/회복 과거 이력 */}
-              {isFieldVisible('history') && (
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">회생/파산/회복 이력</label>
-                  <div className="grid grid-cols-4 gap-1 mb-2">
-                    {HISTORY_TYPES.map(opt => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => handleChange('historyType', opt)}
-                        className={`py-1 text-xs rounded-md font-medium border transition-all ${
-                          formData.historyType === opt
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                  {formData.historyType && formData.historyType !== '없음' && (
-                    <textarea
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 h-16"
-                      value={formData.historyMemo}
-                      onChange={e => handleChange('historyMemo', e.target.value)}
-                      placeholder="이력 상세 내용을 입력하세요. (사건번호, 법원, 면책여부 등)"
-                    />
-                  )}
-                </div>
-              )}
             </div>
 
           </div>
@@ -1109,94 +1127,115 @@ export default function NewCase() {
           {/* ========================================================= */}
           <div className="col-span-12 lg:col-span-4 space-y-4">
 
-            {/* Card 2-1: 주거 상황 */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs p-4">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2.5 mb-3">
-                <div className="flex items-center gap-1.5 text-gray-800 dark:text-gray-100 font-bold text-xs">
-                  <Home size={15} className="text-amber-600 dark:text-amber-400" />
-                  <span>3. 주거 형태 및 주거비</span>
+            {/* Card 2-1: 주거 상황 (AMBER IDENTITY) */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-amber-200/90 dark:border-amber-900/60 shadow-xs overflow-hidden">
+              {/* 컬러 헤더 밴드 */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50/40 dark:from-amber-950/50 dark:to-orange-950/30 px-4 py-2.5 border-b border-amber-200 dark:border-amber-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-amber-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                    3
+                  </span>
+                  <h2 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
+                    주거 형태 및 주거비
+                  </h2>
                 </div>
-                <span className="text-[11px] text-gray-400">거주형태별 맞춤항목</span>
+                <span className="text-[11px] text-amber-800 dark:text-amber-300 font-bold bg-amber-100/80 dark:bg-amber-900/50 px-2 py-0.5 rounded">
+                  {formData.housingType} {formData.housingDetail && `(${formData.housingDetail})`}
+                </span>
               </div>
 
-              {/* 거주형태 & 주거타입 */}
-              <div className="grid grid-cols-2 gap-2.5 mb-2.5">
-                <CompactSelect
-                  label="거주형태"
-                  value={formData.housingType}
-                  onChange={(v: any) => handleChange('housingType', v)}
-                  options={HOUSING_TYPES}
-                />
-                <CompactSelect
-                  label="주거타입"
-                  value={formData.housingDetail}
-                  onChange={(v: any) => handleChange('housingDetail', v)}
-                  options={HOUSING_DETAILS}
-                />
-              </div>
+              {/* 카드 본문 */}
+              <div className="p-4 space-y-3">
+                {/* 거주형태 & 주거타입 */}
+                <div className="grid grid-cols-2 gap-3 mb-1">
+                  <CompactSelect
+                    label="거주형태"
+                    value={formData.housingType}
+                    onChange={(v: any) => handleChange('housingType', v)}
+                    options={HOUSING_TYPES}
+                  />
+                  <CompactSelect
+                    label="주거타입"
+                    value={formData.housingDetail}
+                    onChange={(v: any) => handleChange('housingDetail', v)}
+                    options={HOUSING_DETAILS}
+                  />
+                </div>
 
-              {/* 조건부 주거 상세 필드 */}
-              {formData.housingType === '자가' ? (
-                <div className="p-2.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-lg space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <CompactInput
-                      label="집 시세"
-                      value={formData.ownHousePrice}
-                      onChange={(v: any) => handleChange('ownHousePrice', v)}
-                      type="number"
-                      suffix="만원"
-                      isCurrency={true}
-                      placeholder="시세(만)"
-                    />
-                    <CompactInput
-                      label="집 담보 대출"
-                      value={formData.ownHouseLoan}
-                      onChange={(v: any) => handleChange('ownHouseLoan', v)}
-                      type="number"
-                      suffix="만원"
-                      isCurrency={true}
-                      placeholder="대출금(만)"
-                    />
-                  </div>
-                  <CompactSelect
-                    label="집 명의자"
-                    value={formData.ownHouseOwner}
-                    onChange={(v: any) => handleChange('ownHouseOwner', v)}
-                    options={['본인', '배우자', '배우자 공동명의']}
-                  />
-                </div>
-              ) : formData.housingType === '무상거주' ? (
-                <div className="p-2.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-lg">
-                  <CompactSelect
-                    label="집 명의자"
-                    value={formData.freeHousingOwner}
-                    onChange={(v: any) => handleChange('freeHousingOwner', v)}
-                    options={FREE_HOUSING_OWNERS}
-                  />
-                </div>
-              ) : (
-                <div className="p-2.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-lg space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <CompactInput
-                      label="보증금"
-                      value={formData.deposit}
-                      onChange={(v: any) => handleChange('deposit', v)}
-                      type="number"
-                      suffix="만원"
-                      isCurrency={true}
-                      placeholder="보증금(만)"
-                    />
-                    {isFieldVisible('depositLoan') ? (
+                {/* 조건부 주거 상세 필드 */}
+                {formData.housingType === '자가' ? (
+                  <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl space-y-2.5">
+                    <div className="grid grid-cols-2 gap-2.5">
                       <CompactInput
-                        label="보증금 대출"
-                        value={formData.depositLoanAmount}
-                        onChange={(v: any) => handleChange('depositLoanAmount', v)}
+                        label="집 시세"
+                        value={formData.ownHousePrice}
+                        onChange={(v: any) => handleChange('ownHousePrice', v)}
+                        type="number"
+                        suffix="만원"
+                        isCurrency={true}
+                        placeholder="시세(만)"
+                      />
+                      <CompactInput
+                        label="집 담보 대출"
+                        value={formData.ownHouseLoan}
+                        onChange={(v: any) => handleChange('ownHouseLoan', v)}
                         type="number"
                         suffix="만원"
                         isCurrency={true}
                         placeholder="대출금(만)"
                       />
-                    ) : (
+                    </div>
+                    <CompactSelect
+                      label="집 명의자"
+                      value={formData.ownHouseOwner}
+                      onChange={(v: any) => handleChange('ownHouseOwner', v)}
+                      options={['본인', '배우자', '배우자 공동명의']}
+                    />
+                  </div>
+                ) : formData.housingType === '무상거주' ? (
+                  <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl">
+                    <CompactSelect
+                      label="집 명의자"
+                      value={formData.freeHousingOwner}
+                      onChange={(v: any) => handleChange('freeHousingOwner', v)}
+                      options={FREE_HOUSING_OWNERS}
+                    />
+                  </div>
+                ) : (
+                  <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl space-y-2.5">
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <CompactInput
+                        label="보증금"
+                        value={formData.deposit}
+                        onChange={(v: any) => handleChange('deposit', v)}
+                        type="number"
+                        suffix="만원"
+                        isCurrency={true}
+                        placeholder="보증금(만)"
+                      />
+                      {isFieldVisible('depositLoan') ? (
+                        <CompactInput
+                          label="보증금 대출"
+                          value={formData.depositLoanAmount}
+                          onChange={(v: any) => handleChange('depositLoanAmount', v)}
+                          type="number"
+                          suffix="만원"
+                          isCurrency={true}
+                          placeholder="대출금(만)"
+                        />
+                      ) : (
+                        <CompactInput
+                          label="월세"
+                          value={formData.rent}
+                          onChange={(v: any) => handleChange('rent', v)}
+                          type="number"
+                          suffix="만원"
+                          isCurrency={true}
+                          placeholder="월세(만)"
+                        />
+                      )}
+                    </div>
+                    {isFieldVisible('depositLoan') && (
                       <CompactInput
                         label="월세"
                         value={formData.rent}
@@ -1207,212 +1246,212 @@ export default function NewCase() {
                         placeholder="월세(만)"
                       />
                     )}
-                  </div>
-                  {isFieldVisible('depositLoan') && (
-                    <CompactInput
-                      label="월세"
-                      value={formData.rent}
-                      onChange={(v: any) => handleChange('rent', v)}
-                      type="number"
-                      suffix="만원"
-                      isCurrency={true}
-                      placeholder="월세(만)"
+                    <CompactSelect
+                      label="임대차 계약인"
+                      value={formData.rentContractor}
+                      onChange={(v: any) => handleChange('rentContractor', v)}
+                      options={RENT_CONTRACTORS}
                     />
-                  )}
-                  <CompactSelect
-                    label="임대차 계약인"
-                    value={formData.rentContractor}
-                    onChange={(v: any) => handleChange('rentContractor', v)}
-                    options={RENT_CONTRACTORS}
-                  />
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Card 2-2: 자산 / 부채 관리 */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs p-4">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2.5 mb-3">
-                <div className="flex items-center gap-1.5 text-gray-800 dark:text-gray-100 font-bold text-xs">
-                  <Wallet size={15} className="text-rose-600 dark:text-rose-400" />
-                  <span>4. 자산 및 부채 관리</span>
+            {/* Card 2-2: 자산 / 부채 관리 (ROSE IDENTITY) */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-rose-200/90 dark:border-rose-900/60 shadow-xs overflow-hidden">
+              {/* 컬러 헤더 밴드 */}
+              <div className="bg-gradient-to-r from-rose-50 to-pink-50/40 dark:from-rose-950/50 dark:to-pink-950/30 px-4 py-2.5 border-b border-rose-200 dark:border-rose-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-rose-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                    4
+                  </span>
+                  <h2 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
+                    자산 및 부채 관리
+                  </h2>
                 </div>
-                <span className="text-[11px] text-gray-400">모든 기능 100% 동일 제공</span>
+                <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300 bg-rose-100/80 dark:bg-rose-900/50 px-2 py-0.5 rounded">
+                  대출 {formData.creditLoan.length}건 | 자산 {formData.assets.length}건
+                </span>
               </div>
 
-              {/* 4-A: 자산 목록 (본인/배우자) */}
-              {isFieldVisible('assets') && (
-                <div className="mb-4">
+              {/* 카드 본문 */}
+              <div className="p-4 space-y-3.5">
+                {/* 4-A: 자산 목록 (본인/배우자) */}
+                {isFieldVisible('assets') && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                        <span>🚗 보유 자산 목록</span>
+                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full text-[11px] font-bold">
+                          {formData.assets.length}건
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* 등록된 자산 목록 */}
+                    <div className="space-y-1.5 mb-2.5 max-h-40 overflow-y-auto pr-1">
+                      {formData.assets.length === 0 && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2.5 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                          등록된 자산이 없습니다.
+                        </p>
+                      )}
+                      {formData.assets.map((asset: AssetItem) => (
+                        <div key={asset.id} className="bg-gray-50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-center text-xs">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text-gray-800 dark:text-gray-200 truncate">
+                              <span className="text-blue-600 dark:text-blue-400 font-bold mr-1">[{asset.owner}]</span>
+                              <span>{asset.type}</span>
+                              {asset.desc && <span className="text-gray-500 dark:text-gray-400 font-normal ml-1">({asset.desc})</span>}
+                            </div>
+                            <div className="flex gap-2.5 text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                              <span>시세: <b>{asset.amount > 0 ? `${asset.amount.toLocaleString()}만` : '0'}</b></span>
+                              {asset.loanAmount > 0 && <span className="text-rose-600 dark:text-rose-400">담보: <b>{asset.loanAmount.toLocaleString()}만</b></span>}
+                              {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-amber-600">전세: <b>{asset.rentDeposit.toLocaleString()}만</b></span>}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAsset(asset.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                            title="삭제"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 자산 빠른 추가 폼 (컴팩트 압축) */}
+                    <div className="p-3 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          className="px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
+                          value={newAsset.owner}
+                          onChange={e => setNewAsset({ ...newAsset, owner: e.target.value as any })}
+                        >
+                          {ASSET_OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                        <select
+                          className="px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
+                          value={newAsset.type}
+                          onChange={e => setNewAsset({ ...newAsset, type: e.target.value })}
+                        >
+                          {ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          placeholder="시세 (만원)"
+                          className="px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
+                          value={newAsset.amount || ''}
+                          onChange={e => setNewAsset({ ...newAsset, amount: Number(e.target.value) })}
+                        />
+                        <input
+                          type="number"
+                          placeholder="담보대출 (만원)"
+                          className="px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
+                          value={newAsset.loanAmount || ''}
+                          onChange={e => setNewAsset({ ...newAsset, loanAmount: Number(e.target.value) })}
+                        />
+                      </div>
+
+                      {['부동산', '토지'].includes(newAsset.type || '') && (
+                        <input
+                          type="number"
+                          placeholder="전세금액 (만원)"
+                          className="w-full px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
+                          value={newAsset.rentDeposit || ''}
+                          onChange={e => setNewAsset({ ...newAsset, rentDeposit: Number(e.target.value) })}
+                        />
+                      )}
+
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="상세 내용 (차종, 지목 등)"
+                          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
+                          value={newAsset.desc || ''}
+                          onChange={e => setNewAsset({ ...newAsset, desc: e.target.value })}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddAsset}
+                          className="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
+                        >
+                          <Plus size={13} />
+                          <span>자산 추가</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4-B: 신용대출 목록 */}
+                <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                      <span>🚗 보유 자산 목록</span>
-                      <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-1.5 py-0.2 rounded text-[10px] font-bold">
-                        {formData.assets.length}건
+                    <label className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                      <span>💳 신용대출 내역</span>
+                      <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-2 py-0.5 rounded-full text-[11px] font-bold">
+                        {formData.creditLoan.length}건
                       </span>
                     </label>
                   </div>
 
-                  {/* 등록된 자산 목록 */}
-                  <div className="space-y-1.5 mb-2.5 max-h-40 overflow-y-auto pr-1">
-                    {formData.assets.length === 0 && (
-                      <p className="text-[11px] text-gray-400 dark:text-gray-500 text-center py-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
-                        등록된 자산이 없습니다.
+                  {/* 등록된 신용대출 리스트 */}
+                  <div className="space-y-1.5 mb-2.5 max-h-36 overflow-y-auto pr-1">
+                    {formData.creditLoan.length === 0 && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2.5 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                        등록된 신용대출이 없습니다.
                       </p>
                     )}
-                    {formData.assets.map((asset: AssetItem) => (
-                      <div key={asset.id} className="bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center text-xs">
+                    {formData.creditLoan.map((loan: CreditLoanItem) => (
+                      <div key={loan.id} className="bg-rose-50/50 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-200/70 dark:border-rose-900/40 flex justify-between items-center text-xs">
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-gray-800 dark:text-gray-200 truncate">
-                            <span className="text-blue-600 dark:text-blue-400 font-bold mr-1">[{asset.owner}]</span>
-                            <span>{asset.type}</span>
-                            {asset.desc && <span className="text-gray-500 dark:text-gray-400 font-normal ml-1">({asset.desc})</span>}
-                          </div>
-                          <div className="flex gap-2 text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
-                            <span>시세: <b>{asset.amount > 0 ? `${asset.amount.toLocaleString()}만` : '0'}</b></span>
-                            {asset.loanAmount > 0 && <span className="text-rose-600 dark:text-rose-400">담보: <b>{asset.loanAmount.toLocaleString()}만</b></span>}
-                            {asset.rentDeposit && asset.rentDeposit > 0 && <span className="text-amber-600">전세: <b>{asset.rentDeposit.toLocaleString()}만</b></span>}
-                          </div>
+                          <span className="font-bold text-gray-900 dark:text-gray-100">{loan.desc || '신용대출'}</span>
+                          <span className="text-rose-600 dark:text-rose-400 font-extrabold ml-2 text-xs">
+                            {loan.amount > 0 ? `${loan.amount.toLocaleString()}만원` : '0원'}
+                          </span>
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleRemoveAsset(asset.id)}
-                          className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+                          onClick={() => handleRemoveCreditLoan(loan.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
                           title="삭제"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     ))}
                   </div>
 
-                  {/* 자산 빠른 추가 폼 (컴팩트 압축) */}
-                  <div className="p-2.5 bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <select
-                        className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                        value={newAsset.owner}
-                        onChange={e => setNewAsset({ ...newAsset, owner: e.target.value as any })}
-                      >
-                        {ASSET_OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                      <select
-                        className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                        value={newAsset.type}
-                        onChange={e => setNewAsset({ ...newAsset, type: e.target.value })}
-                      >
-                        {ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="number"
-                        placeholder="시세 (만원)"
-                        className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                        value={newAsset.amount || ''}
-                        onChange={e => setNewAsset({ ...newAsset, amount: Number(e.target.value) })}
-                      />
-                      <input
-                        type="number"
-                        placeholder="담보대출 (만원)"
-                        className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                        value={newAsset.loanAmount || ''}
-                        onChange={e => setNewAsset({ ...newAsset, loanAmount: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    {['부동산', '토지'].includes(newAsset.type || '') && (
-                      <input
-                        type="number"
-                        placeholder="전세금액 (만원)"
-                        className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                        value={newAsset.rentDeposit || ''}
-                        onChange={e => setNewAsset({ ...newAsset, rentDeposit: Number(e.target.value) })}
-                      />
-                    )}
-
-                    <div className="flex gap-1.5">
-                      <input
-                        type="text"
-                        placeholder="상세 내용 (차종, 지목 등)"
-                        className="flex-1 px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                        value={newAsset.desc || ''}
-                        onChange={e => setNewAsset({ ...newAsset, desc: e.target.value })}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddAsset}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-md text-xs flex items-center gap-1 shrink-0"
-                      >
-                        <Plus size={13} />
-                        <span>자산 추가</span>
-                      </button>
-                    </div>
+                  {/* 신용대출 인라인 추가 바 */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="대출 내용 (예: 햇살론, 카카오)"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
+                      value={newCreditLoan.desc || ''}
+                      onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="금액(만원)"
+                      className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none text-right"
+                      value={newCreditLoan.amount || ''}
+                      onChange={e => setNewCreditLoan({ ...newCreditLoan, amount: Number(e.target.value) })}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCreditLoan}
+                      className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
+                    >
+                      <Plus size={13} />
+                      <span>추가</span>
+                    </button>
                   </div>
                 </div>
-              )}
-
-              {/* 4-B: 신용대출 목록 */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                    <span>💳 신용대출 내역</span>
-                    <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-1.5 py-0.2 rounded text-[10px] font-bold">
-                      {(formData.creditLoan || []).length}건
-                    </span>
-                  </label>
-                </div>
-
-                {/* 등록된 신용대출 목록 */}
-                <div className="space-y-1.5 mb-2.5 max-h-36 overflow-y-auto pr-1">
-                  {(formData.creditLoan || []).length === 0 && (
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 text-center py-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
-                      등록된 신용대출이 없습니다.
-                    </p>
-                  )}
-                  {formData.creditLoan?.map((loan: CreditLoanItem) => (
-                    <div key={loan.id} className="bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center text-xs">
-                      <div className="font-semibold text-gray-800 dark:text-gray-200">
-                        <span>{loan.desc}</span>
-                        <span className="text-rose-600 dark:text-rose-400 font-bold ml-2">{loan.amount.toLocaleString()}만원</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCreditLoan(loan.id)}
-                        className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
-                        title="삭제"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 신용대출 인라인 추가 바 */}
-                <div className="flex gap-1.5 p-2 bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <input
-                    type="text"
-                    placeholder="대출 내용 (예: 햇살론, 카카오)"
-                    className="flex-1 px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                    value={newCreditLoan.desc || ''}
-                    onChange={e => setNewCreditLoan({ ...newCreditLoan, desc: e.target.value })}
-                  />
-                  <input
-                    type="number"
-                    placeholder="금액(만원)"
-                    className="w-24 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none"
-                    value={newCreditLoan.amount || ''}
-                    onChange={e => setNewCreditLoan({ ...newCreditLoan, amount: Number(e.target.value) })}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCreditLoan}
-                    className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-md text-xs flex items-center gap-1 shrink-0"
-                  >
-                    <Plus size={13} />
-                    <span>추가</span>
-                  </button>
-                </div>
-              </div>
 
               {/* 담보대출 자동 집계 스트링 */}
               <div className="mb-3 p-2 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-lg text-xs">
@@ -1456,84 +1495,95 @@ export default function NewCase() {
                 placeholder="월 상환금액(만)"
               />
             </div>
-
           </div>
+
+        </div>
 
           {/* ========================================================= */}
           {/* COLUMN 3: 실시간 상담 메모 & 등록 콕핏 (Col 3: 4/12, Sticky) */}
           {/* ========================================================= */}
           <div className="col-span-12 lg:col-span-4 space-y-4 lg:sticky lg:top-16">
 
-            {/* Card 3-1: 실시간 통화 메모장 (상담 특이사항) */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs p-4 flex flex-col">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2.5 mb-2.5">
-                <div className="flex items-center gap-1.5 text-gray-800 dark:text-gray-100 font-bold text-xs">
-                  <MessageSquare size={15} className="text-blue-600 dark:text-blue-400" />
-                  <span>5. 실시간 상담 메모 (특이사항)</span>
+            {/* Card 3-1: 실시간 통화 메모장 (상담 특이사항) (INDIGO IDENTITY) */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-indigo-200/90 dark:border-indigo-900/60 shadow-xs overflow-hidden flex flex-col">
+              {/* 컬러 헤더 밴드 */}
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50/40 dark:from-indigo-950/50 dark:to-purple-950/30 px-4 py-2.5 border-b border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                    5
+                  </span>
+                  <h2 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
+                    실시간 상담 메모 (특이사항)
+                  </h2>
                 </div>
-                <span className="text-[10px] text-gray-400">통화 중 스크롤 없이 즉시 기록</span>
+                <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300">
+                  Ctrl+Enter 즉시 등록
+                </span>
               </div>
 
-              {/* 빠른 태그 클릭 삽입 (자주 쓰는 상담 키워드) */}
-              <div className="mb-2">
-                <div className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 mb-1 font-medium">
-                  <Tag size={10} />
-                  <span>빠른 문구 삽입 (클릭 시 자동 추가):</span>
+              {/* 카드 본문 */}
+              <div className="p-4 space-y-3">
+                {/* 빠른 태그 클릭 삽입 (자주 쓰는 상담 키워드) */}
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 mb-1.5 font-bold">
+                    <Tag size={12} className="text-indigo-500" />
+                    <span>빠른 문구 삽입 (클릭 시 자동 추가):</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      '급여압류 위기',
+                      '배우자 모름 (우편물주의)',
+                      '독촉 심함',
+                      '서류안내 완료',
+                      '재통화 요청',
+                      '타 사무소 취소'
+                    ].map(tag => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleAddMemoTag(tag)}
+                        className="px-2.5 py-1 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 border border-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors"
+                      >
+                        +{tag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {[
-                    '급여압류 위기',
-                    '배우자 모름 (우편물주의)',
-                    '독촉 심함',
-                    '서류안내 완료',
-                    '재통화 요청',
-                    '타 사무소 취소'
-                  ].map(tag => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => handleAddMemoTag(tag)}
-                      className="px-2 py-0.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded text-[11px] transition-colors"
-                    >
-                      +{tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* 대형 텍스트에어리어 (통화하면서 자유롭게 작성) */}
-              <div className="mb-3">
-                <textarea
-                  className="w-full h-72 lg:h-[340px] p-3 bg-gray-50/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-xs leading-relaxed text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 focus:outline-none transition-all resize-none shadow-inner"
-                  value={formData.specialMemo}
-                  onChange={e => handleChange('specialMemo', e.target.value)}
-                  placeholder="고객과의 통화 상담 내용을 실시간으로 입력하세요.
+                {/* 대형 텍스트에어리어 (통화하면서 시원하게 작성) */}
+                <div>
+                  <textarea
+                    className="w-full h-72 lg:h-[340px] p-3.5 bg-gray-50/50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-xl text-sm leading-relaxed text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 focus:outline-none transition-all resize-none shadow-inner font-medium"
+                    value={formData.specialMemo}
+                    onChange={e => handleChange('specialMemo', e.target.value)}
+                    placeholder="고객과의 통화 상담 내용을 실시간으로 입력하세요.
 
 (예시)
 - 최근 3개월 카드 연체로 금융사 독촉 전화가 극심함.
 - 배우자는 채무 사실을 전혀 모르고 있어 모든 우편물 직장 수령 강력 요청.
 - 금요일 오후 3시 신분증 및 통장거래내역서 준비하여 2차 상담 진행하기로 함."
-                />
-              </div>
-
-              {/* 안내 문구 & 저장 버튼 */}
-              <div className="p-3 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 rounded-xl mb-3">
-                <div className="flex items-center gap-1.5 text-blue-800 dark:text-blue-300 text-xs font-semibold">
-                  <CheckCircle2 size={14} className="text-blue-600" />
-                  <span>상담 입력 준비 완료</span>
+                  />
                 </div>
-                <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-1">
-                  인적사항 및 상담 메모 작성이 완료되면 아래 버튼을 눌러 케이스를 정식 등록하세요.
-                </p>
-              </div>
 
-              <button
-                onClick={handleSubmit}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-500/10 text-sm flex items-center justify-center gap-2 transition-all active:scale-98"
-              >
-                <Save size={16} />
-                <span>상담 완료 및 케이스 등록</span>
-              </button>
+                {/* 안내 문구 & 저장 버튼 */}
+                <div className="p-3 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-xl">
+                  <div className="flex items-center gap-1.5 text-blue-800 dark:text-blue-300 text-xs font-bold">
+                    <CheckCircle2 size={15} className="text-blue-600" />
+                    <span>상담 입력 준비 완료</span>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 leading-snug">
+                    인적사항 및 상담 메모 작성이 완료되면 아래 버튼을 눌러 케이스를 정식 등록하세요.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleSubmit}
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-md shadow-blue-500/10 text-sm flex items-center justify-center gap-2 transition-all active:scale-98"
+                >
+                  <Save size={16} />
+                  <span>상담 완료 및 케이스 등록</span>
+                </button>
+              </div>
             </div>
 
           </div>
