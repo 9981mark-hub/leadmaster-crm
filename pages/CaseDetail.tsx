@@ -7,6 +7,7 @@ import { calculateCommission, generateAiSummary, convertToPlayableUrl, parseAiTr
 import { CommandPalette } from '../components/CommandPalette';
 // Sub-components
 import { CaseDetailHeader } from '../components/case-detail/CaseDetailHeader';
+import { CaseBriefingBanner } from '../components/case-detail/CaseBriefingBanner';
 import { CaseInfoTab } from '../components/case-detail/info/CaseInfoTab';
 import { CaseSummaryTab } from '../components/case-detail/CaseSummaryTab';
 import { CaseSettlementTab } from '../components/case-detail/CaseSettlementTab';
@@ -530,6 +531,13 @@ export default function CaseDetail() {
                     onSecondaryStatusChangeStart={handleSecondaryStatusChangeStart}
                     onTertiaryStatusChangeStart={handleTertiaryStatusChangeStart}
                     onMissedCallIncrement={handleMissedCallIncrement}
+                />
+
+                {/* [NEW] 고객 상황 및 채무 종합 브리핑 배너 (AI 요약문 우선 연동) */}
+                <CaseBriefingBanner
+                    c={c}
+                    aiSummaryText={aiSummaryText}
+                    showToast={showToast}
                 />
 
                 {/* Primary Status Modal */}

@@ -904,3 +904,140 @@ ${userSummaryPrompt}
   }
 };
 
+// ============================================
+// [NEW] 고객 상황 및 채무 종합 브리핑 파서
+// ============================================
+
+export interface CustomerBriefingData {
+  customerName: string;
+  phone: string;
+  birthYear: string;
+  gender: string;
+  region: string;
+  job: string;
+  insurance4: string;
+  maritalStatus: string;
+  childrenCount: string;
+  income: string;
+  loanMonthlyPay: string;
+  housingType: string;
+  depositRent: string;
+  assets: string;
+  creditLoan: string;
+  collateralLoan: string;
+  creditCardUse: string;
+  history: string;
+  specialMemo: string;
+  isAiSource: boolean;
+}
+
+/**
+ * AI 요약문 텍스트(우선) 또는 Case 객체(폴백)에서 18개 종합 브리핑 항목 추출
+ */
+export const extractBriefingFromSummary = (aiText: string | null | undefined, c: Case): CustomerBriefingData => {
+  const text = (aiText || c.aiSummary || '').trim();
+
+  // Helper: Extract field from text by regex patterns
+  const extractField = (patterns: RegExp[]): string | null => {
+    if (!text) return null;
+    for (const p of patterns) {
+      const match = text.match(p);
+      if (match && match[1] && match[1].trim() !== '') {
+        return match[1].trim();
+      }
+    }
+    return null;
+  };
+
+  const aiName = extractField([/(?:^|\n)[*•\-]?\s*(?:고객이름|고객명|이름)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiPhone = extractField([/(?:^|\n)[*•\-]?\s*(?:연락처|전화번호|휴대폰)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiBirth = extractField([/(?:^|\n)[*•\-]?\s*(?:출생년도|생년월일|출생|나이)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiGender = extractField([/(?:^|\n)[*•\-]?\s*(?:성별)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiRegion = extractField([/(?:^|\n)[*•\-]?\s*(?:거주지역|지역)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiJob = extractField([/(?:^|\n)[*•\-]?\s*(?:직업|직업\s*형태)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiInsurance = extractField([/(?:^|\n)[*•\-]?\s*(?:4대보험\s*가입유무|4대보험|사대보험)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiMarital = extractField([/(?:^|\n)[*•\-]?\s*(?:결혼유무|혼인여부|결혼)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiChildren = extractField([/(?:^|\n)[*•\-]?\s*(?:미성년\s*자녀\s*수|미성년\s*자녀|자녀\s*수|자녀)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiIncome = extractField([/(?:^|\n)[*•\-]?\s*(?:월\s*세후소득\s*\(실급여\)|월\s*세후소득|실급여|월소득|소득)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiLoanPay = extractField([/(?:^|\n)[*•\-]?\s*(?:월\s*대출납입금|월\s*납입금|대출납입금)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiHousing = extractField([/(?:^|\n)[*•\-]?\s*(?:거주\s*형태|거주형태)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiDepositRent = extractField([/(?:^|\n)[*•\-]?\s*(?:보증금[,\s/]*월세|보증금\s*및\s*월세|보증금)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiAssets = extractField([/(?:^|\n)[*•\-]?\s*(?:자산|보유자산)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiCreditLoan = extractField([/(?:^|\n)[*•\-]?\s*(?:신용\s*대출|신용대출)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiCollateral = extractField([/(?:^|\n)[*•\-]?\s*(?:담보\s*대출(?:\s*\(.*?\))?|담보대출)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiCard = extractField([/(?:^|\n)[*•\-]?\s*(?:신용카드\s*사용유무|신용카드|카드사용)\s*[:：]\s*([^\n\r]+)/i]);
+  const aiHistory = extractField([/(?:^|\n)[*•\-]?\s*(?:개인회생\s*[/／]\s*파산\s*[/／]\s*회복\s*이력|회생\s*[/／]\s*파산\s*이력|과거\s*이력|회생이력)\s*[:：]\s*([^\n\r]+)/i]);
+  
+  // Special memo pattern: multiline until next asterisk bullet or end
+  let aiMemo: string | null = null;
+  const memoMatch = text.match(/(?:^|\n)[*•\-]?\s*특이사항\s*[:：]\s*([\s\S]*?)(?=(?:\n[*•\-]\s*[^:\n]+[:：])|$)/i);
+  if (memoMatch && memoMatch[1] && memoMatch[1].trim() !== '') {
+    aiMemo = memoMatch[1].trim();
+  }
+
+  // Determine if source is primarily AI summary
+  const matchedCount = [
+    aiName, aiPhone, aiBirth, aiGender, aiRegion, aiJob, aiInsurance,
+    aiMarital, aiIncome, aiLoanPay, aiHousing, aiDepositRent, aiAssets, aiCreditLoan
+  ].filter(Boolean).length;
+
+  const isAiSource = matchedCount >= 3;
+
+  // Fallback generation from Case object
+  const crmBirth = c.birth ? `${normalizeBirthYear(c.birth)}년생` : '정보 없음';
+  const crmJob = c.jobTypes && c.jobTypes.length > 0 ? c.jobTypes.join(', ') : '정보 없음';
+  const crmChildren = c.childrenCount !== undefined && c.childrenCount !== null ? `${c.childrenCount}명` : '없음';
+  const crmIncome = c.incomeNet ? formatKoreanMoney(c.incomeNet) : '정보 없음';
+  const crmLoanPay = c.loanMonthlyPay ? formatKoreanMoney(c.loanMonthlyPay) : '정보 없음';
+  
+  let crmDepositRent = '정보 없음';
+  if (c.housingType === '월세') {
+    crmDepositRent = `보증금 ${formatKoreanMoney(c.deposit)}, 월세 ${formatKoreanMoney(c.rent)}`;
+  } else if (c.housingType === '전세') {
+    crmDepositRent = `전세 보증금 ${formatKoreanMoney(c.deposit)}`;
+  } else if (c.housingType === '자가') {
+    crmDepositRent = `집 시세 ${formatKoreanMoney(c.ownHousePrice || 0)}`;
+  } else if (c.housingType === '무상거주') {
+    crmDepositRent = `무상거주`;
+  }
+
+  const crmAssets = c.assets && c.assets.length > 0
+    ? c.assets.map(a => `${a.owner ? `[${a.owner}] ` : ''}${a.type}(시세 ${formatKoreanMoney(a.amount)})`).join(', ')
+    : '없음';
+
+  const crmCreditLoan = c.creditLoan && c.creditLoan.length > 0
+    ? c.creditLoan.map(l => `${l.desc || '대출'}(${formatKoreanMoney(l.amount)})`).join(', ')
+    : '없음';
+
+  const crmCollateral = getAutoCollateralString(c) || '없음';
+  const crmHistory = [c.historyType, c.historyMemo].filter(Boolean).join(' ') || '없음';
+
+  const crmMemo = c.specialMemo && c.specialMemo.length > 0
+    ? c.specialMemo.map(m => m.content).join('\n')
+    : '';
+
+  return {
+    customerName: aiName || c.customerName || '미등록',
+    phone: aiPhone || c.phone || '미등록',
+    birthYear: aiBirth || crmBirth,
+    gender: aiGender || c.gender || '정보 없음',
+    region: aiRegion || c.region || '정보 없음',
+    job: aiJob || crmJob,
+    insurance4: aiInsurance || c.insurance4 || '정보 없음',
+    maritalStatus: aiMarital || c.maritalStatus || '정보 없음',
+    childrenCount: aiChildren || crmChildren,
+    income: aiIncome || crmIncome,
+    loanMonthlyPay: aiLoanPay || crmLoanPay,
+    housingType: aiHousing || c.housingType || '정보 없음',
+    depositRent: aiDepositRent || crmDepositRent,
+    assets: aiAssets || crmAssets,
+    creditLoan: aiCreditLoan || crmCreditLoan,
+    collateralLoan: aiCollateral || crmCollateral,
+    creditCardUse: aiCard || c.creditCardUse || '정보 없음',
+    history: aiHistory || crmHistory,
+    specialMemo: aiMemo || crmMemo || '',
+    isAiSource
+  };
+};
+
+
