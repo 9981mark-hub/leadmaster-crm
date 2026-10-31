@@ -1,0 +1,66 @@
+name: Deploy to Vercel (leadmastercrm.vercel.app)
+
+# New Vercel account: markjin9981's projects / project leadmaster-crm.
+# The Vercel GitHub app cannot see this repo (different GitHub account), so CI deploys with a token instead.
+# Needs repo secret VERCEL_TOKEN (project-scoped token). Without it this workflow does nothing.
+# Build env vars (VITE_*) live in the Vercel project settings and are pulled at build time.
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "vercel-production"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_mLANbcvDN3rjcCxVBgFlciGS
+      VERCEL_PROJECT_ID: prj_8VUqHEzPIpHdq0DlUDplc5FhQM53
+    steps:
+      - name: Check token
+        id: gate
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN secret is not set - skipping Vercel deploy."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.skip != '1'
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: steps.gate.outputs.skip != '1'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: 'npm'
+
+      - name: Pull Vercel project settings and env
+        if: steps.gate.outputs.skip != '1'
+        run: npx --yes vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build
+        if: steps.gate.outputs.skip != '1'
+        run: npx --yes vercel@latest build --prod --token="$VERCEL_TOKEN"
+        env:
+          VERCEL: "1"
+
+      - name: Check base path
+        if: steps.gate.outputs.skip != '1'
+        run: |
+          if grep -q '/leadmaster-crm/assets' .vercel/output/static/index.html; then
+            echo "Built with the GitHub Pages base path - aborting."; exit 1
+          fi
+
+      - name: Deploy
+        if: steps.gate.outputs.skip != '1'
+        run: npx --yes vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"
