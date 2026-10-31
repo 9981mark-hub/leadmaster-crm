@@ -1,0 +1,7 @@
+{
+  "versionCode": 6,
+  "versionName": "1.4.0",
+  "apkUrl": "LeadMaster.apk",
+  "required": false,
+  "notes": "· 권한 점검 화면 추가 (메뉴 → 권한 점검)\n· 앱 안에서 새 버전 설치\n· 통화 팝업에 다른 고객이 뜨던 문제 수정\n· 서버 사용량 감소 (실시간 알림)"
+}
