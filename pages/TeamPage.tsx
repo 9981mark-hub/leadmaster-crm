@@ -13,6 +13,7 @@ import { Case } from '../types';
 import TelegramBotSection from '../components/TelegramBotSection';
 import DistributionPanel from '../components/team/DistributionPanel';
 import LeadUploadModal from '../components/team/LeadUploadModal';
+import RecordingSettingsPanel from '../components/team/RecordingSettingsPanel';
 import { AssignmentLog, DistributeMode, REASON_LABEL, distributeCases, fetchAssignmentLogs } from '../services/distribution';
 import { usePartners, useStatuses } from '../services/queries';
 
@@ -317,6 +318,9 @@ export default function TeamPage() {
 
       {/* ===== 텔레그램 봇 ===== */}
       <TelegramBotSection orgId={org.orgId} />
+
+      {/* ===== 통화 녹음 · AI 정리 ===== */}
+      <RecordingSettingsPanel orgId={org.orgId} />
 
       {/* ===== 리드 배분 규칙 + 상담원별 현황 ===== */}
       <div key={panelKey}>

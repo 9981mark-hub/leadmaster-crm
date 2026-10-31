@@ -14,6 +14,7 @@ import { CaseSettlementTab } from '../components/case-detail/CaseSettlementTab';
 import { CaseTimeline } from '../components/case-detail/CaseTimeline';
 import { CaseCallsSmsTab } from '../components/case-detail/CaseCallsSmsTab';
 import { TelegramDeliverModal } from '../components/case-detail/TelegramDeliverModal';
+import { CallRecordingsTab } from '../components/case-detail/CallRecordingsTab';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -30,7 +31,7 @@ export default function CaseDetail() {
     const updateCaseMutation = useUpdateCaseMutation();
 
     // UI State
-    const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline' | 'calls_sms'>('info');
+    const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline' | 'calls_sms' | 'recordings'>('info');
     const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
     const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
     const [isDeliverOpen, setIsDeliverOpen] = useState(false);
@@ -727,7 +728,8 @@ export default function CaseDetail() {
                         { id: 'timeline', label: '타임라인' },
                         { id: 'summary', label: '요약문' },
                         { id: 'settlement', label: '수임료/정산' },
-                        { id: 'calls_sms', label: '통화 및 문자' }
+                        { id: 'calls_sms', label: '통화 및 문자' },
+                        { id: 'recordings', label: '통화 녹음·AI' }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -804,6 +806,20 @@ export default function CaseDetail() {
 
                     {activeTab === 'calls_sms' && (
                         <CaseCallsSmsTab c={c} />
+                    )}
+
+                    {activeTab === 'recordings' && (
+                        <CallRecordingsTab
+                            c={c}
+                            showToast={showToast}
+                            onApply={(updates) => updateCaseMutation.mutate(
+                                { id: c.caseId, updates, silent: true },
+                                {
+                                    onSuccess: () => showToast('AI 정리를 상담 정보에 반영했습니다.'),
+                                    onError: () => showToast('반영하지 못했습니다. 다시 시도해주세요.', 'error'),
+                                }
+                            )}
+                        />
                     )}
                 </div>
             </div>
