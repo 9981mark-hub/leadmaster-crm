@@ -10,6 +10,7 @@ import {
 } from '../services/api';
 import { supabase } from '../services/supabase';
 import { OrgInfo, resolveOrg, loadCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole } from '../services/org';
+import { syncAppSession, clearAppSession } from '../services/appBridge';
 
 interface UserProfile {
   email: string;
@@ -165,6 +166,8 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         // 같은 PC에서 다른 회사·계정으로 로그인한 경우 이전 캐시 삭제
         if (ensureCacheOwner(orgInfo)) resetInitState();
         setOrg(orgInfo);
+        // 안드로이드 앱 안이면 앱 전용 세션 전달 (앱 밖이면 아무것도 안 함)
+        syncAppSession(orgInfo.userId);
       }
 
       localStorage.setItem('authToken', credential);
@@ -234,6 +237,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
             return;
           }
           setOrg(info);
+          syncAppSession(info.userId);
         } else {
           setOrg(null);
         }
@@ -259,6 +263,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   }, [isAuthenticated, setOrg]);
 
   const logout = useCallback(async () => {
+    clearAppSession();
     if (supabase) await supabase.auth.signOut();
     resetInitState(); // [SYNC FIX] 재로그인 시 데이터 재초기화를 위해 모듈 상태 리셋
     localStorage.removeItem('authToken');

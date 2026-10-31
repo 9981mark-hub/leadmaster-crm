@@ -21,6 +21,61 @@ const TELEGRAM_WEBHOOK_SECRET = Deno.env.get('TELEGRAM_WEBHOOK_SECRET') || '';
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // ============================================
+// 0. 회사(멀티테넌트) 구분 — 2026-11-01
+// 웹훅 주소: .../telegram-webhook?org=<회사ID>
+//   - org 없음 또는 본사 ID → 본사 봇(환경변수 TELEGRAM_BOT_TOKEN / TELEGRAM_WEBHOOK_SECRET)
+//   - 그 외 → org_telegram_bots 테이블의 회사 봇 (비밀값 검증 필수)
+// 모든 리드 검색·반영·저장은 이 회사의 데이터 안에서만 한다 (service_role이라 RLS가 안 막아주므로 코드에서 반드시 거른다)
+// ============================================
+const HQ_ORG_ID = '00000000-0000-0000-0000-000000000001';
+const HQ_DEFAULT_OWN_SENDERS = ['markjin', '마크진'];
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+interface OrgContext {
+  orgId: string;
+  botToken: string;
+  webhookSecret: string;
+  ownSenders: string[];
+}
+
+async function resolveOrgContext(url: URL): Promise<OrgContext | null> {
+  const orgParam = (url.searchParams.get('org') || '').trim();
+  if (!orgParam || orgParam === HQ_ORG_ID) {
+    const { data } = await supabase.from('org_telegram_bots').select('own_sender_names').eq('org_id', HQ_ORG_ID).maybeSingle();
+    const custom = (data?.own_sender_names || []).filter(Boolean);
+    return {
+      orgId: HQ_ORG_ID,
+      botToken: TELEGRAM_BOT_TOKEN,
+      webhookSecret: TELEGRAM_WEBHOOK_SECRET,
+      ownSenders: custom.length > 0 ? custom : HQ_DEFAULT_OWN_SENDERS,
+    };
+  }
+  if (!UUID_RE.test(orgParam)) return null;
+  const { data } = await supabase
+    .from('org_telegram_bots')
+    .select('org_id, bot_token, webhook_secret, own_sender_names')
+    .eq('org_id', orgParam)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    orgId: data.org_id,
+    botToken: data.bot_token,
+    webhookSecret: data.webhook_secret,
+    ownSenders: data.own_sender_names || [],
+  };
+}
+
+const normalizeName = (s: string) => (s || '').toLowerCase().replace(/\s+/g, '');
+function isOwnSender(senderName: string, ownSenders: string[]): boolean {
+  const n = normalizeName(senderName);
+  if (!n) return false;
+  return ownSenders.some(o => {
+    const t = normalizeName(o);
+    return !!t && (n === t || n.includes(t));
+  });
+}
+
+// ============================================
 // 1. Telegram Message Parser
 // ============================================
 
@@ -318,9 +373,9 @@ async function classifyWithGemini(
 // 4. Customer Matching Engine
 // ============================================
 
-async function getMappedPartnerId(chatId: string): Promise<string | null> {
+async function getMappedPartnerId(chatId: string, orgId: string): Promise<string | null> {
   try {
-    const { data } = await supabase.from('settings').select('value').eq('key', 'partners').single();
+    const { data } = await supabase.from('settings').select('value').eq('org_id', orgId).eq('key', 'partners').maybeSingle();
     if (data && Array.isArray(data.value)) {
       const partner = data.value.find((p: any) => p.telegramChatId === chatId);
       if (partner) return partner.partnerId;
@@ -331,13 +386,14 @@ async function getMappedPartnerId(chatId: string): Promise<string | null> {
   return null;
 }
 
-async function matchCustomerToCase(customerName: string, partnerId?: string | null): Promise<{ matchedCaseId: string | null; candidates: any[] }> {
+async function matchCustomerToCase(customerName: string, partnerId: string | null | undefined, orgId: string): Promise<{ matchedCaseId: string | null; candidates: any[] }> {
   if (!customerName) return { matchedCaseId: null, candidates: [] };
 
   // Strategy 1: Exact name match on active cases
   let queryExact = supabase
     .from('cases')
     .select('case_id, customer_name, status, created_at')
+    .eq('org_id', orgId)
     .eq('customer_name', customerName)
     .in('status', ['사무장 접수', '상담중', '재통화 예정', '계약 완료', '1차 입금완료', '2차 입금완료']);
     
@@ -358,6 +414,7 @@ async function matchCustomerToCase(customerName: string, partnerId?: string | nu
   let queryFuzzy = supabase
     .from('cases')
     .select('case_id, customer_name, status, created_at')
+    .eq('org_id', orgId)
     .ilike('customer_name', `%${customerName}%`)
     .in('status', ['사무장 접수', '상담중', '재통화 예정']);
     
@@ -378,6 +435,7 @@ async function matchCustomerToCase(customerName: string, partnerId?: string | nu
   let queryGlobal = supabase
     .from('cases')
     .select('case_id, customer_name, status, created_at')
+    .eq('org_id', orgId)
     .eq('customer_name', customerName);
     
   if (partnerId) {
@@ -420,18 +478,20 @@ async function autoApplyFeedback(
   caseId: string,
   classification: any,
   senderName: string,
-  originalText: string
+  originalText: string,
+  orgId: string
 ): Promise<void> {
   const { feedbackType, suggestedStatus, suggestedMemo } = classification;
   const memoPrefix = `[TG-자동] ${senderName}:`;
   const memoContent = suggestedMemo || originalText;
 
-  // Fetch current case
+  // Fetch current case (같은 회사 리드만)
   const { data: caseData } = await supabase
     .from('cases')
     .select('*')
+    .eq('org_id', orgId)
     .eq('case_id', caseId)
-    .single();
+    .maybeSingle();
 
   if (!caseData) return;
 
@@ -475,10 +535,11 @@ async function autoApplyFeedback(
   // 웹 CRM의 증분 동기화(updated_at 기준)가 이 변경을 놓치지 않도록 명시적으로 기록
   updates.updated_at = new Date().toISOString();
 
-  // Apply updates
+  // Apply updates (같은 회사 리드만)
   await supabase
     .from('cases')
     .update(updates)
+    .eq('org_id', orgId)
     .eq('case_id', caseId);
 }
 
@@ -487,58 +548,23 @@ async function autoApplyFeedback(
 // ============================================
 
 serve(async (req: Request) => {
+  // [SECURITY 2026-11-01] 예전 GET 디버그 주소(고정 debug_key로 웹훅 정보 조회·재등록)는 삭제.
+  // 웹훅 등록·상태 확인은 관리자 로그인이 필요한 telegram-admin 함수에서 한다.
   if (req.method === 'GET') {
-    const url = new URL(req.url);
-    const debugKey = url.searchParams.get('debug_key');
-    if (debugKey === 'check_status_2026') {
-      try {
-        const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo`);
-        const tgData = await tgRes.json();
-        return new Response(JSON.stringify({
-          ok: true,
-          env: {
-            hasBotToken: !!TELEGRAM_BOT_TOKEN,
-            hasGeminiKey: !!GEMINI_API_KEY,
-            hasWebhookSecret: !!TELEGRAM_WEBHOOK_SECRET,
-            supabaseUrl: SUPABASE_URL,
-          },
-          webhookInfo: tgData
-        }), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        return new Response(JSON.stringify({ ok: false, error: String(err) }), {
-          headers: { 'Content-Type': 'application/json' },
-          status: 500
-        });
-      }
-    }
-    if (debugKey === 'reset_webhook_2026') {
-      try {
-        const webhookUrl = `https://cenksfblktflfurxjmtv.supabase.co/functions/v1/telegram-webhook`;
-        const registerUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}&secret_token=${encodeURIComponent(TELEGRAM_WEBHOOK_SECRET || '')}`;
-        const tgRes = await fetch(registerUrl);
-        const tgData = await tgRes.json();
-        return new Response(JSON.stringify({
-          ok: true,
-          registerResult: tgData
-        }), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        return new Response(JSON.stringify({ ok: false, error: String(err) }), {
-          headers: { 'Content-Type': 'application/json' },
-          status: 500
-        });
-      }
-    }
     return new Response('OK', { status: 200 });
   }
 
+  const url = new URL(req.url);
+  const ctx = await resolveOrgContext(url);
+  if (!ctx) {
+    return new Response('Unknown org', { status: 404 });
+  }
+
   // [SECURITY] Telegram Secret Token 검증 — 텔레그램 외 요청 차단
-  if (TELEGRAM_WEBHOOK_SECRET) {
+  // 고객사 봇은 비밀값이 항상 있으므로 항상 검증. 본사는 환경변수에 비밀값이 있을 때 검증(기존 동작 유지)
+  if (ctx.webhookSecret || ctx.orgId !== HQ_ORG_ID) {
     const secretHeader = req.headers.get('x-telegram-bot-api-secret-token');
-    if (secretHeader !== TELEGRAM_WEBHOOK_SECRET) {
+    if (!ctx.webhookSecret || secretHeader !== ctx.webhookSecret) {
       return new Response('Forbidden', { status: 403 });
     }
   }
@@ -553,8 +579,8 @@ serve(async (req: Request) => {
       });
     }
 
-    // [SKIP] 관리자(mark jin)가 직업 보낸 메시지는 수집하지 않고 스킵
-    if (parsed.senderName.toLowerCase().replace(/ /g, '') === 'markjin' || parsed.senderName.includes('마크진')) {
+    // [SKIP] 우리 쪽 직원(회사 설정 "우리 쪽 발신자 이름")이 보낸 메시지는 수집하지 않음
+    if (isOwnSender(parsed.senderName, ctx.ownSenders)) {
       return new Response(JSON.stringify({ ok: true, skipped: 'admin sent message' }), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -611,10 +637,10 @@ serve(async (req: Request) => {
     const customerName = classification.customerName;
 
     // Get Partner Mapping from Chat ID
-    const mappedPartnerId = await getMappedPartnerId(parsed.chatId);
+    const mappedPartnerId = await getMappedPartnerId(parsed.chatId, ctx.orgId);
 
-    // Match to CRM case
-    const { matchedCaseId, candidates } = await matchCustomerToCase(customerName, mappedPartnerId);
+    // Match to CRM case (이 회사 리드 안에서만)
+    const { matchedCaseId, candidates } = await matchCustomerToCase(customerName, mappedPartnerId, ctx.orgId);
     classification.candidates = candidates;
 
     // Determine apply mode and urgency (Never auto apply if multiple matches / null id)
@@ -631,6 +657,7 @@ serve(async (req: Request) => {
     const { error: insertError } = await supabase
       .from('telegram_feedbacks')
       .insert({
+        org_id: ctx.orgId,
         message_id: parsed.messageId,
         reply_to_message_id: parsed.replyToMessageId || null,
         sender_name: parsed.senderName,
@@ -659,7 +686,7 @@ serve(async (req: Request) => {
 
     // Auto-apply if applicable
     if (isAutoApply && matchedCaseId) {
-      await autoApplyFeedback(matchedCaseId, classification, parsed.senderName, parsed.text);
+      await autoApplyFeedback(matchedCaseId, classification, parsed.senderName, parsed.text, ctx.orgId);
     }
 
     return new Response(

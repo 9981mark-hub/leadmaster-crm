@@ -10,6 +10,7 @@ import {
   createInvite, cancelInvite, assignCases, assignRoundRobin,
 } from '../services/team';
 import { Case } from '../types';
+import TelegramBotSection from '../components/TelegramBotSection';
 
 type AssignFilter = 'unassigned' | 'all' | string; // string = 특정 멤버 userId
 
@@ -296,6 +297,9 @@ export default function TeamPage() {
           )}
         </div>
       </section>
+
+      {/* ===== 텔레그램 봇 ===== */}
+      <TelegramBotSection orgId={org.orgId} />
 
       {/* ===== 리드 배정 ===== */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
