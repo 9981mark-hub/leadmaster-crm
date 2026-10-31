@@ -55,6 +55,8 @@ export interface Case {
   statusUpdatedAt: string; // ISO
   managerName: string;
   assignedUserId?: string; // [멀티테넌트] 담당 상담원 (auth user id). 상담원은 본인 배정 리드만 조회
+  assignedAt?: string; // [013] 지금 담당자에게 배정된 시각 (자동 회수 기준)
+  importBatchId?: string; // [013] 수신동의 DB 업로드 묶음
   isNew?: boolean; // Computed local flag
   isViewed?: boolean; // Added: Syncable flag for "Seen" status across devices
   deletedAt?: string; // [NEW] Soft Delete Timestamp (ISO)

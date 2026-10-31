@@ -1,16 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw } from 'lucide-react';
+import { UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw, FileUp, History } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { fetchCases, applyLocalAssignment } from '../services/api';
+import { fetchCases, applyLocalAssignment, refreshLocalAssignments } from '../services/api';
 import { ROLE_LABEL, OrgRole } from '../services/org';
 import {
   TeamMember, TeamInvite, fetchTeamMembers, updateTeamMember, fetchPendingInvites,
-  createInvite, cancelInvite, assignCases, assignRoundRobin,
+  createInvite, cancelInvite, assignCases,
 } from '../services/team';
 import { Case } from '../types';
 import TelegramBotSection from '../components/TelegramBotSection';
+import DistributionPanel from '../components/team/DistributionPanel';
+import LeadUploadModal from '../components/team/LeadUploadModal';
+import { AssignmentLog, DistributeMode, REASON_LABEL, distributeCases, fetchAssignmentLogs } from '../services/distribution';
+import { usePartners, useStatuses } from '../services/queries';
 
 type AssignFilter = 'unassigned' | 'all' | string; // string = 특정 멤버 userId
 
@@ -49,16 +53,27 @@ export default function TeamPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [targetUser, setTargetUser] = useState('');
   const [rrUsers, setRrUsers] = useState<Set<string>>(new Set());
+  const [distMode, setDistMode] = useState<DistributeMode>('round_robin');
+  const [distCounts, setDistCounts] = useState<Record<string, number>>({});
+  const [showUpload, setShowUpload] = useState(false);
+  const [logs, setLogs] = useState<AssignmentLog[]>([]);
+  const [panelKey, setPanelKey] = useState(0);
 
   const { data: cases = [] } = useQuery({ queryKey: ['cases'], queryFn: fetchCases });
+  const { data: partners = [] } = usePartners();
+  const { data: statusList = [] } = useStatuses();
 
   const reload = useCallback(async () => {
     if (!org) return;
     setLoading(true);
     try {
-      const [m, i] = await Promise.all([fetchTeamMembers(), fetchPendingInvites(org.orgId)]);
+      const [m, i, l] = await Promise.all([
+        fetchTeamMembers(), fetchPendingInvites(org.orgId),
+        fetchAssignmentLogs({ limit: 50 }).catch(() => [] as AssignmentLog[]),
+      ]);
       setMembers(m);
       setInvites(i);
+      setLogs(l);
     } catch (e: any) {
       showToast(`팀 정보를 불러오지 못했습니다: ${e.message}`, 'error');
     } finally {
@@ -106,6 +121,7 @@ export default function TeamPage() {
     showToast(msg, 'success');
     setSelected(new Set());
     queryClient.invalidateQueries({ queryKey: ['cases'] });
+    setPanelKey(k => k + 1);
     await reload();
   };
 
@@ -126,23 +142,24 @@ export default function TeamPage() {
     }
   };
 
-  const handleRoundRobin = async () => {
+  // 나눠주기: 순번 / 균형(진행 중이 적은 사람부터) / 수량 지정. 리드는 오래된 것부터 (서버에서 처리)
+  const handleDistribute = async () => {
     const ids = setToArray(selected);
     const users = setToArray(rrUsers);
     if (ids.length === 0) return showToast('나눠줄 리드를 고르세요', 'error');
     if (users.length === 0) return showToast('나눠줄 상담원을 한 명 이상 체크하세요', 'error');
-    if (!window.confirm(`${ids.length}건을 상담원 ${users.length}명에게 차례대로 나눠 배정할까요?`)) return;
+    const counts = distMode === 'quantity' ? users.map(u => distCounts[u] || 0) : undefined;
+    if (counts && counts.reduce((a, b) => a + b, 0) === 0) return showToast('상담원마다 건수를 입력하세요', 'error');
+    const label = distMode === 'round_robin' ? '차례대로' : distMode === 'balanced' ? '진행 중 리드가 적은 사람부터' : '정한 건수만큼';
+    if (!window.confirm(`${ids.length}건을 상담원 ${users.length}명에게 ${label} 나눠줄까요?`)) return;
     setBusy(true);
     try {
-      // 오래된 리드부터 차례대로
-      const ordered = filteredCases.filter(c => selected.has(c.caseId))
-        .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))).map(c => c.caseId);
-      const result = await assignRoundRobin(ordered, users);
-      users.forEach((uid, idx) => applyLocalAssignment(ordered.filter((_, i) => i % users.length === idx), uid));
+      const result = await distributeCases(ids, distMode, users, counts);
+      await refreshLocalAssignments(ids);
       const summary = users.map(u => `${memberName(u)} ${result[u] || 0}건`).join(', ');
-      await afterAssign(`순번 배정 완료: ${summary}`);
+      await afterAssign(`나눠주기 완료: ${summary}`);
     } catch (e: any) {
-      showToast(`순번 배정 실패: ${e.message}`, 'error');
+      showToast(`나눠주기 실패: ${e.message}`, 'error');
     } finally {
       setBusy(false);
     }
@@ -301,12 +318,22 @@ export default function TeamPage() {
       {/* ===== 텔레그램 봇 ===== */}
       <TelegramBotSection orgId={org.orgId} />
 
+      {/* ===== 리드 배분 규칙 + 상담원별 현황 ===== */}
+      <div key={panelKey}>
+        <DistributionPanel orgId={org.orgId} statuses={statusList as string[]}
+          onChanged={() => { queryClient.invalidateQueries({ queryKey: ['cases'] }); reload(); }} />
+      </div>
+
       {/* ===== 리드 배정 ===== */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
           <Shuffle size={18} className="text-blue-600" />
           <h2 className="font-bold text-gray-800 dark:text-white">리드 배정</h2>
           <span className="text-xs text-gray-400">미배정 {unassignedCount.toLocaleString()}건 · 상담원은 배정받은 리드만 볼 수 있습니다</span>
+          <button onClick={() => setShowUpload(true)}
+            className="ml-auto px-3 py-1.5 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 flex items-center gap-1">
+            <FileUp size={14} /> 수신동의 DB 업로드
+          </button>
         </div>
 
         <div className="px-5 py-3 flex flex-wrap gap-2 items-center border-b border-gray-100 dark:border-gray-700">
@@ -342,22 +369,37 @@ export default function TeamPage() {
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">순번으로 나눠주기:</span>
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">나눠주기:</span>
+            <select value={distMode} onChange={e => setDistMode(e.target.value as DistributeMode)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm dark:bg-gray-700 dark:text-white">
+              <option value="round_robin">순번</option>
+              <option value="balanced">균형 (진행 중 적은 사람 먼저)</option>
+              <option value="quantity">수량 지정</option>
+            </select>
             {agents.length === 0 && <span className="text-xs text-gray-400">상담원이 없습니다</span>}
             {agents.map(a => (
               <label key={a.userId} className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-200">
                 <input type="checkbox" checked={rrUsers.has(a.userId)}
                   onChange={() => setRrUsers(prev => { const n = new Set(prev); n.has(a.userId) ? n.delete(a.userId) : n.add(a.userId); return n; })} />
                 {a.displayName}
+                {distMode === 'quantity' && rrUsers.has(a.userId) && (
+                  <input type="number" min={0} value={distCounts[a.userId] ?? ''} placeholder="건"
+                    onChange={e => setDistCounts({ ...distCounts, [a.userId]: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                    onClick={e => e.stopPropagation()}
+                    className="w-14 border border-gray-300 dark:border-gray-600 rounded px-1 py-0.5 text-sm dark:bg-gray-700 dark:text-white" />
+                )}
               </label>
             ))}
             {agents.length > 1 && (
               <button onClick={() => setRrUsers(new Set(agents.map(a => a.userId)))} className="text-xs text-blue-600 hover:underline">모두</button>
             )}
-            <button onClick={handleRoundRobin} disabled={busy || selected.size === 0 || rrUsers.size === 0}
+            <button onClick={handleDistribute} disabled={busy || selected.size === 0 || rrUsers.size === 0}
               className="px-3 py-1.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1">
               <Shuffle size={14} /> 나눠주기
             </button>
+            {distMode === 'quantity' && (
+              <span className="text-xs text-gray-500">합계 {setToArray(rrUsers).reduce((s, u) => s + (distCounts[u] || 0), 0)}건 / 선택 {selected.size}건 (오래된 리드부터)</span>
+            )}
           </div>
         </div>
 
@@ -401,6 +443,43 @@ export default function TeamPage() {
           )}
         </div>
       </section>
+
+      {/* ===== 최근 배정 기록 ===== */}
+      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
+          <History size={16} className="text-gray-500" />
+          <h2 className="font-bold text-gray-800 dark:text-white text-sm">최근 배정 기록</h2>
+          <span className="text-xs text-gray-400">최근 50건 · 누가 언제 누구에게서 누구에게</span>
+        </div>
+        <div className="max-h-72 overflow-y-auto">
+          <table className="w-full text-xs">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {logs.map(l => {
+                const cs = liveCases.find(c => c.caseId === l.caseId);
+                return (
+                  <tr key={l.id}>
+                    <td className="px-5 py-1.5 text-gray-400 whitespace-nowrap">{new Date(l.createdAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                    <td className="px-2 py-1.5 font-medium text-gray-700 dark:text-gray-200">{cs?.customerName || l.caseId}</td>
+                    <td className="px-2 py-1.5 text-gray-600 dark:text-gray-300 whitespace-nowrap">{l.fromUser ? memberName(l.fromUser) : '미배정'} → {l.toUser ? memberName(l.toUser) : '미배정'}</td>
+                    <td className="px-2 py-1.5"><span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{REASON_LABEL[l.reason] || l.reason}</span></td>
+                    <td className="px-2 py-1.5 text-gray-400">{l.byUser ? memberName(l.byUser) : '시스템'}{l.note ? ` · ${l.note}` : ''}</td>
+                  </tr>
+                );
+              })}
+              {logs.length === 0 && <tr><td className="px-5 py-4 text-center text-gray-400">아직 기록이 없습니다.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {showUpload && (
+        <LeadUploadModal
+          agents={agents.map(a => ({ userId: a.userId, displayName: a.displayName }))}
+          partners={partners}
+          onClose={() => setShowUpload(false)}
+          onDone={() => { queryClient.invalidateQueries({ queryKey: ['cases'] }); setPanelKey(k => k + 1); reload(); }}
+        />
+      )}
     </div>
   );
 }

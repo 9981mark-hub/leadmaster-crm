@@ -120,6 +120,8 @@ export const dbToCase = (row: DbCase): Case => ({
     region: row.region || '',
     managerName: row.manager_name,
     assignedUserId: row.assigned_user_id || undefined,
+    assignedAt: (row as any).assigned_at || undefined,
+    importBatchId: (row as any).import_batch_id || undefined,
     partnerId: row.partner_id,
     caseType: row.case_type,
     inboundPath: row.inbound_path,
@@ -180,6 +182,7 @@ export const caseToDb = (c: Partial<Case>): Partial<DbCase> => {
     if (c.region !== undefined) result.region = c.region || null;
     if (c.managerName !== undefined) result.manager_name = c.managerName;
     if (c.assignedUserId !== undefined) result.assigned_user_id = c.assignedUserId || null;
+    if (c.importBatchId !== undefined) result.import_batch_id = c.importBatchId || null;
     if (c.partnerId !== undefined) result.partner_id = c.partnerId;
     if (c.caseType !== undefined) result.case_type = c.caseType;
     if (c.inboundPath !== undefined) result.inbound_path = c.inboundPath;

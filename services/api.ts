@@ -20,7 +20,8 @@ import {
   saveSettingToSupabase,
   fetchCaseFromSupabase,
   fetchCasesUpdatedSince,
-  fetchSettingKeysUpdatedSince
+  fetchSettingKeysUpdatedSince,
+  caseToDb as caseToDbFn
 } from './supabase';
 
 
@@ -1585,7 +1586,13 @@ export const createCase = async (newCase: Partial<Case>): Promise<Case> => {
   // [HYBRID MODE] Write to Supabase first (primary), then Sheets (backup)
   if (isSupabaseEnabled()) {
     try {
-      await createCaseInSupabase(c);
+      const remote = await createCaseInSupabase(c);
+      // [013] 자동 배분이 켜져 있으면 서버가 담당자를 정한다 → 화면에도 바로 반영
+      if (remote?.assignedUserId && !c.assignedUserId) {
+        c.assignedUserId = remote.assignedUserId;
+        c.assignedAt = remote.assignedAt;
+        notifyListeners();
+      }
       console.log('[Sync] Case created in Supabase:', c.caseId);
     } catch (err) {
       console.error('[Sync] Supabase create failed:', err);
@@ -1885,6 +1892,78 @@ export const batchCreateCases = async (cases: Partial<Case>[]): Promise<void> =>
   syncAll().catch(err => console.error("Batch sync failed", err));
 };
 
+
+/**
+ * [013] 수신동의 DB 업로드: 200건씩 저장하고 실패를 숨기지 않는다 (batchCreateCases는 실패를 삼킴).
+ * 업로드 묶음(importBatchId)을 붙이면 서버 트리거가 묶음의 배분 방식("auto"면 자동 배분)을 따른다.
+ * @returns 저장된 리드(서버가 정한 담당자 포함)와 실패 건수
+ */
+export const importCasesToBatch = async (
+  rows: Partial<Case>[],
+  importBatchId: string,
+  onProgress?: (done: number, total: number) => void,
+): Promise<{ created: Case[]; failed: number; errors: string[] }> => {
+  if (!supabase || !isSupabaseEnabled()) throw new Error('서버에 연결되어 있지 않습니다');
+  const created: Case[] = [];
+  const errors: string[] = [];
+  let failed = 0;
+  const CHUNK = 200;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    let part = rows.slice(i, i + CHUNK).map(r => ({ ...createCaseHelper({ ...r, isViewed: false }), importBatchId }));
+    let { data, error } = await supabase
+      .from('cases')
+      .insert(part.map(p => caseToDbForImport(p)))
+      .select('case_id, assigned_user_id, assigned_at');
+    // 리드 ID(8자리)가 우연히 겹치면(23505) 새 ID로 두 번까지 다시 시도
+    for (let retry = 0; error && (error as any).code === '23505' && retry < 2; retry++) {
+      part = part.map(p => ({ ...p, caseId: uuidv4().slice(0, 8) }));
+      ({ data, error } = await supabase
+        .from('cases')
+        .insert(part.map(p => caseToDbForImport(p)))
+        .select('case_id, assigned_user_id, assigned_at'));
+    }
+    if (error) {
+      failed += part.length;
+      errors.push(error.message);
+    } else {
+      const byId = new Map((data || []).map((r: any) => [r.case_id, r]));
+      part.forEach(p => {
+        const r: any = byId.get(p.caseId);
+        if (!r) { failed++; return; }
+        created.push({ ...p, assignedUserId: r.assigned_user_id || undefined, assignedAt: r.assigned_at || undefined });
+      });
+    }
+    onProgress?.(Math.min(i + CHUNK, rows.length), rows.length);
+  }
+  if (created.length > 0) {
+    localCases.unshift(...created);
+    syncInboundPaths(created);
+    saveToStorage();
+    notifyListeners();
+  }
+  return { created, failed, errors };
+};
+
+// supabase.ts의 caseToDb를 그대로 쓴다 (import 순환 피하려고 지연 import 대신 위에서 가져온 함수 사용)
+const caseToDbForImport = (c: Case) => caseToDbFn(c);
+
+/** [013] 서버에서 바뀐 담당자를 로컬 캐시에 맞춘다 (나눠주기·이관·회수 후) */
+export const refreshLocalAssignments = async (caseIds: string[]): Promise<void> => {
+  if (!supabase || caseIds.length === 0) return;
+  const map = new Map<string, { a?: string; at?: string }>();
+  for (let i = 0; i < caseIds.length; i += 300) {
+    const { data } = await supabase.from('cases').select('case_id, assigned_user_id, assigned_at').in('case_id', caseIds.slice(i, i + 300));
+    (data || []).forEach((r: any) => map.set(r.case_id, { a: r.assigned_user_id || undefined, at: r.assigned_at || undefined }));
+  }
+  let changed = false;
+  localCases = localCases.map(c => {
+    const m = map.get(c.caseId);
+    if (!m || (m.a === c.assignedUserId && m.at === c.assignedAt)) return c;
+    changed = true;
+    return { ...c, assignedUserId: m.a, assignedAt: m.at };
+  });
+  if (changed) { saveToStorage(); notifyListeners(); }
+};
 
 // --- File Upload ---
 export const uploadRecording = async (file: File): Promise<{ url: string, id: string }> => {
