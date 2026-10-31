@@ -30,7 +30,13 @@ DROP POLICY IF EXISTS "Authenticated users can insert communication_logs"    ON 
 DROP POLICY IF EXISTS "Anon can insert communication_logs"                   ON public.communication_logs;
 DROP POLICY IF EXISTS "Allow all access to tax_invoices"                     ON public.tax_invoices;
 
--- 2. 화이트리스트 사용자 + 앱 서비스 계정
+-- 2. 화이트리스트 사용자 + 앱 서비스 계정 (다시 실행해도 되도록 먼저 지운다)
+DROP POLICY IF EXISTS "lm_cases_app"                   ON public.cases;
+DROP POLICY IF EXISTS "lm_pending_calls_whitelisted"   ON public.pending_calls;
+DROP POLICY IF EXISTS "lm_telegram_feedbacks_app_read" ON public.telegram_feedbacks;
+DROP POLICY IF EXISTS "lm_communication_logs_insert"   ON public.communication_logs;
+DROP POLICY IF EXISTS "lm_tax_invoices_whitelisted"    ON public.tax_invoices;
+
 CREATE OR REPLACE FUNCTION public.lm_is_app_account()
 RETURNS BOOLEAN
 LANGUAGE sql STABLE
