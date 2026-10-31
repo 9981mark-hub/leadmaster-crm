@@ -10,7 +10,9 @@
 - 확정(2026-11-01): **멀티테넌트**, 시작은 빠른 시일 내, 고객사 상담원 **30명**(대부분 삼성, 5년 이내 기종 ≈ Android 11~16), 변호사 사무실 전달은 **텔레그램**(회사별 봇 자동 전송 + 답장으로 회신 연결 방향). 진행 순서는 기획서 15.2: 기반 정리 → 회사 분리 → 사용자·앱 → 전달·배정 → 3~5명 시범 운영 → 30명 오픈.
 - 순서 주의: 저장소 비공개 전에 새 호스팅 배포 + 새 주소 여는 앱 설치가 먼저(GitHub Pages가 멈춤).
 - 확정(2026-11-01 추가): 고객사 상담원 전원 구글 계정 → **구글 로그인만**. 변호사 사무실이 만든 텔레그램 방이 이미 있음 → 그 방에 회사 봇 초대. **유료 플랜(Supabase Pro 등)은 시스템 완성 후** 전환, 개발·시범은 무료 플랜(대역폭 5GB 주의).
-- 멀티테넌트 설계: `docs/설계_멀티테넌트_v1.md`, SQL `supabase/migrations/004~006` (운영 미실행), 로컬 점검 `supabase/tests/multitenant_rls_test.mjs`(PGlite, 21항목 통과). 핵심: org_id 기본값 = `current_org_id()` → 기존 코드가 org_id 없이 INSERT해도 자기 회사로 저장. 본사 org id `00000000-0000-0000-0000-000000000001`.
+- **2026-11-01 운영 DB에 004·005 적용 완료**(1.8초, 자동 점검 전부 통과: 11개 테이블 건수 동일·전부 본사, HOST/서브/앱 계정 전체 보임, 모르는 계정·anon 0건). 되돌리기: `supabase/migrations/rollback_004_005.sql`(고객사 데이터 있으면 자동 중단). 적용 스크립트 `%TEMP%\lm-sqltest\prod_apply.mjs`.
+- 아직 남은 전환기간 항목: telegram_feedbacks.org_id 기본값=본사(웹훅 수정 후 005b), 앱 서비스 계정 admin(앱 사용자 로그인 후 비활성화), 웹은 아직 allowedEmails로 로그인 판단(1-B에서 멤버십으로 교체).
+- 멀티테넌트 설계: `docs/설계_멀티테넌트_v1.md`, SQL `supabase/migrations/004~006`, 로컬 점검 `supabase/tests/multitenant_rls_test.mjs`(PGlite, 21항목 통과). 핵심: org_id 기본값 = `current_org_id()` → 기존 코드가 org_id 없이 INSERT해도 자기 회사로 저장. 본사 org id `00000000-0000-0000-0000-000000000001`.
 - **고객사 회사 생성 전에 telegram-webhook을 회사별로 고쳐 배포해야 함**(지금은 service_role로 전 회사 리드를 이름 검색).
 - 확정(2026-11-01): **상담원은 관리자가 배정한 본인 리드만** 본다(`cases.assigned_user_id`, 상담원 직접 등록 시 자동 본인 배정, 넘기기 불가). 통화기록·전화요청·자동통화·피드백도 본인 것만. `2882a@naver.com` = 본사 admin. 앱 서비스 계정은 전환기간 admin. 로컬 점검 44항목 통과.
 - 2026-11-01 운영 DB 백업: `D:\LeadMaster_Backup\20261101_0130_before_multitenant` (public 전체 dump, 스키마 SQL, auth.users, 정책 목록, 건수: cases 1463 / communication_logs 13886 / settings 17 / telegram_feedbacks 419). 고객 개인정보 포함, git·클라우드에 올리지 않는다. 도구: `D:\Tools\pgsql17\bin` (pg_dump 17.7), 접속 확인 스크립트는 `%TEMP%\lm-sqltest\dbping.mjs`.
