@@ -50,6 +50,7 @@ interface DbCase {
     is_viewed: boolean;
     is_starred: boolean;
     deleted_at: string | null;
+    assigned_user_id?: string | null;
     customer_name: string;
     phone: string;
     birth: string | null;
@@ -118,6 +119,7 @@ export const dbToCase = (row: DbCase): Case => ({
     gender: (row.gender || '남') as any,
     region: row.region || '',
     managerName: row.manager_name,
+    assignedUserId: row.assigned_user_id || undefined,
     partnerId: row.partner_id,
     caseType: row.case_type,
     inboundPath: row.inbound_path,
@@ -177,6 +179,7 @@ export const caseToDb = (c: Partial<Case>): Partial<DbCase> => {
     if (c.gender !== undefined) result.gender = c.gender;
     if (c.region !== undefined) result.region = c.region || null;
     if (c.managerName !== undefined) result.manager_name = c.managerName;
+    if (c.assignedUserId !== undefined) result.assigned_user_id = c.assignedUserId || null;
     if (c.partnerId !== undefined) result.partner_id = c.partnerId;
     if (c.caseType !== undefined) result.case_type = c.caseType;
     if (c.inboundPath !== undefined) result.inbound_path = c.inboundPath;
@@ -898,23 +901,44 @@ export const fetchPhonesWithSmsOut = async (phones: string[]): Promise<Set<strin
 /**
  * PC에서 전화 걸기 요청 → Supabase에 기록 → Android 앱이 감지하여 다이얼러 실행
  */
+/**
+ * [멀티테넌트] 현재 로그인 사용자 id (세션 캐시에서 읽음, 네트워크 호출 없음)
+ */
+export const getCurrentUserId = async (): Promise<string | null> => {
+    if (!supabase) return null;
+    const { data } = await supabase.auth.getSession();
+    return data.session?.user?.id || null;
+};
+
+/**
+ * [멀티테넌트] 내가 요청한 전화 요청만 지우는 필터.
+ * 상담원 여러 명이 같은 회사에 있을 때 다른 사람의 진행 중 요청을 지우지 않게 한다.
+ * requested_by가 비어 있는 행은 멀티테넌트 이전(본사)에 만든 것.
+ */
+export const ownPendingCallFilter = (userId: string | null) =>
+    userId ? `requested_by.eq.${userId},requested_by.is.null` : 'requested_by.is.null';
+
 export const enqueuePendingCall = async (phoneNumber: string, customerName: string, caseId?: string): Promise<boolean> => {
     if (!supabase) return false;
     try {
         const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+        const userId = await getCurrentUserId();
 
         // 이전 pending_calls 잔여 row 정리 (stale row가 남아있으면 Android 앱이 잘못된 case_id를 참조)
+        // [멀티테넌트] 내가 요청한 것만 정리
         try {
             await supabase
                 .from('pending_calls')
                 .delete()
-                .in('status', ['ended', 'dialed', 'cancelled']);
+                .in('status', ['ended', 'dialed', 'cancelled'])
+                .or(ownPendingCallFilter(userId));
             // 다른 전화번호의 pending 상태도 정리 (동시에 2건 이상 pending이 있으면 안 됨)
             await supabase
                 .from('pending_calls')
                 .delete()
                 .eq('status', 'pending')
-                .neq('phone_number', cleanPhone);
+                .neq('phone_number', cleanPhone)
+                .or(ownPendingCallFilter(userId));
         } catch (cleanupErr) {
             console.warn('[PendingCall] Cleanup failed (non-critical):', cleanupErr);
         }

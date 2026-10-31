@@ -93,25 +93,8 @@ const loadFromStorage = () => {
       if (Array.isArray(parsed)) {
         // [Critical Fix] Sanitize loaded data immediately to prevent crashes from legacy bad data
         localCases = parsed.map(processIncomingCase).filter((c): c is Case => c !== null);
-
-        // [Zombie Cleanup] Force remove specific duplicate cases reported by user (Mobile Cache Clear)
-        const ZOMBIE_NAMES = ['박준영', '유희영', '김재열', '이희진', '주민우', '김정아', '추선구', '조강인', '김미영', '유회영'];
-        const initialCount = localCases.length;
-        localCases = localCases.filter(c => {
-          // Remove if name matches AND status is New (likely the zombie duplicate)
-          if (ZOMBIE_NAMES.includes(c.customerName) && c.status === '신규접수') {
-            // Double check: If it has a VALID short ID (8 chars) it might be real, but zombies often have UUIDs or bad IDs.
-            // User asked to force delete "New" ones.
-            console.log(`[Zombie Cleanup] Removing cached zombie: ${c.customerName} (${c.caseId})`);
-            return false;
-          }
-          return true;
-        });
-        if (localCases.length !== initialCount) {
-          console.log(`[Zombie Cleanup] Removed ${initialCount - localCases.length} zombie cases.`);
-          // Trigger save immediately to persist cleanup
-          setTimeout(() => saveToStorage(), 1000);
-        }
+        // [멀티테넌트] 특정 고객 이름으로 캐시를 지우던 일회성 정리(ZOMBIE_NAMES)는 제거.
+        // 다른 회사에 같은 이름의 정상 리드가 있으면 화면에서 사라지는 문제가 생긴다.
       }
     }
     if (storedPaths) localInboundPaths = JSON.parse(storedPaths);
@@ -1004,7 +987,7 @@ export const processIncomingCase = (c: any): Case => {
     updatedAt: String(c.updatedAt || c.UpdatedAt || c.statusUpdatedAt || new Date().toISOString()),
     createdAt: String(c.createdAt || c.CreatedAt || c.Timestamp || new Date().toISOString()),
     status: String(c.status || c.Status || '신규접수'),
-    managerName: String(c.managerName || c.ManagerName || '진성훈'),
+    managerName: String(c.managerName || c.ManagerName || (typeof localStorage !== 'undefined' ? localStorage.getItem('managerName') : '') || ''),
     partnerId: String(c.partnerId || c.PartnerId || 'P001'),
 
     // [Status Logic]

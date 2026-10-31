@@ -326,7 +326,8 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             )}
                             <div className="max-h-72 overflow-y-auto space-y-2 pr-1 no-scrollbar">
                                 {filteredTranscriptLines.map(line => {
-                                    const isAgent = line.speaker.includes('상담원') || line.speaker.includes('담당자') || line.speaker.includes('진성훈') || line.speaker.includes('사무장');
+                                    const myName = localStorage.getItem('managerName') || '';
+                                    const isAgent = line.speaker.includes('상담원') || line.speaker.includes('담당자') || line.speaker.includes('사무장') || line.speaker.includes('진성훈') || (!!myName && line.speaker.includes(myName));
                                     return (
                                         <div
                                             key={line.id}

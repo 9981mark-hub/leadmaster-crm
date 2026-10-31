@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabase';
+import { supabase, getCurrentUserId, ownPendingCallFilter } from '../services/supabase';
 
 // ============================================
 // Active Call State Management
@@ -278,10 +278,13 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // pending_calls 잔여 row 정리 (Android 앱이 stale case_id를 참조하는 것 방지)
             if (supabase) {
                 try {
+                    // [멀티테넌트] 내가 요청한 것만 정리 (다른 상담원 요청 보호)
+                    const userId = await getCurrentUserId();
                     await supabase
                         .from('pending_calls')
                         .delete()
-                        .in('status', ['ended', 'dialed', 'cancelled']);
+                        .in('status', ['ended', 'dialed', 'cancelled'])
+                        .or(ownPendingCallFilter(userId));
                 } catch (e) {
                     console.warn('[ActiveCall] pending_calls cleanup failed:', e);
                 }

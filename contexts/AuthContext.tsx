@@ -9,6 +9,7 @@ import {
   resetInitState
 } from '../services/api';
 import { supabase } from '../services/supabase';
+import { OrgInfo, resolveOrg, loadCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole } from '../services/org';
 
 interface UserProfile {
   email: string;
@@ -19,6 +20,10 @@ interface UserProfile {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: UserProfile | null;
+  /** 소속 회사·역할. 확인 전이거나 확인 실패 시 null (기존 화이트리스트 방식으로 동작) */
+  org: OrgInfo | null;
+  /** 관리자 메뉴 표시 여부. 회사 정보를 아직 모르면 true (본사 사용자 화면이 갑자기 줄지 않게) */
+  isAdmin: boolean;
   allowedEmails: string[];
   loginWithGoogle: (credential: string) => void;
 
@@ -53,6 +58,9 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   // 동적 이메일 리스트 관리 (API 연동)
   const [allowedEmails, setAllowedEmails] = useState<string[]>([]);
 
+  // 소속 회사·역할 (멀티테넌트)
+  const [org, setOrg] = useState<OrgInfo | null>(() => loadCachedOrg());
+
   useEffect(() => {
     // 초기 로드: 로컬 캐시 또는 API에서 가져오기
     fetchAllowedEmails().then(setAllowedEmails);
@@ -74,14 +82,30 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
+  // [멀티테넌트] 로그인 권한은 이제 "회사 멤버" 기준이다.
+  // 마이페이지에서 이메일을 추가하면 기존 목록에 더해 같은 회사 관리자 초대도 만든다 (정식 멤버 관리 화면 전까지 임시).
   const addAllowedEmail = async (email: string) => {
     const newList = await addAllowedEmailApi(email);
     setAllowedEmails(newList);
+    const currentOrg = loadCachedOrg();
+    if (supabase && currentOrg) {
+      const { error } = await supabase
+        .from('org_invites')
+        .upsert({ org_id: currentOrg.orgId, email: email.trim().toLowerCase(), role: 'admin' },
+                { onConflict: 'org_id,email', ignoreDuplicates: true });
+      if (error) console.warn('[Auth] org invite create failed:', error.message);
+    }
   };
 
   const removeAllowedEmail = async (email: string) => {
     const newList = await removeAllowedEmailApi(email);
     setAllowedEmails(newList);
+    const currentOrg = loadCachedOrg();
+    if (supabase && currentOrg) {
+      // 아직 수락 전인 초대만 취소 (이미 멤버가 된 계정은 멤버 관리에서 해제)
+      await supabase.from('org_invites').delete()
+        .eq('org_id', currentOrg.orgId).eq('email', email.trim().toLowerCase()).is('accepted_at', null);
+    }
   };
 
   const AuthProviderInternal = ({ children }: { children?: ReactNode }) => {
@@ -92,18 +116,9 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         // 1. Google ID Token 디코딩
         const decoded: any = jwtDecode(credential);
         const { email, name, picture } = decoded;
-
-        // 2. 이메일 권한 확인 (동적 리스트 사용)
-        if (!allowedEmails.includes(email)) {
-          alert('접근 권한이 없는 계정입니다.\n관리자에게 문의하세요.');
-          return;
-        }
-
-        // 3. 로그인 성공 처리
         const userProfile = { email, name, picture };
 
-        // [Supabase Auth Integration] - Blocking
-        // [Fix] Must succeed to consider user logged in, otherwise syncing fails silently.
+        // 2. Supabase 로그인 (회사 소속 확인을 위해 먼저 로그인한다. 데이터 권한은 DB(RLS)가 막는다)
         if (supabase) {
           const { error } = await supabase.auth.signInWithIdToken({
             provider: 'google',
@@ -112,15 +127,40 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
           if (error) {
             console.error("Supabase Auth Failed:", error);
-            // [Debug] Show specific error message to user for troubleshooting
             alert(`로그인에 실패했습니다.\n사유: ${error.message}\n(서버 설정 문제일 수 있습니다)`);
             return;
           }
         }
 
+        // 3. 소속 회사 확인 (초대가 있으면 자동 수락)
+        let orgInfo: OrgInfo | null = null;
+        let orgChecked = false;
+        try {
+          orgInfo = await resolveOrg();
+          orgChecked = true;
+        } catch (e) {
+          console.warn('[Auth] Org check failed, falling back to allowed email list:', e);
+        }
+
+        if (!orgInfo) {
+          // 회사 확인이 안 되면(네트워크 오류 등) 기존 허용 이메일 목록으로 판단 (본사 사용자 잠김 방지)
+          const allowedByList = !orgChecked && allowedEmails.includes(email);
+          if (!allowedByList) {
+            if (supabase) await supabase.auth.signOut();
+            alert(orgChecked
+              ? '초대받지 않은 계정입니다.\n회사 관리자에게 이 구글 계정으로 초대를 요청하세요.'
+              : '접근 권한을 확인하지 못했습니다.\n잠시 후 다시 시도해주세요.');
+            return;
+          }
+        } else {
+          // 같은 PC에서 다른 회사·계정으로 로그인한 경우 이전 캐시 삭제
+          if (ensureCacheOwner(orgInfo)) resetInitState();
+          setOrg(orgInfo);
+        }
+
         localStorage.setItem('authToken', credential);
         localStorage.setItem('userProfile', JSON.stringify(userProfile));
-        localStorage.setItem('managerName', name);
+        localStorage.setItem('managerName', orgInfo?.displayName || name);
 
         setIsAuthenticated(true);
         setUser(userProfile);
@@ -170,7 +210,25 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         }
       };
 
-      restoreSupabaseSession();
+      restoreSupabaseSession().then(async () => {
+        // 이미 로그인된 상태로 앱을 열었을 때 회사·역할을 다시 확인 (역할 변경·회사 정지 반영)
+        if (!isAuthenticated) return;
+        try {
+          const info = await resolveOrg();
+          if (info) {
+            if (ensureCacheOwner(info)) {
+              // 다른 회사·계정의 캐시였음 → 깨끗한 상태로 다시 로드
+              window.location.reload();
+              return;
+            }
+            setOrg(info);
+          } else {
+            setOrg(null);
+          }
+        } catch (e) {
+          console.warn('[Auth] Background org check failed (using cached org):', e);
+        }
+      });
 
       // [Mobile WebView / PC Tab Fix] 탭 복귀 시 조용히 세션 복구
       const handleVisibilityChange = () => {
@@ -195,13 +253,17 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('userProfile');
       localStorage.removeItem('isAuthenticated');
+      clearOrgCache();
+      setOrg(null);
       setIsAuthenticated(false);
       setUser(null);
       navigate('/login');
     };
 
+    const isAdmin = org ? isAdminRole(org.role) : true;
+
     return (
-      <AuthContext.Provider value={{ isAuthenticated, user, allowedEmails, loginWithGoogle, logout, addAllowedEmail, removeAllowedEmail }}>
+      <AuthContext.Provider value={{ isAuthenticated, user, org, isAdmin, allowedEmails, loginWithGoogle, logout, addAllowedEmail, removeAllowedEmail }}>
         {children}
       </AuthContext.Provider>
     );

@@ -16,6 +16,7 @@ const TelegramSync = lazy(() => import('./pages/TelegramSync'));
 const AutoDial = lazy(() => import('./pages/AutoDial'));
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ROLE_LABEL } from './services/org';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useToast } from './contexts/ToastContext'; // Import hook
@@ -52,10 +53,29 @@ const MobileNavItem = ({ to, icon: Icon, label, active }: any) => (
   </Link>
 );
 
+// 상담원(agent)에게 숨기는 관리자 전용 화면
+const ADMIN_ONLY_PATHS = ['/settlement', '/settings', '/statistics'];
+
+const OrgBadge: React.FC<{ compact?: boolean }> = ({ compact }) => {
+  const { org } = useAuth();
+  if (!org) return null;
+  return (
+    <div className={`flex items-center gap-1.5 ${compact ? '' : 'mt-2'}`} title={org.orgName}>
+      <span className={`truncate font-semibold text-gray-600 dark:text-gray-300 ${compact ? 'max-w-[110px] text-[11px]' : 'max-w-[150px] text-xs'}`}>
+        {org.orgName}
+      </span>
+      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${org.role === 'agent' ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
+        {ROLE_LABEL[org.role]}
+      </span>
+    </div>
+  );
+};
+
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
   const { theme, toggleTheme } = useTheme();
+  const { isAdmin } = useAuth();
   const [pendingTgCount, setPendingTgCount] = React.useState(0);
 
   React.useEffect(() => {
@@ -159,7 +179,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/mypage', icon: User, label: '마이' },
   ];
 
-  const mobileNavs = navs.filter(n => n.to !== '/auto-dial');
+  const visibleNavs = isAdmin ? navs : navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
+  const mobileNavs = visibleNavs.filter(n => n.to !== '/auto-dial');
 
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900">
@@ -168,9 +189,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="p-6 border-b border-gray-100">
           <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
           <p className="text-xs text-gray-400 mt-1">개인회생 변제금 관리</p>
+          <OrgBadge />
         </div>
         <nav className="flex-1 p-4 space-y-1">
-          {navs.map(n => <NavItem key={n.to} {...n} active={path === n.to || (path.startsWith('/case/') && n.to === '/cases')} />)}
+          {visibleNavs.map(n => <NavItem key={n.to} {...n} active={path === n.to || (path.startsWith('/case/') && n.to === '/cases')} />)}
         </nav>
         <div className="p-4 border-t border-gray-100 dark:border-gray-700">
           <button
@@ -187,7 +209,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <main className="flex-1 flex flex-col overflow-hidden relative">
         {/* Mobile Top Bar */}
         <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
+            <OrgBadge compact />
+          </div>
           <Link to="/auto-dial" className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-full">
             <PhoneCall size={20} />
           </Link>
@@ -213,6 +238,11 @@ import { subscribe } from './services/api';
 import { QUERY_KEYS } from './services/queries';
 import { supabase } from './services/supabase';
 import { useNavigate } from 'react-router-dom';
+
+const AdminOnly: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { isAdmin } = useAuth();
+  return isAdmin ? children : <Navigate to="/" replace />;
+};
 
 const ProtectedRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -274,9 +304,9 @@ const ProtectedRoutes = () => {
           <Route path="/case/:caseId" element={<CaseDetail />} />
           <Route path="/telegram" element={<TelegramSync />} />
           <Route path="/auto-dial" element={<AutoDial />} />
-          <Route path="/settlement" element={<Settlement />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
+          <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />
+          <Route path="/settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
