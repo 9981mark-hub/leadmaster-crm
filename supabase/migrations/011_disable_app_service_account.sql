@@ -20,7 +20,8 @@ BEGIN
     RETURN;
   END IF;
   UPDATE public.org_members SET status = 'disabled' WHERE user_id = v_uid;
-  UPDATE auth.users SET banned_until = 'infinity'::timestamptz WHERE id = v_uid;
+  -- 'infinity'는 Supabase 로그인 서버가 읽지 못해 500 오류가 남 → 먼 미래 날짜로
+  UPDATE auth.users SET banned_until = '2999-12-31 00:00:00+00'::timestamptz WHERE id = v_uid;
   UPDATE auth.refresh_tokens SET revoked = true WHERE user_id = v_uid::text AND revoked IS DISTINCT FROM true;
   DELETE FROM auth.sessions WHERE user_id = v_uid;
 END $$;
