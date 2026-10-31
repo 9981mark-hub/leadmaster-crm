@@ -59,9 +59,37 @@ export const formatDateForExcel = (dateString?: string) => {
 };
 
 /**
+ * ISO 날짜/시각 문자열 → 한국 시간 기준 YYYY-MM-DD.
+ * 'YYYY-MM-DD'처럼 시각이 없는 값은 그대로 둔다.
+ */
+export const toKstDateString = (dateString?: string): string => {
+    if (!dateString) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString.split('T')[0];
+    const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    return kst.toISOString().split('T')[0];
+};
+
+export type ExportDateType = 'createdAt' | 'statusChangedAt' | 'contractAt';
+
+/**
+ * 마지막 상태 변경일.
+ * DB에는 statusUpdatedAt 컬럼이 없으므로 상태 변경 이력(statusLogs)의 가장 최근 changedAt을 쓴다.
+ * 이력이 없으면(상태를 한 번도 안 바꾼 케이스) 등록일을 쓴다.
+ */
+export const getStatusChangedAt = (c: Case): string | undefined => {
+    const latestLog = (c.statusLogs || []).reduce<string | undefined>((latest, log) => {
+        if (!log?.changedAt) return latest;
+        return !latest || log.changedAt > latest ? log.changedAt : latest;
+    }, undefined);
+    return latestLog || c.statusUpdatedAt || c.createdAt;
+};
+
+/**
  * Export custom cases based on modal selection
  */
-export const exportCustomCases = (cases: Case[], filename: string = 'cases_export', targetType: 'all' | 'special' | 'current', selectedStatuses: string[], dateType: 'createdAt' | 'contractAt', dateRange: 'all' | 'month' | 'custom', selectedMonth: string, customStartDate: string, customEndDate: string) => {
+export const exportCustomCases = (cases: Case[], filename: string = 'cases_export', targetType: 'all' | 'special' | 'current', selectedStatuses: string[], dateType: ExportDateType, dateRange: 'all' | 'month' | 'custom', selectedMonth: string, customStartDate: string, customEndDate: string) => {
     
     let filtered = [...cases];
 
@@ -79,10 +107,16 @@ export const exportCustomCases = (cases: Case[], filename: string = 'cases_expor
     // 3. Date Range
     if (dateRange !== 'all') {
         filtered = filtered.filter(c => {
-            const dateStr = dateType === 'contractAt' ? c.contractAt : c.createdAt;
+            const dateStr = dateType === 'contractAt'
+                ? c.contractAt
+                : dateType === 'statusChangedAt'
+                    ? getStatusChangedAt(c)
+                    : c.createdAt;
             if (!dateStr) return false;
-            
-            const caseDate = dateStr.split('T')[0];
+
+            // 한국 시간 기준 날짜로 비교 (UTC 날짜로 자르면 오전 9시 이전 건이 전날로 잡힘)
+            const caseDate = toKstDateString(dateStr);
+            if (!caseDate) return false;
             
             if (dateRange === 'month' && selectedMonth) {
                 return caseDate.startsWith(selectedMonth);
@@ -99,8 +133,9 @@ export const exportCustomCases = (cases: Case[], filename: string = 'cases_expor
 
     // Map to export data format (can be expanded later)
     const data = filtered.map(c => ({
-        등록일: formatDateForExcel(c.createdAt),
-        계약일: formatDateForExcel(c.contractAt),
+        등록일: toKstDateString(c.createdAt),
+        상태변경일: toKstDateString(getStatusChangedAt(c)),
+        계약일: toKstDateString(c.contractAt),
         상태: c.status,
         고객명: c.customerName,
         연락처: c.phone,

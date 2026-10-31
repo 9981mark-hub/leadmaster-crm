@@ -269,6 +269,53 @@ export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
 };
 
 /**
+ * [EGRESS FIX] 지정 시각 이후 변경된 케이스만 조회 (증분 동기화)
+ * cases.updated_at은 BEFORE UPDATE 트리거로 서버 시각이 기록된다.
+ */
+export const fetchCasesUpdatedSince = async (sinceIso: string): Promise<Case[]> => {
+    if (!supabase) return [];
+
+    const PAGE_SIZE = 1000;
+    let allData: any[] = [];
+    let from = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+        const { data, error } = await supabase
+            .from('cases')
+            .select('*')
+            .gte('updated_at', sinceIso)
+            .order('updated_at', { ascending: false })
+            .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+            console.error('[Supabase] Incremental fetch error:', error);
+            throw error;
+        }
+
+        const rows = data || [];
+        allData = allData.concat(rows);
+        if (rows.length < PAGE_SIZE) hasMore = false;
+        else from += PAGE_SIZE;
+    }
+
+    return allData.map(dbToCase);
+};
+
+/**
+ * [EGRESS FIX] 지정 시각 이후 변경된 settings key 목록만 조회 (값은 받지 않음)
+ */
+export const fetchSettingKeysUpdatedSince = async (sinceIso: string): Promise<string[]> => {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+        .from('settings')
+        .select('key')
+        .gte('updated_at', sinceIso);
+    if (error) throw error;
+    return (data || []).map((row: any) => row.key);
+};
+
+/**
  * Fetch a single case from Supabase
  */
 export const fetchCaseFromSupabase = async (caseId: string): Promise<Case | null> => {
@@ -431,6 +478,9 @@ export const restoreCaseInSupabase = async (caseId: string): Promise<boolean> =>
 
 let casesChannel: RealtimeChannel | null = null;
 let reconnectAttempts = 0;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+// 채널을 만들 때마다 증가. 이전 채널의 늦은 상태 콜백이 새 채널을 건드리지 않게 한다.
+let channelGeneration = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 /**
@@ -442,17 +492,30 @@ export const subscribeToCases = (
     onInsert: (newCase: Case) => void,
     onUpdate: (updatedCase: Case) => void,
     onDelete: (caseId: string) => void,
-    onAnyChange?: () => void // Partners/Settings 변경 시에만 호출
+    onAnyChange?: () => void, // Partners/Settings 변경 시에만 호출
+    onReconnected?: () => void // 끊겼다가 다시 연결됐을 때 (놓친 변경분 조회용)
 ): (() => void) => {
     if (!supabase) {
         console.warn('[Supabase] Real-time not available - client not configured');
         return () => { };
     }
 
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+    reconnectAttempts = 0;
+
+    const connect = (isReconnect: boolean) => {
+    if (!supabase) return;
+
     // Unsubscribe from previous channel if exists
     if (casesChannel) {
         supabase.removeChannel(casesChannel);
+        casesChannel = null;
     }
+
+    const generation = ++channelGeneration;
 
     casesChannel = supabase
         .channel('app-realtime')
@@ -503,40 +566,51 @@ export const subscribeToCases = (
             }
         )
         .subscribe((status) => {
+            // 이미 교체된(이전) 채널의 늦은 콜백은 무시
+            if (generation !== channelGeneration) return;
             console.log('[Supabase] Realtime status:', status);
 
             if (status === 'SUBSCRIBED') {
                 // 연결 성공 시 재시도 카운터 리셋
                 reconnectAttempts = 0;
+                // 재연결 성공: 끊긴 동안 놓친 변경분만 조회 (전체 재조회 아님)
+                if (isReconnect && onReconnected) onReconnected();
+                return;
             }
 
             // [EGRESS FIX] 지수 백오프 + 최대 재시도 횟수로 무한 루프 방지
             if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                if (reconnectTimer) return; // 이미 재연결 예약됨
                 reconnectAttempts++;
-                
+
                 if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
                     console.error(`[Supabase] Max reconnect attempts (${MAX_RECONNECT_ATTEMPTS}) reached. Stopping reconnection to prevent bandwidth waste.`);
-                    console.error('[Supabase] 수동으로 페이지를 새로고침해주세요.');
+                    console.error('[Supabase] 탭을 다시 열거나 페이지를 새로고침하면 다시 연결합니다.');
                     return;
                 }
 
                 const delay = Math.min(3000 * Math.pow(2, reconnectAttempts - 1), 60000);
                 console.warn(`[Supabase] Realtime channel error/timeout - reconnect attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${delay / 1000}s...`);
-                
-                setTimeout(() => {
-                    if (casesChannel && supabase) {
-                        supabase.removeChannel(casesChannel);
-                        casesChannel = null;
-                    }
+
+                reconnectTimer = setTimeout(() => {
+                    reconnectTimer = null;
                     console.log('[Supabase] Attempting to reconnect...');
-                    // [EGRESS FIX] 재연결 시 onAnyChange 호출 제거
-                    // 재연결만 시도하고, 데이터 재조회는 하지 않음 (무한 루프 방지)
+                    // [FIX] 예전에는 채널만 지우고 다시 구독하지 않아 실시간 동기화가 멈춘 채로 남았다.
+                    connect(true);
                 }, delay);
             }
         });
+    };
+
+    connect(false);
 
     // Return unsubscribe function
     return () => {
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+        channelGeneration++; // 남아 있는 콜백 무효화
         if (casesChannel && supabase) {
             supabase.removeChannel(casesChannel);
             casesChannel = null;

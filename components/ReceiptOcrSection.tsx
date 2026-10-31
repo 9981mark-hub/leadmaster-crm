@@ -24,15 +24,31 @@ interface ReceiptOcrSectionProps {
     onExpenseSaved?: () => void;
 }
 
+interface ReceiptCameraBridge {
+    openReceiptCamera?: () => void;
+    isReceiptCameraAvailable?: () => boolean;
+}
+
 declare global {
     interface Window {
-        Android?: {
-            openReceiptCamera?: () => void;
-            isReceiptCameraAvailable?: () => boolean;
-        };
+        Android?: ReceiptCameraBridge;
         onReceiptImageCaptured?: (base64Image: string) => void;
+        onReceiptCameraResult?: (dataUrl: string | null) => void;
     }
 }
+
+// 앱(LeadMasterApp)은 'AndroidBridge' 이름으로 노출한다. 예전 이름 'Android'도 함께 지원.
+const getReceiptCameraBridge = (): ReceiptCameraBridge | undefined => {
+    if (typeof window === 'undefined') return undefined;
+    const bridge = (window as any).AndroidBridge as ReceiptCameraBridge | undefined;
+    if (bridge?.openReceiptCamera) return bridge;
+    if (window.Android?.openReceiptCamera) return window.Android;
+    return undefined;
+};
+
+// 앱이 순수 base64를 보내는 경우에도 이미지로 읽을 수 있게 data URL로 맞춘다.
+const toImageDataUrl = (image: string): string =>
+    image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
 
 const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved }) => {
     const [ocrLoading, setOcrLoading] = useState(false);
@@ -48,15 +64,28 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // 모바일 카메라 사용 가능 여부
-    const isMobileCamera = typeof window !== 'undefined' &&
-        window.Android?.isReceiptCameraAvailable?.();
+    const isMobileCamera = (() => {
+        try {
+            return !!getReceiptCameraBridge()?.isReceiptCameraAvailable?.();
+        } catch {
+            return false;
+        }
+    })();
 
     // Android 카메라에서 이미지 수신
+    // 앱은 window.onReceiptCameraResult(dataUrl | null)를 호출한다 (취소·실패 시 null).
     React.useEffect(() => {
-        window.onReceiptImageCaptured = async (base64Image: string) => {
-            await processImage(base64Image);
+        const handleCaptured = async (image: string | null) => {
+            if (!image) {
+                setOcrLoading(false);
+                return;
+            }
+            await processImage(toImageDataUrl(image));
         };
+        window.onReceiptCameraResult = handleCaptured;
+        window.onReceiptImageCaptured = handleCaptured; // 예전 이름 호환
         return () => {
+            window.onReceiptCameraResult = undefined;
             window.onReceiptImageCaptured = undefined;
         };
     }, []);
@@ -119,9 +148,17 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
 
     // 모바일 카메라 실행
     const handleOpenCamera = () => {
-        if (window.Android?.openReceiptCamera) {
-            window.Android.openReceiptCamera();
+        const bridge = getReceiptCameraBridge();
+        try {
+            if (bridge?.openReceiptCamera) {
+                bridge.openReceiptCamera();
+                return;
+            }
+        } catch (error) {
+            console.error('Receipt camera bridge error:', error);
         }
+        // 브릿지가 없거나 실패하면 일반 파일 선택(카메라 촬영 가능)으로 대체
+        fileInputRef.current?.click();
     };
 
     // API 키 저장

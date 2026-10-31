@@ -18,7 +18,9 @@ import {
   subscribeToCases,
   bulkInsertCases,
   saveSettingToSupabase,
-  fetchCaseFromSupabase
+  fetchCaseFromSupabase,
+  fetchCasesUpdatedSince,
+  fetchSettingKeysUpdatedSince
 } from './supabase';
 
 
@@ -303,8 +305,9 @@ export const initializeData = async () => {
           setupRealtimeSubscription();
         }
         // [SYNC FIX] 탭 비활성 동안 놓친 업데이트 조회
-        console.log('[Sync] Tab visible - fetching missed updates...');
-        performBackgroundFetch();
+        // [EGRESS FIX] 전체 재조회 대신 마지막 동기화 이후 바뀐 행만 조회
+        console.log('[Sync] Tab visible - fetching missed updates (incremental)...');
+        performIncrementalFetch();
       }
     });
   }
@@ -470,6 +473,11 @@ const setupRealtimeSubscription = () => {
       }
 
       notifyListeners();
+    },
+    // On Reconnected: 끊긴 동안 놓친 변경분만 조회
+    () => {
+      console.log('[Realtime] Reconnected - fetching missed updates (incremental)...');
+      performIncrementalFetch();
     }
   );
 };
@@ -532,6 +540,7 @@ export const refreshData = async () => {
   }
 
   // 2. 서버에서 전체 데이터 조회 (강제)
+  const forceStartedAtMs = Date.now();
   try {
     const supabaseCases = await fetchCasesFromSupabase();
     console.log(`[Sync] Force refresh: ${supabaseCases.length} cases from server`);
@@ -574,6 +583,7 @@ export const refreshData = async () => {
     saveToStorage();
     syncStatus = 'ok';
     lastSyncAt = new Date().toISOString();
+    markServerSync(forceStartedAtMs, true);
     notifyListeners();
     console.log(`[Sync] Force refresh complete: ${localCases.length} cases synced`);
 
@@ -585,7 +595,191 @@ export const refreshData = async () => {
   }
 };
 
+// 서버에서 받은 settings(key → value)를 로컬 상태/캐시에 반영
+// (전체 동기화와 증분 동기화가 같은 로직을 쓰도록 performBackgroundFetch에서 분리)
+const applySettingsData = (settingsData: Record<string, any>) => {
+  if (settingsData.partners) localPartners = settingsData.partners;
+  else if (localPartners.length === 0) localPartners = [...MOCK_PARTNERS]; // Fallback only if empty
+
+  if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
+  else if (localInboundPaths.length === 0) localInboundPaths = [...MOCK_INBOUND_PATHS];
+
+  if (settingsData.statusStages) localStatuses = settingsData.statusStages;
+  else if (settingsData.statuses) localStatuses = settingsData.statuses;
+  else if (localStatuses.length === 0) localStatuses = [...DEFAULT_STATUS_LIST];
+
+  // [NEW] Load secondary statuses from server
+  if (settingsData.secondaryStatuses) localSecondaryStatuses = settingsData.secondaryStatuses;
+  else if (localSecondaryStatuses.length === 0) localSecondaryStatuses = ['고객취소', '진행불가', '연락안받음', '출장예약', '방문예약', '고민중', '계약서작성', '관리중', '착수금입금', '기준비용입금'];
+
+  // [NEW] Load tertiary statuses from server
+  if (settingsData.tertiaryStatuses) localTertiaryStatuses = settingsData.tertiaryStatuses;
+  else if (Object.keys(localTertiaryStatuses).length === 0) localTertiaryStatuses = {};
+
+  if (settingsData.allowedEmails) localAllowedEmails = settingsData.allowedEmails;
+
+  if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
+
+  // Load Email Notification Settings from server
+  if (settingsData.emailNotificationSettings) {
+    (globalThis as any)._pendingEmailNotificationSettings = settingsData.emailNotificationSettings;
+  }
+
+  // [NEW] Load Global Missed Call Settings
+  if (settingsData.missedCallSettings) {
+    const { status, interval, intervalTiers } = settingsData.missedCallSettings;
+    if (status) localStorage.setItem('lm_missedStatus', status);
+    if (interval) localStorage.setItem('lm_missedInterval', String(interval));
+    // [FIX] Sync intervalTiers from server to localStorage (PC↔Mobile sync)
+    if (intervalTiers && Array.isArray(intervalTiers) && intervalTiers.length > 0) {
+      localStorage.setItem('lm_missedIntervalTiers', JSON.stringify(intervalTiers));
+      console.log(`[Sync] Loaded ${intervalTiers.length} missed call interval tiers from server.`);
+    }
+  }
+
+  // [NEW] Load Settlement Batches from server
+  if (settingsData.settlementBatches && Array.isArray(settingsData.settlementBatches)) {
+    localSettlementBatches = settingsData.settlementBatches;
+    // Also update localStorage to keep it fresh
+    localStorage.setItem(CACHE_KEYS.SETTLEMENT_BATCHES, JSON.stringify(localSettlementBatches));
+    batchesInitialized = true;
+    console.log(`[Sync] Loaded ${localSettlementBatches.length} settlement batches from server.`);
+  }
+
+  // [NEW] Load Gemini API Key
+  if (settingsData.geminiApiKey) {
+    localStorage.setItem('lm_geminiApiKey', settingsData.geminiApiKey);
+  }
+
+  // [FIX] Load Gemini Model selection from server
+  if (settingsData.geminiModel) {
+    localStorage.setItem('lm_geminiModel', settingsData.geminiModel);
+  }
+
+  // [NEW] Load AI Keywords from server
+  if (settingsData.aiKeywords) {
+    localStorage.setItem('lm_aiKeywords', settingsData.aiKeywords);
+  }
+
+  // [NEW] Load Toss Ads Records from server
+  if (settingsData.tossAdsRecords && Array.isArray(settingsData.tossAdsRecords)) {
+    localTossAdsRecords = settingsData.tossAdsRecords;
+    tossAdsInitialized = true;
+    localStorage.setItem('leadmaster_toss_ads_records', JSON.stringify(settingsData.tossAdsRecords));
+    console.log(`[Sync] Loaded ${settingsData.tossAdsRecords.length} Toss Ads records from server.`);
+  }
+
+  // [NEW] Load Toss Ads Sheet URL from server
+  if (settingsData.tossAdsSheetUrl) {
+    localTossAdsSheetUrl = settingsData.tossAdsSheetUrl;
+    tossAdsSheetUrlInitialized = true;
+    localStorage.setItem('leadmaster_toss_ads_sheet_url', settingsData.tossAdsSheetUrl);
+    console.log(`[Sync] Loaded Toss Ads sheet URL from server: ${settingsData.tossAdsSheetUrl}`);
+  }
+};
+
+// ------------------------------------------------------------------
+// [EGRESS FIX] 증분 동기화
+// 탭 복귀·앱 복귀(통화 후 등)마다 전체 cases(select *)를 다시 받던 것을
+// "마지막 동기화 이후 바뀐 행"만 받도록 바꾼다.
+// - 첫 로딩, 수동 새로고침, 마지막 전체 동기화 후 6시간 경과 시에는 전체 동기화 유지
+//   (다른 기기에서 영구 삭제된 케이스 정리용)
+// ------------------------------------------------------------------
+const FULL_SYNC_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6시간
+const INCREMENTAL_MIN_INTERVAL_MS = 20 * 1000;   // 20초 안에 반복 호출되면 생략
+const CASE_SINCE_MARGIN_MS = 2 * 60 * 1000;      // 진행 중이던 쓰기·시계 오차 여유
+const SETTINGS_SINCE_MARGIN_MS = 10 * 60 * 1000; // settings.updated_at은 클라이언트 시각이라 여유를 더 둔다
+
+let lastServerFetchStartedAtMs = 0; // 마지막으로 성공한 서버 조회의 시작 시각
+let lastFullSyncAtMs = 0;
+let lastIncrementalAtMs = 0;
+let incrementalInFlight = false;
+
+const markServerSync = (startedAtMs: number, isFull: boolean) => {
+  lastServerFetchStartedAtMs = startedAtMs;
+  if (isFull) lastFullSyncAtMs = startedAtMs;
+};
+
+const performIncrementalFetch = async (): Promise<void> => {
+  if (!isSupabaseEnabled() || !supabase) return;
+
+  const nowMs = Date.now();
+  // 아직 전체 동기화가 없었거나 오래됐으면 전체 동기화
+  if (!lastServerFetchStartedAtMs || !lastFullSyncAtMs || nowMs - lastFullSyncAtMs > FULL_SYNC_MAX_AGE_MS) {
+    return performBackgroundFetch().catch(err => console.warn('[Sync] Full fetch failed:', err));
+  }
+  if (incrementalInFlight || nowMs - lastIncrementalAtMs < INCREMENTAL_MIN_INTERVAL_MS) return;
+
+  incrementalInFlight = true;
+  lastIncrementalAtMs = nowMs;
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      // 세션 복구 로직은 전체 동기화 쪽에 있으므로 그쪽으로 넘긴다
+      await performBackgroundFetch().catch(err => console.warn('[Sync] Full fetch failed:', err));
+      return;
+    }
+
+    const startedAtMs = Date.now();
+    const caseSince = new Date(lastServerFetchStartedAtMs - CASE_SINCE_MARGIN_MS).toISOString();
+    const settingsSince = new Date(lastServerFetchStartedAtMs - SETTINGS_SINCE_MARGIN_MS).toISOString();
+
+    const [changedCases, changedSettingKeys] = await Promise.all([
+      fetchCasesUpdatedSince(caseSince),
+      fetchSettingKeysUpdatedSince(settingsSince),
+    ]);
+
+    let changed = false;
+
+    if (changedSettingKeys.length > 0) {
+      const settings = await fetchSettingsFromSupabase();
+      if (Object.keys(settings).length > 0) {
+        applySettingsData(settings);
+        changed = true;
+      }
+    }
+
+    if (changedCases.length > 0) {
+      for (const raw of changedCases) {
+        const server = processIncomingCase(raw);
+        if (!server) continue;
+        const idx = localCases.findIndex(c => c.caseId === server.caseId);
+        if (idx === -1) {
+          localCases.push(server);
+          changed = true;
+          continue;
+        }
+        const localTime = new Date(localCases[idx].updatedAt || 0).getTime();
+        const serverTime = new Date(server.updatedAt || 0).getTime();
+        if (serverTime >= localTime) {
+          localCases[idx] = server;
+          changed = true;
+        }
+      }
+      localCases.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      syncInboundPaths(localCases);
+    }
+
+    markServerSync(startedAtMs, false);
+    syncStatus = 'ok';
+    lastSyncAt = new Date().toISOString();
+    console.log(`[Sync] Incremental: ${changedCases.length} cases, ${changedSettingKeys.length} settings changed`);
+
+    if (changed) {
+      saveToStorage();
+      notifyListeners();
+    }
+  } catch (err) {
+    console.warn('[Sync] Incremental fetch failed:', err);
+    syncStatus = 'fetch_failed';
+  } finally {
+    incrementalInFlight = false;
+  }
+};
+
 const performBackgroundFetch = async () => {
+  const fetchStartedAtMs = Date.now();
+  let fetchedFromServer = false;
   try {
     let casesData: any[] | null = null;
     let settingsData: any = null;
@@ -652,6 +846,7 @@ const performBackgroundFetch = async () => {
           // [SYNC FIX] 동기화 성공 기록
           syncStatus = 'ok';
           lastSyncAt = new Date().toISOString();
+          fetchedFromServer = true;
 
         } catch (supabaseError) {
           console.warn('[Sync] Supabase fetch failed:', supabaseError);
@@ -673,86 +868,7 @@ const performBackgroundFetch = async () => {
 
 
     // 1. Process Settings
-    if (settingsData) {
-      if (settingsData.partners) localPartners = settingsData.partners;
-      else if (localPartners.length === 0) localPartners = [...MOCK_PARTNERS]; // Fallback only if empty
-
-      if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
-      else if (localInboundPaths.length === 0) localInboundPaths = [...MOCK_INBOUND_PATHS];
-
-      if (settingsData.statusStages) localStatuses = settingsData.statusStages;
-      else if (settingsData.statuses) localStatuses = settingsData.statuses;
-      else if (localStatuses.length === 0) localStatuses = [...DEFAULT_STATUS_LIST];
-
-      // [NEW] Load secondary statuses from server
-      if (settingsData.secondaryStatuses) localSecondaryStatuses = settingsData.secondaryStatuses;
-      else if (localSecondaryStatuses.length === 0) localSecondaryStatuses = ['고객취소', '진행불가', '연락안받음', '출장예약', '방문예약', '고민중', '계약서작성', '관리중', '착수금입금', '기준비용입금'];
-
-      // [NEW] Load tertiary statuses from server
-      if (settingsData.tertiaryStatuses) localTertiaryStatuses = settingsData.tertiaryStatuses;
-      else if (Object.keys(localTertiaryStatuses).length === 0) localTertiaryStatuses = {};
-
-      if (settingsData.allowedEmails) localAllowedEmails = settingsData.allowedEmails;
-
-      if (settingsData.managerName) localStorage.setItem('managerName', settingsData.managerName);
-
-      // Load Email Notification Settings from server
-      if (settingsData.emailNotificationSettings) {
-        (globalThis as any)._pendingEmailNotificationSettings = settingsData.emailNotificationSettings;
-      }
-
-      // [NEW] Load Global Missed Call Settings
-      if (settingsData.missedCallSettings) {
-        const { status, interval, intervalTiers } = settingsData.missedCallSettings;
-        if (status) localStorage.setItem('lm_missedStatus', status);
-        if (interval) localStorage.setItem('lm_missedInterval', String(interval));
-        // [FIX] Sync intervalTiers from server to localStorage (PC↔Mobile sync)
-        if (intervalTiers && Array.isArray(intervalTiers) && intervalTiers.length > 0) {
-          localStorage.setItem('lm_missedIntervalTiers', JSON.stringify(intervalTiers));
-          console.log(`[Sync] Loaded ${intervalTiers.length} missed call interval tiers from server.`);
-        }
-      }
-
-      // [NEW] Load Settlement Batches from server
-      if (settingsData.settlementBatches && Array.isArray(settingsData.settlementBatches)) {
-        localSettlementBatches = settingsData.settlementBatches;
-        // Also update localStorage to keep it fresh
-        localStorage.setItem(CACHE_KEYS.SETTLEMENT_BATCHES, JSON.stringify(localSettlementBatches));
-        batchesInitialized = true;
-        console.log(`[Sync] Loaded ${localSettlementBatches.length} settlement batches from server.`);
-      }
-
-      // [NEW] Load Gemini API Key
-      if (settingsData.geminiApiKey) {
-        localStorage.setItem('lm_geminiApiKey', settingsData.geminiApiKey);
-      }
-
-      // [FIX] Load Gemini Model selection from server
-      if (settingsData.geminiModel) {
-        localStorage.setItem('lm_geminiModel', settingsData.geminiModel);
-      }
-
-      // [NEW] Load AI Keywords from server
-      if (settingsData.aiKeywords) {
-        localStorage.setItem('lm_aiKeywords', settingsData.aiKeywords);
-      }
-
-      // [NEW] Load Toss Ads Records from server
-      if (settingsData.tossAdsRecords && Array.isArray(settingsData.tossAdsRecords)) {
-        localTossAdsRecords = settingsData.tossAdsRecords;
-        tossAdsInitialized = true;
-        localStorage.setItem('leadmaster_toss_ads_records', JSON.stringify(settingsData.tossAdsRecords));
-        console.log(`[Sync] Loaded ${settingsData.tossAdsRecords.length} Toss Ads records from server.`);
-      }
-
-      // [NEW] Load Toss Ads Sheet URL from server
-      if (settingsData.tossAdsSheetUrl) {
-        localTossAdsSheetUrl = settingsData.tossAdsSheetUrl;
-        tossAdsSheetUrlInitialized = true;
-        localStorage.setItem('leadmaster_toss_ads_sheet_url', settingsData.tossAdsSheetUrl);
-        console.log(`[Sync] Loaded Toss Ads sheet URL from server: ${settingsData.tossAdsSheetUrl}`);
-      }
-    }
+    if (settingsData) applySettingsData(settingsData);
 
     // 2. Process Cases with Smart Merge (Conflict Resolution)
     if (casesData && Array.isArray(casesData)) {
@@ -830,6 +946,7 @@ const performBackgroundFetch = async () => {
     // 3. Save to Cache & Notify UI
     saveToStorage();
     notifyListeners();
+    if (fetchedFromServer) markServerSync(fetchStartedAtMs, true);
     console.log("Data revalidated and UI notified.");
 
   } catch (error) {

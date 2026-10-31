@@ -472,6 +472,9 @@ async function autoApplyFeedback(
   // [REMOVED] Reminder creation — AI가 추출한 날짜가 부정확하여 리마인더 자동 생성 비활성화
   // 상담 이력(메모/상태 로그)에만 기록됨
 
+  // 웹 CRM의 증분 동기화(updated_at 기준)가 이 변경을 놓치지 않도록 명시적으로 기록
+  updates.updated_at = new Date().toISOString();
+
   // Apply updates
   await supabase
     .from('cases')

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Calendar, Filter } from 'lucide-react';
 import { Case } from '../../types';
-import { exportCustomCases } from '../../utils/xlsxExport';
+import { exportCustomCases, ExportDateType } from '../../utils/xlsxExport';
 
 interface ExportCaseModalProps {
     isOpen: boolean;
@@ -25,7 +25,7 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     
     // Date filters
-    const [dateType, setDateType] = useState<'createdAt' | 'contractAt'>('createdAt');
+    const [dateType, setDateType] = useState<ExportDateType>('createdAt');
     const [dateRangeType, setDateRangeType] = useState<'all' | 'month' | 'custom'>('all');
     const [selectedMonth, setSelectedMonth] = useState<string>(''); // YYYY-MM
     const [customStartDate, setCustomStartDate] = useState<string>(''); // YYYY-MM-DD
@@ -152,10 +152,11 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
                             </h3>
                             <select 
                                 value={dateType} 
-                                onChange={(e) => setDateType(e.target.value as any)}
+                                onChange={(e) => setDateType(e.target.value as ExportDateType)}
                                 className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             >
                                 <option value="createdAt">등록일 기준</option>
+                                <option value="statusChangedAt">상태변경일 기준</option>
                                 <option value="contractAt">계약일 기준</option>
                             </select>
                         </div>

@@ -1,0 +1,61 @@
+# 리드마스터(LeadMaster) 프로젝트 맥락
+
+모든 답변·보고는 한국어로 한다.
+
+## 서비스
+- 토스애즈·메타·카카오 등 광고로 모은 개인회생/파산 리드를 1차 콜로 상담하고, 기초 내용을 광고 위탁 변호사 사무실(파트너)에 전달하는 영업 CRM.
+- 웹 CRM + 안드로이드 앱(구글 플레이 미등록, APK 직접 설치). 앱은 웹을 WebView로 띄우고 전화·문자·팝업 등 네이티브 기능을 붙인다.
+
+## 경로 (2026-10-31 확인)
+- 웹 CRM: `D:\안티그래피티 작업\01_03-leadmaster-crm` (GitHub `9981mark-hub/leadmaster-crm`, 브랜치 `main`, 공개 저장소)
+- 안드로이드 앱 원본: `D:\안드로이드 스튜디오 작업\Projects\LeadMasterApp` (git `master`, 원격 저장소 없음)
+- `D:\안티그래피티 작업\LeadMasterApp` 는 파일 없는 빈 껍데기 폴더다. 작업하지 않는다.
+- 2026-10-24 폴더 이동 때 `D:\안티그래피티 작업` 아래 여러 프로젝트가 빈 폴더만 남았다. CRM은 2026-10-31 GitHub에서 복원했다.
+- 백업본: `D:\다운로드_전체백업\01_03-leadmaster-crm`, `D:\다운로드_전체백업\LeadMasterApp`. 2026-10-31 비교 결과 작업 폴더와 내용이 같다(CRM a187e0c, 앱 87123d5 + AndroidBridge.kt 미커밋 변경 동일). 백업본은 읽기 전용 참고로만 두고 수정하지 않는다.
+- 마이김변(legal-crm, DB `xgmmv…`)과 리드마스터(DB `cenks…`)는 완전히 별개 서비스. 코드·DB·계정을 섞지 않는다.
+
+## 인계서(2026-10-31) 검증 결과
+- ExportCaseModal은 이미 구현·연결됨(`components/case-list/ExportCaseModal.tsx`, `pages/CaseList.tsx`). 2026-10-31 "상태변경일 기준" 추가(statusLogs 최신 changedAt, 없으면 등록일). 엑셀 날짜는 한국 시간 기준.
+- 통화 종료 시 메모 팝업 유실: 사실. `PhoneMonitorService.hideAllOverlays()` → `FloatingButtonService.ACTION_HIDE` → `hideAllViews()`가 작성 중인 메모 창까지 제거.
+- 녹음 자동 업로드: 앱에 없음. 웹에서 수동 업로드 → Apps Script → 구글 드라이브(`ANYONE_WITH_LINK` 공개 링크).
+- AI 요약: `cases.ai_summary` 한 칸에 덮어씀. 특이사항 일부만 specialMemo로 누적. Gemini는 브라우저에서 직접 호출.
+- 랜딩 리드: Apps Script `create_external`로 시트에 쌓임. 시트 → Supabase로 옮기는 코드는 레포에 없음(실제 경로 사용자 확인 필요).
+- 수신 팝업 이전 고객 노출: PhoneNumberCache(callId·generation)로 일부 대응됨. 현재도 재현되는지 사용자 확인 필요.
+
+## 배포
+- 실제 운영: `main` push → GitHub Actions(`.github/workflows/deploy.yml`) → GitHub Pages `https://9981mark-hub.github.io/leadmaster-crm/` (vite `base: '/leadmaster-crm/'`). 앱 WebView도 이 주소를 연다.
+- Vercel(`0103-leadmaster-crm-sigma.vercel.app`)은 보조 배포. 앱은 이 도메인을 외부 브라우저로 넘긴다.
+- GitHub push 계정은 `markjin9981` (`gh auth switch --user markjin9981`). `legal-crm` 계정으로는 403.
+- 빌드 확인: `npx tsc --noEmit`, `npx vite build`. git 명령은 페이저 때문에 멈추므로 `$env:GIT_PAGER='cat'` 또는 `--no-pager`.
+
+## 웹 구조 요약
+- React 19 + Vite 6 + TS, HashRouter, React Query, Supabase(프로젝트 ref `cenksfblktflfurxjmtv`), Gemini.
+- 핵심 파일: `services/api.ts`(로컬 캐시·동기화·CRUD), `services/supabase.ts`(DB 매핑·Realtime·pending_calls/pending_sms), `App.tsx`(라우트), `supabase/functions/telegram-webhook`(파트너 텔레그램 피드백 자동 분류·반영).
+- 설정값 대부분(partners, statusStages, geminiApiKey 등)은 `settings` 테이블 key/value JSON.
+- Egress(대역폭) 초과 이력 있음(2026-07). 전체 cases 재조회를 늘리는 변경은 피한다.
+
+## 앱 ↔ 웹 연동 계약
+- JS 인터페이스 `window.AndroidBridge`: isAndroidApp, makeCall, makeCallWithAccount, getPhoneAccounts, getPopupSettings, getAppTheme, setPopupTemplate, setFloatingButtonEnabled, getAvailableTemplates, setMissedCallConfig, openReceiptCamera, isReceiptCameraAvailable.
+- 앱 → 웹 콜백: `window.onReceiptCameraResult(dataUrl|null)`. 정산 화면 영수증 스캔(OCR)용. 2026-10-31 웹 `ReceiptOcrSection`을 `AndroidBridge` + `onReceiptCameraResult`로 맞춤(옛 이름 `window.Android`/`onReceiptImageCaptured`도 호환). 사용자가 쓰는 기능이므로 유지.
+- URL: `tel:`(다이얼러), `autocall:`(바로 발신).
+- Supabase 경유: PC 클릭투콜 → `pending_calls` → 앱 폴링 발신. 문자 → `pending_sms`. 앱이 통화/문자 기록을 `communication_logs`에 업로드.
+
+## 앱 빌드 주의
+- 빌드 JDK는 17: `D:\안드로이드 스튜디오 작업\jdk17`. Android Studio 내장 jbr(Java 25)로는 Gradle 8.13이 실패한다.
+- 서명: 이 PC의 `%USERPROFILE%\.android\debug.keystore`(SHA-256 `66b2246b…`)가 폰에 깔린 기존 APK와 같은 키. 사본 `D:\안드로이드 스튜디오 작업\Config_Backup\leadmaster-debug.keystore`. 다른 PC에서 빌드하면 이 사본을 복사해야 업데이트 설치가 된다.
+- 배포할 때마다 `app/build.gradle.kts` versionCode를 1씩 올린다(2026-10-31 기준 2 / 1.1.0). release 서명은 `keystore.properties`가 있을 때만(선택).
+- 2026-10-31 `.gitignore` 추가, build/.gradle/.idea/local.properties를 git 추적에서 뺐다(파일은 그대로).
+
+## 동기화(Egress) 구조 (2026-10-31 변경)
+- 첫 로딩·수동 새로고침·마지막 전체 동기화 후 6시간 경과 → 전체 동기화(`performBackgroundFetch`).
+- 탭/앱 복귀, Realtime 재연결 → `performIncrementalFetch`: `cases.updated_at >= 마지막 조회 - 2분`만 받음. settings는 바뀐 key가 있을 때만 전체 settings 재조회.
+- 증분 동기화는 `cases.updated_at` 갱신에 의존한다. 서버 쪽에서 cases를 고치는 코드(edge function, 앱)는 updated_at도 같이 써야 한다(트리거 `cases_updated_at`도 있음).
+- Realtime(`app-realtime`)이 끊기면 지수 백오프로 실제 재구독(최대 5회).
+
+## DB 보안(RLS) 현황 (2026-10-31 anon 키로 점검)
+- anon으로 보이던 테이블: `pending_sms`(15건), `auto_dial_batches`(1건), `auto_dial_items`(206건, 고객명·번호). 나머지는 0건.
+- 잠금 SQL: `supabase/migrations/003_lock_anon_tables.sql` (화이트리스트 로그인 사용자 + 앱 서비스 계정만 허용). 사용자가 Supabase SQL Editor에서 실행해야 함.
+- 앱 `AutoDialWorker`는 서비스 계정 토큰을 쓰도록 바꿈(기존 anon 키 직접 사용). `PendingCallWorker`의 anon 전용 미사용 코드 삭제.
+
+## 보안 규칙
+- 키·비밀번호·토큰 값은 답변이나 로그에 그대로 쓰지 않는다(마스킹).
