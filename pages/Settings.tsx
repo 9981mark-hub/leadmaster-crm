@@ -4,7 +4,7 @@ import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAdd
 import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle } from 'lucide-react';
 import { getDayName, loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
-import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS, REHABILITATION_DOMAIN_KEYWORDS } from '../constants';
+import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS, REHABILITATION_DOMAIN_KEYWORDS, CHECK_ITEMS, DEFAULT_CHECK_ITEMS, DEFAULT_CLASSIFICATION_GUIDE } from '../constants';
 import Modal from '../components/Modal';
 import TelegramChatPicker from '../components/TelegramChatPicker';
 import { useToast } from '../contexts/ToastContext';
@@ -1453,8 +1453,42 @@ export default function SettingsPage() {
                                     </div>
                                     <p className="text-[10px] text-blue-600 mt-2 ml-1">
                                         * 수임료 구간 최저값 × 계약금 비율 이상 입금 시, 수수료의 선지급 비율만큼 지급합니다.<br />
-                                        * 예: 400~499 구간, 10% → 40만원 이상 입금 시 수수료 50% 선지급
+                                        * 예: 400~499 구간, 10% → 40만원 이상 입금 시 수수료 50% 선지급<br />
+                                        * 나머지는 수당 룰의 "100% 지급 기준 금액" 이상 입금 시 받습니다. 기준을 0으로 두면 수임료 전액 입금 시로 계산합니다.
                                     </p>
+                                </div>
+
+                                <hr className="border-blue-200" />
+
+                                {/* [2026-11-01] 받을 돈 계산용: 부가세, 받기로 한 기한 */}
+                                <div>
+                                    <h4 className="text-sm font-bold text-blue-800 mb-2">🧾 청구 방식</h4>
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <div className="bg-white p-3 rounded border border-blue-200">
+                                            <span className="text-xs text-gray-500 block mb-1">수수료 부가세</span>
+                                            <select
+                                                className="w-full text-sm font-bold bg-transparent outline-none"
+                                                value={editingPartner.vatMode || 'separate'}
+                                                onChange={e => setEditingPartner({ ...editingPartner, vatMode: e.target.value as any })}
+                                            >
+                                                <option value="separate">별도 (수수료 + 10% 받음)</option>
+                                                <option value="included">포함 (수수료 안에 부가세 포함)</option>
+                                                <option value="none">없음</option>
+                                            </select>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border border-blue-200 flex items-center justify-between">
+                                            <span className="text-xs text-gray-500">연체 판단 여유</span>
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="number" min={0} className="w-12 text-right font-bold outline-none border-b border-gray-300 focus:border-blue-500 mr-1"
+                                                    value={editingPartner.paymentTermDays ?? 7}
+                                                    onChange={e => setEditingPartner({ ...editingPartner, paymentTermDays: Math.max(0, Number(e.target.value) || 0) })}
+                                                />
+                                                <span className="text-sm">일</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-blue-600 mt-2 ml-1">* 정산 → 받을 돈에서 청구액·연체를 이 설정으로 계산합니다. 받을 날은 위 마감·지급 요일로 정하고, 요일 설정이 없을 때만 "연체 판단 여유" 일수를 씁니다.</p>
                                 </div>
                             </div>
                         </div>
@@ -1893,11 +1927,47 @@ VAT: {{VAT}}원
                             </p>
                         </div>
 
+                        {/* [2026-11-01] 상담·AI 정리 설정: 필수 확인 항목 + 분류 기준 (통화 녹음 AI 정리와 상담 진행 화면이 같이 씀) */}
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 space-y-5">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-700 flex items-center">
+                                    <ListChecks className="mr-2 text-emerald-600" size={20} /> 필수 확인 항목
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1 mb-3">이 사무실에 넘기기 전에 상담원이 꼭 물어볼 항목입니다. 상담 화면에 진행률로 보이고, 통화 녹음 AI 정리가 빠진 항목을 알려줍니다.</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {CHECK_ITEMS.map(item => {
+                                        const current = editingPartner.checkItems || DEFAULT_CHECK_ITEMS;
+                                        const on = current.includes(item.key);
+                                        return (
+                                            <button
+                                                type="button"
+                                                key={item.key}
+                                                onClick={() => setEditingPartner({ ...editingPartner, checkItems: on ? current.filter(k => k !== item.key) : [...current, item.key] })}
+                                                className={`px-3 py-1.5 rounded-full text-sm border ${on ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-gray-500 border-gray-200'}`}
+                                            >
+                                                {item.label}{on && ' ✓'}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-gray-700">분류 기준</h3>
+                                <p className="text-sm text-gray-500 mt-1 mb-2">AI가 통화 내용을 듣고 이 기준으로 "개인회생 가능 / 파산 검토 / 진행 어려움" 같이 분류합니다. 사무실이 쓰는 말로 적으세요.</p>
+                                <textarea
+                                    className="w-full h-28 p-3 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                                    value={editingPartner.aiClassificationGuide ?? DEFAULT_CLASSIFICATION_GUIDE}
+                                    onChange={e => setEditingPartner({ ...editingPartner, aiClassificationGuide: e.target.value })}
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 bg-gray-50 rounded p-2">통화 녹음 AI 정리는 아래 <b>AI 요약 프롬프트</b>(요약 작성 규칙)와 <b>요약문 양식</b>(사무실 보고서 양식)도 그대로 따릅니다.</p>
+                        </div>
+
                         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
-                                <Edit3 className="mr-2 text-indigo-600" size={20} /> 입력 항목 설정
+                                <Edit3 className="mr-2 text-indigo-600" size={20} /> 등록 화면 추가 항목
                             </h3>
-                            <p className="text-sm text-gray-500 mb-3">신규 접수 시 입력받을 항목을 선택하세요.</p>
+                            <p className="text-sm text-gray-500 mb-3">신규 등록·상담 화면에 보일 추가 입력 칸을 선택하세요.</p>
                             <div className="flex flex-wrap gap-2">
                                 {AVAILABLE_FIELDS_CONFIG.map(field => (
                                     <button
@@ -1917,7 +1987,7 @@ VAT: {{VAT}}원
                             <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
                                 <Sparkles className="mr-2 text-purple-600" size={20} /> AI 요약 프롬프트 설정
                             </h3>
-                            <p className="text-sm text-gray-500 mb-3">통화 녹음 요약 시 AI에게 보낼 지시사항을 설정합니다.</p>
+                            <p className="text-sm text-gray-500 mb-3">통화 녹음 요약을 어떻게 쓸지 AI에게 주는 규칙입니다. 자동 업로드된 녹음과 직접 올린 녹음 모두 이 규칙을 씁니다.</p>
                             <textarea
                                 className="w-full h-32 p-3 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                                 value={editingPartner.aiPromptTemplate || DEFAULT_AI_PROMPT}
@@ -1956,19 +2026,26 @@ VAT: {{VAT}}원
                                         <li><code>{'{{managerName}}'}</code> 담당자명</li>
                                         <li><code>{'{{customerName}}'}</code> 고객명</li>
                                         <li><code>{'{{phone}}'}</code> 연락처</li>
-                                        <li><code>{'{{birth}}'}</code> 생년월일</li>
+                                        <li><code>{'{{birth}}'}</code> 출생년도</li>
                                         <li><code>{'{{gender}}'}</code> 성별</li>
-                                        <li><code>{'{{region}}'}</code> 지역</li>
-                                        <li><code>{'{{jobType}}'}</code> 직업</li>
-                                        <li><code>{'{{incomeNet}}'}</code> 월 소득</li>
-                                        <li><code>{'{{loanMonthlyPay}}'}</code> 월 변제금</li>
-                                        <li><code>{'{{housingType}}'}</code> 주거형태</li>
-                                        <li><code>{'{{depositRentStr}}'}</code> 보증금/월세 통합</li>
-                                        <li><code>{'{{assetsStr}}'}</code> 자산 목록 통합</li>
-                                        <li><code>{'{{creditLoan}}'}</code> 신용대출</li>
-                                        <li><code>{'{{collateralStr}}'}</code> 담보대출 통합</li>
-                                        <li><code>{'{{specialMemo}}'}</code> 특이사항</li>
+                                        <li><code>{'{{region}}'}</code> 거주지역</li>
+                                        <li><code>{'{{jobTypes}}'}</code> 직업</li>
+                                        <li><code>{'{{insurance4}}'}</code> 4대보험</li>
+                                        <li><code>{'{{maritalStatus}}'}</code> 결혼 여부</li>
+                                        <li><code>{'{{childrenCount}}'}</code> 미성년 자녀 수</li>
+                                        <li><code>{'{{incomeDetails}}'}</code> 월 소득 (직업별)</li>
+                                        <li><code>{'{{loanMonthlyPay}}'}</code> 월 대출 납입금</li>
+                                        <li><code>{'{{housingType}}'}</code> 주거 형태 · <code>{'{{housingDetail}}'}</code> 주거 종류</li>
+                                        <li><code>{'{{depositRentStr}}'}</code> 보증금·월세·시세</li>
+                                        <li><code>{'{{assetsStr}}'}</code> 재산 목록</li>
+                                        <li><code>{'{{creditLoanStr}}'}</code> 신용 채무 (카드 포함, 합계)</li>
+                                        <li><code>{'{{collateralStr}}'}</code> 담보 채무 (합계)</li>
+                                        <li><code>{'{{debtTotalStr}}'}</code> 총 채무 (신용+담보)</li>
+                                        <li><code>{'{{creditCardUse}}'}</code> 신용카드 사용 · <code>{'{{creditCardAmountStr}}'}</code> 사용액</li>
+                                        <li><code>{'{{historyStr}}'}</code> 회생·파산 이력</li>
+                                        <li><code>{'{{specialMemo}}'}</code> 상담 메모 (상태 변경 기록 제외)</li>
                                     </ul>
+                                    <p className="mt-2 text-gray-500">통화 녹음 AI 정리는 이 양식의 줄 순서를 그대로 지켜 "사무실 보고서"를 만듭니다.</p>
                                 </div>
                             </div>
                         </div>

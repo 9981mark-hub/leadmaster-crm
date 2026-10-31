@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Sparkles, CalendarClock } from 'lucide-react';
 import { Case, CaseStatusLog, Partner, MemoItem, ReminderItem, RecordingItem } from '../../../types';
 import { CaseDetailReminders } from './CaseDetailReminders';
 import { CaseDetailAiSummary } from './CaseDetailAiSummary';
@@ -8,6 +8,7 @@ import { CaseDetailJobFamily } from './CaseDetailJobFamily';
 import { CaseDetailHousing } from './CaseDetailHousing';
 import { CaseDetailAssets } from './CaseDetailAssets';
 import { CaseDetailHistory } from './CaseDetailHistory';
+import { getCheckProgress } from '../../../utils/intake';
 
 interface CaseInfoTabProps {
     c: Case;
@@ -46,6 +47,25 @@ interface CaseInfoTabProps {
     showToast: (msg: string, type?: 'success' | 'error') => void;
 }
 
+// 질문 순서 = 화면 순서. 필수 확인 항목이 어느 단계에 속하는지
+const STEPS: { id: string; label: string; keys: string[] }[] = [
+    { id: 'personal', label: '접수·인적', keys: ['birth'] },
+    { id: 'job', label: '직업·소득·가족', keys: ['job', 'income', 'insurance4', 'marital', 'children'] },
+    { id: 'housing', label: '주거', keys: ['housing', 'region'] },
+    { id: 'debt', label: '채무·재산', keys: ['debtTotal', 'creditors', 'monthlyPay', 'overdue', 'assets', 'spouseAssets', 'creditCard'] },
+    { id: 'history', label: '이력', keys: ['history', 'contactTime'] },
+];
+
+const scrollToStep = (id: string) => {
+    document.getElementById(`step-${id}`)?.scrollIntoView({ block: 'start' });
+};
+
+/**
+ * 리드 상세 → 정보 탭
+ * [2026-11-01] 상담 순서대로 한 줄로 (접수·인적 → 직업·소득·가족 → 주거 → 채무·재산 → 이력).
+ * 위에 거래처 필수 확인 항목 진행률, 단계 바로가기. 상담 메모·일정은 오른쪽(모바일은 위)에 늘 보인다.
+ * 예전엔 모바일·PC 화면을 둘 다 그려 두고 CSS로 숨겨서 모든 칸이 두 번씩 렌더됐다.
+ */
 export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
     c, partners, inboundPaths, onUpdate, onIncomeChange, onJobTypeChange,
     reminders, memos, onUpdateReminders, onUpdateMemos,
@@ -55,221 +75,117 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
     onAudioFileSelect, onTriggerAudioInput, onGenerateAiSummary, onPlayRecording, onDeleteRecording,
     statusLogs, showToast
 }) => {
-    // Sub-tab for Right Work Dock: 'reminders' vs 'ai'
     const [rightPanelTab, setRightPanelTab] = useState<'reminders' | 'ai'>('reminders');
+    const partner = partners.find(p => p.partnerId === c.partnerId);
+    const progress = useMemo(() => getCheckProgress(c, partner), [c, partner]);
+    const stepState = (keys: string[]) => {
+        const mine = progress.items.filter(i => keys.includes(i.key));
+        return { total: mine.length, missing: mine.filter(i => !i.filled).length };
+    };
+    const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 100;
 
     return (
-        <>
-            {/* 1. Mobile View (100% Exact Preservation) */}
-            <div className="md:hidden space-y-8">
-                <CaseDetailReminders
-                    reminders={reminders}
-                    memos={memos}
-                    onUpdateReminders={onUpdateReminders}
-                    onUpdateMemos={onUpdateMemos}
-                    showToast={showToast}
-                />
-
-                <CaseDetailAiSummary
-                    c={c}
-                    aiSummaryText={aiSummaryText}
-                    setAiSummaryText={setAiSummaryText}
-                    aiSummaryEditMode={aiSummaryEditMode}
-                    setAiSummaryEditMode={setAiSummaryEditMode}
-                    handleUpdateAiSummaryText={handleUpdateAiSummaryText}
-                    handleDeleteAiSummary={handleDeleteAiSummary}
-                    handleSaveSummaryToMemo={handleSaveSummaryToMemo}
-                    currentAudioFile={currentAudioFile}
-                    audioUrl={audioUrl}
-                    isFileUploading={isFileUploading}
-                    isAiLoading={isAiLoading}
-                    onAudioFileSelect={onAudioFileSelect}
-                    onTriggerAudioInput={onTriggerAudioInput}
-                    onGenerateAiSummary={onGenerateAiSummary}
-                    onPlayRecording={onPlayRecording}
-                    onDeleteRecording={onDeleteRecording}
-                />
-
-                <div className="grid md:grid-cols-2 gap-8">
-                    <CaseDetailPersonalInfo
-                        c={c}
-                        partners={partners}
-                        inboundPaths={inboundPaths}
-                        onUpdate={onUpdate}
-                        statusLogs={statusLogs}
-                    />
-
-                    <CaseDetailJobFamily
-                        c={c}
-                        onUpdate={onUpdate}
-                        onIncomeChange={onIncomeChange}
-                        onJobTypeChange={onJobTypeChange}
-                        statusLogs={statusLogs}
-                    />
+        <div className="grid grid-cols-12 gap-5 items-start">
+            {/* 상담 메모 · 일정 (모바일은 먼저, PC는 오른쪽 고정) */}
+            <aside className="col-span-12 xl:col-span-4 xl:order-2 space-y-3 xl:sticky xl:top-28">
+                <div className="bg-white dark:bg-gray-800 p-1 rounded-xl flex gap-1 border border-slate-200 dark:border-gray-700">
+                    <button
+                        type="button"
+                        onClick={() => setRightPanelTab('reminders')}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'reminders' ? 'bg-slate-900 text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
+                    >
+                        <CalendarClock size={13} /> 상담 메모 · 일정
+                        {reminders.length > 0 && <span className={`text-[10px] px-1.5 rounded-full ${rightPanelTab === 'reminders' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>{reminders.length}</span>}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setRightPanelTab('ai')}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'ai' ? 'bg-slate-900 text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
+                    >
+                        <Sparkles size={13} /> 녹음 직접 올려 요약
+                    </button>
                 </div>
-
-                <hr className="border-gray-100" />
-
-                <div className="grid md:grid-cols-2 gap-8">
-                    <CaseDetailHousing
-                        c={c}
-                        onUpdate={onUpdate}
-                    />
-
-                    <CaseDetailAssets
-                        c={c}
-                        onUpdate={onUpdate}
+                {rightPanelTab === 'reminders' ? (
+                    <CaseDetailReminders
+                        reminders={reminders}
+                        memos={memos}
+                        onUpdateReminders={onUpdateReminders}
+                        onUpdateMemos={onUpdateMemos}
                         showToast={showToast}
+                        isStacked={true}
                     />
-                </div>
+                ) : (
+                    <CaseDetailAiSummary
+                        c={c}
+                        aiSummaryText={aiSummaryText}
+                        setAiSummaryText={setAiSummaryText}
+                        aiSummaryEditMode={aiSummaryEditMode}
+                        setAiSummaryEditMode={setAiSummaryEditMode}
+                        handleUpdateAiSummaryText={handleUpdateAiSummaryText}
+                        handleDeleteAiSummary={handleDeleteAiSummary}
+                        handleSaveSummaryToMemo={handleSaveSummaryToMemo}
+                        currentAudioFile={currentAudioFile}
+                        audioUrl={audioUrl}
+                        isFileUploading={isFileUploading}
+                        isAiLoading={isAiLoading}
+                        onAudioFileSelect={onAudioFileSelect}
+                        onTriggerAudioInput={onTriggerAudioInput}
+                        onGenerateAiSummary={onGenerateAiSummary}
+                        onPlayRecording={onPlayRecording}
+                        onDeleteRecording={onDeleteRecording}
+                    />
+                )}
+            </aside>
 
-                <CaseDetailHistory
-                    c={c}
-                    onUpdate={onUpdate}
-                    statusLogs={statusLogs}
-                />
-            </div>
-
-            {/* 2. PC Desktop View (Dual Workspace: Pure Form Hub vs Action & Intelligence Dock) */}
-            <div className="hidden md:grid grid-cols-12 gap-5 items-start">
-                
-                {/* ============================================================ */}
-                {/* [영역 1] 순수 고객 입력 정보 전용 허브 (Col 1~8 / 12, 약 67%) */}
-                {/* AI 요약이나 리마인더가 일절 들어오지 않는 100% 순수 입력 폼 */}
-                {/* ============================================================ */}
-                <div className="col-span-12 xl:col-span-8 bg-slate-50/60 dark:bg-gray-850/60 rounded-2xl border border-slate-200 dark:border-gray-700/80 p-4 shadow-2xs space-y-4">
-                    <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-gray-700">
-                        <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                            <h3 className="font-bold text-slate-900 dark:text-gray-100 text-sm md:text-base">
-                                고객 상황 및 채무 입력 정보 (CRM 폼)
-                            </h3>
-                            <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">직접 수정 가능</span>
+            {/* 상담 순서대로 정보 입력 */}
+            <div className="col-span-12 xl:col-span-8 xl:order-1 space-y-4">
+                {/* 필수 확인 항목 진행률 + 단계 바로가기 */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="min-w-[180px] flex-1">
+                            <div className="flex items-baseline justify-between text-xs">
+                                <span className="font-semibold text-slate-700 dark:text-gray-200">{partner ? `${partner.name} 필수 확인` : '필수 확인'} {progress.done}/{progress.total}</span>
+                                <span className="text-slate-400 tabular-nums">{pct}%</span>
+                            </div>
+                            <div className="mt-1 h-1.5 rounded-full bg-slate-100 dark:bg-gray-700 overflow-hidden">
+                                <div className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : 'bg-blue-600'}`} style={{ width: `${pct}%` }} />
+                            </div>
                         </div>
-                        <span className="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200 dark:border-emerald-800">
-                            ✓ 실시간 자동 저장
-                        </span>
+                        <nav className="flex flex-wrap gap-1.5" aria-label="상담 단계">
+                            {STEPS.map((s, i) => {
+                                const st = stepState(s.keys);
+                                const done = st.total > 0 && st.missing === 0;
+                                return (
+                                    <button key={s.id} type="button" onClick={() => scrollToStep(s.id)}
+                                        className={`px-2.5 py-1 rounded-full text-xs border flex items-center gap-1 ${done ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300' : 'border-slate-200 dark:border-gray-600 text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
+                                        <span className="tabular-nums text-slate-400">{i + 1}</span> {s.label}
+                                        {st.missing > 0 && <span className="text-[10px] px-1 rounded bg-amber-100 text-amber-800">{st.missing}</span>}
+                                    </button>
+                                );
+                            })}
+                        </nav>
                     </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-                        {/* 좌측 폼 열: 1. 기본 인적사항, 2. 직업/소득/가족, 3. 주거 형태 */}
-                        <div className="space-y-4">
-                            <CaseDetailPersonalInfo
-                                c={c}
-                                partners={partners}
-                                inboundPaths={inboundPaths}
-                                onUpdate={onUpdate}
-                            />
-
-                            <CaseDetailJobFamily
-                                c={c}
-                                onUpdate={onUpdate}
-                                onIncomeChange={onIncomeChange}
-                                onJobTypeChange={onJobTypeChange}
-                            />
-
-                            <CaseDetailHousing
-                                c={c}
-                                onUpdate={onUpdate}
-                            />
-                        </div>
-
-                        {/* 우측 폼 열: 4. 채무 및 자산 관리, 5. 과거 회생/파산 이력 & 상태 변경 타임라인 */}
-                        <div className="space-y-4">
-                            <CaseDetailAssets
-                                c={c}
-                                onUpdate={onUpdate}
-                                showToast={showToast}
-                            />
-
-                            <CaseDetailHistory
-                                c={c}
-                                onUpdate={onUpdate}
-                                statusLogs={statusLogs}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* ============================================================ */}
-                {/* [영역 2 & 3] 업무 액션 & AI 인텔리전스 독 (Col 9~12 / 12, 약 33%, Sticky) */}
-                {/* 상단 탭 스위처로 [리마인더 & 이력]과 [AI 요약]을 완벽하게 분리 */}
-                {/* ============================================================ */}
-                <div className="col-span-12 xl:col-span-4 space-y-3 xl:sticky xl:top-20">
-                    
-                    {/* 상단 서브 탭 스위처 */}
-                    <div className="bg-white dark:bg-gray-800 p-1 rounded-xl flex gap-1 border border-slate-200 dark:border-gray-700 shadow-2xs">
-                        <button
-                            type="button"
-                            onClick={() => setRightPanelTab('reminders')}
-                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                                rightPanelTab === 'reminders'
-                                    ? 'bg-amber-500 text-white shadow-xs'
-                                    : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-gray-700'
-                            }`}
-                        >
-                            <span>📅 리마인더 &amp; 상담 이력</span>
-                            {reminders.length > 0 && (
-                                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${rightPanelTab === 'reminders' ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-700'}`}>
-                                    {reminders.length}
-                                </span>
-                            )}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setRightPanelTab('ai')}
-                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                                rightPanelTab === 'ai'
-                                    ? 'bg-purple-600 text-white shadow-xs'
-                                    : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-gray-700'
-                            }`}
-                        >
-                            <Sparkles size={13} className={rightPanelTab === 'ai' ? 'text-white' : 'text-purple-500'} />
-                            <span>AI 통화 요약 &amp; 녹취</span>
-                        </button>
-                    </div>
-
-                    {/* 탭 1: 리마인더 및 상담 이력 */}
-                    {rightPanelTab === 'reminders' && (
-                        <div className="animate-in fade-in duration-150">
-                            <CaseDetailReminders
-                                reminders={reminders}
-                                memos={memos}
-                                onUpdateReminders={onUpdateReminders}
-                                onUpdateMemos={onUpdateMemos}
-                                showToast={showToast}
-                                isStacked={true}
-                            />
-                        </div>
+                    {progress.missing.length > 0 && (
+                        <p className="mt-2 text-xs text-slate-500">아직 확인 안 한 항목: <span className="text-amber-800 dark:text-amber-300">{progress.missing.join(' · ')}</span></p>
                     )}
-
-                    {/* 탭 2: AI 통화 요약 및 녹취 센터 */}
-                    {rightPanelTab === 'ai' && (
-                        <div className="animate-in fade-in duration-150">
-                            <CaseDetailAiSummary
-                                c={c}
-                                aiSummaryText={aiSummaryText}
-                                setAiSummaryText={setAiSummaryText}
-                                aiSummaryEditMode={aiSummaryEditMode}
-                                setAiSummaryEditMode={setAiSummaryEditMode}
-                                handleUpdateAiSummaryText={handleUpdateAiSummaryText}
-                                handleDeleteAiSummary={handleDeleteAiSummary}
-                                handleSaveSummaryToMemo={handleSaveSummaryToMemo}
-                                currentAudioFile={currentAudioFile}
-                                audioUrl={audioUrl}
-                                isFileUploading={isFileUploading}
-                                isAiLoading={isAiLoading}
-                                onAudioFileSelect={onAudioFileSelect}
-                                onTriggerAudioInput={onTriggerAudioInput}
-                                onGenerateAiSummary={onGenerateAiSummary}
-                                onPlayRecording={onPlayRecording}
-                                onDeleteRecording={onDeleteRecording}
-                            />
-                        </div>
-                    )}
-
                 </div>
+
+                <section id="step-personal" className="scroll-mt-28">
+                    <CaseDetailPersonalInfo c={c} partners={partners} inboundPaths={inboundPaths} onUpdate={onUpdate} />
+                </section>
+                <section id="step-job" className="scroll-mt-28">
+                    <CaseDetailJobFamily c={c} onUpdate={onUpdate} onIncomeChange={onIncomeChange} onJobTypeChange={onJobTypeChange} />
+                </section>
+                <section id="step-housing" className="scroll-mt-28">
+                    <CaseDetailHousing c={c} onUpdate={onUpdate} />
+                </section>
+                <section id="step-debt" className="scroll-mt-28">
+                    <CaseDetailAssets c={c} onUpdate={onUpdate} showToast={showToast} />
+                </section>
+                <section id="step-history" className="scroll-mt-28">
+                    <CaseDetailHistory c={c} onUpdate={onUpdate} statusLogs={statusLogs} />
+                </section>
             </div>
-        </>
+        </div>
     );
 };

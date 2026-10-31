@@ -19,21 +19,11 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
     onJobTypeChange
 }) => {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-emerald-200/90 dark:border-emerald-900/60 shadow-xs overflow-hidden">
-            {/* 2. 에메랄드 컬러 헤더 밴드 */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50/40 dark:from-emerald-950/50 dark:to-teal-950/30 px-4 py-2.5 border-b border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                        2
-                    </span>
-                    <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
-                        직업 · 소득 및 부양가족
-                    </h3>
-                </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 dark:text-gray-100 text-sm">직업 · 소득 · 가족</h3>
                 {c.incomeNet > 0 && (
-                    <span className="text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/50 px-2 py-0.5 rounded font-bold">
-                        월 소득: {c.incomeNet.toLocaleString()}만원
-                    </span>
+                    <span className="text-[11px] text-slate-500 tabular-nums">월 소득 {c.incomeNet.toLocaleString()}만원</span>
                 )}
             </div>
 

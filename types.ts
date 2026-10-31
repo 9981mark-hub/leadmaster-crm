@@ -232,6 +232,14 @@ export interface Partner {
   // Form Configuration
   requiredFields: string[]; // List of field keys to show/require e.g., ['spouseAssets', 'childrenCount']
 
+  // [2026-11-01] 상담·AI 정리 설정 (거래처별)
+  checkItems?: string[];            // 필수 확인 항목 (constants.CHECK_ITEMS의 key). 없으면 DEFAULT_CHECK_ITEMS
+  aiClassificationGuide?: string;   // 분류 기준 (AI가 이 기준으로 진행 가능성을 분류)
+
+  // [2026-11-01] 정산 설정
+  vatMode?: 'separate' | 'included' | 'none'; // 수수료에 부가세: 별도(+10%) / 포함 / 없음 (기본 별도)
+  paymentTermDays?: number;         // 지급 사유 발생 후 며칠 안에 받기로 했는지 (기본 7일, 지급일 계산이 없을 때)
+
   // [NEW] 정산 관련 설정
   bankInfo?: BankAccountInfo;        // 입금 계좌 정보
   kakaoTemplates?: KakaoTemplates;   // 카톡 템플릿

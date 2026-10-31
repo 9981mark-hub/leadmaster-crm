@@ -47,6 +47,37 @@ const DOMAIN_KEYWORDS = [
   '카드론', '현금서비스', '마이너스통장', '담보대출', '신용대출', '햇살론', '사채', '일수', '4대보험',
 ];
 
+// 웹 constants.ts CHECK_ITEMS·DEFAULT_CHECK_ITEMS·DEFAULT_SUMMARY_TEMPLATE과 같게 유지
+const CHECK_ITEM_LABELS: Record<string, string> = {
+  birth: '출생년도', region: '거주지역', job: '직업', income: '월 소득', insurance4: '4대보험', marital: '결혼 여부',
+  children: '미성년 자녀', housing: '주거·보증금·월세', debtTotal: '총 채무', creditors: '채권자별 금액', monthlyPay: '월 상환액',
+  overdue: '연체·독촉·압류', assets: '재산(차량·부동산·예금)', spouseAssets: '배우자 재산', creditCard: '신용카드',
+  history: '회생·파산 이력', contactTime: '통화 가능 시간',
+};
+const DEFAULT_CHECK_ITEMS = ['birth', 'region', 'job', 'income', 'marital', 'children', 'housing', 'debtTotal', 'creditors', 'monthlyPay', 'assets', 'history'];
+const DEFAULT_SUMMARY_TEMPLATE = `* 담당자 : {{managerName}}
+* 고객이름 : {{customerName}}
+* 연락처 : {{phone}}
+* 출생년도 : {{birth}}
+* 성별 : {{gender}}
+* 거주지역 : {{region}}
+* 직업 : {{jobTypes}}
+* 4대보험 가입유무 : {{insurance4}}
+* 결혼유무 : {{maritalStatus}}
+* 미성년 자녀 수 : {{childrenCount}}
+* 월 세후소득 (실급여) : {{incomeDetails}}
+* 월 대출납입금 : {{loanMonthlyPay}}
+* 거주 형태 : {{housingType}} ({{housingDetail}})
+* 보증금, 월세 : {{depositRentStr}}
+* 자산 : {{assetsStr}}
+* 신용 대출 : {{creditLoanStr}}
+* 담보 대출 (차량 /집/토지 등) : {{collateralStr}}
+* 신용카드 사용유무 : {{creditCardUse}}
+* 신용카드 사용금액 : {{creditCardAmountStr}}
+* 개인회생 / 파산 / 회복 이력 : {{historyStr}}
+* 특이사항 :
+{{specialMemo}}`;
+
 const DEFAULT_SUMMARY_RULE = `1. 고객 상황 (채무, 소득, 재산 등)
 2. 주요 상담 내용 (질문 및 답변)
 3. 향후 계획 및 조치
@@ -129,11 +160,23 @@ const SCHEMA = {
     special_notes: STR,
     next_action: STR,
     customer_intent: { type: 'STRING', enum: ['높음', '보통', '낮음', '알 수 없음'] },
+    // [거래처 설정 연동] 사무실 양식 보고서 · 빠진 확인 항목 · 분류
+    office_summary: { type: 'STRING' },
+    missing_items: { type: 'ARRAY', items: { type: 'STRING' } },
+    classification: { type: 'OBJECT', properties: { label: { type: 'STRING' }, reason: STR }, required: ['label'] },
+    case_type_suggestion: en(['개인회생', '파산', '새출발기금', '신용회복']),
   },
-  required: ['summary', 'transcript', 'debt', 'income', 'family', 'housing', 'special_notes', 'customer_intent'],
+  required: ['summary', 'transcript', 'debt', 'income', 'family', 'housing', 'special_notes', 'customer_intent', 'office_summary', 'missing_items', 'classification'],
 };
 
-function buildPrompt(ctx: { customerName?: string; direction?: string; durationSec?: number; summaryRule?: string }) {
+interface PromptCtx {
+  customerName?: string; phone?: string; managerName?: string; direction?: string; durationSec?: number;
+  summaryRule?: string; officeTemplate?: string; checkItems?: string[]; classificationGuide?: string; partnerName?: string;
+}
+
+function buildPrompt(ctx: PromptCtx) {
+  const items = (ctx.checkItems && ctx.checkItems.length ? ctx.checkItems : DEFAULT_CHECK_ITEMS)
+    .map(k => CHECK_ITEM_LABELS[k]).filter(Boolean);
   return `당신은 개인회생·파산·신용회복 1차 상담 녹음을 정리하는 보조 AI입니다.
 첨부한 통화 녹음을 듣고 JSON으로만 답하세요.
 
@@ -141,12 +184,32 @@ function buildPrompt(ctx: { customerName?: string; direction?: string; durationS
 ${DOMAIN_KEYWORDS.join(', ')}
 
 [통화 정보]
+- 받는 사무실: ${ctx.partnerName || '미정'}
 - 고객 이름(등록된 값): ${ctx.customerName || '알 수 없음'}
+- 고객 연락처(등록된 값): ${ctx.phone || '알 수 없음'}
+- 담당 상담원: ${ctx.managerName || '알 수 없음'}
 - 방향: ${ctx.direction === 'CALL_IN' ? '고객이 건 전화' : ctx.direction === 'CALL_OUT' ? '상담원이 건 전화' : '알 수 없음'}
 - 길이: 약 ${Math.round((ctx.durationSec || 0) / 60)}분
 
 [summary 작성 규칙]
 ${ctx.summaryRule || DEFAULT_SUMMARY_RULE}
+
+[office_summary: 사무실 보고서]
+- 아래 양식의 줄 구성과 순서를 그대로 지키고 {{...}} 자리만 통화에서 들은 내용으로 채우세요.
+- 담당자·고객이름·연락처는 [통화 정보]의 값을 쓰세요.
+- 통화에서 말하지 않은 칸은 "확인 필요"라고 적으세요 (추측 금지). 금액은 "3,500만원", "1억 2,000만원"처럼 쓰세요.
+- {{specialMemo}} 자리에는 특이사항·다음 할 일을 하이픈 목록으로 적으세요.
+양식:
+${ctx.officeTemplate || DEFAULT_SUMMARY_TEMPLATE}
+
+[missing_items: 빠진 확인 항목]
+- 이 사무실이 꼭 받아야 하는 항목: ${items.join(', ')}
+- 이 중 통화에서 확인하지 못한 항목의 이름만 위 표기 그대로 배열로 적으세요. 모두 확인했으면 빈 배열.
+
+[classification: 분류]
+- 아래 기준으로 이 고객을 분류하고(label: 짧은 이름), 그렇게 본 이유를 한 문장으로(reason) 적으세요. 판단할 정보가 부족하면 label="정보 부족".
+${ctx.classificationGuide || '- 개인회생 가능 / 파산 검토 / 신용회복·새출발기금 검토 / 진행 어려움'}
+- case_type_suggestion: 가장 맞는 절차 (개인회생·파산·새출발기금·신용회복 중 하나, 모르면 null)
 
 [transcript]
 - 화자(상담원/고객)를 나누고 대략적인 시작 시각 t("MM:SS")를 붙여 전체 대화를 빠짐없이 적으세요.
@@ -258,6 +321,10 @@ function normalize(d: any) {
     special_notes: d?.special_notes || null,
     next_action: d?.next_action || null,
     customer_intent: d?.customer_intent || '알 수 없음',
+    office_summary: typeof d?.office_summary === 'string' ? d.office_summary.trim() : null,
+    missing_items: Array.isArray(d?.missing_items) ? d.missing_items.map((x: any) => String(x)).filter(Boolean).slice(0, 30) : [],
+    classification: d?.classification?.label ? { label: String(d.classification.label), reason: d.classification.reason || null } : null,
+    case_type_suggestion: d?.case_type_suggestion || null,
   };
 }
 
@@ -280,15 +347,23 @@ async function analyze(rec: any, settings: any) {
     const bytes = new Uint8Array(await blob.arrayBuffer());
     const mime = rec.mime_type || 'audio/mp4';
 
-    const [{ data: c }, { data: st }] = await Promise.all([
-      admin.from('cases').select('customer_name, partner_id').eq('org_id', rec.org_id).eq('case_id', rec.case_id).maybeSingle(),
+    const [{ data: c }, { data: st }, { data: member }] = await Promise.all([
+      admin.from('cases').select('customer_name, phone, partner_id, manager_name').eq('org_id', rec.org_id).eq('case_id', rec.case_id).maybeSingle(),
       admin.from('settings').select('value').eq('org_id', rec.org_id).eq('key', 'partners').maybeSingle(),
+      rec.user_id
+        ? admin.from('org_members').select('display_name').eq('org_id', rec.org_id).eq('user_id', rec.user_id).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
     const partners: any[] = Array.isArray(st?.value) ? st!.value : [];
     const partner = partners.find(p => p?.partnerId === c?.partner_id);
+    // 거래처(변호사 사무실)별 설정: 요약 규칙·사무실 양식·필수 확인 항목·분류 기준
     const prompt = buildPrompt({
-      customerName: c?.customer_name, direction: rec.direction, durationSec: rec.duration_sec,
+      customerName: c?.customer_name, phone: c?.phone, managerName: (member as any)?.display_name || c?.manager_name,
+      direction: rec.direction, durationSec: rec.duration_sec, partnerName: partner?.name,
       summaryRule: (partner?.aiPromptTemplate || '').trim() || undefined,
+      officeTemplate: (partner?.summaryTemplate || '').trim() || undefined,
+      checkItems: Array.isArray(partner?.checkItems) ? partner.checkItems : undefined,
+      classificationGuide: (partner?.aiClassificationGuide || '').trim() || undefined,
     });
 
     let audioPart: Record<string, unknown>;
@@ -338,7 +413,7 @@ Deno.serve(async (req: Request) => {
 
   // 사용자 권한으로 조회 → 볼 수 없는 녹음은 여기서 막힘
   const { data: rec } = await userClient.from('call_recordings')
-    .select('id, org_id, case_id, storage_path, mime_type, direction, duration_sec, status, updated_at, audio_deleted_at')
+    .select('id, org_id, case_id, user_id, storage_path, mime_type, direction, duration_sec, status, updated_at, audio_deleted_at')
     .eq('id', recordingId).maybeSingle();
   if (!rec) return json({ ok: false, error: '녹음을 찾을 수 없거나 권한이 없습니다' }, 404);
   if (rec.audio_deleted_at) return json({ ok: false, error: '보관 기간이 지나 녹음 파일이 지워졌습니다' }, 410);

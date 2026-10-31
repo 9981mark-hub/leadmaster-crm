@@ -53,16 +53,20 @@
       document.documentElement.classList.remove('dark')
     }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
-    rel="stylesheet">
+  <!-- [2026-11-01] 본문 글꼴: Pretendard (한글·숫자 가독성, 화면에 쓰는 글자만 내려받는 dynamic subset) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <style>
     body {
-      font-family: 'Noto Sans KR', 'Inter', sans-serif;
-      background-color: #f3f4f6;
+      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background-color: #f4f5f7;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
     }
+    html.dark body { color: #e5e7eb; }
+    /* 키보드로 움직일 때만 보이는 포커스 */
+    :focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
     /* Hide scrollbar for Chrome, Safari and Opera */
     .no-scrollbar::-webkit-scrollbar {

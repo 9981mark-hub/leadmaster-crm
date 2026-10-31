@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layout } from 'lucide-react';
 import { Case, CaseStatus, ReminderItem, MemoItem, RecordingItem } from '../types';
-import { useCase, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation } from '../services/queries';
+import { useCase, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation, UPDATE_CASE_MUTATION_KEY } from '../services/queries';
+import { useMutationState } from '@tanstack/react-query';
+import { getCheckProgress } from '../utils/intake';
+import type { SaveState } from '../components/case-detail/CaseDetailHeader';
 import { calculateCommission, generateAiSummary, convertToPlayableUrl, parseAiTranscript } from '../utils';
 import { CommandPalette } from '../components/CommandPalette';
 // Sub-components
@@ -105,6 +108,49 @@ export default function CaseDetail() {
         || partners.find(p => p.name === (c as any)?.partnerName)
         || partners.find(p => p.name === (c as any)?.lawFirm);
     const commission = c ? calculateCommission(c.contractFee || 0, currentPartner?.commissionRules || []) : 0;
+    const checkProgress = c ? getCheckProgress(c, currentPartner) : undefined;
+
+    // 저장 상태 (이 리드의 저장 요청만): 저장 중 / 저장됨 HH:mm / 저장 안 됨
+    const saveRuns = useMutationState({
+        filters: { mutationKey: UPDATE_CASE_MUTATION_KEY },
+        select: m => ({ status: m.state.status, at: m.state.submittedAt, id: (m.state.variables as any)?.id as string | undefined }),
+    });
+    const saveState: SaveState = (() => {
+        const mine = saveRuns.filter(r => r.id === id);
+        if (mine.length === 0) return { state: 'idle' };
+        if (mine.some(r => r.status === 'pending')) return { state: 'saving' };
+        const last = mine[mine.length - 1];
+        return last.status === 'error' ? { state: 'error' } : { state: 'saved', at: last.at };
+    })();
+
+    // 상태 기록에 남길 이름 (로그인 때 회사 표시 이름 저장)
+    const actorName = () => localStorage.getItem('managerName') || '상담원';
+
+    // 신규 리드: 전화·문자를 시작하면 "상담 시작" (신규 표시 해제 + 상태 신규접수 → 상담중)
+    const handleEngage = () => {
+        if (!c || !c.isNew) return;
+        const toStatus = c.status === '신규접수' && statuses.includes('상담중' as CaseStatus) ? ('상담중' as CaseStatus) : null;
+        updateCaseMutation.mutate({
+            id: c.caseId,
+            silent: true,
+            updates: {
+                isViewed: true,
+                isNew: false,
+                ...(toStatus ? {
+                    status: toStatus,
+                    statusLogs: [{ logId: Date.now().toString(), caseId: c.caseId, fromStatus: c.status, toStatus, changedAt: new Date().toISOString(), changedBy: actorName(), memo: '상담 시작' }, ...(c.statusLogs || [])],
+                } : {}),
+            },
+        });
+    };
+
+    // 다음 통화 예약 (작업대 빠른 선택)
+    const handleAddCallReminder = (datetime: string, label: string) => {
+        if (!c) return;
+        const r: ReminderItem = { id: Date.now().toString(), datetime, type: '통화', content: '다시 통화' };
+        updateCaseMutation.mutate({ id: c.caseId, updates: { reminders: [...(c.reminders || []), r] }, silent: true });
+        showToast(`다음 통화를 ${label}(${datetime.slice(5)})로 잡았습니다.`);
+    };
 
     // Toast Helper
     const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
@@ -205,7 +251,7 @@ export default function CaseDetail() {
             fromStatus: c.status,
             toStatus: pendingPrimaryStatus,
             changedAt: new Date().toISOString(),
-            changedBy: 'User',
+            changedBy: actorName(),
             memo: isDropOff
                 ? `[이탈사유: ${selectedDropOffReason}] ${primaryStatusChangeReason}`.trim()
                 : primaryStatusChangeReason
@@ -251,7 +297,7 @@ export default function CaseDetail() {
             fromStatus: c.status,
             toStatus: '사무장 접수' as CaseStatus,
             changedAt: new Date().toISOString(),
-            changedBy: 'User',
+            changedBy: actorName(),
             memo: `텔레그램 전달${chatTitle ? ` (${chatTitle})` : ''}`
         };
         updateCaseMutation.mutate({
@@ -278,7 +324,7 @@ export default function CaseDetail() {
             fromStatus: `${c.status} (${c.secondaryStatus || '없음'})`,
             toStatus: `${c.status} (${pendingSecondaryStatus})`,
             changedAt: new Date().toISOString(),
-            changedBy: 'User',
+            changedBy: actorName(),
             memo: secondaryStatusChangeReason
         };
 
@@ -325,7 +371,7 @@ export default function CaseDetail() {
             fromStatus: `${c.status} (${c.secondaryStatus || '없음'}) [${c.tertiaryStatus || '없음'}]`,
             toStatus: `${c.status} (${c.secondaryStatus || '없음'}) [${pendingTertiaryStatus || '없음'}]`,
             changedAt: new Date().toISOString(),
-            changedBy: 'User',
+            changedBy: actorName(),
             memo: tertiaryStatusChangeReason
         };
 
@@ -523,27 +569,8 @@ export default function CaseDetail() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Header / Nav */}
-            <div className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-                <div className="flex items-center gap-2">
-                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <span className="font-bold text-gray-700 text-lg">상세 정보</span>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setIsCmdPaletteOpen(true)}
-                        className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
-                        title="커맨드 팔레트 (Cmd+K)"
-                    >
-                        <Layout size={20} />
-                    </button>
-                </div>
-            </div>
-
-            <div className="w-full max-w-5xl xl:max-w-[1920px] mx-auto p-4 md:p-6 space-y-4">
+        <div className="pb-20">
+            <div className="w-full max-w-5xl xl:max-w-[1920px] mx-auto space-y-4">
 
                 <CaseDetailHeader
                     c={c}
@@ -556,7 +583,20 @@ export default function CaseDetail() {
                     onTertiaryStatusChangeStart={handleTertiaryStatusChangeStart}
                     onMissedCallIncrement={handleMissedCallIncrement}
                     onDeliverClick={() => setIsDeliverOpen(true)}
+                    onAddCallReminder={handleAddCallReminder}
+                    onEngage={handleEngage}
+                    onBack={() => navigate(-1)}
+                    onOpenPalette={() => setIsCmdPaletteOpen(true)}
+                    saveState={saveState}
+                    progress={checkProgress}
                 />
+
+                {c.isNew && (
+                    <div className="rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 px-4 py-3 flex flex-wrap items-center gap-3 text-sm">
+                        <span className="text-blue-900 dark:text-blue-200"><b>새로 들어온 리드입니다.</b> 전화하거나 문자를 보내면 상담을 시작한 것으로 바뀝니다. 아래 순서대로 물어보며 채우세요.</span>
+                        <button onClick={handleEngage} className="ml-auto h-8 px-3 rounded-lg bg-blue-700 text-white font-semibold">상담 시작</button>
+                    </div>
+                )}
 
                 {isDeliverOpen && (
                     <TelegramDeliverModal
@@ -579,7 +619,7 @@ export default function CaseDetail() {
                 {/* Primary Status Modal */}
                 {isPrimaryStatusModalOpen && pendingPrimaryStatus !== null && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className={`bg-white rounded-lg p-6 w-[440px] shadow-xl border-t-4 ${isDropOffStatus ? 'border-red-500' : 'border-blue-500'}`}>
+                        <div className={`bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[440px] mx-3 shadow-xl border-t-4 ${isDropOffStatus ? 'border-red-500' : 'border-blue-500'}`}>
                             <h3 className={`text-lg font-bold mb-4 ${isDropOffStatus ? 'text-red-700' : 'text-blue-700'}`}>
                                 {isDropOffStatus ? '⚠ 상담 중단 확인' : '상태 변경 확인'}
                             </h3>
@@ -654,7 +694,7 @@ export default function CaseDetail() {
                 {/* Secondary Status Modal */}
                 {isSecondaryStatusModalOpen && pendingSecondaryStatus !== null && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl border-t-4 border-purple-500">
+                        <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border-t-4 border-purple-500">
                             <h3 className="text-lg font-bold mb-4 text-purple-700">2차 상태 변경 확인</h3>
                             <p className="mb-4 text-gray-700">
                                 2차 상태를 <span className="font-bold text-purple-600">{c.secondaryStatus || '없음'}</span>에서 <span className="font-bold text-purple-600">{pendingSecondaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
@@ -689,7 +729,7 @@ export default function CaseDetail() {
                 {/* Tertiary Status Modal */}
                 {isTertiaryStatusModalOpen && pendingTertiaryStatus !== null && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl border-t-4 border-amber-500">
+                        <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border-t-4 border-amber-500">
                             <h3 className="text-lg font-bold mb-4 text-amber-700">3차 상태 변경 확인</h3>
                             <p className="mb-4 text-gray-700">
                                 3차 상태를 <span className="font-bold text-amber-600">{c.tertiaryStatus || '없음'}</span>에서 <span className="font-bold text-amber-600">{pendingTertiaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
@@ -722,26 +762,26 @@ export default function CaseDetail() {
                 )}
 
                 {/* Tabs */}
-                <div className="flex border-b border-gray-200 bg-white px-4 rounded-t-lg overflow-x-auto no-scrollbar">
+                <div className="flex gap-1 border-b border-slate-200 dark:border-gray-700 px-1 overflow-x-auto no-scrollbar">
                     {[
-                        { id: 'info', label: '정보 수정' },
-                        { id: 'timeline', label: '타임라인' },
+                        { id: 'info', label: '상담 정보' },
+                        { id: 'recordings', label: '통화 녹음·AI' },
                         { id: 'summary', label: '요약문' },
-                        { id: 'settlement', label: '수임료/정산' },
-                        { id: 'calls_sms', label: '통화 및 문자' },
-                        { id: 'recordings', label: '통화 녹음·AI' }
+                        { id: 'calls_sms', label: '통화·문자 기록' },
+                        { id: 'timeline', label: '타임라인' },
+                        { id: 'settlement', label: '수임료/정산' }
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={"px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap " + (activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700')}
+                            className={"px-4 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors " + (activeTab === tab.id ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-gray-200 font-medium')}
                         >
                             {tab.label}
                         </button>
                     ))}
                 </div>
 
-                <div className="bg-white p-4 md:p-6 rounded-b-xl shadow-sm border border-gray-100 border-t-0 min-h-[600px]">
+                <div className={activeTab === 'info' ? 'min-h-[600px]' : 'bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-gray-700 min-h-[600px]'}>
                     {activeTab === 'info' && (
                         <CaseInfoTab
                             c={c}
@@ -801,6 +841,7 @@ export default function CaseDetail() {
                             c={c}
                             commission={commission}
                             onUpdate={handleUpdate}
+                            partner={currentPartner}
                         />
                     )}
 

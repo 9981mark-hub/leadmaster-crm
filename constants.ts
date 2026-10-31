@@ -44,6 +44,34 @@ export const ASSET_TYPES = [
 
 export const HISTORY_TYPES = ['없음', '개인회생', '파산', '신용회복', '새출발기금'];
 
+// [2026-11-01] 거래처(변호사 사무실)별 "필수 확인 항목": 상담원이 1차 콜에서 꼭 물어볼 것.
+// 상담 진행 화면의 진행률·미입력 표시, 통화 녹음 AI 정리의 "빠진 항목" 안내에 같이 쓴다.
+export const CHECK_ITEMS: { key: string; label: string }[] = [
+  { key: 'birth', label: '출생년도' },
+  { key: 'region', label: '거주지역' },
+  { key: 'job', label: '직업' },
+  { key: 'income', label: '월 소득' },
+  { key: 'insurance4', label: '4대보험' },
+  { key: 'marital', label: '결혼 여부' },
+  { key: 'children', label: '미성년 자녀' },
+  { key: 'housing', label: '주거·보증금·월세' },
+  { key: 'debtTotal', label: '총 채무' },
+  { key: 'creditors', label: '채권자별 금액' },
+  { key: 'monthlyPay', label: '월 상환액' },
+  { key: 'overdue', label: '연체·독촉·압류' },
+  { key: 'assets', label: '재산(차량·부동산·예금)' },
+  { key: 'spouseAssets', label: '배우자 재산' },
+  { key: 'creditCard', label: '신용카드' },
+  { key: 'history', label: '회생·파산 이력' },
+  { key: 'contactTime', label: '통화 가능 시간' },
+];
+export const DEFAULT_CHECK_ITEMS = ['birth', 'region', 'job', 'income', 'marital', 'children', 'housing', 'debtTotal', 'creditors', 'monthlyPay', 'assets', 'history'];
+
+export const DEFAULT_CLASSIFICATION_GUIDE = `- 개인회생 가능: 꾸준한 소득이 있고 채무가 소득·재산보다 많음
+- 파산 검토: 소득이 거의 없거나 고령·질병으로 일하기 어려움
+- 신용회복·새출발기금 검토: 채무가 적거나 연체 초기
+- 진행 어려움: 채무가 너무 적음, 재산이 채무보다 많음, 최근 회생·면책 이력`;
+
 // Validation Logic Helpers
 export const REMINDER_REQUIRED_STATUSES: CaseStatus[] = ['재통화 예정', '장기관리중'];
 export const CONTRACT_COMPLETED_STATUSES: CaseStatus[] = ['계약 완료', '1차 입금완료', '2차 입금완료'];

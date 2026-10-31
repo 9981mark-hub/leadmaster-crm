@@ -6,6 +6,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 const CaseList = lazy(() => import('./pages/CaseList'));
 const NewCase = lazy(() => import('./pages/NewCase'));
+const QuickNewCase = lazy(() => import('./pages/QuickNewCase'));
 const CaseDetail = lazy(() => import('./pages/CaseDetail'));
 const Settlement = lazy(() => import('./pages/Settlement'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
@@ -307,7 +308,8 @@ const ProtectedRoutes = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/cases" element={<CaseList />} />
-          <Route path="/new" element={<NewCase />} />
+          <Route path="/new" element={<QuickNewCase />} />
+          <Route path="/new/full" element={<NewCase />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />
           <Route path="/telegram" element={<TelegramSync />} />
           <Route path="/auto-dial" element={<AutoDial />} />

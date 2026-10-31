@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, fetchCommunicationLogs, fetchSmsTemplates, saveSmsTemplate, enqueueSms } from './api';
 import { useToast } from '../contexts/ToastContext';
+import { Case } from '../types';
 
 // Keys
 export const QUERY_KEYS = {
@@ -64,26 +65,45 @@ export const useInboundPaths = () => {
 };
 
 // Mutations
+export const UPDATE_CASE_MUTATION_KEY = ['updateCase'];
+
+/**
+ * 리드 저장. [2026-11-01] 화면에 바로 반영(낙관적 업데이트)하고, 목록 캐시는 다시 받지 않고 그 리드만 고친다.
+ * 예전엔 칸 하나 저장할 때마다 목록 쿼리를 무효화해 목록 화면 전체가 다시 계산됐다.
+ * 실패하면 이전 값으로 되돌린다.
+ */
 export const useUpdateCaseMutation = () => {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
 
-    return useMutation({
-        mutationFn: (data: { id: string; updates: any; silent?: boolean }) => updateCase(data.id, data.updates),
-        onSuccess: (data, variables) => {
-            // Update specific case in cache
-            queryClient.setQueryData(QUERY_KEYS.case(variables.id), data);
+    const patchList = (id: string, patch: (c: Case) => Case) => {
+        queryClient.setQueryData<Case[]>(QUERY_KEYS.cases, list => Array.isArray(list) ? list.map(c => c.caseId === id ? patch(c) : c) : list);
+    };
 
-            // Invalidate list to refresh filtered views
-            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cases });
+    return useMutation({
+        mutationKey: UPDATE_CASE_MUTATION_KEY,
+        mutationFn: (data: { id: string; updates: any; silent?: boolean }) => updateCase(data.id, data.updates),
+        onMutate: async (variables) => {
+            await queryClient.cancelQueries({ queryKey: QUERY_KEYS.case(variables.id) });
+            const prevCase = queryClient.getQueryData<Case>(QUERY_KEYS.case(variables.id));
+            const prevListItem = (queryClient.getQueryData<Case[]>(QUERY_KEYS.cases) || []).find(c => c.caseId === variables.id);
+            if (prevCase) queryClient.setQueryData(QUERY_KEYS.case(variables.id), { ...prevCase, ...variables.updates });
+            if (prevListItem) patchList(variables.id, c => ({ ...c, ...variables.updates }));
+            return { prevCase, prevListItem };
+        },
+        onSuccess: (data, variables) => {
+            queryClient.setQueryData(QUERY_KEYS.case(variables.id), data);
+            patchList(variables.id, () => data);
 
             if (!variables.silent) {
                 showToast('저장되었습니다.');
             }
         },
-        onError: (error) => {
+        onError: (error, variables, context) => {
             console.error(error);
-            showToast('저장에 실패했습니다.', 'error');
+            if (context?.prevCase) queryClient.setQueryData(QUERY_KEYS.case(variables.id), context.prevCase);
+            if (context?.prevListItem) patchList(variables.id, () => context.prevListItem as Case);
+            showToast('저장에 실패했습니다. 인터넷 연결을 확인하고 다시 입력해 주세요.', 'error');
         }
     });
 };

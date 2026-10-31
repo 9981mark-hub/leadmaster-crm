@@ -3,6 +3,8 @@ import { Send, X, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { Case, CaseStatus, Partner } from '../../types';
 import { generateSummary, parseAiTranscript } from '../../utils';
 import { CaseDelivery, DeliveryError, deliverCaseToTelegram, fetchCaseDeliveries } from '../../services/telegramDelivery';
+import { fetchLatestAnalyzedRecording } from '../../services/recordings';
+import { getCheckProgress } from '../../utils/intake';
 
 const RECEIVED_STATUS = '사무장 접수';
 
@@ -29,8 +31,16 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
         if (!c.aiSummary) return '';
         try { return (parseAiTranscript(c.aiSummary).summaryText || '').trim(); } catch { return ''; }
     }, [c.aiSummary]);
-    const [source, setSource] = useState<'template' | 'ai'>('template');
-    const initialText = source === 'ai' && aiText ? aiText : templateText;
+    const [source, setSource] = useState<'template' | 'ai' | 'call'>('template');
+    // 통화 녹음 AI 정리의 사무실 보고서 (거래처 요약문 양식으로 작성됨)
+    const [callText, setCallText] = useState('');
+    useEffect(() => {
+        let alive = true;
+        fetchLatestAnalyzedRecording(c.caseId).then(r => { if (alive && r?.extracted?.office_summary) setCallText(r.extracted.office_summary); }).catch(() => {});
+        return () => { alive = false; };
+    }, [c.caseId]);
+    const progress = useMemo(() => getCheckProgress(c, partner), [c, partner]);
+    const initialText = source === 'ai' && aiText ? aiText : source === 'call' && callText ? callText : templateText;
     const [text, setText] = useState(templateText);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -101,16 +111,16 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                         <div className="flex justify-between items-end mb-1">
                             <div className="flex items-center gap-2">
                                 <label className="text-xs font-medium text-gray-500">보낼 내용 (수정 가능)</label>
-                                {aiText && (
+                                {(aiText || callText) && (
                                     <div className="flex text-xs border rounded overflow-hidden">
-                                        {(['template', 'ai'] as const).map(s => (
+                                        {(['template', 'call', 'ai'] as const).filter(s => s === 'template' || (s === 'ai' ? !!aiText : !!callText)).map(s => (
                                             <button
                                                 key={s}
                                                 type="button"
-                                                onClick={() => { setSource(s); setText(s === 'ai' ? aiText : templateText); setNeedForce(false); }}
+                                                onClick={() => { setSource(s); setText(s === 'ai' ? aiText : s === 'call' ? callText : templateText); setNeedForce(false); }}
                                                 className={`px-2 py-0.5 ${source === s ? 'bg-sky-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                                             >
-                                                {s === 'template' ? '기본 요약문' : 'AI 요약문'}
+                                                {s === 'template' ? '입력한 정보로' : s === 'call' ? '통화 녹음 AI 정리' : '예전 AI 요약'}
                                             </button>
                                         ))}
                                     </div>
@@ -129,6 +139,14 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                             onChange={e => { setText(e.target.value); setNeedForce(false); }}
                         />
                     </div>
+
+                    {/* 거래처 필수 확인 항목 중 입력 안 된 것 (보내는 것은 막지 않음) */}
+                    {progress.missing.length > 0 && (
+                        <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2.5">
+                            <span className="font-semibold">{partner?.name || '사무실'} 필수 확인 항목 중 입력 안 된 것 ({progress.missing.length}/{progress.total}):</span>{' '}
+                            {progress.missing.join(', ')}
+                        </div>
+                    )}
 
                     {canChangeStatus && (
                         <label className="flex items-center gap-2 text-sm text-gray-700">

@@ -1,20 +1,65 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, X, Calendar, FileText, CheckCircle, Clock } from 'lucide-react';
 import { SmartInput } from '../ui/SmartInput';
-import { Case, SettlementBatch } from '../../types';
+import { Case, SettlementBatch, Partner } from '../../types';
 import { findBatchForCase, getSettlementStatusLabel } from '../../services/api';
+import { computeCaseCommission, todayKST, fmtMan, VAT_LABEL, vatModeOf } from '../../utils/settlement';
 
 interface CaseSettlementTabProps {
     c: Case;
     commission: number;
     onUpdate: (field: string, value: any) => void;
+    partner?: Partner;
 }
+
+type Deposit = { date: string; amount: number; memo?: string };
+
+/** 입금 한 줄: 입력하는 동안은 화면에만, 칸을 벗어나면 저장 (예전엔 글자 칠 때마다 저장 요청) */
+const DepositRow: React.FC<{ idx: number; d: Deposit; removable: boolean; onSave: (d: Deposit) => void; onRemove: () => void }> = ({ idx, d, removable, onSave, onRemove }) => {
+    const [amount, setAmount] = useState<number>(d.amount || 0);
+    const [date, setDate] = useState<string>(d.date || '');
+    useEffect(() => { setAmount(d.amount || 0); setDate(d.date || ''); }, [d.amount, d.date]);
+    const commit = (next: Partial<Deposit>) => {
+        const merged = { ...d, amount, date, ...next };
+        if (merged.amount !== (d.amount || 0) || merged.date !== (d.date || '')) onSave(merged);
+    };
+    return (
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-200 dark:border-gray-700">
+            <div className="flex justify-between items-center mb-2">
+                <h4 className="font-semibold text-slate-600 dark:text-gray-300 text-sm">{idx + 1}차 입금</h4>
+                {removable && <button onClick={onRemove} className="text-slate-300 hover:text-red-500" aria-label="입금 줄 삭제"><X size={16} /></button>}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+                <label className="text-xs text-slate-500">금액 (만원)
+                    <input inputMode="numeric" className="mt-1 w-full p-2 border border-slate-300 dark:border-gray-600 rounded-lg text-sm font-bold text-right tabular-nums dark:bg-gray-900"
+                        value={amount ? amount.toLocaleString() : ''}
+                        onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setAmount(v ? Number(v) : 0); }}
+                        onBlur={() => commit({})} />
+                </label>
+                <label className="text-xs text-slate-500">입금일
+                    <input type="date" className="mt-1 w-full p-2 border border-slate-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-900"
+                        value={date} onChange={e => { setDate(e.target.value); commit({ date: e.target.value }); }} />
+                </label>
+            </div>
+            {date && date > todayKST() && <p className="text-[11px] text-slate-400 mt-1">입금 예정 (오늘 이후)</p>}
+        </div>
+    );
+};
 
 export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
     c,
     commission,
-    onUpdate
+    onUpdate,
+    partner
 }) => {
+    const cc = computeCaseCommission(c, partner);
+    const deposits: Deposit[] = (c.depositHistory && c.depositHistory.length > 0)
+        ? c.depositHistory.map(d => ({ ...d }))
+        : [
+            { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
+            { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
+        ];
+    const saveDeposits = (next: Deposit[]) => onUpdate('depositHistory', next);
     const [settlementBatch, setSettlementBatch] = useState<SettlementBatch | null>(null);
     const [isLoadingBatch, setIsLoadingBatch] = useState(true);
 
@@ -183,102 +228,63 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                 </div>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+            {/* 이 리드로 사무실에서 받을 수수료 (정산 → 받을 돈과 같은 계산) */}
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl border border-slate-200 dark:border-gray-700">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                    <h3 className="font-bold text-slate-800 dark:text-gray-100">받을 수수료</h3>
+                    {partner && <span className="text-xs text-slate-500">{partner.name} · {VAT_LABEL[vatModeOf(partner)]}</span>}
+                </div>
+                {cc.problem ? (
+                    <p className="text-sm text-amber-800 bg-amber-50 rounded-lg p-3">{cc.problem === '수당 룰 없음' ? '수임료에 맞는 수당 룰이 없습니다. 설정 → 거래처 → 수당 계산 룰을 확인하세요.' : cc.problem === '거래처 없음' ? '거래처를 먼저 고르세요.' : '총 수임료를 넣으면 계산합니다.'}</p>
+                ) : (
+                    <div className="space-y-2 text-sm">
+                        <div className="text-slate-600 dark:text-gray-300">
+                            전체 수수료 <b className="text-slate-900 dark:text-white">{fmtMan(cc.total)}</b> · 고객 입금 {fmtMan(cc.depositActual)}{cc.depositPlanned > 0 && ` (예정 ${fmtMan(cc.depositPlanned)})`}
+                            <span className="block text-xs text-slate-400 mt-0.5">계약금 단계 기준 {fmtMan(cc.firstThreshold)} 입금 · 완납 단계 기준 {fmtMan(cc.fullThreshold)} 입금</span>
+                        </div>
+                        {cc.stages.length === 0 ? (
+                            <p className="text-slate-400">아직 지급 사유가 없습니다. 고객 입금이 {fmtMan(cc.firstThreshold)} 이상이 되면 1단계가 생깁니다.</p>
+                        ) : (
+                            <ul className="divide-y divide-slate-100 dark:divide-gray-700 rounded-lg border border-slate-200 dark:border-gray-700">
+                                {cc.stages.map(s => (
+                                    <li key={s.key} className="px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                        <span className="font-semibold text-slate-800 dark:text-gray-100">{s.stageLabel}</span>
+                                        <span className="tabular-nums">{fmtMan(s.amount)} → 청구 {fmtMan(s.billed)}</span>
+                                        <span className="ml-auto text-xs text-slate-500 tabular-nums">{s.future ? '입금 예정 ' : ''}{s.earnedAt} 입금 기준 · 받을 날 {s.dueAt}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        <p className="text-xs text-slate-400">받은 돈 기록과 미수금은 정산 → 받을 돈에서 사무실별로 관리합니다.</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-900/30 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-gray-700 text-lg">입금 내역</h3>
+                    <h3 className="font-bold text-gray-700 dark:text-gray-200 text-lg">고객 입금 내역 <span className="text-xs font-normal text-slate-400">(고객 → 사무실)</span></h3>
                     <button
-                        onClick={() => {
-                            const currentHistory = (c.depositHistory && c.depositHistory.length > 0)
-                                ? c.depositHistory
-                                : [
-                                    { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
-                                    { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
-                                ];
-                            const newHistory = [...currentHistory, { date: '', amount: 0 }];
-                            onUpdate('depositHistory', newHistory);
-                        }}
-                        className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-700 shadow-sm"
+                        onClick={() => saveDeposits([...deposits, { date: '', amount: 0 }])}
+                        className="flex items-center gap-1 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-slate-800"
                     >
-                        <Plus size={16} /> 추가 ({(c.depositHistory?.length || 2) + 1}차)
+                        <Plus size={16} /> {deposits.length + 1}차 추가
                     </button>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                    {/* Use depositHistory if available, else fallback to 1st/2nd legacy fields visually (but mapped) */}
-                    {((c.depositHistory && c.depositHistory.length > 0) ? c.depositHistory : [
-                        { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 }, // 1차
-                        { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }  // 2차
-                    ]).map((deposit, idx) => (
-                        <div key={idx} className="bg-white p-4 rounded border border-gray-200 shadow-sm relative group">
-                            <div className="flex justify-between items-center mb-2">
-                                <h4 className="font-bold text-gray-600 text-sm">{idx + 1}차 입금</h4>
-                                {idx >= 2 && (
-                                    <button
-                                        onClick={() => {
-                                            const current = c.depositHistory || [];
-                                            const newHistory = current.filter((_, i) => i !== idx);
-                                            onUpdate('depositHistory', newHistory);
-                                        }}
-                                        className="text-gray-400 hover:text-red-500"
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1">금액 (만원)</label>
-                                    <input
-                                        type="number"
-                                        className="w-full p-2 border border-gray-300 rounded text-sm font-bold"
-                                        value={deposit.amount || ''}
-                                        onChange={e => {
-                                            const currentHistory = (c.depositHistory && c.depositHistory.length > 0) ? [...c.depositHistory] : [
-                                                { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
-                                                { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
-                                            ];
-                                            currentHistory[idx].amount = Number(e.target.value);
-                                            onUpdate('depositHistory', currentHistory);
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1">입금일</label>
-                                    <input
-                                        type="date"
-                                        className="w-full p-2 border border-gray-300 rounded text-sm"
-                                        value={deposit.date || ''}
-                                        onChange={e => {
-                                            const currentHistory = (c.depositHistory && c.depositHistory.length > 0) ? [...c.depositHistory] : [
-                                                { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
-                                                { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
-                                            ];
-                                            currentHistory[idx].date = e.target.value;
-                                            onUpdate('depositHistory', currentHistory);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                    {deposits.map((d, idx) => (
+                        <DepositRow key={idx} idx={idx} d={d} removable={idx >= 2}
+                            onSave={nd => saveDeposits(deposits.map((x, i) => i === idx ? nd : x))}
+                            onRemove={() => saveDeposits(deposits.filter((_, i) => i !== idx))} />
                     ))}
                 </div>
-
                 <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
                     <span className="font-bold text-gray-700">총 누적 입금액</span>
                     <span className="text-2xl font-bold text-blue-600">
-                        {(() => {
-                            const today = new Date().toISOString().split('T')[0];
-                            const deposits = (c.depositHistory && c.depositHistory.length > 0)
-                                ? c.depositHistory
-                                : [
-                                    { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
-                                    { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
-                                ];
-                            // 오늘 날짜 이전(포함)인 입금만 합산 (미래 입금은 제외)
-                            return deposits
-                                .filter(d => d.date && d.date <= today)
-                                .reduce((sum, d) => sum + (d.amount || 0), 0);
-                        })().toLocaleString()} 만원
+                        {/* 오늘(한국 날짜)까지 들어온 입금만 합산 */}
+                        {deposits
+                            .filter(d => d.date && d.date <= todayKST())
+                            .reduce((sum, d) => sum + (d.amount || 0), 0).toLocaleString()} 만원
                     </span>
                 </div>
             </div>

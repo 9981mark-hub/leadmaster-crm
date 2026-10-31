@@ -29,20 +29,9 @@ export const CaseDetailHistory: React.FC<CaseDetailHistoryProps> = ({
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-indigo-200/90 dark:border-indigo-900/60 shadow-xs overflow-hidden">
-            {/* 5. 인디고 컬러 헤더 밴드 */}
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50/40 dark:from-indigo-950/50 dark:to-purple-950/30 px-4 py-2.5 border-b border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                        5
-                    </span>
-                    <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
-                        과거 이력 및 상태 변경 기록
-                    </h3>
-                </div>
-                <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300">
-                    히스토리 관리
-                </span>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 dark:text-gray-100 text-sm">회생·파산 이력 · 상태 기록</h3>
             </div>
 
             {/* 카드 본문 */}

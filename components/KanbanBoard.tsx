@@ -30,6 +30,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
         acc[status] = cases.filter(c => c.status === status);
         return acc;
     }, {} as Record<string, Case[]>);
+    // 한 칸에 너무 많으면 화면이 느려진다 → 앞 80건만 그리고 나머지는 숫자로
+    const COLUMN_LIMIT = 80;
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
@@ -50,7 +52,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                     ref={provided.innerRef}
                                     className={`flex-1 p-2 overflow-y-auto scrollbar-hide transition-colors ${snapshot.isDraggingOver ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
                                 >
-                                    {columns[status]?.map((c, index) => (
+                                    {columns[status]?.slice(0, COLUMN_LIMIT).map((c, index) => (
                                         // @ts-ignore
                                         <Draggable key={c.caseId} draggableId={c.caseId} index={index}>
                                             {(provided, snapshot) => (
@@ -90,6 +92,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                         </Draggable>
                                     ))}
                                     {provided.placeholder}
+                                    {(columns[status]?.length || 0) > COLUMN_LIMIT && (
+                                        <div className="text-center text-xs text-gray-400 py-2">외 {(columns[status].length - COLUMN_LIMIT).toLocaleString()}건 — 검색·필터로 좁혀 보세요</div>
+                                    )}
                                 </div>
                             )}
                         </Droppable>

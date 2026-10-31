@@ -21,8 +21,10 @@ import FixedCostSection from '../components/FixedCostSection';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
 import * as XLSX from 'xlsx';
+import ReceivablesTab from '../components/settlement/ReceivablesTab';
+import { todayKST, CANCELLED_STATUSES } from '../utils/settlement';
 
-type TabType = 'monday' | 'tuesday' | 'wednesday' | 'report' | 'expenses';
+type TabType = 'receivables' | 'monday' | 'tuesday' | 'wednesday' | 'report' | 'expenses';
 
 export default function Settlement() {
     const { showToast } = useToast();
@@ -34,7 +36,7 @@ export default function Settlement() {
     const [loading, setLoading] = useState(true);
 
     // Weekly Settlement Center State
-    const [activeTab, setActiveTab] = useState<TabType>('monday');
+    const [activeTab, setActiveTab] = useState<TabType>('receivables');
     const [selectedWeekStart, setSelectedWeekStart] = useState<Date>(() => getWeekMonday(new Date()));
     const [batches, setBatches] = useState<SettlementBatch[]>([]);
     const [loadingBatches, setLoadingBatches] = useState(false);
@@ -49,7 +51,7 @@ export default function Settlement() {
     const [loadingExpenses, setLoadingExpenses] = useState(false);
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
     const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
-    const [expenseForm, setExpenseForm] = useState<Partial<ExpenseItem>>({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+    const [expenseForm, setExpenseForm] = useState<Partial<ExpenseItem>>({ category: '광고비', amount: 0, description: '', date: todayKST() });
     const [expenseStats, setExpenseStats] = useState<{ total: number; byCategory: Record<ExpenseCategory, number>; byMonth: { month: string; amount: number }[] }>({ total: 0, byCategory: { '광고비': 0, '마케팅비': 0, '사무비용': 0, '인건비': 0, '교통비': 0, '식대': 0, '기타': 0, '페이백': 0 }, byMonth: [] });
 
     // KPI Modal State for Expenses Tab
@@ -303,7 +305,7 @@ export default function Settlement() {
             const expenseData: Partial<ExpenseItem> = {
                 category: '광고비',
                 amount: amountInManwon,
-                date: tossAdsWeeklySummary.startDate || new Date().toISOString().split('T')[0],
+                date: tossAdsWeeklySummary.startDate || todayKST(),
                 partnerId: undefined, // 공통 지출은 undefined로 처리
                 description: `토스 애즈 광고비 (${tossAdsWeeklySummary.weekLabel})`,
                 memo: `[토스애즈] 소진비용 ${tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원 + VAT. | 잠재고객 ${tossAdsWeeklySummary.totalLeads}명 | CPL ${tossAdsWeeklySummary.avgCpl.toLocaleString()}원`,
@@ -458,14 +460,7 @@ export default function Settlement() {
     // [SAFETY FIX] Ensure partnerCases is always an array for all downstream operations
     const partnerCases = Array.isArray(_partnerCases) ? _partnerCases : [];
 
-    // DEBUG: Log for troubleshooting (will be visible in console)
-    console.log('[Settlement Debug]', {
-        selectedPartnerId,
-        selectedPartnerName: selectedPartner?.name,
-        totalCases: safeCases.length,
-        partnerCasesCount: partnerCases.length,
-        sampleCasePartnerIds: safeCases.slice(0, 5).map(c => ({ name: c.customerName, partnerId: c.partnerId, contractAt: c.contractAt }))
-    });
+
 
     // Helper to calculate commission for a specific case (with fallback partner matching)
     const findPartnerForCase = (c: Case): Partner | undefined => {
@@ -500,7 +495,7 @@ export default function Settlement() {
             ];
 
         // Today's date for comparison
-        const today = new Date().toISOString().split('T')[0];
+        const today = todayKST();
 
         // Get deposits for THIS WEEK
         const thisWeekDeposits = deposits.filter((d: any) => d.date && d.date >= weekStartDate && d.date <= weekEndDate);
@@ -588,7 +583,7 @@ export default function Settlement() {
     });
 
     // Today for deposit date comparison
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayKST();
 
     // Helper to get deposit info for a case
     const getDepositInfo = (c: Case) => {
@@ -786,7 +781,7 @@ export default function Settlement() {
     const totalUnpaidCommission = totalCommission - totalPaidCommission;
     // 월별 예상 수수료 (지급 예정일 기준)
     const { expectedAmount: monthlyExpectedCommission, nextPayoutDate, payouts: expectedPayouts } = getMonthlyExpectedCommission();
-    const installmentInProgress = statsCases.filter(c => (c.installmentMonths || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission).length;
+    const installmentInProgress = statsCases.filter(c => (parseInt(String(c.installmentMonths || ''), 10) || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission).length;
     const depositCompleteCount = statsCases.filter(c => {
         const { actualDeposit, totalDeposit } = getDepositInfo(c);
         return totalDeposit > 0 && actualDeposit >= totalDeposit;
@@ -1140,20 +1135,23 @@ export default function Settlement() {
         };
 
         const markPayoutPaid = async (itemId: string) => {
-            const today = new Date().toISOString().split('T')[0];
+            const today = todayKST();
             await updatePayoutItem(itemId, { paidAt: today });
         };
 
         const handleCollectionComplete = async () => {
             if (!currentBatch) return;
-            const today = new Date().toISOString().split('T')[0];
+            const today = todayKST();
             const collectionInfo = { collectedAt: today, amount: currentBatch.totalCommission };
             await updateSettlementBatch(currentBatch.batchId, { collectionInfo, status: 'collected' as any });
             setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, collectionInfo, status: 'collected' as any } : b));
             
             // [NEW] Payback Auto-registration based on weekly batch
             const paybackAmount = Math.round(currentBatch.totalCommission * 0.05);
-            if (paybackAmount > 0) {
+            // 같은 주차 페이백이 이미 있으면 다시 넣지 않는다 (수금 버튼을 두 번 눌렀을 때 중복 방지)
+            const existingPayback = (await fetchExpenses(undefined, Number(currentBatch.startDate.slice(0, 4))))
+                .some(e => e.category === '페이백' && (e.description || '').includes(currentBatch.weekLabel));
+            if (paybackAmount > 0 && !existingPayback) {
                 await createExpense({
                     category: '페이백',
                     amount: paybackAmount,
@@ -1168,7 +1166,7 @@ export default function Settlement() {
 
         const handleInvoiceReceived = async () => {
             if (!currentBatch) return;
-            const today = new Date().toISOString().split('T')[0];
+            const today = todayKST();
             const purchaseInvoice = { receivedAt: today };
             await updateSettlementBatch(currentBatch.batchId, { purchaseInvoice, status: 'completed' as any });
             setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, purchaseInvoice, status: 'completed' as any } : b));
@@ -1478,7 +1476,7 @@ export default function Settlement() {
                 // 1. Unpaid amount > 0
                 // 2. Last deposit (or contract date) was > 30 days ago
                 const overdueCases = safePartnerCases.filter(c => {
-                    if (c.status === '종결' || c.status === '취소') return false;
+                    if (CANCELLED_STATUSES.includes(c.status)) return false;
 
                     const contractFee = c.contractFee || 0;
                     const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
@@ -1956,7 +1954,7 @@ export default function Settlement() {
                                 '세금계산서': b.purchaseInvoice?.receivedAt ? `수취 (${b.purchaseInvoice.receivedAt})` : '미수취',
                                 '상태': getSettlementStatusLabel(b.status)
                             }));
-                            exportToExcel(`정산내역_${new Date().toISOString().split('T')[0]}`, excelData);
+                            exportToExcel(`정산내역_${todayKST()}`, excelData);
                             showToast('엑셀 파일이 다운로드되었습니다.', 'success');
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
@@ -2237,7 +2235,7 @@ export default function Settlement() {
         setExpenseStats(stats);
         setIsExpenseModalOpen(false);
         setEditingExpense(null);
-        setExpenseForm({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+        setExpenseForm({ category: '광고비', amount: 0, description: '', date: todayKST() });
     };
 
     const handleDeleteExpense = async (id: string) => {
@@ -2378,7 +2376,7 @@ export default function Settlement() {
                     <button
                         onClick={() => {
                             setEditingExpense(null);
-                            setExpenseForm({ category: '광고비', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+                            setExpenseForm({ category: '광고비', amount: 0, description: '', date: todayKST() });
                             setIsExpenseModalOpen(true);
                         }}
                         className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 flex items-center gap-2 shadow-sm transition-colors"
@@ -3649,7 +3647,7 @@ export default function Settlement() {
 
     // 1. Overdue Count
     const totalOverdueCount = safeCases.filter(c => {
-        if (c.status === '종결' || c.status === '취소') return false;
+        if (CANCELLED_STATUSES.includes(c.status)) return false;
         const totalDeposited = (c.depositHistory || []).reduce((sum, d) => sum + (d.amount || 0), 0);
         const unpaid = (c.contractFee || 0) - totalDeposited;
         if (unpaid <= 0) return false;
@@ -3911,7 +3909,7 @@ export default function Settlement() {
             }
 
             case 'installment': {
-                const installmentCases = statsCases.filter(c => (c.installmentMonths || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission);
+                const installmentCases = statsCases.filter(c => (parseInt(String(c.installmentMonths || ''), 10) || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission);
                 return (
                     <>
                         <thead className="bg-gray-100 text-gray-700 font-bold">
@@ -4051,7 +4049,7 @@ export default function Settlement() {
             </div>
 
             {/* Week Navigator (for settlement tabs) */}
-            {activeTab !== 'report' && !isAll && (
+            {activeTab !== 'report' && activeTab !== 'receivables' && !isAll && (
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <button onClick={goToPrevWeek} className="p-2 hover:bg-gray-100 rounded">
@@ -4078,6 +4076,15 @@ export default function Settlement() {
 
             {/* Tabs */}
             <div className="flex border-b border-gray-200 overflow-x-auto">
+                <button
+                    onClick={() => setActiveTab('receivables')}
+                    className={`px-6 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'receivables'
+                        ? 'border-slate-900 text-slate-900 bg-slate-100'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    받을 돈
+                </button>
                 {!isAll && (
                     <>
                         <button
@@ -4155,12 +4162,13 @@ export default function Settlement() {
             )}
 
             {/* Tab Content */}
+            {activeTab === 'receivables' && <ReceivablesTab cases={safeCases} partners={partners} />}
             {activeTab === 'monday' && !isAll && renderMondayTab()}
             {activeTab === 'tuesday' && !isAll && renderTuesdayTab()}
             {activeTab === 'wednesday' && !isAll && renderWednesdayTab()}
             {activeTab === 'report' && renderReportTab()}
             {activeTab === 'expenses' && renderExpensesTab()}
-            {isAll && activeTab !== 'report' && activeTab !== 'expenses' && (
+            {isAll && activeTab !== 'report' && activeTab !== 'expenses' && activeTab !== 'receivables' && (
                 <div className="bg-gray-50 p-8 rounded-xl text-center">
                     <p className="text-gray-500">주간 정산 기능은 특정 거래처를 선택해야 사용할 수 있습니다.</p>
                     <p className="text-sm text-gray-400 mt-2">통계를 보시려면 "리포트" 탭을 선택하세요.</p>

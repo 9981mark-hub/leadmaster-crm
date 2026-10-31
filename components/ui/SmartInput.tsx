@@ -1,10 +1,12 @@
 import React from 'react';
+import { formatKoreanMoney } from '../../utils';
 
 interface SmartInputProps {
     label?: string;
     value: any;
     onChange: (value: any) => void;
-    onBlur?: () => void;
+    /** 칸을 벗어날 때. updateOnBlur면 저장한 값을 넘겨준다 */
+    onBlur?: (committed?: any) => void;
     type?: string;
     placeholder?: string;
     suffix?: string;
@@ -12,8 +14,14 @@ interface SmartInputProps {
     isPhone?: boolean;
     isCurrency?: boolean;
     className?: string;
+    /** 필수 확인 항목인데 비어 있으면 점 표시 */
+    needed?: boolean;
 }
 
+/**
+ * 입력 칸 (전화번호 자동 하이픈, 금액 쉼표, 숫자 키패드)
+ * [2026-11-01] 모바일에서 숫자·전화 키패드가 뜨도록 inputMode 지정, 1억 이상 금액은 "1억 2,000만원"으로 읽어 줌, 다크 모드
+ */
 export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> = ({
     label,
     value,
@@ -26,33 +34,36 @@ export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> 
     isPhone = false,
     isCurrency = false,
     className = "",
-    updateOnBlur = false
+    updateOnBlur = false,
+    needed = false,
 }) => {
-    // Internal state for managing value before blur
     const [localValue, setLocalValue] = React.useState(value);
 
-    // Sync local value with prop value when it changes externally
     React.useEffect(() => {
         setLocalValue(value);
     }, [value]);
 
     const displayValue = updateOnBlur ? localValue : value;
 
-    // Formatting logic for display (currency, etc)
     const getFormattedValue = (val: any) => {
         if (type === 'number') {
             if (!isCurrency && (val === 0 || val === undefined || val === null)) {
                 return '';
             }
         }
-        if (isCurrency && (typeof val === 'number' || !isNaN(Number(val)))) {
-            return Number(val).toLocaleString();
+        if (isCurrency && (typeof val === 'number' || (val !== '' && val !== null && val !== undefined && !isNaN(Number(val))))) {
+            return Number(val) === 0 ? '' : Number(val).toLocaleString();
         }
         return val;
     };
 
+    const commit = (v: any) => {
+        if (updateOnBlur) setLocalValue(v);
+        else onChange(v);
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let val = e.target.value;
+        const val = e.target.value;
 
         if (isPhone) {
             const raw = val.replace(/[^0-9]/g, '');
@@ -62,76 +73,60 @@ export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> 
             } else if (raw.length > 7) {
                 formatted = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7, 11)}`;
             }
-            // For phone, even with updateOnBlur, we might want to update local state formatted
-            // But usually we just update parent. 
-            // If updateOnBlur is true, we update localValue only.
-            if (updateOnBlur) {
-                setLocalValue(formatted);
-            } else {
-                onChange(formatted);
-            }
+            commit(formatted);
             return;
         }
 
-        if (isCurrency) {
+        if (isCurrency || type === 'number') {
             const cleanVal = val.replace(/,/g, '');
             if (cleanVal === '' || /^[0-9]+$/.test(cleanVal)) {
-                const numVal = cleanVal === '' ? 0 : Number(cleanVal);
-                if (updateOnBlur) {
-                    setLocalValue(numVal);
-                } else {
-                    onChange(numVal);
-                }
+                commit(cleanVal === '' ? 0 : Number(cleanVal));
             }
             return;
         }
 
-        if (type === 'number') {
-            if (val === '' || /^[0-9]+$/.test(val)) {
-                const numVal = val === '' ? 0 : Number(val);
-                if (updateOnBlur) {
-                    setLocalValue(numVal);
-                } else {
-                    onChange(numVal);
-                }
-            }
-        } else {
-            if (updateOnBlur) {
-                setLocalValue(val);
-            } else {
-                onChange(val);
-            }
-        }
+        commit(val);
     };
 
     const handleBlur = () => {
-        if (updateOnBlur) {
-            // Only trigger onChange if value is different? 
-            // Or always trigger to ensure sync?
-            // Let's trigger only if different to save calls
-            if (localValue !== value) {
-                onChange(localValue);
-            }
+        if (updateOnBlur && localValue !== value) {
+            onChange(localValue);
         }
-        if (onBlur) onBlur();
+        if (onBlur) onBlur(updateOnBlur ? localValue : value);
     };
 
+    const numeric = Number(displayValue) || 0;
+    const showKorean = isCurrency && numeric >= 10000;
+    const empty = displayValue === '' || displayValue === undefined || displayValue === null || (isCurrency && numeric === 0);
+
     return (
-        <div className={`mb-4 ${className}`}>
-            {label && <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>}
+        <div className={`mb-3 ${className}`}>
+            {label && (
+                <label className="flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-gray-300 mb-1">
+                    {label}
+                    {needed && empty && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="이 사무실 필수 확인 항목" />}
+                </label>
+            )}
             <div className="relative">
                 <input
-                    type={type === 'number' && !isCurrency ? 'text' : 'text'}
+                    type="text"
+                    inputMode={isPhone ? 'tel' : (isCurrency || type === 'number') ? 'numeric' : undefined}
                     autoComplete="off"
-                    className={"w-full p-2 border border-blue-300 rounded text-sm outline-none " + (readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-1 focus:ring-blue-500')}
+                    className={"w-full px-2.5 py-2 border rounded-lg text-sm outline-none transition-colors " +
+                        (readOnly
+                            ? 'bg-slate-100 dark:bg-gray-900/50 text-slate-500 border-slate-200 dark:border-gray-700 cursor-not-allowed'
+                            : 'bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100 border-slate-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20') +
+                        (suffix ? ' pr-12' : '') + (isCurrency ? ' text-right tabular-nums' : '')}
                     value={getFormattedValue(displayValue) || ''}
                     onChange={!readOnly ? handleInputChange : undefined}
                     onBlur={handleBlur}
+                    onKeyDown={e => { if (e.key === 'Enter' && updateOnBlur) (e.target as HTMLInputElement).blur(); }}
                     placeholder={placeholder}
                     readOnly={readOnly}
                 />
-                {suffix && <span className="absolute right-3 top-2 text-gray-500 text-xs">{suffix}</span>}
+                {suffix && <span className="absolute right-3 top-2.5 text-slate-400 text-xs pointer-events-none">{suffix}</span>}
             </div>
+            {showKorean && <div className="text-[11px] text-slate-500 mt-0.5 text-right tabular-nums">{formatKoreanMoney(numeric)}</div>}
         </div>
     );
 };

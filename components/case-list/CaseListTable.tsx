@@ -27,35 +27,21 @@ const SECONDARY_STATUS_COLOR_MAP: Record<string, string> = {
     '기준비용입금': 'text-emerald-400',
 };
 
-const StatusHistoryTooltipContent = ({ caseId }: { caseId: string }) => {
-    const [logs, setLogs] = useState<CaseStatusLog[] | null>(null);
-    const [secondaryChanges, setSecondaryChanges] = useState<{ date: string; from: string; to: string; memo?: string }[]>([]);
-
-    useEffect(() => {
-        // Fetch status logs
-        fetchCaseStatusLogs(caseId).then(setLogs);
-
-        // Fetch case to get secondary status changes from memos
-        fetchCases().then(cases => {
-            const foundCase = cases.find(c => c.caseId === caseId);
-            if (foundCase?.specialMemo) {
-                const changes = foundCase.specialMemo
-                    .filter(m => m.content.startsWith('[2차 상태 변경]'))
-                    .map(m => {
-                        const match = m.content.match(/\[2차 상태 변경\] (.+?) → (.+?)(\n|$)/);
-                        return {
-                            date: m.createdAt || (m as any).datetime,
-                            from: match?.[1] || '없음',
-                            to: match?.[2] || '없음',
-                            memo: m.content.includes('사유:') ? m.content.split('사유:')[1]?.trim() : undefined
-                        };
-                    });
-                setSecondaryChanges(changes);
-            }
+// [2026-11-01] 툴팁을 열 때마다 전체 리드를 복사하던 것을, 이미 가진 리드 정보로 바로 그린다
+const StatusHistoryTooltipContent = ({ c }: { c: Case }) => {
+    const logs: CaseStatusLog[] = c.statusLogs || [];
+    const secondaryChanges = (c.specialMemo || [])
+        .filter(m => String(m.content || '').startsWith('[2차 상태 변경]'))
+        .map(m => {
+            const match = m.content.match(/\[2차 상태 변경\] (.+?) → (.+?)(\n|$)/);
+            return {
+                date: m.createdAt || (m as any).datetime,
+                from: match?.[1] || '없음',
+                to: match?.[2] || '없음',
+                memo: m.content.includes('사유:') ? m.content.split('사유:')[1]?.trim() : undefined
+            };
         });
-    }, [caseId]);
 
-    if (!logs) return <span>로딩중...</span>;
     if (logs.length === 0 && secondaryChanges.length === 0) return <span>이력이 없습니다.</span>;
 
     return (
@@ -110,6 +96,18 @@ const getNextUpcomingReminder = (reminders?: ReminderItem[]): ReminderItem | nul
     return upcoming.length > 0 ? upcoming[0] : null;
 };
 
+/** 지난(처리 안 한) 일정: 가장 오래된 것 */
+const getOverdueReminder = (reminders?: ReminderItem[]): ReminderItem | null => {
+    if (!reminders || reminders.length === 0) return null;
+    const now = Date.now();
+    const past = reminders
+        .filter(r => !r.resultStatus && !r.isCompleted)
+        .map(r => ({ r, t: parseReminder(r.datetime)?.getTime() ?? NaN }))
+        .filter(x => !isNaN(x.t) && x.t < now)
+        .sort((a, b) => a.t - b.t);
+    return past.length ? past[0].r : null;
+};
+
 const getLastConsultationDate = (c: Case): string => {
     if (!c.specialMemo || !Array.isArray(c.specialMemo) || c.specialMemo.length === 0) {
         return c.updatedAt;
@@ -131,6 +129,11 @@ interface CaseListTableProps {
     onMissedCall: (e: React.MouseEvent, c: Case) => void;
     onStatusChange: (caseId: string, newStatus: string, oldStatus: string) => void; // [NEW]
     onToggleStar: (caseId: string, currentStarred: boolean) => void; // [NEW] 중요 표시
+    // [2026-11-01] 여러 건 선택 · 담당자 표시
+    selectedIds?: Set<string>;
+    onToggleSelect?: (caseId: string) => void;
+    onToggleSelectAll?: (caseIds: string[], on: boolean) => void;
+    memberName?: (userId?: string) => string;
 }
 
 export const CaseListTable: React.FC<CaseListTableProps> = ({
@@ -144,8 +147,15 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     onRestore,
     onMissedCall,
     onStatusChange,
-    onToggleStar
+    onToggleStar,
+    selectedIds,
+    onToggleSelect,
+    onToggleSelectAll,
+    memberName,
 }) => {
+    const selectable = !!onToggleSelect && viewMode === 'active';
+    const pageIds = cases.map(c => c.caseId);
+    const allOnPage = selectable && pageIds.length > 0 && pageIds.every(id => selectedIds?.has(id));
     // [NEW] State for status dropdown
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -160,12 +170,13 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     // 1차 상태가 이 목록에 해당하면 SMS_OUT 없어도 빨간색 표시 안 함
     const SMS_OUT_EXEMPT_STATUSES = ['신규접수', '사무장 접수', '수신정지'];
 
-    // 배치로 SMS_OUT 존재 여부 조회
+    // 배치로 SMS_OUT 존재 여부 조회 (보이는 번호가 바뀔 때만 — 저장할 때마다 다시 부르지 않게)
+    const phoneKey = cases.map(c => c.phone).filter(Boolean).join(',');
     useEffect(() => {
-        const phones = cases.map(c => c.phone).filter(Boolean);
+        const phones = phoneKey ? phoneKey.split(',') : [];
         if (phones.length === 0) return;
         fetchPhonesWithSmsOut(phones).then(setPhonesWithSmsOut);
-    }, [cases]);
+    }, [phoneKey]);
 
     // History 아이콘이 빨간색이어야 하는지 판단하는 헬퍼
     const shouldShowRedHistory = (phone: string, status: string): boolean => {
@@ -256,7 +267,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     {c.status}
                                                 </button>
                                             }
-                                            content={<StatusHistoryTooltipContent caseId={c.caseId} />}
+                                            content={() => <StatusHistoryTooltipContent c={c} />}
                                         />
 
                                         {/* Mobile Status Change Dropdown */}
@@ -305,7 +316,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
                             <div className="flex justify-between items-center mt-1">
                                 <div className="flex items-center gap-2">
-                                    <Link to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
+                                    <Link to={`/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
                                         {c.customerName}
                                     </Link>
                                     <HoverCheckTooltip
@@ -348,6 +359,15 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     )}
                                 </div>
                             </div>
+
+                            {/* [Mobile] 지난 일정 */}
+                            {(() => {
+                                const o = getOverdueReminder(c.reminders);
+                                return o ? <div className="mt-1 w-fit text-xs px-2 py-0.5 rounded bg-red-50 text-red-700 font-semibold dark:bg-red-900/30 dark:text-red-300">지난 일정 {o.datetime.slice(5)}</div> : null;
+                            })()}
+                            {memberName && (
+                                <div className={`text-[11px] ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>{c.assignedUserId ? `담당 ${memberName(c.assignedUserId) || '?'}` : '미배정'}</div>
+                            )}
 
                             {/* [Mobile] Reminder Info */}
                             {(() => {
@@ -450,6 +470,11 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                 <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300 table-fixed">
                     <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
                         <tr>
+                            {selectable && (
+                                <th className="pl-3 pr-1 py-3 w-[3%] text-center">
+                                    <input type="checkbox" aria-label="이 쪽 모두 선택" checked={allOnPage} onChange={() => onToggleSelectAll?.(pageIds, !allOnPage)} />
+                                </th>
+                            )}
                             <th className="px-2 py-3 w-[3%] text-center"><Star size={14} className="inline text-gray-400" /></th>
                             <th className="px-4 py-3 w-[14%]">유형/경로/거래처</th>
                             <th className="px-4 py-3 w-[11%]">고객명</th>
@@ -467,15 +492,19 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                             const warnings = getCaseWarnings(c, partner);
                             const lastConsultDate = getLastConsultationDate(c);
                             const nextReminder = getNextUpcomingReminder(c.reminders);
+                            const overdueReminder = getOverdueReminder(c.reminders);
+                            const isSelected = !!selectedIds?.has(c.caseId);
 
                             return (
-                                <motion.tr
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    key={`${c.caseId}_${index}`}
-                                    className={`border-b border-gray-50 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors ${c.isStarred ? 'bg-amber-50/40 dark:bg-amber-900/10' : ''}`}
+                                <tr
+                                    key={c.caseId}
+                                    className={`border-b border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700/60 transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : c.isStarred ? 'bg-amber-50/40 dark:bg-amber-900/10' : ''}`}
                                 >
+                                    {selectable && (
+                                        <td className="pl-3 pr-1 py-3 text-center">
+                                            <input type="checkbox" aria-label={`${c.customerName} 선택`} checked={isSelected} onChange={() => onToggleSelect?.(c.caseId)} />
+                                        </td>
+                                    )}
                                     {/* [NEW] Star Column */}
                                     <td className="px-2 py-3 text-center">
                                         <button
@@ -496,7 +525,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-1.5">
                                             <Link
-                                                to={c.isNew ? `/new?leadId=${c.caseId}` : `/case/${c.caseId}`}
+                                                to={`/case/${c.caseId}`}
                                                 className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                                             >
                                                 <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
@@ -546,7 +575,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             />
                                         </div>
 
-                                        {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs">⚠</span>}
+                                        {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs" title={warnings.join(', ')}>⚠</span>}
+                                        {memberName && (
+                                            <div className={`text-[11px] mt-0.5 ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>
+                                                {c.assignedUserId ? `담당 ${memberName(c.assignedUserId) || '?'}` : '미배정'}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className={`px-4 py-3 font-medium ${c.status === '진행불가' || c.status === '고객취소'
                                         ? 'text-red-600 dark:text-red-400'
@@ -607,7 +641,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         <ChevronDown size={12} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
                                                     </button>
                                                 }
-                                                content={<StatusHistoryTooltipContent caseId={c.caseId} />}
+                                                content={() => <StatusHistoryTooltipContent c={c} />}
                                             />
 
                                             {/* Status Change Dropdown */}
@@ -674,6 +708,11 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         {safeFormat(lastConsultDate, 'yyyy-MM-dd')}
                                     </td>
                                     <td className="px-4 py-3 text-xs">
+                                        {overdueReminder && (
+                                            <div className="mb-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-semibold dark:bg-red-900/30 dark:text-red-300" title={overdueReminder.content || ''}>
+                                                지난 일정 {overdueReminder.datetime.slice(5)}
+                                            </div>
+                                        )}
                                         {nextReminder ? (
                                             <HoverCheckTooltip
                                                 trigger={
@@ -706,7 +745,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     </div>
                                                 }
                                             />
-                                        ) : '-'}
+                                        ) : (overdueReminder ? null : '-')}
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         {viewMode === 'trash' ? (
@@ -736,7 +775,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             </button>
                                         )}
                                     </td>
-                                </motion.tr>
+                                </tr>
                             );
                         })}
                     </tbody>

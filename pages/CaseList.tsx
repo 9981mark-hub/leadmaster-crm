@@ -1,4 +1,9 @@
-import React, { useEffect, useState, useMemo, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useLayoutEffect, useRef, useCallback, useDeferredValue } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchTeamMembers, assignCases, TeamMember } from '../services/team';
+import { applyLocalAssignment } from '../services/api';
+import { exportToExcel } from '../utils/xlsxExport';
+import { parseReminder } from '../utils';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { ListSkeleton } from '../components/Skeleton';
@@ -109,6 +114,22 @@ export default function CaseList() {
     const [showOverdueMissedOnly, setShowOverdueMissedOnly] = useState(() => sessionStorage.getItem('lm_showOverdueMissed') === 'true');
     const [showStarredOnly, setShowStarredOnly] = useState(() => sessionStorage.getItem('lm_showStarredOnly') === 'true');
 
+    // [2026-11-01] 빠른 보기 (오늘 할 일 · 내 담당 · 미배정) + 담당자 필터 + 쪽 크기 + 여러 건 선택
+    const { org, isAdmin } = useAuth();
+    type QuickView = 'all' | 'today' | 'mine' | 'unassigned';
+    const [quickView, setQuickView] = useState<QuickView>(() => (sessionStorage.getItem('lm_quickView') as QuickView) || 'all');
+    const [assigneeFilter, setAssigneeFilter] = useState(() => sessionStorage.getItem('lm_assigneeFilter') || '');
+    const [pageSize, setPageSize] = useState<number>(() => Number(localStorage.getItem('lm_caselist_pagesize')) || 20);
+    const [members, setMembers] = useState<TeamMember[]>([]);
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [bulkBusy, setBulkBusy] = useState(false);
+    useEffect(() => {
+        if (!isAdmin || !org?.orgId) return;
+        fetchTeamMembers().then(setMembers).catch(() => setMembers([]));
+    }, [isAdmin, org?.orgId]);
+    const memberName = useCallback((uid?: string) => (uid ? (members.find(m => m.userId === uid)?.displayName || '') : ''), [members]);
+    const showAssignee = isAdmin && members.length > 1;
+
     // [NEW] Secondary/Tertiary Status Filters
     const [secondaryStatusFilter, setSecondaryStatusFilter] = useState(() => sessionStorage.getItem('lm_secondaryStatusFilter') || '');
     const [tertiaryStatusFilter, setTertiaryStatusFilter] = useState(() => sessionStorage.getItem('lm_tertiaryStatusFilter') || '');
@@ -143,7 +164,18 @@ export default function CaseList() {
         sessionStorage.setItem('lm_viewMode', viewMode);
         sessionStorage.setItem('lm_secondaryStatusFilter', secondaryStatusFilter);
         sessionStorage.setItem('lm_tertiaryStatusFilter', tertiaryStatusFilter);
-    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, showOverdueMissedOnly, showStarredOnly, viewMode, secondaryStatusFilter, tertiaryStatusFilter]);
+        sessionStorage.setItem('lm_quickView', quickView);
+        sessionStorage.setItem('lm_assigneeFilter', assigneeFilter);
+    }, [search, statusFilters, inboundPathFilter, partnerFilter, dateFilterStart, dateFilterEnd, sortOrder, showNewOnly, showOverdueMissedOnly, showStarredOnly, viewMode, secondaryStatusFilter, tertiaryStatusFilter, quickView, assigneeFilter]);
+    useEffect(() => { localStorage.setItem('lm_caselist_pagesize', String(pageSize)); }, [pageSize]);
+
+    // 오늘 할 일 = 오늘까지 잡힌 일정 중 처리 안 한 것
+    const endOfToday = useMemo(() => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); }, []);
+    const hasDueReminder = useCallback((c: Case) => (c.reminders || []).some(r => {
+        if (r.resultStatus || r.isCompleted) return false;
+        const t = parseReminder(r.datetime)?.getTime();
+        return t !== undefined && t <= endOfToday;
+    }), [endOfToday]);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState<number>(() => {
@@ -154,22 +186,30 @@ export default function CaseList() {
     useEffect(() => {
         sessionStorage.setItem('lm_caselist_page', String(currentPage));
     }, [currentPage]);
-    const itemsPerPage = 10;
+    const itemsPerPage = pageSize;
+    // 글자를 칠 때마다 1,500건 메모를 다 뒤지지 않도록 검색은 한 박자 늦게 반영
+    const deferredSearch = useDeferredValue(search);
 
     // Derived Logic (Filtering & Sorting)
     const filteredCases = useMemo(() => {
+        const q = deferredSearch.trim().toLowerCase();
+        const qDigits = q.replace(/[^0-9]/g, '');
         return cases.filter(c => {
-            // Extended search: name, phone, consultation history (specialMemo), and reminders
-            const searchLower = search.toLowerCase();
-            const matchesSearch =
-                String(c.customerName || '').toLowerCase().includes(searchLower) ||
-                String(c.phone || '').includes(search) ||
-                // 상담이력(메모) 검색
-                (c.specialMemo || []).some(m => String(m.content || '').toLowerCase().includes(searchLower)) ||
-                // 리마인더 검색
-                (c.reminders || []).some(r => String(r.content || '').toLowerCase().includes(searchLower)) ||
-                // [NEW] 문자 내용 검색
+            // 검색: 이름·번호·상담 메모·일정 내용·문자 내용
+            const matchesSearch = !q ||
+                String(c.customerName || '').toLowerCase().includes(q) ||
+                String(c.phone || '').includes(q) ||
+                (qDigits.length >= 4 && String(c.phone || '').replace(/[^0-9]/g, '').includes(qDigits)) ||
+                (c.specialMemo || []).some(m => String(m.content || '').toLowerCase().includes(q)) ||
+                (c.reminders || []).some(r => String(r.content || '').toLowerCase().includes(q)) ||
                 matchingSmsPhones.includes(String(c.phone || '').replace(/[^0-9]/g, ''));
+
+            if (quickView === 'today' && !(hasDueReminder(c) || c.isNew || isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers))) return false;
+            if (quickView === 'mine' && c.assignedUserId !== org?.userId) return false;
+            if (quickView === 'unassigned' && c.assignedUserId) return false;
+            if (assigneeFilter) {
+                if (assigneeFilter === '__none__' ? !!c.assignedUserId : c.assignedUserId !== assigneeFilter) return false;
+            }
 
             const isHiddenGlobally = hiddenStatuses.includes(c.status);
             const matchesStatus = statusFilters.length === 0
@@ -217,7 +257,21 @@ export default function CaseList() {
 
             return matchesSearch && matchesStatus && matchesPath && matchesPartner && matchesDate && matchesNew && matchesSecondary && matchesTertiary;
         });
-    }, [cases, search, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, showStarredOnly, missedCallStatus, missedCallIntervalTiers, secondaryStatusFilter, tertiaryStatusFilter, matchingSmsPhones]);
+    }, [cases, deferredSearch, hiddenStatuses, statusFilters, inboundPathFilter, partnerFilter, showNewOnly, viewMode, dateFilterStart, dateFilterEnd, showOverdueMissedOnly, showStarredOnly, missedCallStatus, missedCallIntervalTiers, secondaryStatusFilter, tertiaryStatusFilter, matchingSmsPhones, quickView, assigneeFilter, org?.userId, hasDueReminder]);
+
+    // 필터가 바뀌면 선택 해제
+    useEffect(() => { setSelected(new Set()); }, [deferredSearch, statusFilters, inboundPathFilter, partnerFilter, quickView, assigneeFilter, viewMode, showNewOnly, showOverdueMissedOnly, showStarredOnly]);
+
+    // 빠른 보기 숫자 (휴지통 제외)
+    const viewCounts = useMemo(() => {
+        const live = cases.filter(c => c.status !== '휴지통' && !c.deletedAt);
+        return {
+            all: live.length,
+            today: live.filter(c => hasDueReminder(c) || c.isNew || isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)).length,
+            mine: org?.userId ? live.filter(c => c.assignedUserId === org.userId).length : 0,
+            unassigned: live.filter(c => !c.assignedUserId).length,
+        };
+    }, [cases, hasDueReminder, missedCallStatus, missedCallIntervalTiers, org?.userId]);
 
     const sortedCases = useMemo(() => {
         return [...filteredCases].sort((a, b) => {
@@ -431,7 +485,11 @@ export default function CaseList() {
             updates.lastMissedCallAt = targetCase?.lastMissedCallAt || now;
         }
 
-        updateCaseMutation.mutate({ id: caseId, updates });
+        // 상태 변경 기록도 남긴다 (예전엔 목록에서 바꾸면 기록이 없었다)
+        const target = cases.find(c => c.caseId === caseId);
+        updates.statusLogs = [{ logId: Date.now().toString(), caseId, fromStatus: oldStatus, toStatus: newStatus, changedAt: now, changedBy: localStorage.getItem('managerName') || '상담원', memo: '목록에서 변경' }, ...(target?.statusLogs || [])];
+
+        updateCaseMutation.mutate({ id: caseId, updates, silent: true });
         showToast(`상태가 "${newStatus}"(으)로 변경되었습니다.`);
     };
 
@@ -447,7 +505,7 @@ export default function CaseList() {
             fromStatus: dropOffOldStatus,
             toStatus: dropOffNewStatus,
             changedAt: now,
-            changedBy: 'User',
+            changedBy: localStorage.getItem('managerName') || '상담원',
             memo: `[이탈사유: ${dropOffReason}] ${dropOffDetail}`.trim()
         };
         const targetCase = cases.find(c => c.caseId === dropOffCaseId);
@@ -464,6 +522,64 @@ export default function CaseList() {
         showToast(`상태가 "${dropOffNewStatus}"(으)로 변경되었습니다.`);
         setIsDropOffModalOpen(false);
     };
+
+    // ---- 여러 건 선택 ----
+    const toggleSelect = (id: string) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    const toggleSelectAll = (ids: string[], on: boolean) => setSelected(prev => { const n = new Set(prev); ids.forEach(id => on ? n.add(id) : n.delete(id)); return n; });
+    const selectedCases = () => cases.filter(c => selected.has(c.caseId));
+
+    const bulkStatus = async (newStatus: string) => {
+        const list = selectedCases().filter(c => c.status !== newStatus);
+        if (list.length === 0) return;
+        if (!window.confirm(`${list.length}건의 상태를 "${newStatus}"(으)로 바꿀까요?`)) return;
+        const now = new Date().toISOString();
+        const who = localStorage.getItem('managerName') || '상담원';
+        list.forEach(c => updateCaseMutation.mutate({
+            id: c.caseId, silent: true,
+            updates: {
+                status: newStatus, statusUpdatedAt: now,
+                statusLogs: [{ logId: `${Date.now()}_${c.caseId}`, caseId: c.caseId, fromStatus: c.status, toStatus: newStatus, changedAt: now, changedBy: who, memo: '목록에서 여러 건 변경' }, ...(c.statusLogs || [])],
+            },
+        }));
+        showToast(`${list.length}건의 상태를 "${newStatus}"(으)로 바꿨습니다.`);
+        setSelected(new Set());
+    };
+
+    const bulkTrash = () => {
+        const list = selectedCases();
+        if (list.length === 0 || !window.confirm(`${list.length}건을 휴지통으로 옮길까요?`)) return;
+        list.forEach(c => updateCaseMutation.mutate({ id: c.caseId, updates: { status: '휴지통' }, silent: true }));
+        showToast(`${list.length}건을 휴지통으로 옮겼습니다.`);
+        setSelected(new Set());
+    };
+
+    const bulkAssign = async (uid: string) => {
+        const ids: string[] = [];
+        selected.forEach(v => ids.push(v));
+        if (ids.length === 0) return;
+        const target = uid === '__none__' ? null : uid;
+        setBulkBusy(true);
+        try {
+            const n = await assignCases(ids, target);
+            applyLocalAssignment(ids, target);
+            refetchCases();
+            showToast(target ? `${memberName(target)}님에게 ${n}건 배정했습니다.` : `${n}건 배정을 풀었습니다.`);
+            setSelected(new Set());
+        } catch (e: any) {
+            showToast(`배정하지 못했습니다: ${e.message}`, 'error');
+        } finally { setBulkBusy(false); }
+    };
+
+    const bulkExport = () => {
+        const list = selectedCases();
+        if (list.length === 0) return;
+        exportToExcel(`리드_${list.length}건_${format(new Date(), 'yyyyMMdd')}`, list.map(c => ({
+            '이름': c.customerName, '연락처': c.phone, '상태': c.status, '2차 상태': c.secondaryStatus || '',
+            '사건 유형': c.caseType || '', '유입경로': c.inboundPath || '', '거래처': partners.find(p => p.partnerId === c.partnerId)?.name || '',
+            '담당': memberName(c.assignedUserId), '등록일': safeDate(c.createdAt),
+        })));
+    };
+    const safeDate = (iso?: string) => { const d = parseGenericDate(iso); return d ? format(d, 'yyyy-MM-dd HH:mm') : ''; };
 
     if (loadingCases && cases.length === 0) return <ListSkeleton />;
 
@@ -518,6 +634,57 @@ export default function CaseList() {
                 onResetPage={() => setCurrentPage(1)}
             />
 
+            {/* 빠른 보기 + 담당자 */}
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
+                    {([
+                        { k: 'all', label: '전체', n: viewCounts.all },
+                        { k: 'today', label: '오늘 할 일', n: viewCounts.today, hint: '오늘까지 잡힌 일정 · 신규 · 다시 걸 부재' },
+                        ...(org?.userId && viewCounts.mine > 0 ? [{ k: 'mine', label: '내 담당', n: viewCounts.mine }] : []),
+                        ...(isAdmin ? [{ k: 'unassigned', label: '미배정', n: viewCounts.unassigned }] : []),
+                    ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (
+                        <button key={v.k} type="button" title={v.hint}
+                            onClick={() => { setQuickView(v.k); setCurrentPage(1); }}
+                            className={`h-8 px-3 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
+                            {v.label}
+                            <span className={`text-xs tabular-nums ${quickView === v.k ? 'opacity-80' : 'text-slate-400'}`}>{v.n.toLocaleString()}</span>
+                        </button>
+                    ))}
+                </div>
+                {showAssignee && (
+                    <select value={assigneeFilter} onChange={e => { setAssigneeFilter(e.target.value); setCurrentPage(1); }}
+                        className="h-10 px-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-slate-700 dark:text-gray-200" aria-label="담당자">
+                        <option value="">모든 담당자</option>
+                        <option value="__none__">미배정</option>
+                        {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId}>{m.displayName}</option>)}
+                    </select>
+                )}
+            </div>
+
+            {/* 여러 건 선택했을 때 */}
+            {selected.size > 0 && (
+                <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white shadow-lg">
+                    <span className="text-sm font-bold tabular-nums">{selected.size}건 선택</span>
+                    <select defaultValue="" onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkStatus(v); }}
+                        className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="상태 바꾸기">
+                        <option value="" className="text-slate-900">상태 바꾸기…</option>
+                        {statuses.filter(s => s !== '휴지통' && !DROP_OFF_STATUSES.includes(s)).map(s => <option key={s} value={s} className="text-slate-900">{s}</option>)}
+                    </select>
+                    {isAdmin && members.length > 0 && (
+                        <select defaultValue="" disabled={bulkBusy} onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkAssign(v); }}
+                            className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="담당 배정">
+                            <option value="" className="text-slate-900">담당 배정…</option>
+                            {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId} className="text-slate-900">{m.displayName}</option>)}
+                            <option value="__none__" className="text-slate-900">배정 풀기</option>
+                        </select>
+                    )}
+                    <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>
+                    <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-red-500/80 text-sm">휴지통</button>
+                    <button onClick={() => setSelected(new Set())} className="ml-auto h-8 px-3 rounded-lg text-sm text-white/70 hover:text-white">선택 해제</button>
+                    <span className="w-full text-[11px] text-white/50">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
+                </div>
+            )}
+
             <StatusVisibilityModal
                 isOpen={isVisibilityModalOpen}
                 onClose={() => setIsVisibilityModalOpen(false)}
@@ -544,9 +711,13 @@ export default function CaseList() {
 
             {layoutMode === 'kanban' ? (
                 <KanbanBoard
-                    cases={currentCases} // Kanban typically shows all, but following existing logic
+                    // [2026-11-01] 예전엔 현재 쪽 10건만 칸반에 나왔다 → 필터 결과 전체
+                    cases={sortedCases}
                     statuses={statuses.filter(s => s !== '휴지통')}
-                    onUpdateStatus={(caseId, newStatus) => handleUpdate(caseId, { status: newStatus })}
+                    onUpdateStatus={(caseId, newStatus) => {
+                        const old = cases.find(x => x.caseId === caseId)?.status || '';
+                        handleQuickStatusChange(caseId, newStatus, old);
+                    }}
                 />
             ) : (
                 <div
@@ -565,11 +736,18 @@ export default function CaseList() {
                         onMissedCall={handleMissedCall}
                         onStatusChange={handleQuickStatusChange}
                         onToggleStar={handleToggleStar}
+                        selectedIds={selected}
+                        onToggleSelect={toggleSelect}
+                        onToggleSelectAll={toggleSelectAll}
+                        memberName={showAssignee ? memberName : undefined}
                     />
 
                     <CaseListPagination
                         currentPage={currentPage}
                         totalPages={totalPages}
+                        totalItems={totalItems}
+                        pageSize={pageSize}
+                        onPageSizeChange={(s) => { setPageSize(s); setCurrentPage(1); }}
                         onPageChange={(page) => {
                             setCurrentPage(page);
                             document.getElementById('main-scroll-container')?.scrollTo({ top: 0, behavior: 'instant' });

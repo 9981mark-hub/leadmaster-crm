@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { AlertTriangle, Smartphone, Plus, Phone, MessageSquare, Send } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, Plus, Phone, MessageSquare, Send, ArrowLeft, Clock, Check, Loader2, CloudOff, PhoneMissed, Command, X } from 'lucide-react';
 import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
 import { STATUS_COLOR_MAP } from '../../constants';
 import CallConfirmPopup from '../CallConfirmPopup';
-import { useActiveCall } from '../../contexts/ActiveCallContext';
+import { useEnqueueSmsMutation } from '../../services/queries';
+import { CheckProgress } from '../../utils/intake';
+
+export type SaveState = { state: 'idle' | 'saving' | 'saved' | 'error'; at?: number };
 
 interface CaseDetailHeaderProps {
     c: Case;
@@ -12,186 +15,219 @@ interface CaseDetailHeaderProps {
     statuses: CaseStatus[];
     secondaryStatuses: string[];
     tertiaryStatuses: Record<string, string[]>;
-    pendingFeedbackCount?: number;
     onStatusChangeStart: (status: CaseStatus) => void;
     onSecondaryStatusChangeStart: (status: string | null) => void;
     onTertiaryStatusChangeStart: (status: string | null) => void;
-    onClickPendingFeedbacks?: () => void;
     onMissedCallIncrement?: () => void;
     onDeliverClick?: () => void;
+    /** 다음 통화 예약 ("YYYY-MM-DD HH:mm") */
+    onAddCallReminder?: (datetime: string, label: string) => void;
+    /** 전화·문자를 시작할 때 (신규 리드면 상담 시작으로 처리) */
+    onEngage?: () => void;
+    onBack?: () => void;
+    onOpenPalette?: () => void;
+    saveState?: SaveState;
+    progress?: CheckProgress;
 }
 
+const isMobileUA = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const pad = (n: number) => String(n).padStart(2, '0');
+const fmtLocal = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+/** 다음 통화 예약 빠른 선택 */
+const quickSlots = (): { label: string; at: string }[] => {
+    const now = new Date();
+    const inHour = new Date(now.getTime() + 60 * 60_000);
+    inHour.setMinutes(Math.ceil(inHour.getMinutes() / 10) * 10, 0, 0);
+    const today18 = new Date(now); today18.setHours(18, 0, 0, 0);
+    const tomorrow10 = new Date(now); tomorrow10.setDate(now.getDate() + 1); tomorrow10.setHours(10, 0, 0, 0);
+    const day2 = new Date(now); day2.setDate(now.getDate() + 2); day2.setHours(10, 0, 0, 0);
+    const out = [{ label: '1시간 뒤', at: fmtLocal(inHour) }];
+    if (today18.getTime() > now.getTime() + 30 * 60_000) out.push({ label: '오늘 저녁 6시', at: fmtLocal(today18) });
+    out.push({ label: '내일 오전 10시', at: fmtLocal(tomorrow10) }, { label: '모레 오전 10시', at: fmtLocal(day2) });
+    return out;
+};
+
+/** 상태 색 (목록·상세 공통 색에서 진한 색만 뽑아 왼쪽 띠로) */
+const statusBar = (status: string) => {
+    const cls = STATUS_COLOR_MAP[status] || 'bg-blue-100';
+    const m = cls.match(/bg-([a-z]+)-\d+/);
+    const color = m ? m[1] : 'blue';
+    const MAP: Record<string, string> = { blue: 'bg-blue-500', orange: 'bg-orange-500', yellow: 'bg-yellow-500', gray: 'bg-gray-400', purple: 'bg-purple-500', indigo: 'bg-indigo-500', teal: 'bg-teal-500', green: 'bg-green-600' };
+    return MAP[color] || 'bg-blue-500';
+};
+
+const SaveBadge: React.FC<{ s?: SaveState }> = ({ s }) => {
+    if (!s || s.state === 'idle') return null;
+    if (s.state === 'saving') return <span className="text-xs text-slate-500 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> 저장 중</span>;
+    if (s.state === 'error') return <span className="text-xs text-red-600 font-semibold flex items-center gap-1"><CloudOff size={12} /> 저장 안 됨 — 다시 입력하세요</span>;
+    const t = s.at ? new Date(s.at) : null;
+    return <span className="text-xs text-emerald-700 flex items-center gap-1"><Check size={12} /> 저장됨{t ? ` ${pad(t.getHours())}:${pad(t.getMinutes())}` : ''}</span>;
+};
+
+/**
+ * 리드 상세 맨 위 "통화 작업대" (스크롤해도 위에 붙어 있음)
+ * 누구인지 · 전화 · 문자 · 부재 · 다음 통화 예약 · 텔레그램 전달 · 상태 · 저장 상태 · 필수 확인 진행률
+ */
 export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
-    c,
-    partner,
-    statuses,
-    secondaryStatuses,
-    tertiaryStatuses,
-    pendingFeedbackCount = 0,
-    onStatusChangeStart,
-    onSecondaryStatusChangeStart,
-    onTertiaryStatusChangeStart,
-    onClickPendingFeedbacks,
-    onMissedCallIncrement,
-    onDeliverClick
+    c, partner, statuses, secondaryStatuses, tertiaryStatuses,
+    onStatusChangeStart, onSecondaryStatusChangeStart, onTertiaryStatusChangeStart,
+    onMissedCallIncrement, onDeliverClick, onAddCallReminder, onEngage, onBack, onOpenPalette, saveState, progress,
 }) => {
     const warnings = getCaseWarnings(c, partner);
-    const [plusAnim, setPlusAnim] = useState(false);
     const [showCallPopup, setShowCallPopup] = useState(false);
-    const { startCall } = useActiveCall();
+    const [menu, setMenu] = useState<'sms' | 'reminder' | null>(null);
+    const [smsText, setSmsText] = useState('');
+    const menuRef = useRef<HTMLDivElement>(null);
+    const sms = useEnqueueSmsMutation();
 
-    // Missed call status from settings
     const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
     const isMissedStatus = c.status === missedCallStatus;
+    const availableTertiary = c.secondaryStatus ? (tertiaryStatuses[c.secondaryStatus] || []) : [];
+    const phoneDigits = (c.phone || '').replace(/[^0-9+]/g, '');
 
-    const handleMissedCallClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setPlusAnim(true);
-        setTimeout(() => setPlusAnim(false), 400);
-        onMissedCallIncrement?.();
+    useEffect(() => {
+        if (!menu) return;
+        const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(null); };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, [menu]);
+
+    const call = () => {
+        onEngage?.();
+        if (isMobileUA()) { window.location.href = `tel:${phoneDigits}`; return; }
+        setShowCallPopup(true);
     };
 
-    // Get available tertiary statuses for the current secondary status
-    const availableTertiaryStatuses = c.secondaryStatus
-        ? (tertiaryStatuses[c.secondaryStatus] || [])
-        : [];
+    const sendSms = () => {
+        const text = smsText.trim();
+        if (!text) return;
+        onEngage?.();
+        sms.mutate({ phone: c.phone, content: text }, { onSuccess: () => { setSmsText(''); setMenu(null); } });
+    };
+
+    const btn = 'h-9 px-3 rounded-lg text-sm font-semibold flex items-center gap-1.5 border transition-colors whitespace-nowrap';
+    const sel = 'h-9 px-2 border rounded-lg text-sm font-semibold outline-none min-w-[120px] bg-white dark:bg-gray-800 dark:text-gray-100';
 
     return (
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-0 z-10">
-            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className={"px-2 py-0.5 rounded text-xs font-bold text-white whitespace-nowrap " + (['개인회생', '파산'].includes(c.caseType || '') ? 'bg-indigo-500' : 'bg-gray-500')}>
-                            {c.caseType}
-                        </span>
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-bold border border-gray-200 whitespace-nowrap">
-                            {partner?.name || '거래처 미정'}
-                        </span>
-                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 whitespace-nowrap">{c.customerName}</h1>
-                        <button
-                            onClick={() => {
-                                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-                                if (isMobile) {
-                                    window.location.href = `tel:${(c.phone || '').replace(/[^0-9+]/g, '')}`;
-                                    return;
-                                }
-                                setShowCallPopup(true);
-                            }}
-                            className="text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors whitespace-nowrap flex items-center gap-1 cursor-pointer"
-                        >
-                            <Phone size={14} className="text-green-500" />
-                            {c.phone}
-                        </button>
-                        {/* 모바일 전용 문자 아이콘 */}
-                        <a
-                            href={`sms:${(c.phone || '').replace(/[^0-9+]/g, '')}`}
-                            className="md:hidden inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 active:bg-blue-200 transition-colors"
-                            title="문자 보내기"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <MessageSquare size={16} className="text-blue-500" />
-                        </a>
-                        {onDeliverClick && (
-                            <button
-                                onClick={onDeliverClick}
-                                className="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 flex items-center gap-1 transition-colors whitespace-nowrap"
-                                title="회사 텔레그램 봇으로 변호사 사무실 방에 상담 내용을 보냅니다"
-                            >
-                                <Send size={13} /> 텔레그램 전달
-                            </button>
+        <div className="sticky top-0 z-20 -mx-1 px-1 pt-1 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur">
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <span className={`absolute left-0 top-0 bottom-0 w-1.5 ${statusBar(c.status)}`} aria-hidden />
+                <div className="pl-4 pr-3 py-3 flex flex-col lg:flex-row lg:items-center gap-3">
+                    {/* 누구인지 */}
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                        {onBack && (
+                            <button onClick={onBack} className="mt-0.5 p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-700" aria-label="뒤로"><ArrowLeft size={18} /></button>
                         )}
-                        {pendingFeedbackCount > 0 && (
-                            <button
-                                onClick={onClickPendingFeedbacks}
-                                className="ml-2 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-200 shadow-sm flex items-center gap-1 transition-colors"
-                                title="승인 대기 중인 텔레그램 피드백"
-                            >
-                                <Smartphone size={14} className="animate-pulse" />
-                                TG 대기 <span className="bg-rose-500 text-white rounded-full px-1.5 py-0.5 ml-0.5">{pendingFeedbackCount}</span>
-                            </button>
-                        )}
-                    </div>
-                    {warnings.length > 0 && (
-                        <div className="flex gap-2 mt-2">
-                            {warnings.map(w => (
-                                <span key={w} className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded font-bold flex items-center">
-                                    <AlertTriangle size={12} className="mr-1" /> {w}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-2">
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs text-gray-400 font-medium">1차 상태</label>
-                        <div className="flex items-center gap-1">
-                            <select
-                                className={"p-2 border border-gray-300 rounded font-semibold outline-none min-w-[140px] " + (STATUS_COLOR_MAP[c.status] || 'bg-blue-50 text-blue-800')}
-                                value={c.status}
-                                onChange={(e) => onStatusChangeStart(e.target.value as CaseStatus)}
-                            >
-                                {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                            {isMissedStatus && onMissedCallIncrement && (
-                                <button
-                                    onClick={handleMissedCallClick}
-                                    className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md border border-orange-300 bg-orange-50 text-orange-600 hover:bg-orange-100 hover:border-orange-400 active:scale-90 transition-all duration-150 ${
-                                        plusAnim ? 'scale-110 bg-orange-200 border-orange-500' : ''
-                                    }`}
-                                    title={`부재 확인 (현재 ${c.missedCallCount || 0}회)`}
-                                >
-                                    <Plus size={16} strokeWidth={2.5} />
-                                </button>
-                            )}
-                        </div>
-                        {isMissedStatus && (c.missedCallCount || 0) > 0 && (
-                            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-orange-600 font-medium">
-                                <span className="bg-orange-100 px-1.5 py-0.5 rounded font-bold">{c.missedCallCount}회</span>
-                                {c.lastMissedCallAt && (
-                                    <span className="text-orange-400">
-                                        {(() => {
-                                            const d = new Date(c.lastMissedCallAt);
-                                            return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-                                        })()}
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">{c.customerName || '이름 없음'}</h1>
+                                <button onClick={call} className="text-base font-semibold tabular-nums text-blue-700 dark:text-blue-300 hover:underline">{c.phone}</button>
+                                {c.isNew && <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-600 text-white font-bold">신규</span>}
+                            </div>
+                            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                                <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 font-medium">{c.caseType || '유형 미정'}</span>
+                                <span className={`px-1.5 py-0.5 rounded font-medium ${partner ? 'bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200' : 'bg-red-50 text-red-700'}`}>{partner?.name || '거래처 미정'}</span>
+                                {c.inboundPath && <span className="text-slate-400">{c.inboundPath}</span>}
+                                {progress && progress.total > 0 && (
+                                    <span className={`px-1.5 py-0.5 rounded font-medium ${progress.done === progress.total ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}
+                                        title={progress.missing.length ? `확인 안 한 항목: ${progress.missing.join(', ')}` : '필수 확인 항목을 모두 입력했습니다'}>
+                                        필수 확인 {progress.done}/{progress.total}
                                     </span>
                                 )}
+                                {warnings.map(w => (
+                                    <span key={w} className="px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-medium flex items-center gap-0.5"><AlertTriangle size={11} /> {w}</span>
+                                ))}
+                                <SaveBadge s={saveState} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 할 일 */}
+                    <div ref={menuRef} className="flex flex-wrap items-center gap-1.5 relative">
+                        <button onClick={call} className={`${btn} bg-slate-900 text-white border-slate-900 hover:bg-slate-800`}><Phone size={15} /> 전화</button>
+                        {isMobileUA() ? (
+                            <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50`}><MessageSquare size={15} /> 문자</a>
+                        ) : (
+                            <button onClick={() => setMenu(menu === 'sms' ? null : 'sms')} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}><MessageSquare size={15} /> 문자</button>
+                        )}
+                        <button
+                            onClick={() => isMissedStatus ? onMissedCallIncrement?.() : onStatusChangeStart(missedCallStatus as CaseStatus)}
+                            className={`${btn} border-orange-200 text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+                            title={isMissedStatus ? `부재 1회 더 기록 (지금 ${c.missedCallCount || 0}회)` : `상태를 '${missedCallStatus}'(으)로`}
+                        >
+                            <PhoneMissed size={15} /> 부재{isMissedStatus ? ` ${c.missedCallCount || 0}` : ''}{isMissedStatus && <Plus size={13} />}
+                        </button>
+                        {onAddCallReminder && (
+                            <button onClick={() => setMenu(menu === 'reminder' ? null : 'reminder')} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}><Clock size={15} /> 다음 통화</button>
+                        )}
+                        {onDeliverClick && (
+                            <button onClick={onDeliverClick} className={`${btn} border-sky-200 text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20`} title="회사 텔레그램 봇으로 변호사 사무실 방에 상담 내용을 보냅니다"><Send size={15} /> 사무실 전달</button>
+                        )}
+                        {onOpenPalette && (
+                            <button onClick={onOpenPalette} className="h-9 w-9 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 hidden md:flex items-center justify-center" title="빠른 이동 (Ctrl+K)"><Command size={16} /></button>
+                        )}
+
+                        {menu === 'sms' && (
+                            <div className="absolute right-0 top-11 z-30 w-80 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg p-3 space-y-2">
+                                <div className="flex items-center justify-between text-sm font-semibold text-slate-800 dark:text-gray-100">
+                                    <span>{c.customerName}님께 문자</span>
+                                    <button onClick={() => setMenu(null)} className="text-slate-400" aria-label="닫기"><X size={14} /></button>
+                                </div>
+                                <textarea autoFocus value={smsText} onChange={e => setSmsText(e.target.value)} rows={5}
+                                    onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendSms(); }}
+                                    className="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-2 text-sm dark:bg-gray-900 dark:text-gray-100 outline-none focus:border-blue-500" placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[11px] text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
+                                    <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-8 px-3 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-40 flex items-center gap-1">
+                                        {sms.isPending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />} 보내기
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        {menu === 'reminder' && onAddCallReminder && (
+                            <div className="absolute right-0 top-11 z-30 w-56 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg py-1">
+                                {quickSlots().map(s => (
+                                    <button key={s.label} onClick={() => { onAddCallReminder(s.at, s.label); setMenu(null); }}
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 flex justify-between">
+                                        <span className="text-slate-800 dark:text-gray-100">{s.label}</span>
+                                        <span className="text-slate-400 tabular-nums text-xs">{s.at.slice(5)}</span>
+                                    </button>
+                                ))}
+                                <div className="px-3 py-1.5 text-[11px] text-slate-400 border-t border-slate-100 dark:border-gray-700">다른 시각은 오른쪽 "상담 메모 · 일정"에서</div>
                             </div>
                         )}
                     </div>
-                    {/* 2차 상태 (사무장 접수 이후에만 표시) */}
-                    {c.status === '사무장 접수' && (
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-purple-500 font-medium">2차 상태</label>
-                            <select
-                                className="p-2 border border-purple-300 rounded font-semibold outline-none min-w-[140px] bg-purple-50 text-purple-800"
-                                value={c.secondaryStatus || ''}
-                                onChange={(e) => onSecondaryStatusChangeStart(e.target.value || null)}
-                            >
-                                <option value="">선택 안함</option>
+
+                    {/* 상태 */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        <select
+                            aria-label="1차 상태"
+                            className={`${sel} border-slate-300 ${STATUS_COLOR_MAP[c.status] || ''}`}
+                            value={c.status}
+                            onChange={(e) => onStatusChangeStart(e.target.value as CaseStatus)}
+                        >
+                            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        {c.status === '사무장 접수' && (
+                            <select aria-label="2차 상태" className={`${sel} border-purple-300 text-purple-800`} value={c.secondaryStatus || ''} onChange={(e) => onSecondaryStatusChangeStart(e.target.value || null)}>
+                                <option value="">2차 상태</option>
                                 {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
-                        </div>
-                    )}
-                    {/* 3차 상태 (2차 상태가 선택되고, 해당 2차에 3차 목록이 있을 때만 표시) */}
-                    {c.status === '사무장 접수' && c.secondaryStatus && availableTertiaryStatuses.length > 0 && (
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-amber-600 font-medium">3차 상태</label>
-                            <select
-                                className="p-2 border border-amber-300 rounded font-semibold outline-none min-w-[140px] bg-amber-50 text-amber-800"
-                                value={c.tertiaryStatus || ''}
-                                onChange={(e) => onTertiaryStatusChangeStart(e.target.value || null)}
-                            >
-                                <option value="">선택 안함</option>
-                                {availableTertiaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                        )}
+                        {c.status === '사무장 접수' && c.secondaryStatus && availableTertiary.length > 0 && (
+                            <select aria-label="3차 상태" className={`${sel} border-amber-300 text-amber-800`} value={c.tertiaryStatus || ''} onChange={(e) => onTertiaryStatusChangeStart(e.target.value || null)}>
+                                <option value="">3차 상태</option>
+                                {availableTertiary.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
-                        </div>
-                    )}
+                        )}
+                        {isMissedStatus && c.lastMissedCallAt && (
+                            <span className="text-[11px] text-orange-600 tabular-nums">마지막 부재 {(() => { const d = new Date(c.lastMissedCallAt!); return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; })()}</span>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Call Confirm Popup */}
             <CallConfirmPopup
                 isOpen={showCallPopup}
                 customerName={c.customerName}

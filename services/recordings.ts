@@ -19,6 +19,11 @@ export interface ExtractedInfo {
   special_notes: string | null;
   next_action: string | null;
   customer_intent: string;
+  // 거래처 설정 연동 결과
+  office_summary?: string | null;          // 사무실 요약문 양식대로 쓴 보고서
+  missing_items?: string[];                // 필수 확인 항목 중 통화에서 확인 못 한 것
+  classification?: { label: string; reason: string | null } | null;  // 분류 기준에 따른 분류
+  case_type_suggestion?: string | null;
 }
 
 export interface CallRecording {
@@ -160,6 +165,14 @@ export const fmtManwon = (v: number | null | undefined) => {
   if (v === null || v === undefined) return '-';
   if (v >= 10000) { const eok = Math.floor(v / 10000); const rest = v % 10000; return `${eok}억${rest ? ` ${rest.toLocaleString()}만` : ''}원`; }
   return `${v.toLocaleString()}만원`;
+};
+
+/** 리드의 가장 최근 AI 정리 완료 녹음 (텔레그램 전달 기본 글 등) */
+export const fetchLatestAnalyzedRecording = async (caseId: string): Promise<CallRecording | null> => {
+  const { data, error } = await need().from('call_recordings').select(LIST_COLS)
+    .eq('case_id', caseId).eq('status', 'done').order('call_started_at', { ascending: false }).limit(1);
+  if (error) return null;
+  return data && data[0] ? mapRow(data[0]) : null;
 };
 
 /** 통화 녹음 AI 정리 → 텔레그램 전달·메모용 글 */

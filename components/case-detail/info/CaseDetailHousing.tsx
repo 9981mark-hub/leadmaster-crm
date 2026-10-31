@@ -14,18 +14,10 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
     onUpdate
 }) => {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-amber-200/90 dark:border-amber-900/60 shadow-xs overflow-hidden">
-            {/* 3. 앰버 컬러 헤더 밴드 */}
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50/40 dark:from-amber-950/50 dark:to-orange-950/30 px-4 py-2.5 border-b border-amber-200 dark:border-amber-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-amber-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                        3
-                    </span>
-                    <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
-                        주거 형태 및 주거비
-                    </h3>
-                </div>
-                <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/50 px-2 py-0.5 rounded">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 dark:text-gray-100 text-sm">주거</h3>
+                <span className="text-[11px] text-slate-500">
                     {c.housingType || '미지정'} {c.housingDetail && `(${c.housingDetail})`}
                 </span>
             </div>

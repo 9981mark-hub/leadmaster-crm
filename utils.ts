@@ -343,9 +343,16 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
     historyStr += ` (${c.historyMemo})`;
   }
 
+  // 총 채무 = 신용(카드 포함) + 담보
+  const totalDebt = totalCreditLoanAmount + totalCollateralAmount;
+  const debtTotalStr = totalDebt > 0
+    ? `${formatKoreanMoney(totalDebt)} (신용 ${formatKoreanMoney(totalCreditLoanAmount)} + 담보 ${formatKoreanMoney(totalCollateralAmount)})`
+    : '없음';
+
   const sortedMemos = c.specialMemo
     ? [...c.specialMemo]
-      .filter(m => !m.content.startsWith('[상태변경]')) // Filter out status changes
+      // 상태 변경 자동 기록(1·2·3차)은 사무실에 보내는 요약에서 뺀다
+      .filter(m => !/^\[(상태변경|2차 상태 변경|3차 상태 변경)\]/.test(String(m.content || '')))
       .sort((a, b) => String(b.createdAt || (b as any).datetime || '').localeCompare(String(a.createdAt || (a as any).datetime || '')))
     : [];
   const allMemosContent = sortedMemos.length > 0
@@ -387,7 +394,12 @@ export const generateSummary = (c: Case, template: string = DEFAULT_SUMMARY_TEMP
     creditCardUse: c.creditCardUse || '미사용',
     creditCardAmountStr: c.creditCardUse === '사용' && c.creditCardAmount ? formatKoreanMoney(c.creditCardAmount) : '없음',
     historyStr: historyStr,
-    specialMemo: allMemosContent
+    debtTotalStr,
+    specialMemo: allMemosContent,
+    // 예전 안내에 있던 이름도 받아준다
+    jobType: jobTypesStr,
+    incomeNet: formatKoreanMoney(c.incomeNet),
+    creditLoan: creditLoanStr,
   };
 
   // 2. Replace placeholders in template

@@ -49,6 +49,7 @@ function buildCandidates(c: Case, e: ExtractedInfo, rec: CallRecording): Candida
     if (cur === v) return;
     out.push({ key: String(key), label, current: cur || '-', next: v, defaultOn: SYSTEM_DEFAULTS.has(cur), apply: u => { (u as any)[key] = v; } });
   };
+  pick('caseType', '사건 유형', e.case_type_suggestion || null);
   pick('birth', '출생년도', e.personal.birth_year);
   pick('gender', '성별', e.personal.gender);
   pick('region', '지역', e.personal.region);
@@ -238,7 +239,9 @@ function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToa
   };
 
   const copy = async () => {
-    try { await navigator.clipboard.writeText(extractedToText(rec)); showToast('복사했습니다.'); } catch { showToast('복사하지 못했습니다.', 'error'); }
+    // 사무실 양식 보고서가 있으면 그것을, 없으면 요약 + 채무 정리
+    const text = rec.extracted?.office_summary || extractedToText(rec);
+    try { await navigator.clipboard.writeText(text); showToast('복사했습니다.'); } catch { showToast('복사하지 못했습니다.', 'error'); }
   };
 
   return (
@@ -265,8 +268,36 @@ function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToa
 
           {rec.status === 'done' && rec.extracted && (
             <>
+              {/* 거래처 설정 연동: 분류 · 빠진 확인 항목 */}
+              {(rec.extracted.classification || (rec.extracted.missing_items || []).length > 0) && (
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  {rec.extracted.classification && (
+                    <span className="px-2 py-0.5 rounded-md bg-slate-800 text-white font-bold" title={rec.extracted.classification.reason || ''}>
+                      {rec.extracted.classification.label}
+                    </span>
+                  )}
+                  {rec.extracted.case_type_suggestion && rec.extracted.case_type_suggestion !== c.caseType && (
+                    <span className="px-2 py-0.5 rounded-md border border-slate-300 text-slate-700">추천 절차: {rec.extracted.case_type_suggestion}</span>
+                  )}
+                  {rec.extracted.classification?.reason && <span className="text-xs text-gray-500">{rec.extracted.classification.reason}</span>}
+                </div>
+              )}
+              {(rec.extracted.missing_items || []).length > 0 && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-sm">
+                  <div className="font-semibold text-amber-900 mb-1">다음 통화에서 확인할 것</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {rec.extracted.missing_items!.map(m => <span key={m} className="px-2 py-0.5 rounded bg-white border border-amber-300 text-amber-900 text-xs">{m}</span>)}
+                  </div>
+                </div>
+              )}
               {rec.summary && <div className="text-sm whitespace-pre-wrap text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-900/40 rounded p-3">{rec.summary}</div>}
               <ExtractedView e={rec.extracted} />
+              {rec.extracted.office_summary && (
+                <details className="rounded-lg border border-gray-200 dark:border-gray-700">
+                  <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200">사무실 보고서 (거래처 요약문 양식)</summary>
+                  <pre className="px-3 pb-3 text-sm whitespace-pre-wrap font-sans text-gray-800 dark:text-gray-100">{rec.extracted.office_summary}</pre>
+                </details>
+              )}
             </>
           )}
 

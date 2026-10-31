@@ -21,20 +21,10 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
     onUpdate
 }) => {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-blue-200/90 dark:border-blue-900/60 shadow-xs overflow-hidden">
-            {/* 1. 블루 컬러 헤더 밴드 */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50/40 dark:from-blue-950/50 dark:to-indigo-950/30 px-4 py-2.5 border-b border-blue-200 dark:border-blue-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                        1
-                    </span>
-                    <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm">
-                        기본 인적사항 및 접수
-                    </h3>
-                </div>
-                <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/50 px-2 py-0.5 rounded">
-                    접수: {c.createdAt ? safeFormat(c.createdAt, 'yy.MM.dd') : '-'}
-                </span>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 dark:text-gray-100 text-sm">접수 · 인적사항</h3>
+                <span className="text-[11px] text-slate-500 tabular-nums">접수 {c.createdAt ? safeFormat(c.createdAt, 'yy.MM.dd HH:mm') : '-'}</span>
             </div>
 
             {/* 카드 본문 */}
@@ -177,14 +167,12 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                     <SmartInput
                         label="출생년도 (2자리)"
                         value={c.birth}
-                        onChange={(v: any) => onUpdate('birth', v)}
-                        onBlur={() => {
-                            const normalized = normalizeBirthYear(c.birth);
-                            if (normalized !== c.birth) onUpdate('birth', normalized);
-                        }}
+                        // [2026-11-01] 저장할 때 바로 4자리로 (예전엔 한 번 늦게 바뀌었다)
+                        onChange={(v: any) => onUpdate('birth', normalizeBirthYear(String(v ?? '')))}
                         placeholder="예: 77"
                         suffix={c.birth?.length === 4 ? "년생" : ""}
                         updateOnBlur={true}
+                        needed
                     />
                     <div>
                         <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">

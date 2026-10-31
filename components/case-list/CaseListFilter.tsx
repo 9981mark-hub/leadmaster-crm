@@ -70,8 +70,9 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
                     <input
                         type="text"
-                        placeholder="이름 또는 번호 검색"
-                        className="pl-10 pr-10 py-2 border rounded-lg text-sm w-full xl:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                        placeholder="이름·번호·메모·문자 내용"
+                        aria-label="검색"
+                        className="pl-10 pr-10 py-2 border border-slate-300 rounded-lg text-sm w-full xl:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                         value={search}
                         onChange={withReset(setSearch)}
                     />
@@ -127,7 +128,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 <div className="relative flex-1 min-w-[100px]">
                     <Building className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
                     <select
-                        className="w-full border p-2 pl-8 rounded-lg text-sm bg-white appearance-none"
+                        className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
                         value={partnerFilter}
                         onChange={withReset(setPartnerFilter)}
                     >
