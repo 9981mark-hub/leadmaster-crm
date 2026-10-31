@@ -567,25 +567,17 @@ export default function SettingsPage() {
                         )}
                     </div>
                     <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                        <h4 className="font-bold text-indigo-800 mb-2">Supabase Edge Function 기반 하이브리드 연동</h4>
+                        <h4 className="font-bold text-indigo-800 mb-2">텔레그램 피드백 자동 수집</h4>
                         <p className="text-sm text-indigo-700 mb-2">
-                            현장에서 들어온 텔레그램 봇 피드백을 수신하여 AI가 자동으로 케이스 상태를 분류하고 CRM에 반영합니다.
+                            변호사 사무실 방의 피드백을 회사 봇이 받아 AI가 분류하고 CRM에 반영합니다.
                             <br />- <b>[자동 반영]</b> 부재, 명함발송, 재통화요청 등
                             <br />- <b>[승인 대기]</b> 미팅취소, 타사무소선택, 계약완료 등 중요 변경사항
                         </p>
-                        <div className="bg-white p-3 rounded border border-indigo-100 text-sm mt-3">
-                            <b>Webhook Endpoint 설정 방법:</b><br />
-                            <ol className="list-decimal pl-5 mt-1 space-y-1 text-gray-600">
-                                <li>Supabase 프로젝트의 Edge Functions URL을 확인합니다.<br />
-                                    <code className="bg-gray-100 p-2 rounded text-[11px] select-all block mt-1 break-all text-indigo-700">https://[PROJECT_ID].supabase.co/functions/v1/telegram-webhook</code>
-                                </li>
-                                <li>브라우저에 아래 주소를 입력하여 Webhook을 등록합니다.<br />
-                                    <code className="bg-gray-100 p-2 rounded text-[11px] select-all block mt-1 break-all text-indigo-700">
-                                        https://api.telegram.org/bot[봇토큰]/setWebhook?url=[EdgeFunction_URL]
-                                    </code>
-                                </li>
-                            </ol>
-                        </div>
+                        <p className="text-sm text-gray-700 bg-white p-3 rounded border border-indigo-100 mt-3">
+                            봇 연결 상태 확인과 웹훅 재등록은 <b>팀 관리 → 텔레그램 봇 연결</b>에서 합니다.
+                            거래처별 방은 아래 <b>거래처 → 텔레그램 수신 연동</b>에서 고릅니다.
+                            <button type="button" onClick={() => window.location.hash = '#/team'} className="ml-2 text-indigo-700 underline font-medium">팀 관리로 이동</button>
+                        </p>
                     </div>
                     <div>
                         <button type="button" onClick={() => window.location.hash = '#/telegram'} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full md:w-auto transition-colors font-medium">
