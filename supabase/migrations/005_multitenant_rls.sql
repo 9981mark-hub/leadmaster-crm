@@ -7,10 +7,14 @@
 --   - anon(로그인 안 한 요청)은 어떤 행도 못 봄
 --   - service_role(Edge Function)은 RLS를 우회하므로 코드에서 org_id로 직접 거른다
 --
--- 역할별 권한 (Phase 1)
---   owner/admin : 회사 데이터 전체 읽기·쓰기, 설정·파트너·세금계산서 변경, 리드 영구 삭제, 멤버·초대 관리
---   agent       : 회사 리드 읽기·등록·수정(휴지통 이동 포함), 통화/문자/자동통화/텔레그램 피드백 처리
---                 설정은 읽기만, 영구 삭제·세금계산서 불가
+-- 역할별 권한 (Phase 1, 2026-11-01 확정: 상담원은 관리자가 배정한 본인 리드만)
+--   owner/admin : 회사 데이터 전체 읽기·쓰기, 리드 배정, 설정·파트너·문자템플릿·세금계산서 변경,
+--                 리드 영구 삭제, 멤버·초대 관리
+--   agent       : 본인 배정 리드만 읽기·수정 (다른 사람에게 넘기기 불가), 직접 등록한 리드는 자동으로 본인 배정
+--                 통화·문자 기록 = 본인 폰 기록 + 본인 배정 리드 번호의 기록
+--                 전화·문자 요청 = 본인이 요청했거나 본인 폰 대상
+--                 자동통화 = 본인이 만든 묶음, 텔레그램 피드백 = 본인 배정 리드에 연결된 것
+--                 설정·파트너·문자템플릿은 읽기만, 영구 삭제·세금계산서 불가
 -- =============================================
 
 BEGIN;
@@ -48,21 +52,47 @@ DECLARE
   t TEXT;
   same_org CONSTANT TEXT := 'org_id = (SELECT public.current_org_id())';
   is_admin CONSTANT TEXT := '(SELECT public.is_org_admin())';
+  me       CONSTANT TEXT := '(SELECT auth.uid())';
+  rule     TEXT;
 BEGIN
-  -- 같은 회사 멤버 전원 읽기·쓰기
-  FOREACH t IN ARRAY ARRAY[
-    'telegram_feedbacks', 'communication_logs', 'pending_sms', 'pending_calls',
-    'auto_dial_batches', 'auto_dial_items', 'sms_templates'
-  ]
+  -- 전화·문자 요청: 관리자 또는 본인이 요청했거나 본인 폰 대상
+  FOREACH t IN ARRAY ARRAY['pending_calls', 'pending_sms']
   LOOP
-    IF to_regclass('public.' || t) IS NULL THEN CONTINUE; END IF;
+    rule := format('%s AND (%s OR requested_by = %s OR target_user_id = %s)', same_org, is_admin, me, me);
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
     EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (%s) WITH CHECK (%s)',
-                   'lm_' || t || '_member_rw', t, same_org, same_org);
+                   'lm_' || t || '_own_rw', t, rule, rule);
   END LOOP;
 
+  -- 통화·문자 기록: 읽기 = 본인 폰 기록 + 본인 배정 리드 번호 / 쓰기 = 본인 폰 기록만 / 삭제 = 관리자
+  EXECUTE 'ALTER TABLE public.communication_logs ENABLE ROW LEVEL SECURITY';
+  EXECUTE format('CREATE POLICY lm_communication_logs_read ON public.communication_logs FOR SELECT TO authenticated USING (%s AND (%s OR user_id = %s OR public.can_access_phone(phone_number)))',
+                 same_org, is_admin, me);
+  EXECUTE format('CREATE POLICY lm_communication_logs_insert ON public.communication_logs FOR INSERT TO authenticated WITH CHECK (%s AND (%s OR user_id = %s))',
+                 same_org, is_admin, me);
+  EXECUTE format('CREATE POLICY lm_communication_logs_update ON public.communication_logs FOR UPDATE TO authenticated USING (%s AND (%s OR user_id = %s)) WITH CHECK (%s AND (%s OR user_id = %s))',
+                 same_org, is_admin, me, same_org, is_admin, me);
+  EXECUTE format('CREATE POLICY lm_communication_logs_admin_delete ON public.communication_logs FOR DELETE TO authenticated USING (%s AND %s)',
+                 same_org, is_admin);
+
+  -- 텔레그램 피드백: 관리자 전체 / 상담원은 본인 배정 리드에 연결된 것만 보고 처리
+  EXECUTE 'ALTER TABLE public.telegram_feedbacks ENABLE ROW LEVEL SECURITY';
+  rule := format('%s AND (%s OR (matched_case_id IS NOT NULL AND public.can_access_case(matched_case_id)))', same_org, is_admin);
+  EXECUTE format('CREATE POLICY lm_telegram_feedbacks_read ON public.telegram_feedbacks FOR SELECT TO authenticated USING (%s)', rule);
+  EXECUTE format('CREATE POLICY lm_telegram_feedbacks_update ON public.telegram_feedbacks FOR UPDATE TO authenticated USING (%s) WITH CHECK (%s)', rule, rule);
+  EXECUTE format('CREATE POLICY lm_telegram_feedbacks_admin_insert ON public.telegram_feedbacks FOR INSERT TO authenticated WITH CHECK (%s AND %s)', same_org, is_admin);
+  EXECUTE format('CREATE POLICY lm_telegram_feedbacks_admin_delete ON public.telegram_feedbacks FOR DELETE TO authenticated USING (%s AND %s)', same_org, is_admin);
+
+  -- 자동통화: 관리자 전체 / 상담원은 본인이 만든 묶음과 그 항목
+  EXECUTE 'ALTER TABLE public.auto_dial_batches ENABLE ROW LEVEL SECURITY';
+  rule := format('%s AND (%s OR owner_user_id = %s)', same_org, is_admin, me);
+  EXECUTE format('CREATE POLICY lm_auto_dial_batches_own_rw ON public.auto_dial_batches FOR ALL TO authenticated USING (%s) WITH CHECK (%s)', rule, rule);
+  EXECUTE 'ALTER TABLE public.auto_dial_items ENABLE ROW LEVEL SECURITY';
+  rule := format('%s AND public.can_access_auto_dial_batch(batch_id)', same_org);
+  EXECUTE format('CREATE POLICY lm_auto_dial_items_own_rw ON public.auto_dial_items FOR ALL TO authenticated USING (%s) WITH CHECK (%s)', rule, rule);
+
   -- 멤버 읽기, 관리자만 쓰기
-  FOREACH t IN ARRAY ARRAY['settings', 'partners']
+  FOREACH t IN ARRAY ARRAY['settings', 'partners', 'sms_templates']
   LOOP
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
     EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (%s)',
@@ -80,11 +110,13 @@ BEGIN
   EXECUTE format('CREATE POLICY lm_tax_invoices_admin_rw ON public.tax_invoices FOR ALL TO authenticated USING (%s AND %s) WITH CHECK (%s AND %s)',
                  same_org, is_admin, same_org, is_admin);
 
-  -- cases: 멤버 읽기·등록·수정, 영구 삭제는 관리자만
+  -- cases: 관리자 = 회사 전체 / 상담원 = 본인 배정분만 (다른 사람에게 넘기거나 배정 해제 불가)
+  --        상담원이 등록하면 cases_default_assignee 트리거가 본인 배정으로 채운 뒤 아래 검사를 통과한다
   EXECUTE 'ALTER TABLE public.cases ENABLE ROW LEVEL SECURITY';
-  EXECUTE format('CREATE POLICY lm_cases_member_read ON public.cases FOR SELECT TO authenticated USING (%s)', same_org);
-  EXECUTE format('CREATE POLICY lm_cases_member_insert ON public.cases FOR INSERT TO authenticated WITH CHECK (%s)', same_org);
-  EXECUTE format('CREATE POLICY lm_cases_member_update ON public.cases FOR UPDATE TO authenticated USING (%s) WITH CHECK (%s)', same_org, same_org);
+  rule := format('%s AND (%s OR assigned_user_id = %s)', same_org, is_admin, me);
+  EXECUTE format('CREATE POLICY lm_cases_read ON public.cases FOR SELECT TO authenticated USING (%s)', rule);
+  EXECUTE format('CREATE POLICY lm_cases_insert ON public.cases FOR INSERT TO authenticated WITH CHECK (%s)', rule);
+  EXECUTE format('CREATE POLICY lm_cases_update ON public.cases FOR UPDATE TO authenticated USING (%s) WITH CHECK (%s)', rule, rule);
   EXECUTE format('CREATE POLICY lm_cases_admin_delete ON public.cases FOR DELETE TO authenticated USING (%s AND %s)', same_org, is_admin);
 END $$;
 

@@ -203,8 +203,10 @@ VALUES ('00000000-0000-0000-0000-000000000001', '리드마스터 본사', 'hq')
 ON CONFLICT (id) DO NOTHING;
 
 -- 기존 허용 이메일(settings.allowedEmails) + 관리자 기본 이메일 → 본사 멤버
--- 9981mark@gmail.com = owner, 앱 서비스 계정 = agent (전환기간용, 앱 사용자 로그인 완료 후 비활성화)
--- 나머지 허용 이메일 = admin  ← 실행 전 006의 [사전 점검] 결과로 대상자 확인
+-- 9981mark@gmail.com = owner, 2882a@naver.com 등 나머지 허용 이메일 = admin (2026-11-01 확정)
+-- 앱 서비스 계정 = admin (전환기간 전용: 지금 앱은 이 계정 하나로 모든 문자·전화 요청을 처리하므로
+--   상담원 권한이면 대표님 요청이 안 보인다. 앱 사용자 로그인 배포 후 status='disabled'로 끈다)
+-- ← 실행 전 006의 [사전 점검] 결과로 대상자 확인
 WITH allowed AS (
   SELECT lower(e) AS email
   FROM public.settings s,
@@ -220,12 +222,31 @@ SELECT '00000000-0000-0000-0000-000000000001',
        u.id,
        CASE
          WHEN lower(u.email) = '9981mark@gmail.com' THEN 'owner'
-         WHEN lower(u.email) = 'android-app@leadmaster.com' THEN 'agent'
          ELSE 'admin'
        END
 FROM auth.users u
 JOIN allowed a ON a.email = lower(u.email)
 ON CONFLICT (org_id, user_id) DO NOTHING;
+
+-- 아직 한 번도 로그인하지 않은 허용 이메일(예: 2882a@naver.com, 2026-11-01 기준 미가입)은
+-- 본사 관리자 초대로 만들어 둔다 → 처음 로그인할 때 accept_my_invites()로 자동 연결
+WITH allowed AS (
+  SELECT lower(e) AS email
+  FROM public.settings s,
+       jsonb_array_elements_text(
+         CASE WHEN jsonb_typeof(s.value) = 'array' THEN s.value ELSE '[]'::jsonb END
+       ) AS e
+  WHERE s.key = 'allowedEmails'
+  UNION
+  SELECT unnest(ARRAY['9981mark@gmail.com', '2882a@naver.com'])
+)
+INSERT INTO public.org_invites (org_id, email, role, expires_at)
+SELECT '00000000-0000-0000-0000-000000000001', a.email,
+       CASE WHEN a.email = '9981mark@gmail.com' THEN 'owner' ELSE 'admin' END,
+       now() + interval '365 days'
+FROM allowed a
+WHERE NOT EXISTS (SELECT 1 FROM auth.users u WHERE lower(u.email) = a.email)
+ON CONFLICT (org_id, email) DO NOTHING;
 
 INSERT INTO public.user_profiles (user_id, active_org_id, is_platform_admin)
 SELECT m.user_id, m.org_id, (lower(u.email) = '9981mark@gmail.com')
@@ -282,8 +303,74 @@ CREATE INDEX IF NOT EXISTS idx_cases_org_updated ON public.cases (org_id, update
 ALTER TABLE public.pending_calls ADD COLUMN IF NOT EXISTS requested_by UUID DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE SET NULL;
 -- 어느 상담원 폰에서 걸지. 기본값 = 요청한 본인 (PC에서 누르면 내 폰으로)
 ALTER TABLE public.pending_calls ADD COLUMN IF NOT EXISTS target_user_id UUID DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE SET NULL;
+ALTER TABLE public.pending_sms   ADD COLUMN IF NOT EXISTS requested_by UUID DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE SET NULL;
 ALTER TABLE public.pending_sms   ADD COLUMN IF NOT EXISTS target_user_id UUID DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE SET NULL;
 ALTER TABLE public.communication_logs ADD COLUMN IF NOT EXISTS user_id UUID DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE SET NULL;
+ALTER TABLE public.auto_dial_batches  ADD COLUMN IF NOT EXISTS owner_user_id UUID DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE SET NULL;
+
+-- ---------------------------------------------
+-- 4-1. 상담원은 "관리자가 배정한 본인 리드"만 (2026-11-01 확정)
+-- ---------------------------------------------
+-- 상담원이 직접 등록한 리드는 본인 담당으로 자동 지정 (안 그러면 등록하자마자 본인에게 안 보임)
+-- 관리자 등록·엑셀 업로드는 미배정으로 들어가고 관리자가 배정한다
+CREATE OR REPLACE FUNCTION public.cases_default_assignee()
+RETURNS TRIGGER
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.assigned_user_id IS NULL AND auth.uid() IS NOT NULL AND public.current_org_role() = 'agent' THEN
+    NEW.assigned_user_id := auth.uid();
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS cases_default_assignee ON public.cases;
+CREATE TRIGGER cases_default_assignee
+  BEFORE INSERT ON public.cases
+  FOR EACH ROW EXECUTE FUNCTION public.cases_default_assignee();
+
+-- 이 리드를 볼 수 있는가 (관리자 = 회사 전체, 상담원 = 본인 배정분)
+CREATE OR REPLACE FUNCTION public.can_access_case(p_case_id TEXT)
+RETURNS BOOLEAN
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.cases c
+    WHERE c.case_id = p_case_id
+      AND c.org_id = public.current_org_id()
+      AND (public.is_org_admin() OR c.assigned_user_id = auth.uid())
+  )
+$$;
+
+-- 이 전화번호의 통화·문자 기록을 볼 수 있는가 (상담원 = 본인 배정 리드의 번호)
+CREATE OR REPLACE FUNCTION public.can_access_phone(p_phone TEXT)
+RETURNS BOOLEAN
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.is_org_admin() OR EXISTS (
+    SELECT 1 FROM public.cases c
+    WHERE c.org_id = public.current_org_id()
+      AND c.assigned_user_id = auth.uid()
+      AND regexp_replace(COALESCE(c.phone, ''), '[^0-9]', '', 'g') = regexp_replace(COALESCE(p_phone, ''), '[^0-9]', '', 'g')
+  )
+$$;
+
+-- 이 자동통화 묶음을 볼 수 있는가 (상담원 = 본인이 만든 묶음)
+CREATE OR REPLACE FUNCTION public.can_access_auto_dial_batch(p_batch_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.auto_dial_batches b
+    WHERE b.id = p_batch_id
+      AND b.org_id = public.current_org_id()
+      AND (public.is_org_admin() OR b.owner_user_id = auth.uid())
+  )
+$$;
 
 -- ---------------------------------------------
 -- 5. 회사별로 겹칠 수 있는 고유 제약 조정
@@ -298,6 +385,7 @@ ALTER TABLE public.partners ADD CONSTRAINT partners_org_partner_id_key UNIQUE (o
 
 -- telegram: message_id는 대화방마다 따로 매겨짐 → (방, 메시지)
 ALTER TABLE public.telegram_feedbacks DROP CONSTRAINT IF EXISTS telegram_feedbacks_message_id_key;
+ALTER TABLE public.telegram_feedbacks DROP CONSTRAINT IF EXISTS telegram_message_id_unique;  -- 운영 DB 실제 이름 (2026-11-01 백업에서 확인)
 ALTER TABLE public.telegram_feedbacks ADD CONSTRAINT telegram_feedbacks_chat_message_key UNIQUE (chat_id, message_id);
 
 -- 통화·문자 기록 중복 방지 키에 회사 포함

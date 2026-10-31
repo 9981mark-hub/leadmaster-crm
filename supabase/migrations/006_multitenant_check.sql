@@ -14,10 +14,11 @@ WITH allowed AS (
   UNION
   SELECT unnest(ARRAY['9981mark@gmail.com', '2882a@naver.com', 'android-app@leadmaster.com'])
 )
+-- 2026-11-01 운영 결과: 9981mark(owner), beanhull@gmail.com(admin, allowedEmails에 있음),
+--   android-app(admin), 2882a@naver.com은 미가입 → 초대로 생성
 SELECT a.email, u.id AS user_id, u.last_sign_in_at,
        CASE WHEN a.email = '9981mark@gmail.com' THEN 'owner'
-            WHEN a.email = 'android-app@leadmaster.com' THEN 'agent'
-            ELSE 'admin' END AS role_to_assign
+            ELSE 'admin' END AS role_to_assign  -- 앱 서비스 계정도 전환기간 admin
 FROM allowed a
 LEFT JOIN auth.users u ON lower(u.email) = a.email
 ORDER BY 1;

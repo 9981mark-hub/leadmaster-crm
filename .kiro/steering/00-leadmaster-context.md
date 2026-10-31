@@ -12,6 +12,12 @@
 - 확정(2026-11-01 추가): 고객사 상담원 전원 구글 계정 → **구글 로그인만**. 변호사 사무실이 만든 텔레그램 방이 이미 있음 → 그 방에 회사 봇 초대. **유료 플랜(Supabase Pro 등)은 시스템 완성 후** 전환, 개발·시범은 무료 플랜(대역폭 5GB 주의).
 - 멀티테넌트 설계: `docs/설계_멀티테넌트_v1.md`, SQL `supabase/migrations/004~006` (운영 미실행), 로컬 점검 `supabase/tests/multitenant_rls_test.mjs`(PGlite, 21항목 통과). 핵심: org_id 기본값 = `current_org_id()` → 기존 코드가 org_id 없이 INSERT해도 자기 회사로 저장. 본사 org id `00000000-0000-0000-0000-000000000001`.
 - **고객사 회사 생성 전에 telegram-webhook을 회사별로 고쳐 배포해야 함**(지금은 service_role로 전 회사 리드를 이름 검색).
+- 확정(2026-11-01): **상담원은 관리자가 배정한 본인 리드만** 본다(`cases.assigned_user_id`, 상담원 직접 등록 시 자동 본인 배정, 넘기기 불가). 통화기록·전화요청·자동통화·피드백도 본인 것만. `2882a@naver.com` = 본사 admin. 앱 서비스 계정은 전환기간 admin. 로컬 점검 44항목 통과.
+- 2026-11-01 운영 DB 백업: `D:\LeadMaster_Backup\20261101_0130_before_multitenant` (public 전체 dump, 스키마 SQL, auth.users, 정책 목록, 건수: cases 1463 / communication_logs 13886 / settings 17 / telegram_feedbacks 419). 고객 개인정보 포함, git·클라우드에 올리지 않는다. 도구: `D:\Tools\pgsql17\bin` (pg_dump 17.7), 접속 확인 스크립트는 `%TEMP%\lm-sqltest\dbping.mjs`.
+- 운영 실제 상태(백업에서 확인): auth 사용자 3명(9981mark@gmail.com, beanhull@gmail.com, android-app), allowedEmails = [9981mark, beanhull]. `2882a@naver.com`은 미가입 → 004에서 본사 admin 초대로 생성. "Authenticated users can do all on …" 정책 때문에 아무 로그인 계정이나 전체 접근 가능했음 → `003b_close_any_login_access.sql` **2026-11-01 사용자가 운영 실행 완료**. 재점검: 열린 정책 0개, 모르는 구글 계정 0건, 9981mark·beanhull 전체, 앱 계정 필요한 테이블만.
+- 계정: **9981mark@gmail.com = HOST(대표, owner·플랫폼 관리자)**, **beanhull@gmail.com = 대표 본인 서브계정(본사 admin 유지)**, 2882a@naver.com = 본사 admin(미가입, 초대로 생성).
+- 스테이징: `leadmaster-staging` (eu-west-3). 2026-11-01 운영 구조 복원 + 003b + 가짜 데이터 + 004/005 적용, 실제 Supabase에서 35항목 통과(`%TEMP%\lm-sqltest\staging_test.mjs`, 재실행 시 organizations 있으면 중단). 테스트 고객사 '테스트고객사' 생성됨. Realtime publication은 스테이징에 복원 안 됨(웹 연결 시험 전 추가 필요). 실제 고객 데이터는 스테이징(EU)에 넣지 않는다. 접속 정보 `.env.local`의 `SUPABASE_STAGING_DB_URL`/`SUPABASE_STAGING_DB_PASSWORD`.
+- 운영 DB: Postgres 17, 세션 풀러 호스트 `aws-1-ap-northeast-2.pooler.supabase.com:5432`, 사용자 `postgres.cenksfblktflfurxjmtv`. DB 비밀번호는 `.env.local`의 `SUPABASE_DB_PASSWORD`(사용자가 직접 입력, 채팅·로그에 출력 금지).
 
 ## 경로 (2026-10-31 확인)
 - 웹 CRM: `D:\안티그래피티 작업\01_03-leadmaster-crm` (GitHub `9981mark-hub/leadmaster-crm`, 브랜치 `main`, 공개 저장소)
@@ -61,7 +67,7 @@
 
 ## DB 보안(RLS) 현황 (2026-10-31 anon 키로 점검)
 - anon으로 보이던 테이블: `pending_sms`(15건), `auto_dial_batches`(1건), `auto_dial_items`(206건, 고객명·번호). 나머지는 0건.
-- 잠금 SQL: `supabase/migrations/003_lock_anon_tables.sql` (화이트리스트 로그인 사용자 + 앱 서비스 계정만 허용). 사용자가 Supabase SQL Editor에서 실행해야 함.
+- 잠금 SQL: `supabase/migrations/003_lock_anon_tables.sql` (화이트리스트 로그인 사용자 + 앱 서비스 계정만 허용). **2026-11-01 운영 DB 실행 완료**, 재점검 결과 anon으로 모든 테이블 0건.
 - 앱 `AutoDialWorker`는 서비스 계정 토큰을 쓰도록 바꿈(기존 anon 키 직접 사용). `PendingCallWorker`의 anon 전용 미사용 코드 삭제.
 
 ## 보안 규칙
