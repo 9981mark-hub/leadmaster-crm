@@ -582,7 +582,9 @@ export const refreshData = async () => {
 // (전체 동기화와 증분 동기화가 같은 로직을 쓰도록 performBackgroundFetch에서 분리)
 const applySettingsData = (settingsData: Record<string, any>) => {
   if (settingsData.partners) localPartners = settingsData.partners;
-  else if (localPartners.length === 0) localPartners = [...MOCK_PARTNERS]; // Fallback only if empty
+  // [멀티테넌트 2026-11-01] 서버 사용 중이면 예시 거래처(태산·율도·화려)를 넣지 않는다.
+  // 새 고객사는 거래처가 비어 있는 상태로 시작하고, 관리자가 설정 → 거래처에서 실제 변호사 사무실을 등록한다.
+  else if (localPartners.length === 0) localPartners = isSupabaseEnabled() ? [] : [...MOCK_PARTNERS];
 
   if (settingsData.inboundPaths) localInboundPaths = settingsData.inboundPaths;
   else if (localInboundPaths.length === 0) localInboundPaths = [...MOCK_INBOUND_PATHS];

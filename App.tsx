@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2 } from 'lucide-react';
 // Lazy Load Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
@@ -15,6 +15,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const TelegramSync = lazy(() => import('./pages/TelegramSync'));
 const AutoDial = lazy(() => import('./pages/AutoDial'));
 const TeamPage = lazy(() => import('./pages/TeamPage'));
+const PlatformPage = lazy(() => import('./pages/PlatformPage'));
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ROLE_LABEL } from './services/org';
@@ -55,7 +56,7 @@ const MobileNavItem = ({ to, icon: Icon, label, active }: any) => (
 );
 
 // 상담원(agent)에게 숨기는 관리자 전용 화면
-const ADMIN_ONLY_PATHS = ['/settlement', '/settings', '/statistics', '/team'];
+const ADMIN_ONLY_PATHS = ['/settlement', '/settings', '/statistics', '/team', '/platform'];
 
 const OrgBadge: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { org } = useAuth();
@@ -76,7 +77,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
   const { theme, toggleTheme } = useTheme();
-  const { isAdmin } = useAuth();
+  const { isAdmin, org } = useAuth();
   const [pendingTgCount, setPendingTgCount] = React.useState(0);
 
   React.useEffect(() => {
@@ -181,9 +182,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/mypage', icon: User, label: '마이' },
   ];
 
+  // HOST(플랫폼 관리자)에게만 "회사 관리" 메뉴
+  if (org?.isPlatformAdmin) navs.splice(navs.length - 2, 0, { to: '/platform', icon: Building2, label: '회사 관리' });
+
   const visibleNavs = isAdmin ? navs : navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
   // 모바일 하단 바는 칸이 좁아 자동통화·팀 관리는 뺀다 (팀 관리는 PC 화면용)
-  const mobileNavs = visibleNavs.filter(n => n.to !== '/auto-dial' && n.to !== '/team');
+  const mobileNavs = visibleNavs.filter(n => n.to !== '/auto-dial' && n.to !== '/team' && n.to !== '/platform');
 
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900">
@@ -311,6 +315,7 @@ const ProtectedRoutes = () => {
           <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />
           <Route path="/settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />
           <Route path="/team" element={<AdminOnly><TeamPage /></AdminOnly>} />
+          <Route path="/platform" element={<AdminOnly><PlatformPage /></AdminOnly>} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
