@@ -98,6 +98,10 @@ DROP TABLE IF EXISTS public.user_profiles;
 DROP TABLE IF EXISTS public.org_members;
 DROP TABLE IF EXISTS public.organizations;
 
+-- 007(팀 관리) 함수도 함께 제거
+DROP FUNCTION IF EXISTS public.list_org_members();
+DROP FUNCTION IF EXISTS public.update_org_member(UUID, TEXT, TEXT, TEXT);
+DROP FUNCTION IF EXISTS public.assign_cases(TEXT[], UUID);
 DROP FUNCTION IF EXISTS public.cases_default_assignee();
 DROP FUNCTION IF EXISTS public.can_access_case(TEXT);
 DROP FUNCTION IF EXISTS public.can_access_phone(TEXT);

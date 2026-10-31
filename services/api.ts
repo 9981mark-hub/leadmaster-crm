@@ -1460,6 +1460,22 @@ export const saveGlobalSettings = async (settings: {
 };
 
 
+// [멀티테넌트] 리드 배정 결과를 로컬 캐시에 바로 반영 (서버 반영은 assign_cases RPC가 이미 끝낸 뒤 호출)
+export const applyLocalAssignment = (caseIds: string[], userId: string | null) => {
+  const ids = new Set(caseIds);
+  const now = new Date().toISOString();
+  let changed = false;
+  localCases = localCases.map(c => {
+    if (!ids.has(c.caseId)) return c;
+    changed = true;
+    return { ...c, assignedUserId: userId || undefined, updatedAt: now };
+  });
+  if (changed) {
+    saveToStorage();
+    notifyListeners();
+  }
+};
+
 // --- Cases ---
 export const fetchCases = async (): Promise<Case[]> => {
   if (!isInitialized) await initializeData();
