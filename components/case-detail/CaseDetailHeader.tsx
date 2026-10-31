@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Smartphone, Plus, Phone, MessageSquare } from 'lucide-react';
+import { AlertTriangle, Smartphone, Plus, Phone, MessageSquare, Send } from 'lucide-react';
 import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
 import { STATUS_COLOR_MAP } from '../../constants';
@@ -18,6 +18,7 @@ interface CaseDetailHeaderProps {
     onTertiaryStatusChangeStart: (status: string | null) => void;
     onClickPendingFeedbacks?: () => void;
     onMissedCallIncrement?: () => void;
+    onDeliverClick?: () => void;
 }
 
 export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
@@ -31,7 +32,8 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     onSecondaryStatusChangeStart,
     onTertiaryStatusChangeStart,
     onClickPendingFeedbacks,
-    onMissedCallIncrement
+    onMissedCallIncrement,
+    onDeliverClick
 }) => {
     const warnings = getCaseWarnings(c, partner);
     const [plusAnim, setPlusAnim] = useState(false);
@@ -90,6 +92,15 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         >
                             <MessageSquare size={16} className="text-blue-500" />
                         </a>
+                        {onDeliverClick && (
+                            <button
+                                onClick={onDeliverClick}
+                                className="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 flex items-center gap-1 transition-colors whitespace-nowrap"
+                                title="회사 텔레그램 봇으로 변호사 사무실 방에 상담 내용을 보냅니다"
+                            >
+                                <Send size={13} /> 텔레그램 전달
+                            </button>
+                        )}
                         {pendingFeedbackCount > 0 && (
                             <button
                                 onClick={onClickPendingFeedbacks}

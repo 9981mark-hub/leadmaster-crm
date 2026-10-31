@@ -13,6 +13,7 @@ import { CaseSummaryTab } from '../components/case-detail/CaseSummaryTab';
 import { CaseSettlementTab } from '../components/case-detail/CaseSettlementTab';
 import { CaseTimeline } from '../components/case-detail/CaseTimeline';
 import { CaseCallsSmsTab } from '../components/case-detail/CaseCallsSmsTab';
+import { TelegramDeliverModal } from '../components/case-detail/TelegramDeliverModal';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -32,6 +33,7 @@ export default function CaseDetail() {
     const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline' | 'calls_sms'>('info');
     const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
     const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
+    const [isDeliverOpen, setIsDeliverOpen] = useState(false);
 
     // Status Change Modal State
     const [isSecondaryStatusModalOpen, setIsSecondaryStatusModalOpen] = useState(false);
@@ -237,6 +239,27 @@ export default function CaseDetail() {
         setIsPrimaryStatusModalOpen(false);
         setPendingPrimaryStatus(null);
         setSelectedDropOffReason('');
+    };
+
+    // [텔레그램 전달] 성공 후: 요청 시 상태를 '사무장 접수'로 (상태변경 기록 포함)
+    const handleDelivered = ({ changeStatus, chatTitle }: { changeStatus: boolean; chatTitle?: string }) => {
+        if (!c || !changeStatus || c.status === '사무장 접수') return;
+        setSecondaryStatuses(globalSecondaryStatuses);
+        const log = {
+            logId: Date.now().toString(),
+            fromStatus: c.status,
+            toStatus: '사무장 접수' as CaseStatus,
+            changedAt: new Date().toISOString(),
+            changedBy: 'User',
+            memo: `텔레그램 전달${chatTitle ? ` (${chatTitle})` : ''}`
+        };
+        updateCaseMutation.mutate({
+            id: c.caseId,
+            updates: {
+                status: '사무장 접수' as CaseStatus,
+                statusLogs: [log, ...(c.statusLogs || [])]
+            }
+        });
     };
 
     const handleSecondaryStatusChangeStart = (status: string | null) => {
@@ -531,7 +554,19 @@ export default function CaseDetail() {
                     onSecondaryStatusChangeStart={handleSecondaryStatusChangeStart}
                     onTertiaryStatusChangeStart={handleTertiaryStatusChangeStart}
                     onMissedCallIncrement={handleMissedCallIncrement}
+                    onDeliverClick={() => setIsDeliverOpen(true)}
                 />
+
+                {isDeliverOpen && (
+                    <TelegramDeliverModal
+                        c={c}
+                        partner={currentPartner}
+                        statuses={statuses}
+                        onClose={() => setIsDeliverOpen(false)}
+                        onDelivered={handleDelivered}
+                        showToast={showToast}
+                    />
+                )}
 
                 {/* [NEW] 고객 상황 및 채무 종합 브리핑 배너 (AI 요약문 우선 연동) */}
                 <CaseBriefingBanner

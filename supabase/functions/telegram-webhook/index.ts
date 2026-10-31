@@ -89,6 +89,53 @@ interface ParsedMessage {
   chatTitle: string;
 }
 
+// ============================================
+// 1-1. 방 목록 기록 (설정 화면에서 거래처에 방을 고를 수 있게) — 실패해도 피드백 처리는 계속
+// ============================================
+async function recordChat(orgId: string, chat: any, fields: Record<string, unknown> = {}): Promise<void> {
+  if (!chat?.id) return;
+  try {
+    await supabase.from('org_telegram_chats').upsert({
+      org_id: orgId,
+      chat_id: String(chat.id),
+      title: chat.title || [chat.first_name, chat.last_name].filter(Boolean).join(' ') || null,
+      chat_type: chat.type || null,
+      updated_at: new Date().toISOString(),
+      ...fields,
+    }, { onConflict: 'org_id,chat_id' });
+  } catch (err) {
+    console.error('[TG-Webhook] recordChat failed:', err);
+  }
+}
+
+// ============================================
+// 1-2. 답장 연결: 우리 봇이 보낸 전달 메시지(case_deliveries) 또는 이미 연결된 피드백에 단 답장이면 그 리드로 바로 연결
+// ============================================
+async function findCaseByReply(orgId: string, chatId: string, replyTo?: number): Promise<{ caseId: string; customerName: string | null; via: string } | null> {
+  if (!replyTo || !chatId) return null;
+  try {
+    const { data: d } = await supabase.from('case_deliveries')
+      .select('case_id').eq('org_id', orgId).eq('chat_id', chatId).eq('message_id', replyTo).maybeSingle();
+    let caseId: string | null = d?.case_id || null;
+    let via = 'delivery';
+    if (!caseId) {
+      const { data: f } = await supabase.from('telegram_feedbacks')
+        .select('matched_case_id').eq('org_id', orgId).eq('chat_id', chatId).eq('message_id', replyTo)
+        .not('matched_case_id', 'is', null).maybeSingle();
+      caseId = f?.matched_case_id || null;
+      via = 'reply_chain';
+    }
+    if (!caseId) return null;
+    const { data: c } = await supabase.from('cases').select('case_id, customer_name')
+      .eq('org_id', orgId).eq('case_id', caseId).maybeSingle();
+    if (!c) return null;
+    return { caseId: c.case_id, customerName: c.customer_name || null, via };
+  } catch (err) {
+    console.error('[TG-Webhook] findCaseByReply failed:', err);
+    return null;
+  }
+}
+
 function parseTelegramUpdate(update: any): ParsedMessage | null {
   const msg = update.message;
   if (!msg || !msg.text) return null;
@@ -571,6 +618,25 @@ serve(async (req: Request) => {
 
   try {
     const update = await req.json();
+
+    // 봇이 방에 초대·추방됨 → 방 목록만 갱신하고 끝
+    if (update.my_chat_member) {
+      await recordChat(ctx.orgId, update.my_chat_member.chat, {
+        bot_status: update.my_chat_member.new_chat_member?.status || null,
+      });
+      return new Response(JSON.stringify({ ok: true, skipped: 'chat member update' }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    // 메시지가 온 방 기록 (일반 그룹 → 슈퍼그룹 전환 시 새 방 ID도 남김)
+    const anyMsg = update.message || update.edited_message;
+    if (anyMsg?.chat) {
+      await recordChat(ctx.orgId, anyMsg.chat, {
+        last_message_at: new Date((anyMsg.date || Date.now() / 1000) * 1000).toISOString(),
+        ...(anyMsg.migrate_to_chat_id ? { migrated_to: String(anyMsg.migrate_to_chat_id) } : {}),
+      });
+    }
+
     const parsed = parseTelegramUpdate(update);
 
     if (!parsed) {
@@ -585,6 +651,9 @@ serve(async (req: Request) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // 우리 봇이 보낸 전달 메시지(또는 이미 연결된 피드백)에 단 답장이면 그 리드로 바로 연결
+    const replyLink = await findCaseByReply(ctx.orgId, parsed.chatId, parsed.replyToMessageId);
 
     // Trivial skip for meaningless short texts to save AI calls
     if (parsed.text.trim().length <= 2) {
@@ -628,19 +697,35 @@ serve(async (req: Request) => {
         
     // 비피드백 유형은 무의미한 저장 방지를 위해 DB 저장 스킵 (단, 이름 패턴이 있거나 AI 에러인 경우는 제외)
     // 안부인사, 마감인사, 일반대화는 히스토리 조회를 위해 DB에 저장함
-    if (classification.feedbackType === '비피드백' && !classification._aiError && !hasNamePattern && !classification.customerName) {
+    if (classification.feedbackType === '비피드백' && !classification._aiError && !hasNamePattern && !classification.customerName && !replyLink) {
       return new Response(JSON.stringify({ ok: true, skipped: 'non-feedback' }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const customerName = classification.customerName;
+    // 답장 연결 사용 여부:
+    //  - 우리 전달 메시지에 단 답장 → 항상 그 리드
+    //  - 이미 연결된 피드백에 단 답장 → AI가 다른 고객 이름을 찾지 않았을 때만
+    const aiName = normalizeName(classification.customerName || '');
+    const useReplyLink = !!replyLink && (
+      replyLink.via === 'delivery' || !aiName || aiName === normalizeName(replyLink.customerName || '')
+    );
 
-    // Get Partner Mapping from Chat ID
-    const mappedPartnerId = await getMappedPartnerId(parsed.chatId, ctx.orgId);
-
-    // Match to CRM case (이 회사 리드 안에서만)
-    const { matchedCaseId, candidates } = await matchCustomerToCase(customerName, mappedPartnerId, ctx.orgId);
+    let matchedCaseId: string | null;
+    let candidates: any[];
+    let customerName: string | null;
+    if (useReplyLink) {
+      matchedCaseId = replyLink!.caseId;
+      candidates = [];
+      customerName = replyLink!.customerName || classification.customerName || null;
+      classification.linkedBy = replyLink!.via;
+    } else {
+      customerName = classification.customerName;
+      // Get Partner Mapping from Chat ID
+      const mappedPartnerId = await getMappedPartnerId(parsed.chatId, ctx.orgId);
+      // Match to CRM case (이 회사 리드 안에서만)
+      ({ matchedCaseId, candidates } = await matchCustomerToCase(customerName as string, mappedPartnerId, ctx.orgId));
+    }
     classification.candidates = candidates;
 
     // Determine apply mode and urgency (Never auto apply if multiple matches / null id)
