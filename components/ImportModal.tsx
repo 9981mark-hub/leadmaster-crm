@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, Check, Loader2, List, Sparkles, Grid, Trash2 } from 'lucide-react';
 import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase, fetchCases } from '../services/api';
 import { Partner, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
 import { ASSET_TYPES, JOB_TYPES, CASE_TYPES, formatPhone } from '../constants';
 import { fileToBase64, checkIsDuplicate } from '../utils';
+import { callAi, checkAiFileSize, AiProxyError } from '../services/aiProxy';
 
 // 유입경로 약어 매핑 (엑셀 업로드 / 시트 입력 공용)
 const INBOUND_PATH_ALIASES: Record<string, string> = {
@@ -299,21 +299,15 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     const processOcr = async () => {
         if (!ocrFile) return;
+        const sizeError = checkAiFileSize('import_ocr', ocrFile.size);
+        if (sizeError) {
+            showToast(sizeError, 'error');
+            return;
+        }
         setIsLoading(true);
         try {
             const base64Content = await fileToBase64(ocrFile); // utils already removes the header
             const mimeType = ocrFile.type || 'image/png';
-
-            // Note: You need a valid API key in environment variables or hardcoded constants for demo
-            // Assuming GOOGLE_API_KEY is available via import.meta.env or similar, or prompt user.
-            // For this demo, I will assume the key is available or throw a clear error.
-            const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (window as any).GEMINI_API_KEY;
-            if (!apiKey) {
-                throw new Error("Google API Key Missing");
-            }
-
-            const client = new GoogleGenerativeAI(apiKey);
-            const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
 
             const selectedPartner = partners.find(p => p.partnerId === ocrPartnerId);
             const prompt = selectedPartner?.ocrPromptTemplate || `
@@ -327,34 +321,18 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         If a field is not found, use empty string.
       `;
 
-            // Retry Logic with Exponential Backoff
-            let attempt = 0;
-            const maxRetries = 3;
-            let responseText = "";
-
-            while (attempt < maxRetries) {
-                try {
-                    const result = await model.generateContent([
-                        { inlineData: { mimeType, data: base64Content } },
-                        prompt
-                    ]);
-                    responseText = result.response.text();
-                    break; // Success
-                } catch (err: any) {
-                    attempt++;
-                    console.warn(`OCR Attempt ${attempt} failed:`, err);
-
-                    if ((err.message?.includes('429') || err.message?.includes('503')) && attempt < maxRetries) {
-                        const waitTime = Math.pow(2, attempt) * 1000 + Math.random() * 500;
-                        await new Promise(resolve => setTimeout(resolve, waitTime));
-                        continue;
-                    }
-                    throw err;
-                }
-            }
+            // 서버(ai-proxy)가 Gemini를 부른다. 모델 과부하 시 다른 모델로 바꾸는 것도 서버가 한다
+            // (여기서 다시 시도하면 회사 하루 AI 사용 횟수만 줄어서 재시도하지 않는다)
+            const { text: responseText } = await callAi({
+                task: 'import_ocr',
+                prompt,
+                files: [{ mimeType, data: base64Content }],
+                responseMimeType: 'application/json',
+            });
             // Clean up markdown if present
             const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-            const parsed = JSON.parse(jsonStr);
+            const parsedRaw = JSON.parse(jsonStr);
+            const parsed = Array.isArray(parsedRaw) ? (parsedRaw[0] || {}) : parsedRaw;
 
             setOcrPreview({
                 customerName: parsed.customerName,
@@ -370,8 +348,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
         } catch (e: any) {
             console.error(e);
-            if (e.message?.includes("API Key")) {
-                showToast("Google API Key가 설정되지 않았습니다.", 'error');
+            if (e instanceof AiProxyError) {
+                showToast(e.message, 'error');
             } else {
                 showToast('문서 분석에 실패했습니다. 이미지가 선명한지 확인해주세요.', 'error');
             }

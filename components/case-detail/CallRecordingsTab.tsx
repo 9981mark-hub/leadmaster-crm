@@ -5,6 +5,7 @@ import {
   CallRecording, ExtractedInfo, fetchCaseRecordings, fetchRecording, getRecordingUrl, requestAnalyze, markRecordingApplied,
   isNotReadyError, fmtBytes, fmtDuration, fmtManwon, extractedToText,
 } from '../../services/recordings';
+import { logRecordingPlay } from '../../services/accessLog';
 
 interface Props {
   c: Case;
@@ -258,7 +259,7 @@ function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToa
       {open && (
         <div className="px-3 pb-3 space-y-3">
           {!rec.audioDeletedAt && (url
-            ? <audio controls preload="none" src={url} className="w-full h-10" />
+            ? <audio controls preload="none" src={url} className="w-full h-10" onPlay={() => logRecordingPlay(rec.caseId, rec.id)} />
             : <button onClick={loadUrl} disabled={loadingUrl} className="text-sm text-blue-600 flex items-center gap-1">{loadingUrl && <Loader2 size={14} className="animate-spin" />} 녹음 듣기</button>)}
 
           {rec.status === 'failed' && rec.error && (

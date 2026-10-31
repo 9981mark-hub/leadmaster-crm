@@ -12,10 +12,7 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
     },
     plugins: [react()],
-    define: {
-      // Force injection of Vercel Env Var during build
-      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY || ""),
-    },
+    // AI 키는 번들에 넣지 않는다 (AI 호출은 Supabase Edge Function ai-proxy가 서버 비밀값으로 한다)
     build: {
       rollupOptions: {
         output: {

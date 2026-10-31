@@ -19,6 +19,8 @@ interface CaseListHeaderProps {
     onManualRefresh: () => void;
     onResetPage: () => void;
     onExportClick: () => void;
+    /** 데이터 내보내기 버튼 표시 (회사 관리자만). 기본 true */
+    canExport?: boolean;
 }
 
 export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
@@ -36,7 +38,8 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     newLeadsCount,
     onManualRefresh,
     onResetPage,
-    onExportClick
+    onExportClick,
+    canExport = true
 }) => {
     return (
         <div className="space-y-4">
@@ -144,12 +147,14 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             <span className="text-xs text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
                         )}
                     </div>
-                    <button
-                        onClick={onExportClick}
-                        className="px-3 py-1.5 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap"
-                    >
-                        데이터 내보내기
-                    </button>
+                    {canExport && (
+                        <button
+                            onClick={onExportClick}
+                            className="px-3 py-1.5 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap"
+                        >
+                            데이터 내보내기
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

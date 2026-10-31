@@ -1,8 +1,18 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { X, Camera, Image as ImageIcon, CheckSquare, Square, Loader2, Clock, Sparkles, Phone, AlertCircle } from 'lucide-react';
+import { X, Camera, Image as ImageIcon, CheckSquare, Square, Loader2, Clock, Sparkles, Phone } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { createBatch } from '../../services/autoDialService';
+import { callAi, checkAiFileSize } from '../../services/aiProxy';
+
+// AI 응답 형식: [{ name, phone }]
+const CONTACTS_SCHEMA = {
+  type: 'ARRAY',
+  items: {
+    type: 'OBJECT',
+    properties: { name: { type: 'STRING' }, phone: { type: 'STRING' } },
+    required: ['name', 'phone'],
+  },
+};
 
 interface OcrBatchModalProps {
   isOpen: boolean;
@@ -40,9 +50,6 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const isApiKeyMissing = !apiKey;
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -54,25 +61,25 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
 
   const handleExtract = async () => {
     if (!selectedFile) return;
-    if (isApiKeyMissing) {
-      showToast('Gemini API 키가 설정되지 않았습니다.', 'error');
+    const sizeError = checkAiFileSize('image_extract', selectedFile.size);
+    if (sizeError) {
+      showToast(sizeError, 'error');
       return;
     }
 
     setIsLoading(true);
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      
       const base64 = await fileToBase64(selectedFile);
       const promptText = "이 이미지에서 사람 이름과 전화번호를 모두 추출해주세요. JSON 배열로 반환해주세요. 형식: [{\"name\": \"이름\", \"phone\": \"전화번호\"}]. 전화번호가 없는 항목은 제외하세요. 마크다운 기호 없이 순수 JSON 배열만 출력해주세요.";
-      
-      const result = await model.generateContent([
-        { inlineData: { data: base64, mimeType: selectedFile.type } },
-        promptText
-      ]);
-      
-      const text = result.response.text();
+
+      // 서버(ai-proxy)가 Gemini를 부른다 (브라우저에는 AI 키가 없다)
+      const { text } = await callAi({
+        task: 'image_extract',
+        prompt: promptText,
+        files: [{ mimeType: selectedFile.type || 'image/jpeg', data: base64 }],
+        responseMimeType: 'application/json',
+        responseSchema: CONTACTS_SCHEMA,
+      });
       const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
       
       try {
@@ -81,7 +88,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
           const formattedContacts = parsed
             .filter((item: any) => item.name && item.phone)
             .map((item: any) => {
-              const cleanPhone = item.phone.replace(/[^\d]/g, '');
+              const cleanPhone = String(item.phone).replace(/[^\d]/g, '');
               return {
                 id: crypto.randomUUID(),
                 name: item.name,
@@ -190,18 +197,6 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {isApiKeyMissing && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-medium text-red-800 dark:text-red-300">Gemini API 키 누락</h4>
-                <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                  환경 변수 <code className="bg-red-100 dark:bg-red-900/40 px-1 rounded">VITE_GEMINI_API_KEY</code>가 설정되지 않아 이미지 인식 기능을 사용할 수 없습니다.
-                </p>
-              </div>
-            </div>
-          )}
-
           <div className="space-y-4">
             <div className="flex items-center justify-center w-full">
               <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:bg-gray-100 transition-colors">
@@ -230,7 +225,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
               <button
                 type="button"
                 onClick={handleExtract}
-                disabled={isLoading || isApiKeyMissing}
+                disabled={isLoading}
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
               >
                 {isLoading ? (

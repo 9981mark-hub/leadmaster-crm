@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { analyzeReceiptImage, imageToBase64, resizeImage, hasGoogleApiKey, setGoogleApiKey } from '../services/visionService';
+// 영수증 글자 읽기는 서버 AI(ai-proxy)가 한다 → 로그인만 돼 있으면 쓸 수 있다 (키 입력 없음)
+import { analyzeReceiptImage, imageToBase64, resizeImage } from '../services/visionService';
 
 interface OcrResult {
     success: boolean;
@@ -59,8 +60,6 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
         description: '',
         category: '기타지출'
     });
-    const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-    const [apiKeyInput, setApiKeyInput] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // 모바일 카메라 사용 가능 여부
@@ -96,13 +95,6 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
         setOcrResult(null);
 
         try {
-            // API 키 확인
-            if (!hasGoogleApiKey()) {
-                setShowApiKeyInput(true);
-                setOcrLoading(false);
-                return;
-            }
-
             // 이미지 리사이즈 및 OCR 분석
             const resized = await resizeImage(base64);
             const result = await analyzeReceiptImage(resized);
@@ -159,15 +151,6 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
         }
         // 브릿지가 없거나 실패하면 일반 파일 선택(카메라 촬영 가능)으로 대체
         fileInputRef.current?.click();
-    };
-
-    // API 키 저장
-    const handleSaveApiKey = () => {
-        if (apiKeyInput.trim()) {
-            setGoogleApiKey(apiKeyInput.trim());
-            setShowApiKeyInput(false);
-            setApiKeyInput('');
-        }
     };
 
     // 지출 저장
@@ -261,39 +244,6 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
             </div>
 
             <div className="p-4">
-                {/* API 키 입력 */}
-                {showApiKeyInput && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                        <p className="text-yellow-700 text-sm mb-2">
-                            🔑 Google Vision API 키를 입력해주세요
-                        </p>
-                        <div className="flex gap-2">
-                            <input
-                                type="password"
-                                value={apiKeyInput}
-                                onChange={e => setApiKeyInput(e.target.value)}
-                                placeholder="API 키 입력"
-                                className="flex-1 border border-yellow-300 rounded-lg px-3 py-2 text-sm"
-                            />
-                            <button
-                                onClick={handleSaveApiKey}
-                                className="px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700"
-                            >
-                                저장
-                            </button>
-                            <button
-                                onClick={() => setShowApiKeyInput(false)}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300"
-                            >
-                                취소
-                            </button>
-                        </div>
-                        <p className="text-xs text-yellow-600 mt-2">
-                            * API 키는 로컬에만 저장되며 서버로 전송되지 않습니다
-                        </p>
-                    </div>
-                )}
-
                 {/* OCR 에러 */}
                 {ocrResult && !ocrResult.success && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
@@ -393,7 +343,7 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
                 )}
 
                 {/* 초기 상태 */}
-                {!ocrResult && !ocrLoading && !showApiKeyInput && (
+                {!ocrResult && !ocrLoading && (
                     <div className="text-center py-8 text-gray-400">
                         <span className="text-4xl block mb-2">📷</span>
                         <p>영수증 사진을 업로드하면 AI가 자동으로 분석합니다</p>

@@ -23,6 +23,8 @@ import {
   fetchSettingKeysUpdatedSince,
   caseToDb as caseToDbFn
 } from './supabase';
+import { logAccess, maskedCaseLabel } from './accessLog';
+import { loadCachedOrg, isAdminRole } from './org';
 
 
 // --- CONFIGURATION ---
@@ -1611,6 +1613,7 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
   const idx = localCases.findIndex(c => c.caseId === caseId);
   if (idx === -1) throw new Error('Case not found');
 
+  const prevStatus = localCases[idx].status;
   const updated = {
     ...localCases[idx],
     ...updates,
@@ -1635,6 +1638,14 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
     try {
       await updateCaseInSupabase(caseId, updates);
       console.log('[Sync] Case updated in Supabase:', caseId);
+      // [015] 접근 기록: 휴지통으로 옮김 / 휴지통에서 꺼냄 (목록·상세·여러 건 모두 여기를 지난다)
+      if (updates.status !== undefined && updates.status !== prevStatus) {
+        if (updates.status === '휴지통') {
+          logAccess('case_trash', { caseId, detail: { label: maskedCaseLabel(updated.customerName, updated.phone) } });
+        } else if (prevStatus === '휴지통') {
+          logAccess('case_restore', { caseId });
+        }
+      }
     } catch (err) {
       console.error('[Sync] Supabase update failed, will rely on Sheets:', err);
       throw err; // [Fix] Propagate error
@@ -1648,9 +1659,10 @@ export const updateCase = async (caseId: string, updates: Partial<Case>): Promis
   return updated;
 };
 
-export const deleteCase = async (caseId: string, force: boolean = false): Promise<Case[]> => {
+export const deleteCase = async (caseId: string, force: boolean = false, opts: { auto?: boolean } = {}): Promise<Case[]> => {
   if (force) {
     // Hard Delete
+    const target = localCases.find(c => c.caseId === caseId);
     localCases = localCases.filter(c => c.caseId !== caseId);
 
     // [HYBRID MODE] Delete from Supabase
@@ -1658,6 +1670,15 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
       try {
         await deleteCaseFromSupabase(caseId);
         console.log('[Sync] Case deleted from Supabase:', caseId);
+        // [015] 접근 기록: 영구 삭제. 리드가 사라지므로 가린 이름(김*수 ·1234)을 같이 남긴다.
+        // 리드 삭제는 관리자만 서버에서 실제로 된다(상담원은 RLS로 0건) → 관리자일 때만 기록
+        const me = loadCachedOrg();
+        if (!me || isAdminRole(me.role)) {
+          logAccess('case_purge', {
+            caseId,
+            detail: { label: maskedCaseLabel(target?.customerName, target?.phone), ...(opts.auto ? { auto: true } : {}) },
+          });
+        }
       } catch (err) {
         console.error('[Sync] Supabase delete failed:', err);
       }
@@ -1677,6 +1698,7 @@ export const deleteCase = async (caseId: string, force: boolean = false): Promis
         try {
           await softDeleteCaseInSupabase(caseId);
           console.log('[Sync] Case soft-deleted in Supabase:', caseId);
+          logAccess('case_trash', { caseId, detail: { label: maskedCaseLabel(localCases[idx]?.customerName, localCases[idx]?.phone) } });
         } catch (err) {
           console.error('[Sync] Supabase soft-delete failed:', err);
           throw err; // [Fix] Propagate error to trigger UI rollback
@@ -1712,6 +1734,7 @@ export const restoreCase = async (caseId: string): Promise<Case[]> => {
       try {
         await restoreCaseInSupabase(caseId);
         console.log('[Sync] Case restored in Supabase:', caseId);
+        logAccess('case_restore', { caseId });
       } catch (err) {
         console.error('[Sync] Supabase restore failed:', err);
       }
@@ -1743,7 +1766,8 @@ export const cleanupRecycleBin = async () => {
   if (casesToDelete.length > 0) {
     console.log(`Auto-deleting ${casesToDelete.length} items from Recycle Bin.`);
     casesToDelete.forEach(c => {
-      deleteCase(c.caseId, true); // Force delete
+      // auto: 접근 기록에 "자동(휴지통 30일)"으로 남김. 여러 건이면 한 줄로 합쳐진다
+      deleteCase(c.caseId, true, { auto: true }); // Force delete
     });
   }
 };

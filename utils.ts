@@ -692,8 +692,7 @@ export const getAutoCollateralString = (c: Case): string => {
 };
 
 // [NEW] Added for CaseDetailAiSummary.tsx
-// [Restored] Gemini AI Integration
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// AI 호출은 서버(Edge Function ai-proxy)에서 한다 → services/aiProxy.ts. 브라우저에는 AI 키가 없다.
 import { DEFAULT_AI_PROMPT, REHABILITATION_DOMAIN_KEYWORDS } from "./constants";
 
 // [Improved] AI Context Interface
@@ -801,34 +800,15 @@ export const getDomainKeywords = (): string[] => {
 };
 
 export const generateAiSummary = async (file: File, customPrompt?: string, context?: AIContext): Promise<string> => {
-  const lsKey = localStorage.getItem('lm_geminiApiKey');
-  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const apiKey = lsKey || envKey || "";
-
-  if (!apiKey || apiKey.trim() === '') {
-    console.warn("Gemini API Key missing! Fallback to Mock.");
-    const debugInfo = `오류 진단 정보:\n- 저장된 키(User): ${lsKey === null ? '없음(Null)' : (lsKey === '' ? '빈값' : `있음(${lsKey.length}자)`)}\n- 기본 키(Env): ${!envKey ? '없음' : `있음(${envKey.length}자)`}`;
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(`[데모 모드] API 키가 확인되지 않습니다.\n\n${debugInfo}\n\n설정 페이지의 [AI 설정]에서 '등록된 키가 없습니다' 문구가 뜨는지 확인해주세요.\n[자동 생성 예시] 내용 없음`);
-      }, 1000);
-    });
-  }
-
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // [Modern Model List - 3.5 Generation]
-    const VALID_MODELS = ['gemini-3.5-transcribe', 'gemini-3.5-flash', 'gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview', 'gemini-2.5-flash'];
-    const FALLBACK_MODEL = 'gemini-3.5-flash';
-    let selectedModel = localStorage.getItem('lm_geminiModel') || FALLBACK_MODEL;
-    
-    if (!VALID_MODELS.includes(selectedModel)) {
-      console.warn(`[AI] Invalid or retired model "${selectedModel}" found, migrating to "${FALLBACK_MODEL}"`);
-      selectedModel = FALLBACK_MODEL;
-      localStorage.setItem('lm_geminiModel', FALLBACK_MODEL);
+    // 서버 호출 모듈은 쓸 때만 불러온다 (utils.ts는 node 점검 스크립트(tsx)에서도 읽히는데, supabase 모듈은 Vite 환경 변수가 필요)
+    const { callAi, checkAiFileSize } = await import('./services/aiProxy');
+
+    if (!file || file.size === 0) {
+      throw new Error('분석할 녹음 파일 내용이 비어 있습니다. 녹음 파일을 다시 선택해 주세요.');
     }
+    const sizeError = checkAiFileSize('case_summary', file.size);
+    if (sizeError) throw new Error(sizeError);
 
     // Convert file to compatible format (Base64)
     const base64Data = await fileToBase64(file);
@@ -863,55 +843,16 @@ ${userSummaryPrompt}
 [00:15] 상담원: 네 고객님 현재 총 채무 금액과 소득이 어떻게 되시나요?
 ...`;
 
-    const contentPayload = [
-      fullPrompt,
-      {
-        inlineData: {
-          data: base64Data,
-          mimeType: file.type || "audio/mp3",
-        },
-      },
-    ];
-
-    // Try with selected model
-    try {
-      const model = genAI.getGenerativeModel({ model: selectedModel });
-      const result = await model.generateContent(contentPayload);
-      const response = await result.response;
-      return response.text();
-    } catch (firstError: any) {
-      const firstMsg = firstError?.message || '';
-      
-      // [Auto-Fallback] If 404/not found or 503, retry with fallback model
-      if ((firstMsg.includes('404') || firstMsg.includes('not found') || firstMsg.includes('503')) && selectedModel !== FALLBACK_MODEL) {
-        console.warn(`[AI] Model "${selectedModel}" failed (${firstMsg}), retrying with fallback "${FALLBACK_MODEL}"...`);
-        localStorage.setItem('lm_geminiModel', FALLBACK_MODEL);
-        
-        const fallbackModel = genAI.getGenerativeModel({ model: FALLBACK_MODEL });
-        const result = await fallbackModel.generateContent(contentPayload);
-        const response = await result.response;
-        return `[모델 자동 전환: ${selectedModel} → ${FALLBACK_MODEL}]\n\n` + response.text();
-      }
-      throw firstError;
-    }
+    // 서버(ai-proxy)가 Gemini를 부른다. 모델 선택·자동 전환도 서버가 한다.
+    const result = await callAi({
+      task: 'case_summary',
+      prompt: fullPrompt,
+      files: [{ mimeType: file.type || "audio/mp3", data: base64Data }],
+    });
+    return result.text;
   } catch (error) {
     console.error("Gemini AI Error:", error);
-    let errorMsg = error instanceof Error ? error.message : "알 수 없는 오류";
-
-    // [Smart Diagnostics] If 404/Not Found, try to fetch available models
-    if (errorMsg.includes("404") || errorMsg.includes("not found")) {
-      try {
-        const listReq = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const listData = await listReq.json();
-        if (listData.models) {
-          const modelNames = listData.models.map((m: any) => m.name.replace('models/', '')).join(', ');
-          errorMsg += `\n\n[진단 - 사용 가능한 모델 목록]\n${modelNames}`;
-        }
-      } catch (e) {
-        errorMsg += `\n\n[진단] 모델 목록 조회 실패: ${e}`;
-      }
-    }
-
+    const errorMsg = error instanceof Error ? error.message : "알 수 없는 오류";
     return `[오류 발생] AI 분석 중 문제가 발생했습니다.\n사유: ${errorMsg}`;
   }
 };

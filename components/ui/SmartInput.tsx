@@ -16,6 +16,8 @@ interface SmartInputProps {
     className?: string;
     /** 필수 확인 항목인데 비어 있으면 점 표시 */
     needed?: boolean;
+    /** 촘촘한 모양 (리드 상세): 칸 높이 36px, 아래 여백 없음 — 간격은 감싼 격자가 준다. 기본은 예전 모양 그대로 */
+    compact?: boolean;
 }
 
 /**
@@ -36,7 +38,9 @@ export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> 
     className = "",
     updateOnBlur = false,
     needed = false,
+    compact = false,
 }) => {
+    const inputId = React.useId();
     const [localValue, setLocalValue] = React.useState(value);
 
     React.useEffect(() => {
@@ -100,19 +104,20 @@ export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> 
     const empty = displayValue === '' || displayValue === undefined || displayValue === null || (isCurrency && numeric === 0);
 
     return (
-        <div className={`mb-3 ${className}`}>
+        <div className={`${compact ? 'min-w-0' : 'mb-3'} ${className}`}>
             {label && (
-                <label className="flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-gray-300 mb-1">
+                <label htmlFor={inputId} className="flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-gray-300 mb-1">
                     {label}
                     {needed && empty && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="이 사무실 필수 확인 항목" />}
                 </label>
             )}
             <div className="relative">
                 <input
+                    id={inputId}
                     type="text"
                     inputMode={isPhone ? 'tel' : (isCurrency || type === 'number') ? 'numeric' : undefined}
                     autoComplete="off"
-                    className={"w-full px-2.5 py-2 border rounded-lg text-sm outline-none transition-colors " +
+                    className={"w-full px-2.5 " + (compact ? 'h-9' : 'py-2') + " border rounded-lg text-sm outline-none transition-colors " +
                         (readOnly
                             ? 'bg-slate-100 dark:bg-gray-900/50 text-slate-500 border-slate-200 dark:border-gray-700 cursor-not-allowed'
                             : 'bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100 border-slate-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20') +
@@ -124,7 +129,7 @@ export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> 
                     placeholder={placeholder}
                     readOnly={readOnly}
                 />
-                {suffix && <span className="absolute right-3 top-2.5 text-slate-400 text-xs pointer-events-none">{suffix}</span>}
+                {suffix && <span className={"absolute right-3 text-slate-400 text-xs pointer-events-none " + (compact ? 'top-1/2 -translate-y-1/2' : 'top-2.5')}>{suffix}</span>}
             </div>
             {showKorean && <div className="text-[11px] text-slate-500 mt-0.5 text-right tabular-nums">{formatKoreanMoney(numeric)}</div>}
         </div>
