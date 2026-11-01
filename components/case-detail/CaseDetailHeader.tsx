@@ -4,7 +4,7 @@ import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
 import { STATUS_COLOR_MAP } from '../../constants';
 import CallConfirmPopup from '../CallConfirmPopup';
-import { useEnqueueSmsMutation } from '../../services/queries';
+import { useEnqueueSmsMutation, useSmsTemplates } from '../../services/queries';
 import { CheckProgress } from '../../utils/intake';
 
 export type SaveState = { state: 'idle' | 'saving' | 'saved' | 'error'; at?: number };
@@ -87,6 +87,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     const [smsText, setSmsText] = useState('');
     const menuRef = useRef<HTMLDivElement>(null);
     const sms = useEnqueueSmsMutation();
+    const { data: smsTemplates = [] } = useSmsTemplates();
 
     const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
     const isMissedStatus = c.status === missedCallStatus;
@@ -117,15 +118,15 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
         const text = smsText.trim();
         if (!text) return;
         onEngage?.();
-        console.log('[SMS] 발송:', { phone: c.phone, content: text });
+        console.log('[SMS] 발송 시작:', { phone: c.phone, contentLength: text.length, content: text.slice(0, 50) });
         sms.mutate({ phone: c.phone, content: text }, { 
             onSuccess: () => { 
-                console.log('[SMS] 성공');
+                console.log('[SMS] mutate 성공 - pending_sms INSERT 완료');
                 setSmsText(''); 
                 setMenu(null); 
             },
             onError: (err) => {
-                console.error('[SMS] 실패:', err);
+                console.error('[SMS] mutate 실패:', err);
             }
         });
     };
@@ -210,20 +211,40 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             <>
                                 <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setMenu(null)} />
                                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMenu(null)}>
-                                    <div className="w-full max-w-md bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl p-4 space-y-3" onClick={e => e.stopPropagation()}>
-                                        <div className="flex items-center justify-between text-base font-semibold text-slate-800 dark:text-gray-100">
-                                            <span>{c.customerName}님께 문자 보내기</span>
-                                            <button onClick={() => setMenu(null)} className="text-slate-400 hover:text-slate-600 p-1" aria-label="닫기"><X size={18} /></button>
-                                        </div>
-                                        <textarea autoFocus value={smsText} onChange={e => setSmsText(e.target.value)} rows={6}
-                                            onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendSms(); }}
-                                            className="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-sm dark:bg-gray-900 dark:text-gray-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" 
-                                            placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
-                                            <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-800 flex items-center gap-1.5">
-                                                {sms.isPending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} 보내기
-                                            </button>
+                                    <div className="w-full max-w-md bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                                        <div className="p-4 space-y-3">
+                                            <div className="flex items-center justify-between text-base font-semibold text-slate-800 dark:text-gray-100">
+                                                <span>{c.customerName}님께 문자 보내기</span>
+                                                <button onClick={() => setMenu(null)} className="text-slate-400 hover:text-slate-600 p-1" aria-label="닫기"><X size={18} /></button>
+                                            </div>
+                                            {smsTemplates.length > 0 && (
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-medium text-slate-600 dark:text-gray-400">템플릿 선택</label>
+                                                    <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                                                        {smsTemplates.map(tmpl => (
+                                                            <button
+                                                                key={tmpl.id}
+                                                                onClick={() => setSmsText(tmpl.content)}
+                                                                className="text-left px-3 py-2 text-xs border border-slate-200 dark:border-gray-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 hover:border-blue-400 transition-colors"
+                                                                title={tmpl.content}
+                                                            >
+                                                                <div className="font-medium text-slate-800 dark:text-gray-100 truncate">{tmpl.title}</div>
+                                                                <div className="text-slate-400 truncate">{tmpl.content.slice(0, 20)}...</div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <textarea autoFocus value={smsText} onChange={e => setSmsText(e.target.value)} rows={6}
+                                                onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendSms(); }}
+                                                className="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-sm dark:bg-gray-900 dark:text-gray-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" 
+                                                placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
+                                                <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-800 flex items-center gap-1.5">
+                                                    {sms.isPending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} 보내기
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
