@@ -1,31 +1,16 @@
 /**
- * Google Cloud Vision OCR Service
- * 영수증 이미지에서 텍스트를 추출하고 날짜, 금액, 업종을 파싱합니다.
+ * 영수증 OCR
+ * 영수증 이미지의 글자를 서버(Edge Function ai-proxy → Gemini)로 읽고, 날짜·금액·상호명을 파싱합니다.
+ * (예전에는 브라우저가 Google Cloud Vision을 키로 직접 불렀다. 이제 브라우저에는 키가 없다.)
  */
+import { callAi } from './aiProxy';
 
-// API 키는 환경변수 또는 로컬스토리지에서 가져옴
-const getApiKey = (): string => {
-    // 1. 환경변수 확인
-    const envKey = import.meta.env.VITE_GOOGLE_API_KEY;
-    if (envKey) return envKey;
-
-    // 2. 로컬스토리지 확인
-    const storedKey = localStorage.getItem('google_api_key');
-    if (storedKey) return storedKey;
-
-    // 3. 없으면 빈 문자열 (호출 시 에러 처리)
-    return '';
-};
-
-// API 키 저장 (설정 페이지에서 사용)
-export const setGoogleApiKey = (key: string): void => {
-    localStorage.setItem('google_api_key', key);
-};
-
-// API 키 존재 여부 확인
-export const hasGoogleApiKey = (): boolean => {
-    return !!getApiKey();
-};
+// 영수증 글자를 줄 단위 그대로 받아 parseReceiptText로 해석한다 (Vision TEXT_DETECTION 결과와 같은 모양)
+const RECEIPT_PROMPT = `이 이미지는 영수증입니다. 이미지에 보이는 글자를 위에서 아래로, 한 줄씩 빠짐없이 그대로 옮겨 적으세요.
+- 같은 줄에 있는 글자(품목 이름과 금액 등)는 한 줄에 공백으로 이어 적으세요.
+- 숫자·쉼표·기호·날짜는 보이는 그대로 적으세요. 계산하거나 고치지 마세요.
+- 설명, 요약, 번역, 마크다운 기호 없이 원문 글자만 출력하세요.
+- 읽을 수 있는 글자가 없으면 아무것도 출력하지 마세요.`;
 
 export interface OcrResult {
     success: boolean;
@@ -40,60 +25,29 @@ export interface OcrResult {
 }
 
 /**
- * Google Cloud Vision API를 사용하여 이미지에서 텍스트 추출
+ * 서버 AI(ai-proxy, task=receipt_text)로 영수증 이미지의 글자를 읽어 텍스트 추출
+ * @param imageBase64 data URL(data:image/jpeg;base64,...) 또는 순수 base64
  */
 export const analyzeReceiptImage = async (imageBase64: string): Promise<OcrResult> => {
-    const apiKey = getApiKey();
-
-    if (!apiKey) {
-        return {
-            success: false,
-            rawText: '',
-            parsed: { date: null, amount: null, storeName: null, items: [] },
-            error: 'API 키가 설정되지 않았습니다. 설정에서 Google API 키를 입력해주세요.'
-        };
-    }
-
     try {
         // Base64 데이터에서 prefix 제거 (data:image/jpeg;base64, 등)
+        const mimeMatch = imageBase64.match(/^data:([^;,]+)[;,]/);
+        const mimeType = mimeMatch?.[1] || 'image/jpeg';
         const base64Data = imageBase64.includes(',')
             ? imageBase64.split(',')[1]
             : imageBase64;
 
-        const response = await fetch(
-            `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    requests: [
-                        {
-                            image: {
-                                content: base64Data
-                            },
-                            features: [
-                                {
-                                    type: 'TEXT_DETECTION',
-                                    maxResults: 1
-                                }
-                            ]
-                        }
-                    ]
-                })
-            }
-        );
+        const { text } = await callAi({
+            task: 'receipt_text',
+            prompt: RECEIPT_PROMPT,
+            files: [{ mimeType, data: base64Data }],
+            responseMimeType: 'text/plain',
+        });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'Vision API 요청 실패');
-        }
+        // 혹시 붙은 마크다운 코드 블록 표시는 떼어 낸다
+        const rawText = text.replace(/^```[a-z]*\s*$/gim, '').trim();
 
-        const data = await response.json();
-        const textAnnotations = data.responses?.[0]?.textAnnotations;
-
-        if (!textAnnotations || textAnnotations.length === 0) {
+        if (!rawText) {
             return {
                 success: false,
                 rawText: '',
@@ -102,7 +56,6 @@ export const analyzeReceiptImage = async (imageBase64: string): Promise<OcrResul
             };
         }
 
-        const rawText = textAnnotations[0].description || '';
         const parsed = parseReceiptText(rawText);
 
         return {
@@ -112,7 +65,7 @@ export const analyzeReceiptImage = async (imageBase64: string): Promise<OcrResul
         };
 
     } catch (error) {
-        console.error('Vision API Error:', error);
+        console.error('Receipt OCR Error:', error);
         return {
             success: false,
             rawText: '',

@@ -4,10 +4,12 @@ import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAdd
 import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from '../types';
 import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle } from 'lucide-react';
 import { getDayName, loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
-import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, AVAILABLE_AI_MODELS, REHABILITATION_DOMAIN_KEYWORDS, CHECK_ITEMS, DEFAULT_CHECK_ITEMS, DEFAULT_CLASSIFICATION_GUIDE } from '../constants';
+import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, REHABILITATION_DOMAIN_KEYWORDS, CHECK_ITEMS, DEFAULT_CHECK_ITEMS, DEFAULT_CLASSIFICATION_GUIDE } from '../constants';
 import Modal from '../components/Modal';
 import TelegramChatPicker from '../components/TelegramChatPicker';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchAiUsage, AiUsage } from '../services/aiProxy';
 
 export default function SettingsPage() {
     const [partners, setPartners] = useState<Partner[]>([]);
@@ -73,20 +75,17 @@ export default function SettingsPage() {
     // Rules State
     const [newRule, setNewRule] = useState<Partial<CommissionRule>>({ minFee: 0, maxFee: 0, commission: 0, fullPayoutThreshold: 0, priority: 1, active: true });
 
-    // [New] AI API Key State
-    const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('lm_geminiApiKey') || '');
-    const [isEditingGeminiKey, setIsEditingGeminiKey] = useState(false);
-
-    // [New] AI Model State
-    const [geminiModel, setGeminiModel] = useState(() => {
-        const stored = localStorage.getItem('lm_geminiModel') || 'gemini-3.5-transcribe';
-        const isValid = AVAILABLE_AI_MODELS.some(m => m.id === stored);
-        if (!isValid) {
-            localStorage.setItem('lm_geminiModel', 'gemini-3.5-transcribe');
-            return 'gemini-3.5-transcribe';
-        }
-        return stored;
-    });
+    // AI는 서버(ai-proxy)에서 실행 → 키·모델 설정 없음. 관리자에게 오늘 사용량만 보여 준다 (016 get_ai_usage)
+    const { isAdmin } = useAuth();
+    const [aiUsage, setAiUsage] = useState<AiUsage | null>(null);
+    useEffect(() => {
+        if (!isAdmin) return;
+        let alive = true;
+        fetchAiUsage()
+            .then(u => { if (alive) setAiUsage(u); })
+            .catch(e => console.warn('[AI] 사용량 조회 실패 (016 적용 전이면 정상):', e?.message || e));
+        return () => { alive = false; };
+    }, [isAdmin]);
 
     // [New] AI Vocabulary Biasing Keywords State
     const [aiKeywords, setAiKeywords] = useState(() => localStorage.getItem('lm_aiKeywords') || REHABILITATION_DOMAIN_KEYWORDS.join(', '));
@@ -710,116 +709,22 @@ export default function SettingsPage() {
 
             {/* AI Settings */}
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
-                    <span className="flex items-center">
-                        <Sparkles className="mr-2 text-purple-600" size={20} /> AI 설정
-                    </span>
-                    {!isEditingGeminiKey && geminiApiKey && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 flex items-center">
-                            <Check size={12} className="mr-1" /> 저장됨
-                        </span>
-                    )}
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                    <Sparkles className="mr-2 text-purple-600" size={20} /> AI 설정
                 </h3>
                 <div className="max-w-md space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Gemini API Key</label>
-
-                        {!isEditingGeminiKey ? (
-                            <div className="flex gap-2">
-                                <div className="flex-1 p-2 border rounded bg-gray-50 text-gray-500 font-mono text-sm flex items-center">
-                                    {geminiApiKey ? 'AIza********************' : '등록된 키가 없습니다'}
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        if (geminiApiKey && !window.confirm('API Key를 수정하시겠습니까? \n잘못된 키 입력 시 AI 기능이 작동하지 않을 수 있습니다.')) {
-                                            return;
-                                        }
-                                        setIsEditingGeminiKey(true);
-                                    }}
-                                    className="px-4 py-2 bg-white border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium whitespace-nowrap"
-                                >
-                                    {geminiApiKey ? '수정' : '등록'}
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <input
-                                    type="password"
-                                    placeholder="AI Key 입력 (AIza...)"
-                                    className="w-full p-2 border rounded border-blue-500 ring-2 ring-blue-100"
-                                    value={geminiApiKey}
-                                    onChange={(e) => setGeminiApiKey(e.target.value)}
-                                    autoFocus
-                                />
-                                <div className="flex justify-end gap-2">
-                                    <button
-                                        onClick={() => {
-                                            // Cancel: Revert to saved value
-                                            setGeminiApiKey(localStorage.getItem('lm_geminiApiKey') || '');
-                                            setIsEditingGeminiKey(false);
-                                        }}
-                                        className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded"
-                                    >
-                                        취소
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (!geminiApiKey.trim()) {
-                                                if (!window.confirm('API Key를 삭제하시겠습니까?')) return;
-                                            }
-                                            // [Fix] Use saveGlobalSettings to persist to Supabase as well
-                                            saveGlobalSettings({ geminiApiKey: geminiApiKey });
-                                            // LocalStorage is also updated inside saveGlobalSettings, but we can keep it here for instant feedback if needed.
-                                            // Actually best to let api handle it. 
-                                            // But for UI "Saved" state, we update immediately.
-                                            localStorage.setItem('lm_geminiApiKey', geminiApiKey);
-
-                                            setIsEditingGeminiKey(false);
-                                            showToast('Gemini API Key가 저장되었습니다.');
-                                        }}
-                                        className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 font-bold"
-                                    >
-                                        저장 완료
-                                    </button>
-                                </div>
-                            </div>
+                    <div className="p-3 rounded-lg border border-purple-100 bg-purple-50">
+                        <p className="text-sm font-medium text-purple-900">AI는 서버에서 실행됩니다. 키를 입력할 필요가 없습니다.</p>
+                        <p className="text-xs text-purple-700 mt-1">
+                            통화 녹음 요약, 이미지·문서 인식, 영수증 스캔은 로그인만 하면 쓸 수 있습니다. 회사마다 하루 사용 횟수 상한이 있습니다.
+                        </p>
+                        {aiUsage && (
+                            <p className="text-xs text-purple-900 mt-2">
+                                오늘 <b>{aiUsage.today.toLocaleString()}</b> / {aiUsage.cap.toLocaleString()}회 사용
+                                · 이번 달 {aiUsage.month.toLocaleString()}회
+                                (토큰 입력 {aiUsage.inputTokensMonth.toLocaleString()} · 출력 {aiUsage.outputTokensMonth.toLocaleString()})
+                            </p>
                         )}
-
-                        <p className="text-xs text-gray-500 mt-2">
-                            Google AI Studio에서 발급받은 API Key를 입력하세요.
-                        </p>
-                    </div>
-
-                    <hr className="border-gray-100" />
-
-                    {/* AI Model Selection */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">사용 모델 선택</label>
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2">
-                            <select
-                                className="w-full p-2 border rounded bg-white text-sm"
-                                value={geminiModel}
-                                onChange={(e) => {
-                                    const newModel = e.target.value;
-                                    setGeminiModel(newModel);
-                                    localStorage.setItem('lm_geminiModel', newModel);
-                                    saveGlobalSettings({ geminiModel: newModel });
-                                    showToast(`AI 모델이 변경되었습니다: ${AVAILABLE_AI_MODELS.find(m => m.id === newModel)?.label}`);
-                                }}
-                            >
-                                {AVAILABLE_AI_MODELS.map(model => (
-                                    <option key={model.id} value={model.id}>
-                                        {model.label}
-                                    </option>
-                                ))}
-                            </select>
-                            <div className="mt-2 text-xs text-gray-500">
-                                {AVAILABLE_AI_MODELS.find(m => m.id === geminiModel)?.description}
-                            </div>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                            ⚠️ "모델이 과부하 상태입니다(503)" 오류 발생 시 다른 모델로 변경해보세요.
-                        </p>
                     </div>
 
                     <hr className="border-gray-100" />

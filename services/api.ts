@@ -634,15 +634,8 @@ const applySettingsData = (settingsData: Record<string, any>) => {
     console.log(`[Sync] Loaded ${localSettlementBatches.length} settlement batches from server.`);
   }
 
-  // [NEW] Load Gemini API Key
-  if (settingsData.geminiApiKey) {
-    localStorage.setItem('lm_geminiApiKey', settingsData.geminiApiKey);
-  }
-
-  // [FIX] Load Gemini Model selection from server
-  if (settingsData.geminiModel) {
-    localStorage.setItem('lm_geminiModel', settingsData.geminiModel);
-  }
+  // [2026-11-01] AI 키·모델은 서버(ai-proxy)만 쓴다 → 브라우저 저장소에 키를 복사하지 않는다
+  try { localStorage.removeItem('lm_geminiApiKey'); localStorage.removeItem('lm_geminiModel'); } catch { /* ignore */ }
 
   // [NEW] Load AI Keywords from server
   if (settingsData.aiKeywords) {
@@ -1405,14 +1398,8 @@ export const saveGlobalSettings = async (settings: {
     localStorage.setItem('lm_missedInterval', String(settings.missedCallInterval));
   }
 
-  // [Fix] Save Gemini API Key
-  if (settings.geminiApiKey !== undefined) {
-    localStorage.setItem('lm_geminiApiKey', settings.geminiApiKey);
-  }
-
-  // [FIX] Save Gemini Model selection
+  // [2026-11-01] AI 키·모델은 서버(ai-proxy)가 정한다. 예전 화면이 보내도 브라우저 저장소에는 두지 않는다
   if (settings.geminiModel) {
-    localStorage.setItem('lm_geminiModel', settings.geminiModel);
     await saveSettingToSupabase('geminiModel', settings.geminiModel);
   }
 
