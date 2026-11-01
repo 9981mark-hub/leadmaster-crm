@@ -103,7 +103,17 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
         const text = smsText.trim();
         if (!text) return;
         onEngage?.();
-        sms.mutate({ phone: c.phone, content: text }, { onSuccess: () => { setSmsText(''); setMenu(null); } });
+        console.log('[SMS] 발송:', { phone: c.phone, content: text });
+        sms.mutate({ phone: c.phone, content: text }, { 
+            onSuccess: () => { 
+                console.log('[SMS] 성공');
+                setSmsText(''); 
+                setMenu(null); 
+            },
+            onError: (err) => {
+                console.error('[SMS] 실패:', err);
+            }
+        });
     };
 
     const btn = 'h-9 px-3 rounded-lg text-sm font-semibold flex items-center gap-1.5 border transition-colors whitespace-nowrap';
@@ -149,7 +159,14 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         {isMobileUA() ? (
                             <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50`}><MessageSquare size={15} /> 문자</a>
                         ) : (
-                            <button onClick={() => setMenu(menu === 'sms' ? null : 'sms')} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}><MessageSquare size={15} /> 문자</button>
+                            <button 
+                                onClick={() => {
+                                    console.log('[Button] 문자 클릭, 현재 menu:', menu);
+                                    setMenu(menu === 'sms' ? null : 'sms');
+                                }} 
+                                className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}>
+                                <MessageSquare size={15} /> 문자
+                            </button>
                         )}
                         <button
                             onClick={() => isMissedStatus ? onMissedCallIncrement?.() : onStatusChangeStart(missedCallStatus as CaseStatus)}
@@ -159,7 +176,14 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             <PhoneMissed size={15} /> 부재{isMissedStatus ? ` ${c.missedCallCount || 0}` : ''}{isMissedStatus && <Plus size={13} />}
                         </button>
                         {onAddCallReminder && (
-                            <button onClick={() => setMenu(menu === 'reminder' ? null : 'reminder')} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}><Clock size={15} /> 다음 통화</button>
+                            <button 
+                                onClick={() => {
+                                    console.log('[Button] 다음 통화 클릭, 현재 menu:', menu);
+                                    setMenu(menu === 'reminder' ? null : 'reminder');
+                                }} 
+                                className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}>
+                                <Clock size={15} /> 다음 통화
+                            </button>
                         )}
                         {onDeliverClick && (
                             <button onClick={onDeliverClick} className={`${btn} border-sky-200 text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20`} title="회사 텔레그램 봇으로 변호사 사무실 방에 상담 내용을 보냅니다"><Send size={15} /> 사무실 전달</button>
