@@ -156,7 +156,8 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         // 회사 확인이 안 되면(네트워크 오류 등) 기존 허용 이메일 목록으로 판단 (본사 사용자 잠김 방지)
         const allowedByList = !orgChecked && allowedEmailsRef.current.includes(email);
         if (!allowedByList) {
-          if (supabase) await supabase.auth.signOut();
+          // scope local: 이 브라우저만 로그아웃 (기본값 global은 폰 앱 세션까지 끊는다)
+          if (supabase) await supabase.auth.signOut({ scope: 'local' });
           alert(orgChecked
             ? '초대받지 않은 계정입니다.\n회사 관리자에게 이 구글 계정으로 초대를 요청하세요.'
             : '접근 권한을 확인하지 못했습니다.\n잠시 후 다시 시도해주세요.');
@@ -264,7 +265,9 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
   const logout = useCallback(async () => {
     clearAppSession();
-    if (supabase) await supabase.auth.signOut();
+    // scope local: 이 기기만 로그아웃. 기본값(global)은 같은 계정의 폰 앱 세션까지 폐기해서
+    // 앱이 전화·문자 요청을 조용히 못 받게 된다 (2026-11-01 문자 미발송 원인)
+    if (supabase) await supabase.auth.signOut({ scope: 'local' });
     resetInitState(); // [SYNC FIX] 재로그인 시 데이터 재초기화를 위해 모듈 상태 리셋
     localStorage.removeItem('authToken');
     localStorage.removeItem('userProfile');

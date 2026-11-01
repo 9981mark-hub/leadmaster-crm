@@ -854,22 +854,31 @@ export const saveSmsTemplateToSupabase = async (template: Partial<SmsTemplate>):
     }
 };
 
-export const enqueueSmsToSupabase = async (phone: string, content: string): Promise<boolean> => {
-    if (!supabase) return false;
-    try {
-        const { error } = await supabase
-            .from('pending_sms')
-            .insert([{
-                phone_number: phone,
-                content: content,
-                status: 'pending'
-            }]);
-        if (error) throw error;
-        return true;
-    } catch (e) {
-        console.error('[Supabase] enqueueSms error:', e);
-        return false;
+/** 문자 요청 저장. 성공하면 요청 id, 실패하면 예외 (예전엔 false를 돌려줘 화면이 성공으로 표시했다) */
+export const enqueueSmsToSupabase = async (phone: string, content: string): Promise<string> => {
+    if (!supabase) throw new Error('서버 연결이 없습니다.');
+    const { data, error } = await supabase
+        .from('pending_sms')
+        .insert([{
+            phone_number: phone,
+            content: content,
+            status: 'pending'
+        }])
+        .select('id')
+        .single();
+    if (error) {
+        console.error('[Supabase] enqueueSms error:', error);
+        throw error;
     }
+    return data?.id as string;
+};
+
+/** 문자 요청 상태 (폰 앱이 가져가면 'sent') */
+export const fetchPendingSmsStatus = async (id: string): Promise<string | null> => {
+    if (!supabase || !id) return null;
+    const { data, error } = await supabase.from('pending_sms').select('status').eq('id', id).maybeSingle();
+    if (error) return null;
+    return (data?.status as string) ?? null;
 };
 
 // ============================================

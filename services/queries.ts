@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, fetchCommunicationLogs, fetchSmsTemplates, saveSmsTemplate, enqueueSms } from './api';
+import { fetchCases, fetchCase, updateCase, createCase, deleteCase, fetchStatuses, fetchPartners, fetchInboundPaths, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, fetchCommunicationLogs, fetchSmsTemplates, saveSmsTemplate, enqueueSms, fetchPendingSmsStatus } from './api';
 import { useToast } from '../contexts/ToastContext';
 import { Case } from '../types';
 
@@ -264,8 +264,17 @@ export const useEnqueueSmsMutation = () => {
 
     return useMutation({
         mutationFn: ({ phone, content }: { phone: string; content: string }) => enqueueSms(phone, content),
-        onSuccess: () => {
-            showToast('문자 발송이 예약되었습니다. (스마트폰 앱에서 처리됩니다)');
+        onSuccess: (id) => {
+            showToast('문자 요청을 폰으로 보냈습니다. 폰에서 문자 앱이 열리면 전송을 누르세요.');
+            // 20초 뒤에도 폰 앱이 요청을 가져가지 않았으면 알려준다 (앱 로그아웃·꺼짐·인터넷 끊김)
+            if (id) {
+                setTimeout(async () => {
+                    const status = await fetchPendingSmsStatus(id);
+                    if (status === 'pending') {
+                        showToast('폰 앱이 아직 문자 요청을 받지 못했습니다. 폰에서 리드마스터 앱을 열고 로그인 상태를 확인하세요.', 'error');
+                    }
+                }, 20_000);
+            }
         },
         onError: (error) => {
             console.error(error);

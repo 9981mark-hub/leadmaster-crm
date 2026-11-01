@@ -3397,6 +3397,7 @@ export const fetchCommunicationLogs = async (phone: string) => fetchCommunicatio
 export const fetchSmsTemplates = async () => fetchSmsTemplatesFromSupabase();
 export const saveSmsTemplate = async (template: any) => saveSmsTemplateToSupabase(template);
 export const enqueueSms = async (phone: string, content: string) => enqueueSmsToSupabase(phone, content);
+export { fetchPendingSmsStatus } from './supabase';
 export { fetchPhonesWithSmsOut };
 
 // ============================================
