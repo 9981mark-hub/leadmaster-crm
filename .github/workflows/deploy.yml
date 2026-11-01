@@ -37,6 +37,8 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_GOOGLE_SCRIPT_URL: ${{ secrets.VITE_GOOGLE_SCRIPT_URL }}
           VITE_GOOGLE_SCRIPT_TOKEN: ${{ secrets.VITE_GOOGLE_SCRIPT_TOKEN }}
+          # 구글 파일 선택 창용 공개 키 (Picker API만 + 웹사이트 제한)
+          VITE_GOOGLE_PICKER_API_KEY: ${{ secrets.VITE_GOOGLE_PICKER_API_KEY }}
           VITE_DATA_MODE: hybrid
 
       - name: Setup Pages
