@@ -30,7 +30,14 @@ interface CaseDetailHeaderProps {
     progress?: CheckProgress;
 }
 
-const isMobileUA = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isMobileUA = () => {
+    // PC 브라우저는 항상 false (문자 발송 메뉴를 보여주기 위해)
+    const ua = navigator.userAgent;
+    console.log('[isMobileUA] User-Agent:', ua);
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(ua) && !/Windows NT|Macintosh/i.test(ua);
+    console.log('[isMobileUA] 판정:', isMobile);
+    return isMobile;
+};
 const pad = (n: number) => String(n).padStart(2, '0');
 const fmtLocal = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
@@ -85,6 +92,13 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     const isMissedStatus = c.status === missedCallStatus;
     const availableTertiary = c.secondaryStatus ? (tertiaryStatuses[c.secondaryStatus] || []) : [];
     const phoneDigits = (c.phone || '').replace(/[^0-9+]/g, '');
+
+    console.log('[CaseDetailHeader] Props:', { 
+        hasOnAddCallReminder: !!onAddCallReminder,
+        hasOnEngage: !!onEngage,
+        hasOnDeliverClick: !!onDeliverClick,
+        isMobile: isMobileUA()
+    });
 
     useEffect(() => {
         if (!menu) return;
