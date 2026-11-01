@@ -47,6 +47,12 @@ export interface CallRecording {
   appliedAt?: string;
   audioDeletedAt?: string;
   createdAt: string;
+  /** 'supabase' = 리드마스터 서버 임시 보관, 'gdrive' = 회사 구글 드라이브 원본 (017) */
+  storageKind: 'supabase' | 'gdrive';
+  driveFileId?: string;
+  archiveStatus?: 'pending' | 'uploading' | 'archived' | 'failed';
+  source?: 'app' | 'web' | 'import';
+  fileName?: string;
 }
 
 export interface RecordingSettings {
@@ -83,19 +89,35 @@ const mapRow = (r: any): CallRecording => ({
   transcript: Array.isArray(r.transcript) ? r.transcript : undefined, extracted: r.extracted || undefined,
   model: r.model || undefined, analyzedAt: r.analyzed_at || undefined, appliedAt: r.applied_at || undefined,
   audioDeletedAt: r.audio_deleted_at || undefined, createdAt: r.created_at,
+  storageKind: r.storage_kind === 'gdrive' ? 'gdrive' : 'supabase',
+  driveFileId: r.drive_file_id || undefined, archiveStatus: r.archive_status || undefined,
+  source: r.source || undefined, fileName: r.file_name || undefined,
 });
 
-const LIST_COLS = 'id, case_id, user_id, direction, call_started_at, duration_sec, storage_path, size_bytes, mime_type, source_app, status, error, summary, transcript, extracted, model, analyzed_at, applied_at, audio_deleted_at, created_at';
+const LIST_COLS_014: string = 'id, case_id, user_id, direction, call_started_at, duration_sec, storage_path, size_bytes, mime_type, source_app, status, error, summary, transcript, extracted, model, analyzed_at, applied_at, audio_deleted_at, created_at';
+const LIST_COLS: string = `${LIST_COLS_014}, storage_kind, drive_file_id, archive_status, source, file_name`;
+
+// 017 칸이 없는 서버(스테이징 일부 등)에서도 동작하도록 한 번 실패하면 014 칸만 읽는다
+let cols017 = true;
+const isMissingColumn = (e: any) => /column .* does not exist|42703/i.test(String(e?.message || e?.code || ''));
 
 export const fetchCaseRecordings = async (caseId: string): Promise<CallRecording[]> => {
-  const { data, error } = await need().from('call_recordings').select(LIST_COLS)
+  let { data, error } = await need().from('call_recordings').select(cols017 ? LIST_COLS : LIST_COLS_014)
     .eq('case_id', caseId).order('call_started_at', { ascending: false }).limit(50);
+  if (error && cols017 && isMissingColumn(error)) {
+    cols017 = false;
+    ({ data, error } = await need().from('call_recordings').select(LIST_COLS_014).eq('case_id', caseId).order('call_started_at', { ascending: false }).limit(50));
+  }
   if (error) fail(error);
   return (data || []).map(mapRow);
 };
 
 export const fetchRecording = async (id: string): Promise<CallRecording | null> => {
-  const { data, error } = await need().from('call_recordings').select(LIST_COLS).eq('id', id).maybeSingle();
+  let { data, error } = await need().from('call_recordings').select(cols017 ? LIST_COLS : LIST_COLS_014).eq('id', id).maybeSingle();
+  if (error && cols017 && isMissingColumn(error)) {
+    cols017 = false;
+    ({ data, error } = await need().from('call_recordings').select(LIST_COLS_014).eq('id', id).maybeSingle());
+  }
   if (error) fail(error);
   return data ? mapRow(data) : null;
 };
@@ -105,6 +127,31 @@ export const getRecordingUrl = async (path: string): Promise<string> => {
   const { data, error } = await need().storage.from(RECORDING_BUCKET).createSignedUrl(path, 3600);
   if (error || !data?.signedUrl) fail(error || '주소를 만들지 못했습니다');
   return data!.signedUrl;
+};
+
+/** 서버(recording-play)가 회사 드라이브에서 흘려보내는 1시간짜리 듣기 주소 */
+const signPlay = async (body: Record<string, unknown>): Promise<string> => {
+  const { data, error } = await need().functions.invoke('recording-play', { body });
+  if (error) {
+    let msg = error.message;
+    try { const b = await (error as any).context?.json?.(); if (b?.error) msg = b.error; } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  if (!data?.ok || !data.url) throw new Error(data?.error || '듣기 주소를 만들지 못했습니다');
+  return data.url as string;
+};
+
+/** 녹음 저장 위치에 맞는 듣기 주소 */
+export const getPlayableUrl = (rec: CallRecording): Promise<string> =>
+  rec.storageKind === 'gdrive' ? signPlay({ recording_id: rec.id }) : getRecordingUrl(rec.storagePath);
+
+export const driveFileIdFromUrl = (url: string) => (url.match(/\/d\/([A-Za-z0-9_-]{10,})/) || url.match(/[?&]id=([A-Za-z0-9_-]{10,})/) || [])[1] || '';
+
+/** 리드 상세 예전 녹음(드라이브 링크)의 비공개 듣기 주소 */
+export const getLegacyDrivePlayUrl = (caseId: string, url: string): Promise<string> => {
+  const fid = driveFileIdFromUrl(url);
+  if (!fid) return Promise.reject(new Error('드라이브 링크가 아닙니다'));
+  return signPlay({ case_id: caseId, drive_file_id: fid });
 };
 
 /** AI 정리 요청 (백그라운드에서 진행, 결과는 status로 확인) */

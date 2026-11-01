@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { HardDrive, Link2, FolderPlus, FolderOpen, FlaskConical, Unlink, RefreshCw, Check, X, FileAudio } from 'lucide-react';
+import { HardDrive, Link2, FolderPlus, FolderOpen, FlaskConical, Unlink, RefreshCw, Check, X, FileAudio, Download } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import {
   DriveStatus, fetchDriveStatus, startDriveConnect, createDriveFolder, setDriveFolder, testDrive, disconnectDrive,
-  openDrivePicker, PICKER_API_KEY, takeDriveReturnFlag, DRIVE_RETURN_MESSAGES,
+  openDrivePicker, PICKER_API_KEY, takeDriveReturnFlag, DRIVE_RETURN_MESSAGES, importLegacyRecordings, LegacyImportStats,
 } from '../../services/drive';
 
 const fmt = (iso?: string | null) => {
@@ -55,6 +55,13 @@ export default function DriveConnectionCard() {
     const r = await createDriveFolder(name);
     showToast(`드라이브에 "${r.folder.name}" 폴더를 만들어 보관 폴더로 정했습니다.`, 'success');
   });
+  const [imp, setImp] = useState<LegacyImportStats | null>(null);
+  const importLegacy = () => run('import', async () => {
+    const r = await importLegacyRecordings(false);
+    setImp(r.stats);
+    const s = r.stats;
+    showToast(`예전 녹음 ${s.imported}개를 드라이브 보관 녹음으로 등록했습니다.${s.need_allow ? ` 허용이 필요한 파일 ${s.need_allow}개` : ''}${s.more ? ' (남은 것이 있어 한 번 더 누르세요)' : ''}`, s.errors ? 'error' : 'success');
+  });
   const test = () => run('test', async () => {
     const r = await testDrive();
     showToast(r.test.ok ? '연결 시험 성공: 드라이브에 올리고 지우기까지 됐습니다.' : '연결 시험 중 실패한 단계가 있습니다. 아래 결과를 보세요.', r.test.ok ? 'success' : 'error');
@@ -105,6 +112,9 @@ export default function DriveConnectionCard() {
             {st.rootFolderId && st.folderMode === 'picked' && (
               <button onClick={allowFiles} disabled={!!busy || !PICKER_API_KEY} className={`${btn} border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700`}><FileAudio size={13} /> 기존 파일 허용</button>
             )}
+            {st.rootFolderId && (
+              <button onClick={importLegacy} disabled={!!busy} title="리드 상세에 예전 방식으로 올린 드라이브 녹음을 '통화 녹음·AI' 탭의 드라이브 보관 녹음으로 등록합니다. 파일은 옮기지 않습니다." className={`${btn} border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700`}><Download size={13} /> {busy === 'import' ? '등록 중…' : '예전 녹음 등록'}</button>
+            )}
             <button onClick={test} disabled={!!busy || !st.rootFolderId} className={`${btn} border-sky-300 text-sky-700 hover:bg-sky-50`}><FlaskConical size={13} /> {busy === 'test' ? '시험 중…' : '연결 시험'}</button>
             <button onClick={() => run('connect', startDriveConnect)} disabled={!!busy} className={`${btn} border-gray-300 text-gray-600 hover:bg-gray-50`}><Link2 size={13} /> 다른 계정으로 다시 연결</button>
             <button onClick={disconnect} disabled={!!busy} className={`${btn} border-red-200 text-red-600 hover:bg-red-50`}><Unlink size={13} /> 연결 해제</button>
@@ -112,6 +122,19 @@ export default function DriveConnectionCard() {
         )}
       </div>
       {st.connected && !PICKER_API_KEY && <p className="text-[11px] text-gray-400">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
+
+      {imp && (
+        <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs text-gray-600 dark:text-gray-300 grid grid-cols-[12rem_1fr] gap-y-0.5">
+          <span>녹음이 있는 리드 / 녹음 링크</span><b>{imp.cases}건 / {imp.items}개</b>
+          <span>이번에 등록</span><b className="text-emerald-700">{imp.imported}개</b>
+          <span>이미 등록됨</span><span>{imp.already}개</span>
+          <span>허용 필요 (기존 파일 허용 후 다시)</span><span className={imp.need_allow ? 'text-amber-700 font-semibold' : ''}>{imp.need_allow}개</span>
+          <span>드라이브 링크 아님 (임시 주소 등)</span><span>{imp.not_drive}개</span>
+          {imp.trashed > 0 && <><span>드라이브 휴지통에 있음</span><span>{imp.trashed}개</span></>}
+          {imp.errors > 0 && <><span className="text-red-600">오류</span><span className="text-red-600">{imp.errors}개</span></>}
+          {imp.more && <span className="col-span-2 text-amber-700">시간 제한으로 일부만 처리했습니다. 한 번 더 누르세요.</span>}
+        </div>
+      )}
 
       {st.lastTest && (
         <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs space-y-1">

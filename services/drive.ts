@@ -67,6 +67,10 @@ export const setDriveFolder = (folderId: string) => call<{ folder: { id: string;
 export const testDrive = () => call<{ test: { at: string; ok: boolean; steps: DriveTestStep[] } }>({ action: 'test' });
 export const disconnectDrive = () => call({ action: 'disconnect' });
 
+export interface LegacyImportStats { cases: number; items: number; imported: number; already: number; need_allow: number; trashed: number; not_drive: number; errors: number; more: boolean }
+/** 리드 상세의 예전 드라이브 녹음 링크를 녹음 기록(드라이브 보관)으로 등록. 허용된 파일만 */
+export const importLegacyRecordings = (dryRun = false) => call<{ stats: LegacyImportStats }>({ action: 'import_legacy', dry_run: dryRun });
+
 // --------------------------------------------
 // 구글 파일 선택 창 (Google Picker): 기존 폴더 고르기 · 기존 파일 허용
 // 브라우저 API 키(VITE_GOOGLE_PICKER_API_KEY, Picker API만 허용·웹사이트 제한)가 있어야 동작

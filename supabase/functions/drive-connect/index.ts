@@ -10,6 +10,7 @@
  *     { action: 'set_folder', folder_id } → Picker에서 고른 폴더를 보관 폴더로 정함
  *     { action: 'test' }                  → 하위 폴더 만들기·작은 파일 올리기·확인·지우기 (단계별 결과 저장)
  *     { action: 'disconnect' }            → 구글 권한 취소 + 저장된 토큰 삭제
+ *     { action: 'import_legacy', dry_run? } → 리드 상세의 예전 드라이브 녹음 링크를 call_recordings에 등록 (허용된 파일만)
  * - GET ?code&state (구글이 돌려보냄): 토큰 교환 → Vault 저장 → 웹으로 돌아감 (#/team?drive=connected)
  *
  * 비밀값: GOOGLE_DRIVE_CLIENT_ID, GOOGLE_DRIVE_CLIENT_SECRET (서버 비밀값에만)
@@ -229,6 +230,62 @@ async function handlePost(req: Request): Promise<Response> {
     const result = { at: new Date().toISOString(), ok: allOk, steps };
     await admin.from('org_drive_connections').update({ last_test: result, ...(allOk ? { last_ok_at: result.at, last_error: null } : { last_error: steps.find(s => !s.ok)?.detail || '연결 시험 실패' }), updated_at: result.at }).eq('org_id', orgId);
     return json({ ok: true, test: result });
+  }
+
+  if (action === 'import_legacy') {
+    // 리드 상세에 예전 방식(Apps Script)으로 올린 드라이브 녹음을 call_recordings에 "드라이브 보관"으로 등록 (5.6, 11장)
+    // 리드마스터가 열 수 있는(허용된) 파일만 등록한다. 파일은 옮기거나 바꾸지 않는다. dry_run이면 세기만.
+    const dryRun = body.dry_run === true;
+    const started = Date.now();
+    const stats = { cases: 0, items: 0, imported: 0, already: 0, need_allow: 0, trashed: 0, not_drive: 0, errors: 0, more: false };
+    const { data: existing } = await admin.from('call_recordings').select('drive_file_id').eq('org_id', orgId).not('drive_file_id', 'is', null);
+    const have = new Set((existing || []).map((r: any) => r.drive_file_id));
+    const idOf = (url: string) => (url.match(/\/d\/([A-Za-z0-9_-]{10,})/) || url.match(/[?&]id=([A-Za-z0-9_-]{10,})/) || [])[1] || '';
+    let from = 0;
+    outer: for (;;) {
+      const { data: rows, error } = await admin.from('cases').select('case_id, phone, recordings')
+        .eq('org_id', orgId).not('recordings', 'is', null).order('case_id').range(from, from + 199);
+      if (error) return json({ ok: false, error: '리드를 읽지 못했습니다' }, 500);
+      if (!rows || rows.length === 0) break;
+      for (const c of rows) {
+        const recs = Array.isArray(c.recordings) ? c.recordings : [];
+        if (!recs.length) continue;
+        stats.cases++;
+        for (const r of recs) {
+          stats.items++;
+          const fid = idOf(String(r?.url || ''));
+          if (!fid) { stats.not_drive++; continue; }
+          if (have.has(fid)) { stats.already++; continue; }
+          if (Date.now() - started > 100_000) { stats.more = true; break outer; }
+          try {
+            const f = await getFile(token, fid, 'id,name,mimeType,size,createdTime,trashed');
+            if (f.trashed) { stats.trashed++; continue; }
+            if (!dryRun) {
+              const { error: insErr } = await admin.from('call_recordings').insert({
+                org_id: orgId, case_id: c.case_id, phone: String(c.phone || '').replace(/[^0-9]/g, ''),
+                user_id: null, direction: null,
+                call_started_at: r.uploadDate || f.createdTime || new Date().toISOString(),
+                duration_sec: Math.max(0, Math.round(Number(r.duration) || 0)),
+                storage_kind: 'gdrive', drive_file_id: fid, archive_status: 'archived', archived_at: new Date().toISOString(),
+                source: 'import', file_name: r.filename || f.name || null,
+                size_bytes: Number(f.size || 0), mime_type: (r.mimeType || f.mimeType || 'audio/mp4').slice(0, 60),
+                status: 'uploaded',
+              });
+              if (insErr) { stats.errors++; console.error('[import_legacy] insert', insErr.message); continue; }
+            }
+            have.add(fid);
+            stats.imported++;
+          } catch (e) {
+            if (e instanceof DriveError && e.code === 'not_found') stats.need_allow++;
+            else { stats.errors++; console.error('[import_legacy]', String(e)); }
+          }
+        }
+      }
+      if (rows.length < 200) break;
+      from += 200;
+    }
+    await markOk(admin, orgId);
+    return json({ ok: true, dry_run: dryRun, stats });
   }
 
   return json({ ok: false, error: '알 수 없는 요청' }, 400);

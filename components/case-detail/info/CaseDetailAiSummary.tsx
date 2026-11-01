@@ -1,8 +1,9 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Archive, Edit2, Mic, PlayCircle, Send, Sparkles, Trash2, X, MessageCircle, FileText, ListOrdered, Copy, Check } from 'lucide-react';
 import { Case, RecordingItem } from '../../../types';
 import { CustomAudioPlayer, CustomAudioPlayerRef } from '../../CustomAudioPlayer';
 import { convertToPlayableUrl, safeFormat, loadTelegramRooms, parseAiTranscript } from '../../../utils';
+import { getLegacyDrivePlayUrl } from '../../../services/recordings';
 import { useToast } from '../../../contexts/ToastContext';
 
 interface CaseDetailAiSummaryProps {
@@ -77,6 +78,22 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
         if (c.recordings && c.recordings.length > 0) return c.recordings[0].url;
         return null;
     }, [audioUrl, currentAudioFile, c.recordings]);
+
+    // 드라이브 링크는 서버(recording-play)를 거친 비공개 듣기 주소로 바꾼다.
+    // 아직 리드마스터에 허용되지 않은 파일·드라이브 미연결이면 예전 공개 링크로 재생 (공개 링크를 끄기 전까지)
+    const [playSrc, setPlaySrc] = useState<string>('');
+    useEffect(() => {
+        let cancelled = false;
+        const u = activeAudioUrl || '';
+        if (!u.includes('drive.google.com')) { setPlaySrc(u); return; }
+        setPlaySrc('');
+        getLegacyDrivePlayUrl(c.caseId, u)
+            .then(s => { if (!cancelled) setPlaySrc(s); })
+            .catch(() => { if (!cancelled) setPlaySrc(convertToPlayableUrl(u)); });
+        return () => { cancelled = true; };
+    }, [activeAudioUrl, c.caseId]);
+    // 예전(1~4월)에 저장된 blob: 주소 = 그때 브라우저 안에서만 쓰던 임시 주소 → 지금은 열 수 없음
+    const isTempBlob = !currentAudioFile && !!activeAudioUrl && activeAudioUrl.startsWith('blob:') && !!c.recordings?.some(r => r.url === activeAudioUrl);
 
     const activeFileName = useMemo(() => {
         if (currentAudioFile) return currentAudioFile.name;
@@ -191,11 +208,19 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
             {/* Audio Player for Current or Selected with Ref seeking */}
             {(activeAudioUrl || currentAudioFile) && (
                 <div className="mb-4">
-                    <CustomAudioPlayer
-                        ref={playerRef}
-                        src={activeAudioUrl && activeAudioUrl.includes('drive.google.com') ? convertToPlayableUrl(activeAudioUrl) : (activeAudioUrl || '')}
-                        fileName={activeFileName}
-                    />
+                    {isTempBlob ? (
+                        <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                            이 녹음은 예전에 브라우저 임시 주소로만 저장되어 서버에 원본이 없습니다. 원본 파일이 있으면 다시 올려 주세요.
+                        </div>
+                    ) : (activeAudioUrl && activeAudioUrl.includes('drive.google.com') && !playSrc) ? (
+                        <div className="text-xs text-gray-400 p-3">녹음 여는 중…</div>
+                    ) : (
+                        <CustomAudioPlayer
+                            ref={playerRef}
+                            src={playSrc || (activeAudioUrl || '')}
+                            fileName={activeFileName}
+                        />
+                    )}
                 </div>
             )}
 

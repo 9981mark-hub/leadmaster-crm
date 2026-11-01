@@ -11,13 +11,15 @@
  * 권한: 녹음 기록은 "사용자 권한"으로 읽는다(RLS) → 볼 수 없는 녹음은 분석할 수 없다.
  *       파일 내려받기·결과 저장만 service_role.
  * 비용 보호: 회사별 하루 상한(org_recording_settings.daily_analyze_cap, 기본 300건)
- * 보관 기간: 분석할 때마다 그 회사의 보관 기간(retention_days)이 지난 녹음 파일을 최대 20개 지운다 (AI 결과는 남김)
+ * 보관 기간: 분석할 때마다 그 회사의 보관 기간(retention_days)이 지난 Supabase 임시 녹음 파일을 최대 20개 지운다 (AI 결과는 남김)
+ * 구글 드라이브 녹음(storage_kind='gdrive', 017): 회사 드라이브에서 내려받아 분석하고, 자동 삭제하지 않는다.
  *
  * 비밀값: GEMINI_API_KEY (telegram-webhook과 같은 키), 선택 RECORDING_MODELS="모델1,모델2"
  * Deploy: supabase functions deploy recording-analyze --use-api --project-ref cenksfblktflfurxjmtv   (JWT 검증 켬)
  */
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { encodeBase64 } from 'jsr:@std/encoding@1/base64';
+import { getAccessToken } from '../_shared/drive.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
@@ -330,8 +332,10 @@ function normalize(d: any) {
 
 async function cleanupExpired(orgId: string, retentionDays: number) {
   const before = new Date(Date.now() - retentionDays * 86400_000).toISOString();
+  // Supabase 임시 보관 파일만 정리한다. 구글 드라이브 원본은 자동 삭제하지 않는다 (017)
   const { data } = await admin.from('call_recordings').select('id, storage_path')
-    .eq('org_id', orgId).is('audio_deleted_at', null).lt('created_at', before).limit(20);
+    .eq('org_id', orgId).eq('storage_kind', 'supabase').not('storage_path', 'is', null)
+    .is('audio_deleted_at', null).lt('created_at', before).limit(20);
   if (!data || data.length === 0) return 0;
   const { error } = await admin.storage.from(BUCKET).remove(data.map(r => r.storage_path));
   if (error) { console.error('[recording-analyze] cleanup remove', error.message); return 0; }
@@ -342,9 +346,19 @@ async function cleanupExpired(orgId: string, retentionDays: number) {
 async function analyze(rec: any, settings: any) {
   let geminiFile: string | null = null;
   try {
-    const { data: blob, error: dlErr } = await admin.storage.from(BUCKET).download(rec.storage_path);
-    if (dlErr || !blob) throw new Error(`녹음 파일을 내려받지 못했습니다 (${dlErr?.message || '없음'})`);
-    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let bytes: Uint8Array;
+    if (rec.storage_kind === 'gdrive') {
+      // 회사 구글 드라이브 원본 (017)
+      if (!rec.drive_file_id) throw new Error('드라이브에 아직 올라가지 않은 녹음입니다');
+      const token = await getAccessToken(admin, rec.org_id);
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(rec.drive_file_id)}?alt=media&supportsAllDrives=true`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(res.status === 404 ? '드라이브에서 녹음을 찾을 수 없거나 리드마스터에 허용되지 않았습니다' : `드라이브에서 녹음을 내려받지 못했습니다 (HTTP ${res.status})`);
+      bytes = new Uint8Array(await res.arrayBuffer());
+    } else {
+      const { data: blob, error: dlErr } = await admin.storage.from(BUCKET).download(rec.storage_path);
+      if (dlErr || !blob) throw new Error(`녹음 파일을 내려받지 못했습니다 (${dlErr?.message || '없음'})`);
+      bytes = new Uint8Array(await blob.arrayBuffer());
+    }
     const mime = rec.mime_type || 'audio/mp4';
 
     const [{ data: c }, { data: st }, { data: member }] = await Promise.all([
@@ -390,7 +404,7 @@ async function analyze(rec: any, settings: any) {
     await admin.from('call_recordings').update({ status: 'failed', error: msg }).eq('id', rec.id);
   } finally {
     if (geminiFile) await geminiDeleteFile(geminiFile);
-    try { await cleanupExpired(rec.org_id, settings?.retention_days || 30); } catch (e) { console.error('[recording-analyze] cleanup', e); }
+    try { await cleanupExpired(rec.org_id, settings?.retention_days || 3650); } catch (e) { console.error('[recording-analyze] cleanup', e); }
   }
 }
 
@@ -413,7 +427,7 @@ Deno.serve(async (req: Request) => {
 
   // 사용자 권한으로 조회 → 볼 수 없는 녹음은 여기서 막힘
   const { data: rec } = await userClient.from('call_recordings')
-    .select('id, org_id, case_id, user_id, storage_path, mime_type, direction, duration_sec, status, updated_at, audio_deleted_at')
+    .select('id, org_id, case_id, user_id, storage_path, storage_kind, drive_file_id, mime_type, direction, duration_sec, status, updated_at, audio_deleted_at')
     .eq('id', recordingId).maybeSingle();
   if (!rec) return json({ ok: false, error: '녹음을 찾을 수 없거나 권한이 없습니다' }, 404);
   if (rec.audio_deleted_at) return json({ ok: false, error: '보관 기간이 지나 녹음 파일이 지워졌습니다' }, 410);
