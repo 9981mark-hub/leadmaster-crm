@@ -5,6 +5,7 @@ import {
   RecordingSettings, RecordingUsage, DEFAULT_RECORDING_SETTINGS, fetchRecordingSettings, fetchRecordingUsage,
   saveRecordingSettings, isNotReadyError, fmtBytes,
 } from '../../services/recordings';
+import DriveConnectionCard from './DriveConnectionCard';
 
 /** 팀 관리 → 통화 녹음·AI 정리 설정 + 사용량 */
 export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
@@ -75,8 +76,8 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
         </div>
         <div className="space-y-3 text-sm">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="w-32 text-gray-600 dark:text-gray-300">녹음 파일 보관</span>
-            <input type="number" min={1} max={3650} value={s.retentionDays} onChange={e => setS({ ...s, retentionDays: parseInt(e.target.value, 10) || 30 })} className={`${input} w-20`} /> <span className="text-xs text-gray-400">일 (지나면 파일만 지우고 AI 정리는 남김)</span>
+            <span className="w-32 text-gray-600 dark:text-gray-300">서버 임시 보관</span>
+            <input type="number" min={1} max={3650} value={s.retentionDays} onChange={e => setS({ ...s, retentionDays: parseInt(e.target.value, 10) || 3650 })} className={`${input} w-20`} /> <span className="text-xs text-gray-400">일 (리드마스터 서버에 올라간 녹음만. 구글 드라이브 원본은 자동 삭제 안 함)</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-32 text-gray-600 dark:text-gray-300">하루 AI 정리 상한</span>
@@ -96,6 +97,9 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
             <button onClick={save} disabled={busy || !dirty} className="px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-40 flex items-center gap-1"><Save size={14} /> 저장</button>
           </div>
         </div>
+      </div>
+      <div className="px-5 pb-5">
+        <DriveConnectionCard />
       </div>
     </section>
   );

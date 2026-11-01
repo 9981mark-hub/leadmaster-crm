@@ -59,7 +59,7 @@ export interface RecordingSettings {
   exists: boolean;
 }
 export const DEFAULT_RECORDING_SETTINGS: RecordingSettings = {
-  autoUpload: false, autoAnalyze: false, minDurationSec: 40, retentionDays: 30, dailyAnalyzeCap: 300, wifiOnly: false, exists: false,
+  autoUpload: false, autoAnalyze: false, minDurationSec: 40, retentionDays: 3650, dailyAnalyzeCap: 300, wifiOnly: false, exists: false,
 };
 
 export interface RecordingUsage {
@@ -139,7 +139,7 @@ export const saveRecordingSettings = async (orgId: string, s: RecordingSettings)
     auto_upload: s.autoUpload,
     auto_analyze: s.autoAnalyze,
     min_duration_sec: Math.min(Math.max(Math.round(s.minDurationSec || 0), 0), 3600),
-    retention_days: Math.min(Math.max(Math.round(s.retentionDays || 30), 1), 3650),
+    retention_days: Math.min(Math.max(Math.round(s.retentionDays || 3650), 1), 3650),
     daily_analyze_cap: Math.min(Math.max(Math.round(s.dailyAnalyzeCap || 0), 0), 100000),
     wifi_only: s.wifiOnly,
     updated_at: new Date().toISOString(),
