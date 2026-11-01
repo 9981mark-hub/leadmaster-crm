@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <!--
+    개발용 미리보기 (배포 빌드에 들어가지 않음: vite build 입력은 루트 index.html 하나)
+    실행: npx vite --port 5199 --host 127.0.0.1
+    주소: http://127.0.0.1:5199/leadmaster-crm/scripts/preview/detail-preview.html
+    옵션: ?tab=settlement (정산 탭) · ?dark=1 (다크 모드) · ?new=1 (신규 리드) · ?house=자가|무상거주
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>리드 상세 미리보기 (개발용)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            gray: {
+              900: '#111827',
+              800: '#1F2937',
+              700: '#374151',
+              50: '#F9FAFB',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script>
+    if (new URLSearchParams(location.search).get('dark') === '1') document.documentElement.classList.add('dark');
+  </script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <!-- 운영 index.html과 같은 전역 스타일 -->
+  <style>
+    html, body, #main-scroll-container { scroll-behavior: auto !important; overscroll-behavior-y: none; }
+    * { scroll-behavior: auto !important; }
+    body {
+      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background-color: #f4f5f7;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
+    }
+    html.dark body { color: #e5e7eb; }
+    :focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; -webkit-appearance: textfield; appearance: textfield; }
+  </style>
+  <link rel="stylesheet" href="../../index.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="./detail-preview.tsx"></script>
+</body>
+
+</html>

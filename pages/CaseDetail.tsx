@@ -786,7 +786,7 @@ export default function CaseDetail() {
                     ))}
                 </div>
 
-                <div className={activeTab === 'info' ? 'min-h-[600px]' : 'bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-gray-700 min-h-[600px]'}>
+                <div className={activeTab === 'info' || activeTab === 'settlement' ? 'min-h-[600px]' : 'bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-gray-700 min-h-[600px]'}>
                     {activeTab === 'info' && (
                         <CaseInfoTab
                             c={c}

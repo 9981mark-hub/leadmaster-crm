@@ -85,9 +85,9 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
     const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 100;
 
     return (
-        <div className="grid grid-cols-12 gap-5 items-start">
-            {/* 상담 메모 · 일정 (모바일은 먼저, PC는 오른쪽 고정) */}
-            <aside className="col-span-12 xl:col-span-4 xl:order-2 space-y-3 xl:sticky xl:top-28">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_380px] gap-4 items-start">
+            {/* 상담 메모 · 일정 (모바일은 먼저, PC는 오른쪽 고정 폭) */}
+            <aside className="min-w-0 xl:order-2 space-y-3 xl:sticky xl:top-28">
                 <div className="bg-white dark:bg-gray-800 p-1 rounded-xl flex gap-1 border border-slate-200 dark:border-gray-700">
                     <button
                         type="button"
@@ -137,10 +137,10 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                 )}
             </aside>
 
-            {/* 상담 순서대로 정보 입력 */}
-            <div className="col-span-12 xl:col-span-8 xl:order-1 space-y-4">
+            {/* 상담 순서대로 정보 입력. 본문 폭이 넓으면(720px+) 단계 카드를 두 줄로 (index.css .lm-info-sections) */}
+            <div className="lm-info-main min-w-0 xl:order-1 space-y-3">
                 {/* 필수 확인 항목 진행률 + 단계 바로가기 */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 px-4 py-3">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 px-4 py-2.5">
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="min-w-[180px] flex-1">
                             <div className="flex items-baseline justify-between text-xs">
@@ -170,21 +170,24 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                     )}
                 </div>
 
-                <section id="step-personal" className="scroll-mt-28">
-                    <CaseDetailPersonalInfo c={c} partners={partners} inboundPaths={inboundPaths} onUpdate={onUpdate} />
-                </section>
-                <section id="step-job" className="scroll-mt-28">
-                    <CaseDetailJobFamily c={c} onUpdate={onUpdate} onIncomeChange={onIncomeChange} onJobTypeChange={onJobTypeChange} />
-                </section>
-                <section id="step-housing" className="scroll-mt-28">
-                    <CaseDetailHousing c={c} onUpdate={onUpdate} />
-                </section>
-                <section id="step-debt" className="scroll-mt-28">
-                    <CaseDetailAssets c={c} onUpdate={onUpdate} showToast={showToast} />
-                </section>
-                <section id="step-history" className="scroll-mt-28">
-                    <CaseDetailHistory c={c} onUpdate={onUpdate} statusLogs={statusLogs} />
-                </section>
+                {/* 화면에 놓이는 순서는 상담 순서 그대로. 넓을 때: [1 접수][2 직업] / [3 주거][4 채무] / [5 이력][4 채무] */}
+                <div className="lm-info-sections">
+                    <section id="step-personal" data-area="personal" className="scroll-mt-28 min-w-0">
+                        <CaseDetailPersonalInfo c={c} partners={partners} inboundPaths={inboundPaths} onUpdate={onUpdate} />
+                    </section>
+                    <section id="step-job" data-area="job" className="scroll-mt-28 min-w-0">
+                        <CaseDetailJobFamily c={c} onUpdate={onUpdate} onIncomeChange={onIncomeChange} onJobTypeChange={onJobTypeChange} />
+                    </section>
+                    <section id="step-housing" data-area="housing" className="scroll-mt-28 min-w-0">
+                        <CaseDetailHousing c={c} onUpdate={onUpdate} />
+                    </section>
+                    <section id="step-debt" data-area="debt" className="scroll-mt-28 min-w-0">
+                        <CaseDetailAssets c={c} onUpdate={onUpdate} showToast={showToast} />
+                    </section>
+                    <section id="step-history" data-area="history" className="scroll-mt-28 min-w-0">
+                        <CaseDetailHistory c={c} onUpdate={onUpdate} statusLogs={statusLogs} />
+                    </section>
+                </div>
             </div>
         </div>
     );

@@ -1,148 +1,126 @@
 import React from 'react';
 import { SmartInput } from '../../ui/SmartInput';
-import { Select } from '../../ui/Select';
 import { Case } from '../../../types';
 import { FREE_HOUSING_OWNERS, HOUSING_DETAILS, HOUSING_TYPES, RENT_CONTRACTORS } from '../../../constants';
+import { SectionCard, Choice, FIELD_GRID } from '../detailUi';
 
 interface CaseDetailHousingProps {
     c: Case;
     onUpdate: (field: string, value: any) => void;
 }
 
+/** 3단계 주거 (거주형태에 따라 시세·대출 / 보증금·월세 / 명의자 칸이 바뀐다) */
 export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
     c,
     onUpdate
 }) => {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 dark:border-gray-700 flex items-center justify-between">
-                <h3 className="font-bold text-slate-900 dark:text-gray-100 text-sm">주거</h3>
-                <span className="text-[11px] text-slate-500">
-                    {c.housingType || '미지정'} {c.housingDetail && `(${c.housingDetail})`}
-                </span>
-            </div>
+        <SectionCard step={3} title="주거" meta={`${c.housingType || '미지정'}${c.housingDetail ? ` (${c.housingDetail})` : ''}`}>
+            <div className={FIELD_GRID}>
+                <Choice
+                    label="거주형태"
+                    className="col-span-2"
+                    options={HOUSING_TYPES}
+                    value={c.housingType}
+                    onPick={v => onUpdate('housingType', v)}
+                />
+                <Choice
+                    label="주거상세"
+                    className="col-span-2"
+                    options={HOUSING_DETAILS}
+                    value={c.housingDetail}
+                    onPick={v => onUpdate('housingDetail', v)}
+                />
 
-            {/* 카드 본문 */}
-            <div className="p-4 space-y-3.5">
-                {/* 거주형태 & 주거상세 (2열) */}
-                <div className="grid grid-cols-2 gap-3">
-                    <Select 
-                        label="거주형태" 
-                        value={c.housingType} 
-                        onChange={(v: any) => onUpdate('housingType', v)} 
-                        options={HOUSING_TYPES} 
-                    />
-                    <Select 
-                        label="주거상세" 
-                        value={c.housingDetail} 
-                        onChange={(v: any) => onUpdate('housingDetail', v)} 
-                        options={HOUSING_DETAILS} 
-                    />
-                </div>
-
-                {/* 거주형태별 조건부 상세 블록 */}
                 {c.housingType === '자가' ? (
-                    <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl space-y-2.5">
-                        <div className="grid grid-cols-2 gap-2.5">
-                            <SmartInput 
-                                label="집 시세" 
-                                type="number" 
-                                value={c.ownHousePrice} 
-                                onChange={(v: any) => onUpdate('ownHousePrice', v)} 
-                                suffix="만원"
-                                isCurrency={true} 
-                                updateOnBlur={true} 
-                            />
-                            <SmartInput 
-                                label="집 담보 대출" 
-                                type="number" 
-                                value={c.ownHouseLoan} 
-                                onChange={(v: any) => onUpdate('ownHouseLoan', v)} 
-                                suffix="만원"
-                                isCurrency={true} 
-                                updateOnBlur={true} 
-                            />
-                        </div>
-                        <Select 
-                            label="집 명의자" 
-                            value={c.ownHouseOwner} 
-                            onChange={(v: any) => onUpdate('ownHouseOwner', v)} 
-                            options={['본인', '배우자', '배우자 공동명의']} 
-                        />
-                    </div>
-                ) : c.housingType === '무상거주' ? (
-                    <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl">
-                        <Select 
-                            label="집 명의자" 
-                            value={c.freeHousingOwner} 
-                            onChange={(v: any) => onUpdate('freeHousingOwner', v)} 
-                            options={FREE_HOUSING_OWNERS} 
-                        />
-                    </div>
-                ) : (
-                    <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl space-y-2.5">
-                        <div className="grid grid-cols-2 gap-2.5">
-                            <SmartInput 
-                                label="보증금" 
-                                type="number" 
-                                value={c.deposit} 
-                                onChange={(v: any) => onUpdate('deposit', v)} 
-                                suffix="만원"
-                                isCurrency={true} 
-                                updateOnBlur={true} 
-                            />
-                            <SmartInput 
-                                label="보증금 대출" 
-                                type="number" 
-                                value={c.depositLoanAmount} 
-                                onChange={(v: any) => onUpdate('depositLoanAmount', v)} 
-                                suffix="만원"
-                                isCurrency={true} 
-                                updateOnBlur={true} 
-                            />
-                        </div>
-                        <SmartInput 
-                            label="월세" 
-                            type="number" 
-                            value={c.rent} 
-                            onChange={(v: any) => onUpdate('rent', v)} 
+                    <>
+                        <SmartInput
+                            compact
+                            label="집 시세"
+                            type="number"
+                            value={c.ownHousePrice}
+                            onChange={(v: any) => onUpdate('ownHousePrice', v)}
                             suffix="만원"
-                            isCurrency={true} 
-                            updateOnBlur={true} 
+                            isCurrency={true}
+                            updateOnBlur={true}
                         />
-                        <div>
-                            <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">
-                                임대차 계약인
-                            </label>
-                            <div className="flex gap-2">
-                                {RENT_CONTRACTORS.map(opt => (
-                                    <button
-                                        key={opt}
-                                        type="button"
-                                        onClick={() => onUpdate('rentContractor', opt)}
-                                        className={`flex-1 py-1.5 text-xs rounded-lg font-bold transition-all border ${
-                                            c.rentContractor === opt 
-                                                ? 'bg-blue-600 text-white border-blue-600 shadow-xs' 
-                                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        {opt}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                        <SmartInput
+                            compact
+                            label="집 담보 대출"
+                            type="number"
+                            value={c.ownHouseLoan}
+                            onChange={(v: any) => onUpdate('ownHouseLoan', v)}
+                            suffix="만원"
+                            isCurrency={true}
+                            updateOnBlur={true}
+                        />
+                        <Choice
+                            label="집 명의자"
+                            className="col-span-2"
+                            options={['본인', '배우자', '배우자 공동명의']}
+                            value={c.ownHouseOwner}
+                            onPick={v => onUpdate('ownHouseOwner', v)}
+                        />
+                    </>
+                ) : c.housingType === '무상거주' ? (
+                    <Choice
+                        label="집 명의자"
+                        className="col-span-2"
+                        options={FREE_HOUSING_OWNERS}
+                        value={c.freeHousingOwner}
+                        onPick={v => onUpdate('freeHousingOwner', v)}
+                    />
+                ) : (
+                    <>
+                        <SmartInput
+                            compact
+                            label="보증금"
+                            type="number"
+                            value={c.deposit}
+                            onChange={(v: any) => onUpdate('deposit', v)}
+                            suffix="만원"
+                            isCurrency={true}
+                            updateOnBlur={true}
+                        />
+                        <SmartInput
+                            compact
+                            label="보증금 대출"
+                            type="number"
+                            value={c.depositLoanAmount}
+                            onChange={(v: any) => onUpdate('depositLoanAmount', v)}
+                            suffix="만원"
+                            isCurrency={true}
+                            updateOnBlur={true}
+                        />
+                        <SmartInput
+                            compact
+                            label="월세"
+                            type="number"
+                            value={c.rent}
+                            onChange={(v: any) => onUpdate('rent', v)}
+                            suffix="만원"
+                            isCurrency={true}
+                            updateOnBlur={true}
+                        />
+                        <Choice
+                            label="임대차 계약인"
+                            options={RENT_CONTRACTORS}
+                            value={c.rentContractor}
+                            onPick={v => onUpdate('rentContractor', v)}
+                        />
+                    </>
                 )}
 
-                {/* 거주지역 (관할법원 연계) */}
-                <SmartInput 
-                    label="거주지역 (관할법원 연계)" 
-                    value={c.region} 
-                    onChange={(v: any) => onUpdate('region', v)} 
+                <SmartInput
+                    compact
+                    className="col-span-2"
+                    label="거주지역 (관할법원 연계)"
+                    value={c.region}
+                    onChange={(v: any) => onUpdate('region', v)}
                     placeholder="예: 서울 강남 / 수원 팔달"
-                    updateOnBlur={true} 
+                    updateOnBlur={true}
                 />
             </div>
-        </div>
+        </SectionCard>
     );
 };

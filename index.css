@@ -131,3 +131,34 @@
   display: grid;
   gap: 0.75rem;
 }
+
+/* [2026-11-01] 리드 상세 → 정보 탭: 단계 카드 배치
+   좁으면 한 줄로 위아래, 본문(.lm-info-main) 폭이 720px 이상이면 두 줄로 나란히 (카드 한 장 ≥ 354px).
+   화면 폭이 아니라 본문 폭을 보므로 오른쪽 메모 칸·왼쪽 메뉴 폭이 달라져도 맞게 바뀐다.
+   HTML 순서(= 상담 순서, 단계 바로가기·키보드 이동 순서)는 그대로 두고 놓이는 자리만 바꾼다. */
+.lm-info-main {
+  container-type: inline-size;
+}
+
+.lm-info-sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+@container (min-width: 720px) {
+  .lm-info-sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "personal job"
+      "housing debt"
+      "history debt";
+  }
+
+  .lm-info-sections > [data-area="personal"] { grid-area: personal; }
+  .lm-info-sections > [data-area="job"] { grid-area: job; }
+  .lm-info-sections > [data-area="housing"] { grid-area: housing; }
+  .lm-info-sections > [data-area="debt"] { grid-area: debt; }
+  .lm-info-sections > [data-area="history"] { grid-area: history; }
+}
