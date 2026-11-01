@@ -570,7 +570,9 @@ export default function CaseList() {
         } finally { setBulkBusy(false); }
     };
 
+    // [015] 내보내기는 회사 관리자만 (버튼도 관리자에게만 보임). 접근 기록은 exportToExcel이 남긴다
     const bulkExport = () => {
+        if (!isAdmin) { showToast('내보내기는 관리자만 할 수 있습니다.', 'error'); return; }
         const list = selectedCases();
         if (list.length === 0) return;
         exportToExcel(`리드_${list.length}건_${format(new Date(), 'yyyyMMdd')}`, list.map(c => ({
@@ -608,7 +610,8 @@ export default function CaseList() {
                     refetchCases();
                 }}
                 onResetPage={() => setCurrentPage(1)}
-                onExportClick={() => setIsExportModalOpen(true)}
+                onExportClick={() => { if (isAdmin) setIsExportModalOpen(true); }}
+                canExport={isAdmin}
             />
 
             <CaseListFilter
@@ -678,7 +681,7 @@ export default function CaseList() {
                             <option value="__none__" className="text-slate-900">배정 풀기</option>
                         </select>
                     )}
-                    <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>
+                    {isAdmin && <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>}
                     <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-red-500/80 text-sm">휴지통</button>
                     <button onClick={() => setSelected(new Set())} className="ml-auto h-8 px-3 rounded-lg text-sm text-white/70 hover:text-white">선택 해제</button>
                     <span className="w-full text-[11px] text-white/50">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
@@ -702,7 +705,7 @@ export default function CaseList() {
             />
 
             <ExportCaseModal
-                isOpen={isExportModalOpen}
+                isOpen={isExportModalOpen && isAdmin}
                 onClose={() => setIsExportModalOpen(false)}
                 allCases={cases}
                 currentListCases={filteredCases}

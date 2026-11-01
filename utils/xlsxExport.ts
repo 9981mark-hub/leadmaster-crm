@@ -1,13 +1,22 @@
 import * as XLSX from 'xlsx';
 import { Case } from '../types';
+import { logAccess, canExportCaseData } from '../services/accessLog';
 
 /**
  * Export data to Excel file
+ * 모든 엑셀 내보내기(리드 목록·정산)가 여기를 지난다.
+ * [015] 회사 관리자만 내보낼 수 있고(화면 버튼도 숨김), 내보낼 때마다 접근 기록을 남긴다.
  * @param filename Filename without extension
  * @param data Array of objects to export
  * @param sheetName Name of the sheet (default: 'Sheet1')
+ * @returns 파일을 만들었으면 true, 권한이 없어 막았으면 false
  */
-export const exportToExcel = (filename: string, data: any[], sheetName: string = 'Sheet1') => {
+export const exportToExcel = (filename: string, data: any[], sheetName: string = 'Sheet1'): boolean => {
+    if (!canExportCaseData()) {
+        console.warn('[Export] 내보내기는 회사 관리자만 할 수 있습니다.');
+        return false;
+    }
+
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
@@ -28,6 +37,10 @@ export const exportToExcel = (filename: string, data: any[], sheetName: string =
 
     // Save file
     XLSX.writeFile(wb, `${filename}.xlsx`);
+
+    // 접근 기록: 누가 어떤 파일을 몇 줄 내보냈는지 (기다리지 않음, 실패해도 무시)
+    logAccess('export', { count: data.length, detail: { file: `${filename}.xlsx`, rows: data.length } });
+    return true;
 };
 
 /**
@@ -47,7 +60,7 @@ export const exportSpecialCases = (cases: Case[], filename: string = 'special_ca
         phone: c.phone,
         preInfo: c.preInfo ?? ''
     }));
-    exportToExcel(filename, data);
+    return exportToExcel(filename, data);
 };
 
 /**
@@ -144,7 +157,7 @@ export const exportCustomCases = (cases: Case[], filename: string = 'cases_expor
         수임료: formatCurrencyForExcel(c.contractFee),
     }));
 
-    exportToExcel(filename, data);
+    return exportToExcel(filename, data);
 };
 
 export const formatCurrencyForExcel = (amount?: number) => {

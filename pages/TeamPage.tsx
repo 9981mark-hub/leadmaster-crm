@@ -14,6 +14,7 @@ import TelegramBotSection from '../components/TelegramBotSection';
 import DistributionPanel from '../components/team/DistributionPanel';
 import LeadUploadModal from '../components/team/LeadUploadModal';
 import RecordingSettingsPanel from '../components/team/RecordingSettingsPanel';
+import AccessLogPanel from '../components/team/AccessLogPanel';
 import { AssignmentLog, DistributeMode, REASON_LABEL, distributeCases, fetchAssignmentLogs } from '../services/distribution';
 import { usePartners, useStatuses } from '../services/queries';
 
@@ -475,6 +476,9 @@ export default function TeamPage() {
           </table>
         </div>
       </section>
+
+      {/* ===== 접근 기록 (015) ===== */}
+      <AccessLogPanel orgId={org.orgId} members={members} cases={cases} />
 
       {showUpload && (
         <LeadUploadModal

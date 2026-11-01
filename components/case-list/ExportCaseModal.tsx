@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Download, Calendar, Filter } from 'lucide-react';
 import { Case } from '../../types';
 import { exportCustomCases, ExportDateType } from '../../utils/xlsxExport';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ExportCaseModalProps {
     isOpen: boolean;
@@ -18,6 +20,9 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
     currentListCases,
     statuses
 }) => {
+    // [015] 리드 데이터 내보내기는 회사 관리자만
+    const { isAdmin } = useAuth();
+    const { showToast } = useToast();
     const [targetScope, setTargetScope] = useState<'all' | 'special' | 'current'>('all');
     
     // Status filters
@@ -41,7 +46,7 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
         }
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !isAdmin) return null;
 
     const handleToggleStatus = (status: string) => {
         if (isAllStatuses) {
@@ -64,10 +69,11 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
     };
 
     const handleExport = () => {
+        if (!isAdmin) { showToast('내보내기는 관리자만 할 수 있습니다.', 'error'); onClose(); return; }
         const sourceData = targetScope === 'current' ? currentListCases : allCases;
         const filename = `cases_export_${new Date().toISOString().split('T')[0]}`;
         
-        exportCustomCases(
+        const done = exportCustomCases(
             sourceData, 
             filename, 
             targetScope, 
@@ -78,6 +84,7 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
             customStartDate, 
             customEndDate
         );
+        if (!done) showToast('내보내기는 관리자만 할 수 있습니다.', 'error');
         onClose();
     };
 

@@ -18,6 +18,7 @@ import { CaseTimeline } from '../components/case-detail/CaseTimeline';
 import { CaseCallsSmsTab } from '../components/case-detail/CaseCallsSmsTab';
 import { TelegramDeliverModal } from '../components/case-detail/TelegramDeliverModal';
 import { CallRecordingsTab } from '../components/case-detail/CallRecordingsTab';
+import { logCaseView } from '../services/accessLog';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -26,6 +27,10 @@ export default function CaseDetail() {
 
     // Data Fetching
     const { data: c, isLoading, error } = useCase(id!);
+
+    // [015] 접근 기록: 리드 상세를 연 것 (같은 탭에서 10분 안에 다시 열면 한 번만)
+    const viewedCaseId = c?.caseId;
+    useEffect(() => { if (viewedCaseId) logCaseView(viewedCaseId); }, [viewedCaseId]);
     const { data: partners = [] } = usePartners();
     const { data: inboundPaths = [] } = useInboundPaths();
     const { data: statuses = [] } = useStatuses();
