@@ -207,33 +207,45 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         )}
 
                         {menu === 'sms' && (
-                            <div className="absolute right-0 top-11 z-30 w-80 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg p-3 space-y-2">
-                                <div className="flex items-center justify-between text-sm font-semibold text-slate-800 dark:text-gray-100">
-                                    <span>{c.customerName}님께 문자</span>
-                                    <button onClick={() => setMenu(null)} className="text-slate-400" aria-label="닫기"><X size={14} /></button>
+                            <>
+                                <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setMenu(null)} />
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMenu(null)}>
+                                    <div className="w-full max-w-md bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl p-4 space-y-3" onClick={e => e.stopPropagation()}>
+                                        <div className="flex items-center justify-between text-base font-semibold text-slate-800 dark:text-gray-100">
+                                            <span>{c.customerName}님께 문자 보내기</span>
+                                            <button onClick={() => setMenu(null)} className="text-slate-400 hover:text-slate-600 p-1" aria-label="닫기"><X size={18} /></button>
+                                        </div>
+                                        <textarea autoFocus value={smsText} onChange={e => setSmsText(e.target.value)} rows={6}
+                                            onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendSms(); }}
+                                            className="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-sm dark:bg-gray-900 dark:text-gray-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" 
+                                            placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
+                                            <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-800 flex items-center gap-1.5">
+                                                {sms.isPending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} 보내기
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <textarea autoFocus value={smsText} onChange={e => setSmsText(e.target.value)} rows={5}
-                                    onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendSms(); }}
-                                    className="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-2 text-sm dark:bg-gray-900 dark:text-gray-100 outline-none focus:border-blue-500" placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[11px] text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
-                                    <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-8 px-3 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-40 flex items-center gap-1">
-                                        {sms.isPending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />} 보내기
-                                    </button>
-                                </div>
-                            </div>
+                            </>
                         )}
                         {menu === 'reminder' && onAddCallReminder && (
-                            <div className="absolute right-0 top-11 z-30 w-56 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg py-1">
-                                {quickSlots().map(s => (
-                                    <button key={s.label} onClick={() => { onAddCallReminder(s.at, s.label); setMenu(null); }}
-                                        className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 flex justify-between">
-                                        <span className="text-slate-800 dark:text-gray-100">{s.label}</span>
-                                        <span className="text-slate-400 tabular-nums text-xs">{s.at.slice(5)}</span>
-                                    </button>
-                                ))}
-                                <div className="px-3 py-1.5 text-[11px] text-slate-400 border-t border-slate-100 dark:border-gray-700">다른 시각은 오른쪽 "상담 메모 · 일정"에서</div>
-                            </div>
+                            <>
+                                <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setMenu(null)} />
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMenu(null)}>
+                                    <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl py-2 overflow-hidden" onClick={e => e.stopPropagation()}>
+                                        <div className="px-4 py-2 text-base font-semibold text-slate-800 dark:text-gray-100 border-b border-slate-100 dark:border-gray-700">다음 통화 예약</div>
+                                        {quickSlots().map(s => (
+                                            <button key={s.label} onClick={() => { onAddCallReminder(s.at, s.label); setMenu(null); }}
+                                                className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-gray-700 flex justify-between items-center group">
+                                                <span className="text-sm font-medium text-slate-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">{s.label}</span>
+                                                <span className="text-xs text-slate-400 tabular-nums">{s.at.slice(5)}</span>
+                                            </button>
+                                        ))}
+                                        <div className="px-4 py-2 text-xs text-slate-400 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">다른 시각은 오른쪽 "상담 메모 · 일정" 탭에서 추가하세요</div>
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
 
