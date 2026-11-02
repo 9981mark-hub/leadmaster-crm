@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Copy, Edit2, FileText, Send, Sparkles, X } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X } from 'lucide-react';
 import { Case, Partner } from '../../types';
-import { generateSummary, injectSummaryMetadata } from '../../utils';
+import { generateSummary, injectSummaryMetadata, parseAiTranscript } from '../../utils';
 
 interface CaseSummaryTabProps {
     c: Case;
@@ -21,6 +21,21 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
 }) => {
     const [manualSummary, setManualSummary] = useState('');
     const [isManualSummaryEdit, setIsManualSummaryEdit] = useState(false);
+    // AI 결과를 요약문 / 대화록으로 나눠 보기 (모바일 상담 정보 화면과 같은 방식)
+    const [aiTab, setAiTab] = useState<'summary' | 'transcript'>('summary');
+    const parsed = useMemo(() => parseAiTranscript(aiSummaryText), [aiSummaryText]);
+    const copyAiTab = () => {
+        const text = aiTab === 'summary'
+            ? (parsed.summaryText || aiSummaryText || '')
+            : (parsed.transcriptLines.length
+                ? parsed.transcriptLines.map(l => `${l.time ? `[${l.time}] ` : ''}${l.speaker}: ${l.text}`).join('\n')
+                : parsed.rawTranscript || '');
+        if (!text.trim()) { showToast(aiTab === 'summary' ? '복사할 요약문이 없습니다.' : '복사할 대화록이 없습니다.'); return; }
+        navigator.clipboard.writeText(text).then(
+            () => showToast(aiTab === 'summary' ? '요약문을 복사했습니다.' : '대화록을 복사했습니다.'),
+            () => showToast('복사하지 못했습니다.'),
+        );
+    };
 
     return (
         <div className="grid md:grid-cols-2 gap-4 h-full min-h-[400px] md:min-h-[500px]">
@@ -79,6 +94,15 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                         <Sparkles size={18} /> AI 요약문
                     </h3>
                     <div className="flex gap-2">
+                        {aiSummaryText && !aiSummaryEditMode && (
+                            <button
+                                onClick={copyAiTab}
+                                className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded hover:bg-purple-200 flex items-center gap-1"
+                                title={aiTab === 'summary' ? '요약문만 복사' : '대화록만 복사'}
+                            >
+                                <Copy size={12} /> 복사
+                            </button>
+                        )}
                         {aiSummaryText && (
                             <>
                                 <button onClick={() => {
@@ -98,14 +122,51 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     </div>
                 </div>
 
+                {aiSummaryText && !aiSummaryEditMode && (
+                    <div className="flex gap-1.5 border-b border-purple-200 mb-2">
+                        <button
+                            onClick={() => setAiTab('summary')}
+                            className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-t-lg transition-colors ${aiTab === 'summary' ? 'bg-white text-purple-700 border-t border-l border-r border-purple-200' : 'text-gray-500 hover:text-purple-600'}`}
+                        >
+                            <FileText size={13} /> 요약문
+                        </button>
+                        <button
+                            onClick={() => setAiTab('transcript')}
+                            className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-t-lg transition-colors ${aiTab === 'transcript' ? 'bg-white text-purple-700 border-t border-l border-r border-purple-200' : 'text-gray-500 hover:text-purple-600'}`}
+                        >
+                            <ListOrdered size={13} /> 대화록
+                            {parsed.transcriptLines.length > 0 && <span className="ml-1 px-1.5 bg-purple-100 text-purple-700 rounded-full text-[10px]">{parsed.transcriptLines.length}</span>}
+                        </button>
+                    </div>
+                )}
+
                 <div className="flex-1 relative h-full">
                     {aiSummaryText ? (
                         <>
-                            <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'md:hidden' : ''}`}
-                                onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
-                            >
-                                {aiSummaryText}
-                            </div>
+                            {aiTab === 'summary' ? (
+                                <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'md:hidden' : ''}`}
+                                    onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
+                                >
+                                    {parsed.summaryText || aiSummaryText}
+                                </div>
+                            ) : (
+                                <div className={`w-full h-full p-3 bg-white rounded-lg border border-purple-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] space-y-2 ${aiSummaryEditMode ? 'md:hidden' : ''}`}>
+                                    {parsed.transcriptLines.length > 0 ? parsed.transcriptLines.map(line => {
+                                        const isAgent = /상담원|담당자|사무장/.test(line.speaker);
+                                        return (
+                                            <div key={line.id} className={`p-2.5 rounded-lg border text-xs leading-relaxed ${isAgent ? 'bg-blue-50 border-blue-100 text-blue-950' : 'bg-purple-50/60 border-purple-100 text-gray-900'}`}>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-bold">{line.speaker}</span>
+                                                    {line.time && <span className="text-[10px] text-gray-400 tabular-nums">{line.time}</span>}
+                                                </div>
+                                                <div className="whitespace-pre-wrap">{line.text}</div>
+                                            </div>
+                                        );
+                                    }) : (
+                                        <div className="text-sm text-gray-400 whitespace-pre-wrap">{parsed.rawTranscript || '분석된 대화록이 없습니다.'}</div>
+                                    )}
+                                </div>
+                            )}
                             {aiSummaryEditMode && (
                                 <textarea
                                     className="hidden md:block w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-300 outline-none resize-none focus:ring-2 focus:ring-purple-200 transition-shadow min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]"
