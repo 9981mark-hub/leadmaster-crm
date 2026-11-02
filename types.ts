@@ -152,6 +152,8 @@ export interface Case {
   // 10. Settlement (Critical)
   contractAt?: string; // "YYYY-MM-DD"
   contractFee?: number; // Manwon
+  contractType?: string; // 계약 종류 (예: 개인회생, 개인파산 등)
+  incentiveTypeId?: string; // 인센티브 종류 ID
 
   // New: Installment & Dynamic Deposits
   installmentMonths?: string; // "완납", "2개월" ...

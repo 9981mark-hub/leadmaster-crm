@@ -82,6 +82,8 @@ interface DbCase {
     children_count: number;
     contract_at: string | null;
     contract_fee: number;
+    contract_type?: string | null;
+    incentive_type_id?: string | null;
     installment_months: string | null;
     use_capital: boolean;
     assets: any[];
@@ -147,6 +149,8 @@ export const dbToCase = (row: DbCase): Case => ({
     childrenCount: row.children_count,
     contractAt: row.contract_at || undefined,
     contractFee: row.contract_fee,
+    contractType: row.contract_type || undefined,
+    incentiveTypeId: row.incentive_type_id || undefined,
     installmentMonths: row.installment_months || undefined,
     useCapital: row.use_capital,
     assets: row.assets || [],
@@ -208,6 +212,8 @@ export const caseToDb = (c: Partial<Case>): Partial<DbCase> => {
     if (c.childrenCount !== undefined) result.children_count = c.childrenCount;
     if (c.contractAt !== undefined) result.contract_at = c.contractAt || null;
     if (c.contractFee !== undefined) result.contract_fee = c.contractFee;
+    if (c.contractType !== undefined) result.contract_type = c.contractType || null;
+    if (c.incentiveTypeId !== undefined) result.incentive_type_id = c.incentiveTypeId || null;
     if (c.installmentMonths !== undefined) result.installment_months = c.installmentMonths || null;
     if (c.useCapital !== undefined) result.use_capital = c.useCapital;
     if (c.assets !== undefined) result.assets = c.assets;

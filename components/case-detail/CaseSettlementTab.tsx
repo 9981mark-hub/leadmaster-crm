@@ -5,6 +5,7 @@ import { Case, SettlementBatch, Partner } from '../../types';
 import { findBatchForCase, getSettlementStatusLabel } from '../../services/api';
 import { computeCaseCommission, todayKST, fmtMan, VAT_LABEL, vatModeOf } from '../../utils/settlement';
 import { SectionCard, Field, FIELD_GRID, CONTROL_PLAIN, LABEL } from './detailUi';
+import { fetchIncentiveSettings, IncentiveContractType, DEFAULT_CONTRACT_TYPES } from '../../services/performance';
 
 interface CaseSettlementTabProps {
     c: Case;
@@ -68,6 +69,12 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
     const saveDeposits = (next: Deposit[]) => onUpdate('depositHistory', next);
     const [settlementBatch, setSettlementBatch] = useState<SettlementBatch | null>(null);
     const [isLoadingBatch, setIsLoadingBatch] = useState(true);
+    const [contractTypes, setContractTypes] = useState<IncentiveContractType[]>(DEFAULT_CONTRACT_TYPES);
+    useEffect(() => {
+        fetchIncentiveSettings().then(s => {
+            if (s.contractTypes && s.contractTypes.length > 0) setContractTypes(s.contractTypes);
+        }).catch(() => {});
+    }, []);
     const contractId = React.useId();
     const installmentId = React.useId();
 
@@ -136,6 +143,26 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                 {/* 계약 및 수임료 */}
                 <SectionCard title="계약 및 수임료" meta={commission > 0 ? `예상 수당 ${commission.toLocaleString()}만원` : undefined}>
                     <div className={FIELD_GRID}>
+                        <Field label="계약 종류 (인센티브)" htmlFor="case-contract-type">
+                            <select
+                                id="case-contract-type"
+                                className={CONTROL_PLAIN}
+                                value={c.incentiveTypeId || ''}
+                                onChange={e => {
+                                    const selectedId = e.target.value;
+                                    const found = contractTypes.find(t => t.id === selectedId);
+                                    onUpdate('incentiveTypeId', selectedId);
+                                    onUpdate('contractType', found ? found.name : '');
+                                }}
+                            >
+                                <option value="">— 기본 계약 종류 —</option>
+                                {contractTypes.map(t => (
+                                    <option key={t.id} value={t.id}>
+                                        {t.name} ({t.calcType === 'fixed' ? `건당 ${t.amount.toLocaleString()}원` : `수임료 ${t.rate}%`})
+                                    </option>
+                                ))}
+                            </select>
+                        </Field>
                         <Field label="계약완료일 (정산 기준)" htmlFor={contractId}>
                             <input
                                 id={contractId}
