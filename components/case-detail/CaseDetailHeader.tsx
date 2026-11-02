@@ -155,6 +155,13 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                 <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">{c.customerName || '이름 없음'}</h1>
                                 <button onClick={call} className="text-base font-semibold tabular-nums text-blue-700 dark:text-blue-300 hover:underline">{c.phone}</button>
+                                {/* [2026-11-02] 모바일만: 문자 아이콘 → 폰 문자 앱의 이 고객 대화창 (앱은 sms: 주소를 문자 앱으로 넘김) */}
+                                {phoneDigits && (
+                                    <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} aria-label="문자 보내기" title="문자 보내기"
+                                        className="md:hidden h-8 w-8 -ml-0.5 rounded-full flex items-center justify-center text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300">
+                                        <MessageSquare size={16} />
+                                    </a>
+                                )}
                                 {c.isNew && <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-600 text-white font-bold">신규</span>}
                             </div>
                             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
@@ -302,6 +309,14 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                 <option value="">3차 상태</option>
                                 {availableTertiary.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
+                        )}
+                        {/* [2026-11-02] 모바일만: 부재일 때 + → 부재 1회 더 + 마지막 부재 시각 지금으로 */}
+                        {isMissedStatus && onMissedCallIncrement && (
+                            <button type="button" onClick={onMissedCallIncrement}
+                                className="md:hidden h-9 px-2.5 rounded-lg border border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 text-sm font-bold flex items-center gap-1 tabular-nums"
+                                aria-label={`부재 1회 더 기록 (지금 ${c.missedCallCount || 0}회)`}>
+                                <Plus size={15} /> {c.missedCallCount || 0}회
+                            </button>
                         )}
                         {isMissedStatus && c.lastMissedCallAt && (
                             <span className="text-[11px] text-orange-600 tabular-nums">마지막 부재 {(() => { const d = new Date(c.lastMissedCallAt!); return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; })()}</span>
