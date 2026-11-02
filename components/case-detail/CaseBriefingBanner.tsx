@@ -68,24 +68,11 @@ ${data.specialMemo || '없음'}`;
             >
                 <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
-                    <span className="font-bold text-white text-sm flex items-center gap-1.5">
+                    {/* 2026-11-02 글자 줄임: 부제·출처 배지 삭제 (출처는 마우스를 올리면 보임) */}
+                    <span className="font-bold text-white text-sm flex items-center gap-1.5" title={data.isAiSource ? 'AI 통화 분석 기반' : 'CRM 입력 데이터 기반'}>
                         <span className="text-base">📋</span>
                         고객 종합 브리핑
-                        <span className="text-xs font-normal text-slate-400">(상황 및 채무 요약)</span>
                     </span>
-
-                    {/* Data Source Badge */}
-                    {data.isAiSource ? (
-                        <span className="bg-purple-950/80 text-purple-300 border border-purple-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
-                            <Sparkles size={11} className="text-purple-400" />
-                            AI 통화 분석 기반
-                        </span>
-                    ) : (
-                        <span className="bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
-                            <FileText size={11} className="text-slate-400" />
-                            CRM 입력 데이터 기반
-                        </span>
-                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
