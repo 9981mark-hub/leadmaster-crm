@@ -8,7 +8,7 @@
 // ============================================
 import { supabase } from './supabase';
 
-export type AiTask = 'case_summary' | 'image_extract' | 'import_ocr' | 'receipt_text';
+export type AiTask = 'case_summary' | 'image_extract' | 'import_ocr' | 'receipt_text' | 'summary_extract';
 
 export interface AiFile {
   mimeType: string;
@@ -51,6 +51,7 @@ export const AI_MAX_FILE_BYTES: Record<AiTask, number> = {
   image_extract: 10 * MB,
   import_ocr: 15 * MB,
   receipt_text: 5 * MB,
+  summary_extract: 0,   // 글만 보냄 (파일 없음)
 };
 
 /** 브라우저가 기다리는 최대 시간 (서버는 약 140초 안에 끝내고, 응답 대기 한도는 150초) */

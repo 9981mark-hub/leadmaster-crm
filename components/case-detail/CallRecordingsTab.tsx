@@ -6,6 +6,7 @@ import {
   isNotReadyError, fmtBytes, fmtDuration, fmtManwon, extractedToText,
 } from '../../services/recordings';
 import { logRecordingPlay } from '../../services/accessLog';
+import { AiApplyModal } from './AiApplyModal';
 
 interface Props {
   c: Case;
@@ -28,142 +29,6 @@ const fmtWhen = (iso: string) => {
   return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 const uid = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
-
-// ---------------------------------------------
-// AI 결과 → 리드 칸 후보 (현재 값과 나란히 보여주고 고른 것만 반영)
-// ---------------------------------------------
-interface Candidate { key: string; label: string; current: string; next: string; defaultOn: boolean; apply: (u: Partial<Case>) => void; }
-const SYSTEM_DEFAULTS = new Set(['', '남', '미가입', '월세', '미혼', '기타']);
-const emptyNum = (v: any) => v === undefined || v === null || Number(v) === 0;
-
-function buildCandidates(c: Case, e: ExtractedInfo, rec: CallRecording): Candidate[] {
-  const out: Candidate[] = [];
-  const num = (key: keyof Case, label: string, v: number | null) => {
-    if (v === null || v === undefined) return;
-    const cur = (c as any)[key];
-    if (Number(cur) === v) return;
-    out.push({ key: String(key), label, current: emptyNum(cur) ? '-' : fmtManwon(Number(cur)), next: fmtManwon(v), defaultOn: emptyNum(cur), apply: u => { (u as any)[key] = v; } });
-  };
-  const pick = (key: keyof Case, label: string, v: string | null) => {
-    if (!v) return;
-    const cur = String((c as any)[key] ?? '');
-    if (cur === v) return;
-    out.push({ key: String(key), label, current: cur || '-', next: v, defaultOn: SYSTEM_DEFAULTS.has(cur), apply: u => { (u as any)[key] = v; } });
-  };
-  pick('caseType', '사건 유형', e.case_type_suggestion || null);
-  pick('birth', '출생년도', e.personal.birth_year);
-  pick('gender', '성별', e.personal.gender);
-  pick('region', '지역', e.personal.region);
-  if (e.income.job_types?.length) {
-    const cur = (c.jobTypes || []).join(', ');
-    const nx = e.income.job_types.join(', ');
-    if (cur !== nx) out.push({ key: 'jobTypes', label: '직업', current: cur || '-', next: nx, defaultOn: !cur, apply: u => { u.jobTypes = e.income.job_types; } });
-  }
-  pick('insurance4', '4대보험', e.income.insurance4);
-  num('incomeNet', '월 소득(실수령)', e.income.net_monthly_manwon);
-  const det = { salary: e.income.salary_manwon, business: e.income.business_manwon, freelance: e.income.freelance_manwon };
-  if (det.salary !== null || det.business !== null || det.freelance !== null) {
-    const cur = c.incomeDetails || {};
-    const merged: any = { ...cur };
-    (Object.keys(det) as (keyof typeof det)[]).forEach(k => { if (det[k] !== null) merged[k] = det[k]; });
-    const label = (o: any) => [o.salary ? `직장 ${o.salary}` : '', o.business ? `사업 ${o.business}` : '', o.freelance ? `프리 ${o.freelance}` : ''].filter(Boolean).join(' / ') || '-';
-    if (label(cur) !== label(merged)) out.push({ key: 'incomeDetails', label: '직업별 수입(만원)', current: label(cur), next: label(merged), defaultOn: label(cur) === '-', apply: u => { u.incomeDetails = merged; } });
-  }
-  num('loanMonthlyPay', '대출 월 상환액', e.debt.monthly_payment_manwon);
-  pick('maritalStatus', '결혼', e.family.marital_status);
-  if (e.family.children_count !== null && e.family.children_count !== c.childrenCount) {
-    out.push({ key: 'childrenCount', label: '미성년 자녀', current: c.childrenCount ? `${c.childrenCount}명` : '-', next: `${e.family.children_count}명`, defaultOn: !c.childrenCount, apply: u => { u.childrenCount = e.family.children_count!; } });
-  }
-  pick('housingType', '주거 형태', e.housing.type);
-  pick('housingDetail', '주거 종류', e.housing.detail);
-  num('deposit', '보증금', e.housing.deposit_manwon);
-  num('rent', '월세', e.housing.rent_manwon);
-  num('depositLoanAmount', '보증금 대출', e.housing.deposit_loan_manwon);
-  pick('rentContractor', '임대차 계약인', e.housing.contractor);
-  num('ownHousePrice', '자가 시세', e.housing.own_house_price_manwon);
-  num('ownHouseLoan', '자가 담보대출', e.housing.own_house_loan_manwon);
-  pick('creditCardUse', '신용카드', e.credit_card.use);
-  num('creditCardAmount', '카드 사용액', e.credit_card.amount_manwon);
-
-  const creditors = (e.debt.creditors || []).filter(cr => cr.kind !== '담보대출');
-  if (creditors.length) {
-    const items: CreditLoanItem[] = creditors.map(cr => ({
-      id: uid(), amount: cr.amount_manwon || 0,
-      desc: [cr.name, cr.name ? `(${cr.kind})` : cr.kind, cr.note].filter(Boolean).join(' '),
-    }));
-    const cur = c.creditLoan || [];
-    const sum = items.reduce((s, x) => s + x.amount, 0);
-    out.push({
-      key: 'creditLoan', label: `신용 채무 ${items.length}건`, current: cur.length ? `${cur.length}건 (${fmtManwon(cur.reduce((s, x) => s + (x.amount || 0), 0))})` : '-',
-      next: `${cur.length ? '추가 ' : ''}${items.length}건 (${fmtManwon(sum)})`, defaultOn: cur.length === 0,
-      apply: u => { u.creditLoan = [...cur, ...items]; },
-    });
-  }
-  const assets = e.assets || [];
-  if (assets.length) {
-    const items: AssetItem[] = assets.map(a => ({
-      id: uid(), owner: a.owner || '본인', type: a.type || '기타', amount: a.amount_manwon || 0, loanAmount: a.loan_manwon || 0, desc: a.desc || '',
-    }));
-    const cur = c.assets || [];
-    out.push({
-      key: 'assets', label: `재산 ${items.length}건`, current: cur.length ? `${cur.length}건` : '-',
-      next: `${cur.length ? '추가 ' : ''}${items.map(a => `${a.type} ${fmtManwon(a.amount)}`).join(', ')}`, defaultOn: cur.length === 0,
-      apply: u => { u.assets = [...cur, ...items]; },
-    });
-  }
-  // 상담 메모: 요약 + 채무 정리 전체 (항상 후보, 기본 켬)
-  out.push({
-    key: 'specialMemo', label: '상담 메모 추가', current: `${(c.specialMemo || []).length}건`, next: '요약·채무 정리 1건', defaultOn: !rec.appliedAt,
-    apply: u => {
-      const memo: MemoItem = { id: Date.now().toString(), createdAt: new Date().toISOString(), content: `[AI 통화 정리 ${fmtWhen(rec.callStartedAt)}]\n${extractedToText(rec)}`.slice(0, 4000) };
-      u.specialMemo = [memo, ...((u.specialMemo as MemoItem[]) || c.specialMemo || [])];
-    },
-  });
-  return out;
-}
-
-function ApplyModal({ c, rec, onClose, onApply }: { c: Case; rec: CallRecording; onClose: () => void; onApply: (u: Partial<Case>) => void }) {
-  const cands = useMemo(() => buildCandidates(c, rec.extracted!, rec), [c, rec]);
-  const [on, setOn] = useState<Record<string, boolean>>(() => Object.fromEntries(cands.map(x => [x.key, x.defaultOn])));
-  const count = cands.filter(x => on[x.key]).length;
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="px-5 py-3 border-b dark:border-gray-700">
-          <h3 className="font-bold text-gray-800 dark:text-white">AI 정리 → 상담 정보에 반영</h3>
-          <p className="text-xs text-gray-500 mt-0.5">녹음에서 들은 값입니다. 맞는 것만 체크하세요. 이미 값이 있는 칸은 기본으로 체크하지 않았습니다.</p>
-          {rec.appliedAt && <p className="text-xs text-amber-700 mt-1">이 녹음은 {fmtWhen(rec.appliedAt)}에 이미 반영했습니다. 채무·재산을 다시 반영하면 같은 항목이 한 번 더 들어갑니다.</p>}
-        </div>
-        <div className="overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead className="text-xs text-gray-400 bg-gray-50 dark:bg-gray-700/40"><tr><th className="w-10" /><th className="text-left px-2 py-1.5">항목</th><th className="text-left px-2">지금</th><th className="text-left px-2">AI</th></tr></thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {cands.map(x => (
-                <tr key={x.key} className={on[x.key] ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''} onClick={() => setOn({ ...on, [x.key]: !on[x.key] })}>
-                  <td className="text-center"><input type="checkbox" checked={!!on[x.key]} onChange={() => setOn({ ...on, [x.key]: !on[x.key] })} onClick={e => e.stopPropagation()} /></td>
-                  <td className="px-2 py-1.5 font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">{x.label}</td>
-                  <td className="px-2 text-gray-400">{x.current}</td>
-                  <td className="px-2 text-gray-800 dark:text-gray-100">{x.next}</td>
-                </tr>
-              ))}
-              {cands.length === 0 && <tr><td colSpan={4} className="px-5 py-6 text-center text-gray-400">새로 반영할 값이 없습니다.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-5 py-3 border-t dark:border-gray-700 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded border border-gray-300 text-sm">취소</button>
-          <button disabled={count === 0} onClick={() => {
-            const u: Partial<Case> = {};
-            cands.filter(x => on[x.key]).forEach(x => x.apply(u));
-            onApply(u);
-            markRecordingApplied(rec.id).catch(() => { /* 표시만 실패 */ });
-            onClose();
-          }} className="px-4 py-2 rounded bg-blue-600 text-white text-sm font-bold disabled:opacity-40 flex items-center gap-1"><Check size={14} /> {count}개 반영</button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ExtractedView({ e }: { e: ExtractedInfo }) {
   const row = (k: string, v: React.ReactNode) => (v === null || v === undefined || v === '' || v === '-') ? null : (
@@ -335,7 +200,7 @@ function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToa
           {rec.model && rec.analyzedAt && <div className="text-[11px] text-gray-400">AI 정리 {fmtWhen(rec.analyzedAt)} · {rec.model} · 녹음에서 들은 내용이라 틀릴 수 있으니 확인 후 반영하세요.</div>}
         </div>
       )}
-      {showApply && rec.extracted && <ApplyModal c={c} rec={rec} onClose={() => setShowApply(false)} onApply={onApply} />}
+      {showApply && rec.extracted && <AiApplyModal c={c} extracted={rec.extracted} memo={{ title: `[AI 통화 정리 ${fmtWhen(rec.callStartedAt)}]`, text: extractedToText(rec), alreadyApplied: !!rec.appliedAt }} warning={rec.appliedAt ? `이 녹음은 ${fmtWhen(rec.appliedAt)}에 이미 반영했습니다. 채무·재산을 다시 반영하면 같은 항목이 한 번 더 들어갑니다.` : undefined} onClose={() => setShowApply(false)} onApply={onApply} onApplied={() => markRecordingApplied(rec.id).catch(() => { /* 표시만 실패 */ })} />}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Case, RecordingItem } from '../../../types';
 import { CustomAudioPlayer, CustomAudioPlayerRef } from '../../CustomAudioPlayer';
 import { convertToPlayableUrl, safeFormat, loadTelegramRooms, parseAiTranscript } from '../../../utils';
 import { getLegacyDrivePlayUrl } from '../../../services/recordings';
+import { FillFromSummaryButton } from '../FillFromSummaryButton';
 import { useToast } from '../../../contexts/ToastContext';
 
 interface CaseDetailAiSummaryProps {
@@ -423,6 +424,9 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                         <MessageCircle size={14} /> 텔레그램 전송
                     </button>
                 </div>
+            )}
+            {aiSummaryText && !aiSummaryEditMode && (
+                <FillFromSummaryButton c={c} text={aiSummaryText} compact className="w-full mt-2" />
             )}
 
             {/* Telegram Room Selection Modal */}

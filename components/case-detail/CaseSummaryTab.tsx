@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X } from 'lucide-react';
 import { Case, Partner } from '../../types';
 import { generateSummary, injectSummaryMetadata, parseAiTranscript } from '../../utils';
+import { FillFromSummaryButton } from './FillFromSummaryButton';
 
 interface CaseSummaryTabProps {
     c: Case;
@@ -224,8 +225,9 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                 <span className="text-center">상담이력<br className="block sm:hidden" /><span className="hidden sm:inline"> </span>전송</span>
                             </button>
                         </div>
+                        <FillFromSummaryButton c={c} text={aiSummaryText} className="w-full" />
                         <p className="text-[10px] text-center text-purple-400">
-                            * 전송 시 '특이사항' 부분만 자동으로 추출되어 저장됩니다.
+                            * 상담이력 전송 시 '특이사항' 부분만 자동으로 추출되어 저장됩니다.
                         </p>
                     </div>
                 )}

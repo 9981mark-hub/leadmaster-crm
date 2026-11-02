@@ -59,6 +59,8 @@ const TASKS: Record<string, TaskRule> = {
   image_extract: { maxBytes: 10 * MB, maxFiles: 1, requireFile: true, mime: IMAGE_MIME, maxOutputTokens: 8192, textFirst: false },
   import_ocr: { maxBytes: 15 * MB, maxFiles: 1, requireFile: true, mime: /^(image\/(png|jpeg|webp|heic|heif)|application\/pdf)$/, maxOutputTokens: 8192, textFirst: false },
   receipt_text: { maxBytes: 5 * MB, maxFiles: 1, requireFile: true, mime: IMAGE_MIME, maxOutputTokens: 4096, textFirst: false },
+  // 2026-11-02 AI 요약문·대화록 글 → 고객 정보 JSON (파일 없음, 웹 services/aiExtract.ts)
+  summary_extract: { maxBytes: 0, maxFiles: 0, requireFile: false, mime: /^$/, maxOutputTokens: 8192, textFirst: true },
 };
 const MAX_BODY_BYTES = Math.ceil((Math.max(...Object.values(TASKS).map((t) => t.maxBytes)) * 4) / 3) + 512 * 1024;
 

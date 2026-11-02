@@ -130,6 +130,7 @@ const SCHEMA = {
         job: STR,
         job_types: { type: 'ARRAY', items: { type: 'STRING', enum: ['직장인', '일용직', '개인사업자', '법인사업자', '프리랜서', '무직'] } },
         insurance4: en(['가입', '미가입']),
+        workplace: STR, business_place: STR,
       },
     },
     family: {
@@ -223,6 +224,7 @@ ${ctx.classificationGuide || '- 개인회생 가능 / 파산 검토 / 신용회�
 - creditors: 말한 채권자마다 한 줄 (name = 금융사·업체 이름, 모르면 null).
 - debt.total_manwon: 고객이 말한 총 채무. 따로 말하지 않았으면 creditors 금액 합계, 그것도 없으면 null.
 - income.net_monthly_manwon: 세후 월 실수령. 직업별 수입은 salary/business/freelance.
+- income.workplace: 직장인·일용직·프리랜서의 직장 지역, income.business_place: 사업자의 사업장 지역 ("서울 강남구"처럼 시·구 단위, 말하지 않았으면 null).
 - debt.monthly_payment_manwon: 지금 매달 갚고 있는 금액(대출 월 상환액).
 - history: 예전 개인회생·파산·신용회복·워크아웃 이력.
 - special_notes: 압류·독촉·급한 사정·가족 몰래 진행 희망·연락 가능 시간 등 사무실이 알아야 할 것.
@@ -309,6 +311,7 @@ function normalize(d: any) {
       net_monthly_manwon: n(d?.income?.net_monthly_manwon), salary_manwon: n(d?.income?.salary_manwon),
       business_manwon: n(d?.income?.business_manwon), freelance_manwon: n(d?.income?.freelance_manwon),
       job: d?.income?.job || null, job_types: Array.isArray(d?.income?.job_types) ? d.income.job_types : [], insurance4: d?.income?.insurance4 || null,
+      workplace: d?.income?.workplace || null, business_place: d?.income?.business_place || null,
     },
     family: { marital_status: d?.family?.marital_status || null, children_count: n(d?.family?.children_count), note: d?.family?.note || null },
     housing: {
