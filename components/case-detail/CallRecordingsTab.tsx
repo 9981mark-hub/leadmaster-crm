@@ -200,7 +200,7 @@ function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToa
           {rec.model && rec.analyzedAt && <div className="text-[11px] text-gray-400">AI 정리 {fmtWhen(rec.analyzedAt)} · {rec.model} · 녹음에서 들은 내용이라 틀릴 수 있으니 확인 후 반영하세요.</div>}
         </div>
       )}
-      {showApply && rec.extracted && <AiApplyModal c={c} extracted={rec.extracted} preferNew={isLatest} sourceLabel={`${fmtWhen(rec.callStartedAt)} 통화`} memo={{ title: `[AI 통화 정리 ${fmtWhen(rec.callStartedAt)}]`, text: extractedToText(rec), alreadyApplied: !!rec.appliedAt }} warning={rec.appliedAt ? `이 녹음은 ${fmtWhen(rec.appliedAt)}에 이미 반영했습니다. 채무·재산을 다시 반영하면 같은 항목이 한 번 더 들어갑니다.` : undefined} onClose={() => setShowApply(false)} onApply={onApply} onApplied={() => markRecordingApplied(rec.id).catch(() => { /* 표시만 실패 */ })} />}
+      {showApply && rec.extracted && <AiApplyModal c={c} extracted={rec.extracted} preferNew={isLatest} sourceLabel={`${fmtWhen(rec.callStartedAt)} 통화`} memo={{ title: `[AI 통화 정리 ${fmtWhen(rec.callStartedAt)}]`, text: extractedToText(rec), alreadyApplied: true /* AI 정리 때 상담 이력에 이미 자동으로 남음 */ }} warning={rec.appliedAt ? `이 녹음은 ${fmtWhen(rec.appliedAt)}에 이미 반영했습니다. 채무·재산을 다시 반영하면 같은 항목이 한 번 더 들어갑니다.` : undefined} onClose={() => setShowApply(false)} onApply={onApply} onApplied={() => markRecordingApplied(rec.id).catch(() => { /* 표시만 실패 */ })} />}
     </div>
   );
 }

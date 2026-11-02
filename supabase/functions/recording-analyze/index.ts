@@ -346,6 +346,29 @@ async function cleanupExpired(orgId: string, retentionDays: number) {
   return data.length;
 }
 
+/** 상담 이력 메모 1건 (id = rec-<녹음id>, 다시 정리하면 교체) */
+async function addHistoryMemo(rec: any, summary: string, e: any) {
+  const k = new Date(new Date(rec.call_started_at || Date.now()).getTime() + 9 * 3600_000);
+  const p = (n: number) => String(n).padStart(2, '0');
+  const when = `${k.getUTCMonth() + 1}/${k.getUTCDate()} ${p(k.getUTCHours())}:${p(k.getUTCMinutes())}`;
+  const dir = rec.direction === 'CALL_IN' ? '수신' : rec.direction === 'CALL_OUT' ? '발신' : '통화';
+  const dur = Math.max(0, Number(rec.duration_sec) || 0);
+  const src = rec.source === 'web' ? '직접 올린 녹음' : '통화 녹음';
+  const lines = [`[${src} AI 정리 · ${when} ${dir} ${Math.floor(dur / 60)}분 ${p(dur % 60)}초]`];
+  if (summary) lines.push(summary);
+  if (e?.special_notes) lines.push(`- 특이사항: ${e.special_notes}`);
+  if (e?.next_action) lines.push(`- 다음 할 일: ${e.next_action}`);
+  const content = lines.join('\n').slice(0, 2000);
+  const id = `rec-${rec.id}`;
+  const { data: c } = await admin.from('cases').select('special_memo').eq('org_id', rec.org_id).eq('case_id', rec.case_id).maybeSingle();
+  if (!c) return;
+  const memos: any[] = Array.isArray(c.special_memo) ? c.special_memo : [];
+  const i = memos.findIndex(m => m?.id === id);
+  const memo = { id, createdAt: i >= 0 ? memos[i].createdAt : new Date().toISOString(), content };
+  const next = i >= 0 ? memos.map((m, j) => (j === i ? memo : m)) : [memo, ...memos];
+  await admin.from('cases').update({ special_memo: next, updated_at: new Date().toISOString() }).eq('org_id', rec.org_id).eq('case_id', rec.case_id);
+}
+
 async function analyze(rec: any, settings: any) {
   let geminiFile: string | null = null;
   try {
@@ -401,6 +424,8 @@ async function analyze(rec: any, settings: any) {
       model: out.model, tokens_in: out.tokensIn, tokens_out: out.tokensOut,
       analyzed_at: new Date().toISOString(),
     }).eq('id', rec.id);
+    // [2026-11-02] 상담 이력(cases.special_memo)에도 남긴다. 같은 녹음을 다시 정리하면 그 메모만 새 내용으로 바꾼다
+    try { await addHistoryMemo(rec, String(out.data?.summary || '').trim(), normalize(out.data)); } catch (e) { console.error('[recording-analyze] memo', String(e)); }
   } catch (e) {
     const msg = String((e as Error)?.message || e).slice(0, 500);
     console.error('[recording-analyze] fail', rec.id, msg);
@@ -430,7 +455,7 @@ Deno.serve(async (req: Request) => {
 
   // 사용자 권한으로 조회 → 볼 수 없는 녹음은 여기서 막힘
   const { data: rec } = await userClient.from('call_recordings')
-    .select('id, org_id, case_id, user_id, storage_path, storage_kind, drive_file_id, mime_type, direction, duration_sec, status, updated_at, audio_deleted_at')
+    .select('id, org_id, case_id, user_id, storage_path, storage_kind, drive_file_id, mime_type, direction, duration_sec, call_started_at, source, status, updated_at, audio_deleted_at')
     .eq('id', recordingId).maybeSingle();
   if (!rec) return json({ ok: false, error: '녹음을 찾을 수 없거나 권한이 없습니다' }, 404);
   if (rec.audio_deleted_at) return json({ ok: false, error: '보관 기간이 지나 녹음 파일이 지워졌습니다' }, 410);
