@@ -64,7 +64,7 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
             </div>
 
             <div className={FIELD_GRID}>
-                <Field label="거래처 (법률사무소)" htmlFor={partnerId} className="col-span-2">
+                <Field label="거래처 (법률사무소)" htmlFor={partnerId} className="col-span-1 md:col-span-2">
                     <div className="relative">
                         <select
                             id={partnerId}
