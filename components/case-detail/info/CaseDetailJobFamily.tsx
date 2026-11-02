@@ -32,7 +32,7 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
             <div className={FIELD_GRID}>
                 <Choice
                     label="직업 형태 (복수 선택)"
-                    className="col-span-2"
+                    className="col-span-full"
                     options={JOB_TYPES}
                     value={jobs}
                     onPick={onJobTypeChange}
@@ -43,6 +43,7 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
                     <SmartInput
                         compact
                         label="직장인 월수입"
+                        className="md:max-w-[9.5rem]"
                         type="number"
                         value={income?.salary}
                         onChange={(v: any) => onIncomeChange('salary', v)}
@@ -55,6 +56,7 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
                     <SmartInput
                         compact
                         label="사업자 월수입"
+                        className="md:max-w-[9.5rem]"
                         type="number"
                         value={income?.business}
                         onChange={(v: any) => onIncomeChange('business', v)}
@@ -67,6 +69,7 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
                     <SmartInput
                         compact
                         label="프리랜서 월수입"
+                        className="md:max-w-[9.5rem]"
                         type="number"
                         value={income?.freelance}
                         onChange={(v: any) => onIncomeChange('freelance', v)}
@@ -108,6 +111,7 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
                 />
                 <Choice
                     label="결혼여부"
+                    className="col-span-full"
                     options={['미혼', '기혼', '사실혼', '이혼', '사별']}
                     value={c.maritalStatus}
                     onPick={v => onUpdate('maritalStatus', v)}
