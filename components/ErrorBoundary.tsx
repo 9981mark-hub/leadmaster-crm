@@ -10,40 +10,49 @@ interface State {
     hasError: boolean;
     error: Error | null;
     errorInfo: ErrorInfo | null;
+    isChunkError: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.state = { hasError: false, error: null, errorInfo: null };
+        this.state = { hasError: false, error: null, errorInfo: null, isChunkError: false };
     }
 
     static getDerivedStateFromError(error: Error): State {
-        return { hasError: true, error, errorInfo: null };
+        const isChunkError =
+            error?.name === 'ChunkLoadError' ||
+            error?.message?.includes('Failed to fetch dynamically imported module') ||
+            error?.message?.includes('Importing a module script failed') ||
+            error?.message?.includes('error loading dynamically imported module');
+
+        return { hasError: true, error, errorInfo: null, isChunkError };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        // Handle chunk load errors (dynamic import failures)
-        const isChunkLoadError = error.message.includes('Failed to fetch dynamically imported module') ||
-            error.message.includes('Importing a module script failed');
+        const isChunkError =
+            error?.name === 'ChunkLoadError' ||
+            error?.message?.includes('Failed to fetch dynamically imported module') ||
+            error?.message?.includes('Importing a module script failed') ||
+            error?.message?.includes('error loading dynamically imported module');
 
-        if (isChunkLoadError) {
-            const retryCount = parseInt(sessionStorage.getItem('chunk_retry_count') || '0', 10);
-            if (retryCount < 3) {
-                console.warn(`Chunk load error detected. Reloading... (Attempt ${retryCount + 1}/3)`);
-                sessionStorage.setItem('chunk_retry_count', (retryCount + 1).toString());
-                window.location.reload();
+        if (isChunkError) {
+            const now = Date.now();
+            const lastReload = parseInt(sessionStorage.getItem('chunk_boundary_reload') || '0', 10);
+
+            // 15초 이내에 자동 새로고침한 적이 없다면 즉시 최신 버전 로드
+            if (now - lastReload > 15000) {
+                console.warn('[ErrorBoundary] 청크 로드 실패 감지: 0.3초 후 최신 버전으로 자동 갱신합니다.');
+                sessionStorage.setItem('chunk_boundary_reload', String(now));
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
                 return;
-            } else {
-                console.error("Max retries for chunk load error reached.");
             }
-        } else {
-            // Reset retry count for other errors or successful loads (success logic handled elsewhere usually, but if we hit a different error, clear it)
-            sessionStorage.removeItem('chunk_retry_count');
         }
 
         console.error("Uncaught error:", error, errorInfo);
-        this.setState({ error, errorInfo });
+        this.setState({ error, errorInfo, isChunkError });
     }
 
     render() {
@@ -51,6 +60,62 @@ export class ErrorBoundary extends Component<Props, State> {
             if (this.props.fallback) {
                 return this.props.fallback;
             }
+
+            // 신규 배포 청크 누락 시 친절한 자동 갱신 화면
+            if (this.state.isChunkError) {
+                return (
+                    <div style={{
+                        maxWidth: '520px',
+                        margin: '60px auto',
+                        padding: '32px 24px',
+                        background: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '16px',
+                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)',
+                        textAlign: 'center',
+                        fontFamily: 'Pretendard, system-ui, sans-serif'
+                    }}>
+                        <div style={{
+                            width: '48px',
+                            height: '48px',
+                            margin: '0 auto 16px',
+                            borderRadius: '50%',
+                            background: '#eff6ff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#2563eb',
+                            fontSize: '24px'
+                        }}>
+                            🔄
+                        </div>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>
+                            새로운 업데이트가 적용되었습니다
+                        </h2>
+                        <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.5', marginBottom: '20px' }}>
+                            최신 버전의 기능과 화면을 안전하게 불러오기 위해 페이지를 갱신합니다.
+                        </p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            style={{
+                                padding: '10px 20px',
+                                background: '#2563eb',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                                transition: 'background 0.2s'
+                            }}
+                        >
+                            지금 새로고침
+                        </button>
+                    </div>
+                );
+            }
+
+            // 기타 일반 시스템 에러
             return (
                 <div style={{ padding: '20px', color: '#b91c1c', background: '#fef2f2', border: '1px solid #f87171', margin: '20px', borderRadius: '8px' }}>
                     <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '10px' }}>⚠️ 시스템 오류 발생 (Critical Crash)</h2>

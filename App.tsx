@@ -1,22 +1,24 @@
 import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2 } from 'lucide-react';
-// Lazy Load Pages
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const SchedulePage = lazy(() => import('./pages/SchedulePage'));
-const CaseList = lazy(() => import('./pages/CaseList'));
-const NewCase = lazy(() => import('./pages/NewCase'));
-const QuickNewCase = lazy(() => import('./pages/QuickNewCase'));
-const CaseDetail = lazy(() => import('./pages/CaseDetail'));
-const Settlement = lazy(() => import('./pages/Settlement'));
-const SettingsPage = lazy(() => import('./pages/Settings'));
-const Statistics = lazy(() => import('./pages/Statistics'));
-const MyPage = lazy(() => import('./pages/MyPage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const TelegramSync = lazy(() => import('./pages/TelegramSync'));
-const AutoDial = lazy(() => import('./pages/AutoDial'));
-const TeamPage = lazy(() => import('./pages/TeamPage'));
-const PlatformPage = lazy(() => import('./pages/PlatformPage'));
+import { lazyWithRetry } from './utils/lazyWithRetry';
+
+// Lazy Load Pages (신규 배포 시 청크 404 에러 자동 복구 래퍼 적용)
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+const SchedulePage = lazyWithRetry(() => import('./pages/SchedulePage'));
+const CaseList = lazyWithRetry(() => import('./pages/CaseList'));
+const NewCase = lazyWithRetry(() => import('./pages/NewCase'));
+const QuickNewCase = lazyWithRetry(() => import('./pages/QuickNewCase'));
+const CaseDetail = lazyWithRetry(() => import('./pages/CaseDetail'));
+const Settlement = lazyWithRetry(() => import('./pages/Settlement'));
+const SettingsPage = lazyWithRetry(() => import('./pages/Settings'));
+const Statistics = lazyWithRetry(() => import('./pages/Statistics'));
+const MyPage = lazyWithRetry(() => import('./pages/MyPage'));
+const LoginPage = lazyWithRetry(() => import('./pages/LoginPage'));
+const TelegramSync = lazyWithRetry(() => import('./pages/TelegramSync'));
+const AutoDial = lazyWithRetry(() => import('./pages/AutoDial'));
+const TeamPage = lazyWithRetry(() => import('./pages/TeamPage'));
+const PlatformPage = lazyWithRetry(() => import('./pages/PlatformPage'));
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ROLE_LABEL } from './services/org';
