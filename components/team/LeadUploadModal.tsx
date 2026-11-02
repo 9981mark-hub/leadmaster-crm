@@ -6,6 +6,7 @@ import { formatPhone } from '../../constants';
 import { Partner, Case } from '../../types';
 import { importCasesToBatch, refreshLocalAssignments } from '../../services/api';
 import { createImportBatch, distributeCases, findExistingPhones, updateImportBatch, DistributeMode } from '../../services/distribution';
+import { findDncPhones } from '../../services/dnc';
 
 interface Agent { userId: string; displayName: string; }
 interface Props {
@@ -43,6 +44,7 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
   const [picked, setPicked] = useState<string[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [existing, setExisting] = useState<Map<string, any> | null>(null);
+  const [dncMap, setDncMap] = useState<Map<string, string> | null>(null);
   const [checking, setChecking] = useState(false);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState('');
@@ -104,12 +106,20 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
   const invalidCount = parsed.filter(x => !x.valid).length;
   const fileDupCount = parsed.filter(x => x.dupInFile).length;
   const existingCount = existing ? validRows.filter(x => existing.has(x.phone)).length : 0;
-  const toInsert = existing ? validRows.filter(x => !existing.has(x.phone)) : [];
+  const dncCount = dncMap ? validRows.filter(x => !existing?.has(x.phone) && dncMap.has(x.phone)).length : 0;
+  const toInsert = existing
+    ? validRows.filter(x => !existing.has(x.phone) && (!dncMap || !dncMap.has(x.phone)))
+    : [];
 
   const checkExisting = async () => {
     setChecking(true);
     try {
-      setExisting(await findExistingPhones(validRows.map(x => x.phone)));
+      const [exPhones, dncPhones] = await Promise.all([
+        findExistingPhones(validRows.map(x => x.phone)),
+        findDncPhones(validRows.map(x => x.phone)),
+      ]);
+      setExisting(exPhones);
+      setDncMap(dncPhones);
     } catch (e: any) {
       showToast(`중복 확인 실패: ${e.message}`, 'error');
     } finally {
@@ -251,23 +261,38 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
                   <span className={invalidCount ? 'text-red-600' : ''}>번호 오류 {invalidCount}</span>
                   <span className={fileDupCount ? 'text-orange-600' : ''}>파일 안 중복 {fileDupCount}</span>
                   {existing && <span className={existingCount ? 'text-orange-600' : ''}>이미 있는 번호 {existingCount}</span>}
+                  {dncMap && <span className={dncCount ? 'text-rose-600 font-semibold' : ''}>🚫 수신거부(DNC) {dncCount}</span>}
                   {existing && <span className="font-bold text-green-700">새로 넣을 리드 {toInsert.length.toLocaleString()}</span>}
                 </div>
                 {!existing ? (
                   <button onClick={checkExisting} disabled={checking || col.phone < 0 || validRows.length === 0}
                     className="px-3 py-1.5 rounded bg-gray-800 text-white text-sm disabled:opacity-40 flex items-center gap-1">
-                    {checking && <Loader2 size={14} className="animate-spin" />} 회사 전체에서 중복 확인
+                    {checking && <Loader2 size={14} className="animate-spin" />} 회사 전체에서 중복 & DNC 확인
                   </button>
-                ) : existingCount > 0 && (
-                  <details className="text-xs text-gray-500">
-                    <summary className="cursor-pointer">이미 있는 번호 보기 (넣지 않음)</summary>
-                    <ul className="mt-1 max-h-32 overflow-y-auto">
-                      {validRows.filter(x => existing.has(x.phone)).slice(0, 200).map(x => {
-                        const e = existing.get(x.phone);
-                        return <li key={x.idx}>{formatPhone(x.phone)} → {e.customerName} ({e.status})</li>;
-                      })}
-                    </ul>
-                  </details>
+                ) : (
+                  <>
+                    {existingCount > 0 && (
+                      <details className="text-xs text-gray-500">
+                        <summary className="cursor-pointer">이미 있는 번호 보기 ({existingCount}건 넣지 않음)</summary>
+                        <ul className="mt-1 max-h-32 overflow-y-auto">
+                          {validRows.filter(x => existing.has(x.phone)).slice(0, 200).map(x => {
+                            const e = existing.get(x.phone);
+                            return <li key={x.idx}>{formatPhone(x.phone)} → {e.customerName} ({e.status})</li>;
+                          })}
+                        </ul>
+                      </details>
+                    )}
+                    {dncMap && dncCount > 0 && (
+                      <details className="text-xs text-rose-500">
+                        <summary className="cursor-pointer">🚫 수신거부(DNC) 번호 보기 ({dncCount}건 자동 제외)</summary>
+                        <ul className="mt-1 max-h-32 overflow-y-auto">
+                          {validRows.filter(x => !existing?.has(x.phone) && dncMap.has(x.phone)).slice(0, 200).map(x => (
+                            <li key={x.idx}>{formatPhone(x.phone)} (사유: {dncMap.get(x.phone) || '수신거부'})</li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
+                  </>
                 )}
                 {parsed.length > 0 && (
                   <div className="overflow-x-auto">

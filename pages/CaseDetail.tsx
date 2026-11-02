@@ -19,6 +19,7 @@ import { CaseCallsSmsTab } from '../components/case-detail/CaseCallsSmsTab';
 import { TelegramDeliverModal } from '../components/case-detail/TelegramDeliverModal';
 import { CallRecordingsTab } from '../components/case-detail/CallRecordingsTab';
 import { logCaseView } from '../services/accessLog';
+import { registerDnc } from '../services/dnc';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -287,6 +288,22 @@ export default function CaseDetail() {
                 } : {})
             }
         });
+
+        // [NEW] 수신정지 상태 또는 수신거부/오신청 이탈 사유인 경우 자동으로 회사 DNC(수신거부) 목록에 등록
+        if (
+            pendingPrimaryStatus === '수신정지' ||
+            selectedDropOffReason?.includes('수신거부') ||
+            selectedDropOffReason?.includes('통화거부') ||
+            selectedDropOffReason?.includes('오신청')
+        ) {
+            const dncReason = selectedDropOffReason?.includes('오신청') ? 'wrong_number' : 'refusal';
+            registerDnc(
+                c.phone,
+                dncReason,
+                c.caseId,
+                `[케이스 ${c.customerName || ''}] ${selectedDropOffReason || pendingPrimaryStatus} 등록`
+            ).catch(err => console.warn('[DNC] 자동 등록 알림/오류:', err));
+        }
 
         showToast(`상태가 ${pendingPrimaryStatus}(으)로 변경되었습니다.`);
         setIsPrimaryStatusModalOpen(false);

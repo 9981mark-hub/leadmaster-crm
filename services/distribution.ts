@@ -189,6 +189,45 @@ export const distributeCases = async (caseIds: string[], mode: DistributeMode, u
   return total;
 };
 
+export interface BulkDistributeOptions {
+  limit?: number;
+  mode: 'round_robin' | 'quota' | 'balanced';
+  userIds?: string[];
+  quotaPerAgent?: number;
+  statusFilter?: string;
+  inboundPath?: string;
+  batchId?: string;
+  note?: string;
+}
+
+export interface BulkDistributeResult {
+  success: boolean;
+  totalDistributed: number;
+  userCount: number;
+  summary: Record<string, number>;
+}
+
+/** 대용량(15,000건+) 미배정 리드 고속 일괄 배분 */
+export const distributeUnassignedBulk = async (opts: BulkDistributeOptions): Promise<BulkDistributeResult> => {
+  const { data, error } = await need().rpc('distribute_unassigned_cases_bulk', {
+    p_limit: opts.limit ?? null,
+    p_mode: opts.mode,
+    p_user_ids: opts.userIds && opts.userIds.length > 0 ? opts.userIds : null,
+    p_quota_per_agent: opts.quotaPerAgent ?? null,
+    p_status_filter: opts.statusFilter || null,
+    p_inbound_path: opts.inboundPath || null,
+    p_batch_id: opts.batchId || null,
+    p_note: opts.note || '대량 자동 배분',
+  });
+  if (error) fail(error);
+  return {
+    success: !!data?.success,
+    totalDistributed: Number(data?.total_distributed || 0),
+    userCount: Number(data?.user_count || 0),
+    summary: data?.summary || {},
+  };
+};
+
 /** 담당 변경(이관). toUser = null 이면 회수(미배정). scope 'open' = 진행 중만 */
 export const transferCases = async (fromUser: string, toUser: string | null, scope: 'open' | 'all' = 'open', caseIds?: string[], note?: string): Promise<number> => {
   const { data, error } = await need().rpc('transfer_cases', {
