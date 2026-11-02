@@ -139,37 +139,7 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
 
             {/* 상담 순서대로 정보 입력. 본문 폭이 넓으면(720px+) 단계 카드를 두 줄로 (index.css .lm-info-sections) */}
             <div className="lm-info-main min-w-0 xl:order-1 space-y-3">
-                {/* 필수 확인 항목 진행률 + 단계 바로가기 */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 px-4 py-2.5">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="min-w-[180px] flex-1">
-                            <div className="flex items-baseline justify-between text-xs">
-                                <span className="font-semibold text-slate-700 dark:text-gray-200">{partner ? `${partner.name} 필수 확인` : '필수 확인'} {progress.done}/{progress.total}</span>
-                                <span className="text-slate-400 tabular-nums">{pct}%</span>
-                            </div>
-                            <div className="mt-1 h-1.5 rounded-full bg-slate-100 dark:bg-gray-700 overflow-hidden">
-                                <div className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : 'bg-blue-600'}`} style={{ width: `${pct}%` }} />
-                            </div>
-                        </div>
-                        <nav className="flex flex-wrap gap-1.5" aria-label="상담 단계">
-                            {STEPS.map((s, i) => {
-                                const st = stepState(s.keys);
-                                const done = st.total > 0 && st.missing === 0;
-                                return (
-                                    <button key={s.id} type="button" onClick={() => scrollToStep(s.id)}
-                                        className={`px-2.5 py-1 rounded-full text-xs border flex items-center gap-1 ${done ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300' : 'border-slate-200 dark:border-gray-600 text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
-                                        <span className="tabular-nums text-slate-400">{i + 1}</span> {s.label}
-                                        {st.missing > 0 && <span className="text-[10px] px-1 rounded bg-amber-100 text-amber-800">{st.missing}</span>}
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    </div>
-                    {progress.missing.length > 0 && (
-                        <p className="mt-2 text-xs text-slate-500">아직 확인 안 한 항목: <span className="text-amber-800 dark:text-amber-300">{progress.missing.join(' · ')}</span></p>
-                    )}
-                </div>
-
+                {/* 2026-11-02 필수 확인 진행률·단계 바로가기 칸 삭제 (대표님 요청). 진행률은 상단 "필수 확인 n/m" 배지에 남음 */}
                 {/* 화면에 놓이는 순서는 상담 순서 그대로. 넓을 때: [1 접수][2 직업] / [3 주거][4 채무] / [5 이력][4 채무] */}
                 <div className="lm-info-sections">
                     <section id="step-personal" data-area="personal" className="scroll-mt-28 min-w-0">
