@@ -59,7 +59,7 @@ const run = async () => {
     aiSummaryText: null, setAiSummaryText: noop, aiSummaryEditMode: false, setAiSummaryEditMode: noop, handleUpdateAiSummaryText: noop,
     handleDeleteAiSummary: noop, handleSaveSummaryToMemo: noop, currentAudioFile: null, audioUrl: null, isFileUploading: false, isAiLoading: false,
     onAudioFileSelect: noop, onTriggerAudioInput: noop, onGenerateAiSummary: noop, onPlayRecording: noop, onDeleteRecording: noop, statusLogs: [], showToast: noop,
-  }), ['필수 확인', '채무 · 재산', '총 채무', '1억 5,100만원', '국민카드 카드론', '접수 · 인적사항']);
+  }), ['채무 · 재산', '총 채무', '1억 5,100만원', '국민카드 카드론', '접수 · 인적사항']);
 
   check('통화 작업대', React.createElement(CaseDetailHeader as any, {
     c, partner, statuses: ['신규접수', '상담중', '부재'], secondaryStatuses: [], tertiaryStatuses: {},
