@@ -35,6 +35,12 @@ const CORS = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
 
+const ALLOWED_ORIGINS = [
+  /^https:\/\/9981mark-hub\.github\.io$/,
+  /^https:\/\/leadmastercrm\.vercel\.app$/,
+  /^https:\/\/leadmaster-crm-sooty\.vercel\.app$/,
+  /^http:\/\/(localhost|127\.0\.0\.1):\d{2,5}$/,
+];
 const HEX64 = /^[0-9a-f]{64}$/;
 const HEX32 = /^[0-9a-f]{32}$/;
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -57,6 +63,8 @@ serve(async (req: Request) => {
     let body: any = {};
     try { body = await req.json(); } catch { /* empty */ }
     const action = String(body?.action || '');
+    const reqOrigin = req.headers.get('Origin') || '';
+    const webOrigin = ALLOWED_ORIGINS.some(r => r.test(reqOrigin)) ? reqOrigin : '';
 
     // ---------------------------------------------------------------
     if (action === 'start') {
@@ -68,7 +76,9 @@ serve(async (req: Request) => {
       const startedAt = String(body.call_started_at || '');
       const mime = String(body.mime_type || 'audio/mp4').toLowerCase().split(';')[0].slice(0, 60);
       if (!caseId || !phone) return json({ ok: false, error: '리드·번호가 없습니다' }, 400);
-      if (!HEX64.test(sha256) || !HEX32.test(md5)) return json({ ok: false, error: '파일 지문 형식 오류' }, 400);
+      // md5는 앱만 보낸다 (브라우저 WebCrypto는 md5가 없음 → 웹은 sha256 + 크기로 확인)
+      if (!HEX64.test(sha256) || (md5 && !HEX32.test(md5))) return json({ ok: false, error: '파일 지문 형식 오류' }, 400);
+      const source = body.source === 'web' ? 'web' : 'app';
       if (size <= 0 || size > MAX_BYTES) return json({ ok: false, error: '파일 크기 오류' }, 400);
       if (!startedAt || isNaN(new Date(startedAt).getTime())) return json({ ok: false, error: '통화 시각 형식 오류' }, 400);
       if (!/^audio\//.test(mime)) return json({ ok: false, error: '오디오 파일만 올릴 수 있습니다' }, 400);
@@ -108,7 +118,7 @@ serve(async (req: Request) => {
         case_id: caseId, phone, user_id: u.user.id, direction: dir, call_started_at: new Date(startedAt).toISOString(),
         duration_sec: dur, size_bytes: size, mime_type: mime, file_name: String(body.file_name || '').slice(0, 200) || null,
         source_app: body.source_app ? String(body.source_app).slice(0, 100) : null,
-        storage_kind: 'gdrive', archive_status: 'uploading', drive_folder_id: caseFolderId, sha256, source: 'app',
+        storage_kind: 'gdrive', archive_status: 'uploading', drive_folder_id: caseFolderId, sha256, source,
       };
       if (recId) {
         await admin.from('call_recordings').update(rowData).eq('id', recId);
@@ -134,6 +144,8 @@ serve(async (req: Request) => {
         headers: {
           Authorization: `Bearer ${token}`, 'Content-Type': 'application/json; charset=UTF-8',
           'X-Upload-Content-Type': mime, 'X-Upload-Content-Length': String(size),
+          // 웹에서 올릴 때: 시작 요청에 사이트 주소를 넣어야 브라우저의 PUT에 구글이 CORS 허용을 붙여 준다 (2026-11-02 확인)
+          ...(source === 'web' && webOrigin ? { Origin: webOrigin } : {}),
         },
         body: JSON.stringify({
           name: fileName, parents: [caseFolderId], description, mimeType: mime,

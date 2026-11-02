@@ -410,32 +410,34 @@ export default function CaseDetail() {
 
             setIsFileUploading(true);
             try {
-                // 1. 파일을 Base64 화
-                const base64Data = await new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = error => reject(error);
-                    reader.readAsDataURL(file);
-                });
+                if (!c) throw new Error('리드 정보가 없습니다');
+                // [2026-11-02] 앱과 같은 길: 회사 구글 드라이브(비공개) + 통화 녹음·AI 탭 기록. Apps Script·공개 링크 안 씀
+                const { uploadRecordingToDrive } = await import('../services/recordings');
+                const r = await uploadRecordingToDrive(c.caseId, c.phone, file);
+                // 회사 설정 "올리면 바로 AI 정리"가 켜져 있으면 통화 녹음·AI 탭에서 채무 정리까지 (앱 녹음과 같게)
+                if (!r.exists) {
+                    import('../services/recordings').then(m => m.requestAnalyze(r.recordingId, true)).catch(() => { /* 탭에서 다시 가능 */ });
+                }
 
-                // 2. 구글 드라이브로 업로드 전송
-                const { uploadFileToDrive } = await import('../services/api');
-                const result = await uploadFileToDrive(base64Data, file.name, file.type || 'audio/mp3');
-
-                const newRecording: RecordingItem = {
-                    id: Date.now().toString(),
-                    filename: file.name,
-                    url: result.viewUrl, // 스트리밍 전용 구글 드라이브 주소 저장
-                    uploadDate: new Date().toISOString(),
-                    mimeType: file.type || 'audio/mp3',
-                    duration: 0
-                };
-
-                handleUpdate('recordings', [newRecording, ...(c?.recordings || [])]);
-                showToast('녹음 파일이 구글 드라이브에 안전하게 저장되었습니다.');
-            } catch (err) {
+                // 녹음 아카이브(이 칸)에도 남긴다: 듣기는 서버 경유(recording-play), 통화별 AI 요약 보관에 씀
+                const already = (c.recordings || []).some(x => r.driveFileId && x.url.includes(r.driveFileId));
+                if (!already && r.driveFileId) {
+                    const newRecording: RecordingItem = {
+                        id: Date.now().toString(),
+                        filename: file.name,
+                        url: `https://drive.google.com/file/d/${r.driveFileId}/view`,
+                        uploadDate: new Date().toISOString(),
+                        mimeType: file.type || 'audio/mp4',
+                        duration: r.durationSec,
+                    };
+                    handleUpdate('recordings', [newRecording, ...(c.recordings || [])]);
+                }
+                showToast(r.exists
+                    ? '이미 드라이브에 보관된 녹음입니다. 통화 녹음·AI 탭에서 볼 수 있습니다.'
+                    : '회사 구글 드라이브에 비공개로 저장했습니다. 통화 녹음·AI 탭에도 올라갔습니다.');
+            } catch (err: any) {
                 console.error("Upload Error:", err);
-                showToast('구글 드라이브 업로드 실패', 'error');
+                showToast(`드라이브 업로드 실패: ${err?.message || '알 수 없는 오류'}`, 'error');
             } finally {
                 setIsFileUploading(false);
                 // Reset file input value to allow selecting the same file again

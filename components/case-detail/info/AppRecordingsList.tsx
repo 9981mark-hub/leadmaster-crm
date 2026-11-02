@@ -21,7 +21,7 @@ export const AppRecordingsList: React.FC<{ c: Case; onOpen?: () => void }> = ({ 
     useEffect(() => {
         let cancelled = false;
         fetchCaseRecordings(c.caseId)
-            .then(r => { if (!cancelled) setList(r.filter(x => x.source !== 'import')); })
+            .then(r => { if (!cancelled) setList(r.filter(x => x.source === 'app')); })
             .catch(() => { /* 017 전이거나 권한 없음 → 안 보임 */ });
         return () => { cancelled = true; };
     }, [c.caseId, c.updatedAt]);

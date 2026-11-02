@@ -118,7 +118,7 @@ function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToa
         <span className="text-xs text-gray-500">{fmtDuration(rec.durationSec)} · {fmtBytes(rec.sizeBytes)}</span>
         <span className={`text-xs px-1.5 py-0.5 rounded ${st.cls}`}>{st.text}</span>
         {rec.appliedAt && <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">반영함</span>}
-        {rec.storageKind === 'gdrive' && <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700" title="회사 구글 드라이브에 원본 보관">드라이브{rec.source === 'import' ? ' · 예전 녹음' : ''}</span>}
+        {rec.storageKind === 'gdrive' && <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700" title="회사 구글 드라이브에 원본 보관">드라이브{rec.source === 'import' ? ' · 예전 녹음' : rec.source === 'web' ? ' · 직접 올림' : ''}</span>}
         {rec.audioDeletedAt && <span className="text-xs text-gray-400">{rec.storageKind === 'gdrive' ? '파일 삭제됨' : '파일 보관 기간 지남'}</span>}
         <span className="ml-auto text-gray-400">{open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
       </button>

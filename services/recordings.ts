@@ -141,6 +141,78 @@ const signPlay = async (body: Record<string, unknown>): Promise<string> => {
   return data.url as string;
 };
 
+// --------------------------------------------
+// [2026-11-02] 직접 올리는 녹음도 앱과 같은 길: 회사 구글 드라이브(비공개) + call_recordings(source 'web')
+// 서버(recording-upload)가 권한 확인 후 드라이브 업로드 주소를 주고, 브라우저가 드라이브에 직접 올린다.
+// --------------------------------------------
+const callUpload = async (body: Record<string, unknown>) => {
+  const { data, error } = await need().functions.invoke('recording-upload', { body });
+  if (error) {
+    let msg = error.message;
+    try { const b = await (error as any).context?.json?.(); if (b?.error) msg = b.error; } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  if (!data?.ok) throw new Error(data?.error || '요청 실패');
+  return data;
+};
+
+const sha256Hex = async (file: File) => {
+  const buf = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+/** 녹음 파일 길이(초). 못 읽으면 0 */
+const audioDurationSec = (file: File) => new Promise<number>(resolve => {
+  const url = URL.createObjectURL(file);
+  const a = new Audio();
+  const done = (v: number) => { URL.revokeObjectURL(url); resolve(Number.isFinite(v) ? Math.round(v) : 0); };
+  a.preload = 'metadata';
+  a.onloadedmetadata = () => done(a.duration);
+  a.onerror = () => done(0);
+  setTimeout(() => done(0), 8000);
+  a.src = url;
+});
+
+/** 파일 이름 속 통화 시각 (T전화 yyyyMMddHHmmss, 삼성 yyMMdd_HHmmss). 없으면 파일 수정 시각 - 길이 */
+const startedAtFromFile = (file: File, durSec: number) => {
+  const base = file.name.replace(/\.[^.]+$/, '');
+  const m = base.match(/(20\d{2})(\d{2})(\d{2})_?(\d{2})(\d{2})(\d{2})/) || base.match(/(?<!\d)(\d{2})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?!\d)/);
+  if (m) {
+    const y = m[1].length === 2 ? `20${m[1]}` : m[1];
+    const d = new Date(`${y}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}+09:00`);
+    if (!isNaN(d.getTime())) return d.toISOString();
+  }
+  return new Date((file.lastModified || Date.now()) - durSec * 1000).toISOString();
+};
+
+export interface WebUploadResult { recordingId: string; driveFileId: string; exists: boolean; durationSec: number; startedAt: string }
+
+/** 녹음 파일 → 회사 드라이브 (비공개) + 녹음 기록. 실패하면 한국어 문구의 Error */
+export const uploadRecordingToDrive = async (caseId: string, phone: string, file: File, onStep?: (s: string) => void): Promise<WebUploadResult> => {
+  if (!file || file.size === 0) throw new Error('녹음 파일이 비어 있습니다');
+  onStep?.('파일 확인 중');
+  const [sha256, durationSec] = await Promise.all([sha256Hex(file), audioDurationSec(file)]);
+  const startedAt = startedAtFromFile(file, durationSec);
+  const mime = (file.type && file.type.startsWith('audio/')) ? file.type : (/\.m4a$/i.test(file.name) ? 'audio/mp4' : /\.mp3$/i.test(file.name) ? 'audio/mpeg' : /\.wav$/i.test(file.name) ? 'audio/wav' : 'audio/mp4');
+  onStep?.('드라이브 준비 중');
+  const st = await callUpload({
+    action: 'start', source: 'web', case_id: caseId, phone: String(phone || '').replace(/[^0-9]/g, ''),
+    call_started_at: startedAt, duration_sec: durationSec, size_bytes: file.size, mime_type: mime,
+    file_name: file.name.slice(0, 200), sha256,
+  });
+  if (st.status === 'exists') {
+    const rec = await fetchRecording(st.recording_id);
+    return { recordingId: st.recording_id, driveFileId: rec?.driveFileId || '', exists: true, durationSec, startedAt };
+  }
+  onStep?.('드라이브에 올리는 중');
+  const put = await fetch(st.upload_url, { method: 'PUT', headers: { 'Content-Type': mime }, body: file });
+  const pj: any = await put.json().catch(() => ({}));
+  if (!put.ok || !pj.id) throw new Error(`드라이브 업로드 실패 (HTTP ${put.status})`);
+  onStep?.('보관 확인 중');
+  await callUpload({ action: 'finish', recording_id: st.recording_id, drive_file_id: pj.id });
+  return { recordingId: st.recording_id, driveFileId: pj.id, exists: false, durationSec, startedAt };
+};
+
 /** 녹음 저장 위치에 맞는 듣기 주소 */
 export const getPlayableUrl = (rec: CallRecording): Promise<string> =>
   rec.storageKind === 'gdrive' ? signPlay({ recording_id: rec.id }) : getRecordingUrl(rec.storagePath);
@@ -155,8 +227,8 @@ export const getLegacyDrivePlayUrl = (caseId: string, url: string): Promise<stri
 };
 
 /** AI 정리 요청 (백그라운드에서 진행, 결과는 status로 확인) */
-export const requestAnalyze = async (id: string): Promise<{ queued: boolean; reason?: string }> => {
-  const { data, error } = await need().functions.invoke('recording-analyze', { body: { recordingId: id } });
+export const requestAnalyze = async (id: string, auto = false): Promise<{ queued: boolean; reason?: string }> => {
+  const { data, error } = await need().functions.invoke('recording-analyze', { body: { recordingId: id, ...(auto ? { auto: true } : {}) } });
   if (error) {
     let msg = error.message;
     try { const b = await (error as any).context?.json?.(); if (b?.error) msg = b.error; } catch { /* ignore */ }
