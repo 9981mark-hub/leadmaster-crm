@@ -69,7 +69,7 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
     };
 
     const handleExport = () => {
-        if (!isAdmin) { showToast('내보내기는 관리자만 할 수 있습니다.', 'error'); onClose(); return; }
+        if (!isAdmin) { showToast('데이터 내보내기는 관리자만 가능합니다.', 'error'); onClose(); return; }
         const sourceData = targetScope === 'current' ? currentListCases : allCases;
         const filename = `cases_export_${new Date().toISOString().split('T')[0]}`;
         
@@ -84,7 +84,7 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
             customStartDate, 
             customEndDate
         );
-        if (!done) showToast('내보내기는 관리자만 할 수 있습니다.', 'error');
+        if (!done) showToast('데이터 내보내기는 관리자만 가능합니다.', 'error');
         onClose();
     };
 

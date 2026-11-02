@@ -279,7 +279,13 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     navigate('/login');
   }, [navigate, setOrg]);
 
-  const isAdmin = org ? isAdminRole(org.role) : true;
+  // [권한 보안 강화] 관리자(owner·admin)만 관리자 권한 부여.
+  // 시스템 호스트(9981mark@gmail.com)는 항상 관리자이며, 소속/역할이 확인되지 않은 일반 계정은 기본적으로 false (비관리자)
+  const isAdmin = useMemo(() => {
+    if (user?.email === '9981mark@gmail.com') return true;
+    if (org) return isAdminRole(org.role);
+    return false;
+  }, [user?.email, org]);
 
   const value = useMemo(() => ({
     isAuthenticated, user, org, isAdmin, allowedEmails,

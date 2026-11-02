@@ -581,7 +581,7 @@ export default function CaseList() {
 
     // [015] 내보내기는 회사 관리자만 (버튼도 관리자에게만 보임). 접근 기록은 exportToExcel이 남긴다
     const bulkExport = () => {
-        if (!isAdmin) { showToast('내보내기는 관리자만 할 수 있습니다.', 'error'); return; }
+        if (!isAdmin) { showToast('데이터 내보내기는 관리자만 가능합니다.', 'error'); return; }
         const list = selectedCases();
         if (list.length === 0) return;
         exportToExcel(`리드_${list.length}건_${format(new Date(), 'yyyyMMdd')}`, list.map(c => ({
@@ -619,7 +619,7 @@ export default function CaseList() {
                     refetchCases();
                 }}
                 onResetPage={() => setCurrentPage(1)}
-                onExportClick={() => { if (isAdmin) setIsExportModalOpen(true); }}
+                onExportClick={() => { if (isAdmin) setIsExportModalOpen(true); else showToast('데이터 내보내기는 관리자만 가능합니다.', 'error'); }}
                 canExport={isAdmin}
             />
 

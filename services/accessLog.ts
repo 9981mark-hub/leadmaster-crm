@@ -62,11 +62,18 @@ export const isAccessLogNotReady = (e: any): boolean => {
     || /does not exist|Could not find the table|schema cache/i.test(String(e?.message || e || ''));
 };
 
-/** 리드 데이터 내보내기 권한: 회사 관리자(대표·관리자)만.
- *  화면 규칙(useAuth().isAdmin)과 같게, 회사 정보를 아직 모르면 막지 않는다. */
+/** 리드 데이터 내보내기 권한: 회사 관리자(대표·관리자) 및 시스템 호스트만 가능 */
 export const canExportCaseData = (): boolean => {
   const org = loadCachedOrg();
-  return org ? isAdminRole(org.role) : true;
+  if (org) return isAdminRole(org.role);
+  try {
+    const rawUser = localStorage.getItem('userProfile');
+    if (rawUser) {
+      const u = JSON.parse(rawUser);
+      if (u?.email === '9981mark@gmail.com') return true;
+    }
+  } catch {}
+  return false;
 };
 
 /** 영구 삭제처럼 리드가 사라지는 기록에 남길 표시 (예: 김*수 ·1234). 이름·번호 원문은 남기지 않는다 */

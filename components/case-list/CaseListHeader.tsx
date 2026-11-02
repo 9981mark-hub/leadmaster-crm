@@ -19,7 +19,7 @@ interface CaseListHeaderProps {
     onManualRefresh: () => void;
     onResetPage: () => void;
     onExportClick: () => void;
-    /** 데이터 내보내기 버튼 표시 (회사 관리자만). 기본 true */
+    /** 데이터 내보내기 버튼 표시 (회사 관리자만). 기본 false */
     canExport?: boolean;
 }
 
@@ -39,7 +39,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     onManualRefresh,
     onResetPage,
     onExportClick,
-    canExport = true
+    canExport = false
 }) => {
     return (
         <div className="space-y-4">
