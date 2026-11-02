@@ -226,6 +226,26 @@ export const getLegacyDrivePlayUrl = (caseId: string, url: string): Promise<stri
   return signPlay({ case_id: caseId, drive_file_id: fid });
 };
 
+/** 리드 상세 녹음 아카이브 항목(드라이브 링크) → 서버 녹음 기록. 없으면 null */
+export const findRecordingByDriveFile = async (caseId: string, driveFileId: string): Promise<CallRecording | null> => {
+  if (!driveFileId) return null;
+  const { data, error } = await need().from('call_recordings').select(LIST_COLS)
+    .eq('case_id', caseId).eq('drive_file_id', driveFileId).order('created_at', { ascending: false }).limit(1);
+  if (error) fail(error);
+  return data && data[0] ? mapRow(data[0]) : null;
+};
+
+/** AI 정리가 끝날 때까지 기다림 (기본 4분). 끝난 기록을 돌려줌 */
+export const waitAnalyzed = async (id: string, timeoutMs = 240_000): Promise<CallRecording | null> => {
+  const until = Date.now() + timeoutMs;
+  while (Date.now() < until) {
+    await new Promise(r => setTimeout(r, 4000));
+    const r = await fetchRecording(id).catch(() => null);
+    if (r && (r.status === 'done' || r.status === 'failed')) return r;
+  }
+  return null;
+};
+
 /** AI 정리 요청 (백그라운드에서 진행, 결과는 status로 확인) */
 export const requestAnalyze = async (id: string, auto = false): Promise<{ queued: boolean; reason?: string }> => {
   const { data, error } = await need().functions.invoke('recording-analyze', { body: { recordingId: id, ...(auto ? { auto: true } : {}) } });

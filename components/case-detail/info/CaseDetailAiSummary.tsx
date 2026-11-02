@@ -66,12 +66,15 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
     const history = useMemo(() => {
         const recs = (c.recordings || []).filter(r => r.aiCurrent || (r.aiSummary && r.aiSummary.trim()));
         return recs
-            .map(r => ({ id: r.id, at: r.analyzedAt || r.uploadDate, current: !!r.aiCurrent, text: r.aiSummary || '' }))
+            // 앱 녹음(fromApp)은 통화 시각, 직접 올린 녹음은 요약한 시각
+            .map(r => ({ id: r.id, at: (r.fromApp ? r.uploadDate : r.analyzedAt) || r.uploadDate, current: !!r.aiCurrent, text: r.aiSummary || '' }))
             .sort((a, b) => String(b.at).localeCompare(String(a.at)));
     }, [c.recordings]);
     const viewing = viewingId ? history.find(h => h.id === viewingId && !h.current) : undefined;
     const displayedText = viewing ? viewing.text : aiSummaryText;
-    const viewingLabel = viewing ? `${safeFormat(viewing.at, 'MM/dd')} 통화 AI 요약` : (history.find(h => h.current) ? `${safeFormat(history.find(h => h.current)!.at, 'MM/dd')} 통화 AI 요약` : 'AI 요약');
+    const viewingLabel = viewing ? `${safeFormat(viewing.at, 'MM/dd HH:mm')} 통화 AI 요약` : (history.find(h => h.current) ? `${safeFormat(history.find(h => h.current)!.at, 'MM/dd HH:mm')} 통화 AI 요약` : 'AI 요약');
+    // 녹음 아카이브 목록 = 직접 올린 녹음만 (fromApp 항목은 통화별 요약 보관용, 앱 녹음은 위 목록에 따로)
+    const archive = useMemo(() => (c.recordings || []).filter(r => !r.fromApp), [c.recordings]);
 
     // Parse summary text and transcript lines
     const { summaryText, transcriptLines, rawTranscript } = useMemo(() => {
@@ -92,9 +95,9 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
     const activeAudioUrl = useMemo(() => {
         if (currentAudioFile) return '';
         if (audioUrl) return audioUrl;
-        if (c.recordings && c.recordings.length > 0) return c.recordings[0].url;
+        if (archive.length > 0) return archive[0].url;
         return null;
-    }, [audioUrl, currentAudioFile, c.recordings]);
+    }, [audioUrl, currentAudioFile, archive]);
 
     // 드라이브 링크는 서버(recording-play)를 거친 비공개 듣기 주소로 바꾼다.
     // 아직 리드마스터에 허용되지 않은 파일·드라이브 미연결이면 예전 공개 링크로 재생 (공개 링크를 끄기 전까지)
@@ -244,11 +247,11 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
             <AppRecordingsList c={c} onOpen={onOpenRecordingsTab} />
 
             {/* Recording List (Archive) */}
-            {(c.recordings && c.recordings.length > 0) && (
+            {archive.length > 0 && (
                 <div className="mb-4">
                     <h4 className="text-xs font-bold text-gray-600 mb-2 flex items-center"><Archive size={12} className="mr-1" /> 녹음 아카이브</h4>
                     <div className="space-y-1 max-h-32 overflow-y-auto no-scrollbar">
-                        {c.recordings.map(rec => {
+                        {archive.map(rec => {
                             const isSelected = rec.url === activeAudioUrl;
                             return (
                                 <div
@@ -291,7 +294,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                 onClick={() => setViewingId(h.current ? null : h.id)}
                                 className={`px-2 py-0.5 rounded-full border ${active ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'}`}
                             >
-                                {safeFormat(h.at, 'MM/dd')}{h.current ? ' 최근' : ''}
+                                {safeFormat(h.at, 'MM/dd HH:mm')}{h.current ? ' 최근' : ''}
                             </button>
                         );
                     })}

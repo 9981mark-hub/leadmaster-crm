@@ -681,6 +681,9 @@ const markServerSync = (startedAtMs: number, isFull: boolean) => {
   if (isFull) lastFullSyncAtMs = startedAtMs;
 };
 
+/** 서버에서 바뀐 리드만 바로 받아오기 (예: 서버 AI 정리가 요약문을 바꾼 뒤) */
+export const refreshChangedCases = (): Promise<void> => performIncrementalFetch();
+
 const performIncrementalFetch = async (): Promise<void> => {
   if (!isSupabaseEnabled() || !supabase) return;
 

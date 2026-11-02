@@ -50,6 +50,13 @@ export interface RecordingItem {
   aiSummary?: string;
   aiCurrent?: boolean;
   analyzedAt?: string; // ISO
+  /**
+   * [2026-11-02] 서버(recording-analyze)가 앱 녹음 AI 정리로 요약문을 바꿀 때 만든 항목.
+   * 통화별 요약 보관용이라 녹음 아카이브 목록에는 안 보인다 (앱 녹음은 "앱 자동 업로드 녹음"에 따로 보임).
+   */
+  fromApp?: boolean;
+  /** 연결된 call_recordings.id */
+  recordingId?: string;
 }
 
 export interface Case {

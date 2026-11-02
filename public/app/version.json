@@ -1,7 +1,7 @@
 {
-  "versionCode": 10,
-  "versionName": "1.6.1",
+  "versionCode": 11,
+  "versionName": "1.6.2",
   "apkUrl": "LeadMaster.apk",
-  "notes": "통화가 끝나면 녹음을 바로(10초·1분·3분 뒤) 회사 구글 드라이브에 올립니다. 리드마스터 서버에는 저장하지 않습니다.",
+  "notes": "통화가 끝나면 통화기록을 10초 안에 바로 올립니다. 녹음은 회사 구글 드라이브에만 보관합니다.",
   "required": false
 }

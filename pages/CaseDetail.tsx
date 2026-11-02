@@ -78,8 +78,9 @@ export default function CaseDetail() {
     useEffect(() => {
         if (c) {
             setAiSummaryText(c.aiSummary || null);
-            if (c.recordings && c.recordings.length > 0 && !audioUrl && !currentAudioFile) {
-                setAudioUrl(c.recordings[0].url);
+            const firstArchive = (c.recordings || []).find(r => !r.fromApp);
+            if (firstArchive && !audioUrl && !currentAudioFile) {
+                setAudioUrl(firstArchive.url);
             }
             if (c.status === '사무장 접수') {
                 // [Fix] Use global dynamic list instead of hardcoded
@@ -447,12 +448,46 @@ export default function CaseDetail() {
     };
 
     const handleGenerateAiSummary = async () => {
+        if (!c) return;
         if (!currentAudioFile && !audioUrl) {
             showToast('분석할 녹음 파일이 없습니다.', 'error');
             return;
         }
+        // [2026-11-02] 드라이브에 보관된 녹음이면 서버(recording-analyze)가 정리 → 요약문·상담 이력·통화별 보관까지 서버가 한다.
+        // (예전엔 목록에서 고른 녹음을 누르면 빈 파일이 AI로 넘어갔음)
+        const recs = c.recordings || [];
+        const item = currentAudioFile
+            ? recs.find(r => !r.fromApp && r.filename === currentAudioFile.name)
+            : recs.find(r => r.url === audioUrl);
         setIsAiLoading(true);
         try {
+            const m = await import('../services/recordings');
+            let serverRec: Awaited<ReturnType<typeof m.fetchRecording>> = null;
+            try {
+                serverRec = item?.recordingId
+                    ? await m.fetchRecording(item.recordingId)
+                    : (item ? await m.findRecordingByDriveFile(c.caseId, m.driveFileIdFromUrl(item.url)) : null);
+            } catch { serverRec = null; }
+            if (serverRec && !serverRec.audioDeletedAt) {
+                if (serverRec.status === 'done' && !window.confirm('이 녹음은 이미 AI 정리가 끝났습니다. 다시 정리할까요?\n(다시 정리하면 AI 사용량이 한 번 더 듭니다)')) return;
+                if (serverRec.status !== 'processing') await m.requestAnalyze(serverRec.id);
+                showToast('AI가 녹음을 정리하는 중입니다. 1분 정도 걸립니다.');
+                const done = await m.waitAnalyzed(serverRec.id);
+                if (done?.status === 'done') {
+                    const { refreshChangedCases } = await import('../services/api');
+                    await refreshChangedCases().catch(() => { /* Realtime으로도 들어옴 */ });
+                    showToast('✅ 이 통화 내용으로 요약문을 바꿨습니다. 이전 요약은 통화별 요약에 남아 있습니다.');
+                } else if (done?.status === 'failed') {
+                    showToast(`AI 정리 실패: ${done.error || '알 수 없는 오류'}`, 'error');
+                } else {
+                    showToast('정리가 오래 걸리고 있습니다. 끝나면 요약문이 자동으로 바뀝니다.');
+                }
+                return;
+            }
+            if (!currentAudioFile) {
+                showToast('이 녹음은 서버에 보관된 파일을 찾지 못해 AI 분석을 할 수 없습니다. 녹음 파일을 다시 올려 주세요.', 'error');
+                return;
+            }
             // [Modified] Use Partner's Custom Prompt if available
             const customPrompt = currentPartner?.aiPromptTemplate;
             const context = {
