@@ -11,7 +11,13 @@ import { AiApplyModal } from './AiApplyModal';
  * [AI 요약으로 고객정보 채우기] (2026-11-02)
  * AI 요약문·대화록 글 → 서버 AI가 칸별 정보로 정리 → 지금 값과 비교표 → 체크한 것만 반영
  */
-export const FillFromSummaryButton: React.FC<{ c: Case; text: string | null | undefined; className?: string; compact?: boolean }> = ({ c, text, className = '', compact = false }) => {
+export const FillFromSummaryButton: React.FC<{
+    c: Case; text: string | null | undefined; className?: string; compact?: boolean;
+    /** 이 요약이 이 고객의 가장 최근 통화 요약인지 (바뀐 값도 기본 체크) */
+    preferNew?: boolean;
+    /** 변경 기록 메모의 기준 (예: "11/16 통화 AI 요약") */
+    sourceLabel?: string;
+}> = ({ c, text, className = '', compact = false, preferNew = true, sourceLabel = 'AI 요약' }) => {
     const { showToast } = useToast();
     const update = useUpdateCaseMutation();
     const [busy, setBusy] = useState(false);
@@ -46,6 +52,8 @@ export const FillFromSummaryButton: React.FC<{ c: Case; text: string | null | un
                 <AiApplyModal
                     c={c}
                     extracted={extracted}
+                    preferNew={preferNew}
+                    sourceLabel={sourceLabel}
                     title="AI 요약 → 상담 정보 채우기"
                     subtitle="AI 요약문에 적힌 값입니다. 맞는 것만 체크하세요. 이미 값이 있는 칸은 기본으로 체크하지 않았습니다."
                     onClose={() => setExtracted(null)}

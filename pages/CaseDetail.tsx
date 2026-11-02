@@ -479,11 +479,29 @@ export default function CaseDetail() {
             };
 
             if (c) {
+                // [2026-11-02] 통화별 요약 보관: 지금 리드 요약(이전 통화)을 그 녹음에 옮겨 두고, 이번 녹음을 "최근 요약"으로 표시
+                const isError = /^\s*\[오류 발생\]/.test(summary);
+                let recordings = c.recordings || [];
+                if (!isError) {
+                    const target = (currentAudioFile && recordings.find(r => r.filename === currentAudioFile.name)) || undefined;
+                    const prevCurrent = recordings.find(r => r.aiCurrent);
+                    const oldText = (c.aiSummary || '').trim();
+                    recordings = recordings.map(r => {
+                        if (target && r.id === target.id) return { ...r, aiCurrent: true, aiSummary: undefined, analyzedAt: new Date().toISOString() };
+                        if (prevCurrent && r.id === prevCurrent.id) return { ...r, aiCurrent: false, aiSummary: oldText && !/^\s*\[오류 발생\]/.test(oldText) ? oldText : r.aiSummary };
+                        return r;
+                    });
+                }
+                // 어느 녹음 것인지 모르는 예전 요약(통화별 보관 전)은 지우지 않고 상담 메모로 보관
+                const legacyOld = (!isError && !(c.recordings || []).some(r => r.aiCurrent) && (c.aiSummary || '').trim() && !/^\s*\[오류 발생\]/.test(c.aiSummary || ''))
+                    ? [{ id: `${Date.now()}o`, createdAt: new Date().toISOString(), content: `[이전 AI 요약 보관]\n${(c.aiSummary || '').trim()}`.slice(0, 4000) } as MemoItem]
+                    : [];
                 updateCaseMutation.mutate({
                     id: c.caseId,
                     updates: {
                         aiSummary: summary,
-                        specialMemo: [newMemo, ...(c.specialMemo || [])]
+                        ...(isError ? {} : { recordings }),
+                        specialMemo: [newMemo, ...legacyOld, ...(c.specialMemo || [])]
                     },
                     silent: true
                 }, {
@@ -550,6 +568,13 @@ export default function CaseDetail() {
 
     const handleDeleteRecording = (id: string) => {
         if (window.confirm('녹음 파일을 삭제하시겠습니까?')) {
+            const rec = (c?.recordings || []).find(r => r.id === id);
+            // 지난 통화 AI 요약이 붙어 있으면 지우지 않고 상담 메모로 옮긴다
+            if (c && rec?.aiSummary && rec.aiSummary.trim()) {
+                const memo: MemoItem = { id: `${Date.now()}r`, createdAt: new Date().toISOString(), content: `[삭제한 녹음의 AI 요약 보관 · ${rec.filename}]\n${rec.aiSummary.trim()}`.slice(0, 4000) };
+                updateCaseMutation.mutate({ id: c.caseId, updates: { recordings: (c.recordings || []).filter(r => r.id !== id), specialMemo: [memo, ...(c.specialMemo || [])] }, silent: true });
+                return;
+            }
             handleUpdate('recordings', (c?.recordings || []).filter(r => r.id !== id));
         }
     };

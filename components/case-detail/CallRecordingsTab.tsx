@@ -74,9 +74,9 @@ function ExtractedView({ e }: { e: ExtractedInfo }) {
   );
 }
 
-function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToast }: {
+function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToast, isLatest = false }: {
   c: Case; rec: CallRecording; open: boolean; onToggle: () => void; onChanged: (r: CallRecording) => void;
-  onApply: (u: Partial<Case>) => void; showToast: Props['showToast'];
+  onApply: (u: Partial<Case>) => void; showToast: Props['showToast']; isLatest?: boolean;
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
@@ -200,7 +200,7 @@ function RecordingItemView({ c, rec, open, onToggle, onChanged, onApply, showToa
           {rec.model && rec.analyzedAt && <div className="text-[11px] text-gray-400">AI 정리 {fmtWhen(rec.analyzedAt)} · {rec.model} · 녹음에서 들은 내용이라 틀릴 수 있으니 확인 후 반영하세요.</div>}
         </div>
       )}
-      {showApply && rec.extracted && <AiApplyModal c={c} extracted={rec.extracted} memo={{ title: `[AI 통화 정리 ${fmtWhen(rec.callStartedAt)}]`, text: extractedToText(rec), alreadyApplied: !!rec.appliedAt }} warning={rec.appliedAt ? `이 녹음은 ${fmtWhen(rec.appliedAt)}에 이미 반영했습니다. 채무·재산을 다시 반영하면 같은 항목이 한 번 더 들어갑니다.` : undefined} onClose={() => setShowApply(false)} onApply={onApply} onApplied={() => markRecordingApplied(rec.id).catch(() => { /* 표시만 실패 */ })} />}
+      {showApply && rec.extracted && <AiApplyModal c={c} extracted={rec.extracted} preferNew={isLatest} sourceLabel={`${fmtWhen(rec.callStartedAt)} 통화`} memo={{ title: `[AI 통화 정리 ${fmtWhen(rec.callStartedAt)}]`, text: extractedToText(rec), alreadyApplied: !!rec.appliedAt }} warning={rec.appliedAt ? `이 녹음은 ${fmtWhen(rec.appliedAt)}에 이미 반영했습니다. 채무·재산을 다시 반영하면 같은 항목이 한 번 더 들어갑니다.` : undefined} onClose={() => setShowApply(false)} onApply={onApply} onApplied={() => markRecordingApplied(rec.id).catch(() => { /* 표시만 실패 */ })} />}
     </div>
   );
 }
@@ -255,10 +255,10 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
         <span className="text-xs text-gray-400">앱이 이 고객과의 통화 녹음을 자동으로 올립니다</span>
         <button onClick={load} className="ml-auto text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
       </div>
-      {list.map(r => (
+      {list.map((r, idx) => (
         <div key={r.id}>
           <RecordingItemView c={c} rec={r} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)}
-            onChanged={nr => setList(prev => prev.map(x => x.id === nr.id ? nr : x))} onApply={onApply} showToast={showToast} />
+            onChanged={nr => setList(prev => prev.map(x => x.id === nr.id ? nr : x))} onApply={onApply} showToast={showToast} isLatest={idx === 0} />
         </div>
       ))}
       {!loading && list.length === 0 && (

@@ -57,10 +57,22 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
     const playerRef = useRef<CustomAudioPlayerRef>(null);
     const audioInputRef = useRef<HTMLInputElement>(null);
 
+    // [2026-11-02] 통화별 요약: 최근 요약(aiSummaryText) 말고 지난 통화 요약을 볼 수 있다 (보기만)
+    const [viewingId, setViewingId] = useState<string | null>(null);
+    const history = useMemo(() => {
+        const recs = (c.recordings || []).filter(r => r.aiCurrent || (r.aiSummary && r.aiSummary.trim()));
+        return recs
+            .map(r => ({ id: r.id, at: r.analyzedAt || r.uploadDate, current: !!r.aiCurrent, text: r.aiSummary || '' }))
+            .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    }, [c.recordings]);
+    const viewing = viewingId ? history.find(h => h.id === viewingId && !h.current) : undefined;
+    const displayedText = viewing ? viewing.text : aiSummaryText;
+    const viewingLabel = viewing ? `${safeFormat(viewing.at, 'MM/dd')} 통화 AI 요약` : (history.find(h => h.current) ? `${safeFormat(history.find(h => h.current)!.at, 'MM/dd')} 통화 AI 요약` : 'AI 요약');
+
     // Parse summary text and transcript lines
     const { summaryText, transcriptLines, rawTranscript } = useMemo(() => {
-        return parseAiTranscript(aiSummaryText);
-    }, [aiSummaryText]);
+        return parseAiTranscript(displayedText);
+    }, [displayedText]);
 
     const filteredTranscriptLines = useMemo(() => {
         if (!transcriptSearch.trim()) return transcriptLines;
@@ -247,6 +259,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                         <div className="truncate">
                                             <span className={isSelected ? "text-purple-900" : "font-medium text-gray-800"}>{rec.filename}</span>
                                             <span className="text-gray-400 text-[10px] ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
+                                            {(rec.aiCurrent || rec.aiSummary) && <span className="ml-1 text-[10px] px-1 rounded bg-purple-100 text-purple-700">요약{rec.aiCurrent ? ' 최근' : ''}</span>}
                                         </div>
                                     </div>
                                     <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-400 hover:text-red-500 ml-2">
@@ -256,6 +269,27 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             );
                         })}
                     </div>
+                </div>
+            )}
+
+            {/* 통화별 AI 요약 (지난 통화 요약이 있을 때만) */}
+            {history.length > 1 && (
+                <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span className="text-gray-500 font-semibold">통화별 요약</span>
+                    {history.map(h => {
+                        const active = h.current ? !viewing : viewing?.id === h.id;
+                        return (
+                            <button
+                                key={h.id}
+                                type="button"
+                                onClick={() => setViewingId(h.current ? null : h.id)}
+                                className={`px-2 py-0.5 rounded-full border ${active ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'}`}
+                            >
+                                {safeFormat(h.at, 'MM/dd')}{h.current ? ' 최근' : ''}
+                            </button>
+                        );
+                    })}
+                    {viewing && <span className="text-amber-700">지난 통화 요약을 보는 중 (수정 불가)</span>}
                 </div>
             )}
 
@@ -318,7 +352,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                         </div>
                     ) : (
                         <div className="group">
-                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewing ? 'hidden' : ''}`}>
                                 <button onClick={() => setAiSummaryEditMode(true)} className="p-1 text-blue-500 hover:bg-blue-50 rounded" title="수정">
                                     <Edit2 size={14} />
                                 </button>
@@ -408,8 +442,8 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                 </div>
             )}
 
-            {/* Action Buttons */}
-            {aiSummaryText && !aiSummaryEditMode && (
+            {/* Action Buttons (최근 요약을 볼 때만) */}
+            {aiSummaryText && !aiSummaryEditMode && !viewing && (
                 <div className="mt-3 flex justify-end">
                     <button
                         onClick={handleSaveSummaryToMemo}
@@ -425,8 +459,15 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                     </button>
                 </div>
             )}
-            {aiSummaryText && !aiSummaryEditMode && (
-                <FillFromSummaryButton c={c} text={aiSummaryText} compact className="w-full mt-2" />
+            {displayedText && !aiSummaryEditMode && (
+                <FillFromSummaryButton
+                    c={c}
+                    text={displayedText}
+                    compact
+                    className="w-full mt-2"
+                    preferNew={!viewing}
+                    sourceLabel={viewingLabel}
+                />
             )}
 
             {/* Telegram Room Selection Modal */}

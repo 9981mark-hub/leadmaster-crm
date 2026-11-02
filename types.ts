@@ -43,6 +43,13 @@ export interface RecordingItem {
   url: string; // Blob URL (Session only) or Remote URL
   mimeType: string;
   duration?: number; // seconds
+  /**
+   * 통화별 AI 요약 (2026-11-02). 가장 최근 요약은 cases.ai_summary에 있고 그 녹음은 aiCurrent=true(글은 중복 저장 안 함).
+   * 새 녹음을 분석하면 이전 요약 글을 이전 녹음의 aiSummary로 옮겨 보관한다 (덮어써서 사라지지 않게).
+   */
+  aiSummary?: string;
+  aiCurrent?: boolean;
+  analyzedAt?: string; // ISO
 }
 
 export interface Case {
