@@ -41,6 +41,7 @@ interface CaseInfoTabProps {
     onGenerateAiSummary: () => void;
     onPlayRecording: (rec: RecordingItem) => void;
     onDeleteRecording: (id: string) => void;
+    onOpenRecordingsTab?: () => void;
 
     // Logs
     statusLogs: CaseStatusLog[];
@@ -72,7 +73,7 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
     aiSummaryText, setAiSummaryText, aiSummaryEditMode, setAiSummaryEditMode,
     handleUpdateAiSummaryText, handleDeleteAiSummary, handleSaveSummaryToMemo,
     currentAudioFile, audioUrl, isFileUploading, isAiLoading,
-    onAudioFileSelect, onTriggerAudioInput, onGenerateAiSummary, onPlayRecording, onDeleteRecording,
+    onAudioFileSelect, onTriggerAudioInput, onGenerateAiSummary, onPlayRecording, onDeleteRecording, onOpenRecordingsTab,
     statusLogs, showToast
 }) => {
     const [rightPanelTab, setRightPanelTab] = useState<'reminders' | 'ai'>('reminders');
@@ -133,6 +134,7 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                         onGenerateAiSummary={onGenerateAiSummary}
                         onPlayRecording={onPlayRecording}
                         onDeleteRecording={onDeleteRecording}
+                        onOpenRecordingsTab={onOpenRecordingsTab}
                     />
                 )}
             </aside>

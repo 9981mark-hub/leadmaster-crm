@@ -5,6 +5,7 @@ import { CustomAudioPlayer, CustomAudioPlayerRef } from '../../CustomAudioPlayer
 import { convertToPlayableUrl, safeFormat, loadTelegramRooms, parseAiTranscript } from '../../../utils';
 import { getLegacyDrivePlayUrl } from '../../../services/recordings';
 import { FillFromSummaryButton } from '../FillFromSummaryButton';
+import { AppRecordingsList } from './AppRecordingsList';
 import { useToast } from '../../../contexts/ToastContext';
 
 interface CaseDetailAiSummaryProps {
@@ -26,6 +27,8 @@ interface CaseDetailAiSummaryProps {
     onGenerateAiSummary: () => void;
     onPlayRecording: (rec: RecordingItem) => void;
     onDeleteRecording: (id: string) => void;
+    /** 통화 녹음·AI 탭으로 이동 */
+    onOpenRecordingsTab?: () => void;
 }
 
 export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
@@ -45,7 +48,8 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
     onTriggerAudioInput,
     onGenerateAiSummary,
     onPlayRecording,
-    onDeleteRecording
+    onDeleteRecording,
+    onOpenRecordingsTab
 }) => {
     const { showToast } = useToast();
     const [telegramRooms] = useState(() => loadTelegramRooms());
@@ -236,6 +240,8 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                     )}
                 </div>
             )}
+
+            <AppRecordingsList c={c} onOpen={onOpenRecordingsTab} />
 
             {/* Recording List (Archive) */}
             {(c.recordings && c.recordings.length > 0) && (

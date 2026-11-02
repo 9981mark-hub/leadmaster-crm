@@ -840,6 +840,7 @@ export default function CaseDetail() {
                             onGenerateAiSummary={handleGenerateAiSummary}
                             onPlayRecording={handlePlayRecording}
                             onDeleteRecording={handleDeleteRecording}
+                            onOpenRecordingsTab={() => setActiveTab('recordings')}
                             statusLogs={c.statusLogs || []}
                             showToast={showToast}
                         />
