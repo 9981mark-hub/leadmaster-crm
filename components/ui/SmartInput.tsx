@@ -2,7 +2,7 @@ import React from 'react';
 import { formatKoreanMoney } from '../../utils';
 
 interface SmartInputProps {
-    label?: string;
+    label?: React.ReactNode;
     value: any;
     onChange: (value: any) => void;
     /** 칸을 벗어날 때. updateOnBlur면 저장한 값을 넘겨준다 */
