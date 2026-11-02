@@ -170,6 +170,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, []);
 
 
+  // 안드로이드 앱(WebView) 안인지: 앱은 자기 상단 바가 있다
+  const inAndroidApp = React.useMemo(() => {
+    try { return !!window.AndroidBridge?.isAndroidApp?.(); } catch { return false; }
+  }, []);
+
   const navs = [
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
     { to: '/schedule', icon: Calendar, label: '일정' },
@@ -215,16 +220,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Mobile Top Bar */}
-        <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
-            <OrgBadge compact />
+        {/* Mobile Top Bar — [2026-11-02] 앱 안에서는 앱 자체 상단 바(LeadMaster·새로고침·메뉴)와 겹쳐서 숨김.
+            오른쪽 자동통화 바로가기 아이콘은 삭제 (전화는 고객 번호를 누르면 걸림) */}
+        {!inAndroidApp && (
+          <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
+              <OrgBadge compact />
+            </div>
           </div>
-          <Link to="/auto-dial" className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-full">
-            <PhoneCall size={20} />
-          </Link>
-        </div>
+        )}
 
         <div id="main-scroll-container" className="flex-1 overflow-y-scroll p-4 md:p-8 pb-40 md:pb-8">
           {children}
