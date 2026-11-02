@@ -55,7 +55,8 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
     };
 
     // 대화록을 고르면: 넓은 화면(1280px 이상)은 기본 요약문 · AI 요약문 · 대화록 3칸을 나란히, 좁은 화면은 AI 칸 안에서 탭 전환
-    const showTranscript = !!aiSummaryText && !aiSummaryEditMode && aiTab === 'transcript';
+    // 수정 모드 중에도 3칸 레이아웃과 대화록을 그대로 유지하여 대화록을 보면서 요약문을 수정할 수 있도록 한다.
+    const showTranscript = !!aiSummaryText && aiTab === 'transcript';
     const transcriptList = parsed.transcriptLines.length > 0 ? parsed.transcriptLines.map(line => {
         const isAgent = /상담원|담당자|사무장/.test(line.speaker);
         return (
@@ -184,14 +185,14 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                 <div className="flex-1 relative h-full">
                     {aiSummaryText ? (
                         <>
-                            {/* 요약문: 요약문 탭이면 항상, 대화록 탭이면 넓은 화면에서만 (대화록은 오른쪽 칸에) */}
-                            <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'md:hidden' : ''} ${showTranscript ? 'hidden xl:block' : ''}`}
-                                onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
+                            {/* 요약문: 요약문 탭이면 항상, 대화록 탭이면 넓은 화면에서만 (대화록은 오른쪽 칸에). 수정 모드에서는 숨김 */}
+                            <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'hidden' : (showTranscript ? 'hidden xl:block' : 'block')}`}
+                                onClick={() => { if (!aiSummaryEditMode) { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); } }}
                             >
                                 {parsed.summaryText || aiSummaryText}
                             </div>
-                            {/* 대화록: 좁은 화면에서만 이 칸 안에 */}
-                            {showTranscript && (
+                            {/* 대화록: 좁은 화면에서만 이 칸 안에 (수정 모드가 아닐 때) */}
+                            {showTranscript && !aiSummaryEditMode && (
                                 <div className="xl:hidden w-full h-full p-3 bg-white rounded-lg border border-purple-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] space-y-2">
                                     {transcriptList}
                                 </div>
@@ -219,21 +220,15 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     <div className="mt-4 flex flex-col gap-2">
                         <div className="grid grid-cols-2 gap-2">
                             <button
-                                onClick={() => { navigator.clipboard.writeText(aiSummaryText); showToast('복사되었습니다.'); }}
-                                className="bg-gray-700 text-white px-4 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-gray-800 shadow-sm transition-all active:scale-95 text-xs md:text-sm leading-tight"
-                            >
-                                <Copy className="mr-1.5 md:mr-2 flex-shrink-0" size={16} />
-                                <span className="text-center">전체 복사</span>
-                            </button>
-                            <button
+                                type="button"
                                 onClick={handleSaveSummaryToMemo}
-                                className="bg-indigo-600 text-white px-4 py-3 rounded-lg font-bold flex items-center justify-center hover:bg-indigo-700 w-full shadow-sm transition-all active:scale-95 text-xs md:text-sm leading-tight"
+                                className="bg-indigo-600 text-white px-3 py-3 rounded-lg font-bold flex items-center justify-center gap-1.5 hover:bg-indigo-700 shadow-sm transition-all active:scale-95 text-xs md:text-sm leading-tight"
                             >
-                                <Send className="mr-1.5 md:mr-2 flex-shrink-0" size={16} />
-                                <span className="text-center">상담이력<br className="block sm:hidden" /><span className="hidden sm:inline"> </span>전송</span>
+                                <Send size={16} className="flex-shrink-0" />
+                                <span className="text-center whitespace-nowrap">상담이력 전송</span>
                             </button>
+                            <FillFromSummaryButton c={c} text={aiSummaryText} className="w-full whitespace-nowrap" />
                         </div>
-                        <FillFromSummaryButton c={c} text={aiSummaryText} className="w-full" />
                         <p className="text-[10px] text-center text-purple-400">
                             * 상담이력 전송 시 '특이사항' 부분만 자동으로 추출되어 저장됩니다.
                         </p>
@@ -241,7 +236,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                 )}
             </div>
 
-            {/* 3번째 칸: 대화록 (넓은 화면에서 대화록을 골랐을 때만) */}
+            {/* 3번째 칸: 대화록 (넓은 화면에서 대화록을 골랐을 때만 - 수정 모드 중에도 대화록을 보면서 작업할 수 있도록 유지) */}
             {showTranscript && (
                 <div className="hidden xl:flex bg-white p-4 rounded-xl border border-purple-100 shadow-sm flex-col h-full">
                     <div className="flex justify-between items-center mb-3">
