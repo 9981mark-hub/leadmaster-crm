@@ -5,7 +5,7 @@ import { fetchCases, fetchPartners, fetchSettlementBatches, subscribe, getSyncSt
 import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X, DollarSign, FileText, Bell, MessageSquare } from 'lucide-react';
+import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X, DollarSign, FileText, Bell, MessageSquare, Sparkles } from 'lucide-react';
 import { DEFAULT_STATUS_LIST } from '../constants';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
@@ -13,6 +13,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 import { CardSkeleton } from '../components/Skeleton';
 import RevenueWidget from '../components/RevenueWidget';
+import AiUsageWidget from '../components/AiUsageWidget';
+import { fetchDetailedAiUsage, DetailedAiUsage } from '../services/aiUsage';
 
 const KPICard = ({ title, count, color, icon: Icon, subText }: any) => (
   <motion.div
@@ -84,6 +86,11 @@ export default function Dashboard() {
 
   /* [NEW] State for Warning Cases Modal */
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const [aiUsageSummary, setAiUsageSummary] = useState<DetailedAiUsage | null>(null);
+
+  useEffect(() => {
+    fetchDetailedAiUsage().then(res => setAiUsageSummary(res)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     Promise.all([fetchCases(), fetchPartners(), fetchSettlementBatches()]).then(([data, partnerData, batchData]) => {
@@ -228,10 +235,22 @@ export default function Dashboard() {
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
           <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText="구간별 알림 적용중" />
         </Link>
+        <div onClick={() => { const el = document.getElementById('ai-usage-widget'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
+          <KPICard
+            title="오늘 AI 사용량"
+            count={aiUsageSummary ? `${aiUsageSummary.todayCount}회` : '-'}
+            color="text-purple-600"
+            icon={Sparkles}
+            subText={aiUsageSummary ? `약 ₩${aiUsageSummary.todayCostKrw.toLocaleString()} (${aiUsageSummary.todayCount}/${aiUsageSummary.dailyCap})` : '실시간 집계'}
+          />
+        </div>
       </div>
 
       {/* Revenue KPI Widget */}
       <RevenueWidget cases={cases} partners={partners} />
+
+      {/* Gemini AI 실시간 사용량 & 비용 분석 위젯 */}
+      <AiUsageWidget />
 
       {/* Charts Section */}
       <div className="space-y-2">
