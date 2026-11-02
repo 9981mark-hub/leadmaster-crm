@@ -24,6 +24,15 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
                     value={c.housingType}
                     onPick={v => onUpdate('housingType', v)}
                 />
+                {/* 2026-11-02 거주지역: 한 칸 폭, 거주형태 바로 옆 */}
+                <SmartInput
+                    compact
+                    label="거주지역 (관할법원 연계)"
+                    value={c.region}
+                    onChange={(v: any) => onUpdate('region', v)}
+                    placeholder="예: 서울 강남"
+                    updateOnBlur={true}
+                />
                 <Choice
                     label="주거상세"
                     className="col-span-2"
@@ -110,16 +119,6 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
                         />
                     </>
                 )}
-
-                <SmartInput
-                    compact
-                    className="col-span-2"
-                    label="거주지역 (관할법원 연계)"
-                    value={c.region}
-                    onChange={(v: any) => onUpdate('region', v)}
-                    placeholder="예: 서울 강남 / 수원 팔달"
-                    updateOnBlur={true}
-                />
             </div>
         </SectionCard>
     );
