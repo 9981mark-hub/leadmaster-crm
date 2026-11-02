@@ -91,6 +91,8 @@ export interface Case {
     salary?: number;
     business?: number;
     freelance?: number;
+    /** 회사(사업장) 소재지 (직장인·개인사업자·법인사업자·프리랜서, 2026-11-02) — 숫자가 아니므로 소득 합계에서 뺀다 */
+    workplace?: string;
   };
   incomeNet: number; // Manwon
   loanMonthlyPay: number; // Manwon

@@ -28,7 +28,7 @@ export const MANAGER_NAME = "Mark";
 
 export const CASE_TYPES = ['개인회생', '파산', '새출발기금', '신용회복'];
 
-export const JOB_TYPES = ['직장인', '개인사업자', '법인사업자', '프리랜서', '무직'];
+export const JOB_TYPES = ['직장인', '일용직', '개인사업자', '법인사업자', '프리랜서', '무직'];
 export const HOUSING_TYPES = ['자가', '전세', '월세', '무상거주'];
 export const HOUSING_DETAILS = ['아파트', '빌라', '단독주택', '오피스텔', '기타'];
 

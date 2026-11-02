@@ -13,6 +13,8 @@ interface CaseDetailJobFamilyProps {
 }
 
 const CHILDREN_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7];
+/** 회사 소재지를 받는 직업 */
+const WORKPLACE_JOBS = ['직장인', '개인사업자', '법인사업자', '프리랜서'];
 
 /** 2단계 직업 · 소득 · 가족 (직업을 고르면 그 직업의 월수입 칸이 바로 옆에 생긴다) */
 export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
@@ -68,6 +70,18 @@ export const CaseDetailJobFamily: React.FC<CaseDetailJobFamilyProps> = ({
                         onChange={(v: any) => onIncomeChange('freelance', v)}
                         suffix="만원"
                         isCurrency={true}
+                        updateOnBlur={true}
+                    />
+                )}
+                {/* 2026-11-02 회사(사업장) 소재지: 직장인·개인사업자·법인사업자·프리랜서. income_details.workplace에 저장 (DB 변경 없음) */}
+                {jobs.some(j => WORKPLACE_JOBS.includes(j)) && (
+                    <SmartInput
+                        compact
+                        label="회사 소재지"
+                        className="col-span-2"
+                        value={income?.workplace || ''}
+                        onChange={(v: any) => onUpdate('incomeDetails', { ...income, workplace: String(v || '').trim() })}
+                        placeholder="예: 서울 강남구 / 경기 성남시 분당구"
                         updateOnBlur={true}
                     />
                 )}

@@ -128,7 +128,7 @@ const SCHEMA = {
       properties: {
         net_monthly_manwon: NUM, salary_manwon: NUM, business_manwon: NUM, freelance_manwon: NUM,
         job: STR,
-        job_types: { type: 'ARRAY', items: { type: 'STRING', enum: ['직장인', '개인사업자', '법인사업자', '프리랜서', '무직'] } },
+        job_types: { type: 'ARRAY', items: { type: 'STRING', enum: ['직장인', '일용직', '개인사업자', '법인사업자', '프리랜서', '무직'] } },
         insurance4: en(['가입', '미가입']),
       },
     },

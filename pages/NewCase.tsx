@@ -278,7 +278,7 @@ export default function NewCase() {
 
   const handleIncomeChange = (type: 'salary' | 'business' | 'freelance', value: number) => {
     const newIncomeDetails = { ...formData.incomeDetails, [type]: value };
-    const totalIncome = Object.values(newIncomeDetails).reduce((sum, val: any) => sum + (val || 0), 0);
+    const totalIncome = Object.values(newIncomeDetails).reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0);
     setFormData((prev: any) => ({
       ...prev,
       incomeDetails: newIncomeDetails,
@@ -298,7 +298,7 @@ export default function NewCase() {
     if (['개인사업자', '법인사업자'].includes(jobType) && !newTypes.some((t: string) => ['개인사업자', '법인사업자'].includes(t))) delete newIncomeDetails.business;
     if (jobType === '프리랜서' && !newTypes.includes('프리랜서')) delete newIncomeDetails.freelance;
 
-    const totalIncome = Object.values(newIncomeDetails).reduce((sum: any, val: any) => sum + (val || 0), 0);
+    const totalIncome = Object.values(newIncomeDetails).reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0);
 
     setFormData((prev: any) => ({
       ...prev,
