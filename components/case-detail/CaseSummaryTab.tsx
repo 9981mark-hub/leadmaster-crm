@@ -25,6 +25,14 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
     const [aiTab, setAiTab] = useState<'summary' | 'transcript'>('summary');
     const parsed = useMemo(() => parseAiTranscript(aiSummaryText), [aiSummaryText]);
     const copyAiTab = () => {
+        // 넓은 화면에서 대화록을 열면 AI 칸에는 요약문이 보이므로 요약문을 복사 (대화록은 3번째 칸의 복사 버튼)
+        const wide = typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches;
+        if (wide && aiTab === 'transcript') {
+            const s = parsed.summaryText || aiSummaryText || '';
+            if (!s.trim()) { showToast('복사할 요약문이 없습니다.'); return; }
+            navigator.clipboard.writeText(s).then(() => showToast('요약문을 복사했습니다.'), () => showToast('복사하지 못했습니다.'));
+            return;
+        }
         const text = aiTab === 'summary'
             ? (parsed.summaryText || aiSummaryText || '')
             : (parsed.transcriptLines.length
@@ -37,8 +45,32 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
         );
     };
 
+    // 대화록을 고르면: 넓은 화면(1280px 이상)은 기본 요약문 · AI 요약문 · 대화록 3칸을 나란히, 좁은 화면은 AI 칸 안에서 탭 전환
+    const showTranscript = !!aiSummaryText && !aiSummaryEditMode && aiTab === 'transcript';
+    const transcriptList = parsed.transcriptLines.length > 0 ? parsed.transcriptLines.map(line => {
+        const isAgent = /상담원|담당자|사무장/.test(line.speaker);
+        return (
+            <div key={line.id} className={`p-2.5 rounded-lg border text-xs leading-relaxed ${isAgent ? 'bg-blue-50 border-blue-100 text-blue-950' : 'bg-purple-50/60 border-purple-100 text-gray-900'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold">{line.speaker}</span>
+                    {line.time && <span className="text-[10px] text-gray-400 tabular-nums">{line.time}</span>}
+                </div>
+                <div className="whitespace-pre-wrap">{line.text}</div>
+            </div>
+        );
+    }) : (
+        <div className="text-sm text-gray-400 whitespace-pre-wrap">{parsed.rawTranscript || '분석된 대화록이 없습니다.'}</div>
+    );
+    const copyTranscript = () => {
+        const text = parsed.transcriptLines.length
+            ? parsed.transcriptLines.map(l => `${l.time ? `[${l.time}] ` : ''}${l.speaker}: ${l.text}`).join('\n')
+            : parsed.rawTranscript || '';
+        if (!text.trim()) { showToast('복사할 대화록이 없습니다.'); return; }
+        navigator.clipboard.writeText(text).then(() => showToast('대화록을 복사했습니다.'), () => showToast('복사하지 못했습니다.'));
+    };
+
     return (
-        <div className="grid md:grid-cols-2 gap-4 h-full min-h-[400px] md:min-h-[500px]">
+        <div className={`grid md:grid-cols-2 ${showTranscript ? 'xl:grid-cols-3' : ''} gap-4 h-full min-h-[400px] md:min-h-[500px]`}>
             {/* LEFT: Basic Summary */}
             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full relative">
                 <div className="flex justify-between items-center mb-3">
@@ -143,28 +175,16 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                 <div className="flex-1 relative h-full">
                     {aiSummaryText ? (
                         <>
-                            {aiTab === 'summary' ? (
-                                <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'md:hidden' : ''}`}
-                                    onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
-                                >
-                                    {parsed.summaryText || aiSummaryText}
-                                </div>
-                            ) : (
-                                <div className={`w-full h-full p-3 bg-white rounded-lg border border-purple-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] space-y-2 ${aiSummaryEditMode ? 'md:hidden' : ''}`}>
-                                    {parsed.transcriptLines.length > 0 ? parsed.transcriptLines.map(line => {
-                                        const isAgent = /상담원|담당자|사무장/.test(line.speaker);
-                                        return (
-                                            <div key={line.id} className={`p-2.5 rounded-lg border text-xs leading-relaxed ${isAgent ? 'bg-blue-50 border-blue-100 text-blue-950' : 'bg-purple-50/60 border-purple-100 text-gray-900'}`}>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="font-bold">{line.speaker}</span>
-                                                    {line.time && <span className="text-[10px] text-gray-400 tabular-nums">{line.time}</span>}
-                                                </div>
-                                                <div className="whitespace-pre-wrap">{line.text}</div>
-                                            </div>
-                                        );
-                                    }) : (
-                                        <div className="text-sm text-gray-400 whitespace-pre-wrap">{parsed.rawTranscript || '분석된 대화록이 없습니다.'}</div>
-                                    )}
+                            {/* 요약문: 요약문 탭이면 항상, 대화록 탭이면 넓은 화면에서만 (대화록은 오른쪽 칸에) */}
+                            <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'md:hidden' : ''} ${showTranscript ? 'hidden xl:block' : ''}`}
+                                onClick={() => { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); }}
+                            >
+                                {parsed.summaryText || aiSummaryText}
+                            </div>
+                            {/* 대화록: 좁은 화면에서만 이 칸 안에 */}
+                            {showTranscript && (
+                                <div className="xl:hidden w-full h-full p-3 bg-white rounded-lg border border-purple-100 overflow-y-auto min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] space-y-2">
+                                    {transcriptList}
                                 </div>
                             )}
                             {aiSummaryEditMode && (
@@ -210,6 +230,25 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* 3번째 칸: 대화록 (넓은 화면에서 대화록을 골랐을 때만) */}
+            {showTranscript && (
+                <div className="hidden xl:flex bg-white p-4 rounded-xl border border-purple-100 shadow-sm flex-col h-full">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-bold text-purple-800 flex items-center gap-2">
+                            <ListOrdered size={18} /> 대화록
+                            {parsed.transcriptLines.length > 0 && <span className="px-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px]">{parsed.transcriptLines.length}</span>}
+                        </h3>
+                        <div className="flex gap-2">
+                            <button onClick={copyTranscript} className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded hover:bg-purple-200 flex items-center gap-1"><Copy size={12} /> 복사</button>
+                            <button onClick={() => setAiTab('summary')} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-200 flex items-center gap-1" title="대화록 칸 닫기"><X size={12} /> 닫기</button>
+                        </div>
+                    </div>
+                    <div className="flex-1 p-3 bg-gray-50 rounded-lg border border-gray-100 overflow-y-auto min-h-[250px] max-h-[600px] space-y-2">
+                        {transcriptList}
+                    </div>
+                </div>
+            )}
 
             {/* FULLSCREEN OVERLAY FOR MANUAL SUMMARY EDIT (Mobile Only) */}
             {isManualSummaryEdit && (
