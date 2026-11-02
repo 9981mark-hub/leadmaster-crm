@@ -9,6 +9,9 @@ interface CaseDetailHousingProps {
     onUpdate: (field: string, value: any) => void;
 }
 
+/** 전세/월세 여부 (보증금·월세 칸이 보이는 유형) */
+const isRentType = (t?: string) => t !== '자가' && t !== '무상거주';
+
 /** 3단계 주거 (거주형태에 따라 시세·대출 / 보증금·월세 / 명의자 칸이 바뀐다) */
 export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
     c,
@@ -33,6 +36,16 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
                     placeholder="예: 서울 강남"
                     updateOnBlur={true}
                 />
+                {/* 모바일: 거주지역 옆에 임대차 계약인 한줄 노출 (전세/월세일 때) */}
+                {isRentType(c.housingType) && (
+                    <Choice
+                        label="임대차 계약인"
+                        className="md:hidden"
+                        options={RENT_CONTRACTORS}
+                        value={c.rentContractor}
+                        onPick={v => onUpdate('rentContractor', v)}
+                    />
+                )}
                 <Choice
                     label="주거상세"
                     className="col-span-2"
@@ -81,38 +94,43 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
                     />
                 ) : (
                     <>
-                        <SmartInput
-                            compact
-                            label="보증금"
-                            type="number"
-                            value={c.deposit}
-                            onChange={(v: any) => onUpdate('deposit', v)}
-                            suffix="만원"
-                            isCurrency={true}
-                            updateOnBlur={true}
-                        />
-                        <SmartInput
-                            compact
-                            label="보증금 대출"
-                            type="number"
-                            value={c.depositLoanAmount}
-                            onChange={(v: any) => onUpdate('depositLoanAmount', v)}
-                            suffix="만원"
-                            isCurrency={true}
-                            updateOnBlur={true}
-                        />
-                        <SmartInput
-                            compact
-                            label="월세"
-                            type="number"
-                            value={c.rent}
-                            onChange={(v: any) => onUpdate('rent', v)}
-                            suffix="만원"
-                            isCurrency={true}
-                            updateOnBlur={true}
-                        />
+                        {/* 모바일: 보증금·보증금대출·월세 입력 박스를 줄여 한줄 3칸 배치 */}
+                        <div className="col-span-2 md:col-span-full grid grid-cols-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-x-2 md:gap-x-3 gap-y-3 items-start">
+                            <SmartInput
+                                compact
+                                label="보증금"
+                                type="number"
+                                value={c.deposit}
+                                onChange={(v: any) => onUpdate('deposit', v)}
+                                suffix="만원"
+                                isCurrency={true}
+                                updateOnBlur={true}
+                            />
+                            <SmartInput
+                                compact
+                                label="보증금 대출"
+                                type="number"
+                                value={c.depositLoanAmount}
+                                onChange={(v: any) => onUpdate('depositLoanAmount', v)}
+                                suffix="만원"
+                                isCurrency={true}
+                                updateOnBlur={true}
+                            />
+                            <SmartInput
+                                compact
+                                label="월세"
+                                type="number"
+                                value={c.rent}
+                                onChange={(v: any) => onUpdate('rent', v)}
+                                suffix="만원"
+                                isCurrency={true}
+                                updateOnBlur={true}
+                            />
+                        </div>
+                        {/* md 이상에서만 임대차 계약인 표시 (모바일은 거주지역 옆에 이미 노출) */}
                         <Choice
                             label="임대차 계약인"
+                            className="hidden md:block"
                             options={RENT_CONTRACTORS}
                             value={c.rentContractor}
                             onPick={v => onUpdate('rentContractor', v)}
