@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X } from 'lucide-react';
 import { Case, Partner } from '../../types';
 import { generateSummary, injectSummaryMetadata, parseAiTranscript } from '../../utils';
@@ -25,6 +25,14 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
     // AI 결과를 요약문 / 대화록으로 나눠 보기 (모바일 상담 정보 화면과 같은 방식)
     const [aiTab, setAiTab] = useState<'summary' | 'transcript'>('summary');
     const parsed = useMemo(() => parseAiTranscript(aiSummaryText), [aiSummaryText]);
+    // [2026-11-02] PC 넓은 화면(1280px 이상)은 AI 요약문이 있으면 처음부터 기본 요약문 · AI 요약문 · 대화록 3칸으로 연다
+    const autoOpened = useRef(false);
+    useEffect(() => {
+        if (autoOpened.current || !aiSummaryText) return;
+        autoOpened.current = true;
+        const wide = typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches;
+        if (wide && (parsed.transcriptLines.length > 0 || parsed.rawTranscript)) setAiTab('transcript');
+    }, [aiSummaryText, parsed]);
     const copyAiTab = () => {
         // 넓은 화면에서 대화록을 열면 AI 칸에는 요약문이 보이므로 요약문을 복사 (대화록은 3번째 칸의 복사 버튼)
         const wide = typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches;
@@ -156,7 +164,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                 </div>
 
                 {aiSummaryText && !aiSummaryEditMode && (
-                    <div className="flex gap-1.5 border-b border-purple-200 mb-2">
+                    <div className={`flex gap-1.5 border-b border-purple-200 mb-2 ${showTranscript ? 'xl:hidden' : ''}`}>
                         <button
                             onClick={() => setAiTab('summary')}
                             className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-t-lg transition-colors ${aiTab === 'summary' ? 'bg-white text-purple-700 border-t border-l border-r border-purple-200' : 'text-gray-500 hover:text-purple-600'}`}
