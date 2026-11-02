@@ -117,7 +117,16 @@ export default function CaseList() {
     // [2026-11-01] 빠른 보기 (오늘 할 일 · 내 담당 · 미배정) + 담당자 필터 + 쪽 크기 + 여러 건 선택
     const { org, isAdmin } = useAuth();
     type QuickView = 'all' | 'today' | 'mine' | 'unassigned';
-    const [quickView, setQuickView] = useState<QuickView>(() => (sessionStorage.getItem('lm_quickView') as QuickView) || 'all');
+    const [quickView, setQuickView] = useState<QuickView>(() => {
+        const saved = sessionStorage.getItem('lm_quickView') as QuickView;
+        if (!isAdmin && (saved === 'mine' || saved === 'unassigned')) return 'all';
+        return saved || 'all';
+    });
+    useEffect(() => {
+        if (!isAdmin && (quickView === 'mine' || quickView === 'unassigned')) {
+            setQuickView('all');
+        }
+    }, [isAdmin, quickView]);
     const [assigneeFilter, setAssigneeFilter] = useState(() => sessionStorage.getItem('lm_assigneeFilter') || '');
     const [pageSize, setPageSize] = useState<number>(() => Number(localStorage.getItem('lm_caselist_pagesize')) || 20);
     const [members, setMembers] = useState<TeamMember[]>([]);
@@ -643,7 +652,7 @@ export default function CaseList() {
                     {([
                         { k: 'all', label: '전체', n: viewCounts.all },
                         { k: 'today', label: '오늘 할 일', n: viewCounts.today, hint: '오늘까지 잡힌 일정 · 신규 · 다시 걸 부재' },
-                        ...(org?.userId && viewCounts.mine > 0 ? [{ k: 'mine', label: '내 담당', n: viewCounts.mine }] : []),
+                        ...(isAdmin && org?.userId && viewCounts.mine > 0 ? [{ k: 'mine', label: '내 담당', n: viewCounts.mine }] : []),
                         ...(isAdmin ? [{ k: 'unassigned', label: '미배정', n: viewCounts.unassigned }] : []),
                     ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (
                         <button key={v.k} type="button" title={v.hint}
