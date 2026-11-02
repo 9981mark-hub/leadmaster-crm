@@ -94,7 +94,15 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
                     />
                 ) : (
                     <>
-                        {/* 모바일: 보증금·보증금대출·월세 입력 박스를 줄여 한줄 3칸 배치 */}
+                        {/* PC: 주거상세 바로 옆(자가의 '집 시세' 자리)에 임대차 계약인 배치 */}
+                        <Choice
+                            label="임대차 계약인"
+                            className="hidden md:block"
+                            options={RENT_CONTRACTORS}
+                            value={c.rentContractor}
+                            onPick={v => onUpdate('rentContractor', v)}
+                        />
+                        {/* 보증금·보증금대출·월세 (모바일 3칸 한줄, PC는 다음 줄에 3칸 배치) */}
                         <div className="col-span-2 md:col-span-full grid grid-cols-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-x-2 md:gap-x-3 gap-y-3 items-start">
                             <SmartInput
                                 compact
@@ -127,14 +135,6 @@ export const CaseDetailHousing: React.FC<CaseDetailHousingProps> = ({
                                 updateOnBlur={true}
                             />
                         </div>
-                        {/* md 이상에서만 임대차 계약인 표시 (모바일은 거주지역 옆에 이미 노출) */}
-                        <Choice
-                            label="임대차 계약인"
-                            className="hidden md:block"
-                            options={RENT_CONTRACTORS}
-                            value={c.rentContractor}
-                            onPick={v => onUpdate('rentContractor', v)}
-                        />
                     </>
                 )}
             </div>
