@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Plus, Phone, MessageSquare, Send, ArrowLeft, Clock, Check, Loader2, CloudOff, PhoneMissed, Command, X } from 'lucide-react';
 import { Case, CaseStatus, Partner } from '../../types';
 import { getCaseWarnings } from '../../utils';
@@ -86,6 +87,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     const [menu, setMenu] = useState<'sms' | 'reminder' | null>(null);
     const [smsText, setSmsText] = useState('');
     const menuRef = useRef<HTMLDivElement>(null);
+    const popRef = useRef<HTMLDivElement>(null);
     const sms = useEnqueueSmsMutation();
     const { data: smsTemplates = [] } = useSmsTemplates();
 
@@ -103,7 +105,12 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
 
     useEffect(() => {
         if (!menu) return;
-        const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(null); };
+        // 버튼 줄과 팝업(body에 띄움) 밖을 누르면 닫는다
+        const h = (e: MouseEvent) => {
+            const t = e.target as Node;
+            if (menuRef.current?.contains(t) || popRef.current?.contains(t)) return;
+            setMenu(null);
+        };
         document.addEventListener('mousedown', h);
         return () => document.removeEventListener('mousedown', h);
     }, [menu]);
@@ -208,8 +215,9 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             <button onClick={onOpenPalette} className="h-9 w-9 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 hidden md:flex items-center justify-center" title="빠른 이동 (Ctrl+K)"><Command size={16} /></button>
                         )}
 
-                        {menu === 'sms' && (
-                            <>
+                        {/* 팝업은 body에 띄운다: 상단 고정 영역(backdrop-blur·overflow-hidden) 안에 있으면 화면 위쪽이 잘린다 */}
+                        {menu === 'sms' && createPortal(
+                            <div ref={popRef}>
                                 <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setMenu(null)} />
                                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMenu(null)}>
                                     <div className="w-full max-w-md bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -221,7 +229,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                             {smsTemplates.length > 0 && (
                                                 <div className="space-y-1.5">
                                                     <label className="text-xs font-medium text-slate-600 dark:text-gray-400">템플릿 선택</label>
-                                                    <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                                                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                                                         {smsTemplates.map(tmpl => (
                                                             <button
                                                                 key={tmpl.id}
@@ -249,10 +257,11 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                            </>
+                            </div>,
+                            document.body
                         )}
-                        {menu === 'reminder' && onAddCallReminder && (
-                            <>
+                        {menu === 'reminder' && onAddCallReminder && createPortal(
+                            <div ref={popRef}>
                                 <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setMenu(null)} />
                                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMenu(null)}>
                                     <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl py-2 overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -267,7 +276,8 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                         <div className="px-4 py-2 text-xs text-slate-400 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">다른 시각은 오른쪽 "상담 메모 · 일정" 탭에서 추가하세요</div>
                                     </div>
                                 </div>
-                            </>
+                            </div>,
+                            document.body
                         )}
                     </div>
 
