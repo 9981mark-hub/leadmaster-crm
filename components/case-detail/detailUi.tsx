@@ -35,14 +35,14 @@ export const SectionCard: React.FC<{
     children: React.ReactNode;
 }> = ({ step, title, meta, className = '', bodyClassName = 'p-4', children }) => (
     <div className={`${CARD} overflow-hidden ${className}`}>
-        <div className="px-4 py-2.5 bg-slate-100 dark:bg-gray-700/60 border-b border-slate-200 dark:border-gray-700 flex items-center justify-between gap-3">
+        <div className="px-4 py-2.5 bg-slate-200 dark:bg-gray-700 border-b border-slate-300 dark:border-gray-600 flex items-center justify-between gap-3">
             <h3 className="min-w-0 flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-gray-100">
                 {step !== undefined && (
-                    <span aria-hidden className="w-5 h-5 shrink-0 rounded-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-[11px] font-bold tabular-nums text-slate-700 dark:text-gray-200 flex items-center justify-center shadow-xs">{step}</span>
+                    <span aria-hidden className="w-5 h-5 shrink-0 rounded-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-500 text-[11px] font-bold tabular-nums text-slate-800 dark:text-gray-100 flex items-center justify-center shadow-xs">{step}</span>
                 )}
                 <span className="truncate">{title}</span>
             </h3>
-            {meta ? <span className="shrink-0 text-[11px] text-slate-500 dark:text-gray-400 tabular-nums">{meta}</span> : null}
+            {meta ? <span className="shrink-0 text-[11px] font-medium text-slate-600 dark:text-gray-300 tabular-nums">{meta}</span> : null}
         </div>
         <div className={bodyClassName}>{children}</div>
     </div>
