@@ -169,7 +169,8 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                     </div>
 
                     {/* 할 일 */}
-                    <div ref={menuRef} className="flex flex-wrap items-center gap-1.5 relative">
+                    {/* 모바일(768px 미만)에서는 숨김: 앱 화면에서 고객 정보를 가리지 않게 (2026-11-02) */}
+                    <div ref={menuRef} className="hidden md:flex flex-wrap items-center gap-1.5 relative">
                         <button onClick={call} className={`${btn} bg-slate-900 text-white border-slate-900 hover:bg-slate-800`}><Phone size={15} /> 전화</button>
                         {isMobileUA() ? (
                             <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50`}><MessageSquare size={15} /> 문자</a>
