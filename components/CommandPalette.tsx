@@ -7,8 +7,36 @@ import { Search, Calculator, Calendar, User, Phone, FileText, Zap, ChevronRight,
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../contexts/ToastContext';
 
-export const CommandPalette = () => {
-    const [open, setOpen] = useState(false);
+interface CommandPaletteProps {
+    /** 바깥 버튼(⌘)으로 열 때. 없으면 Ctrl+K로만 연다 */
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
+    const [open, setOpenRaw] = useState(false);
+    // [2026-11-02] 예전엔 isOpen을 안 받아서 상세 화면 ⌘ 버튼이 아무 반응이 없었다. 닫힐 때 바깥에도 알린다
+    const setOpen = (v: boolean | ((o: boolean) => boolean)) => {
+        setOpenRaw(prev => {
+            const next = typeof v === 'function' ? v(prev) : v;
+            if (prev && !next) setTimeout(() => onClose?.(), 0);
+            return next;
+        });
+    };
+    useEffect(() => {
+        if (isOpen) {
+            setPage('root');
+            setSearch('');
+            setOpenRaw(true);
+        }
+    }, [isOpen]);
+    // ESC로 닫기 (아래 안내 문구대로)
+    useEffect(() => {
+        if (!open) return;
+        const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); setOpen(false); } };
+        document.addEventListener('keydown', esc);
+        return () => document.removeEventListener('keydown', esc);
+    }, [open]);
     const [cases, setCases] = useState<Case[]>([]);
     const [statuses, setStatuses] = useState<string[]>([]);
     const [page, setPage] = useState<'root' | 'status-case-select' | 'status-select'>('root');
@@ -84,8 +112,9 @@ export const CommandPalette = () => {
     return (
         <AnimatePresence>
             {open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)}>
                     <motion.div
+                        onClick={e => e.stopPropagation()}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
