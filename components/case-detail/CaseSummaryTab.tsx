@@ -11,7 +11,7 @@ interface CaseSummaryTabProps {
     setAiSummaryText: (text: string) => void;
     aiSummaryEditMode: boolean;
     setAiSummaryEditMode: (mode: boolean) => void;
-    handleUpdateAiSummaryText: () => void;
+    handleUpdateAiSummaryText: (textOverride?: string) => void;
     handleSaveSummaryToMemo: () => void;
     showToast: (msg: string) => void;
 }
@@ -24,6 +24,29 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
     const [isManualSummaryEdit, setIsManualSummaryEdit] = useState(false);
     // AI 결과를 요약문 / 대화록으로 나눠 보기 (모바일 상담 정보 화면과 같은 방식)
     const [aiTab, setAiTab] = useState<'summary' | 'transcript'>('summary');
+    const [editSummaryText, setEditSummaryText] = useState('');
+
+    const handleStartAiEdit = () => {
+        const summaryOnly = (parsed.summaryText || '').trim();
+        setEditSummaryText(injectSummaryMetadata(summaryOnly, c));
+        setAiSummaryEditMode(true);
+    };
+
+    const handleCancelAiEdit = () => {
+        setAiSummaryEditMode(false);
+    };
+
+    const handleSaveAiEdit = () => {
+        const parsedEdit = parseAiTranscript(editSummaryText);
+        const trimmedSummary = (parsedEdit.summaryText || editSummaryText).trim();
+        const transcriptToKeep = (parsedEdit.rawTranscript || parsed.rawTranscript || '').trim();
+        const combined = transcriptToKeep
+            ? `${trimmedSummary}\n\n[전체 대화록]\n${transcriptToKeep}`
+            : trimmedSummary;
+        setAiSummaryText(combined);
+        handleUpdateAiSummaryText(combined);
+        setAiSummaryEditMode(false);
+    };
     const parsed = useMemo(() => parseAiTranscript(aiSummaryText), [aiSummaryText]);
     // [2026-11-02] PC 넓은 화면(1280px 이상)은 AI 요약문이 있으면 처음부터 기본 요약문 · AI 요약문 · 대화록 3칸으로 연다
     const autoOpened = useRef(false);
@@ -37,13 +60,13 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
         // 넓은 화면에서 대화록을 열면 AI 칸에는 요약문이 보이므로 요약문을 복사 (대화록은 3번째 칸의 복사 버튼)
         const wide = typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches;
         if (wide && aiTab === 'transcript') {
-            const s = parsed.summaryText || aiSummaryText || '';
+            const s = parsed.summaryText || '';
             if (!s.trim()) { showToast('복사할 요약문이 없습니다.'); return; }
             navigator.clipboard.writeText(s).then(() => showToast('요약문을 복사했습니다.'), () => showToast('복사하지 못했습니다.'));
             return;
         }
         const text = aiTab === 'summary'
-            ? (parsed.summaryText || aiSummaryText || '')
+            ? (parsed.summaryText || '')
             : (parsed.transcriptLines.length
                 ? parsed.transcriptLines.map(l => `${l.time ? `[${l.time}] ` : ''}${l.speaker}: ${l.text}`).join('\n')
                 : parsed.rawTranscript || '');
@@ -147,16 +170,13 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                         )}
                         {aiSummaryText && (
                             <>
-                                <button onClick={() => {
-                                    setAiSummaryText(injectSummaryMetadata(aiSummaryText || '', c));
-                                    setAiSummaryEditMode(true);
-                                }} className={`text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded hover:bg-purple-200 flex items-center gap-1 ${aiSummaryEditMode ? 'md:hidden' : ''}`}>
+                                <button onClick={handleStartAiEdit} className={`text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded hover:bg-purple-200 flex items-center gap-1 ${aiSummaryEditMode ? 'md:hidden' : ''}`}>
                                     <Edit2 size={12} /> 수정
                                 </button>
                                 {aiSummaryEditMode && (
                                     <div className="hidden md:flex gap-2 animate-in fade-in">
-                                        <button onClick={() => setAiSummaryEditMode(false)} className="text-xs bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50 flex items-center shadow-sm">취소</button>
-                                        <button onClick={() => { handleUpdateAiSummaryText(); setAiSummaryEditMode(false); }} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 flex items-center shadow-sm">저장</button>
+                                        <button onClick={handleCancelAiEdit} className="text-xs bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50 flex items-center shadow-sm">취소</button>
+                                        <button onClick={handleSaveAiEdit} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 flex items-center shadow-sm">저장</button>
                                     </div>
                                 )}
                             </>
@@ -187,9 +207,9 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                         <>
                             {/* 요약문: 요약문 탭이면 항상, 대화록 탭이면 넓은 화면에서만 (대화록은 오른쪽 칸에). 수정 모드에서는 숨김 */}
                             <div className={`w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-100 overflow-y-auto cursor-text hover:bg-purple-50/50 transition-colors min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px] ${aiSummaryEditMode ? 'hidden' : (showTranscript ? 'hidden xl:block' : 'block')}`}
-                                onClick={() => { if (!aiSummaryEditMode) { setAiSummaryText(injectSummaryMetadata(aiSummaryText, c)); setAiSummaryEditMode(true); } }}
+                                onClick={() => { if (!aiSummaryEditMode) handleStartAiEdit(); }}
                             >
-                                {parsed.summaryText || aiSummaryText}
+                                {parsed.summaryText || ''}
                             </div>
                             {/* 대화록: 좁은 화면에서만 이 칸 안에 (수정 모드가 아닐 때) */}
                             {showTranscript && !aiSummaryEditMode && (
@@ -200,8 +220,8 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                             {aiSummaryEditMode && (
                                 <textarea
                                     className="hidden md:block w-full h-full p-4 bg-white rounded-lg text-sm whitespace-pre-wrap leading-relaxed border border-purple-300 outline-none resize-none focus:ring-2 focus:ring-purple-200 transition-shadow min-h-[200px] md:min-h-[250px] max-h-[400px] md:max-h-[500px]"
-                                    value={aiSummaryText || ''}
-                                    onChange={e => setAiSummaryText(e.target.value)}
+                                    value={editSummaryText}
+                                    onChange={e => setEditSummaryText(e.target.value)}
                                     placeholder="AI 요약문을 입력하세요..."
                                     autoFocus
                                 />
@@ -281,14 +301,14 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     <div className="flex items-center justify-between p-4 border-b border-purple-200 bg-purple-50 shadow-sm">
                         <h3 className="font-bold text-purple-800 flex items-center gap-2"><Sparkles size={18} /> AI 요약문 직접 수정</h3>
                         <div className="flex gap-2">
-                            <button onClick={() => setAiSummaryEditMode(false)} className="px-5 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-bold active:scale-95 transition-all">취소</button>
-                            <button onClick={() => { handleUpdateAiSummaryText(); setAiSummaryEditMode(false); }} className="px-5 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold active:scale-95 transition-all">저장</button>
+                            <button onClick={handleCancelAiEdit} className="px-5 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-bold active:scale-95 transition-all">취소</button>
+                            <button onClick={handleSaveAiEdit} className="px-5 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold active:scale-95 transition-all">저장</button>
                         </div>
                     </div>
                     <textarea
                         className="flex-1 w-full p-4 resize-none outline-none text-base leading-relaxed bg-white"
-                        value={aiSummaryText || ''}
-                        onChange={e => setAiSummaryText(e.target.value)}
+                        value={editSummaryText}
+                        onChange={e => setEditSummaryText(e.target.value)}
                         placeholder="AI 요약문을 입력하세요..."
                         autoFocus
                     />

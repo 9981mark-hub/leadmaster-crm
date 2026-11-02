@@ -558,9 +558,10 @@ export default function CaseDetail() {
         }
     };
 
-    const handleUpdateAiSummaryText = () => {
-        if (aiSummaryText) {
-            handleUpdate('aiSummary', aiSummaryText);
+    const handleUpdateAiSummaryText = (textOverride?: string) => {
+        const textToSave = typeof textOverride === 'string' ? textOverride : aiSummaryText;
+        if (textToSave) {
+            handleUpdate('aiSummary', textToSave);
             setAiSummaryEditMode(false);
             showToast('AI 요약이 저장되었습니다.');
         }

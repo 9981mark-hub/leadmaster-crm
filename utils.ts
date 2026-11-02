@@ -722,8 +722,10 @@ export const parseAiTranscript = (rawText: string | null | undefined): {
     return { summaryText: '', transcriptLines: [], rawTranscript: '' };
   }
 
-  // Look for separator like "[전체 대화록]" or "[녹취록]" or "[대화록]"
-  const splitMatch = rawText.match(/(?:^|\n)(?:\[(?:전체\s*)?(?:대화록|녹취록|전사본)\]|={3,}\s*(?:전체\s*)?(?:대화록|녹취록)\s*={3,})([\s\S]*)$/i);
+  // Look for separator like "[전체 대화록]", "[2. 전체 대화록]", "### [전체 대화록]", "2. 전체 대화록", "[녹취록]" etc.
+  const splitMatch = rawText.match(
+    /(?:^|\n)\s*(?:[-=*_]{3,}\s*)?(?:#{1,4}\s*)?(?:\*{1,2}\s*)?(?:\[?\s*(?:\d{1,2}\s*[\.\)]\s*)?)?(?:\[\s*(?:전체\s*|통화\s*|상담\s*)?(?:대화록|녹취록|전사본|대화\s*내용|통화\s*내용|녹취\s*전문|전문)(?:\s*\([^\)]*\))?\s*\]|\[?(?:전체\s*|통화\s*|상담\s*)?(?:대화록|녹취록|전사본|대화\s*내용|통화\s*내용|녹취\s*전문|전문)(?:\s*\([^\)]*\))?\]?|={3,}.*?={3,})(?:\s*\*{1,2})?\s*(?:\n+)([\s\S]*)$/i
+  );
 
   let summaryText = rawText;
   let rawTranscript = '';
@@ -731,14 +733,22 @@ export const parseAiTranscript = (rawText: string | null | undefined): {
   if (splitMatch && splitMatch.index !== undefined) {
     summaryText = rawText.slice(0, splitMatch.index).trim();
     rawTranscript = splitMatch[1].trim();
-  } else if (rawText.includes('[00:') || rawText.includes('[01:')) {
-    // If no explicit header but contains timestamp lines
-    const firstTimestampIdx = rawText.search(/(?:^|\n)\[\d{1,2}:\d{2}\]/);
-    if (firstTimestampIdx > -1) {
-      summaryText = rawText.slice(0, firstTimestampIdx).trim();
-      rawTranscript = rawText.slice(firstTimestampIdx).trim();
+  } else {
+    // If no explicit header but contains timestamp lines: e.g. [00:01] or 상담원 00:01: or 상담원 [00:01]
+    const tsMatch = rawText.match(
+      /(?:^|\n)\s*(?:\[\d{1,2}:\d{2}(?::\d{2})?\]|(?:상담원|고객|담당자|사무장|화자)\s*\[?\d{1,2}:\d{2}(?::\d{2})?\]?)/i
+    );
+    if (tsMatch && tsMatch.index !== undefined) {
+      summaryText = rawText.slice(0, tsMatch.index).trim();
+      rawTranscript = rawText.slice(tsMatch.index).trim();
     }
   }
+
+  // Remove trailing horizontal rules (---, ===) or stray separator headers from summaryText
+  summaryText = summaryText
+    .replace(/(?:^|\n)\s*(?:[-=*_]{3,}\s*)?(?:#{1,4}\s*)?(?:\*{1,2}\s*)?(?:\[?\s*(?:\d{1,2}\s*[\.\)]\s*)?)?(?:\[\s*(?:전체\s*|통화\s*|상담\s*)?(?:대화록|녹취록|전사본|대화\s*내용|통화\s*내용|녹취\s*전문|전문)(?:\s*\([^\)]*\))?\s*\]|\[?(?:전체\s*|통화\s*|상담\s*)?(?:대화록|녹취록|전사본|대화\s*내용|통화\s*내용|녹취\s*전문|전문)(?:\s*\([^\)]*\))?\]?|={3,}.*?={3,})(?:\s*\*{1,2})?\s*$/i, '')
+    .replace(/[\r\n]+\s*[-=*_]{3,}\s*$/, '')
+    .trim();
 
   const lines = rawTranscript.split('\n');
   const transcriptLines: TranscriptLine[] = [];
@@ -747,13 +757,27 @@ export const parseAiTranscript = (rawText: string | null | undefined): {
     const line = lines[i].trim();
     if (!line) continue;
 
-    // Pattern: [01:23] 상담원: 내용 or [01:23] [상담원] 내용 or [01:23] 상담원 - 내용
-    const match = line.match(/^\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?\s*(?:\[?([^:\]\-]+)\]?[:\-])?\s*(.*)$/);
-    if (match && match[1]) {
-      const timeStr = match[1];
-      const speakerStr = (match[2] || '화자').trim();
-      const content = (match[3] || '').trim();
+    // Pattern 1: [01:23] 상담원: 내용 or [01:23] [상담원] 내용 or [01:23] 상담원 - 내용 or 01:23 상담원: 내용
+    // Pattern 2: 상담원 [01:23]: 내용 or 상담원 01:23: 내용 or 고객 01:23 내용
+    let timeStr = '';
+    let speakerStr = '화자';
+    let content = '';
 
+    const matchTimeFirst = line.match(/^\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?\s*(?:\[([^\]]+)\]|\[?([^:\]\-]+)\]?[:\-])?\s*(.*)$/);
+    if (matchTimeFirst && matchTimeFirst[1]) {
+      timeStr = matchTimeFirst[1];
+      speakerStr = (matchTimeFirst[2] || matchTimeFirst[3] || '화자').trim();
+      content = (matchTimeFirst[4] || '').trim();
+    } else {
+      const matchSpeakerFirst = line.match(/^(?:\[?([^:\]\-\d\s]+)\]?)\s*\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?[:\-\s]*(.*)$/);
+      if (matchSpeakerFirst && matchSpeakerFirst[2]) {
+        timeStr = matchSpeakerFirst[2];
+        speakerStr = (matchSpeakerFirst[1] || '화자').trim();
+        content = (matchSpeakerFirst[3] || '').trim();
+      }
+    }
+
+    if (timeStr) {
       // calculate seconds
       const parts = timeStr.split(':').map(Number);
       let sec = 0;
@@ -777,7 +801,7 @@ export const parseAiTranscript = (rawText: string | null | undefined): {
   }
 
   return {
-    summaryText: summaryText || rawText,
+    summaryText: (splitMatch || rawTranscript) ? summaryText : rawText,
     transcriptLines,
     rawTranscript
   };
