@@ -83,7 +83,7 @@ export interface Case {
   // 3. Job/Insurance
   jobTypes: string[];
   insurance4: '가입' | '미가입';
-  maritalStatus: '미혼' | '기혼' | '이혼';
+  maritalStatus: '미혼' | '기혼' | '사실혼' | '이혼' | '사별';
   childrenCount?: number; // Added: Number of minor children
 
   // 4. Income
@@ -91,8 +91,10 @@ export interface Case {
     salary?: number;
     business?: number;
     freelance?: number;
-    /** 회사(사업장) 소재지 (직장인·개인사업자·법인사업자·프리랜서, 2026-11-02) — 숫자가 아니므로 소득 합계에서 뺀다 */
+    /** 직장 소재지 (직장인·프리랜서, 2026-11-02) — 숫자가 아니므로 소득 합계에서 뺀다 */
     workplace?: string;
+    /** 사업장 소재지 (개인사업자·법인사업자, 2026-11-02) */
+    businessPlace?: string;
   };
   incomeNet: number; // Manwon
   loanMonthlyPay: number; // Manwon

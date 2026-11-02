@@ -10,7 +10,7 @@ export interface Creditor { name: string | null; kind: string; amount_manwon: nu
 export interface ExtractedInfo {
   debt: { total_manwon: number | null; monthly_payment_manwon: number | null; overdue: string | null; creditors: Creditor[] };
   income: { net_monthly_manwon: number | null; salary_manwon: number | null; business_manwon: number | null; freelance_manwon: number | null; job: string | null; job_types: string[]; insurance4: '가입' | '미가입' | null };
-  family: { marital_status: '미혼' | '기혼' | '이혼' | null; children_count: number | null; note: string | null };
+  family: { marital_status: '미혼' | '기혼' | '사실혼' | '이혼' | '사별' | null; children_count: number | null; note: string | null };
   housing: { type: '자가' | '전세' | '월세' | '무상거주' | null; detail: '아파트' | '빌라' | '단독주택' | '오피스텔' | '기타' | null; deposit_manwon: number | null; rent_manwon: number | null; deposit_loan_manwon: number | null; own_house_price_manwon: number | null; own_house_loan_manwon: number | null; contractor: '본인' | '배우자' | null };
   assets: { type: string; owner: '본인' | '배우자' | '배우자 공동명의' | null; amount_manwon: number | null; loan_manwon: number | null; desc: string | null }[];
   personal: { birth_year: string | null; gender: '남' | '여' | null; region: string | null };

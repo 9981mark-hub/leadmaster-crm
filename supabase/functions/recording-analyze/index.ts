@@ -134,7 +134,7 @@ const SCHEMA = {
     },
     family: {
       type: 'OBJECT',
-      properties: { marital_status: en(['미혼', '기혼', '이혼']), children_count: NUM, note: STR },
+      properties: { marital_status: en(['미혼', '기혼', '사실혼', '이혼', '사별']), children_count: NUM, note: STR },
     },
     housing: {
       type: 'OBJECT',

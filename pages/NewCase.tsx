@@ -542,9 +542,9 @@ export default function NewCase() {
       }
 
       <Select label="4대보험" value={formData.insurance4} onChange={(v: any) => handleChange('insurance4', v)} options={['가입', '미가입']} />
-      <Select label="결혼여부" value={formData.maritalStatus} onChange={(v: any) => handleChange('maritalStatus', v)} options={['미혼', '기혼', '이혼']} />
+      <Select label="결혼여부" value={formData.maritalStatus} onChange={(v: any) => handleChange('maritalStatus', v)} options={['미혼', '기혼', '사실혼', '이혼', '사별']} />
 
-      {['기혼', '이혼'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
+      {['기혼', '사실혼', '이혼', '사별'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
         <div className="mb-5">
           <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">미성년 자녀 수</label>
           <div className="flex gap-2 flex-wrap">
@@ -1060,12 +1060,12 @@ export default function NewCase() {
                     label="결혼여부"
                     value={formData.maritalStatus}
                     onChange={(v: any) => handleChange('maritalStatus', v)}
-                    options={['미혼', '기혼', '이혼']}
+                    options={['미혼', '기혼', '사실혼', '이혼', '사별']}
                   />
                 </div>
 
                 {/* 미성년 자녀 수 (기혼/이혼 시) */}
-                {['기혼', '이혼'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
+                {['기혼', '사실혼', '이혼', '사별'].includes(formData.maritalStatus) && isFieldVisible('childrenCount') && (
                   <div className="mb-3">
                     <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5">미성년 자녀 수</label>
                     <div className="flex gap-1 flex-wrap">
