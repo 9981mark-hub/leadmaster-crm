@@ -3,6 +3,16 @@ import { Case } from '../types';
 import { CallRecording, fetchCaseRecordings, fmtDuration, isNotReadyError } from './recordings';
 import { parseAiTranscript, TranscriptLine } from '../utils';
 
+export type CaseCallStatus =
+  | 'done'
+  | 'processing'
+  | 'failed'
+  | 'uploaded'
+  | 'queued'
+  | 'skipped'
+  | 'no_summary'
+  | 'no_audio';
+
 export interface CaseCallItem {
   id: string;
   recordingId?: string;
@@ -12,7 +22,7 @@ export interface CaseCallItem {
   durationSec?: number;
   durationLabel?: string; // e.g. "4분 12초"
   direction?: 'CALL_IN' | 'CALL_OUT';
-  status: 'done' | 'processing' | 'failed' | 'uploaded' | 'queued' | 'skipped';
+  status: CaseCallStatus;
   summaryText: string;
   transcriptLines: TranscriptLine[];
   rawTranscript: string;
@@ -21,6 +31,8 @@ export interface CaseCallItem {
   source: 'app' | 'web' | 'import' | 'manual' | 'legacy';
   recordingItem?: CallRecording;
   fileName?: string;
+  audioUrl?: string;
+  audioProblem?: string;
 }
 
 export const formatCallTime = (iso?: string): string => {
@@ -87,6 +99,26 @@ export function buildCallHistoryList(
     const startedAt = r.callStartedAt || r.createdAt || new Date().toISOString();
     const rawCombinedText = buildCombinedText(r);
     const parsed = parseAiTranscript(rawCombinedText);
+    const isStale = (Date.now() - new Date(startedAt).getTime()) > 15 * 60 * 1000;
+
+    let finalStatus: CaseCallStatus = r.status;
+    let audioProblem: string | undefined = undefined;
+
+    if (r.status === 'done') {
+      finalStatus = 'done';
+    } else if (r.status === 'failed') {
+      finalStatus = 'failed';
+      audioProblem = r.error || 'AI 분석 중 오류가 발생했습니다.';
+    } else if (r.status === 'skipped') {
+      finalStatus = 'skipped';
+      audioProblem = '통화 시간이 너무 짧거나 음성이 없어 분석을 건너뛰었습니다.';
+    } else if (isStale) {
+      // 15분 이상 지났는데 아직도 uploaded나 processing인 경우: 중단/실패 처리
+      finalStatus = 'failed';
+      audioProblem = 'AI 분석 응답 대기 시간이 초과되어 분석이 완료되지 못했습니다.';
+    } else if (r.status === 'uploaded' || r.status === 'queued' || r.status === 'processing') {
+      finalStatus = 'processing';
+    }
 
     items.push({
       id: r.id,
@@ -97,7 +129,7 @@ export function buildCallHistoryList(
       durationSec: r.durationSec,
       durationLabel: r.durationSec ? fmtDuration(r.durationSec) : undefined,
       direction: r.direction,
-      status: r.status,
+      status: finalStatus,
       summaryText: parsed.summaryText,
       transcriptLines: parsed.transcriptLines,
       rawTranscript: parsed.rawTranscript,
@@ -106,6 +138,7 @@ export function buildCallHistoryList(
       source: r.source === 'web' ? 'manual' : (r.source === 'import' ? 'import' : 'app'),
       recordingItem: r,
       fileName: r.fileName,
+      audioProblem,
     });
   }
 
@@ -131,6 +164,7 @@ export function buildCallHistoryList(
           match.transcriptLines = parsed.transcriptLines;
           match.rawTranscript = parsed.rawTranscript;
           match.rawCombinedText = text;
+          match.status = 'done';
         }
       }
       continue;
@@ -141,6 +175,30 @@ export function buildCallHistoryList(
     const startedAt = cr.analyzedAt || (cr.fromApp ? cr.uploadDate : cr.analyzedAt) || cr.uploadDate || new Date().toISOString();
     const parsed = parseAiTranscript(text);
 
+    const url = (cr.url || '').trim();
+    const isBlob = url.startsWith('blob:');
+    const isRecent = (Date.now() - new Date(cr.uploadDate || startedAt).getTime()) < 3 * 60 * 1000;
+
+    let clientStatus: CaseCallStatus = 'done';
+    let clientAudioProblem: string | undefined = undefined;
+
+    if (text) {
+      clientStatus = 'done';
+    } else if (isRecent && cr.aiCurrent) {
+      // 최근 3분 이내에 업로드되어 AI 분석이 막 시작된 통화
+      clientStatus = 'processing';
+    } else if (isBlob || !url) {
+      // 음성 소스 파일이 없거나 브라우저 임시 주소(blob:)가 만료된 과거 녹음
+      clientStatus = 'no_audio';
+      clientAudioProblem = isBlob
+        ? '브라우저 임시 주소(blob:)가 만료되어 음성 원본 파일이 서버나 구글 드라이브에 남아있지 않습니다.'
+        : '등록된 통화 녹음 음성 파일(소스)이 존재하지 않습니다.';
+    } else {
+      // 유효한 드라이브/원격 주소가 있으나 AI 분석을 아직 돌리지 않은 녹음
+      clientStatus = 'no_summary';
+      clientAudioProblem = '통화 녹음 원본은 보관되어 있으나, 아직 AI 요약 분석이 실행되지 않았습니다.';
+    }
+
     items.push({
       id: cr.id || `client-${startedAt}`,
       recordingId: cr.recordingId,
@@ -149,7 +207,7 @@ export function buildCallHistoryList(
       formattedDate: formatCallTime(startedAt),
       durationSec: cr.duration,
       durationLabel: cr.duration ? fmtDuration(cr.duration) : undefined,
-      status: text ? 'done' : 'processing',
+      status: clientStatus,
       summaryText: parsed.summaryText,
       transcriptLines: parsed.transcriptLines,
       rawTranscript: parsed.rawTranscript,
@@ -157,6 +215,8 @@ export function buildCallHistoryList(
       isLatest: !!cr.aiCurrent,
       source: 'manual',
       fileName: cr.filename,
+      audioUrl: url,
+      audioProblem: clientAudioProblem,
     });
   }
 
@@ -237,7 +297,7 @@ export function buildCallHistoryList(
     }
   }
 
-  // 5. Reverse for UI display (newest first: [3차 (최신), 2차, 1차])
+  // 5. Reverse for UI display (newest first: [5차 (최신), 4차, 3차, 2차, 1차])
   return items.reverse();
 }
 
@@ -281,11 +341,10 @@ export function useCaseCallHistory(c: Case, currentAiSummaryOverride?: string | 
     return buildCallHistoryList(c, serverRecordings, currentAiSummaryOverride);
   }, [c, serverRecordings, currentAiSummaryOverride]);
 
-  // Auto-polling when an analysis is in progress
+  // Auto-polling ONLY when an actual analysis is in progress
   const hasProcessing = useMemo(() => {
-    return calls.some(call => call.status === 'processing' || call.status === 'uploaded' || call.status === 'queued') ||
-           serverRecordings.some(r => r.status === 'processing' || r.status === 'uploaded' || r.status === 'queued');
-  }, [calls, serverRecordings]);
+    return calls.some(call => call.status === 'processing');
+  }, [calls]);
 
   useEffect(() => {
     if (!hasProcessing) return;

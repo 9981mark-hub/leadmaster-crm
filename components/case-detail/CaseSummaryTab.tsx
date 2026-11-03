@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X, Check, Loader2 } from 'lucide-react';
+import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X, Check, Loader2, AlertCircle, AlertTriangle, VolumeX } from 'lucide-react';
 import { Case, Partner } from '../../types';
 import { generateSummary, injectSummaryMetadata, parseAiTranscript } from '../../utils';
 import { FillFromSummaryButton } from './FillFromSummaryButton';
@@ -283,12 +283,57 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     )}
 
                     <div className="flex-1 relative h-full">
-                        {selectedCall && (selectedCall.status === 'processing' || selectedCall.status === 'uploaded') ? (
-                            <div className="flex flex-col items-center justify-center h-full text-purple-700 dark:text-purple-300 gap-3 min-h-[200px] p-4 text-center bg-purple-50/50 dark:bg-purple-950/20 rounded-lg border border-purple-100 dark:border-purple-900/40">
+                        {selectedCall && selectedCall.status === 'processing' ? (
+                            <div className="flex flex-col items-center justify-center h-full text-purple-700 dark:text-purple-300 gap-3 min-h-[220px] p-6 text-center bg-purple-50/50 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/40">
                                 <Loader2 size={36} className="animate-spin text-purple-600 dark:text-purple-400" />
                                 <div className="space-y-1">
                                     <p className="font-bold text-sm">AI가 통화 녹음을 정리하고 있습니다...</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">1~2분 정도 소요되며 완료되면 요약문과 대화록이 자동으로 표시됩니다.</p>
+                                </div>
+                            </div>
+                        ) : selectedCall && selectedCall.status === 'no_audio' ? (
+                            <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 gap-3 min-h-[220px] p-6 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <VolumeX size={36} className="text-gray-400 dark:text-gray-500" />
+                                <div className="space-y-1.5 max-w-md">
+                                    <h4 className="font-bold text-sm text-gray-800 dark:text-gray-200">음성 소스 파일 없음</h4>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                        {selectedCall.audioProblem || '이 통화는 녹음 원본(음성 소스) 파일이 서버에 남아있지 않거나 브라우저 임시 주소(blob:)가 만료되어 AI 요약을 진행할 수 없습니다.'}
+                                    </p>
+                                    {selectedCall.fileName && (
+                                        <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono bg-white dark:bg-gray-900 px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 inline-block mt-1">
+                                            파일명: {selectedCall.fileName}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ) : selectedCall && selectedCall.status === 'no_summary' ? (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-600 dark:text-slate-300 gap-3 min-h-[220px] p-6 text-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
+                                <FileText size={36} className="text-slate-400" />
+                                <div className="space-y-1.5 max-w-md">
+                                    <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">AI 요약 미생성</h4>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                        {selectedCall.audioProblem || '녹음 원본 파일은 보관되어 있으나, 아직 AI 요약 분석이 실행되지 않았습니다.'}
+                                    </p>
+                                    {selectedCall.fileName && (
+                                        <p className="text-[11px] text-slate-400 font-mono bg-white dark:bg-gray-800 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 inline-block mt-1">
+                                            파일명: {selectedCall.fileName}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ) : selectedCall && selectedCall.status === 'failed' ? (
+                            <div className="flex flex-col items-center justify-center h-full text-red-600 dark:text-red-400 gap-3 min-h-[220px] p-6 text-center bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/40">
+                                <AlertTriangle size={36} className="text-red-500" />
+                                <div className="space-y-1.5 max-w-md">
+                                    <h4 className="font-bold text-sm text-red-800 dark:text-red-200">AI 분석 실패</h4>
+                                    <p className="text-xs text-red-600 dark:text-red-300 leading-relaxed">
+                                        {selectedCall.audioProblem || '통화 녹음 AI 분석 중 오류가 발생했거나 대기 시간이 초과되었습니다.'}
+                                    </p>
+                                    {selectedCall.fileName && (
+                                        <p className="text-[11px] text-red-400 font-mono bg-white dark:bg-gray-800 px-2.5 py-1 rounded border border-red-200 dark:border-red-800 inline-block mt-1">
+                                            파일명: {selectedCall.fileName}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         ) : activeRawText ? (
