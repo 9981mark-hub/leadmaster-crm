@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
-  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert
+  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -22,13 +22,14 @@ import BulkDistributionSection from '../components/team/BulkDistributionSection'
 import BatchQualityPanel from '../components/team/BatchQualityPanel';
 import DncManagementPanel from '../components/team/DncManagementPanel';
 import AgentPerformancePanel from '../components/team/AgentPerformancePanel';
+import TeamCallAuditPanel from '../components/team/TeamCallAuditPanel';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
   fetchAssignmentLogs, fetchImportBatches, ImportBatch
 } from '../services/distribution';
 import { usePartners, useStatuses, useInboundPaths } from '../services/queries';
 
-type TeamTab = 'performance' | 'bulk_assign' | 'rules' | 'quality' | 'dnc' | 'members';
+type TeamTab = 'performance' | 'call_audit' | 'bulk_assign' | 'rules' | 'quality' | 'dnc' | 'members';
 type AssignFilter = 'unassigned' | 'all' | string; // string = 특정 멤버 userId
 
 // tsconfig lib 설정상 Array.from(Set)이 unknown[]으로 추론되어 직접 변환
@@ -251,7 +252,7 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* 6대 전문 탭 네비게이션 */}
+      {/* 7대 전문 탭 네비게이션 */}
       <div className="flex items-center gap-1 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-x-auto border border-gray-200 dark:border-gray-700">
         <button
           onClick={() => setActiveTab('performance')}
@@ -262,6 +263,17 @@ export default function TeamPage() {
           }`}
         >
           <Award size={16} /> 팀원 성과 · 인센티브
+        </button>
+
+        <button
+          onClick={() => setActiveTab('call_audit')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+            activeTab === 'call_audit'
+              ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <PhoneCall size={16} /> 콜 활동 · AI 요약
         </button>
 
         <button
@@ -328,6 +340,11 @@ export default function TeamPage() {
       {/* 탭 1: 팀원 성과 & 인센티브 */}
       {activeTab === 'performance' && (
         <AgentPerformancePanel />
+      )}
+
+      {/* 탭: 콜 활동 · AI 요약 및 대화록 모니터링 */}
+      {activeTab === 'call_audit' && (
+        <TeamCallAuditPanel members={members} />
       )}
 
       {/* 탭 2: 대용량 리드 배정 (스마트 일괄 배분 + 세부 수동 배정 테이블) */}
