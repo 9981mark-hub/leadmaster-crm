@@ -1000,6 +1000,10 @@ export const processIncomingCase = (c: any): Case => {
       !(c.deletedAt || c.DeletedAt),
 
     deletedAt: c.deletedAt || c.DeletedAt || undefined,
+    isArchived: !!(c.isArchived || c.is_archived || c.IsArchived),
+    archivedAt: c.archivedAt || c.archived_at || undefined,
+    archivedReason: c.archivedReason || c.archived_reason || undefined,
+    archivedBy: c.archivedBy || c.archived_by || undefined,
 
     // [AI Summary]
     aiSummary: String(c.aiSummary || c.AiSummary || ''),

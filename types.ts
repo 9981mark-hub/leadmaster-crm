@@ -76,6 +76,10 @@ export interface Case {
   isNew?: boolean; // Computed local flag
   isViewed?: boolean; // Added: Syncable flag for "Seen" status across devices
   deletedAt?: string; // [NEW] Soft Delete Timestamp (ISO)
+  isArchived?: boolean; // [024] 보관함 / 상담원 숨김 플래그
+  archivedAt?: string; // 보관 일시 (ISO)
+  archivedReason?: string; // 보관 사유 (manual, auto_contract, auto_stale, batch_cleanup)
+  archivedBy?: string; // 보관 처리자 ID
   isStarred?: boolean; // [NEW] 중요 표시 (별표)
   missedCallCount?: number; // [NEW] Missed Call Counter
   lastMissedCallAt?: string; // [NEW] Last time a missed call was logged (ISO)

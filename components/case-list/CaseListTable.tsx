@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History } from 'lucide-react';
+import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History, Archive } from 'lucide-react';
 import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
 import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
@@ -120,12 +120,13 @@ const getLastConsultationDate = (c: Case): string => {
 interface CaseListTableProps {
     cases: Case[];
     partners: Partner[];
-    viewMode: 'active' | 'trash';
+    viewMode: 'active' | 'archived' | 'trash';
     missedCallStatus: string;
     missedCallIntervalTiers: MissedCallIntervalTier[];
     statuses: string[]; // [NEW] Status list for quick change dropdown
     onDelete: (id: string, e: React.MouseEvent) => void;
     onRestore: (id: string, e: React.MouseEvent) => void;
+    onArchive?: (id: string, e: React.MouseEvent) => void;
     onMissedCall: (e: React.MouseEvent, c: Case) => void;
     onStatusChange: (caseId: string, newStatus: string, oldStatus: string) => void; // [NEW]
     onToggleStar: (caseId: string, currentStarred: boolean) => void; // [NEW] 중요 표시
@@ -145,6 +146,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     statuses,
     onDelete,
     onRestore,
+    onArchive,
     onMissedCall,
     onStatusChange,
     onToggleStar,
@@ -153,7 +155,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     onToggleSelectAll,
     memberName,
 }) => {
-    const selectable = !!onToggleSelect && viewMode === 'active';
+    const selectable = !!onToggleSelect && (viewMode === 'active' || viewMode === 'archived');
     const pageIds = cases.map(c => c.caseId);
     const allOnPage = selectable && pageIds.length > 0 && pageIds.every(id => selectedIds?.has(id));
     // [NEW] State for status dropdown
@@ -319,6 +321,11 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <Link to={`/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
                                         {c.customerName}
                                     </Link>
+                                    {c.isArchived && (
+                                        <span className="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full font-medium" title={c.archivedReason || '보관됨'}>
+                                            보관
+                                        </span>
+                                    )}
                                     <HoverCheckTooltip
                                         mobileAlign="left"
                                         trigger={
@@ -451,13 +458,60 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             </div>
                                         }
                                     />
-                                    <button
-                                        onClick={(e) => onDelete(c.caseId, e)}
-                                        className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                                        title="휴지통으로 이동"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    {viewMode === 'trash' ? (
+                                        <>
+                                            <button
+                                                onClick={(e) => onRestore(c.caseId, e)}
+                                                className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors"
+                                                title="복구"
+                                            >
+                                                <Sparkles size={16} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => onDelete(c.caseId, e)}
+                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                title="영구 삭제"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </>
+                                    ) : viewMode === 'archived' ? (
+                                        <>
+                                            <button
+                                                onClick={(e) => onRestore(c.caseId, e)}
+                                                className="p-2 bg-purple-100 text-purple-600 rounded-full hover:bg-purple-200 transition-colors"
+                                                title="활성 리드로 복원"
+                                            >
+                                                <Sparkles size={16} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => onDelete(c.caseId, e)}
+                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                title="휴지통으로 이동"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {onArchive && (
+                                                <button
+                                                    onClick={(e) => onArchive(c.caseId, e)}
+                                                    className="p-2 bg-purple-50 text-purple-600 rounded-full hover:bg-purple-100 transition-colors"
+                                                    title="보관함으로 이동 (상담원 숨김)"
+                                                >
+                                                    <Archive size={16} />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={(e) => onDelete(c.caseId, e)}
+                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                title="휴지통으로 이동"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -532,6 +586,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     {c.customerName}
                                                 </span>
                                                 {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
+                                                {c.isArchived && <span className="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
                                             </Link>
                                             <HoverCheckTooltip
                                                 desktopAlign="left"
@@ -765,14 +820,42 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
+                                        ) : viewMode === 'archived' ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button
+                                                    onClick={(e) => onRestore(c.caseId, e)}
+                                                    className="text-purple-600 hover:text-purple-800 p-1.5 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                                    title="활성 리드로 복원 (상담원 공개)"
+                                                >
+                                                    <Sparkles size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => onDelete(c.caseId, e)}
+                                                    className="text-gray-300 hover:text-red-500 p-1.5 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    title="휴지통으로 이동"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         ) : (
-                                            <button
-                                                onClick={(e) => onDelete(c.caseId, e)}
-                                                className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                title="삭제"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {onArchive && (
+                                                    <button
+                                                        onClick={(e) => onArchive(c.caseId, e)}
+                                                        className="text-gray-300 hover:text-purple-600 p-2 rounded transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                                        title="보관함으로 이동 (상담원 숨김)"
+                                                    >
+                                                        <Archive size={16} />
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={(e) => onDelete(c.caseId, e)}
+                                                    className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    title="삭제"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         )}
                                     </td>
                                 </tr>

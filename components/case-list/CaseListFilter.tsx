@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star } from 'lucide-react';
+import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star, Archive } from 'lucide-react';
 import { Partner, CaseStatus } from '../../types';
 
 interface CaseListFilterProps {
@@ -23,8 +23,9 @@ interface CaseListFilterProps {
     setSortOrder: (val: any) => void;
     layoutMode: 'list' | 'kanban';
     setLayoutMode: (val: 'list' | 'kanban') => void;
-    viewMode: 'active' | 'trash';
-    setViewMode: (val: 'active' | 'trash') => void;
+    viewMode: 'active' | 'archived' | 'trash';
+    setViewMode: (val: 'active' | 'archived' | 'trash') => void;
+    canManageArchive?: boolean;
     showStarredOnly: boolean;
     setShowStarredOnly: (val: boolean) => void;
     partners: Partner[];
@@ -48,7 +49,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     tertiaryStatusFilter, setTertiaryStatusFilter,
     sortOrder, setSortOrder,
     layoutMode, setLayoutMode,
-    viewMode, setViewMode,
+    viewMode, setViewMode, canManageArchive = false,
     showStarredOnly, setShowStarredOnly,
     partners, inboundPaths, statuses,
     secondaryStatuses, tertiaryStatuses,
@@ -305,8 +306,22 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         </div>
 
 
+                        {canManageArchive && (
+                            <button
+                                onClick={() => setViewMode(viewMode === 'archived' ? 'active' : 'archived')}
+                                className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${
+                                    viewMode === 'archived'
+                                        ? 'bg-purple-600 text-white hover:bg-purple-700'
+                                        : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-600'
+                                }`}
+                                title={viewMode === 'archived' ? '활성 목록으로 돌아가기' : '보관함 (상담원 숨김) 보기'}
+                            >
+                                {viewMode === 'archived' ? <ChevronLeft size={18} /> : <Archive size={18} />}
+                            </button>
+                        )}
+
                         <button
-                            onClick={() => setViewMode(viewMode === 'active' ? 'trash' : 'active')}
+                            onClick={() => setViewMode(viewMode === 'trash' ? 'active' : 'trash')}
                             className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
                                 ? 'bg-red-600 text-white hover:bg-red-700'
                                 : 'bg-white border text-gray-600 hover:bg-gray-50'
@@ -318,6 +333,25 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Archive Banner */}
+            {viewMode === 'archived' && (
+                <div className="bg-purple-50 dark:bg-purple-950/40 border-l-4 border-purple-500 p-4 mb-4 rounded-r-lg">
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                            <Archive className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-purple-800 dark:text-purple-200 font-bold">
+                                보관함 모드입니다 (상담원 시야에서 숨김 처리된 DB)
+                            </p>
+                            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                                계약 완료 또는 장기 미활동으로 상담원 화면에서 숨겨진 고객들입니다. 고객이 다시 전화를 걸거나 문의를 남기면 자동으로 활성 상태로 복원됩니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Recycle Bin Banner */}
             {viewMode === 'trash' && (

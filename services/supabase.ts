@@ -49,6 +49,10 @@ interface DbCase {
     tertiary_status: string | null;
     is_viewed: boolean;
     is_starred: boolean;
+    is_archived?: boolean;
+    archived_at?: string | null;
+    archived_reason?: string | null;
+    archived_by?: string | null;
     deleted_at: string | null;
     assigned_user_id?: string | null;
     customer_name: string;
@@ -114,6 +118,10 @@ export const dbToCase = (row: DbCase): Case => ({
     tertiaryStatus: row.tertiary_status || undefined,
     isViewed: row.is_viewed,
     isStarred: row.is_starred || false,
+    isArchived: !!row.is_archived,
+    archivedAt: row.archived_at || undefined,
+    archivedReason: row.archived_reason || undefined,
+    archivedBy: row.archived_by || undefined,
     deletedAt: row.deleted_at || undefined,
     customerName: row.customer_name,
     phone: row.phone,
@@ -178,6 +186,10 @@ export const caseToDb = (c: Partial<Case>): Partial<DbCase> => {
     if (c.tertiaryStatus !== undefined) result.tertiary_status = c.tertiaryStatus || null;
     if (c.isViewed !== undefined) result.is_viewed = c.isViewed;
     if (c.isStarred !== undefined) result.is_starred = c.isStarred;
+    if (c.isArchived !== undefined) result.is_archived = c.isArchived;
+    if (c.archivedAt !== undefined) result.archived_at = c.archivedAt || null;
+    if (c.archivedReason !== undefined) result.archived_reason = c.archivedReason || null;
+    if (c.archivedBy !== undefined) result.archived_by = c.archivedBy || null;
     if (c.deletedAt !== undefined) result.deleted_at = c.deletedAt || null;
     if (c.customerName !== undefined) result.customer_name = c.customerName;
     if (c.phone !== undefined) result.phone = c.phone;

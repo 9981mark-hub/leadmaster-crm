@@ -17,6 +17,7 @@ import { Case, MissedCallIntervalTier } from '../types';
 // React Query Hooks
 import { useCases, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
 import { restoreCase, refreshData } from '../services/api';
+import { archiveCases, restoreArchivedCases } from '../services/leadLifecycle';
 import { searchCommunicationLogsPhones } from '../services/supabase';
 import { exportSpecialCases } from '../utils/xlsxExport';
 import { CaseListHeader } from '../components/case-list/CaseListHeader';
@@ -43,7 +44,7 @@ export default function CaseList() {
     // State
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
+    const [viewMode, setViewMode] = useState<'active' | 'archived' | 'trash'>('active');
     const [layoutMode, setLayoutMode] = useState<'list' | 'kanban'>('list');
 
     // [NEW] 이탈 사유 모달 (CaseList 빠른 상태 변경 시)
@@ -229,8 +230,18 @@ export default function CaseList() {
             const matchesNew = showNewOnly ? c.isNew : true;
 
             const isDeleted = c.status === '휴지통' || !!c.deletedAt;
-            if (viewMode === 'active' && isDeleted) return false;
-            if (viewMode === 'trash' && !isDeleted) return false;
+            const isArchived = !isDeleted && !!c.isArchived;
+
+            // 상담원(agent)은 보관함 DB를 아예 볼 수 없음 (완전 은닉)
+            if (!isAdmin && isArchived) return false;
+
+            if (viewMode === 'active') {
+                if (isDeleted || isArchived) return false;
+            } else if (viewMode === 'archived') {
+                if (isDeleted || !isArchived) return false;
+            } else if (viewMode === 'trash') {
+                if (!isDeleted) return false;
+            }
 
             let matchesDate = true;
             if (dateFilterStart || dateFilterEnd) {
@@ -273,7 +284,7 @@ export default function CaseList() {
 
     // 빠른 보기 숫자 (휴지통 제외)
     const viewCounts = useMemo(() => {
-        const live = cases.filter(c => c.status !== '휴지통' && !c.deletedAt);
+        const live = cases.filter(c => c.status !== '휴지통' && !c.deletedAt && !c.isArchived);
         return {
             all: live.length,
             today: live.filter(c => hasDueReminder(c) || c.isNew || isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)).length,
@@ -417,7 +428,7 @@ export default function CaseList() {
 
     const handleDelete = async (caseId: string, e?: React.MouseEvent) => {
         e?.stopPropagation();
-        if (viewMode === 'active') {
+        if (viewMode === 'active' || viewMode === 'archived') {
             if (!window.confirm('휴지통으로 이동하시겠습니까?')) return;
             // Soft delete
             // [Fix] Don't set deletedAt to ensure it remains visible to RLS-restricted queries
@@ -430,13 +441,70 @@ export default function CaseList() {
 
     const handleRestore = async (caseId: string, e?: React.MouseEvent) => {
         e?.stopPropagation();
-        if (!window.confirm('복구하시겠습니까?')) return;
+        if (viewMode === 'archived') {
+            if (!window.confirm('활성 리드로 복원하시겠습니까?\n(상담원에게 다시 공개됩니다)')) return;
+            try {
+                await restoreArchivedCases([caseId]);
+                refetchCases();
+                showToast('활성 리드로 복원되었습니다.');
+            } catch (e: any) {
+                showToast(e.message || '복원 실패', 'error');
+            }
+        } else {
+            if (!window.confirm('복구하시겠습니까?')) return;
+            try {
+                await restoreCase(caseId);
+                refetchCases();
+                showToast('복구되었습니다.');
+            } catch (e) {
+                showToast('복구 실패', 'error');
+            }
+        }
+    };
+
+    const handleArchive = async (caseId: string, e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        if (!window.confirm('보관함으로 이동하시겠습니까?\n(상담원 화면에서 숨김 처리됩니다)')) return;
         try {
-            await restoreCase(caseId);
+            await archiveCases([caseId], '수동 개별 보관');
             refetchCases();
-            showToast('복구되었습니다.');
-        } catch (e) {
-            showToast('복구 실패', 'error');
+            showToast('보관함으로 이동되었습니다. (상담원 숨김)');
+        } catch (e: any) {
+            showToast(e.message || '보관함 이동 실패', 'error');
+        }
+    };
+
+    const bulkArchive = async () => {
+        const ids: string[] = Array.from(selected);
+        if (ids.length === 0) return;
+        if (!window.confirm(`${ids.length}건을 보관함으로 이동하시겠습니까?\n(상담원 화면에서 즉시 숨김 처리됩니다)`)) return;
+        setBulkBusy(true);
+        try {
+            const count = await archiveCases(ids, '수동 일괄 보관');
+            refetchCases();
+            showToast(`${count}건을 보관함으로 이동했습니다. (상담원 숨김)`);
+            setSelected(new Set());
+        } catch (e: any) {
+            showToast(e.message || '보관함 이동 실패', 'error');
+        } finally {
+            setBulkBusy(false);
+        }
+    };
+
+    const bulkRestoreFromArchive = async () => {
+        const ids: string[] = Array.from(selected);
+        if (ids.length === 0) return;
+        if (!window.confirm(`${ids.length}건을 활성 리드로 복원하시겠습니까?\n(상담원 화면에 다시 공개됩니다)`)) return;
+        setBulkBusy(true);
+        try {
+            const count = await restoreArchivedCases(ids);
+            refetchCases();
+            showToast(`${count}건을 활성 리드로 복원했습니다.`);
+            setSelected(new Set());
+        } catch (e: any) {
+            showToast(e.message || '복원 실패', 'error');
+        } finally {
+            setBulkBusy(false);
         }
     };
 
@@ -634,7 +702,7 @@ export default function CaseList() {
                 tertiaryStatusFilter={tertiaryStatusFilter} setTertiaryStatusFilter={setTertiaryStatusFilter}
                 sortOrder={sortOrder} setSortOrder={setSortOrder}
                 layoutMode={layoutMode} setLayoutMode={setLayoutMode}
-                viewMode={viewMode} setViewMode={setViewMode}
+                viewMode={viewMode} setViewMode={setViewMode} canManageArchive={isAdmin}
                 showStarredOnly={showStarredOnly} setShowStarredOnly={setShowStarredOnly}
                 partners={partners}
                 inboundPaths={inboundPaths}
@@ -691,6 +759,16 @@ export default function CaseList() {
                         </select>
                     )}
                     {isAdmin && <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>}
+                    {isAdmin && viewMode === 'active' && (
+                        <button onClick={bulkArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium">
+                            보관함으로 (숨김)
+                        </button>
+                    )}
+                    {isAdmin && viewMode === 'archived' && (
+                        <button onClick={bulkRestoreFromArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium">
+                            활성 리드로 복원
+                        </button>
+                    )}
                     <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-red-500/80 text-sm">휴지통</button>
                     <button onClick={() => setSelected(new Set())} className="ml-auto h-8 px-3 rounded-lg text-sm text-white/70 hover:text-white">선택 해제</button>
                     <span className="w-full text-[11px] text-white/50">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
@@ -745,6 +823,7 @@ export default function CaseList() {
                         statuses={statuses.filter(s => s !== '휴지통')}
                         onDelete={handleDelete}
                         onRestore={handleRestore}
+                        onArchive={isAdmin ? handleArchive : undefined}
                         onMissedCall={handleMissedCall}
                         onStatusChange={handleQuickStatusChange}
                         onToggleStar={handleToggleStar}

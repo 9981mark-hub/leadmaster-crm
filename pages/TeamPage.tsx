@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
-  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall
+  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -23,13 +23,14 @@ import BatchQualityPanel from '../components/team/BatchQualityPanel';
 import DncManagementPanel from '../components/team/DncManagementPanel';
 import AgentPerformancePanel from '../components/team/AgentPerformancePanel';
 import TeamCallAuditPanel from '../components/team/TeamCallAuditPanel';
+import LifecyclePolicyPanel from '../components/team/LifecyclePolicyPanel';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
   fetchAssignmentLogs, fetchImportBatches, ImportBatch
 } from '../services/distribution';
 import { usePartners, useStatuses, useInboundPaths } from '../services/queries';
 
-type TeamTab = 'performance' | 'call_audit' | 'bulk_assign' | 'rules' | 'quality' | 'dnc' | 'members';
+type TeamTab = 'performance' | 'call_audit' | 'bulk_assign' | 'rules' | 'lifecycle' | 'quality' | 'dnc' | 'members';
 type AssignFilter = 'unassigned' | 'all' | string; // string = 특정 멤버 userId
 
 // tsconfig lib 설정상 Array.from(Set)이 unknown[]으로 추론되어 직접 변환
@@ -301,6 +302,17 @@ export default function TeamPage() {
           }`}
         >
           <SlidersHorizontal size={16} /> 배분 규칙 · 로테이션
+        </button>
+
+        <button
+          onClick={() => setActiveTab('lifecycle')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+            activeTab === 'lifecycle'
+              ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Archive size={16} /> DB 수명주기 · 보관
         </button>
 
         <button
@@ -598,6 +610,17 @@ export default function TeamPage() {
             }}
           />
         </div>
+      )}
+
+      {/* 탭: DB 수명주기 & 보관 관리 */}
+      {activeTab === 'lifecycle' && (
+        <LifecyclePolicyPanel
+          cases={cases}
+          onChanged={() => {
+            queryClient.invalidateQueries({ queryKey: ['cases'] });
+            reload();
+          }}
+        />
       )}
 
       {/* 탭 4: 회차별 DB 품질 분석 */}
