@@ -592,11 +592,11 @@ export default function CaseDetail() {
         }
     };
 
-    const handleSaveSummaryToMemo = () => {
-        if (!aiSummaryText) return;
-
+    const handleSaveSummaryToMemo = (textOverride?: string) => {
+        const textToUse = typeof textOverride === "string" ? textOverride : aiSummaryText;
+        if (!textToUse) return;
         // Extract '특이사항' section from the AI summary (ignoring transcript)
-        const { summaryText } = parseAiTranscript(aiSummaryText);
+        const { summaryText } = parseAiTranscript(textToUse);
         let memoContent = '';
         const simpleMatch = summaryText.match(/(?:^|\n)(?:[\*\-0-9\.\s]*)특이사항[:\s]*([\s\S]*)$/i);
 
