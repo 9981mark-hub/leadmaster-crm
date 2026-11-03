@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, saveGlobalSettings } from '../services/api';
 import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAddTertiaryStatusMutation, useDeleteTertiaryStatusMutation } from '../services/queries';
 import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from '../types';
-import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle } from 'lucide-react';
+import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle, Skull, ShieldAlert } from 'lucide-react';
 import { getDayName, loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
 import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, REHABILITATION_DOMAIN_KEYWORDS, CHECK_ITEMS, DEFAULT_CHECK_ITEMS, DEFAULT_CLASSIFICATION_GUIDE } from '../constants';
 import Modal from '../components/Modal';
 import TelegramChatPicker from '../components/TelegramChatPicker';
+import { EmergencyPurgeModal } from '../components/settings/EmergencyPurgeModal';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchAiUsage, AiUsage } from '../services/aiProxy';
@@ -76,7 +77,8 @@ export default function SettingsPage() {
     const [newRule, setNewRule] = useState<Partial<CommissionRule>>({ minFee: 0, maxFee: 0, commission: 0, fullPayoutThreshold: 0, priority: 1, active: true });
 
     // AI는 서버(ai-proxy)에서 실행 → 키·모델 설정 없음. 관리자에게 오늘 사용량만 보여 준다 (016 get_ai_usage)
-    const { isAdmin } = useAuth();
+    const { isAdmin, org } = useAuth();
+    const [isEmergencyPurgeOpen, setIsEmergencyPurgeOpen] = useState(false);
     const [aiUsage, setAiUsage] = useState<AiUsage | null>(null);
     useEffect(() => {
         if (!isAdmin) return;
@@ -402,6 +404,7 @@ export default function SettingsPage() {
                             { id: 'status', label: '상태 관리', icon: '📋' },
                             { id: 'partner', label: '거래처 관리', icon: '🏢' },
                             { id: 'intake', label: '접수확인 · AI', icon: '📝' },
+                            ...(org?.role === 'owner' ? [{ id: 'danger', label: '위험 구역 (파기)', icon: '🚨' }] : []),
                         ].map(s => (
                             <button key={s.id} onClick={() => { const el = document.getElementById(`settings-${s.id}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 rounded-lg transition-colors text-left">
                                 <span className="text-xs">{s.icon}</span>
@@ -1988,6 +1991,52 @@ VAT: {{VAT}}원
                 )}
             </div>
 
+            {/* 위험 구역 (Danger Zone) - 회사 최고 대표(Owner) 전용 긴급 영구 파기 */}
+            {org?.role === 'owner' && (
+                <div id="settings-danger" className="bg-rose-50/30 dark:bg-rose-950/20 p-4 md:p-6 rounded-xl shadow-xs border-2 border-rose-500/40 space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                            <span className="p-2 bg-rose-600 text-white rounded-xl shadow-xs">
+                                <Skull size={20} />
+                            </span>
+                            <div>
+                                <h3 className="text-base md:text-lg font-bold text-rose-950 dark:text-rose-200 flex items-center gap-2">
+                                    위험 구역 (Danger Zone)
+                                    <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-rose-600 text-white">
+                                        대표자 전용
+                                    </span>
+                                </h3>
+                                <p className="text-xs text-rose-800 dark:text-rose-300/80 mt-0.5">
+                                    비상 상황(개인정보 침해 위험, 법적 분쟁, 긴급 감사 등)에 대비하여 자사 소속의 모든 고객 DB와 통화 녹음을 즉시 영구 파기합니다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsEmergencyPurgeOpen(true)}
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm active:scale-95"
+                        >
+                            <ShieldAlert size={15} />
+                            <span>회사 데이터 긴급 영구 파기</span>
+                        </button>
+                    </div>
+
+                    <div className="p-3.5 bg-rose-950/10 dark:bg-rose-950/40 border border-rose-500/30 rounded-lg text-xs text-rose-900 dark:text-rose-300 space-y-1">
+                        <p className="font-semibold flex items-center gap-1">
+                            <AlertTriangle size={14} className="text-rose-500 shrink-0" />
+                            영구 파기 실행 시 발생하는 영향:
+                        </p>
+                        <ul className="list-disc list-inside space-y-0.5 pl-1 text-[11px] text-rose-800 dark:text-rose-300/90">
+                            <li>등록된 모든 고객 리드({cases.length.toLocaleString()}건), 상담 메모, 채무 정보가 영구 삭제됩니다.</li>
+                            <li>통화 녹음 음성 파일, Gemini AI 요약문, STT 대화록 원본이 물리적으로 완전 소멸됩니다.</li>
+                            <li>수신동의 DB 회차 및 수신거부(DNC) 목록이 초기화됩니다.</li>
+                            <li>오직 회사 최고 대표(Owner)만 실행 가능하며, 삭제된 데이터는 본사를 포함해 어떠한 방법으로도 절대 복구할 수 없습니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            )}
+
             {/* MODALS */}
             <Modal
                 isOpen={isDeleteModalOpen}
@@ -2173,6 +2222,13 @@ VAT: {{VAT}}원
                     </div>
                 </div>
             </Modal>
+
+            {/* 비상 데이터 영구 파기 모달 */}
+            <EmergencyPurgeModal
+                isOpen={isEmergencyPurgeOpen}
+                onClose={() => setIsEmergencyPurgeOpen(false)}
+                cases={cases}
+            />
                 </div>{/* end flex-1 content */}
             </div>{/* end flex gap-6 */}
         </div >
