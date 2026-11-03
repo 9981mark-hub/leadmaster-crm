@@ -492,26 +492,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 <Trash2 size={16} />
                                             </button>
                                         </>
-                                    ) : (
-                                        <>
-                                            {onArchive && (
-                                                <button
-                                                    onClick={(e) => onArchive(c.caseId, e)}
-                                                    className="p-2 bg-purple-50 text-purple-600 rounded-full hover:bg-purple-100 transition-colors"
-                                                    title="보관함으로 이동 (상담원 숨김)"
-                                                >
-                                                    <Archive size={16} />
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={(e) => onDelete(c.caseId, e)}
-                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                                                title="휴지통으로 이동"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </>
-                                    )}
+                                    ) : null}
                                 </div>
                             </div>
                         </div>
@@ -536,8 +517,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                             <th className="px-4 py-3 w-[10%]">상태</th>
                             <th className="px-4 py-3 w-[10%]">등록일</th>
                             <th className="px-4 py-3 w-[10%]">최종상담일</th>
-                            <th className="px-4 py-3 w-[20%]">리마인더</th>
-                            <th className="px-4 py-3 w-[10%] text-center">삭제</th>
+                            <th className={`px-4 py-3 ${viewMode === 'active' ? 'w-[30%]' : 'w-[20%]'}`}>리마인더</th>
+                            {viewMode !== 'active' && (
+                                <th className="px-4 py-3 w-[10%] text-center">
+                                    {viewMode === 'archived' ? '보관·삭제' : '휴지통 관리'}
+                                </th>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
@@ -802,62 +787,45 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             />
                                         ) : (overdueReminder ? null : '-')}
                                     </td>
-                                    <td className="px-4 py-3 text-center">
-                                        {viewMode === 'trash' ? (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    onClick={(e) => onRestore(c.caseId, e)}
-                                                    className="text-green-500 hover:text-green-700 p-1.5 rounded hover:bg-green-50"
-                                                    title="복구"
-                                                >
-                                                    <Sparkles size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => onDelete(c.caseId, e)}
-                                                    className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50"
-                                                    title="영구 삭제"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        ) : viewMode === 'archived' ? (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    onClick={(e) => onRestore(c.caseId, e)}
-                                                    className="text-purple-600 hover:text-purple-800 p-1.5 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                                                    title="활성 리드로 복원 (상담원 공개)"
-                                                >
-                                                    <Sparkles size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => onDelete(c.caseId, e)}
-                                                    className="text-gray-300 hover:text-red-500 p-1.5 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                    title="휴지통으로 이동"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center justify-center gap-1">
-                                                {onArchive && (
+                                    {viewMode !== 'active' && (
+                                        <td className="px-4 py-3 text-center">
+                                            {viewMode === 'trash' ? (
+                                                <div className="flex items-center justify-center gap-2">
                                                     <button
-                                                        onClick={(e) => onArchive(c.caseId, e)}
-                                                        className="text-gray-300 hover:text-purple-600 p-2 rounded transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                                                        title="보관함으로 이동 (상담원 숨김)"
+                                                        onClick={(e) => onRestore(c.caseId, e)}
+                                                        className="text-green-500 hover:text-green-700 p-1.5 rounded hover:bg-green-50"
+                                                        title="복구"
                                                     >
-                                                        <Archive size={16} />
+                                                        <Sparkles size={16} />
                                                     </button>
-                                                )}
-                                                <button
-                                                    onClick={(e) => onDelete(c.caseId, e)}
-                                                    className="text-gray-300 hover:text-red-500 p-2 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                    title="삭제"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </td>
+                                                    <button
+                                                        onClick={(e) => onDelete(c.caseId, e)}
+                                                        className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50"
+                                                        title="영구 삭제"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        onClick={(e) => onRestore(c.caseId, e)}
+                                                        className="text-purple-600 hover:text-purple-800 p-1.5 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                                        title="활성 리드로 복원 (상담원 공개)"
+                                                    >
+                                                        <Sparkles size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => onDelete(c.caseId, e)}
+                                                        className="text-gray-400 hover:text-red-500 p-1.5 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        title="휴지통으로 이동"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             );
                         })}

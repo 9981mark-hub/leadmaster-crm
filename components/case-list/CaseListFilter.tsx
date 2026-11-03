@@ -306,49 +306,66 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         </div>
 
 
+                        {/* 보관함 버튼: 평소 활성 상태에서는 이 버튼만 노출되며, 1차로 누르면 보관함 및 삭제 관리 영역 활성화 */}
                         {canManageArchive && (
                             <button
                                 onClick={() => setViewMode(viewMode === 'archived' ? 'active' : 'archived')}
-                                className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all shadow-sm shrink-0 font-medium text-xs ${
                                     viewMode === 'archived'
-                                        ? 'bg-purple-600 text-white hover:bg-purple-700'
-                                        : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-600'
+                                        ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-300'
+                                        : 'bg-white dark:bg-gray-700 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'
                                 }`}
-                                title={viewMode === 'archived' ? '활성 목록으로 돌아가기' : '보관함 (상담원 숨김) 보기'}
+                                title={viewMode === 'archived' ? '활성 리드로 돌아가기' : '보관함 (상담원 숨김 DB 및 삭제 관리) 보기'}
                             >
-                                {viewMode === 'archived' ? <ChevronLeft size={18} /> : <Archive size={18} />}
+                                {viewMode === 'archived' ? <ChevronLeft size={16} /> : <Archive size={16} />}
+                                <span>{viewMode === 'archived' ? '활성 리드로' : '보관함'}</span>
                             </button>
                         )}
 
-                        <button
-                            onClick={() => setViewMode(viewMode === 'trash' ? 'active' : 'trash')}
-                            className={`flex items-center justify-center p-2 rounded-lg transition-colors shadow-sm shrink-0 ${viewMode === 'trash'
-                                ? 'bg-red-600 text-white hover:bg-red-700'
-                                : 'bg-white border text-gray-600 hover:bg-gray-50'
+                        {/* 휴지통 버튼: 평소(active)에는 노출하지 않고, 보관함(archived)이나 휴지통(trash) 모드에서만 활성화 */}
+                        {viewMode !== 'active' && (
+                            <button
+                                onClick={() => setViewMode(viewMode === 'trash' ? 'archived' : 'trash')}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors shadow-sm shrink-0 text-xs font-medium ${
+                                    viewMode === 'trash'
+                                        ? 'bg-red-600 text-white hover:bg-red-700'
+                                        : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-950/30'
                                 }`}
-                            title={viewMode === 'active' ? "휴지통 보기" : "목록으로 돌아가기"}
-                        >
-                            {viewMode === 'trash' ? <ChevronLeft size={18} /> : <Trash2 size={18} />}
-                        </button>
+                                title={viewMode === 'trash' ? "보관함으로 돌아가기" : "휴지통 보기"}
+                            >
+                                {viewMode === 'trash' ? <ChevronLeft size={16} /> : <Trash2 size={16} />}
+                                <span>{viewMode === 'trash' ? '보관함으로' : '휴지통'}</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* Archive Banner */}
             {viewMode === 'archived' && (
-                <div className="bg-purple-50 dark:bg-purple-950/40 border-l-4 border-purple-500 p-4 mb-4 rounded-r-lg">
+                <div className="bg-purple-50 dark:bg-purple-950/40 border-l-4 border-purple-500 p-4 mb-4 rounded-r-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center">
                         <div className="flex-shrink-0">
                             <Archive className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div className="ml-3">
                             <p className="text-sm text-purple-800 dark:text-purple-200 font-bold">
-                                보관함 모드입니다 (상담원 시야에서 숨김 처리된 DB)
+                                📦 보관함 모드 (상담원 시야에서 숨김 처리된 DB & 삭제 관리)
                             </p>
                             <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                                계약 완료 또는 장기 미활동으로 상담원 화면에서 숨겨진 고객들입니다. 고객이 다시 전화를 걸거나 문의를 남기면 자동으로 활성 상태로 복원됩니다.
+                                상담원에게는 노출되지 않는 데이터입니다. 목록 우측의 액션 버튼을 통해 안전하게 활성 리드로 복원하거나 휴지통으로 삭제할 수 있습니다.
                             </p>
                         </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('trash')}
+                            className="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5 shadow-sm"
+                        >
+                            <Trash2 size={14} className="text-red-500" />
+                            <span>휴지통 보기</span>
+                        </button>
                     </div>
                 </div>
             )}

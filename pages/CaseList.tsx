@@ -760,16 +760,25 @@ export default function CaseList() {
                     )}
                     {isAdmin && <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>}
                     {isAdmin && viewMode === 'active' && (
-                        <button onClick={bulkArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium">
-                            보관함으로 (숨김)
+                        <button onClick={bulkArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium shadow-sm">
+                            📦 선택 보관함 이동 (상담원 숨김)
                         </button>
                     )}
                     {isAdmin && viewMode === 'archived' && (
-                        <button onClick={bulkRestoreFromArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium">
-                            활성 리드로 복원
+                        <>
+                            <button onClick={bulkRestoreFromArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium">
+                                ✨ 활성 리드로 복원
+                            </button>
+                            <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-red-600/80 hover:bg-red-600 text-sm font-medium">
+                                🗑 선택 휴지통으로
+                            </button>
+                        </>
+                    )}
+                    {viewMode === 'trash' && (
+                        <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-red-600/80 hover:bg-red-600 text-sm font-medium">
+                            🗑 선택 영구 삭제
                         </button>
                     )}
-                    <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-red-500/80 text-sm">휴지통</button>
                     <button onClick={() => setSelected(new Set())} className="ml-auto h-8 px-3 rounded-lg text-sm text-white/70 hover:text-white">선택 해제</button>
                     <span className="w-full text-[11px] text-white/50">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
                 </div>
