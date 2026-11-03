@@ -111,7 +111,7 @@ export function buildCallHistoryList(
       audioProblem = r.error || 'AI 분석 중 오류가 발생했습니다.';
     } else if (r.status === 'skipped') {
       finalStatus = 'skipped';
-      audioProblem = '통화 시간이 너무 짧거나 음성이 없어 분석을 건너뛰었습니다.';
+      audioProblem = r.summary || '유효한 상담 내용이 없어 요약을 생략했습니다.';
     } else if (isStale) {
       // 15분 이상 지났는데 아직도 uploaded나 processing인 경우: 중단/실패 처리
       finalStatus = 'failed';
@@ -182,7 +182,10 @@ export function buildCallHistoryList(
     let clientStatus: CaseCallStatus = 'done';
     let clientAudioProblem: string | undefined = undefined;
 
-    if (text) {
+    if (cr.status === 'skipped' || String(cr.aiSummary || cr.summary || '').startsWith('[요약 생략]')) {
+      clientStatus = 'skipped';
+      clientAudioProblem = cr.aiSummary || cr.summary || '유효한 상담 내용이 없어 요약을 생략했습니다.';
+    } else if (text) {
       clientStatus = 'done';
     } else if (isRecent && cr.aiCurrent) {
       // 최근 3분 이내에 업로드되어 AI 분석이 막 시작된 통화

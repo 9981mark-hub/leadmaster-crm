@@ -168,8 +168,19 @@ const SCHEMA = {
     missing_items: { type: 'ARRAY', items: { type: 'STRING' } },
     classification: { type: 'OBJECT', properties: { label: { type: 'STRING' }, reason: STR }, required: ['label'] },
     case_type_suggestion: en(['개인회생', '파산', '새출발기금', '신용회복']),
+    // [통화 적격성 판별: 무의미 통화 필터링 및 일정 약속 구분]
+    call_qualification: {
+      type: 'OBJECT',
+      properties: {
+        is_meaningful: { type: 'BOOLEAN' },
+        call_type: en(['full_consultation', 'schedule_only', 'no_response', 'rejected', 'wrong_number', 'general_greeting']),
+        reason: STR,
+        schedule_note: STR,
+      },
+      required: ['is_meaningful', 'call_type', 'reason'],
+    },
   },
-  required: ['summary', 'transcript', 'debt', 'income', 'family', 'housing', 'special_notes', 'customer_intent', 'office_summary', 'missing_items', 'classification'],
+  required: ['summary', 'transcript', 'debt', 'income', 'family', 'housing', 'special_notes', 'customer_intent', 'office_summary', 'missing_items', 'classification', 'call_qualification'],
 };
 
 interface PromptCtx {
@@ -194,14 +205,38 @@ ${DOMAIN_KEYWORDS.join(', ')}
 - 방향: ${ctx.direction === 'CALL_IN' ? '고객이 건 전화' : ctx.direction === 'CALL_OUT' ? '상담원이 건 전화' : '알 수 없음'}
 - 길이: 약 ${Math.round((ctx.durationSec || 0) / 60)}분
 
+[통화 적격성 판별 (call_qualification) - 최우선 필수 판별]
+통화 녹음을 분석하여 실질적인 법률/채무/개인회생 상담 내용이 오갔는지 가장 먼저 판별하세요:
+- is_meaningful: 채무액, 소득, 재산, 직업, 주거, 가족, 개인회생/파산/신용회복 절차 등 실질적인 상담 내용이나 구체적인 조건이 언급되었는지 여부 (true/false)
+- call_type: 아래 6가지 중 가장 알맞은 하나를 선택하세요:
+  * "full_consultation": 채무, 소득, 재산, 연체, 절차 등 구체적 상담 문답이 1개 이상 오간 경우 (is_meaningful = true)
+  * "schedule_only": 상담 내용은 없고 내방 일시, 서류 안내, 재통화 시간 약속만 오간 경우 (is_meaningful = false)
+  * "no_response": 한쪽 화자만 말하고 상대방 무응답 후 종료 (예: "여보세요"만 1~2마디 하고 끊김) (is_meaningful = false)
+  * "rejected": "지금 바빠요", "운전 중입니다", "나중에 전화해요" 등 대화 거절 (is_meaningful = false)
+  * "wrong_number": 번호를 잘못 걸어 바로 종료 (is_meaningful = false)
+  * "general_greeting": 상담 없이 단순 안부만 짧게 나누고 종료 (is_meaningful = false)
+- reason: 판별 사유를 한국어로 1문장으로 명확히 작성하세요 (예: "상대방 무응답으로 상담원 '여보세요' 후 종료", "운전 중 사유로 통화 거절").
+- schedule_note: call_type이 "schedule_only"인 경우 약속 내용(내방 일시, 지참 서류 등)을 간결히 적고, 그 외는 null.
+
 [summary 작성 규칙]
 ${ctx.summaryRule || DEFAULT_SUMMARY_RULE}
 
-[office_summary: 사무실 보고서]
-- 아래 양식의 줄 구성과 순서를 그대로 지키고 {{...}} 자리만 통화에서 들은 내용으로 채우세요.
-- 담당자·고객이름·연락처는 [통화 정보]의 값을 쓰세요.
-- 통화에서 말하지 않은 칸은 "확인 필요"라고 적으세요 (추측 금지). 금액은 "3,500만원", "1억 2,000만원"처럼 쓰세요.
-- {{specialMemo}} 자리에는 특이사항·다음 할 일을 하이픈 목록으로 적으세요.
+[office_summary: 사무실 보고서 작성 규칙]
+1. [중요] call_type이 'no_response', 'rejected', 'wrong_number', 'general_greeting'인 무효 통화:
+   - 절대로 20개 항목 전체를 "확인 필요"로 채우지 마세요!
+   - office_summary는 반드시 ""(빈 문자열)으로 반환하세요.
+2. [중요] call_type이 'schedule_only'인 경우:
+   - 20개 항목 템플릿 대신 아래 간이 양식으로 작성하세요:
+[일정 및 진행 안내]
+* 통화 구분 : 일정 조율 및 진행 안내
+* 약속 내용 : {{schedule_note}}
+* 특이사항 :
+- {{special_notes}}
+3. [중요] call_type이 'full_consultation'인 경우에만:
+   - 아래 양식의 줄 구성과 순서를 그대로 지키고 {{...}} 자리만 통화에서 들은 내용으로 채우세요.
+   - 담당자·고객이름·연락처는 [통화 정보]의 값을 쓰세요.
+   - 통화에서 말하지 않은 칸만 "확인 필요"라고 적으세요 (추측 금지). 금액은 "3,500만원", "1억 2,000만원"처럼 쓰세요.
+   - {{specialMemo}} 자리에는 특이사항·다음 할 일을 하이픈 목록으로 적으세요.
 양식:
 ${ctx.officeTemplate || DEFAULT_SUMMARY_TEMPLATE}
 
@@ -383,15 +418,19 @@ function caseSummaryText(summary: string, e: any, transcript: { t: string; speak
 }
 
 /**
- * [2026-11-02] 새 통화 AI 정리 → 요약문 칸을 그 통화 요약으로 바꾼다.
+ * [2026-11-02/03] 새 통화 AI 정리 → 요약문 칸을 그 통화 요약으로 바꾼다.
  * - 이 리드에 더 나중 통화의 AI 정리가 이미 있으면 바꾸지 않는다 (예전 통화를 다시 정리한 경우).
  * - 지금 요약은 지우지 않는다: 그 요약의 녹음(aiCurrent)에 옮겨 두고, 어느 녹음 것인지 모르면 상담 이력 메모로 보관.
- * - 이 통화는 cases.recordings에 항목(웹이 올린 녹음이면 그 항목, 아니면 fromApp 항목)으로 남겨 날짜 버튼으로 다시 볼 수 있게.
+ * - 이 통화는 cases.recordings에 항목으로 남겨 날짜 버튼으로 다시 볼 수 있게.
+ * - [2026-11-03] isSkipped: 무효 통화는 대표 ai_summary를 덮어쓰지 않고 타임라인에만 '요약 생략'으로 보존.
  */
-async function updateCaseSummary(rec: any, text: string) {
-  if (!rec.case_id || !text.trim()) return;
+async function updateCaseSummary(rec: any, text: string, opts?: { isSkipped?: boolean; skipReason?: string; isScheduleOnly?: boolean }) {
+  if (!rec.case_id) return;
+  const isSkipped = !!opts?.isSkipped;
+  if (!isSkipped && !text.trim()) return;
+
   const { data: newer } = await admin.from('call_recordings').select('id')
-    .eq('org_id', rec.org_id).eq('case_id', rec.case_id).eq('status', 'done').neq('id', rec.id)
+    .eq('org_id', rec.org_id).eq('case_id', rec.case_id).in('status', ['done', 'skipped']).neq('id', rec.id)
     .gt('call_started_at', rec.call_started_at).limit(1);
   if (newer && newer.length > 0) return;
 
@@ -410,26 +449,56 @@ async function updateCaseSummary(rec: any, text: string) {
   let next = recs.map((r, i) => {
     if (i === idx) {
       const { aiSummary: _drop, ...rest } = r;
-      return { ...rest, aiCurrent: true, analyzedAt: now, recordingId: rec.id };
+      return {
+        ...rest,
+        aiCurrent: !isSkipped,
+        analyzedAt: now,
+        recordingId: rec.id,
+        status: isSkipped ? 'skipped' : 'done',
+        summary: isSkipped ? `[요약 생략] ${opts?.skipReason || ''}` : rest.summary,
+      };
     }
-    if (i === prevIdx) return { ...r, aiCurrent: false, aiSummary: oldOk ? old : r.aiSummary };
+    if (i === prevIdx) {
+      return { ...r, aiCurrent: isSkipped ? r.aiCurrent : false, aiSummary: oldOk ? old : r.aiSummary };
+    }
     return r;
   });
+
   if (idx < 0) {
     next = [{
       id: itemId, recordingId: rec.id, fromApp: true,
       filename: rec.file_name || `통화 녹음 ${rec.call_started_at || ''}`,
       url: rec.drive_file_id ? `https://drive.google.com/file/d/${rec.drive_file_id}/view` : '',
       uploadDate: rec.call_started_at || now, mimeType: rec.mime_type || 'audio/mp4',
-      duration: Number(rec.duration_sec) || 0, aiCurrent: true, analyzedAt: now,
+      duration: Number(rec.duration_sec) || 0,
+      aiCurrent: !isSkipped,
+      analyzedAt: now,
+      status: isSkipped ? 'skipped' : 'done',
+      summary: isSkipped ? `[요약 생략] ${opts?.skipReason || ''}` : undefined,
     }, ...next];
   }
+
+  // 무효 통화(isSkipped)는 대표 요약문을 덮어쓰지 않고 타임라인 recordings 배열만 갱신
+  if (isSkipped) {
+    await admin.from('cases').update({ recordings: next, updated_at: now })
+      .eq('org_id', rec.org_id).eq('case_id', rec.case_id);
+    return;
+  }
+
+  // 일정 안내 통화(isScheduleOnly)인 경우 기존에 정식 요약문이 있었다면 채무/인적 정보를 지우지 않고 보존
+  let targetSummary = text;
+  if (opts?.isScheduleOnly && oldOk) {
+    const schedulePart = text.split('\n\n[전체 대화록]')[0];
+    const transcriptPart = text.includes('\n\n[전체 대화록]') ? `\n\n[전체 대화록]${text.split('\n\n[전체 대화록]')[1]}` : '';
+    targetSummary = `${old}\n\n[추가 일정 안내]\n${schedulePart}${transcriptPart}`;
+  }
+
   let nextMemos = memos;
   const keepId = `prev-${rec.id}`;
   if (prevIdx < 0 && oldOk && !memos.some(m => m?.id === keepId)) {
     nextMemos = [{ id: keepId, createdAt: now, content: `[이전 AI 요약 보관]\n${old}`.slice(0, 4000) }, ...memos];
   }
-  await admin.from('cases').update({ ai_summary: text, recordings: next, special_memo: nextMemos, updated_at: now })
+  await admin.from('cases').update({ ai_summary: targetSummary, recordings: next, special_memo: nextMemos, updated_at: now })
     .eq('org_id', rec.org_id).eq('case_id', rec.case_id);
 }
 
@@ -481,17 +550,67 @@ async function analyze(rec: any, settings: any) {
 
     const out = await callGemini(prompt, audioPart);
     const transcript = Array.isArray(out.data?.transcript) ? out.data.transcript.map((x: any) => ({ t: String(x?.t || ''), speaker: x?.speaker || '기타', text: String(x?.text || '') })) : [];
+
+    const qual = out.data?.call_qualification || { is_meaningful: true, call_type: 'full_consultation', reason: '' };
+    const isFullConsultation = qual.call_type === 'full_consultation';
+    const isScheduleOnly = qual.call_type === 'schedule_only';
+    const isSkipped = !isFullConsultation && !isScheduleOnly; // no_response, rejected, wrong_number, general_greeting
+
+    if (isSkipped) {
+      // [2026-11-03] 무효 통화: 깡통 템플릿("확인 필요" 도배) 생성을 전면 차단하고 skipped 처리
+      const skipReason = qual.reason || '유효 상담 내용 없음';
+      const skipSummary = `[요약 생략] ${skipReason}`;
+      await admin.from('call_recordings').update({
+        status: 'skipped', error: null,
+        summary: skipSummary,
+        transcript, // 대화록은 통화 사실 증거용으로 온전히 보존
+        extracted: null, // 깡통 템플릿 제거
+        model: out.model, tokens_in: out.tokensIn, tokens_out: out.tokensOut,
+        analyzed_at: new Date().toISOString(),
+      }).eq('id', rec.id);
+
+      // 무효 통화는 상담 이력 메모(special_memo)에 절대 등록하지 않음!
+      // 대표 ai_summary도 덮어쓰지 않고, recordings 타임라인 목록에만 '요약 생략'으로 등록
+      try {
+        await updateCaseSummary(rec, '', { isSkipped: true, skipReason });
+      } catch (e) {
+        console.error('[recording-analyze] skipped summary update', String(e));
+      }
+      return;
+    }
+
+    // 정상 상담 또는 일정 안내 통화
+    const summaryText = isScheduleOnly
+      ? (qual.schedule_note || String(out.data?.summary || '').trim() || '[일정 안내 통화]')
+      : String(out.data?.summary || '').trim();
+
     await admin.from('call_recordings').update({
       status: 'done', error: null,
-      summary: String(out.data?.summary || '').trim(),
+      summary: summaryText,
       transcript, extracted: normalize(out.data),
       model: out.model, tokens_in: out.tokensIn, tokens_out: out.tokensOut,
       analyzed_at: new Date().toISOString(),
     }).eq('id', rec.id);
-    // [2026-11-02] 상담 이력(cases.special_memo)에도 남긴다. 같은 녹음을 다시 정리하면 그 메모만 새 내용으로 바꾼다
-    try { await addHistoryMemo(rec, String(out.data?.summary || '').trim(), normalize(out.data)); } catch (e) { console.error('[recording-analyze] memo', String(e)); }
-    // [2026-11-02] 요약문 칸도 이 통화 요약으로 (이전 요약은 통화별로 보관)
-    try { await updateCaseSummary(rec, caseSummaryText(String(out.data?.summary || '').trim(), normalize(out.data), transcript)); } catch (e) { console.error('[recording-analyze] summary', String(e)); }
+
+    // [2026-11-02] 상담 이력(cases.special_memo)에도 남긴다.
+    // schedule_only인 경우 20개 항목 대신 간이 일정 메모 1줄로 남긴다.
+    try {
+      if (isScheduleOnly) {
+        await addHistoryMemo(rec, `[일정 약속] ${qual.schedule_note || summaryText}`, normalize(out.data));
+      } else {
+        await addHistoryMemo(rec, summaryText, normalize(out.data));
+      }
+    } catch (e) {
+      console.error('[recording-analyze] memo', String(e));
+    }
+
+    // [2026-11-02] 요약문 칸도 업데이트 (이전 요약은 보관)
+    try {
+      const combinedText = caseSummaryText(summaryText, normalize(out.data), transcript);
+      await updateCaseSummary(rec, combinedText, { isScheduleOnly });
+    } catch (e) {
+      console.error('[recording-analyze] summary', String(e));
+    }
   } catch (e) {
     const msg = String((e as Error)?.message || e).slice(0, 500);
     console.error('[recording-analyze] fail', rec.id, msg);
@@ -528,6 +647,16 @@ Deno.serve(async (req: Request) => {
 
   const { data: settings } = await admin.from('org_recording_settings').select('*').eq('org_id', rec.org_id).maybeSingle();
   if (auto && !settings?.auto_analyze) return json({ ok: true, queued: false, reason: 'auto_analyze_off' });
+
+  // [2026-11-03] 최소 통화 시간 미만인 경우 AI 호출 자체를 생략하고 skipped 처리
+  const minDur = settings?.min_duration_sec ?? 15;
+  if (auto && rec.duration_sec > 0 && rec.duration_sec < minDur) {
+    await admin.from('call_recordings').update({
+      status: 'skipped',
+      summary: `[요약 생략] 최소 통화 시간(${minDur}초) 미만 (${rec.duration_sec}초)`,
+    }).eq('id', rec.id);
+    return json({ ok: true, queued: false, reason: 'duration_too_short' });
+  }
   if (rec.status === 'processing' && Date.now() - new Date(rec.updated_at).getTime() < STALE_PROCESSING_MS) {
     return json({ ok: true, queued: false, reason: 'already_processing' });
   }

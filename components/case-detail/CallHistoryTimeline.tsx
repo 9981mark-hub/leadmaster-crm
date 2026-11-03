@@ -239,6 +239,11 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
                     요약 미생성
                   </span>
                 )}
+                {call.status === 'skipped' && (
+                  <span className={`text-[10px] px-1 py-0.2 rounded ${isSelected ? 'bg-purple-800/60 text-purple-200' : 'bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                    요약생략
+                  </span>
+                )}
                 {call.status === 'failed' && (
                   <span className={`inline-flex items-center gap-0.5 text-[10px] ${isSelected ? 'text-red-200' : 'text-red-500'}`}>
                     <AlertCircle size={11} />

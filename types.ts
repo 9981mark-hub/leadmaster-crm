@@ -57,6 +57,8 @@ export interface RecordingItem {
   fromApp?: boolean;
   /** 연결된 call_recordings.id */
   recordingId?: string;
+  status?: string;
+  summary?: string;
 }
 
 export interface Case {

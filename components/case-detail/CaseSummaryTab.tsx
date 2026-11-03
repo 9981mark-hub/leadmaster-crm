@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X, Check, Loader2, AlertCircle, AlertTriangle, VolumeX } from 'lucide-react';
+import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X, Check, Loader2, AlertCircle, AlertTriangle, VolumeX, RefreshCw } from 'lucide-react';
 import { Case, Partner } from '../../types';
 import { generateSummary, injectSummaryMetadata, parseAiTranscript } from '../../utils';
 import { FillFromSummaryButton } from './FillFromSummaryButton';
@@ -77,14 +77,41 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
         reloadCalls();
     };
 
+    const [reanalyzing, setReanalyzing] = useState(false);
+    const handleForceReanalyze = async (recId: string) => {
+        setReanalyzing(true);
+        try {
+            showToast('AI 요약 분석을 요청합니다...');
+            const { requestAnalyze, waitAnalyzed } = await import('../../services/recordings');
+            await requestAnalyze(recId, false);
+            showToast('AI 분석이 시작되었습니다. 1~2분 뒤 요약문이 갱신됩니다.', 'success');
+            waitAnalyzed(recId, 180_000).then(async (done) => {
+                if (done?.status === 'done') {
+                    await reloadCalls();
+                    showToast('AI 분석이 완료되어 요약문이 갱신되었습니다.', 'success');
+                }
+            }).catch(() => {});
+        } catch (e: any) {
+            showToast(`분석 요청 실패: ${e?.message || '오류'}`, 'error');
+        } finally {
+            setReanalyzing(false);
+        }
+    };
+
+    const activeTranscriptLines = parsed.transcriptLines.length > 0
+        ? parsed.transcriptLines
+        : (selectedCall?.transcriptLines || []);
+    const activeRawTranscript = parsed.rawTranscript || selectedCall?.rawTranscript || '';
+    const hasTranscript = activeTranscriptLines.length > 0 || !!activeRawTranscript;
+
     // [2026-11-02] PC 넓은 화면(1280px 이상)은 대화록이 있으면 기본 요약문 · AI 요약문 · 대화록 3칸으로 연다
     const autoOpened = useRef(false);
     useEffect(() => {
-        if (autoOpened.current || !activeRawText) return;
+        if (autoOpened.current || (!activeRawText && !hasTranscript)) return;
         autoOpened.current = true;
         const wide = typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches;
-        if (wide && (parsed.transcriptLines.length > 0 || parsed.rawTranscript)) setAiTab('transcript');
-    }, [activeRawText, parsed]);
+        if (wide && hasTranscript) setAiTab('transcript');
+    }, [activeRawText, hasTranscript]);
 
     const copyAiTab = () => {
         const wide = typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches;
@@ -96,9 +123,9 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
         }
         const text = aiTab === 'summary'
             ? (parsed.summaryText || '')
-            : (parsed.transcriptLines.length
-                ? parsed.transcriptLines.map(l => `${l.time ? `[${l.time}] ` : ''}${l.speaker}: ${l.text}`).join('\n')
-                : parsed.rawTranscript || '');
+            : (activeTranscriptLines.length
+                ? activeTranscriptLines.map(l => `${l.time ? `[${l.time}] ` : ''}${l.speaker}: ${l.text}`).join('\n')
+                : activeRawTranscript);
         if (!text.trim()) { showToast(aiTab === 'summary' ? '복사할 요약문이 없습니다.' : '복사할 대화록이 없습니다.'); return; }
         navigator.clipboard.writeText(text).then(
             () => showToast(aiTab === 'summary' ? '요약문을 복사했습니다.' : '대화록을 복사했습니다.'),
@@ -106,8 +133,8 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
         );
     };
 
-    const showTranscript = !!activeRawText && aiTab === 'transcript';
-    const transcriptList = parsed.transcriptLines.length > 0 ? parsed.transcriptLines.map(line => {
+    const showTranscript = (!!activeRawText || hasTranscript) && aiTab === 'transcript';
+    const transcriptList = activeTranscriptLines.length > 0 ? activeTranscriptLines.map(line => {
         const isAgent = /상담원|담당자|사무장/.test(line.speaker);
         return (
             <div
@@ -127,14 +154,14 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
         );
     }) : (
         <div className="text-sm text-gray-400 dark:text-gray-500 whitespace-pre-wrap">
-            {parsed.rawTranscript || '분석된 대화록이 없습니다.'}
+            {activeRawTranscript || '분석된 대화록이 없습니다.'}
         </div>
     );
 
     const copyTranscript = () => {
-        const text = parsed.transcriptLines.length
-            ? parsed.transcriptLines.map(l => `${l.time ? `[${l.time}] ` : ''}${l.speaker}: ${l.text}`).join('\n')
-            : parsed.rawTranscript || '';
+        const text = activeTranscriptLines.length
+            ? activeTranscriptLines.map(l => `${l.time ? `[${l.time}] ` : ''}${l.speaker}: ${l.text}`).join('\n')
+            : activeRawTranscript;
         if (!text.trim()) { showToast('복사할 대화록이 없습니다.'); return; }
         navigator.clipboard.writeText(text).then(
             () => showToast('대화록을 복사했습니다.'),
@@ -335,6 +362,32 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                         </p>
                                     )}
                                 </div>
+                            </div>
+                        ) : selectedCall && selectedCall.status === 'skipped' ? (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-600 dark:text-slate-300 gap-3 min-h-[220px] p-6 text-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
+                                <div className="p-3 bg-purple-100 dark:bg-purple-900/40 rounded-full text-purple-600 dark:text-purple-300">
+                                    <FileText size={32} />
+                                </div>
+                                <div className="space-y-1.5 max-w-md">
+                                    <h4 className="font-bold text-sm text-gray-800 dark:text-gray-100">유효한 상담 내용이 없어 요약을 생략했습니다</h4>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                        {selectedCall.audioProblem || selectedCall.summaryText || '상대방 무응답, 통화 거절, 또는 단순 인사 통화로 판단되어 20개 항목 템플릿 생성을 생략했습니다.'}
+                                    </p>
+                                    <p className="text-[11px] text-purple-600 dark:text-purple-400 font-medium pt-1">
+                                        ※ 통화 녹음 원본과 대화록은 우측 탭에서 온전히 확인하실 수 있습니다.
+                                    </p>
+                                </div>
+                                {selectedCall.recordingId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleForceReanalyze(selectedCall.recordingId!)}
+                                        disabled={reanalyzing}
+                                        className="mt-1 text-xs px-3 py-1.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/30 flex items-center gap-1.5 transition-colors shadow-xs font-medium"
+                                    >
+                                        <RefreshCw size={12} className={reanalyzing ? 'animate-spin' : ''} />
+                                        <span>수동으로 전체 요약 실행하기</span>
+                                    </button>
+                                )}
                             </div>
                         ) : activeRawText ? (
                             <>
