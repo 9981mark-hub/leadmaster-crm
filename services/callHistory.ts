@@ -44,7 +44,7 @@ export const formatCallTime = (iso?: string): string => {
  * Builds unified combined text (summary + [전체 대화록] + transcript)
  * matching the standard format expected by parseAiTranscript.
  */
-function buildCombinedText(r: CallRecording): string {
+export function buildCombinedText(r: CallRecording): string {
   const officeSummary = (r.extracted?.office_summary || '').trim();
   let body = officeSummary;
   if (!body) {
@@ -77,6 +77,7 @@ export function buildCallHistoryList(
 ): CaseCallItem[] {
   const items: CaseCallItem[] = [];
   const handledIds = new Set<string>();
+  const activeSummary = (currentAiSummaryOverride || c.aiSummary || '').trim();
 
   // 1. Process server call_recordings
   for (const r of serverRecordings) {
@@ -108,41 +109,88 @@ export function buildCallHistoryList(
     });
   }
 
-  // 2. Process legacy or client-only case.recordings that have aiSummary
+  // 2. Process client recordings (c.recordings)
   const clientRecs = c.recordings || [];
   for (const cr of clientRecs) {
-    if (cr.recordingId && handledIds.has(cr.recordingId)) continue;
-    if (cr.id && handledIds.has(cr.id)) continue;
-    if (cr.url && handledIds.has(cr.url)) continue;
+    const isHandled = (cr.recordingId && handledIds.has(cr.recordingId))
+      || (cr.id && handledIds.has(cr.id))
+      || (cr.url && handledIds.has(cr.url));
 
-    // Check if this recording has summary content
-    const summaryContent = (cr.aiSummary || '').trim();
-    if (summaryContent) {
-      const startedAt = (cr.fromApp ? cr.uploadDate : cr.analyzedAt) || cr.uploadDate || new Date().toISOString();
-      const parsed = parseAiTranscript(summaryContent);
+    if (isHandled) {
+      // If server recording was already handled, but has empty summary and client has text, backfill
+      const match = items.find(it =>
+        (cr.recordingId && it.recordingId === cr.recordingId) ||
+        (cr.id && it.id === cr.id) ||
+        (cr.url && it.recordingItem?.driveFileId && cr.url.includes(it.recordingItem.driveFileId))
+      );
+      if (match && !match.summaryText) {
+        const text = cr.aiCurrent ? activeSummary : (cr.aiSummary || '');
+        if (text) {
+          const parsed = parseAiTranscript(text);
+          match.summaryText = parsed.summaryText;
+          match.transcriptLines = parsed.transcriptLines;
+          match.rawTranscript = parsed.rawTranscript;
+          match.rawCombinedText = text;
+        }
+      }
+      continue;
+    }
 
+    // Client-only recording (e.g. uploaded manually on mobile/web)
+    const text = cr.aiCurrent ? activeSummary : (cr.aiSummary || '');
+    const startedAt = cr.analyzedAt || (cr.fromApp ? cr.uploadDate : cr.analyzedAt) || cr.uploadDate || new Date().toISOString();
+    const parsed = parseAiTranscript(text);
+
+    items.push({
+      id: cr.id || `client-${startedAt}`,
+      recordingId: cr.recordingId,
+      callNumber: 0,
+      startedAt,
+      formattedDate: formatCallTime(startedAt),
+      durationSec: cr.duration,
+      durationLabel: cr.duration ? fmtDuration(cr.duration) : undefined,
+      status: text ? 'done' : 'processing',
+      summaryText: parsed.summaryText,
+      transcriptLines: parsed.transcriptLines,
+      rawTranscript: parsed.rawTranscript,
+      rawCombinedText: text,
+      isLatest: !!cr.aiCurrent,
+      source: 'manual',
+      fileName: cr.filename,
+    });
+  }
+
+  // 3. Check if activeSummary represents a separate/newer call not yet in items
+  if (activeSummary) {
+    const parsedActive = parseAiTranscript(activeSummary);
+    const hasMatchingItem = items.some(it => {
+      if (it.rawCombinedText && it.rawCombinedText.trim() === activeSummary) return true;
+      if (it.summaryText && parsedActive.summaryText && it.summaryText.trim() === parsedActive.summaryText.trim()) return true;
+      return false;
+    });
+
+    if (!hasMatchingItem) {
+      // The active summary represents a consultation/call that was analyzed and saved to c.aiSummary,
+      // but not yet assigned to an existing recording item.
+      const latestMemoDate = c.specialMemo?.[0]?.createdAt;
+      const startedAt = latestMemoDate || c.updatedAt || new Date().toISOString();
       items.push({
-        id: cr.id || `client-${startedAt}`,
-        recordingId: cr.recordingId,
+        id: `active-summary-${startedAt}`,
         callNumber: 0,
         startedAt,
         formattedDate: formatCallTime(startedAt),
-        durationSec: cr.duration,
-        durationLabel: cr.duration ? fmtDuration(cr.duration) : undefined,
         status: 'done',
-        summaryText: parsed.summaryText,
-        transcriptLines: parsed.transcriptLines,
-        rawTranscript: parsed.rawTranscript,
-        rawCombinedText: summaryContent,
-        isLatest: false,
+        summaryText: parsedActive.summaryText,
+        transcriptLines: parsedActive.transcriptLines,
+        rawTranscript: parsedActive.rawTranscript,
+        rawCombinedText: activeSummary,
+        isLatest: true,
         source: 'manual',
-        fileName: cr.filename,
       });
     }
   }
 
-  // 3. Fallback: If no calls were found at all, but c.aiSummary or currentAiSummaryOverride exists
-  const activeSummary = (currentAiSummaryOverride || c.aiSummary || '').trim();
+  // Fallback: If no items found at all
   if (items.length === 0 && activeSummary) {
     const startedAt = c.createdAt || new Date().toISOString();
     const parsed = parseAiTranscript(activeSummary);
@@ -168,6 +216,7 @@ export function buildCallHistoryList(
   // Assign call numbers: 1차, 2차, 3차...
   items.forEach((item, index) => {
     item.callNumber = index + 1;
+    item.isLatest = false;
   });
 
   // Mark the last item as latest
@@ -175,12 +224,12 @@ export function buildCallHistoryList(
     const lastItem = items[items.length - 1];
     lastItem.isLatest = true;
 
-    // If there is an active edited summary in c.aiSummary or currentAiSummaryOverride,
-    // apply it to the latest call so the user sees their live edits.
+    // If activeSummary exists and matches this latest call (or latest is done),
+    // apply user edits to it
     if (activeSummary && lastItem.status === 'done') {
       const parsed = parseAiTranscript(activeSummary);
       lastItem.summaryText = parsed.summaryText;
-      if (parsed.transcriptLines.length > 0) {
+      if (parsed.transcriptLines.length > 0 || parsed.rawTranscript) {
         lastItem.transcriptLines = parsed.transcriptLines;
         lastItem.rawTranscript = parsed.rawTranscript;
       }
@@ -219,9 +268,32 @@ export function useCaseCallHistory(c: Case, currentAiSummaryOverride?: string | 
     reload();
   }, [reload]);
 
+  // Window event listener for instant reloads across tabs/components
+  useEffect(() => {
+    const handleHistoryReload = () => {
+      reload();
+    };
+    window.addEventListener('crm:call_history_reload', handleHistoryReload);
+    return () => window.removeEventListener('crm:call_history_reload', handleHistoryReload);
+  }, [reload]);
+
   const calls = useMemo(() => {
     return buildCallHistoryList(c, serverRecordings, currentAiSummaryOverride);
   }, [c, serverRecordings, currentAiSummaryOverride]);
+
+  // Auto-polling when an analysis is in progress
+  const hasProcessing = useMemo(() => {
+    return calls.some(call => call.status === 'processing' || call.status === 'uploaded' || call.status === 'queued') ||
+           serverRecordings.some(r => r.status === 'processing' || r.status === 'uploaded' || r.status === 'queued');
+  }, [calls, serverRecordings]);
+
+  useEffect(() => {
+    if (!hasProcessing) return;
+    const interval = setInterval(() => {
+      reload();
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [hasProcessing, reload]);
 
   // Default selection is the latest call (first in the reversed list)
   const effectiveSelectedId = useMemo(() => {

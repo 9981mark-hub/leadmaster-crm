@@ -52,11 +52,23 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
         setUploadStep('AI 분석 요청 중...');
         await requestAnalyze(r.recordingId, true);
         showToast('✅ 파일 업로드 완료! AI 분석이 시작되었습니다. 1~2분 뒤 요약이 갱신됩니다.', 'success');
+
+        // Background monitor for completion
+        import('../../services/recordings').then(({ waitAnalyzed }) => {
+          waitAnalyzed(r.recordingId, 180_000).then(async (done) => {
+            if (done?.status === 'done') {
+              await onRefresh();
+              window.dispatchEvent(new CustomEvent('crm:call_history_reload'));
+              showToast('✅ 통화 분석이 완료되어 요약문과 대화록이 갱신되었습니다.', 'success');
+            }
+          }).catch(() => {});
+        });
       } else {
         showToast('이미 보관된 파일입니다.', 'success');
       }
 
       await onRefresh();
+      window.dispatchEvent(new CustomEvent('crm:call_history_reload'));
     } catch (err: any) {
       console.error('Manual recording upload failed:', err);
       showToast(`업로드 실패: ${err?.message || '알 수 없는 오류'}`, 'error');
@@ -211,8 +223,11 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
                 )}
 
                 {/* Status indicator if not done */}
-                {call.status === 'processing' && (
-                  <Loader2 size={11} className="animate-spin text-amber-400" />
+                {(call.status === 'processing' || call.status === 'uploaded') && (
+                  <span className={`inline-flex items-center gap-0.5 text-[10px] ${isSelected ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400'}`}>
+                    <Loader2 size={11} className="animate-spin" />
+                    <span>분석중</span>
+                  </span>
                 )}
                 {call.status === 'failed' && (
                   <AlertCircle size={11} className="text-red-400" />

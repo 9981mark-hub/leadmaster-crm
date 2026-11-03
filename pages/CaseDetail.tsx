@@ -441,14 +441,18 @@ export default function CaseDetail() {
                 const already = (c.recordings || []).some(x => r.driveFileId && x.url.includes(r.driveFileId));
                 if (!already && r.driveFileId) {
                     const newRecording: RecordingItem = {
-                        id: Date.now().toString(),
+                        id: r.recordingId || `rec-${Date.now()}`,
+                        recordingId: r.recordingId,
                         filename: file.name,
                         url: `https://drive.google.com/file/d/${r.driveFileId}/view`,
-                        uploadDate: new Date().toISOString(),
+                        uploadDate: r.startedAt || new Date().toISOString(),
                         mimeType: file.type || 'audio/mp4',
                         duration: r.durationSec,
+                        aiCurrent: true,
                     };
-                    handleUpdate('recordings', [newRecording, ...(c.recordings || [])]);
+                    const updatedRecs = [newRecording, ...(c.recordings || []).map(x => ({ ...x, aiCurrent: false }))];
+                    handleUpdate('recordings', updatedRecs);
+                    window.dispatchEvent(new CustomEvent('crm:call_history_reload'));
                 }
                 showToast(r.exists
                     ? '이미 드라이브에 보관된 녹음입니다. 통화 녹음·AI 탭에서 볼 수 있습니다.'
@@ -491,9 +495,15 @@ export default function CaseDetail() {
                 showToast('AI가 녹음을 정리하는 중입니다. 1분 정도 걸립니다.');
                 const done = await m.waitAnalyzed(serverRec.id);
                 if (done?.status === 'done') {
+                    const { buildCombinedText } = await import('../services/callHistory');
+                    const combined = buildCombinedText(done);
+                    if (combined) {
+                        setAiSummaryText(combined);
+                    }
                     const { refreshChangedCases } = await import('../services/api');
                     await refreshChangedCases().catch(() => { /* Realtime으로도 들어옴 */ });
-                    showToast('✅ 이 통화 내용으로 요약문을 바꿨습니다. 이전 요약은 통화별 요약에 남아 있습니다.');
+                    window.dispatchEvent(new CustomEvent('crm:call_history_reload'));
+                    showToast('✅ 이 통화 내용으로 요약문을 바꿨습니다. 통화 히스토리에 새 통화가 추가되었습니다.');
                 } else if (done?.status === 'failed') {
                     showToast(`AI 정리 실패: ${done.error || '알 수 없는 오류'}`, 'error');
                 } else {
@@ -536,19 +546,40 @@ export default function CaseDetail() {
                 // [2026-11-02] 통화별 요약 보관: 지금 리드 요약(이전 통화)을 그 녹음에 옮겨 두고, 이번 녹음을 "최근 요약"으로 표시
                 const isError = /^\s*\[오류 발생\]/.test(summary);
                 let recordings = c.recordings || [];
+                const nowIso = new Date().toISOString();
                 if (!isError) {
                     const target = (currentAudioFile && recordings.find(r => r.filename === currentAudioFile.name)) || undefined;
                     const prevCurrent = recordings.find(r => r.aiCurrent);
                     const oldText = (c.aiSummary || '').trim();
-                    recordings = recordings.map(r => {
-                        if (target && r.id === target.id) return { ...r, aiCurrent: true, aiSummary: undefined, analyzedAt: new Date().toISOString() };
-                        if (prevCurrent && r.id === prevCurrent.id) return { ...r, aiCurrent: false, aiSummary: oldText && !/^\s*\[오류 발생\]/.test(oldText) ? oldText : r.aiSummary };
-                        return r;
-                    });
+                    if (target) {
+                        recordings = recordings.map(r => {
+                            if (target && r.id === target.id) return { ...r, aiCurrent: true, aiSummary: undefined, analyzedAt: nowIso };
+                            if (prevCurrent && r.id === prevCurrent.id) return { ...r, aiCurrent: false, aiSummary: oldText && !/^\s*\[오류 발생\]/.test(oldText) ? oldText : r.aiSummary };
+                            return r;
+                        });
+                    } else if (currentAudioFile) {
+                        const newRec: RecordingItem = {
+                            id: `rec-${Date.now()}`,
+                            filename: currentAudioFile.name,
+                            url: audioUrl || '',
+                            uploadDate: nowIso,
+                            mimeType: currentAudioFile.type || 'audio/mp4',
+                            aiCurrent: true,
+                            analyzedAt: nowIso,
+                        };
+                        recordings = [
+                            newRec,
+                            ...recordings.map(r => ({
+                                ...r,
+                                aiCurrent: false,
+                                aiSummary: r.aiCurrent && oldText && !/^\s*\[오류 발생\]/.test(oldText) ? oldText : r.aiSummary,
+                            }))
+                        ];
+                    }
                 }
                 // 어느 녹음 것인지 모르는 예전 요약(통화별 보관 전)은 지우지 않고 상담 메모로 보관
                 const legacyOld = (!isError && !(c.recordings || []).some(r => r.aiCurrent) && (c.aiSummary || '').trim() && !/^\s*\[오류 발생\]/.test(c.aiSummary || ''))
-                    ? [{ id: `${Date.now()}o`, createdAt: new Date().toISOString(), content: `[이전 AI 요약 보관]\n${(c.aiSummary || '').trim()}`.slice(0, 4000) } as MemoItem]
+                    ? [{ id: `${Date.now()}o`, createdAt: nowIso, content: `[이전 AI 요약 보관]\n${(c.aiSummary || '').trim()}`.slice(0, 4000) } as MemoItem]
                     : [];
                 updateCaseMutation.mutate({
                     id: c.caseId,
@@ -560,7 +591,8 @@ export default function CaseDetail() {
                     silent: true
                 }, {
                     onSuccess: () => {
-                        showToast('✅ AI 요약 → 저장 → 상담 이력 전송 완료!');
+                        window.dispatchEvent(new CustomEvent('crm:call_history_reload'));
+                        showToast('✅ AI 요약 → 저장 → 상담 이력 전송 완료! 통화 히스토리에 새 통화가 추가되었습니다.');
                     },
                     onError: () => {
                         showToast('⚠️ AI 요약은 생성되었으나 서버 저장에 실패했습니다. 다시 시도해주세요.', 'error');

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X, Check } from 'lucide-react';
+import { Copy, Edit2, FileText, ListOrdered, Send, Sparkles, X, Check, Loader2 } from 'lucide-react';
 import { Case, Partner } from '../../types';
 import { generateSummary, injectSummaryMetadata, parseAiTranscript } from '../../utils';
 import { FillFromSummaryButton } from './FillFromSummaryButton';
@@ -283,7 +283,15 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                     )}
 
                     <div className="flex-1 relative h-full">
-                        {activeRawText ? (
+                        {selectedCall && (selectedCall.status === 'processing' || selectedCall.status === 'uploaded') ? (
+                            <div className="flex flex-col items-center justify-center h-full text-purple-700 dark:text-purple-300 gap-3 min-h-[200px] p-4 text-center bg-purple-50/50 dark:bg-purple-950/20 rounded-lg border border-purple-100 dark:border-purple-900/40">
+                                <Loader2 size={36} className="animate-spin text-purple-600 dark:text-purple-400" />
+                                <div className="space-y-1">
+                                    <p className="font-bold text-sm">AI가 통화 녹음을 정리하고 있습니다...</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">1~2분 정도 소요되며 완료되면 요약문과 대화록이 자동으로 표시됩니다.</p>
+                                </div>
+                            </div>
+                        ) : activeRawText ? (
                             <>
                                 {/* 요약문: 요약문 탭이면 항상, 대화록 탭이면 넓은 화면에서만 (대화록은 오른쪽 칸에). 수정 모드에서는 숨김 */}
                                 <div
