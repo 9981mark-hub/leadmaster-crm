@@ -186,11 +186,14 @@ const SCHEMA = {
 interface PromptCtx {
   customerName?: string; phone?: string; managerName?: string; direction?: string; durationSec?: number;
   summaryRule?: string; officeTemplate?: string; checkItems?: string[]; classificationGuide?: string; partnerName?: string;
+  existingSummary?: string; // [2026-11-03] 이전 통화들에서 이미 확인된 기존 누적 요약문
 }
 
 function buildPrompt(ctx: PromptCtx) {
   const items = (ctx.checkItems && ctx.checkItems.length ? ctx.checkItems : DEFAULT_CHECK_ITEMS)
     .map(k => CHECK_ITEM_LABELS[k]).filter(Boolean);
+  const existingSnippet = ctx.existingSummary ? ctx.existingSummary.split('\n\n[전체 대화록]')[0].trim() : '';
+
   return `당신은 개인회생·파산·신용회복 1차 상담 녹음을 정리하는 보조 AI입니다.
 첨부한 통화 녹음을 듣고 JSON으로만 답하세요.
 
@@ -204,7 +207,19 @@ ${DOMAIN_KEYWORDS.join(', ')}
 - 담당 상담원: ${ctx.managerName || '알 수 없음'}
 - 방향: ${ctx.direction === 'CALL_IN' ? '고객이 건 전화' : ctx.direction === 'CALL_OUT' ? '상담원이 건 전화' : '알 수 없음'}
 - 길이: 약 ${Math.round((ctx.durationSec || 0) / 60)}분
-
+${existingSnippet ? `
+[중요: 기존 상담을 통해 이미 확인된 고객 정보 (이전 통화 누적 데이터)]
+아래 내용은 이전 통화들을 통해 이미 확인되어 기록된 기존 고객 정보입니다:
+--------------------------------------------------
+${existingSnippet}
+--------------------------------------------------
+[스마트 누적 병합(Merge) 필수 규칙 - 매우 중요]
+1. 기존 보존 원칙: 이번 통화에서 다시 묻지 않거나 언급되지 않은 항목(예: 출생년도, 거주지, 직업, 소득, 기존 대출 등)은 절대로 "확인 필요"로 초기화하지 말고, 위 [기존 확인된 고객 정보]의 값을 그대로 유지하여 채우세요.
+2. 새 정보 추가: 이번 통화에서 새롭게 확인된 항목(예: 추가 채무, 새 자산, 가족 사항 등)은 해당 칸에 정확히 반영하세요.
+3. 정보 갱신: 고객의 상황이 바뀐 경우(예: 이직, 소득 변동, 신규 대출 발생 등)는 이번 통화의 최신 내용으로 갱신하세요.
+4. 기존 정보에도 없고 이번 통화에서도 전혀 말하지 않은 항목만 "확인 필요"로 적으세요.
+5. 특이사항({{specialMemo}}) 자리에는 기존 특이사항의 핵심을 보존하면서, 이번 통화에서 추가된 특이사항을 시계열로 덧붙이세요.
+` : ''}
 [통화 적격성 판별 (call_qualification) - 최우선 필수 판별]
 통화 녹음을 분석하여 실질적인 법률/채무/개인회생 상담 내용이 오갔는지 가장 먼저 판별하세요:
 - is_meaningful: 채무액, 소득, 재산, 직업, 주거, 가족, 개인회생/파산/신용회복 절차 등 실질적인 상담 내용이나 구체적인 조건이 언급되었는지 여부 (true/false)
@@ -235,8 +250,9 @@ ${ctx.summaryRule || DEFAULT_SUMMARY_RULE}
 3. [중요] call_type이 'full_consultation'인 경우에만:
    - 아래 양식의 줄 구성과 순서를 그대로 지키고 {{...}} 자리만 통화에서 들은 내용으로 채우세요.
    - 담당자·고객이름·연락처는 [통화 정보]의 값을 쓰세요.
-   - 통화에서 말하지 않은 칸만 "확인 필요"라고 적으세요 (추측 금지). 금액은 "3,500만원", "1억 2,000만원"처럼 쓰세요.
-   - {{specialMemo}} 자리에는 특이사항·다음 할 일을 하이픈 목록으로 적으세요.
+   - [기존 확인된 고객 정보]가 있다면 그 내용을 바탕으로 이번 통화 내용을 스마트 누적 병합하여 '완성형 보고서'로 작성하세요.
+   - 기존 정보에도 없고 이번 통화에서도 전혀 말하지 않은 칸만 "확인 필요"라고 적으세요 (추측 금지). 금액은 "3,500만원", "1억 2,000만원"처럼 쓰세요.
+   - {{specialMemo}} 자리에는 기존 특이사항의 핵심을 유지하고 이번 통화의 새로운 특이사항을 하이픈 목록으로 정리하세요.
 양식:
 ${ctx.officeTemplate || DEFAULT_SUMMARY_TEMPLATE}
 
@@ -255,9 +271,10 @@ ${ctx.classificationGuide || '- 개인회생 가능 / 파산 검토 / 신용회�
 
 [채무·소득·주거·재산·가족 칸 규칙]
 - 금액은 모두 "만원" 단위 숫자 (예: 3천5백만원 → 3500, 150만원 → 150, 1억2천 → 12000).
-- 녹음에서 실제로 말한 내용만 넣으세요. 말하지 않은 값은 null (추측 금지).
-- creditors: 말한 채권자마다 한 줄 (name = 금융사·업체 이름, 모르면 null).
-- debt.total_manwon: 고객이 말한 총 채무. 따로 말하지 않았으면 creditors 금액 합계, 그것도 없으면 null.
+- [기존 확인된 고객 정보]가 있는 경우, 기존 정보의 값과 이번 통화에서 추가/변경된 정보를 결합한 최종 누적 상태를 JSON 객체로 반환하세요.
+- 녹음에서 실제로 말한 내용 및 기존 확인된 내용만 넣으세요. 말하지 않았고 기존에도 없는 값은 null (추측 금지).
+- creditors: 말한 채권자마다 한 줄 (name = 금융사·업체 이름, 모르면 null). 기존 채권자에 이번 통화 채권자 누적.
+- debt.total_manwon: 고객이 말한 총 채무 (기존 채무 + 추가 채무).
 - income.net_monthly_manwon: 세후 월 실수령. 직업별 수입은 salary/business/freelance.
 - income.workplace: 직장인·일용직·프리랜서의 직장 지역, income.business_place: 사업자의 사업장 지역 ("서울 강남구"처럼 시·구 단위, 말하지 않았으면 null).
 - debt.monthly_payment_manwon: 지금 매달 갚고 있는 금액(대출 월 상환액).
@@ -521,7 +538,7 @@ async function analyze(rec: any, settings: any) {
     const mime = rec.mime_type || 'audio/mp4';
 
     const [{ data: c }, { data: st }, { data: member }] = await Promise.all([
-      admin.from('cases').select('customer_name, phone, partner_id, manager_name').eq('org_id', rec.org_id).eq('case_id', rec.case_id).maybeSingle(),
+      admin.from('cases').select('customer_name, phone, partner_id, manager_name, ai_summary').eq('org_id', rec.org_id).eq('case_id', rec.case_id).maybeSingle(),
       admin.from('settings').select('value').eq('org_id', rec.org_id).eq('key', 'partners').maybeSingle(),
       rec.user_id
         ? admin.from('org_members').select('display_name').eq('org_id', rec.org_id).eq('user_id', rec.user_id).maybeSingle()
@@ -529,7 +546,12 @@ async function analyze(rec: any, settings: any) {
     ]);
     const partners: any[] = Array.isArray(st?.value) ? st!.value : [];
     const partner = partners.find(p => p?.partnerId === c?.partner_id);
-    // 거래처(변호사 사무실)별 설정: 요약 규칙·사무실 양식·필수 확인 항목·분류 기준
+
+    // [2026-11-03] 기존에 확인된 유효한 요약문 추출 (오류 메시지 제외)
+    const rawExisting = String(c?.ai_summary || '').trim();
+    const existingSummary = rawExisting && !/^\s*\[오류 발생\]/.test(rawExisting) ? rawExisting : undefined;
+
+    // 거래처(변호사 사무실)별 설정: 요약 규칙·사무실 양식·필수 확인 항목·분류 기준 + 기존 누적 정보
     const prompt = buildPrompt({
       customerName: c?.customer_name, phone: c?.phone, managerName: (member as any)?.display_name || c?.manager_name,
       direction: rec.direction, durationSec: rec.duration_sec, partnerName: partner?.name,
@@ -537,6 +559,7 @@ async function analyze(rec: any, settings: any) {
       officeTemplate: (partner?.summaryTemplate || '').trim() || undefined,
       checkItems: Array.isArray(partner?.checkItems) ? partner.checkItems : undefined,
       classificationGuide: (partner?.aiClassificationGuide || '').trim() || undefined,
+      existingSummary,
     });
 
     let audioPart: Record<string, unknown>;
