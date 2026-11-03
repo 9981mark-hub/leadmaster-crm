@@ -1,6 +1,7 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2 } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Lazy Load Pages (신규 배포 시 청크 404 에러 자동 복구 래퍼 적용)
@@ -37,25 +38,84 @@ import { fetchPendingCount, subscribeTelegramFeedbacks } from './services/telegr
 // 예: "1234567890-abcdefg.apps.googleusercontent.com"
 const GOOGLE_CLIENT_ID = "703402707746-b3dia8784s2k1g5nfm6dpps2r75hukms.apps.googleusercontent.com";
 
-const NavItem = ({ to, icon: Icon, label, active, badge }: any) => (
-  <Link to={to} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${active ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
-    <div className="flex items-center space-x-3">
-      <Icon size={20} />
-      <span className="font-medium">{label}</span>
+/* ── Sidebar NavItem (collapsed 지원 + 액티브 인디케이터) ── */
+const NavItem = ({ to, icon: Icon, label, active, badge, collapsed }: any) => (
+  <Link to={to} className={`relative flex items-center justify-between rounded-lg transition-all duration-200 ${collapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'} ${active ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'}`} title={collapsed ? label : undefined}>
+    {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-blue-600 dark:bg-blue-400 rounded-r-full" />}
+    <div className={`flex items-center ${collapsed ? '' : 'gap-3'}`}>
+      <Icon size={20} className="shrink-0" />
+      {!collapsed && <span className="text-sm">{label}</span>}
     </div>
-    {badge && (
-      <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+    {badge && !collapsed && (
+      <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
         {badge}
       </span>
+    )}
+    {badge && collapsed && (
+      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
     )}
   </Link>
 );
 
+const NavGroup = ({ label, collapsed, children }: { label: string; collapsed: boolean; children: React.ReactNode }) => (
+  <div className="space-y-0.5">
+    {!collapsed && <p className="px-3 pt-4 pb-1 text-[10px] font-bold tracking-widest uppercase text-gray-400 dark:text-gray-500">{label}</p>}
+    {collapsed && <div className="my-2 mx-2 border-t border-gray-100 dark:border-gray-700" />}
+    {children}
+  </div>
+);
+
+/* ── Mobile Bottom Nav ── */
 const MobileNavItem = ({ to, icon: Icon, label, active }: any) => (
-  <Link to={to} className={`flex flex-col items-center justify-center w-full py-2 ${active ? 'text-blue-600' : 'text-gray-500'}`}>
-    <Icon size={24} />
-    <span className="text-xs mt-1">{label}</span>
+  <Link to={to} className={`flex flex-col items-center justify-center py-2 min-w-[64px] ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>
+    <Icon size={22} />
+    <span className="text-[10px] mt-1 font-medium">{label}</span>
   </Link>
+);
+
+/* ── 더보기 그리드 메뉴 (모바일) ── */
+const MobileMoreMenu = ({ navs, path, onClose }: { navs: any[]; path: string; onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.15 }}
+    className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end"
+    onClick={onClose}
+  >
+    <motion.div
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      exit={{ y: '100%' }}
+      transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+      className="w-full bg-white dark:bg-gray-800 rounded-t-2xl p-6 pb-safe shadow-2xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">메뉴</h3>
+        <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+          <X size={20} className="text-gray-500" />
+        </button>
+      </div>
+      <div className="grid grid-cols-4 gap-3">
+        {navs.map(n => (
+          <Link
+            key={n.to}
+            to={n.to}
+            onClick={onClose}
+            className={`flex flex-col items-center gap-2 py-3 px-2 rounded-xl transition-colors ${
+              path === n.to ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            <div className={`p-2.5 rounded-xl ${path === n.to ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-gray-100 dark:bg-gray-700'}`}>
+              <n.icon size={22} />
+            </div>
+            <span className="text-xs font-medium">{n.label}</span>
+          </Link>
+        ))}
+      </div>
+    </motion.div>
+  </motion.div>
 );
 
 // 상담원(agent)에게 숨기는 관리자 전용 화면
@@ -194,28 +254,73 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (org?.isPlatformAdmin) navs.splice(navs.length - 2, 0, { to: '/platform', icon: Building2, label: '회사 관리' });
 
   const visibleNavs = isAdmin ? navs : navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
-  // 모바일 하단 바는 칸이 좁아 자동통화·팀 관리는 뺀다 (팀 관리는 PC 화면용)
-  const mobileNavs = visibleNavs.filter(n => n.to !== '/auto-dial' && n.to !== '/team' && n.to !== '/platform');
+  // 모바일 하단 바 — 핵심 4개만 고정, 나머지는 "더보기" 그리드
+  const MOBILE_CORE_PATHS = ['/', '/cases', '/new'];
+  const mobileCoreTabs = visibleNavs.filter(n => MOBILE_CORE_PATHS.includes(n.to));
+  const mobileMoreItems = visibleNavs.filter(n => !MOBILE_CORE_PATHS.includes(n.to));
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem('sidebar_collapsed') === 'true'; } catch { return false; }
+  });
+  const toggleSidebar = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      try { localStorage.setItem('sidebar_collapsed', String(next)); } catch {}
+      return next;
+    });
+  };
 
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-        <div className="p-6 border-b border-gray-100">
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
-          <p className="text-xs text-gray-400 mt-1">개인회생 변제금 관리</p>
-          <OrgBadge />
+      {/* Sidebar (Desktop) — 축소 토글 + 메뉴 그룹핑 */}
+      <aside className={`hidden md:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${sidebarCollapsed ? 'w-[72px]' : 'w-60'}`}>
+        <div className={`flex items-center border-b border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'justify-center p-4' : 'justify-between p-5'}`}>
+          {!sidebarCollapsed && (
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
+              <OrgBadge />
+            </div>
+          )}
+          <button onClick={toggleSidebar} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition-colors shrink-0" title={sidebarCollapsed ? '메뉴 펼치기' : '메뉴 접기'}>
+            {sidebarCollapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
+          </button>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {visibleNavs.map(n => <NavItem key={n.to} {...n} active={path === n.to || (path.startsWith('/case/') && n.to === '/cases')} />)}
+        <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-3' : 'px-3 py-2'} space-y-0.5`}>
+          {(() => {
+            const isActive = (to: string) => path === to || (path.startsWith('/case/') && to === '/cases');
+            const workNavPaths = ['/', '/schedule', '/cases', '/new'];
+            const opsNavPaths = ['/telegram', '/auto-dial', '/settlement'];
+            const adminNavPaths = ['/statistics', '/team', '/platform', '/settings', '/mypage'];
+            const workNavs = visibleNavs.filter(n => workNavPaths.includes(n.to));
+            const opsNavs = visibleNavs.filter(n => opsNavPaths.includes(n.to));
+            const adminNavs = visibleNavs.filter(n => adminNavPaths.includes(n.to));
+            return (
+              <>
+                <NavGroup label="업무" collapsed={sidebarCollapsed}>
+                  {workNavs.map(n => <NavItem key={n.to} {...n} active={isActive(n.to)} collapsed={sidebarCollapsed} />)}
+                </NavGroup>
+                {opsNavs.length > 0 && (
+                  <NavGroup label="운영" collapsed={sidebarCollapsed}>
+                    {opsNavs.map(n => <NavItem key={n.to} {...n} active={isActive(n.to)} collapsed={sidebarCollapsed} />)}
+                  </NavGroup>
+                )}
+                {adminNavs.length > 0 && (
+                  <NavGroup label="관리" collapsed={sidebarCollapsed}>
+                    {adminNavs.map(n => <NavItem key={n.to} {...n} active={isActive(n.to)} collapsed={sidebarCollapsed} />)}
+                  </NavGroup>
+                )}
+              </>
+            );
+          })()}
         </nav>
-        <div className="p-4 border-t border-gray-100 dark:border-gray-700">
+        <div className={`border-t border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'p-2' : 'p-3'}`}>
           <button
             onClick={toggleTheme}
-            className="flex items-center space-x-3 p-3 w-full rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className={`flex items-center w-full rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${sidebarCollapsed ? 'p-2.5 justify-center' : 'gap-3 px-3 py-2.5'}`}
+            title={sidebarCollapsed ? (theme === 'dark' ? '라이트 모드' : '다크 모드') : undefined}
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            <span className="font-medium">{theme === 'dark' ? '라이트 모드' : '다크 모드'}</span>
+            {!sidebarCollapsed && <span className="text-sm">{theme === 'dark' ? '라이트 모드' : '다크 모드'}</span>}
           </button>
         </div>
       </aside>
@@ -237,10 +342,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {children}
         </div>
 
-        {/* Bottom Nav (Mobile) */}
-        <div className="md:hidden absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-between px-2 pb-safe z-50">
-          {mobileNavs.map(n => <MobileNavItem key={n.to} {...n} active={path === n.to || (path.startsWith('/case/') && n.to === '/cases')} />)}
+        {/* Bottom Nav (Mobile) — 핵심 3개 + 더보기 */}
+        <div className="md:hidden absolute bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 flex items-center justify-around px-2 pb-safe z-50">
+          {mobileCoreTabs.map(n => <MobileNavItem key={n.to} {...n} active={path === n.to || (path.startsWith('/case/') && n.to === '/cases')} />)}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className={`flex flex-col items-center justify-center py-2 min-w-[64px] ${isMobileMenuOpen ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}
+          >
+            <Grid3X3 size={22} />
+            <span className="text-[10px] mt-1 font-medium">더보기</span>
+          </button>
         </div>
+        <AnimatePresence>
+          {isMobileMenuOpen && <MobileMoreMenu navs={mobileMoreItems} path={path} onClose={() => setIsMobileMenuOpen(false)} />}
+        </AnimatePresence>
       </main>
     </div>
   );

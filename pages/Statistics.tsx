@@ -1441,7 +1441,7 @@ export default function Statistics() {
                                         </div>
                                     }
                                 >
-                                    <div className="h-[280px]">
+                                    <div className="h-[200px] md:h-[280px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <ComposedChart data={trendData}>
                                                 <defs>
@@ -1473,7 +1473,7 @@ export default function Statistics() {
                                 </ChartSection>
 
                                 <ChartSection title="🎯 계약 전환 퍼널 (Leakage 분석)">
-                                    <div className="h-[280px] flex items-center justify-center">
+                                    <div className="h-[200px] md:h-[280px] flex items-center justify-center">
                                         <div className="w-full space-y-2.5">
                                             {funnelData.map((stage, i) => {
                                                 const widthPercent = funnelData[0].value > 0 ? (stage.value / funnelData[0].value) * 100 : 0;
@@ -1518,7 +1518,7 @@ export default function Statistics() {
 
                             <div className="grid md:grid-cols-2 gap-4">
                                 <ChartSection title="📋 현재 상태 분포">
-                                    <div className="h-[280px]">
+                                    <div className="h-[200px] md:h-[280px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={statusData} layout="vertical">
                                                 <defs>
@@ -1542,7 +1542,7 @@ export default function Statistics() {
                                 </ChartSection>
 
                                 <ChartSection title="📞 리마인더 결과 분석">
-                                    <div className="h-[280px]">
+                                    <div className="h-[200px] md:h-[280px]">
                                         {reminderData.length > 0 ? (
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <RechartsPie>
@@ -1702,7 +1702,7 @@ export default function Statistics() {
                                 <div className="space-y-6">
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <ChartSection title="📍 유입경로별 분포">
-                                            <div className="h-[280px]">
+                                            <div className="h-[200px] md:h-[280px]">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <RechartsPie>
                                                         <Pie
@@ -1726,7 +1726,7 @@ export default function Statistics() {
                                         </ChartSection>
 
                                         <ChartSection title="📊 유입경로별 계약 전환율">
-                                            <div className="h-[280px]">
+                                            <div className="h-[200px] md:h-[280px]">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <BarChart data={sourceData} layout="vertical">
                                                         <defs>
@@ -1846,7 +1846,7 @@ export default function Statistics() {
                                                         </table>
                                                     </div>
 
-                                                    <div className="h-[250px] mt-4">
+                                                    <div className="h-[180px] md:h-[250px] mt-4">
                                                         <p className="text-xs text-gray-400 mb-2 font-medium">ROAS 비교 (광고수익률 %)</p>
                                                         <ResponsiveContainer width="100%" height="100%">
                                                             <BarChart data={roiData.filter(d => d.광고비 > 0)}>
@@ -2041,7 +2041,7 @@ export default function Statistics() {
                                                 </div>
                                             )}
                                         >
-                                            <div className="h-[280px]">
+                                            <div className="h-[200px] md:h-[280px]">
                                                 {tossPerformanceData.length > 0 ? (
                                                     <ResponsiveContainer width="100%" height="100%">
                                                         <ComposedChart data={[...tossPerformanceData].reverse()}>
@@ -2068,7 +2068,7 @@ export default function Statistics() {
                                         </ChartSection>
 
                                         <ChartSection title="🎯 토스애즈 잠재고객 깔깔때기 (Funnel)">
-                                            <div className="flex flex-col justify-center h-[280px] space-y-4 px-2">
+                                            <div className="flex flex-col justify-center h-[200px] md:h-[280px] space-y-4 px-2">
                                                 {tossFunnelData.map((stage, idx) => {
                                                     const percent = tossSummaryKpis.totalTossLeads > 0 
                                                         ? Math.round((stage.value / tossSummaryKpis.totalTossLeads) * 100)
@@ -2298,7 +2298,7 @@ export default function Statistics() {
                         <div className="space-y-6">
                             <div className="grid md:grid-cols-2 gap-4">
                                 <ChartSection title="🏢 거래처별 성과 (접수 건수 vs 계약 건수)">
-                                    <div className="h-[280px]">
+                                    <div className="h-[200px] md:h-[280px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={partnerData} layout="vertical">
                                                 <defs>
@@ -2324,7 +2324,7 @@ export default function Statistics() {
                                 </ChartSection>
 
                                 <ChartSection title="🔄 2차 상태 분포 (사무장 접수 케이스)">
-                                    <div className="h-[280px]">
+                                    <div className="h-[200px] md:h-[280px]">
                                         {secondaryStatusData.length > 0 ? (
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <RechartsPie>
@@ -2401,7 +2401,7 @@ export default function Statistics() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <p className="text-xs text-gray-400 mb-2 font-medium">이탈 분류 사유 분포 (dropOffReason)</p>
-                                                <div className="h-[250px]">
+                                                <div className="h-[180px] md:h-[250px]">
                                                     {dropOffReasonData.length > 0 ? (
                                                         <ResponsiveContainer width="100%" height="100%">
                                                             <RechartsPie>
@@ -2433,7 +2433,7 @@ export default function Statistics() {
 
                                             <div>
                                                 <p className="text-xs text-gray-400 mb-2 font-medium">단계별 이탈 직전 시점</p>
-                                                <div className="h-[250px]">
+                                                <div className="h-[180px] md:h-[250px]">
                                                     {dropOffStageData.length > 0 ? (
                                                         <ResponsiveContainer width="100%" height="100%">
                                                             <BarChart data={dropOffStageData} layout="vertical">

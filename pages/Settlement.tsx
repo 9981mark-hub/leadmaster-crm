@@ -826,7 +826,7 @@ export default function Settlement() {
                 </p>
 
                 {!currentBatch ? (
-                    <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
                         <p className="text-gray-500 mb-4">이 주차에 대한 배치가 없습니다.</p>
                         <button
                             onClick={handleGenerateBatch}
@@ -840,19 +840,19 @@ export default function Settlement() {
                     <div className="space-y-4">
                         {/* Batch Summary */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <p className="text-xs text-gray-500">딜 수</p>
                                 <p className="text-2xl font-bold text-gray-800">{currentBatch.dealIds.length}건</p>
                             </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <p className="text-xs text-gray-500">총 수임료</p>
                                 <p className="text-2xl font-bold text-blue-600">{currentBatch.totalContractFee.toLocaleString()}만원</p>
                             </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <p className="text-xs text-gray-500">총 수수료</p>
                                 <p className="text-2xl font-bold text-green-600">{currentBatch.totalCommission.toLocaleString()}만원</p>
                             </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <p className="text-xs text-gray-500">상태</p>
                                 <p className={`text-xl font-bold ${currentBatch.status === 'draft' ? 'text-gray-600' : 'text-green-600'}`}>
                                     {getSettlementStatusLabel(currentBatch.status)}
@@ -861,7 +861,7 @@ export default function Settlement() {
                         </div>
 
                         {/* Deal List */}
-                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                                 <h4 className="font-bold text-gray-700 text-sm">정산 대상 딜 목록</h4>
                                 <button
@@ -941,7 +941,7 @@ export default function Settlement() {
                         </div>
 
                         {/* Confirmation Evidence */}
-                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                             <h4 className="font-bold text-gray-700 mb-2 text-sm">📝 카톡 확인 증빙</h4>
                             <textarea
                                 className="w-full p-3 border border-gray-300 rounded-lg text-sm"
@@ -987,18 +987,18 @@ export default function Settlement() {
                 </p>
 
                 {!currentBatch ? (
-                    <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
                         <p className="text-gray-500">먼저 월요일 탭에서 배치를 생성해주세요.</p>
                     </div>
                 ) : currentBatch.status === 'draft' ? (
-                    <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
                         <AlertTriangle className="mx-auto text-yellow-500 mb-2" size={32} />
                         <p className="text-gray-600">먼저 월요일 탭에서 정산 확인을 완료해주세요.</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {/* Invoice Info Form */}
-                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                             <h4 className="font-bold text-gray-700 mb-3 text-sm">📄 세금계산서 정보</h4>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
@@ -1055,7 +1055,7 @@ export default function Settlement() {
 
                         {/* Kakao Template */}
                         {currentPartner?.kakaoTemplates?.invoiceNotice && (
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <div className="flex justify-between items-center mb-2">
                                     <h4 className="font-bold text-gray-700 text-sm">📱 카톡 템플릿</h4>
                                     <button
@@ -1082,7 +1082,7 @@ export default function Settlement() {
 
                         {/* Collection Status */}
                         {currentBatch.status !== 'draft' && (
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <h4 className="font-bold text-gray-700 mb-2 text-sm">💰 수금 상태</h4>
                                 {currentBatch.collectionInfo?.collectedAt ? (
                                     <p className="text-green-600 font-bold">
@@ -1184,12 +1184,12 @@ export default function Settlement() {
                     </h3>
 
                     {!currentBatch || !['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) ? (
-                        <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
                             <AlertTriangle className="mx-auto text-yellow-500 mb-2" size={32} />
                             <p className="text-gray-600">화요일 탭에서 발행을 먼저 완료해주세요.</p>
                         </div>
                     ) : (
-                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div className="bg-blue-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500">수금 대상 금액</p>
@@ -1244,11 +1244,11 @@ export default function Settlement() {
                     </div>
 
                     {payoutItems.length === 0 ? (
-                        <p className="text-sm text-gray-500 bg-white p-4 rounded-lg">파트너 지급이 없으면 "지급 추가" 없이 두세요.</p>
+                        <p className="text-sm text-gray-500 bg-white dark:bg-gray-800 p-4 rounded-lg">파트너 지급이 없으면 "지급 추가" 없이 두세요.</p>
                     ) : (
                         <div className="space-y-3">
                             {payoutItems.map((item, idx) => (
-                                <div key={item.id} className="bg-white p-4 rounded-lg border border-gray-200">
+                                <div key={item.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                     <div className="flex justify-between items-start mb-3">
                                         <span className="text-sm font-medium text-gray-500">지급 #{idx + 1}</span>
                                         {!item.paidAt && (
@@ -1342,7 +1342,7 @@ export default function Settlement() {
                         📥 매입 세금계산서 수취
                     </h3>
                     {currentBatch && ['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) && (
-                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                             {currentBatch.purchaseInvoice?.receivedAt ? (
                                 <div className="bg-purple-50 p-3 rounded border border-purple-200">
                                     <p className="text-purple-700 font-bold text-lg">✓ 수취완료 ({currentBatch.purchaseInvoice.receivedAt})</p>
@@ -1368,7 +1368,7 @@ export default function Settlement() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                 <div
                     onClick={() => setActiveModalType('contract')}
-                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">📋 계약 건수</p>
@@ -1379,7 +1379,7 @@ export default function Settlement() {
                 </div>
                 <div
                     onClick={() => setActiveModalType('revenue')}
-                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">💰 총 매출</p>
@@ -1390,7 +1390,7 @@ export default function Settlement() {
                 </div>
                 <div
                     onClick={() => setActiveModalType('actualDeposit')}
-                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">✅ 실제 입금액</p>
@@ -1401,7 +1401,7 @@ export default function Settlement() {
                 </div>
                 <div
                     onClick={() => setActiveModalType('expectedDeposit')}
-                    className="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">📅 예상 입금액</p>
@@ -1537,7 +1537,7 @@ export default function Settlement() {
                         {/* Horizontal Scroll for Overdue Cards */}
                         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                             {overdueCases.map(c => (
-                                <div key={c.caseId} className="min-w-[240px] bg-white p-4 rounded-lg border border-red-200 shadow-sm flex-shrink-0">
+                                <div key={c.caseId} className="min-w-[240px] bg-white dark:bg-gray-800 p-4 rounded-lg border border-red-200 dark:border-red-800 shadow-sm flex-shrink-0">
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="font-bold text-gray-800">{c.customerName}</span>
                                         <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-bold">
@@ -1565,7 +1565,7 @@ export default function Settlement() {
             })()}
 
             {/* Chart */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-80 flex flex-col">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-80 flex flex-col">
                 <h3 className="text-lg font-bold text-gray-700 mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
                 <div className="flex-1 min-h-0 w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1584,7 +1584,7 @@ export default function Settlement() {
             </div>
 
             {/* Monthly Summary Table (Enhanced) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 bg-gray-50">
                     <h3 className="font-bold text-gray-700">📅 월별 상세 요약</h3>
                 </div>
@@ -1630,7 +1630,7 @@ export default function Settlement() {
 
             {/* Partner Stats Section (Only visible when viewing all) */}
             {isAll && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
                     <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
                         <h3 className="font-bold text-gray-700">🤝 파트너별 성과 분석</h3>
                         <p className="text-xs text-gray-500 mt-1">파트너별 수임 건수 및 수수료 지급 현황</p>
@@ -1777,7 +1777,7 @@ export default function Settlement() {
 
                 if (nearFutureDeposits.length === 0) {
                     return (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-2xl">🔮</span>
                                 <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
@@ -1788,7 +1788,7 @@ export default function Settlement() {
                 }
 
                 return (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-white">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -1885,7 +1885,7 @@ export default function Settlement() {
 
             {/* [NEW] Toss Ads Weekly Summary */}
             {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-blue-100 dark:border-gray-700 overflow-hidden mb-6">
                     <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50">
                         <h3 className="font-bold text-blue-800 flex items-center gap-2">
                             <span className="text-lg">📢</span> 이번 주 토스 애즈 광고비 현황
@@ -1918,7 +1918,7 @@ export default function Settlement() {
                             <div className="flex justify-end items-end md:items-center">
                                 <button
                                     onClick={() => setActiveTab('expenses')}
-                                    className="px-4 py-2 bg-white text-blue-600 border border-blue-200 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 transition-colors flex items-center gap-1"
+                                    className="px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1"
                                 >
                                     지출 관리로 이동 
                                     <ChevronRight size={16} />
@@ -1930,7 +1930,7 @@ export default function Settlement() {
             )}
 
             {/* Weekly Batch Status Overview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white flex justify-between items-center">
                     <div>
                         <h3 className="font-bold text-gray-700">📋 주간 정산 배치 현황</h3>
@@ -1992,7 +1992,7 @@ export default function Settlement() {
 
                                 {/* Status Grid */}
                                 <div className="grid grid-cols-3 gap-2 text-center">
-                                    <div className="bg-white rounded-lg p-2">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
                                         <p className="text-[10px] text-gray-400 mb-1">수금</p>
                                         {b.collectionInfo?.collectedAt ? (
                                             <span className="text-green-600 text-xs font-medium">✓ 완료</span>
@@ -2000,7 +2000,7 @@ export default function Settlement() {
                                             <span className="text-gray-400 text-xs">대기</span>
                                         )}
                                     </div>
-                                    <div className="bg-white rounded-lg p-2">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
                                         <p className="text-[10px] text-gray-400 mb-1">파트너 지급</p>
                                         {payoutCount > 0 ? (
                                             <span className={`text-xs font-medium ${paidPayoutCount === payoutCount ? 'text-green-600' : 'text-yellow-600'}`}>
@@ -2010,7 +2010,7 @@ export default function Settlement() {
                                             <span className="text-gray-400 text-xs">없음</span>
                                         )}
                                     </div>
-                                    <div className="bg-white rounded-lg p-2">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
                                         <p className="text-[10px] text-gray-400 mb-1">세금계산서</p>
                                         {b.purchaseInvoice?.receivedAt ? (
                                             <span className="text-purple-600 text-xs font-medium">✓ 수취</span>
@@ -2106,7 +2106,7 @@ export default function Settlement() {
                 if (partnerList.length === 0) return null;
 
                 return (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
                             <h3 className="font-bold text-gray-700">💳 파트너별 지급 현황</h3>
                             <p className="text-xs text-gray-500 mt-1">전체 정산 기간 파트너 지급 누계</p>
@@ -2310,7 +2310,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Toss Ads Dashboard Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-blue-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <h3 className="font-bold text-blue-800 flex items-center gap-2">
@@ -2329,7 +2329,7 @@ export default function Settlement() {
                             <button
                                 onClick={() => tossAdsFileInputRef.current?.click()}
                                 disabled={uploadingTossAds}
-                                className="px-4 py-2 bg-white text-blue-700 border border-blue-300 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                className="px-4 py-2 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-800 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                             >
                                 {uploadingTossAds ? '업로드 중...' : 'CSV 업로드'}
                             </button>
@@ -2342,19 +2342,19 @@ export default function Settlement() {
                                 <div>
                                     <h4 className="font-bold text-gray-800 text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
                                     <div className="flex gap-4 mt-2">
-                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center">
+                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
                                             <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
                                             <p className="font-bold text-blue-600">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
                                         </div>
-                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center">
+                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
                                             <p className="text-[10px] text-gray-500">잠재고객</p>
                                             <p className="font-bold text-indigo-600">{tossAdsWeeklySummary.totalLeads}명</p>
                                         </div>
-                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center hidden sm:block">
+                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden sm:block">
                                             <p className="text-[10px] text-gray-500">평균 CPL</p>
                                             <p className="font-bold text-purple-600">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
                                         </div>
-                                        <div className="bg-white px-3 py-2 rounded border border-gray-200 text-center hidden md:block">
+                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden md:block">
                                             <p className="text-[10px] text-gray-500">총 노출</p>
                                             <p className="font-bold text-gray-700">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
                                         </div>
@@ -2388,7 +2388,7 @@ export default function Settlement() {
                 {/* Charts Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Pie Chart - Category Breakdown */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                         <h3 className="text-lg font-bold text-gray-700 mb-4">📊 카테고리별 지출</h3>
                         {pieData.length > 0 ? (
                             <div className="flex items-center">
@@ -2430,7 +2430,7 @@ export default function Settlement() {
                     </div>
 
                     {/* Bar Chart - Monthly Trend */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                         <h3 className="text-lg font-bold text-gray-700 mb-4">📈 월별 지출 추이</h3>
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={expenseStats.byMonth}>
@@ -2445,7 +2445,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Expense List Table */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                         <h3 className="font-bold text-gray-700">📋 지출 내역</h3>
                         <span className="text-sm text-gray-500">{expenses.length}건</span>
@@ -2510,7 +2510,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Bank Transaction Upload Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50 flex justify-between items-center">
                         <div>
                             <h3 className="font-bold text-indigo-700">🏦 은행 거래내역 업로드</h3>
@@ -2639,7 +2639,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Tax Calculation Dashboard */}
-                <div className="bg-white rounded-xl shadow-sm border border-purple-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-purple-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-indigo-50">
                         <h3 className="font-bold text-purple-700 flex items-center gap-2">
                             📊 세금 계산 도우미 (개인사업자)
@@ -2839,7 +2839,7 @@ export default function Settlement() {
                 </div>
 
                 {/* VAT (부가가치세) Dashboard */}
-                <div className="bg-white rounded-xl shadow-sm border border-teal-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-teal-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-teal-100 bg-gradient-to-r from-teal-50 to-cyan-50">
                         <h3 className="font-bold text-teal-700 flex items-center gap-2">
                             🧾 부가가치세 예상액
@@ -2936,7 +2936,7 @@ export default function Settlement() {
                 </div>
 
                 {/* 원천징수 (Withholding Tax) Calculator */}
-                <div className="bg-white rounded-xl shadow-sm border border-orange-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-orange-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50">
                         <h3 className="font-bold text-orange-700 flex items-center gap-2">
                             💰 원천징수 계산기
@@ -3010,7 +3010,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Tax Calendar (세무 캘린더) */}
-                <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-rose-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
                         <h3 className="font-bold text-rose-700 flex items-center gap-2">
                             📅 세무 캘린더
@@ -3094,7 +3094,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Monthly/Quarterly Income Statement (손익계산서) */}
-                <div className="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50">
                         <h3 className="font-bold text-indigo-700 flex items-center gap-2">
                             📈 월별 손익계산서
@@ -3204,7 +3204,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Partner Revenue Analysis (거래처별 수익 분석) */}
-                <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-emerald-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
                         <h3 className="font-bold text-emerald-700 flex items-center gap-2">
                             🏢 거래처별 수익 분석
@@ -3303,7 +3303,7 @@ export default function Settlement() {
                 </div>
 
                 {/* 더존/세무사랑 형식 엑셀 내보내기 */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-gray-50">
                         <h3 className="font-bold text-slate-700 flex items-center gap-2">
                             📤 세무사 제출용 엑셀 내보내기
@@ -3528,7 +3528,7 @@ export default function Settlement() {
 
                 {/* 세금계산서 등록/관리 UI */}
                 {/*  세금계산서 관리 - 준비 중 */}
-                <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-rose-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
                         <h3 className="font-bold text-rose-700 flex items-center gap-2">
                             세금계산서 관리
@@ -3545,7 +3545,7 @@ export default function Settlement() {
                 </div>
 
                 {/* 월간 세무 캘린더 (확장) */}
-                <div className="bg-white rounded-xl shadow-sm border border-amber-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-amber-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-yellow-50">
                         <h3 className="font-bold text-amber-700 flex items-center gap-2">
                             📆 월간 세무 캘린더
@@ -4002,7 +4002,7 @@ export default function Settlement() {
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h2 className="text-2xl font-bold text-gray-800">주간정산센터</h2>
@@ -4010,7 +4010,7 @@ export default function Settlement() {
                 <div className="flex gap-2 items-center flex-wrap">
                     <div className="relative">
                         <select
-                            className="bg-white border p-2 pl-9 rounded text-lg font-bold text-indigo-700 min-w-[200px] outline-none cursor-pointer"
+                            className="bg-white dark:bg-gray-800 border dark:border-gray-600 p-2 pl-9 rounded text-lg font-bold text-indigo-700 dark:text-indigo-300 min-w-[200px] outline-none cursor-pointer"
                             value={selectedPartnerId}
                             onChange={e => setSelectedPartnerId(e.target.value)}
                         >
@@ -4050,7 +4050,7 @@ export default function Settlement() {
 
             {/* Week Navigator (for settlement tabs) */}
             {activeTab !== 'report' && activeTab !== 'receivables' && !isAll && (
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-4">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <button onClick={goToPrevWeek} className="p-2 hover:bg-gray-100 rounded">
                             <ChevronLeft size={20} />
@@ -4140,7 +4140,7 @@ export default function Settlement() {
             {(activeTab === 'report' || activeTab === 'expenses') && (
                 <div className="flex gap-2 items-center">
                     <select
-                        className="bg-white border p-2 rounded text-lg font-bold cursor-pointer min-w-[100px]"
+                        className="bg-white dark:bg-gray-800 border dark:border-gray-600 p-2 rounded text-lg font-bold cursor-pointer min-w-[100px] dark:text-white"
                         value={year}
                         onChange={e => setYear(Number(e.target.value))}
                     >
@@ -4149,7 +4149,7 @@ export default function Settlement() {
                         ))}
                     </select>
                     <select
-                        className="bg-white border p-2 rounded text-lg font-bold cursor-pointer min-w-[100px]"
+                        className="bg-white dark:bg-gray-800 border dark:border-gray-600 p-2 rounded text-lg font-bold cursor-pointer min-w-[100px] dark:text-white"
                         value={month}
                         onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                     >

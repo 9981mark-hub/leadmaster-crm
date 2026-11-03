@@ -95,7 +95,7 @@ export default function QuickNewCase() {
   const label = 'block text-sm font-semibold text-slate-700 dark:text-gray-200 mb-1.5';
 
   return (
-    <div className="max-w-2xl mx-auto pb-24" onKeyDown={onKey}>
+    <div className="max-w-4xl mx-auto pb-24" onKeyDown={onKey}>
       <header className="mb-6">
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">새 리드 등록</h1>
         <p className="text-sm text-slate-500 mt-1">번호와 이름만 넣고 바로 상담을 시작하세요. 직업·소득·채무는 상담 화면에서 순서대로 채웁니다.</p>
@@ -157,7 +157,7 @@ export default function QuickNewCase() {
           <div className="grid grid-cols-4 gap-2">
             {CASE_TYPES.map(t => (
               <button key={t} type="button" onClick={() => setCaseType(t)}
-                className={`h-10 rounded-xl text-sm font-semibold border transition-colors ${caseType === t ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' : 'bg-white dark:bg-gray-800 border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 hover:bg-slate-50'}`}>
+                className={`h-10 rounded-xl text-sm font-semibold border transition-colors ${caseType === t ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-600 dark:text-white dark:border-blue-600' : 'bg-white dark:bg-gray-800 border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 hover:bg-slate-50'}`}>
                 {t}
               </button>
             ))}
@@ -180,7 +180,7 @@ export default function QuickNewCase() {
 
         <div className="flex flex-col sm:flex-row gap-2 pt-1">
           <button type="button" onClick={() => submit('open')} disabled={saving}
-            className="flex-1 h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+            className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50">
             {saving ? <Loader2 size={18} className="animate-spin" /> : <PhoneCall size={18} />} 등록하고 상담 시작
           </button>
           <button type="button" onClick={() => submit('another')} disabled={saving}

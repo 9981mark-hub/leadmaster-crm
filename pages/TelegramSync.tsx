@@ -69,7 +69,7 @@ const ManualLinker = ({ onLink, prefillName }: { onLink: (caseId: string) => voi
             {results.length > 0 && (
                 <div className="flex flex-col gap-1 mt-2">
                     {results.map(r => (
-                        <div key={r.case_id} className="flex justify-between items-center bg-white p-2 border border-blue-100 rounded">
+                        <div key={r.case_id} className="flex justify-between items-center bg-white dark:bg-gray-800 p-2 border border-blue-100 dark:border-blue-900 rounded">
                             <span className="font-medium text-xs text-gray-800">
                                 {r.customer_name} <span className="text-gray-400">({r.status})</span> - {r.phone?.slice(-4) || '번호없음'}
                             </span>
@@ -204,7 +204,7 @@ export default function TelegramSync() {
     };
 
     const renderFeedbackCard = (f: TelegramFeedback, isHistory: boolean) => (
-        <div key={f.id} className={`p-6 transition-colors ${isHistory ? 'bg-white border-b border-gray-50' : 'hover:bg-gray-50/50'}`}>
+        <div key={f.id} className={`p-6 transition-colors ${isHistory ? 'bg-white dark:bg-gray-800 border-b border-gray-50 dark:border-gray-700' : 'hover:bg-gray-50/50'}`}>
             <div className={`flex justify-between gap-4 ${isHistory ? 'flex-col sm:flex-row' : ''}`}>
                 <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-3 flex-wrap">
@@ -274,7 +274,7 @@ export default function TelegramSync() {
                                             <button 
                                                 key={idx} 
                                                 onClick={() => handleConfirm(f, c.case_id)}
-                                                className="text-xs bg-white text-blue-600 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50 shadow-sm transition font-medium flex items-center gap-1"
+                                                className="text-xs bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-gray-700 shadow-sm transition font-medium flex items-center gap-1"
                                             >
                                                 <Check size={12} /> {c.customer_name} ({c.status}) 님께 승인연동
                                             </button>
@@ -303,14 +303,14 @@ export default function TelegramSync() {
                         {f.matchedCaseId ? (
                             <button
                                 onClick={() => handleConfirm(f)}
-                                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-sm shadow-indigo-200 hover:bg-indigo-700 transition flex items-center justify-center gap-1.5"
+                                className="w-full px-4 py-2 bg-blue-600 text-white rounded-xl font-bold shadow-sm shadow-indigo-200 hover:bg-blue-700 transition flex items-center justify-center gap-1.5"
                             >
                                 <Check size={16} /> 승인하기
                             </button>
                         ) : null}
                         <button
                             onClick={() => handleDismiss(f.id)}
-                            className="w-full px-4 py-2 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 hover:border-gray-300 transition flex items-center justify-center gap-1.5"
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 transition flex items-center justify-center gap-1.5"
                         >
                             <X size={16} /> 무시하기
                         </button>
@@ -343,29 +343,25 @@ export default function TelegramSync() {
     }, [selectedChatTitle]);
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6">
-            <div className="flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-lg relative overflow-hidden">
-                <div className="relative z-10 text-white">
-                    <h2 className="text-3xl font-extrabold flex items-center gap-3">
-                        <Smartphone size={32} />
-                        텔레그램 연동 센터
-                    </h2>
-                    <p className="mt-2 text-indigo-100 opacity-90 text-sm">
-                        현장에서 들어온 텔레그램 피드백을 확인하고 승인하세요. AI가 고객을 자동 매칭합니다.
-                    </p>
-                </div>
-                <div className="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-6">
-                    <Smartphone size={160} />
+        <div className="max-w-7xl mx-auto space-y-6">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 shrink-0">
+                        <Smartphone size={22} className="text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">텔레그램 연동</h1>
+                        <p className="hidden sm:block text-sm text-gray-500 dark:text-gray-400 mt-0.5">현장 피드백 확인 · 승인 · AI 자동 매칭</p>
+                    </div>
                 </div>
             </div>
-
             {/* Tabs */}
             <div className="flex gap-2 border-b border-gray-200 pb-px">
                 <button
                     onClick={() => setActiveTab('pending')}
                     className={`px-6 py-3 font-bold text-sm flex items-center gap-2 rounded-t-xl transition-colors ${
                         activeTab === 'pending' 
-                        ? 'bg-white text-indigo-600 border-t border-x border-gray-200 shadow-[0_4px_0_0_white]' 
+                        ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-t border-x border-gray-200 dark:border-gray-600 shadow-[0_4px_0_0_white] dark:shadow-[0_4px_0_0_#1f2937]' 
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
                 >
@@ -379,7 +375,7 @@ export default function TelegramSync() {
                     onClick={() => setActiveTab('history')}
                     className={`px-6 py-3 font-bold text-sm flex items-center gap-2 rounded-t-xl transition-colors ${
                         activeTab === 'history' 
-                        ? 'bg-white text-indigo-600 border-t border-x border-gray-200 shadow-[0_4px_0_0_white]' 
+                        ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-t border-x border-gray-200 dark:border-gray-600 shadow-[0_4px_0_0_white] dark:shadow-[0_4px_0_0_#1f2937]' 
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
                 >
@@ -390,7 +386,7 @@ export default function TelegramSync() {
 
             {/* Room Filter */}
             {uniqueChatTitles.length > 0 && (
-                <div className="flex items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <MessageSquare size={18} className="text-gray-500" />
                     <span className="text-sm font-bold text-gray-700">채팅방 필터:</span>
                     <select
@@ -408,13 +404,13 @@ export default function TelegramSync() {
 
             {/* Tab Contents */}
             {activeTab === 'pending' && (
-                <div className="bg-white rounded-2xl rounded-tl-none shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                             <MessageSquare className="text-indigo-500" size={20} />대기 목록
                             <span className="text-sm font-medium text-gray-500 ml-2">총 {filteredPendingFeedbacks.length}건</span>
                         </h3>
-                        <button onClick={loadData} className="text-sm text-indigo-600 font-medium hover:text-indigo-800 transition-colors">
+                        <button onClick={loadData} className="text-sm text-blue-600 font-medium hover:text-indigo-800 transition-colors">
                             새로고침
                         </button>
                     </div>
@@ -441,7 +437,7 @@ export default function TelegramSync() {
             {activeTab === 'history' && (
                 <div className="space-y-4">
                     {/* Delete Actions Panel */}
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
+                    <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
                         <div>
                             <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 mb-1">
                                 <Trash2 className="text-rose-500" size={16} /> 히스토리 데이터 정리
@@ -485,13 +481,13 @@ export default function TelegramSync() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                 <History className="text-indigo-500" size={20} />전체 히스토리
                                 <span className="text-sm font-medium text-gray-500 ml-2">총 {filteredHistoryFeedbacks.length}건</span>
                             </h3>
-                            <button onClick={loadData} className="text-sm text-indigo-600 font-medium hover:text-indigo-800 transition-colors">
+                            <button onClick={loadData} className="text-sm text-blue-600 font-medium hover:text-indigo-800 transition-colors">
                                 새로고침
                             </button>
                         </div>
@@ -518,7 +514,7 @@ export default function TelegramSync() {
                                         <button
                                             onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
                                             disabled={historyPage === 1}
-                                            className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                            className="p-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
                                         >
                                             <ChevronLeft size={16} />
                                         </button>
@@ -529,8 +525,8 @@ export default function TelegramSync() {
                                                 onClick={() => setHistoryPage(page)}
                                                 className={`w-9 h-9 rounded-lg text-sm font-bold transition ${
                                                     page === historyPage
-                                                        ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
-                                                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                                                        ? 'bg-blue-600 text-white shadow-sm shadow-indigo-200'
+                                                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300'
                                                 }`}
                                             >
                                                 {page}
@@ -540,7 +536,7 @@ export default function TelegramSync() {
                                         <button
                                             onClick={() => setHistoryPage(p => Math.min(totalHistoryPages, p + 1))}
                                             disabled={historyPage === totalHistoryPages}
-                                            className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                            className="p-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
                                         >
                                             <ChevronRight size={16} />
                                         </button>

@@ -74,7 +74,7 @@ export default function PlatformPage() {
   const copy = (text: string) => navigator.clipboard.writeText(text).then(() => showToast('복사했습니다.', 'success'));
 
   return (
-    <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2"><Building2 size={24} /> 회사 관리</h1>

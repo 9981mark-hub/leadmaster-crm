@@ -431,14 +431,14 @@ export default function SchedulePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto flex justify-center items-center h-64">
+      <div className="max-w-7xl mx-auto flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       
       {/* 1. 상단 타이틀 영역 */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

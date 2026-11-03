@@ -223,7 +223,7 @@ export default function TeamPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-6">
       {/* 상단 헤더 */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -603,7 +603,54 @@ export default function TeamPage() {
               <h2 className="font-bold text-gray-800 dark:text-white">멤버 {members.length}명</h2>
               <span className="text-xs text-gray-400">사용 중 {activeMembers.length}명 · 상담원 {agents.length}명</span>
             </div>
-            <div className="overflow-x-auto">
+            {/* Mobile card list */}
+            <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+              {members.map(m => (
+                <div key={m.userId} className={`px-4 py-3 space-y-2 ${m.status === 'disabled' ? 'opacity-50' : ''}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-medium text-gray-800 dark:text-gray-100">{m.displayName}</span>
+                      {m.userId === org.userId && <span className="ml-1 text-xs text-blue-500">(나)</span>}
+                      {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500">사용 중지</span>}
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                      {ROLE_LABEL[m.role]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{m.email}</p>
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex gap-3">
+                      <span className="text-gray-500 dark:text-gray-400">담당 <span className="font-semibold text-gray-700 dark:text-gray-200">{m.assignedCases.toLocaleString()}</span>건</span>
+                      <span className="text-gray-500 dark:text-gray-400">로그인 {fmtDate(m.lastSignInAt)}</span>
+                    </div>
+                    {canEditRole(m) && (m.status === 'active' ? (
+                      <button
+                        disabled={busy}
+                        onClick={() => handleMemberChange(m, { status: 'disabled' },
+                          `${m.displayName}님을 사용 중지할까요?\n바로 로그인과 데이터 접근이 막힙니다. 담당 리드 ${m.assignedCases}건은 그대로 남으니 다른 상담원에게 다시 배정하세요.`)}
+                        className="inline-flex items-center gap-1 text-red-600 hover:underline disabled:opacity-50"
+                      >
+                        <Ban size={14} /> 중지
+                      </button>
+                    ) : (
+                      <button
+                        disabled={busy}
+                        onClick={() => handleMemberChange(m, { status: 'active' })}
+                        className="inline-flex items-center gap-1 text-green-600 hover:underline disabled:opacity-50"
+                      >
+                        <RotateCcw size={14} /> 복원
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {!loading && members.length === 0 && (
+                <div className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</div>
+              )}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs">
                   <tr>

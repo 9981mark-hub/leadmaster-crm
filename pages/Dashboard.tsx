@@ -11,27 +11,12 @@ import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
+import { KPICard } from '../components/ui/KPICard';
 import { CardSkeleton } from '../components/Skeleton';
 import RevenueWidget from '../components/RevenueWidget';
 import AiUsageWidget from '../components/AiUsageWidget';
 import { fetchDetailedAiUsage, DetailedAiUsage } from '../services/aiUsage';
 
-const KPICard = ({ title, count, color, icon: Icon, subText }: any) => (
-  <motion.div
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    className="glass-panel p-4 rounded-xl flex items-center justify-between transition-all h-full"
-  >
-    <div>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{title}</p>
-      <p className={`text-2xl font-bold ${color}`}>{count}</p>
-      {subText && <p className="text-xs text-gray-400 mt-1">{subText}</p>}
-    </div>
-    <div className={`p-3 rounded-full bg-gray-50 dark:bg-gray-700 ${color.replace('text', 'text-opacity-20')}`}>
-      <Icon size={24} className={color} />
-    </div>
-  </motion.div>
-);
 
 interface CaseListItemProps {
   c: Case;
