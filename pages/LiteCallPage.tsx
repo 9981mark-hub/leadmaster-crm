@@ -122,8 +122,11 @@ export default function LiteCallPage() {
         setHudOpen(false);
         setPostCallOpen(true);
       } else {
-        // 'pending' or 'dialing' 대기 중
-        setIsCalling(false);
+        // 'pending' or 'dialing' 대기 중 (PC 모드일 때만 false로 대기 표시)
+        const isDeviceCalling = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || typeof (window as any).AndroidBridge?.makeCall === 'function';
+        if (!isDeviceCalling) {
+          setIsCalling(false);
+        }
       }
     }
   }, [callState, cases, activeCase]);
@@ -239,12 +242,6 @@ export default function LiteCallPage() {
       setIsCalling(true);
       startCall(target.customerName, target.phone, target.caseId);
       (window as any).AndroidBridge.makeCall(cleanPhone);
-      // 통화 화면으로 튕기지 않고 앱 전면 유지 브릿지 호출 (지원 시)
-      try {
-        if (typeof (window as any).AndroidBridge?.bringToFront === 'function') {
-          (window as any).AndroidBridge.bringToFront();
-        }
-      } catch {}
     } else if (isMobile) {
       // 2) 스마트폰 모바일 브라우저: tel: 프로토콜로 휴대폰 다이얼러 호출
       setIsCalling(true);
