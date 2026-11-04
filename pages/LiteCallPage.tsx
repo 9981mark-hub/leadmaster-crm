@@ -3,8 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Phone, PhoneOff, PhoneCall, Sparkles, Search, X, RefreshCw, 
   ChevronLeft, ArrowRight, User, CheckCircle2, Clock, Moon, Sun, 
-  Send, AlertCircle, Building2, Zap, Filter
+  Send, AlertCircle, Building2, Zap, Filter, Calculator, ShieldCheck, MessageSquare
 } from 'lucide-react';
+import { LiteDebtReliefCalculator } from '../components/lite/LiteDebtReliefCalculator';
+import { LiteBattlecards } from '../components/lite/LiteBattlecards';
+import { LiteQuickSmsModal } from '../components/lite/LiteQuickSmsModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -36,6 +39,10 @@ export default function LiteCallPage() {
   const [search, setSearch] = useState('');
   const [onlyMyLeads, setOnlyMyLeads] = useState<boolean>(!isAdmin);
   const [refetchTrigger, setRefetchTrigger] = useState(0);
+  // [NEW] 상단 퀵 툴 및 카드별 인라인 계산기/문자 모달 상태
+  const [activeTool, setActiveTool] = useState<'calc' | 'battlecards' | null>(null);
+  const [expandedCalcCaseId, setExpandedCalcCaseId] = useState<string | null>(null);
+  const [smsTargetCase, setSmsTargetCase] = useState<Case | null>(null);
 
   // URL ?caseId= 파라미터 처리 (안드로이드 리다이렉트 흡수)
   const [searchParams, setSearchParams] = useSearchParams();
@@ -587,6 +594,33 @@ export default function LiteCallPage() {
                 )}
 
                 {/* 4행: 빅 터치 액션 버튼 바 */}
+                {/* 카드별 인라인 탕감 계산기 (펼쳐졌을 때) */}
+                {expandedCalcCaseId === c.caseId && (
+                  <div className="mb-3">
+                    <LiteDebtReliefCalculator c={c} />
+                  </div>
+                )}
+
+                {/* 카드 빠른 보조 툴 (3초 탕감 계산 / 1-Click 문자) */}
+                <div className="flex items-center justify-between text-xs pt-1 pb-2 border-t border-gray-100 dark:border-gray-700/60 mb-1">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedCalcCaseId(expandedCalcCaseId === c.caseId ? null : c.caseId)}
+                    className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline"
+                  >
+                    <Calculator size={13} className="text-emerald-600" />
+                    <span>{expandedCalcCaseId === c.caseId ? '계산기 접기 ▲' : '⚡ 이 고객 탕감 계산 ▼'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSmsTargetCase(c)}
+                    className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    <MessageSquare size={13} />
+                    <span>📩 1-Click 문자</span>
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-12 gap-2 pt-1">
                   
                   {/* Primary: 큰 원터치 전화 걸기 버튼 */}
@@ -654,6 +688,17 @@ export default function LiteCallPage() {
       )}
 
       {/* ── 통화 종료 스마트 후처리 & 텔레그램 전달 시트 ── */}
+      {/* 카드 직접 발송용 1-Click 문자 모달 */}
+      {smsTargetCase && (
+        <LiteQuickSmsModal
+          c={smsTargetCase}
+          partner={partners.find(p => p.partnerId === smsTargetCase.partnerId)}
+          isOpen={!!smsTargetCase}
+          onClose={() => setSmsTargetCase(null)}
+          showToast={showToast}
+        />
+      )}
+
       {postCallOpen && activeCase && (
         <LitePostCallSheet
           c={activeCase}

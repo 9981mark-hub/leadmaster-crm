@@ -71,6 +71,23 @@ export const LitePostCallSheet: React.FC<Props> = ({
     };
   };
 
+  const [selectedStatus, setSelectedStatus] = useState<string>(c.status === '신규접수' || c.status === '부재' ? '사무장 접수' : c.status);
+  
+  // 파트너(변호사 사무실) 선택
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string>(c.partnerId || (partners[0]?.partnerId || ''));
+  const currentPartner = useMemo(() => partners.find(p => p.partnerId === selectedPartnerId), [partners, selectedPartnerId]);
+
+  // 텔레그램 채팅방 목록
+  const [knownChats, setKnownChats] = useState<KnownTelegramChat[]>([]);
+  useEffect(() => {
+    fetchKnownTelegramChats().then(setKnownChats).catch(() => {});
+  }, []);
+
+  // AI 요약문 상태
+  const [summaryText, setSummaryText] = useState<string>('');
+  const [loadingAi, setLoadingAi] = useState(false);
+
+  // 1-Click SMS 모달 및 AI 스마트 일정 감지
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
   const [addedSchedule, setAddedSchedule] = useState(false);
   const detectedSchedule = useMemo(() => detectScheduleFromText(summaryText), [summaryText]);
@@ -89,22 +106,6 @@ export const LitePostCallSheet: React.FC<Props> = ({
     setAddedSchedule(true);
     showToast(`${detectedSchedule.datetime} 재통화 일정이 캘린더에 등록되었습니다!`, 'success');
   };
-
-  const [selectedStatus, setSelectedStatus] = useState<string>(c.status === '신규접수' || c.status === '부재' ? '사무장 접수' : c.status);
-  
-  // 파트너(변호사 사무실) 선택
-  const [selectedPartnerId, setSelectedPartnerId] = useState<string>(c.partnerId || (partners[0]?.partnerId || ''));
-  const currentPartner = useMemo(() => partners.find(p => p.partnerId === selectedPartnerId), [partners, selectedPartnerId]);
-
-  // 텔레그램 채팅방 목록
-  const [knownChats, setKnownChats] = useState<KnownTelegramChat[]>([]);
-  useEffect(() => {
-    fetchKnownTelegramChats().then(setKnownChats).catch(() => {});
-  }, []);
-
-  // AI 요약문 상태
-  const [summaryText, setSummaryText] = useState<string>('');
-  const [loadingAi, setLoadingAi] = useState(false);
 
   // 초기 요약문 빌드 (최근 분석 녹음 or 템플릿)
   useEffect(() => {

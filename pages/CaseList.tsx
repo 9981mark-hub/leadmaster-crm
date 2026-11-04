@@ -361,6 +361,50 @@ export default function CaseList() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentCases = sortedCases.slice(indexOfFirstItem, indexOfLastItem);
 
+    // 퀵 인스펙터 (Peek Drawer) 내비게이션 및 빠른 액션
+    const drawerIndex = drawerCase ? sortedCases.findIndex(c => c.caseId === drawerCase.caseId) : -1;
+    const hasPrevDrawer = drawerIndex > 0;
+    const hasNextDrawer = drawerIndex >= 0 && drawerIndex < sortedCases.length - 1;
+    const handlePrevDrawer = () => {
+        if (hasPrevDrawer) setDrawerCase(sortedCases[drawerIndex - 1]);
+    };
+    const handleNextDrawer = () => {
+        if (hasNextDrawer) setDrawerCase(sortedCases[drawerIndex + 1]);
+    };
+    const handleDrawerDial = (target: Case) => {
+        const clean = String(target.phone || '').replace(/[^0-9]/g, '');
+        if (!clean) {
+            showToast('전화번호가 없습니다.', 'error');
+            return;
+        }
+        startCall(clean, target.customerName, target.caseId);
+        try {
+            if (typeof (window as any).AndroidBridge?.makeCall === 'function') {
+                (window as any).AndroidBridge.makeCall(clean, target.caseId);
+            } else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                window.location.href = 'tel:' + clean;
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+    };
+    const handleDrawerAddMemo = async (caseId: string, memoContent: string) => {
+        const target = cases.find(c => c.caseId === caseId);
+        if (!target) return;
+        const newMemo = {
+            id: 'memo_' + Date.now(),
+            createdAt: new Date().toISOString(),
+            content: memoContent,
+        };
+        const updatedMemos = [...(target.specialMemo || []), newMemo];
+        await updateCaseMutation.mutateAsync({
+            id: caseId,
+            updates: { specialMemo: updatedMemos },
+        });
+        showToast('상담 메모가 저장되었습니다.', 'success');
+        setDrawerCase(prev => prev && prev.caseId === caseId ? { ...prev, specialMemo: updatedMemos } : prev);
+    };
+
     // Auto-clamp page
     useEffect(() => {
         if (totalPages > 0 && currentPage > totalPages) {
