@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Phone, PhoneOff, CheckCircle2, Circle, Clock, AlertCircle, ChevronDown, ChevronUp, User, MapPin, Loader2 } from 'lucide-react';
 import { Case, Partner } from '../../types';
+import { LiteDebtReliefCalculator } from './LiteDebtReliefCalculator';
+import { LiteBattlecards } from './LiteBattlecards';
 
 interface Props {
   c: Case;
@@ -95,6 +97,12 @@ export const LiteInCallHud: React.FC<Props> = ({
 
         {/* 바디: 사전 정보 및 필수 질문 가이드 */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar">
+          
+          {/* 1-Tap 반론 극복 치트키 */}
+          <LiteBattlecards />
+
+          {/* 3초 탕감율 & 변제금 즉석 계산기 */}
+          <LiteDebtReliefCalculator c={c} />
           
           {/* 고객 기본 프로필 & 사전 정보 카드 */}
           <div className="bg-blue-50/80 dark:bg-blue-950/40 rounded-xl p-3 border border-blue-100 dark:border-blue-900/50">

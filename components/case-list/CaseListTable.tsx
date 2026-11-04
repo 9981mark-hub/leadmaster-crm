@@ -130,6 +130,7 @@ interface CaseListTableProps {
     onMissedCall: (e: React.MouseEvent, c: Case) => void;
     onStatusChange: (caseId: string, newStatus: string, oldStatus: string) => void; // [NEW]
     onToggleStar: (caseId: string, currentStarred: boolean) => void; // [NEW] 중요 표시
+    onOpenDrawer?: (c: Case) => void; // [NEW] 퀵 인스펙터 슬라이드 드로어
     // [2026-11-01] 여러 건 선택 · 담당자 표시
     selectedIds?: Set<string>;
     onToggleSelect?: (caseId: string) => void;
@@ -150,6 +151,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     onMissedCall,
     onStatusChange,
     onToggleStar,
+    onOpenDrawer,
     selectedIds,
     onToggleSelect,
     onToggleSelectAll,
@@ -318,7 +320,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
                             <div className="flex justify-between items-center mt-1">
                                 <div className="flex items-center gap-2">
-                                    <Link to={`/case/${c.caseId}`} className="font-bold text-lg text-gray-800 dark:text-gray-200">
+                                    <Link to={`/case/${c.caseId}`} onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }} className="font-bold text-lg text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">
                                         {c.customerName}
                                     </Link>
                                     {c.isArchived && (
@@ -565,6 +567,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         <div className="flex items-center gap-1.5">
                                             <Link
                                                 to={`/case/${c.caseId}`}
+                                                onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }}
                                                 className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                                             >
                                                 <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Send, CheckCircle2, Phone, X, Sparkles, Building2, AlertTriangle, ArrowRight, Loader2, RotateCcw } from 'lucide-react';
-import { Case, CaseStatus, Partner } from '../../types';
+import { Send, CheckCircle2, Phone, X, Sparkles, Building2, AlertTriangle, ArrowRight, Loader2, RotateCcw, Calendar, MessageSquare, Smartphone } from 'lucide-react';
+import { LiteQuickSmsModal } from './LiteQuickSmsModal';
+import { Case, CaseStatus, Partner, ReminderItem } from '../../types';
 import { generateSummary, parseAiTranscript } from '../../utils';
 import { deliverCaseToTelegram, fetchKnownTelegramChats, KnownTelegramChat, DeliveryError } from '../../services/telegramDelivery';
 import { fetchLatestAnalyzedRecording } from '../../services/recordings';
@@ -31,6 +32,64 @@ export const LitePostCallSheet: React.FC<Props> = ({
   showToast,
 }) => {
   // 선택된 상태
+  // 스마트 일정 감지 헬퍼
+  const detectScheduleFromText = (text: string): { datetime: string; note: string } | null => {
+    if (!text) return null;
+    const hasKeyword = /재통화|다시 연락|내일|모레|오후|오전|통화 가능|상담 예약/.test(text);
+    if (!hasKeyword) return null;
+
+    const now = new Date();
+    const targetDate = new Date(now);
+
+    if (text.includes('내일')) {
+      targetDate.setDate(targetDate.getDate() + 1);
+    } else if (text.includes('모레')) {
+      targetDate.setDate(targetDate.getDate() + 2);
+    }
+
+    let hour = 14;
+    let minute = 0;
+    const timeMatch = text.match(/(오전|오후)?\s*(\d{1,2})시\s*(\d{1,2})?분?/);
+    if (timeMatch) {
+      let h = parseInt(timeMatch[2], 10);
+      const isPm = timeMatch[1] === '오후' || (h < 9 && !timeMatch[1]);
+      if (isPm && h < 12) h += 12;
+      if (timeMatch[1] === '오전' && h === 12) h = 0;
+      hour = h;
+      if (timeMatch[3]) minute = parseInt(timeMatch[3], 10);
+    }
+
+    const yyyy = targetDate.getFullYear();
+    const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(targetDate.getDate()).padStart(2, '0');
+    const hh = String(hour).padStart(2, '0');
+    const minStr = String(minute).padStart(2, '0');
+
+    return {
+      datetime: `${yyyy}-${mm}-${dd} ${hh}:${minStr}`,
+      note: 'AI 감지: 재통화 상담 예약',
+    };
+  };
+
+  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
+  const [addedSchedule, setAddedSchedule] = useState(false);
+  const detectedSchedule = useMemo(() => detectScheduleFromText(summaryText), [summaryText]);
+
+  const handleAddDetectedSchedule = async () => {
+    if (!detectedSchedule) return;
+    const newReminder: ReminderItem = {
+      id: `rem_${Date.now()}`,
+      datetime: detectedSchedule.datetime,
+      type: '통화',
+      content: detectedSchedule.note,
+      isCompleted: false,
+    };
+    const updated = [...(c.reminders || []), newReminder];
+    await onSaveCase({ reminders: updated }, `📅 ${detectedSchedule.datetime} 캘린더 일정이 등록되었습니다.`);
+    setAddedSchedule(true);
+    showToast(`${detectedSchedule.datetime} 재통화 일정이 캘린더에 등록되었습니다!`, 'success');
+  };
+
   const [selectedStatus, setSelectedStatus] = useState<string>(c.status === '신규접수' || c.status === '부재' ? '사무장 접수' : c.status);
   
   // 파트너(변호사 사무실) 선택
@@ -186,6 +245,62 @@ export const LitePostCallSheet: React.FC<Props> = ({
 
         {/* 바디 (스크롤) */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+
+          {/* [NEW] AI 감지 재통화 일정 원클릭 캘린더 등록 */}
+          {detectedSchedule && !addedSchedule && (
+            <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-2xl border border-amber-300 dark:border-amber-800 flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+                  <Calendar size={16} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-extrabold px-1.5 py-0.5 rounded">
+                      AI 일정 감지
+                    </span>
+                    <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                      {detectedSchedule.datetime}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
+                    {detectedSchedule.note}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddDetectedSchedule}
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shrink-0 shadow-xs active:scale-95 transition-all"
+              >
+                캘린더 등록
+              </button>
+            </div>
+          )}
+
+          {/* [NEW] 1-Click 안내 문자 / 알림톡 발송 바 */}
+          <div className="flex items-center justify-between bg-indigo-50/70 dark:bg-indigo-950/40 p-3 rounded-2xl border border-indigo-100 dark:border-indigo-900/50">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                <MessageSquare size={14} />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">
+                  1-Click 안내 문자 발송
+                </span>
+                <span className="text-[10px] text-gray-500">
+                  부재중 1/2차 콜백 요청 · 사무장 배정 안내
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSmsModalOpen(true)}
+              className="flex items-center gap-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl shadow-xs active:scale-95 transition-all"
+            >
+              <Smartphone size={13} />
+              <span>문자 발송</span>
+            </button>
+          </div>
 
           {/* 1. 상태 원터치 선택 그리드 */}
           <div>

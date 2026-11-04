@@ -25,6 +25,8 @@ import { CaseListFilter } from '../components/case-list/CaseListFilter';
 import { CaseListTable } from '../components/case-list/CaseListTable';
 import { CaseListPagination } from '../components/case-list/CaseListPagination';
 import { ExportCaseModal } from '../components/case-list/ExportCaseModal';
+import { CaseDetailDrawer } from '../components/case-list/CaseDetailDrawer';
+import { useActiveCall } from '../contexts/ActiveCallContext';
 
 export default function CaseList() {
     const navigate = useNavigate();
@@ -46,6 +48,9 @@ export default function CaseList() {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'active' | 'archived' | 'trash'>('active');
     const [layoutMode, setLayoutMode] = useState<'list' | 'kanban'>('list');
+    // [NEW] 우측 슬라이드 퀵 인스펙터 (Peek Drawer)
+    const [drawerCase, setDrawerCase] = useState<Case | null>(null);
+    const { startCall } = useActiveCall();
 
     // [NEW] 이탈 사유 모달 (CaseList 빠른 상태 변경 시)
     const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
@@ -808,6 +813,25 @@ export default function CaseList() {
                 statuses={statuses}
             />
 
+            {/* 우측 슬라이드 퀵 인스펙터 (Peek Drawer) */}
+            <CaseDetailDrawer
+                c={drawerCase}
+                isOpen={!!drawerCase}
+                onClose={() => setDrawerCase(null)}
+                onPrev={handlePrevDrawer}
+                onNext={handleNextDrawer}
+                hasPrev={hasPrevDrawer}
+                hasNext={hasNextDrawer}
+                partners={partners}
+                statuses={statuses.filter(s => s !== '휴지통')}
+                onStatusChange={(cid, nStatus, oStatus) => {
+                    handleQuickStatusChange(cid, nStatus, oStatus);
+                    setDrawerCase(prev => prev && prev.caseId === cid ? { ...prev, status: nStatus } : prev);
+                }}
+                onAddMemo={handleDrawerAddMemo}
+                onDial={handleDrawerDial}
+            />
+
             {layoutMode === 'kanban' ? (
                 <KanbanBoard
                     // [2026-11-01] 예전엔 현재 쪽 10건만 칸반에 나왔다 → 필터 결과 전체
@@ -836,6 +860,7 @@ export default function CaseList() {
                         onMissedCall={handleMissedCall}
                         onStatusChange={handleQuickStatusChange}
                         onToggleStar={handleToggleStar}
+                        onOpenDrawer={setDrawerCase}
                         selectedIds={selected}
                         onToggleSelect={toggleSelect}
                         onToggleSelectAll={toggleSelectAll}
