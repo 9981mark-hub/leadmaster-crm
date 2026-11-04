@@ -67,12 +67,24 @@ const NavGroup = ({ label, collapsed, children }: { label: string; collapsed: bo
 );
 
 /* ── Mobile Bottom Nav ── */
-const MobileNavItem = ({ to, icon: Icon, label, active }: any) => (
-  <Link to={to} className={`flex flex-col items-center justify-center py-2 min-w-[64px] ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>
-    <Icon size={22} />
-    <span className="text-[10px] mt-1 font-medium">{label}</span>
-  </Link>
-);
+const MobileNavItem = ({ to, icon: Icon, label, active }: any) => {
+  const isLite = to === '/lite';
+  return (
+    <Link
+      to={to}
+      className={`flex flex-col items-center justify-center py-2 min-w-[56px] transition-colors ${
+        active
+          ? isLite ? 'text-amber-500 font-bold' : 'text-blue-600 dark:text-blue-400 font-bold'
+          : isLite ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-400 dark:text-gray-500'
+      }`}
+    >
+      <div className={isLite ? 'relative' : ''}>
+        <Icon size={21} className={isLite ? 'text-amber-500 fill-amber-500/20' : ''} />
+      </div>
+      <span className="text-[10px] mt-0.5 whitespace-nowrap">{label}</span>
+    </Link>
+  );
+};
 
 /* ── 더보기 그리드 메뉴 (모바일) ── */
 const MobileMoreMenu = ({ navs, path, onClose }: { navs: any[]; path: string; onClose: () => void }) => (
@@ -222,7 +234,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // [CRITICAL] Cache Buster / Force Version Update
   React.useEffect(() => {
-    const CURRENT_VERSION = "3.33";
+    const CURRENT_VERSION = "3.34";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
@@ -257,7 +269,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const visibleNavs = isAdmin ? navs : navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
   // 모바일 하단 바 — 핵심 4개만 고정, 나머지는 "더보기" 그리드
-  const MOBILE_CORE_PATHS = ['/', '/cases', '/new'];
+  const MOBILE_CORE_PATHS = ['/', '/cases', '/lite', '/new'];
   const mobileCoreTabs = visibleNavs.filter(n => MOBILE_CORE_PATHS.includes(n.to));
   const mobileMoreItems = visibleNavs.filter(n => !MOBILE_CORE_PATHS.includes(n.to));
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
