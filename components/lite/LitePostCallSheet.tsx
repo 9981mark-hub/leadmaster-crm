@@ -111,6 +111,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
       // 2. 텔레그램 메시지 발송
       const res = await deliverCaseToTelegram(c.caseId, summaryText, needForce);
       showToast(`[${res.chatTitle || currentPartner.name}] 텔레그램 방으로 전달 완료!`);
+      window.dispatchEvent(new Event('lm_lite_activity_updated'));
 
       // 3. 자동으로 다음 고객으로 넘어가기
       onNext();
@@ -153,6 +154,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
       };
 
       await onSaveCase(updates, `고객 상태를 "${selectedStatus}"(으)로 저장했습니다.`);
+      window.dispatchEvent(new Event('lm_lite_activity_updated'));
       onNext();
     } catch (e: any) {
       showToast(e.message || '저장 실패', 'error');

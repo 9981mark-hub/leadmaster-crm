@@ -13,6 +13,7 @@ import { Case, Partner } from '../types';
 import { parseGenericDate, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { LiteInCallHud } from '../components/lite/LiteInCallHud';
 import { LitePostCallSheet } from '../components/lite/LitePostCallSheet';
+import { LiteTodayPerformanceBar } from '../components/lite/LiteTodayPerformanceBar';
 import { useActiveCall } from '../contexts/ActiveCallContext';
 import { enqueuePendingCall } from '../services/supabase';
 
@@ -34,6 +35,7 @@ export default function LiteCallPage() {
   const [activeTab, setActiveTab] = useState<LiteTab>('all');
   const [search, setSearch] = useState('');
   const [onlyMyLeads, setOnlyMyLeads] = useState<boolean>(!isAdmin);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   // Active Case for In-Call HUD or Post-Call Sheet
   const [activeCase, setActiveCase] = useState<Case | null>(null);
@@ -158,6 +160,17 @@ export default function LiteCallPage() {
     setCallElapsed(0);
     setHudOpen(true);
 
+    // 오늘 발신 로컬 카운트 증가 및 실시간 알림
+    try {
+      const todayKey = new Date().toISOString().split('T')[0];
+      const storageKey = `lm_lite_dials_${todayKey}_${org?.userId || 'me'}`;
+      const curDials = parseInt(localStorage.getItem(storageKey) || '0', 10);
+      localStorage.setItem(storageKey, String(curDials + 1));
+      window.dispatchEvent(new Event('lm_lite_activity_updated'));
+    } catch (e) {
+      console.warn('Failed to update local dials:', e);
+    }
+
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const hasBridge = !!(window as any).AndroidBridge?.makeCall;
 
@@ -216,6 +229,8 @@ export default function LiteCallPage() {
       });
 
       showToast(`${target.customerName} 고객 부재 처리 완료 (누적 ${nextCount}회)`);
+      window.dispatchEvent(new Event('lm_lite_activity_updated'));
+      setRefetchTrigger(prev => prev + 1);
       if (hudOpen) {
         setHudOpen(false);
         setIsCalling(false);
@@ -250,6 +265,8 @@ export default function LiteCallPage() {
       id: activeCase.caseId,
       updates,
     });
+    window.dispatchEvent(new Event('lm_lite_activity_updated'));
+    setRefetchTrigger(prev => prev + 1);
     if (successMessage) {
       showToast(successMessage);
     }
@@ -277,7 +294,10 @@ export default function LiteCallPage() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => refetchCases()}
+            onClick={() => {
+              refetchCases();
+              setRefetchTrigger(prev => prev + 1);
+            }}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
             title="새로고침"
           >
@@ -301,6 +321,13 @@ export default function LiteCallPage() {
           </button>
         </div>
       </header>
+
+      {/* ── 오늘 나의 실적 및 활동 요약 바 (Today's Performance & Activity Bar) ── */}
+      <LiteTodayPerformanceBar
+        cases={cases}
+        onSelectTab={(tab) => setActiveTab(tab)}
+        refetchTrigger={refetchTrigger}
+      />
 
       {/* ── Search & Filter Controls ── */}
       <div className="p-3.5 space-y-2.5 bg-white dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-800">
