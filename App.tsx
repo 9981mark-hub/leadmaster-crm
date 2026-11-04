@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X, Zap } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -20,6 +20,7 @@ const TelegramSync = lazyWithRetry(() => import('./pages/TelegramSync'));
 const AutoDial = lazyWithRetry(() => import('./pages/AutoDial'));
 const TeamPage = lazyWithRetry(() => import('./pages/TeamPage'));
 const PlatformPage = lazyWithRetry(() => import('./pages/PlatformPage'));
+const LiteCallPage = lazyWithRetry(() => import('./pages/LiteCallPage'));
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ROLE_LABEL } from './services/org';
@@ -241,6 +242,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
     { to: '/schedule', icon: Calendar, label: '일정' },
     { to: '/cases', icon: Users, label: '케이스' },
+    { to: '/lite', icon: Zap, label: '간편 콜 모드' },
     { to: '/new', icon: PlusCircle, label: '신규등록' },
     { to: '/telegram', icon: Smartphone, label: 'TG연동', badge: pendingTgCount > 0 ? pendingTgCount : undefined },
     { to: '/auto-dial', icon: PhoneCall, label: '자동통화' },
@@ -288,7 +290,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-3' : 'px-3 py-2'} space-y-0.5`}>
           {(() => {
             const isActive = (to: string) => path === to || (path.startsWith('/case/') && to === '/cases');
-            const workNavPaths = ['/', '/schedule', '/cases', '/new'];
+            const workNavPaths = ['/', '/schedule', '/cases', '/lite', '/new'];
             const opsNavPaths = ['/telegram', '/auto-dial', '/settlement'];
             const adminNavPaths = ['/statistics', '/team', '/platform', '/settings', '/mypage'];
             const workNavs = visibleNavs.filter(n => workNavPaths.includes(n.to));
@@ -335,6 +337,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
               <OrgBadge compact />
             </div>
+            <Link
+              to="/lite"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all"
+            >
+              <Zap size={14} className="fill-white" />
+              <span>간편모드</span>
+            </Link>
           </div>
         )}
 
@@ -423,6 +432,21 @@ const ProtectedRoutes = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // 간편 모드(/lite): 모바일 엄지 영역 및 전용 전체화면 제공
+  if (location.pathname === '/lite') {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={
+          <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <Loader2 className="animate-spin text-amber-500" size={32} />
+          </div>
+        }>
+          <LiteCallPage />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <Layout>
       <ErrorBoundary>
@@ -430,6 +454,7 @@ const ProtectedRoutes = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/cases" element={<CaseList />} />
+          <Route path="/lite" element={<LiteCallPage />} />
           <Route path="/new" element={<QuickNewCase />} />
           <Route path="/new/full" element={<NewCase />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />

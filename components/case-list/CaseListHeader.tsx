@@ -1,5 +1,6 @@
 import React from 'react';
-import { Sparkles, Phone, X, ArrowUpDown, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Sparkles, Phone, X, ArrowUpDown, AlertTriangle, Zap } from 'lucide-react';
 import { MissedCallIntervalTier } from '../../types';
 import { getSyncStatus } from '../../services/api';
 
@@ -147,6 +148,15 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             <span className="text-xs text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
                         )}
                     </div>
+                    <Link
+                        to="/lite"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all whitespace-nowrap"
+                        title="재택/이동 중 모바일 스마트폰 간편 콜 모드"
+                    >
+                        <Zap size={13} className="fill-white" />
+                        <span>간편 모드</span>
+                    </Link>
+
                     {canExport && (
                         <button
                             onClick={onExportClick}
