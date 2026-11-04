@@ -14,6 +14,7 @@ import { parseGenericDate, isOverdueMissedCall, loadMissedCallTiers } from '../u
 import { LiteInCallHud } from '../components/lite/LiteInCallHud';
 import { LitePostCallSheet } from '../components/lite/LitePostCallSheet';
 import { useActiveCall } from '../contexts/ActiveCallContext';
+import { enqueuePendingCall } from '../services/supabase';
 
 type LiteTab = 'all' | 'today' | 'new' | 'missed';
 
@@ -133,20 +134,35 @@ export default function LiteCallPage() {
     return { all: myLive.length, today: todayCount, new: newCount, missed: missedCount };
   }, [cases, onlyMyLeads, org?.userId]);
 
-  // 전화 걸기 핸들러
-  const handleDial = (target: Case) => {
+  // 전화 걸기 핸들러 (모바일/PC 환경 자동 감지 분기)
+  const handleDial = async (target: Case) => {
     const cleanPhone = String(target.phone || '').replace(/[^0-9]/g, '');
     setActiveCase(target);
     setIsCalling(true);
     setCallElapsed(0);
     setHudOpen(true);
 
-    // Context & App bridge
-    startCall(target.customerName, target.phone, target.caseId);
-    if ((window as any).AndroidBridge?.makeCall) {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const hasBridge = !!(window as any).AndroidBridge?.makeCall;
+
+    if (hasBridge) {
+      // 1) 안드로이드 앱 웹뷰: 브릿지 호출
+      startCall(target.customerName, target.phone, target.caseId);
       (window as any).AndroidBridge.makeCall(cleanPhone);
-    } else {
+    } else if (isMobile) {
+      // 2) 스마트폰 모바일 브라우저: tel: 프로토콜로 휴대폰 다이얼러 호출
+      startCall(target.customerName, target.phone, target.caseId);
       window.location.href = `tel:${cleanPhone}`;
+    } else {
+      // 3) PC 브라우저: tel: 호출 시 윈도우/크롬의 '앱 선택' 팝업이 뜨므로 호출하지 않고,
+      // 리드마스터의 스마트폰 원격 발신(Click-to-Call) 큐로 자동 전송!
+      startCall(target.customerName, target.phone, target.caseId);
+      try {
+        await enqueuePendingCall(cleanPhone, target.customerName, target.caseId);
+        showToast(`핸드폰으로 전화 발신 요청을 보냈습니다. (${target.customerName})`);
+      } catch (e: any) {
+        console.error('enqueuePendingCall error:', e);
+      }
     }
   };
 
