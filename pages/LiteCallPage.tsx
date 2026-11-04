@@ -41,25 +41,47 @@ export default function LiteCallPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlCaseId = searchParams.get('caseId');
 
-  // 간편 모드 세션 활성 및 안드로이드 플로팅 버튼 자동 제어
+  // 간편 모드 세션 활성 및 안드로이드 플로팅 버튼/라이트모드 자동 제어
   useEffect(() => {
     sessionStorage.setItem('lm_lite_mode_active', 'true');
     try {
+      if (typeof (window as any).AndroidBridge?.setLiteModeActive === 'function') {
+        (window as any).AndroidBridge.setLiteModeActive(true);
+      }
       if (typeof (window as any).AndroidBridge?.setFloatingButtonEnabled === 'function') {
         (window as any).AndroidBridge.setFloatingButtonEnabled(false);
       }
     } catch (e) {
-      console.warn('[Lite] Android floating button control failed:', e);
+      console.warn('[Lite] Android bridge init failed:', e);
     }
 
+    // 네이티브에서 통화 종료 시 직접 수신하는 JS 콜백 등록
+    (window as any).onNativeCallEnded = (caseId: string) => {
+      console.log('[LeadMaster Lite] onNativeCallEnded received:', caseId);
+      if (caseId && cases.length > 0) {
+        const match = cases.find(c => c.caseId === caseId);
+        if (match) {
+          setActiveCase(match);
+          setIsCalling(false);
+          setHudOpen(false);
+          setPostCallOpen(true);
+        }
+      }
+    };
+
     return () => {
+      sessionStorage.removeItem('lm_lite_mode_active');
+      delete (window as any).onNativeCallEnded;
       try {
+        if (typeof (window as any).AndroidBridge?.setLiteModeActive === 'function') {
+          (window as any).AndroidBridge.setLiteModeActive(false);
+        }
         if (typeof (window as any).AndroidBridge?.setFloatingButtonEnabled === 'function') {
           (window as any).AndroidBridge.setFloatingButtonEnabled(true);
         }
       } catch {}
     };
-  }, []);
+  }, [cases]);
 
   // 외부(안드로이드 통화 종료 후)에서 ?caseId=로 접근 시 해당 고객 시트 즉시 오픈
   useEffect(() => {
