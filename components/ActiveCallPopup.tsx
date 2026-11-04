@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, PhoneOff, X, ExternalLink, Loader2, PhoneCall } from 'lucide-react';
 import { useActiveCall } from '../contexts/ActiveCallContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Case, MemoItem } from '../types';
 
 const ActiveCallPopup: React.FC = () => {
@@ -11,6 +11,7 @@ const ActiveCallPopup: React.FC = () => {
     const [matchedCase, setMatchedCase] = useState<Case | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     // 사전 고객 정보 파싱 유틸
     const parsePreInfo = (preInfo?: string) => {
@@ -137,6 +138,8 @@ const ActiveCallPopup: React.FC = () => {
     };
 
     if (!callState.isActive) return null;
+    // 간편 모드(/lite)에서는 전역 미니 팝업 완전 비활성화 (간편 모드 전용 HUD/시트 독립 작동)
+    if (location.pathname === '/lite') return null;
 
     // ========================================
     // 미니 팝업 (ended 모드)

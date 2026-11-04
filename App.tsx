@@ -432,6 +432,15 @@ const ProtectedRoutes = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // 간편 모드 세션 보호: 안드로이드 오버레이나 외부 호출에 의해 통화 종료 후 /case/:id로 튕기는 현상 방지
+  if (location.pathname.startsWith('/case/')) {
+    if (sessionStorage.getItem('lm_lite_mode_active') === 'true') {
+      const match = location.pathname.match(/\/case\/([^/]+)/);
+      const targetCaseId = match ? match[1] : '';
+      return <Navigate to={`/lite?caseId=${targetCaseId}`} replace />;
+    }
+  }
+
   // 간편 모드(/lite): 모바일 엄지 영역 및 전용 전체화면 제공
   if (location.pathname === '/lite') {
     return (

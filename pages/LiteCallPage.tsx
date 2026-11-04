@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Phone, PhoneOff, PhoneCall, Sparkles, Search, X, RefreshCw, 
   ChevronLeft, ArrowRight, User, CheckCircle2, Clock, Moon, Sun, 
@@ -36,6 +36,44 @@ export default function LiteCallPage() {
   const [search, setSearch] = useState('');
   const [onlyMyLeads, setOnlyMyLeads] = useState<boolean>(!isAdmin);
   const [refetchTrigger, setRefetchTrigger] = useState(0);
+
+  // URL ?caseId= 파라미터 처리 (안드로이드 리다이렉트 흡수)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlCaseId = searchParams.get('caseId');
+
+  // 간편 모드 세션 활성 및 안드로이드 플로팅 버튼 자동 제어
+  useEffect(() => {
+    sessionStorage.setItem('lm_lite_mode_active', 'true');
+    try {
+      if (typeof (window as any).AndroidBridge?.setFloatingButtonEnabled === 'function') {
+        (window as any).AndroidBridge.setFloatingButtonEnabled(false);
+      }
+    } catch (e) {
+      console.warn('[Lite] Android floating button control failed:', e);
+    }
+
+    return () => {
+      try {
+        if (typeof (window as any).AndroidBridge?.setFloatingButtonEnabled === 'function') {
+          (window as any).AndroidBridge.setFloatingButtonEnabled(true);
+        }
+      } catch {}
+    };
+  }, []);
+
+  // 외부(안드로이드 통화 종료 후)에서 ?caseId=로 접근 시 해당 고객 시트 즉시 오픈
+  useEffect(() => {
+    if (urlCaseId && cases.length > 0) {
+      const match = cases.find(c => c.caseId === urlCaseId);
+      if (match) {
+        setActiveCase(match);
+        setPostCallOpen(true);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete('caseId');
+        setSearchParams(nextParams, { replace: true });
+      }
+    }
+  }, [urlCaseId, cases, searchParams, setSearchParams]);
 
   // Active Case for In-Call HUD or Post-Call Sheet
   const [activeCase, setActiveCase] = useState<Case | null>(null);
@@ -179,6 +217,12 @@ export default function LiteCallPage() {
       setIsCalling(true);
       startCall(target.customerName, target.phone, target.caseId);
       (window as any).AndroidBridge.makeCall(cleanPhone);
+      // 통화 화면으로 튕기지 않고 앱 전면 유지 브릿지 호출 (지원 시)
+      try {
+        if (typeof (window as any).AndroidBridge?.bringToFront === 'function') {
+          (window as any).AndroidBridge.bringToFront();
+        }
+      } catch {}
     } else if (isMobile) {
       // 2) 스마트폰 모바일 브라우저: tel: 프로토콜로 휴대폰 다이얼러 호출
       setIsCalling(true);
@@ -196,6 +240,20 @@ export default function LiteCallPage() {
         console.error('enqueuePendingCall error:', e);
       }
     }
+  };
+
+  // 앱 내 통화 종료 (전화 끊기) 핸들러
+  const handleEndCall = () => {
+    try {
+      if (typeof (window as any).AndroidBridge?.endCall === 'function') {
+        (window as any).AndroidBridge.endCall();
+      }
+    } catch (e) {
+      console.warn('[Lite] AndroidBridge.endCall failed:', e);
+    }
+    setIsCalling(false);
+    setHudOpen(false);
+    setPostCallOpen(true);
   };
 
   // 원터치 부재 처리
@@ -313,7 +371,10 @@ export default function LiteCallPage() {
           </button>
 
           <button
-            onClick={() => navigate('/cases')}
+            onClick={() => {
+              sessionStorage.removeItem('lm_lite_mode_active');
+              navigate('/cases');
+            }}
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
           >
             <ChevronLeft size={14} />
@@ -559,6 +620,7 @@ export default function LiteCallPage() {
           partner={partners.find(p => p.partnerId === activeCase.partnerId)}
           elapsedSec={callElapsed}
           isCalling={isCalling}
+          onEndCall={handleEndCall}
           onOpenPostCall={() => {
             setHudOpen(false);
             setPostCallOpen(true);

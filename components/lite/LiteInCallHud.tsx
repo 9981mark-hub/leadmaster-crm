@@ -7,6 +7,7 @@ interface Props {
   partner?: Partner;
   elapsedSec: number;
   isCalling?: boolean;
+  onEndCall?: () => void;
   onOpenPostCall: () => void;
   onQuickMissedCall: () => void;
   onClose: () => void;
@@ -17,6 +18,7 @@ export const LiteInCallHud: React.FC<Props> = ({
   partner,
   elapsedSec,
   isCalling = false,
+  onEndCall,
   onOpenPostCall,
   onQuickMissedCall,
   onClose,
@@ -256,23 +258,35 @@ export const LiteInCallHud: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* 하단 고정 액션 버튼 바 (엄지 터치 최적화) */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-800/90 border-t border-gray-200 dark:border-gray-700 shrink-0 grid grid-cols-2 gap-2.5">
+        {/* 하단 고정 액션 버튼 바 (엄지 터치 최적화: 통화 종료 + 부재 + 상담완료) */}
+        <div className="p-3 bg-gray-50 dark:bg-gray-800/90 border-t border-gray-200 dark:border-gray-700 shrink-0 space-y-2">
+          {/* 1. 앱 내 즉시 통화 종료 (전화 끊기) 버튼 */}
           <button
-            onClick={onQuickMissedCall}
-            className="flex items-center justify-center gap-1.5 py-3.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md active:scale-95 transition-all"
+            onClick={onEndCall || onOpenPostCall}
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-extrabold text-sm shadow-md active:scale-[0.98] transition-all"
           >
-            <PhoneOff size={16} />
-            <span>📵 부재 (카운트+1)</span>
+            <PhoneOff size={18} />
+            <span>통화 종료 (전화 끊고 결과 입력)</span>
           </button>
 
-          <button
-            onClick={onOpenPostCall}
-            className="flex items-center justify-center gap-1.5 py-3.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md active:scale-95 transition-all"
-          >
-            <CheckCircle2 size={16} />
-            <span>상담 완료 및 결과 입력</span>
-          </button>
+          {/* 2. 보조 액션 (원터치 부재 처리 / 상담 결과 시트 열기) */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={onQuickMissedCall}
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+            >
+              <PhoneOff size={14} />
+              <span>📵 부재 (카운트+1)</span>
+            </button>
+
+            <button
+              onClick={onOpenPostCall}
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+            >
+              <CheckCircle2 size={14} />
+              <span>상담 메모 & 전송</span>
+            </button>
+          </div>
         </div>
 
       </div>
