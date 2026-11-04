@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Phone, PhoneOff, CheckCircle2, Circle, Clock, AlertCircle, ChevronDown, ChevronUp, User, MapPin } from 'lucide-react';
+import { Phone, PhoneOff, CheckCircle2, Circle, Clock, AlertCircle, ChevronDown, ChevronUp, User, MapPin, Loader2 } from 'lucide-react';
 import { Case, Partner } from '../../types';
 
 interface Props {
   c: Case;
   partner?: Partner;
   elapsedSec: number;
+  isCalling?: boolean;
   onOpenPostCall: () => void;
   onQuickMissedCall: () => void;
   onClose: () => void;
@@ -15,6 +16,7 @@ export const LiteInCallHud: React.FC<Props> = ({
   c,
   partner,
   elapsedSec,
+  isCalling = false,
   onOpenPostCall,
   onQuickMissedCall,
   onClose,
@@ -48,10 +50,12 @@ export const LiteInCallHud: React.FC<Props> = ({
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shrink-0 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isCalling ? 'bg-white/20 animate-pulse' : 'bg-amber-400/30'}`}>
                 <Phone size={20} className="text-white" />
               </div>
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 border-2 border-white rounded-full"></span>
+              <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 border-2 border-white rounded-full ${
+                isCalling ? 'bg-green-400' : 'bg-amber-400 animate-ping'
+              }`}></span>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -60,15 +64,24 @@ export const LiteInCallHud: React.FC<Props> = ({
                   {c.caseType || '개인회생'}
                 </span>
               </div>
-              <p className="text-xs text-blue-100 font-mono mt-0.5">{formattedPhone}</p>
+              <p className="text-xs text-blue-100 font-mono mt-0.5">
+                {isCalling ? `통화 중 · ${formattedPhone}` : `핸드폰 연결 대기 중... (${formattedPhone})`}
+              </p>
             </div>
           </div>
 
           <div className="flex flex-col items-end">
-            <div className="flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-full text-xs font-mono font-bold tracking-wider">
-              <Clock size={13} className="text-emerald-300" />
-              <span>{formatElapsed(elapsedSec)}</span>
-            </div>
+            {isCalling ? (
+              <div className="flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-full text-xs font-mono font-bold tracking-wider">
+                <Clock size={13} className="text-emerald-300" />
+                <span>{formatElapsed(elapsedSec)}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-tight">
+                <Loader2 size={12} className="animate-spin text-amber-300" />
+                <span>전화 대기 중</span>
+              </div>
+            )}
             <button
               onClick={onClose}
               className="text-[11px] text-blue-200 hover:text-white mt-1 underline"

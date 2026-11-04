@@ -44,29 +44,45 @@ export default function LiteCallPage() {
   const [callElapsed, setCallElapsed] = useState(0);
   const [isCalling, setIsCalling] = useState(false);
 
-  useEffect(() => {
-    let interval: any = null;
-    if (isCalling) {
-      interval = setInterval(() => {
-        setCallElapsed(prev => prev + 1);
-      }, 1000);
-    } else {
-      setCallElapsed(0);
-    }
-    return () => clearInterval(interval);
-  }, [isCalling]);
-
-  // Sync with ActiveCallContext if available
+  // Sync with ActiveCallContext
   useEffect(() => {
     if (callState.isActive && callState.caseId) {
       const match = cases.find(c => c.caseId === callState.caseId);
       if (match && (!activeCase || activeCase.caseId !== match.caseId)) {
         setActiveCase(match);
         setHudOpen(true);
-        setIsCalling(callState.mode === 'calling');
+      }
+      if (callState.mode === 'calling') {
+        setIsCalling(true);
+      } else if (callState.mode === 'ended') {
+        setIsCalling(false);
+        // 통화 종료 시 HUD를 닫고 자동으로 결과 입력 시트 열기
+        setHudOpen(false);
+        setPostCallOpen(true);
+      } else {
+        // 'pending' or 'dialing' 대기 중
+        setIsCalling(false);
       }
     }
   }, [callState, cases, activeCase]);
+
+  // Timer interval: 오직 실제 통화가 연결(isCalling === true)되었을 때만 시간 측정
+  useEffect(() => {
+    let interval: any = null;
+    if (isCalling) {
+      interval = setInterval(() => {
+        if (callState.startedAt) {
+          const sec = Math.floor((Date.now() - new Date(callState.startedAt).getTime()) / 1000);
+          setCallElapsed(sec > 0 ? sec : 0);
+        } else {
+          setCallElapsed(prev => prev + 1);
+        }
+      }, 1000);
+    } else {
+      setCallElapsed(0);
+    }
+    return () => clearInterval(interval);
+  }, [isCalling, callState.startedAt]);
 
   // Filtering
   const filteredCases = useMemo(() => {
@@ -146,16 +162,19 @@ export default function LiteCallPage() {
     const hasBridge = !!(window as any).AndroidBridge?.makeCall;
 
     if (hasBridge) {
-      // 1) 안드로이드 앱 웹뷰: 브릿지 호출
+      // 1) 안드로이드 앱 웹뷰: 브릿지 호출 (앱에서 직접 발신)
+      setIsCalling(true);
       startCall(target.customerName, target.phone, target.caseId);
       (window as any).AndroidBridge.makeCall(cleanPhone);
     } else if (isMobile) {
       // 2) 스마트폰 모바일 브라우저: tel: 프로토콜로 휴대폰 다이얼러 호출
+      setIsCalling(true);
       startCall(target.customerName, target.phone, target.caseId);
       window.location.href = `tel:${cleanPhone}`;
     } else {
-      // 3) PC 브라우저: tel: 호출 시 윈도우/크롬의 '앱 선택' 팝업이 뜨므로 호출하지 않고,
-      // 리드마스터의 스마트폰 원격 발신(Click-to-Call) 큐로 자동 전송!
+      // 3) PC 브라우저: tel: 호출 대신 스마트폰 원격 발신(Click-to-Call) 전송!
+      // 스마트폰에서 전화를 받기 전까지는 isCalling=false(대기 중) 유지
+      setIsCalling(false);
       startCall(target.customerName, target.phone, target.caseId);
       try {
         await enqueuePendingCall(cleanPhone, target.customerName, target.caseId);
@@ -512,6 +531,7 @@ export default function LiteCallPage() {
           c={activeCase}
           partner={partners.find(p => p.partnerId === activeCase.partnerId)}
           elapsedSec={callElapsed}
+          isCalling={isCalling}
           onOpenPostCall={() => {
             setHudOpen(false);
             setPostCallOpen(true);
