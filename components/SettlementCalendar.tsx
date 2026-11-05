@@ -296,7 +296,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full">
                 <ChevronLeft size={20} />
             </button>
-            <h3 className="text-lg font-bold text-gray-700">
+            <h3 className="text-lg font-bold text-gray-700 dark:text-white">
                 {format(currentMonth, 'yyyy년 M월', { locale: ko })}
             </h3>
             <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full">
@@ -408,9 +408,9 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
 
         return (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setIsModalOpen(false)}>
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                <div className="bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-gray-800">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-white">
                             📅 {format(selectedDate, 'yyyy년 M월 d일 (EEEE)', { locale: ko })}
                         </h3>
                         <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded-full">
@@ -465,7 +465,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                                             {e.weekLabel && <p className="text-xs text-gray-400 mt-1">{e.weekLabel}</p>}
                                         </div>
                                         {e.amount && (
-                                            <span className="text-lg font-bold text-gray-800">{e.amount.toLocaleString()}만원</span>
+                                            <span className="text-lg font-bold text-gray-800 dark:text-white">{e.amount.toLocaleString()}만원</span>
                                         )}
                                     </div>
                                 </div>
@@ -478,7 +478,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>

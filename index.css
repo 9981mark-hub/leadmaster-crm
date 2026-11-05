@@ -162,3 +162,33 @@
   .lm-info-sections > [data-area="debt"] { grid-area: debt; }
   .lm-info-sections > [data-area="history"] { grid-area: history; }
 }
+
+
+/* ========================================================
+   Dark Mode Contrast & Native Control Enhancements
+   ======================================================== */
+.dark {
+  color-scheme: dark;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Fallback for native inputs to prevent invisible text against dark backgrounds */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="color"]):not([class*="dark:bg-"]),
+.dark select:not([class*="dark:bg-"]),
+.dark textarea:not([class*="dark:bg-"]) {
+  background-color: #374151; /* gray-700 */
+  color: #f9fafb; /* gray-50 */
+  border-color: #4b5563; /* gray-600 */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #9ca3af; /* gray-400 */
+}

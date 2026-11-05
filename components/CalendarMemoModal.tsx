@@ -99,14 +99,14 @@ export default function CalendarMemoModal({
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                    <h2 className="text-lg font-bold text-gray-800">
+                <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">
                         {editingMemo ? '메모 수정' : '새 메모'}
                     </h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
-                        <X size={20} className="text-gray-500" />
+                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-colors">
+                        <X size={20} />
                     </button>
                 </div>
 
@@ -114,13 +114,13 @@ export default function CalendarMemoModal({
                 <div className="p-4 space-y-4">
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">제목 *</label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="일정 제목을 입력하세요"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
                             autoFocus
                         />
                     </div>
@@ -128,20 +128,20 @@ export default function CalendarMemoModal({
                     {/* Date and Repeat */}
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label>
                             <input
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">반복 설정</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">반복 설정</label>
                             <select
                                 value={repeatType}
                                 onChange={(e) => setRepeatType(e.target.value as any)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
                             >
                                 {REPEAT_OPTIONS.map((opt) => (
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -152,10 +152,10 @@ export default function CalendarMemoModal({
 
                     {/* All Day Toggle */}
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">종일</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">종일</span>
                         <button
                             onClick={() => setIsAllDay(!isAllDay)}
-                            className={`w-12 h-6 rounded-full transition-colors ${isAllDay ? 'bg-blue-500' : 'bg-gray-300'}`}
+                            className={`w-12 h-6 rounded-full transition-colors ${isAllDay ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
                         >
                             <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${isAllDay ? 'translate-x-6' : 'translate-x-0.5'}`} />
                         </button>
@@ -164,7 +164,7 @@ export default function CalendarMemoModal({
                     {/* Time (if not all day) */}
                     {!isAllDay && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 <Clock size={14} className="inline mr-1" />
                                 시간
                             </label>
@@ -172,26 +172,26 @@ export default function CalendarMemoModal({
                                 type="time"
                                 value={time}
                                 onChange={(e) => setTime(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
                             />
                         </div>
                     )}
 
                     {/* Content */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">메모 내용</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모 내용</label>
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="상세 내용 (선택)"
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none outline-none transition-colors"
                         />
                     </div>
 
                     {/* Color */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             <Palette size={14} className="inline mr-1" />
                             색상
                         </label>
@@ -200,7 +200,7 @@ export default function CalendarMemoModal({
                                 <button
                                     key={c.value}
                                     onClick={() => setColor(c.value)}
-                                    className={`w-8 h-8 rounded-full ${c.className} ${color === c.value ? 'ring-2 ring-offset-2 ring-gray-400' : ''}`}
+                                    className={`w-8 h-8 rounded-full ${c.className} ${color === c.value ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-800' : ''}`}
                                     title={c.label}
                                 />
                             ))}
@@ -208,15 +208,15 @@ export default function CalendarMemoModal({
                     </div>
 
                     {/* Notification */}
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+                    <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                                 <Bell size={14} />
                                 알림 설정
                             </span>
                             <button
                                 onClick={() => setHasNotification(!hasNotification)}
-                                className={`w-12 h-6 rounded-full transition-colors ${hasNotification ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                className={`w-12 h-6 rounded-full transition-colors ${hasNotification ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
                             >
                                 <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${hasNotification ? 'translate-x-6' : 'translate-x-0.5'}`} />
                             </button>
@@ -227,7 +227,7 @@ export default function CalendarMemoModal({
                                 <select
                                     value={notifyMinutesBefore}
                                     onChange={(e) => setNotifyMinutesBefore(Number(e.target.value))}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm outline-none"
                                 >
                                     {NOTIFY_OPTIONS.map((opt) => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -239,25 +239,25 @@ export default function CalendarMemoModal({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-100 flex gap-2">
+                <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-2">
                     {editingMemo && onDelete && (
                         <button
                             onClick={onDelete}
-                            className="flex-1 py-2 px-4 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
+                            className="flex-1 py-2 px-4 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg font-medium hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
                         >
                             삭제
                         </button>
                     )}
                     <button
                         onClick={onClose}
-                        className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                        className="flex-1 py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     >
                         취소
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={!title.trim()}
-                        className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-500 disabled:cursor-not-allowed"
                     >
                         저장
                     </button>

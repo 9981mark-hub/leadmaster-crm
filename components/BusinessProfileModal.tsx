@@ -48,9 +48,9 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
                         <Building size={18} className="text-blue-500" />
                         내 사업 유형 설정
                     </h3>
@@ -62,7 +62,7 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
                 <div className="p-5 space-y-5">
                     {/* 과세 유형 */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">과세 유형 (부가세 신고 기준)</label>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">과세 유형 (부가세 신고 기준)</label>
                         <div className="grid grid-cols-2 gap-2">
                             {['간이과세자', '일반과세자', '법인사업자', '면세사업자'].map(type => (
                                 <button
@@ -71,7 +71,7 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
                                     className={`px-3 py-2 text-sm rounded-lg border text-left ${
                                         profile.businessType === type 
                                             ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' 
-                                            : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                                            : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                                     }`}
                                 >
                                     {type}
@@ -85,7 +85,7 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
 
                     {/* 인건비 설정 */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
                             <Users size={16} className="text-gray-500" /> 인건비 지급 여부
                         </label>
                         
@@ -98,7 +98,7 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
                                     className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                                 />
                                 <div>
-                                    <p className="text-sm font-bold text-gray-800">정규직 / 알바 (근로소득)</p>
+                                    <p className="text-sm font-bold text-gray-800 dark:text-white">정규직 / 알바 (근로소득)</p>
                                     <p className="text-xs text-gray-500">4대보험 가입자 또는 간이세액 대상자</p>
                                 </div>
                             </label>
@@ -111,7 +111,7 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
                                     className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                                 />
                                 <div>
-                                    <p className="text-sm font-bold text-gray-800">프리랜서 / 외주 (사업소득 3.3%)</p>
+                                    <p className="text-sm font-bold text-gray-800 dark:text-white">프리랜서 / 외주 (사업소득 3.3%)</p>
                                     <p className="text-xs text-gray-500">지급액의 3.3%를 원천징수 후 지급하는 대상</p>
                                 </div>
                             </label>
@@ -119,7 +119,7 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-2">
+                <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 flex justify-end gap-2">
                     <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg">
                         취소
                     </button>

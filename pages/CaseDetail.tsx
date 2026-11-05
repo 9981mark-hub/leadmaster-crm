@@ -740,16 +740,16 @@ export default function CaseDetail() {
                             <h3 className={`text-lg font-bold mb-4 ${isDropOffStatus ? 'text-red-700' : 'text-blue-700'}`}>
                                 {isDropOffStatus ? '⚠ 상담 중단 확인' : '상태 변경 확인'}
                             </h3>
-                            <p className="mb-4 text-gray-700">
-                                상태를 <span className="font-bold text-blue-600">{c.status}</span>에서{' '}
-                                <span className={`font-bold ${isDropOffStatus ? 'text-red-600' : 'text-blue-600'}`}>{pendingPrimaryStatus}</span>
+                            <p className="mb-4 text-gray-700 dark:text-gray-200">
+                                상태를 <span className="font-bold text-blue-600 dark:text-blue-400">{c.status}</span>에서{' '}
+                                <span className={`font-bold ${isDropOffStatus ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>{pendingPrimaryStatus}</span>
                                 (으)로 변경하시겠습니까?
                             </p>
 
                             {/* [NEW] 이탈 사유 카테고리 선택 (고객취소/진행불가 시에만 표시) */}
                             {isDropOffStatus && (
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         이탈 사유 <span className="text-red-500">*필수</span>
                                     </label>
                                     <div className="flex flex-wrap gap-2">
@@ -760,7 +760,7 @@ export default function CaseDetail() {
                                                 onClick={() => setSelectedDropOffReason(reason)}
                                                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${selectedDropOffReason === reason
                                                         ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                                                        : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-600'
+                                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400'
                                                     }`}
                                             >
                                                 {reason}
@@ -771,13 +771,13 @@ export default function CaseDetail() {
                             )}
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     {isDropOffStatus ? '상세 메모 (선택)' : '변경 사유 (선택)'}
                                 </label>
                                 <textarea
-                                    className={`w-full p-2 border rounded resize-none h-20 focus:ring-2 outline-none ${isDropOffStatus
-                                            ? 'border-red-200 focus:ring-red-500'
-                                            : 'border-blue-200 focus:ring-blue-500'
+                                    className={`w-full p-2 border rounded resize-none h-20 focus:ring-2 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 ${isDropOffStatus
+                                            ? 'border-red-200 dark:border-red-900/50 focus:ring-red-500'
+                                            : 'border-blue-200 dark:border-blue-900/50 focus:ring-blue-500'
                                         }`}
                                     placeholder={isDropOffStatus
                                         ? '추가 메모를 입력하세요... (예: 상담 3회 진행 후 비용 문제로 포기)'
@@ -790,7 +790,7 @@ export default function CaseDetail() {
                             <div className="flex justify-end gap-2">
                                 <button
                                     onClick={() => { setIsPrimaryStatusModalOpen(false); setPendingPrimaryStatus(null); setSelectedDropOffReason(''); }}
-                                    className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     취소
                                 </button>
@@ -813,13 +813,13 @@ export default function CaseDetail() {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border-t-4 border-purple-500">
                             <h3 className="text-lg font-bold mb-4 text-purple-700">2차 상태 변경 확인</h3>
-                            <p className="mb-4 text-gray-700">
-                                2차 상태를 <span className="font-bold text-purple-600">{c.secondaryStatus || '없음'}</span>에서 <span className="font-bold text-purple-600">{pendingSecondaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
+                            <p className="mb-4 text-gray-700 dark:text-gray-200">
+                                2차 상태를 <span className="font-bold text-purple-600 dark:text-purple-400">{c.secondaryStatus || '없음'}</span>에서 <span className="font-bold text-purple-600 dark:text-purple-400">{pendingSecondaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
                             </p>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">변경 사유 / 메모</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">변경 사유 / 메모</label>
                                 <textarea
-                                    className="w-full p-2 border border-purple-200 rounded resize-none h-24 focus:ring-2 focus:ring-purple-500 outline-none"
+                                    className="w-full p-2 border border-purple-200 dark:border-purple-900/50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded resize-none h-24 focus:ring-2 focus:ring-purple-500 outline-none"
                                     placeholder="상태 변경 사유를 입력하세요..."
                                     value={secondaryStatusChangeReason}
                                     onChange={e => setSecondaryStatusChangeReason(e.target.value)}
@@ -828,7 +828,7 @@ export default function CaseDetail() {
                             <div className="flex justify-end gap-2">
                                 <button
                                     onClick={() => { setIsSecondaryStatusModalOpen(false); setPendingSecondaryStatus(null); }}
-                                    className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     취소
                                 </button>
@@ -848,13 +848,13 @@ export default function CaseDetail() {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border-t-4 border-amber-500">
                             <h3 className="text-lg font-bold mb-4 text-amber-700">3차 상태 변경 확인</h3>
-                            <p className="mb-4 text-gray-700">
-                                3차 상태를 <span className="font-bold text-amber-600">{c.tertiaryStatus || '없음'}</span>에서 <span className="font-bold text-amber-600">{pendingTertiaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
+                            <p className="mb-4 text-gray-700 dark:text-gray-200">
+                                3차 상태를 <span className="font-bold text-amber-600 dark:text-amber-400">{c.tertiaryStatus || '없음'}</span>에서 <span className="font-bold text-amber-600 dark:text-amber-400">{pendingTertiaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
                             </p>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">변경 사유 / 메모</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">변경 사유 / 메모</label>
                                 <textarea
-                                    className="w-full p-2 border border-amber-200 rounded resize-none h-24 focus:ring-2 focus:ring-amber-500 outline-none"
+                                    className="w-full p-2 border border-amber-200 dark:border-amber-900/50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded resize-none h-24 focus:ring-2 focus:ring-amber-500 outline-none"
                                     placeholder="상태 변경 사유를 입력하세요..."
                                     value={tertiaryStatusChangeReason}
                                     onChange={e => setTertiaryStatusChangeReason(e.target.value)}
@@ -863,7 +863,7 @@ export default function CaseDetail() {
                             <div className="flex justify-end gap-2">
                                 <button
                                     onClick={() => { setIsTertiaryStatusModalOpen(false); setPendingTertiaryStatus(null); }}
-                                    className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     취소
                                 </button>

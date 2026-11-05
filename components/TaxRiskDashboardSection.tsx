@@ -44,7 +44,7 @@ export default function TaxRiskDashboardSection({ cases, batches, partners }: Ta
 
     let riskLevel = '안정';
     let riskColor = 'text-green-600';
-    let riskBg = 'bg-green-50 border-green-200';
+    let riskBg = 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-900/50';
     let RiskIcon = ShieldCheck;
 
     if (riskScore < 40) {
@@ -60,10 +60,10 @@ export default function TaxRiskDashboardSection({ cases, batches, partners }: Ta
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-            <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+            <div className="p-4 border-b border-gray-100 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                 <div>
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2 text-base">
+                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-base">
                         <AlertCircle size={18} className="text-blue-500" />
                         세무 리스크 대시보드
                     </h3>
@@ -81,7 +81,7 @@ export default function TaxRiskDashboardSection({ cases, batches, partners }: Ta
                 {/* 종합 점수 */}
                 <div className={`p-4 rounded-xl border flex flex-col items-center justify-center ${riskBg}`}>
                     <RiskIcon size={32} className={`mb-2 ${riskColor}`} />
-                    <p className="text-sm font-bold text-gray-700">종합 리스크 점수</p>
+                    <p className="text-sm font-bold text-gray-700 dark:text-gray-200">종합 리스크 점수</p>
                     <p className={`text-3xl font-black ${riskColor}`}>{riskScore}점</p>
                     <p className={`text-xs font-bold px-2 py-0.5 rounded-full mt-2 bg-white ${riskColor} border`}>
                         {riskLevel} 상태
@@ -93,7 +93,7 @@ export default function TaxRiskDashboardSection({ cases, batches, partners }: Ta
                     {/* 매출 누락 경고 */}
                     <div className={`p-3 rounded-lg border ${missingFeeCases.length > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-100'}`}>
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-gray-700">매출 누락 의심 건</span>
+                            <span className="text-sm font-bold text-gray-700 dark:text-gray-200">매출 누락 의심 건</span>
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${missingFeeCases.length > 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                                 {missingFeeCases.length}건
                             </span>
@@ -104,7 +104,7 @@ export default function TaxRiskDashboardSection({ cases, batches, partners }: Ta
                     {/* 원천세 미신고 */}
                     <div className={`p-3 rounded-lg border ${overdueWithholding.length > 0 ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-100'}`}>
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-gray-700">원천세 기한 초과 미신고</span>
+                            <span className="text-sm font-bold text-gray-700 dark:text-gray-200">원천세 기한 초과 미신고</span>
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${overdueWithholding.length > 0 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
                                 {overdueWithholding.length}건
                             </span>
@@ -115,7 +115,7 @@ export default function TaxRiskDashboardSection({ cases, batches, partners }: Ta
                     {/* 증빙 미흡 지출 */}
                     <div className={`p-3 rounded-lg border ${riskyExpenses.length > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-100'}`}>
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-bold text-gray-700">증빙 확인 필요 지출</span>
+                            <span className="text-sm font-bold text-gray-700 dark:text-gray-200">증빙 확인 필요 지출</span>
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${riskyExpenses.length > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
                                 {riskyExpenses.length}건
                             </span>

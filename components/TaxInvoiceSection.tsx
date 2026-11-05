@@ -155,7 +155,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
         : invoices.filter(inv => inv.type === activeTab);
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-rose-100 dark:border-gray-700 overflow-hidden">
             <div className="p-4 border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50">
                 <div className="flex items-center justify-between">
                     <div>
@@ -197,7 +197,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
             <div className="p-4">
                 {/* 업로드 결과 알림 */}
                 {uploadResult && (
-                    <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+                    <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 rounded-lg flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <span className="text-lg">✅</span>
                             <div>
@@ -218,7 +218,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
 
                 {/* 통계 요약 */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <div className="bg-green-50 dark:bg-green-950/40 p-3 rounded-lg border border-green-200 dark:border-green-900/50">
                         <p className="text-xs text-green-600">매출 세금계산서</p>
                         <p className="text-lg font-bold text-green-700">{stats.salesCount}건</p>
                         <p className="text-xs text-green-500">{stats.salesTotal.toLocaleString()}원</p>
@@ -228,7 +228,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                         <p className="text-lg font-bold text-red-700">{stats.purchaseCount}건</p>
                         <p className="text-xs text-red-500">{stats.purchaseTotal.toLocaleString()}원</p>
                     </div>
-                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="bg-blue-50 dark:bg-blue-950/40 p-3 rounded-lg border border-blue-200 dark:border-blue-900/50">
                         <p className="text-xs text-blue-600">매출세액</p>
                         <p className="text-lg font-bold text-blue-700">{stats.salesVat.toLocaleString()}원</p>
                     </div>
@@ -251,7 +251,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                                     ? tab === '매출' ? 'bg-green-100 text-green-700 font-bold'
                                         : tab === '매입' ? 'bg-red-100 text-red-700 font-bold'
                                         : 'bg-rose-100 text-rose-700 font-bold'
-                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                    : 'bg-gray-50 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                         >
                             {tab === 'all' ? `전체 (${invoices.length})` : `${tab} (${invoices.filter(i => i.type === tab).length})`}
@@ -277,7 +277,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                             </thead>
                             <tbody>
                                 {filteredInvoices.map((inv) => (
-                                    <tr key={inv.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                    <tr key={inv.id} className="border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         <td className="py-2 px-2">
                                             <span className={`px-2 py-0.5 rounded text-xs ${inv.type === '매출' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                 {inv.type}
@@ -313,20 +313,20 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
             {/* 등록 모달 */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-transparent dark:border-gray-700">
                         <div className="p-4 border-b bg-gradient-to-r from-rose-50 to-pink-50">
                             <h3 className="font-bold text-rose-700">📜 세금계산서 수동 등록</h3>
                         </div>
                         <div className="p-4 space-y-4">
                             {/* 유형 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">유형</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">유형</label>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setFormData(prev => ({ ...prev, type: '매출' }))}
                                         className={`flex-1 py-2 rounded-lg border ${formData.type === '매출'
                                             ? 'bg-green-100 border-green-500 text-green-700'
-                                            : 'bg-gray-50 border-gray-200 text-gray-600'
+                                            : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
                                             }`}
                                     >
                                         매출
@@ -335,7 +335,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                                         onClick={() => setFormData(prev => ({ ...prev, type: '매입' }))}
                                         className={`flex-1 py-2 rounded-lg border ${formData.type === '매입'
                                             ? 'bg-red-100 border-red-500 text-red-700'
-                                            : 'bg-gray-50 border-gray-200 text-gray-600'
+                                            : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
                                             }`}
                                     >
                                         매입
@@ -345,83 +345,83 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
 
                             {/* 발행일 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">발행일</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">발행일</label>
                                 <input
                                     type="date"
                                     value={formData.issueDate}
                                     onChange={e => setFormData(prev => ({ ...prev, issueDate: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                 />
                             </div>
 
                             {/* 거래처 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">거래처 상호 *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">거래처 상호 *</label>
                                 <input
                                     type="text"
                                     value={formData.companyName}
                                     onChange={e => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="거래처명"
                                 />
                             </div>
 
                             {/* 사업자번호 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">사업자등록번호</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">사업자등록번호</label>
                                 <input
                                     type="text"
                                     value={formData.businessNumber}
                                     onChange={e => setFormData(prev => ({ ...prev, businessNumber: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="000-00-00000"
                                 />
                             </div>
 
                             {/* 공급가액 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">공급가액 *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">공급가액 *</label>
                                 <input
                                     type="number"
                                     value={formData.supplyAmount || ''}
                                     onChange={e => handleSupplyAmountChange(parseInt(e.target.value) || 0)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="0"
                                 />
                             </div>
 
                             {/* 세액 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">세액 (자동계산: 10%)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">세액 (자동계산: 10%)</label>
                                 <input
                                     type="number"
                                     value={formData.vatAmount || ''}
                                     onChange={e => setFormData(prev => ({ ...prev, vatAmount: parseInt(e.target.value) || 0 }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="0"
                                 />
                             </div>
 
                             {/* 적요 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">적요</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">적요</label>
                                 <input
                                     type="text"
                                     value={formData.description}
                                     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="거래 내용"
                                 />
                             </div>
 
                             {/* 승인번호 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">승인번호</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">승인번호</label>
                                 <input
                                     type="text"
                                     value={formData.approvalNumber}
                                     onChange={e => setFormData(prev => ({ ...prev, approvalNumber: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="전자세금계산서 승인번호"
                                 />
                             </div>
@@ -435,7 +435,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                                     onChange={e => setFormData(prev => ({ ...prev, isElectronic: e.target.checked }))}
                                     className="rounded border-gray-300"
                                 />
-                                <label htmlFor="isElectronic" className="text-sm text-gray-700">
+                                <label htmlFor="isElectronic" className="text-sm text-gray-700 dark:text-gray-300">
                                     전자세금계산서
                                 </label>
                             </div>
@@ -444,7 +444,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                         <div className="p-4 border-t flex gap-2">
                             <button
                                 onClick={() => setIsAddModalOpen(false)}
-                                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
                                 취소
                             </button>

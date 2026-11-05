@@ -109,7 +109,7 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
     const totalUsage = totalBudget > 0 ? Math.round(totalSpending / totalBudget * 100) : 0;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700 overflow-hidden">
             <div className="p-3 md:p-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
@@ -165,7 +165,7 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                         return (
                             <div key={category} className="border border-gray-100 rounded-lg p-3">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-gray-700">{category}</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{category}</span>
                                     {isEditMode ? (
                                         <input
                                             type="number"
@@ -222,7 +222,7 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                                 setIsEditMode(false);
                                 loadBudgets();
                             }}
-                            className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                            className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                         >
                             취소
                         </button>

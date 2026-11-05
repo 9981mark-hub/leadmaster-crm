@@ -796,15 +796,15 @@ export default function CaseList() {
                     <span className="text-sm font-bold tabular-nums">{selected.size}건 선택</span>
                     <select defaultValue="" onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkStatus(v); }}
                         className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="상태 바꾸기">
-                        <option value="" className="text-slate-900">상태 바꾸기…</option>
-                        {statuses.filter(s => s !== '휴지통' && !DROP_OFF_STATUSES.includes(s)).map(s => <option key={s} value={s} className="text-slate-900">{s}</option>)}
+                        <option value="" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">상태 바꾸기…</option>
+                        {statuses.filter(s => s !== '휴지통' && !DROP_OFF_STATUSES.includes(s)).map(s => <option key={s} value={s} className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">{s}</option>)}
                     </select>
                     {isAdmin && members.length > 0 && (
                         <select defaultValue="" disabled={bulkBusy} onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkAssign(v); }}
                             className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="담당 배정">
-                            <option value="" className="text-slate-900">담당 배정…</option>
-                            {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId} className="text-slate-900">{m.displayName}</option>)}
-                            <option value="__none__" className="text-slate-900">배정 풀기</option>
+                            <option value="" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">담당 배정…</option>
+                            {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId} className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">{m.displayName}</option>)}
+                            <option value="__none__" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">배정 풀기</option>
                         </select>
                     )}
                     {isAdmin && <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>}
@@ -928,14 +928,14 @@ export default function CaseList() {
             {/* [NEW] 이탈 사유 모달 (빠른 상태 변경 시) */}
             {isDropOffModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-[440px] shadow-xl border-t-4 border-red-500">
-                        <h3 className="text-lg font-bold mb-4 text-red-700">⚠ 상담 중단 확인</h3>
-                        <p className="mb-4 text-gray-700">
-                            상태를 <span className="font-bold text-blue-600">{dropOffOldStatus}</span>에서{' '}
-                            <span className="font-bold text-red-600">{dropOffNewStatus}</span>(으)로 변경하시겠습니까?
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-[440px] shadow-xl border-t-4 border-red-500">
+                        <h3 className="text-lg font-bold mb-4 text-red-700 dark:text-red-400">⚠ 상담 중단 확인</h3>
+                        <p className="mb-4 text-gray-700 dark:text-gray-200">
+                            상태를 <span className="font-bold text-blue-600 dark:text-blue-400">{dropOffOldStatus}</span>에서{' '}
+                            <span className="font-bold text-red-600 dark:text-red-400">{dropOffNewStatus}</span>(으)로 변경하시겠습니까?
                         </p>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 이탈 사유 <span className="text-red-500">*필수</span>
                             </label>
                             <div className="flex flex-wrap gap-2">
@@ -946,7 +946,7 @@ export default function CaseList() {
                                         onClick={() => setDropOffReason(reason)}
                                         className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${dropOffReason === reason
                                                 ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                                                : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-600'
+                                                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400'
                                             }`}
                                     >
                                         {reason}
@@ -955,9 +955,9 @@ export default function CaseList() {
                             </div>
                         </div>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">상세 메모 (선택)</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">상세 메모 (선택)</label>
                             <textarea
-                                className="w-full p-2 border border-red-200 rounded resize-none h-20 focus:ring-2 focus:ring-red-500 outline-none"
+                                className="w-full p-2 border border-red-200 dark:border-red-900/50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded resize-none h-20 focus:ring-2 focus:ring-red-500 outline-none"
                                 placeholder="추가 메모를 입력하세요..."
                                 value={dropOffDetail}
                                 onChange={e => setDropOffDetail(e.target.value)}
@@ -966,7 +966,7 @@ export default function CaseList() {
                         <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setIsDropOffModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium hover:bg-gray-300"
+                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                             >
                                 취소
                             </button>

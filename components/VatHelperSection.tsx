@@ -145,7 +145,7 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
     const current = semiAnnualData.find(d => d.period === selectedPeriod);
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-amber-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-amber-100 dark:border-gray-700 overflow-hidden">
             {/* Header */}
             <div className="p-3 md:p-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-yellow-50">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -201,7 +201,7 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
                                         className={`p-3 rounded-xl border text-left transition-all ${isSelected ? 'bg-amber-100 border-amber-400 ring-2 ring-amber-300' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <p className="text-sm font-bold text-gray-800">{d.period} <span className="text-gray-500 font-normal text-xs">({d.label})</span></p>
+                                                <p className="text-sm font-bold text-gray-800 dark:text-white">{d.period} <span className="text-gray-500 font-normal text-xs">({d.label})</span></p>
                                                 <p className={`text-xl font-bold mt-1 ${d.vatPayable >= 0 ? 'text-amber-700' : 'text-green-700'}`}>
                                                     {d.vatPayable >= 0 ? '' : '-'}{Math.abs(d.vatPayable).toLocaleString()}원
                                                 </p>
@@ -220,7 +220,7 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
                         {current && (
                             <div className="space-y-4">
                                 {/* 예정고지 안내 */}
-                                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+                                <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-lg flex items-start gap-2">
                                     <Info size={15} className="text-blue-500 mt-0.5 shrink-0" />
                                     <div className="text-xs text-blue-700">
                                         <strong>예정고지 납부</strong> ({current.preNoticePeriod}): <strong>{current.preNoticeDate}</strong>까지<br />
@@ -284,15 +284,15 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
                                 </div>
 
                                 {current.invoiceCount === 0 && (
-                                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                                    <div className="bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-3 text-center">
                                         <p className="text-yellow-700 text-sm">⚠️ 이 기간에 등록된 세금계산서가 없습니다.</p>
                                         <p className="text-yellow-600 text-xs mt-1">세금계산서 관리에서 매입/매출 세금계산서를 등록해주세요.</p>
                                     </div>
                                 )}
 
                                 {/* 신고 준비 D-day 체크리스트 */}
-                                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                    <p className="text-xs font-bold text-gray-700 mb-2">📋 신고 준비 단계별 일정</p>
+                                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                    <p className="text-xs font-bold text-gray-700 dark:text-gray-200 mb-2">📋 신고 준비 단계별 일정</p>
                                     <div className="space-y-1.5">
                                         {[
                                             { label: 'D-30: 매출자료 다운로드 (플랫폼 정산, 광고비)', done: false },
@@ -317,12 +317,12 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
                         <p className="text-xs text-gray-500">마크님 업종별 부가세 신고 시 주요 체크 항목입니다.</p>
                         {INDUSTRY_CHECKLIST.map((ind, i) => (
                             <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
-                                <div className="p-3 bg-gray-50 border-b border-gray-200">
-                                    <h4 className="text-sm font-bold text-gray-700">{ind.icon} {ind.industry}</h4>
+                                <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
+                                    <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200">{ind.icon} {ind.industry}</h4>
                                 </div>
                                 <div className="p-3 space-y-2">
                                     {ind.tasks.map((task, j) => (
-                                        <label key={j} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                        <label key={j} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                                             <input type="checkbox" className="rounded text-amber-500" />
                                             {task}
                                         </label>

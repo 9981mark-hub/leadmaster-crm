@@ -165,7 +165,7 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
     const overdueRecords = records.filter(r => !r.isFilingDone && r.filingMonth < todayStr);
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-purple-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-purple-100 dark:border-gray-700 overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-indigo-50">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -288,7 +288,7 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
                     </div>
                     <div className="flex gap-2 mt-3">
                         <button onClick={handleAdd} className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700">등록</button>
-                        <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50">취소</button>
+                        <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50">취소</button>
                     </div>
                 </div>
             )}
@@ -319,10 +319,10 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
                         <tbody className="divide-y divide-gray-100">
                             {records.map(r => (
                                 <tr key={r.id} className={`hover:bg-gray-50 ${r.isFilingDone ? 'opacity-60' : ''}`}>
-                                    <td className="py-2 px-3 text-gray-700">{r.payDate}</td>
-                                    <td className="py-2 px-3 font-medium text-gray-800">{r.name}</td>
+                                    <td className="py-2 px-3 text-gray-700 dark:text-gray-300">{r.payDate}</td>
+                                    <td className="py-2 px-3 font-medium text-gray-800 dark:text-white">{r.name}</td>
                                     <td className="py-2 px-3 text-gray-600">{r.incomeType}</td>
-                                    <td className="py-2 px-3 text-right text-gray-800">{r.payAmount.toLocaleString()}</td>
+                                    <td className="py-2 px-3 text-right text-gray-800 dark:text-gray-200">{r.payAmount.toLocaleString()}</td>
                                     <td className="py-2 px-3 text-right text-orange-600 font-medium">{r.withholdingTax.toLocaleString()}</td>
                                     <td className="py-2 px-3 text-right text-yellow-600">{r.localIncomeTax.toLocaleString()}</td>
                                     <td className="py-2 px-3 text-right text-purple-700 font-bold">{r.netAmount.toLocaleString()}</td>

@@ -187,7 +187,7 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-cyan-100 dark:border-gray-700 overflow-hidden">
             <div className="p-4 border-b border-cyan-100 bg-gradient-to-r from-cyan-50 to-teal-50">
                 <div className="flex items-center justify-between">
                     <div>
@@ -254,7 +254,7 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
                 {/* OCR 결과 및 폼 */}
                 {ocrResult && ocrResult.success && (
                     <div className="space-y-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900/50 rounded-lg p-3">
                             <p className="text-green-700 text-sm">
                                 ✅ 영수증 분석 완료! 아래 정보를 확인 후 저장해주세요.
                             </p>
@@ -262,47 +262,47 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     날짜
                                 </label>
                                 <input
                                     type="date"
                                     value={ocrFormData.date}
                                     onChange={e => setOcrFormData(prev => ({ ...prev, date: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     금액 (원)
                                 </label>
                                 <input
                                     type="number"
                                     value={ocrFormData.amount}
                                     onChange={e => setOcrFormData(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     상호/내용
                                 </label>
                                 <input
                                     type="text"
                                     value={ocrFormData.description}
                                     onChange={e => setOcrFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="상호명 또는 내용"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     카테고리
                                 </label>
                                 <select
                                     value={ocrFormData.category}
                                     onChange={e => setOcrFormData(prev => ({ ...prev, category: e.target.value as ExpenseFormData['category'] }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                 >
                                     <option value="광고비">광고비</option>
                                     <option value="마케팅비">마케팅비</option>
@@ -334,7 +334,7 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
                             </button>
                             <button
                                 onClick={handleReset}
-                                className="px-4 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+                                className="px-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                             >
                                 취소
                             </button>

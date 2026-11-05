@@ -418,15 +418,15 @@ export default function SettingsPage() {
             {/* Global Settings */}
             <div id="settings-global" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <User className="mr-2 text-gray-600" size={20} /> 공통 설정
+                    <User className="mr-2 text-gray-600 dark:text-gray-400" size={20} /> 공통 설정
                 </h3>
                 <div className="max-w-2xl space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">담당자 이름</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">담당자 이름</label>
                         <input
                             type="text"
                             placeholder="담당자 이름"
-                            className="w-full p-2 border rounded"
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded outline-none"
                             value={managerName}
                             onChange={e => setManagerName(e.target.value)}
                         />
@@ -439,7 +439,7 @@ export default function SettingsPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">부재 카운트 대상 상태</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">부재 카운트 대상 상태</label>
                             <select
                                 className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white"
                                 value={missedCallStatus}
@@ -454,9 +454,9 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">재통화 알림 주기 (등록일 기준)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">재통화 알림 주기 (등록일 기준)</label>
                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                            <div className="hidden md:flex items-center bg-gray-50 px-4 py-2.5 border-b border-gray-200 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                            <div className="hidden md:flex items-center bg-gray-50 dark:bg-gray-700/60 px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 text-[11px] font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 <div className="w-16 shrink-0">단계</div>
                                 <div className="flex-1 text-center">구간 (등록 경과일)</div>
                                 <div className="w-8 shrink-0"></div>
@@ -467,21 +467,21 @@ export default function SettingsPage() {
                                 const stageColors = ['bg-emerald-100 text-emerald-700 border-emerald-200','bg-amber-100 text-amber-700 border-amber-200','bg-rose-100 text-rose-700 border-rose-200','bg-violet-100 text-violet-700 border-violet-200','bg-cyan-100 text-cyan-700 border-cyan-200'];
                                 const colorClass = stageColors[idx % stageColors.length];
                                 return (
-                                    <div key={idx} className={`flex flex-wrap md:flex-nowrap items-center gap-2 px-4 py-3 ${idx > 0 ? 'border-t border-gray-100' : ''} hover:bg-gray-50/50 transition-colors`}>
+                                    <div key={idx} className={`flex flex-wrap md:flex-nowrap items-center gap-2 px-4 py-3 ${idx > 0 ? 'border-t border-gray-100' : ''} hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors`}>
                                         <div className="w-full md:w-16 shrink-0 flex items-center justify-between md:justify-start">
                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${colorClass}`}>{idx + 1}단계</span>
                                             <div className="md:hidden">{missedCallIntervalTiers.length > 1 && (<button type="button" onClick={() => setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14} /></button>)}</div>
                                         </div>
                                         <div className="flex-1 flex items-center justify-center gap-1.5">
                                             <span className="text-xs text-gray-400 whitespace-nowrap">등록 후</span>
-                                            <input type="number" className="w-14 py-1.5 px-1 border border-gray-300 rounded-md text-sm text-center focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" value={tier.minDays} min={0} onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,minDays:Number(e.target.value)}; const m=n[idx].maxDays; n[idx].label=m===0?`${n[idx].minDays}일 이상`:`${n[idx].minDays}~${m}일`; setMissedCallIntervalTiers(n); }} />
+                                            <input type="number" className="w-14 py-1.5 px-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md text-sm text-center focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 outline-none" value={tier.minDays} min={0} onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,minDays:Number(e.target.value)}; const m=n[idx].maxDays; n[idx].label=m===0?`${n[idx].minDays}일 이상`:`${n[idx].minDays}~${m}일`; setMissedCallIntervalTiers(n); }} />
                                             <span className="text-gray-300 text-lg">~</span>
-                                            <input type="number" className="w-14 py-1.5 px-1 border border-gray-300 rounded-md text-sm text-center focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" value={tier.maxDays} min={0} placeholder="∞" onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,maxDays:Number(e.target.value)}; const m=n[idx].maxDays; n[idx].label=m===0?`${n[idx].minDays}일 이상`:`${n[idx].minDays}~${m}일`; setMissedCallIntervalTiers(n); }} />
+                                            <input type="number" className="w-14 py-1.5 px-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md text-sm text-center focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 outline-none" value={tier.maxDays} min={0} placeholder="∞" onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,maxDays:Number(e.target.value)}; const m=n[idx].maxDays; n[idx].label=m===0?`${n[idx].minDays}일 이상`:`${n[idx].minDays}~${m}일`; setMissedCallIntervalTiers(n); }} />
                                             <span className="text-xs text-gray-500">일</span>
                                         </div>
                                         <div className="w-8 shrink-0 flex items-center justify-center"><span className="text-gray-300 text-lg">→</span></div>
                                         <div className="w-40 shrink-0 flex items-center justify-center gap-1.5">
-                                            <input type="number" className="w-14 py-1.5 px-1 border-2 border-blue-300 rounded-md text-sm text-center font-bold text-blue-700 bg-blue-50/50 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none" value={tier.interval} min={1} onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,interval:Number(e.target.value)}; setMissedCallIntervalTiers(n); }} />
+                                            <input type="number" className="w-14 py-1.5 px-1 border-2 border-blue-300 dark:border-blue-700 rounded-md text-sm text-center font-bold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/40 focus:ring-2 focus:ring-blue-200 outline-none" value={tier.interval} min={1} onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,interval:Number(e.target.value)}; setMissedCallIntervalTiers(n); }} />
                                             <span className="text-xs text-gray-500 whitespace-nowrap">일 후 알림</span>
                                         </div>
                                         <div className="hidden md:flex w-8 shrink-0 items-center justify-end">{missedCallIntervalTiers.length > 1 ? (<button type="button" onClick={() => setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx))} className="text-gray-300 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors" title="삭제"><Trash2 size={15} /></button>) : <div className="w-8" />}</div>
@@ -510,25 +510,25 @@ export default function SettingsPage() {
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <MessageCircle size={100} />
                 </div>
-                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center relative z-10">
+                <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4 flex items-center relative z-10">
                     <MessageCircle className="mr-2 text-indigo-500" size={20} /> 텔레그램 연동 관리
                 </h3>
                 <div className="max-w-2xl space-y-6 relative z-10">
                     {/* [NEW] 텔레그램 수동 전송 방 관리 */}
                     <div className="space-y-3 border-b border-indigo-50 pb-6">
-                        <h4 className="font-bold text-indigo-800 text-sm">텔레그램 직접 전송 (AI 요약문 출력용 방 설정)</h4>
+                        <h4 className="font-bold text-indigo-800 dark:text-indigo-300 text-sm">텔레그램 직접 전송 (AI 요약문 출력용 방 설정)</h4>
                         <div className="flex flex-col md:flex-row gap-2">
                             <input 
                                 type="text" 
                                 placeholder="방 이름 (예: 직원 공유방)" 
-                                className="flex-1 p-2 text-sm border rounded outline-none focus:ring-2 focus:ring-indigo-300"
+                                className="flex-1 p-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded outline-none focus:ring-2 focus:ring-indigo-300"
                                 value={newTelegramRoomName}
                                 onChange={e => setNewTelegramRoomName(e.target.value)}
                             />
                             <input 
                                 type="text" 
                                 placeholder="방 URL (https://t.me/...)" 
-                                className="flex-[2] p-2 text-sm border rounded outline-none focus:ring-2 focus:ring-indigo-300"
+                                className="flex-[2] p-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded outline-none focus:ring-2 focus:ring-indigo-300"
                                 value={newTelegramRoomUrl}
                                 onChange={e => setNewTelegramRoomUrl(e.target.value)}
                                 onKeyDown={e => {
@@ -578,7 +578,7 @@ export default function SettingsPage() {
                                 {telegramRooms.map((room, idx) => (
                                     <div key={room.id} className={`flex items-center justify-between p-3 ${idx < telegramRooms.length - 1 ? 'border-b border-gray-100' : ''}`}>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-sm text-gray-700">{room.name}</span>
+                                            <span className="font-bold text-sm text-gray-700 dark:text-white">{room.name}</span>
                                             <span className="text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-md">{room.url}</span>
                                         </div>
                                         <button 
@@ -598,9 +598,9 @@ export default function SettingsPage() {
                             </div>
                         )}
                     </div>
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                        <h4 className="font-bold text-indigo-800 mb-2">텔레그램 피드백 자동 수집</h4>
-                        <p className="text-sm text-indigo-700 mb-2">
+                    <div className="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/50 rounded-lg p-4">
+                        <h4 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2">텔레그램 피드백 자동 수집</h4>
+                        <p className="text-sm text-indigo-700 dark:text-indigo-200 mb-2">
                             변호사 사무실 방의 피드백을 회사 봇이 받아 AI가 분류하고 CRM에 반영합니다.
                             <br />- <b>[자동 반영]</b> 부재, 명함발송, 재통화요청 등
                             <br />- <b>[승인 대기]</b> 미팅취소, 타사무소선택, 계약완료 등 중요 변경사항
@@ -625,13 +625,13 @@ export default function SettingsPage() {
                     <AlertTriangle className="mr-2 text-orange-500" size={20} /> 데이터 동기화
                 </h3>
                 <div className="max-w-lg space-y-4">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
                         PC와 모바일 간 케이스 숫자가 다를 경우, 로컬 캐시를 삭제하고 서버에서 최신 데이터를 다시 불러옵니다.
                     </p>
 
                     {/* Backup & Restore Section */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-                        <p className="text-sm font-medium text-blue-800">📦 로컬 데이터 백업 / 복원</p>
+                    <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-lg p-4 space-y-3">
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-300">📦 로컬 데이터 백업 / 복원</p>
                         <div className="flex flex-wrap gap-2">
                             <button
                                 type="button"
@@ -765,7 +765,7 @@ export default function SettingsPage() {
                     {/* AI Speech Vocabulary Biasing (Domain Keywords) */}
                     <div>
                         <div className="flex justify-between items-center mb-1">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 🎙️ 음성인식 보정 전문 용어 사전 (단어 등록)
                             </label>
                             <button
@@ -787,7 +787,7 @@ export default function SettingsPage() {
                             통화 녹음 전사 시 금융사명(대부업체, 저축은행), 법률 용어 등 인식이 잘 되도록 AI에게 사전 주입할 단어들을 쉼표(,)로 구분하여 등록하세요.
                         </p>
                         <textarea
-                            className="w-full h-24 p-2.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none leading-relaxed font-sans"
+                            className="w-full h-24 p-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none leading-relaxed font-sans"
                             value={aiKeywords}
                             onChange={(e) => setAiKeywords(e.target.value)}
                             placeholder="개인회생, 파산면책, 금지명령, 대부업체명, 저축은행명 등..."
@@ -811,7 +811,7 @@ export default function SettingsPage() {
 
             {/* Email Notification Settings */}
             <div id="settings-email" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4 flex items-center justify-between">
                     <span className="flex items-center">
                         <Mail className="mr-2 text-blue-600" size={20} /> 이메일 알림 설정
                     </span>
@@ -838,9 +838,9 @@ export default function SettingsPage() {
                 ) : (
                     <div className="space-y-4 max-w-xl">
                         {/* Enable Toggle */}
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                             <div>
-                                <span className="font-medium text-gray-700">이메일 알림 활성화</span>
+                                <span className="font-medium text-gray-700 dark:text-white">이메일 알림 활성화</span>
                                 <p className="text-xs text-gray-500 mt-0.5">활성화하면 리마인더 전에 이메일을 받습니다.</p>
                             </div>
                             <button
@@ -849,7 +849,7 @@ export default function SettingsPage() {
                                     setEmailNotificationEnabled(!emailNotificationEnabled);
                                     setEmailSettingsSaved(false);
                                 }}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'}`}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}
                             >
                                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-200 transition-transform ${emailNotificationEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                             </button>
@@ -857,7 +857,7 @@ export default function SettingsPage() {
 
                         {/* Minutes Before Dropdown */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">사전 알림 시간</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">사전 알림 시간</label>
                             <select
                                 className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white"
                                 value={emailNotificationMinutes}
@@ -874,7 +874,7 @@ export default function SettingsPage() {
 
                         {/* Email Recipients */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">수신 이메일 주소</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수신 이메일 주소</label>
                             <div className="flex gap-2">
                                 <input
                                     type="email"
@@ -919,7 +919,7 @@ export default function SettingsPage() {
                                         <p className="text-xs text-gray-500 font-medium">등록된 이메일 ({emailNotificationRecipients.length}개)</p>
                                         <div className="flex flex-wrap gap-2">
                                             {emailNotificationRecipients.map(email => (
-                                                <div key={email} className="flex items-center bg-blue-50 rounded-full px-3 py-1.5 text-sm text-blue-700 border border-blue-200">
+                                                <div key={email} className="flex items-center bg-blue-50 dark:bg-blue-950/40 rounded-full px-3 py-1.5 text-sm text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/50">
                                                     <span className="mr-1">📧</span> {email}
                                                     <button
                                                         type="button"
@@ -956,7 +956,7 @@ export default function SettingsPage() {
                                         setEmailSettingsSaved(true);
                                         showToast('이메일 알림 설정이 저장되었습니다.');
                                     }}
-                                    className={`px-4 py-2 rounded font-medium ${!emailSettingsSaved ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                    className={`px-4 py-2 rounded font-medium ${!emailSettingsSaved ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
                                 >
                                     {!emailSettingsSaved ? '💾 변경사항 저장' : '✓ 저장됨'}
                                 </button>
@@ -1218,7 +1218,7 @@ export default function SettingsPage() {
                                     <div className="space-y-1">
                                         {(Object.entries(tertiaryStatuses) as [string, string[]][]).map(([sec, list]) => (
                                             <div key={sec} className="flex items-center gap-2 text-xs">
-                                                <span className={`px-2 py-0.5 rounded-full font-medium ${sec === selectedTertiarySecondary ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-gray-100 text-gray-600'}`}>
+                                                <span className={`px-2 py-0.5 rounded-full font-medium ${sec === selectedTertiarySecondary ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                                                     {sec}
                                                 </span>
                                                 <span className="text-gray-400">→</span>
@@ -1300,7 +1300,7 @@ export default function SettingsPage() {
                                     <label className="text-xs text-gray-500 block mb-1">거래처명</label>
                                     <input
                                         type="text"
-                                        className="text-xl font-bold text-gray-800 border-b border-gray-300 focus:border-blue-500 outline-none pb-1 bg-transparent w-full"
+                                        className="text-xl font-bold text-gray-800 dark:text-white border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 outline-none pb-1 bg-transparent w-full"
                                         value={editingPartner.name}
                                         onChange={e => setEditingPartner({ ...editingPartner, name: e.target.value })}
                                     />
@@ -1611,7 +1611,7 @@ export default function SettingsPage() {
                                         <div key={preset.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                                             <div className="flex items-center gap-4">
                                                 <div>
-                                                    <span className="font-medium text-gray-800">{preset.name}</span>
+                                                    <span className="font-medium text-gray-800 dark:text-white">{preset.name}</span>
                                                     <span className="text-sm text-gray-500 ml-2">{preset.accountInfo}</span>
                                                 </div>
                                                 {preset.defaultAmount && (
@@ -1641,7 +1641,7 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 mb-4">수당 계산 룰</h3>
+                            <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4">수당 계산 룰</h3>
                             <div className="bg-gray-50 p-4 rounded-lg mb-4">
                                 <h4 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">새로운 규칙 추가</h4>
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
@@ -2049,8 +2049,8 @@ VAT: {{VAT}}원
                             <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
                         </div>
                         <div className="mt-0 text-left">
-                            <p className="text-sm text-gray-600">
-                                정말로 <span className="font-bold text-gray-900">'{editingPartner?.name}'</span> 거래처를 삭제하시겠습니까?
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                정말로 <span className="font-bold text-gray-900 dark:text-white">'{editingPartner?.name}'</span> 거래처를 삭제하시겠습니까?
                                 <br />
                                 이 작업은 되돌릴 수 없습니다.
                             </p>
@@ -2067,7 +2067,7 @@ VAT: {{VAT}}원
                         <button
                             type="button"
                             onClick={() => setDeleteModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
                         >
                             취소
                         </button>
@@ -2081,13 +2081,13 @@ VAT: {{VAT}}원
                 title="새 거래처 추가"
             >
                 <div>
-                    <label htmlFor="new-partner-name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="new-partner-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         거래처 이름
                     </label>
                     <input
                         type="text"
                         id="new-partner-name"
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         value={newPartnerName}
                         onChange={(e) => setNewPartnerName(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && executeCreatePartner()}
@@ -2105,7 +2105,7 @@ VAT: {{VAT}}원
                         <button
                             type="button"
                             onClick={() => setAddPartnerModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
                         >
                             취소
                         </button>
@@ -2124,15 +2124,15 @@ VAT: {{VAT}}원
                             <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
                         </div>
                         <div className="mt-0 text-left">
-                            <p className="text-sm text-gray-600">
-                                정말로 <span className="font-bold text-gray-900">'{pathToDelete}'</span> 경로를 삭제하시겠습니까?
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                정말로 <span className="font-bold text-gray-900 dark:text-white">'{pathToDelete}'</span> 경로를 삭제하시겠습니까?
                             </p>
                             {affectedPathCaseCount > 0 && (
-                                <div className="mt-2 bg-yellow-50 p-3 rounded-md border border-yellow-100">
-                                    <p className="text-sm font-bold text-yellow-800 mb-1">
+                                <div className="mt-2 bg-yellow-50 dark:bg-yellow-950/40 p-3 rounded-md border border-yellow-100 dark:border-yellow-900/50">
+                                    <p className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-1">
                                         ⚠️ 현재 이 경로로 등록된 건수: {affectedPathCaseCount}건
                                     </p>
-                                    <p className="text-xs text-yellow-700 mb-2">
+                                    <p className="text-xs text-yellow-700 dark:text-yellow-300/80 mb-2">
                                         삭제 시 해당 건들의 유입 경로를 아래 경로로 일괄 변경해야 합니다.
                                     </p>
                                     <select
@@ -2160,7 +2160,7 @@ VAT: {{VAT}}원
                         <button
                             type="button"
                             onClick={() => setPathDeleteModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
                         >
                             취소
                         </button>
@@ -2179,15 +2179,15 @@ VAT: {{VAT}}원
                             <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
                         </div>
                         <div className="mt-0 text-left">
-                            <p className="text-sm text-gray-600">
-                                정말로 <span className="font-bold text-gray-900">'{statusToDelete}'</span> 상태를 삭제하시겠습니까?
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                정말로 <span className="font-bold text-gray-900 dark:text-white">'{statusToDelete}'</span> 상태를 삭제하시겠습니까?
                             </p>
                             {affectedCaseCount > 0 && (
-                                <div className="mt-2 bg-yellow-50 p-3 rounded-md border border-yellow-100">
-                                    <p className="text-sm font-bold text-yellow-800 mb-1">
+                                <div className="mt-2 bg-yellow-50 dark:bg-yellow-950/40 p-3 rounded-md border border-yellow-100 dark:border-yellow-900/50">
+                                    <p className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-1">
                                         ⚠️ 현재 이 상태로 등록된 건수: {affectedCaseCount}건
                                     </p>
-                                    <p className="text-xs text-yellow-700 mb-2">
+                                    <p className="text-xs text-yellow-700 dark:text-yellow-300/80 mb-2">
                                         삭제 시 해당 건들의 상태를 아래 상태로 일괄 변경해야 합니다.
                                     </p>
                                     <select
@@ -2215,7 +2215,7 @@ VAT: {{VAT}}원
                         <button
                             type="button"
                             onClick={() => setStatusDeleteModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
                         >
                             취소
                         </button>

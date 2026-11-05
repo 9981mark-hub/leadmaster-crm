@@ -596,7 +596,7 @@ export default function AgentPerformancePanel() {
                   className={`px-3 py-1.5 rounded-lg transition-colors ${
                     activeModalTab === 'types'
                       ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
                   1. 계약 종류별 인센티브 ({draftSettings.contractTypes.length}/10)
@@ -607,7 +607,7 @@ export default function AgentPerformancePanel() {
                   className={`px-3 py-1.5 rounded-lg transition-colors ${
                     activeModalTab === 'schedule'
                       ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
                   2. 정산 기간 & 지급일
@@ -1049,7 +1049,7 @@ export default function AgentPerformancePanel() {
               </h3>
               <button
                 onClick={() => setSelectedAgentBreakdown(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-bold"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold"
               >
                 ✕
               </button>

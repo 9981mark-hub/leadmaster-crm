@@ -138,7 +138,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
     const totalInactive = fixedCosts.filter(c => !c.isActive).reduce((sum, c) => sum + c.amount, 0);
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-teal-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-teal-100 dark:border-gray-700 overflow-hidden">
             <div className="p-3 md:p-4 border-b border-teal-100 bg-gradient-to-r from-teal-50 to-cyan-50">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
@@ -172,9 +172,9 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                         <p className="text-lg font-bold text-teal-700">{totalActive.toLocaleString()}원</p>
                         <p className="text-xs text-teal-500">{fixedCosts.filter(c => c.isActive).length}개 항목</p>
                     </div>
-                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                         <p className="text-xs text-gray-600">비활성 항목</p>
-                        <p className="text-lg font-bold text-gray-700">{totalInactive.toLocaleString()}원</p>
+                        <p className="text-lg font-bold text-gray-700 dark:text-gray-200">{totalInactive.toLocaleString()}원</p>
                         <p className="text-xs text-gray-500">{fixedCosts.filter(c => !c.isActive).length}개 항목</p>
                     </div>
                 </div>
@@ -193,13 +193,13 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                                         onClick={() => toggleActive(cost.id)}
                                         className={`w-5 h-5 rounded border flex items-center justify-center ${cost.isActive
                                             ? 'bg-teal-500 border-teal-500 text-white'
-                                            : 'bg-white border-gray-300'
+                                            : 'bg-white dark:bg-gray-800/80 border-gray-300 dark:border-gray-700'
                                             }`}
                                     >
                                         {cost.isActive && '✓'}
                                     </button>
                                     <div>
-                                        <p className="font-medium text-gray-800">{cost.name}</p>
+                                        <p className="font-medium text-gray-800 dark:text-gray-100">{cost.name}</p>
                                         <p className="text-xs text-gray-500">
                                             {cost.category} | 매월 {cost.dueDay}일
                                         </p>
@@ -227,37 +227,37 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
             {/* 추가 모달 */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-                        <div className="p-4 border-b bg-gradient-to-r from-teal-50 to-cyan-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-transparent dark:border-gray-700">
+                        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/40 dark:to-cyan-950/40">
                             <h3 className="font-bold text-teal-700">📌 고정비 추가</h3>
                         </div>
                         <div className="p-4 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">항목명 *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">항목명 *</label>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="예: 사무실 임대료"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">금액 *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액 *</label>
                                 <input
                                     type="number"
                                     value={formData.amount || ''}
                                     onChange={e => setFormData(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="0"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">카테고리</label>
                                 <select
                                     value={formData.category}
                                     onChange={e => setFormData(prev => ({ ...prev, category: e.target.value as ExpenseCategory }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                 >
                                     {EXPENSE_CATEGORIES.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
@@ -265,11 +265,11 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">매월 결제일</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">매월 결제일</label>
                                 <select
                                     value={formData.dueDay}
                                     onChange={e => setFormData(prev => ({ ...prev, dueDay: parseInt(e.target.value) }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                 >
                                     {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
                                         <option key={day} value={day}>{day}일</option>
@@ -277,20 +277,20 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">메모</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모</label>
                                 <input
                                     type="text"
                                     value={formData.description}
                                     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
                                     placeholder="선택사항"
                                 />
                             </div>
                         </div>
-                        <div className="p-4 border-t flex gap-2">
+                        <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-2">
                             <button
                                 onClick={() => setIsAddModalOpen(false)}
-                                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
                                 취소
                             </button>

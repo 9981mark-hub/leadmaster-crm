@@ -817,7 +817,7 @@ export default function Settlement() {
     // Tab content render functions
     const renderMondayTab = () => (
         <div className="space-y-6">
-            <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+            <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-xl border border-blue-100 dark:border-blue-900/40">
                 <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
                     <Calendar className="mr-2" size={20} /> 월요일: 정산 확인
                 </h3>
@@ -842,7 +842,7 @@ export default function Settlement() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <p className="text-xs text-gray-500">딜 수</p>
-                                <p className="text-2xl font-bold text-gray-800">{currentBatch.dealIds.length}건</p>
+                                <p className="text-2xl font-bold text-gray-800 dark:text-white">{currentBatch.dealIds.length}건</p>
                             </div>
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <p className="text-xs text-gray-500">총 수임료</p>
@@ -862,8 +862,8 @@ export default function Settlement() {
 
                         {/* Deal List */}
                         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                                <h4 className="font-bold text-gray-700 text-sm">정산 대상 딜 목록</h4>
+                            <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-between items-center">
+                                <h4 className="font-bold text-gray-700 dark:text-gray-200 text-sm">정산 대상 딜 목록</h4>
                                 <button
                                     onClick={handleRefreshBatch}
                                     disabled={loadingBatches}
@@ -879,7 +879,7 @@ export default function Settlement() {
                                     <p className="text-center text-gray-500 py-6">정산 대상 딜이 없습니다.</p>
                                 ) : (
                                     <table className="w-full text-sm">
-                                        <thead className="bg-gray-50 text-gray-600 sticky top-0">
+                                        <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 sticky top-0">
                                             <tr>
                                                 <th className="text-left px-3 py-2">고객명</th>
                                                 <th className="text-center px-2 py-2 text-xs">분납</th>
@@ -894,7 +894,7 @@ export default function Settlement() {
                                             {weekDeals.map(deal => {
                                                 const info = getPayableInfoForCase(deal, currentBatch!.startDate, currentBatch!.endDate);
                                                 return (
-                                                    <tr key={deal.caseId} className={`hover:bg-gray-50 ${info.isFutureDeposit ? 'bg-purple-50/50' : ''}`}>
+                                                    <tr key={deal.caseId} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${info.isFutureDeposit ? 'bg-purple-50/50' : ''}`}>
                                                         <td className="px-3 py-2 font-medium">
                                                             {deal.customerName}
                                                             {info.isFutureDeposit && (
@@ -942,7 +942,7 @@ export default function Settlement() {
 
                         {/* Confirmation Evidence */}
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <h4 className="font-bold text-gray-700 mb-2 text-sm">📝 카톡 확인 증빙</h4>
+                            <h4 className="font-bold text-gray-700 dark:text-gray-200 mb-2 text-sm">📝 카톡 확인 증빙</h4>
                             <textarea
                                 className="w-full p-3 border border-gray-300 rounded-lg text-sm"
                                 rows={3}
@@ -978,7 +978,7 @@ export default function Settlement() {
 
     const renderTuesdayTab = () => (
         <div className="space-y-6">
-            <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-100">
+            <div className="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-xl border border-yellow-100 dark:border-yellow-900/40">
                 <h3 className="font-bold text-yellow-800 mb-4 text-lg flex items-center">
                     <FileText className="mr-2" size={20} /> 화요일: 발행 / 수금
                 </h3>
@@ -999,7 +999,7 @@ export default function Settlement() {
                     <div className="space-y-4">
                         {/* Invoice Info Form */}
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <h4 className="font-bold text-gray-700 mb-3 text-sm">📄 세금계산서 정보</h4>
+                            <h4 className="font-bold text-gray-700 dark:text-gray-200 mb-3 text-sm">📄 세금계산서 정보</h4>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
                                     <label className="text-xs text-gray-500 block mb-1">발행일</label>
@@ -1057,7 +1057,7 @@ export default function Settlement() {
                         {currentPartner?.kakaoTemplates?.invoiceNotice && (
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <div className="flex justify-between items-center mb-2">
-                                    <h4 className="font-bold text-gray-700 text-sm">📱 카톡 템플릿</h4>
+                                    <h4 className="font-bold text-gray-700 dark:text-gray-200 text-sm">📱 카톡 템플릿</h4>
                                     <button
                                         onClick={handleCopyTemplate}
                                         className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
@@ -1066,7 +1066,7 @@ export default function Settlement() {
                                         {copiedTemplate ? '복사됨!' : '복사'}
                                     </button>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded text-sm text-gray-600 whitespace-pre-line">
+                                <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded text-sm text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-700 whitespace-pre-line">
                                     {currentPartner.kakaoTemplates.invoiceNotice
                                         .replace(/\{\{거래처명\}\}/g, currentPartner.name)
                                         .replace(/\{\{주차라벨\}\}/g, currentBatch.weekLabel)
@@ -1083,7 +1083,7 @@ export default function Settlement() {
                         {/* Collection Status */}
                         {currentBatch.status !== 'draft' && (
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <h4 className="font-bold text-gray-700 mb-2 text-sm">💰 수금 상태</h4>
+                                <h4 className="font-bold text-gray-700 dark:text-gray-200 mb-2 text-sm">💰 수금 상태</h4>
                                 {currentBatch.collectionInfo?.collectedAt ? (
                                     <p className="text-green-600 font-bold">
                                         ✓ 수금완료 ({currentBatch.collectionInfo.collectedAt}) - {currentBatch.collectionInfo.amount?.toLocaleString()}만원
@@ -1178,7 +1178,7 @@ export default function Settlement() {
         return (
             <div className="space-y-6">
                 {/* Section 1: 수금 정보 */}
-                <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-xl border border-blue-100 dark:border-blue-900/40">
                     <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
                         💰 수금 정보 (거래처에서 받을 금액)
                     </h3>
@@ -1191,15 +1191,15 @@ export default function Settlement() {
                     ) : (
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div className="bg-blue-50 p-3 rounded-lg">
+                                <div className="bg-blue-50 dark:bg-blue-950/40 p-3 rounded-lg border border-transparent dark:border-blue-900/40">
                                     <p className="text-xs text-gray-500">수금 대상 금액</p>
                                     <p className="text-2xl font-bold text-blue-700">{currentBatch.totalCommission.toLocaleString()}만원</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
+                                <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-transparent dark:border-gray-700">
                                     <p className="text-xs text-gray-500">거래처</p>
                                     <p className="text-lg font-bold text-gray-700">{currentPartner?.name}</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
+                                <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-transparent dark:border-gray-700">
                                     <p className="text-xs text-gray-500">내 입금 계좌</p>
                                     <p className="text-sm font-medium text-gray-600">
                                         {currentPartner?.bankInfo
@@ -1209,7 +1209,7 @@ export default function Settlement() {
                                 </div>
                             </div>
                             {currentBatch.collectionInfo?.collectedAt ? (
-                                <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                                <div className="bg-green-50 dark:bg-green-950/40 p-3 rounded-lg border border-green-200 dark:border-green-900/50">
                                     <p className="text-green-700 font-bold text-lg">
                                         ✓ 수금완료 ({currentBatch.collectionInfo.collectedAt})
                                     </p>
@@ -1228,7 +1228,7 @@ export default function Settlement() {
                 </div>
 
                 {/* Section 2: 파트너 지급 (복수 지원) */}
-                <div className="bg-green-50 p-6 rounded-xl border border-green-100">
+                <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-xl border border-green-100 dark:border-green-900/40">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="font-bold text-green-800 text-lg flex items-center">
                             <CreditCard className="mr-2" size={20} /> 파트너 지급 ({payoutItems.length}건)
@@ -1368,18 +1368,18 @@ export default function Settlement() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                 <div
                     onClick={() => setActiveModalType('contract')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">📋 계약 건수</p>
                         <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-gray-800 mt-1">{totalCount}건</p>
+                    <p className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white mt-1">{totalCount}건</p>
                     <p className="text-xs text-blue-500 mt-1 hidden md:block">상세 보기 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('revenue')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">💰 총 매출</p>
@@ -1390,7 +1390,7 @@ export default function Settlement() {
                 </div>
                 <div
                     onClick={() => setActiveModalType('actualDeposit')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">✅ 실제 입금액</p>
@@ -1401,7 +1401,7 @@ export default function Settlement() {
                 </div>
                 <div
                     onClick={() => setActiveModalType('expectedDeposit')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">📅 예상 입금액</p>
@@ -1566,7 +1566,7 @@ export default function Settlement() {
 
             {/* Chart */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-80 flex flex-col">
-                <h3 className="text-lg font-bold text-gray-700 mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
+                <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
                 <div className="flex-1 min-h-0 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={monthlyStats}>
@@ -1585,12 +1585,12 @@ export default function Settlement() {
 
             {/* Monthly Summary Table (Enhanced) */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-gray-50">
-                    <h3 className="font-bold text-gray-700">📅 월별 상세 요약</h3>
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <h3 className="font-bold text-gray-700 dark:text-gray-200">📅 월별 상세 요약</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600 font-medium">
+                        <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
                             <tr>
                                 <th className="py-3 px-3 text-center">월</th>
                                 <th className="py-3 px-3 text-center">건수</th>
@@ -1603,7 +1603,7 @@ export default function Settlement() {
                         </thead>
                         <tbody>
                             {monthlyStats.map((m, i) => (
-                                <tr key={i} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 ${month === (i + 1) ? 'bg-blue-50' : ''}`}>
+                                <tr key={i} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${month === (i + 1) ? 'bg-blue-50' : ''}`}>
                                     <td className="py-3 px-3 font-medium text-center">{m.name}</td>
                                     <td className="py-3 px-3 text-center text-gray-500">{m.count}</td>
                                     <td className="py-3 px-3 text-right text-gray-700">{m.revenue.toLocaleString()}만원</td>
@@ -1632,12 +1632,12 @@ export default function Settlement() {
             {isAll && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
                     <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
-                        <h3 className="font-bold text-gray-700">🤝 파트너별 성과 분석</h3>
+                        <h3 className="font-bold text-gray-700 dark:text-gray-200">🤝 파트너별 성과 분석</h3>
                         <p className="text-xs text-gray-500 mt-1">파트너별 수임 건수 및 수수료 지급 현황</p>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-gray-600 font-medium">
+                            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
                                 <tr>
                                     <th className="py-3 px-3 text-left">파트너명</th>
                                     <th className="py-3 px-3 text-center">건수</th>
@@ -1664,7 +1664,7 @@ export default function Settlement() {
                                     .filter(item => item !== null)
                                     .sort((a, b) => (b?.revenue || 0) - (a?.revenue || 0))
                                     .map((item, idx) => (
-                                        <tr key={item!.p.partnerId} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={item!.p.partnerId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="py-3 px-3 font-medium text-gray-800">
                                                 {idx + 1}. {item!.p.name}
                                             </td>
@@ -1780,7 +1780,7 @@ export default function Settlement() {
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-2xl">🔮</span>
-                                <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
+                                <h3 className="font-bold text-gray-700 dark:text-gray-200">미래 입금/지급 예측</h3>
                             </div>
                             <p className="text-gray-400 text-sm">향후 60일 내 예정된 입금이 없습니다.</p>
                         </div>
@@ -1794,7 +1794,7 @@ export default function Settlement() {
                                 <div className="flex items-center gap-2">
                                     <span className="text-2xl">🔮</span>
                                     <div>
-                                        <h3 className="font-bold text-gray-700">미래 입금/지급 예측</h3>
+                                        <h3 className="font-bold text-gray-700 dark:text-gray-200">미래 입금/지급 예측</h3>
                                         <p className="text-xs text-gray-500">향후 60일 내 예정된 입금과 수수료 지급 일정</p>
                                     </div>
                                 </div>
@@ -1897,19 +1897,19 @@ export default function Settlement() {
                             <div className="flex-1">
                                 <p className="text-sm text-gray-500 font-medium mb-2">{tossAdsWeeklySummary.weekLabel} 성과 지표</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                                         <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
                                         <p className="font-bold text-blue-600 text-lg">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                                         <p className="text-[10px] text-gray-500">잠재고객 수</p>
                                         <p className="font-bold text-indigo-600 text-lg">{tossAdsWeeklySummary.totalLeads}명</p>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                                         <p className="text-[10px] text-gray-500">평균 CPL</p>
                                         <p className="font-bold text-purple-600 text-lg">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                                         <p className="text-[10px] text-gray-500">총 노출</p>
                                         <p className="font-bold text-gray-700 text-lg">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
                                     </div>
@@ -1933,7 +1933,7 @@ export default function Settlement() {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white flex justify-between items-center">
                     <div>
-                        <h3 className="font-bold text-gray-700">📋 주간 정산 배치 현황</h3>
+                        <h3 className="font-bold text-gray-700 dark:text-gray-200">📋 주간 정산 배치 현황</h3>
                         <p className="text-xs text-gray-500 mt-1">최근 정산 배치별 수금/지급/세금계산서 상태</p>
                     </div>
                     <button
@@ -2027,7 +2027,7 @@ export default function Settlement() {
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600 font-medium">
+                        <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
                             <tr>
                                 <th className="py-3 px-3 text-left">주차</th>
                                 <th className="py-3 px-3 text-right">수수료</th>
@@ -2043,7 +2043,7 @@ export default function Settlement() {
                                 const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
                                 const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
                                 return (
-                                    <tr key={b.batchId} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                    <tr key={b.batchId} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         <td className="py-3 px-3 font-medium">{b.weekLabel}</td>
                                         <td className="py-3 px-3 text-right font-bold text-blue-600">{b.totalCommission.toLocaleString()}만원</td>
                                         <td className="py-3 px-3 text-center">
@@ -2108,7 +2108,7 @@ export default function Settlement() {
                 return (
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
-                            <h3 className="font-bold text-gray-700">💳 파트너별 지급 현황</h3>
+                            <h3 className="font-bold text-gray-700 dark:text-gray-200">💳 파트너별 지급 현황</h3>
                             <p className="text-xs text-gray-500 mt-1">전체 정산 기간 파트너 지급 누계</p>
                         </div>
                         <div className="p-4 grid gap-3">
@@ -2337,10 +2337,10 @@ export default function Settlement() {
                     </div>
                     
                     {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
-                        <div className="p-4 bg-gray-50 border-b border-gray-100">
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                                 <div>
-                                    <h4 className="font-bold text-gray-800 text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
+                                    <h4 className="font-bold text-gray-800 dark:text-white text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
                                     <div className="flex gap-4 mt-2">
                                         <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
                                             <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
@@ -2389,7 +2389,7 @@ export default function Settlement() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Pie Chart - Category Breakdown */}
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-700 mb-4">📊 카테고리별 지출</h3>
+                        <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4">📊 카테고리별 지출</h3>
                         {pieData.length > 0 ? (
                             <div className="flex items-center">
                                 <ResponsiveContainer width="50%" height={200}>
@@ -2431,7 +2431,7 @@ export default function Settlement() {
 
                     {/* Bar Chart - Monthly Trend */}
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-700 mb-4">📈 월별 지출 추이</h3>
+                        <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4">📈 월별 지출 추이</h3>
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={expenseStats.byMonth}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -2447,12 +2447,12 @@ export default function Settlement() {
                 {/* Expense List Table */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-700">📋 지출 내역</h3>
+                        <h3 className="font-bold text-gray-700 dark:text-gray-200">📋 지출 내역</h3>
                         <span className="text-sm text-gray-500">{expenses.length}건</span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-gray-600 font-medium">
+                            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
                                 <tr>
                                     <th className="py-3 px-3 text-left">날짜</th>
                                     <th className="py-3 px-3 text-left">카테고리</th>
@@ -2472,7 +2472,7 @@ export default function Settlement() {
                                     </tr>
                                 ) : (
                                     expenses.slice(0, 20).map(exp => (
-                                        <tr key={exp.id} className="border-b border-gray-50 hover:bg-gray-50">
+                                        <tr key={exp.id} className="border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                             <td className="py-3 px-3 text-gray-600">{exp.date}</td>
                                             <td className="py-3 px-3">
                                                 <span
@@ -2577,7 +2577,7 @@ export default function Settlement() {
                                         })
                                         .slice(0, 50)
                                         .map(tx => (
-                                            <tr key={tx.id} className={`border-b border-gray-50 hover:bg-gray-50 ${!tx.isVerified && tx.category.includes('기타') ? 'bg-yellow-50' : ''}`}>
+                                            <tr key={tx.id} className={`border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${!tx.isVerified && tx.category.includes('기타') ? 'bg-yellow-50' : ''}`}>
                                                 <td className="py-2 px-3 text-gray-600 text-xs">{tx.datetime}</td>
                                                 <td className="py-2 px-3">
                                                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${tx.bank === 'kakao' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
@@ -3678,7 +3678,7 @@ export default function Settlement() {
             case 'revenue':
                 return (
                     <>
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold">
                             <tr>
                                 <th className="px-4 py-2">계약일</th>
                                 <th className="px-4 py-2">고객명</th>
@@ -3701,9 +3701,9 @@ export default function Settlement() {
                                     .map(c => {
                                         const commission = getCommissionForCase(c);
                                         return (
-                                            <tr key={c.caseId} className="hover:bg-gray-50">
+                                            <tr key={c.caseId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                                 <td className="px-4 py-2 text-gray-600">{c.contractAt}</td>
-                                                <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                                <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{c.customerName}</td>
                                                 <td className="px-4 py-2 text-gray-500">{getPartnerName(c.partnerId)}</td>
                                                 <td className="px-4 py-2">
                                                     <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 border border-gray-200">
@@ -3722,9 +3722,9 @@ export default function Settlement() {
                             )}
                         </tbody>
                         {statsCases.length > 0 && (
-                            <tfoot className="bg-gray-50 font-bold">
+                            <tfoot className="bg-gray-50 dark:bg-gray-800 font-bold">
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-2 text-center text-gray-700">합계</td>
+                                    <td colSpan={4} className="px-4 py-2 text-center text-gray-700 dark:text-gray-200">합계</td>
                                     <td className="px-4 py-2 text-right text-blue-700">{totalRevenue.toLocaleString()}만원</td>
                                     <td className="px-4 py-2 text-right text-green-700">{totalCommission.toLocaleString()}만원</td>
                                 </tr>
@@ -3738,7 +3738,7 @@ export default function Settlement() {
                 const totalDep = depositCases.reduce((sum, c) => sum + getDepositInfo(c).actualDeposit, 0);
                 return (
                     <>
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold">
                             <tr>
                                 <th className="px-4 py-2">고객명</th>
                                 <th className="px-4 py-2 text-right">수임료</th>
@@ -3757,8 +3757,8 @@ export default function Settlement() {
                                     const uncollectedAmount = Math.max(0, fee - actualDeposit);
                                     const rate = fee > 0 ? Math.round((actualDeposit / fee) * 100) : 0;
                                     return (
-                                        <tr key={c.caseId} className="hover:bg-gray-50">
-                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                        <tr key={c.caseId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{c.customerName}</td>
                                             <td className="px-4 py-2 text-right text-gray-600">{fee.toLocaleString()}만원</td>
                                             <td className="px-4 py-2 text-right text-green-600 font-bold">{actualDeposit.toLocaleString()}만원</td>
                                             <td className="px-4 py-2 text-right text-red-500">{uncollectedAmount > 0 ? `${uncollectedAmount.toLocaleString()}만원` : '-'}</td>
@@ -3769,9 +3769,9 @@ export default function Settlement() {
                             )}
                         </tbody>
                         {depositCases.length > 0 && (
-                            <tfoot className="bg-gray-50 font-bold">
+                            <tfoot className="bg-gray-50 dark:bg-gray-800 font-bold">
                                 <tr>
-                                    <td colSpan={2} className="px-4 py-2 text-center text-gray-700">합계</td>
+                                    <td colSpan={2} className="px-4 py-2 text-center text-gray-700 dark:text-gray-200">합계</td>
                                     <td className="px-4 py-2 text-right text-green-700">{totalDep.toLocaleString()}만원</td>
                                     <td colSpan={2}></td>
                                 </tr>
@@ -3811,7 +3811,7 @@ export default function Settlement() {
 
                 return (
                     <>
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold">
                             <tr>
                                 <th className="px-4 py-2">입금 예정일</th>
                                 <th className="px-4 py-2">고객명</th>
@@ -3824,9 +3824,9 @@ export default function Settlement() {
                                 <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">예정된 입금 스케줄이 없습니다.</td></tr>
                             ) : (
                                 expectedDeposits.map((ed, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50">
+                                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         <td className="px-4 py-2 text-gray-600 font-medium">{ed.date}</td>
-                                        <td className="px-4 py-2 font-medium text-gray-900">{ed.customerName}</td>
+                                        <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{ed.customerName}</td>
                                         <td className="px-4 py-2 text-right text-orange-500 font-bold">{ed.expectedAmount.toLocaleString()}만원</td>
                                         <td className="px-4 py-2 text-right text-gray-500">{ed.remainingAmount.toLocaleString()}만원</td>
                                     </tr>
@@ -3842,7 +3842,7 @@ export default function Settlement() {
                 const totalPaid = paidCases.reduce((sum, c) => sum + getPaidCommissionInfo(c).paidCommission, 0);
                 return (
                     <>
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold">
                             <tr>
                                 <th className="px-4 py-2">고객명</th>
                                 <th className="px-4 py-2 text-right">총 예상 수수료</th>
@@ -3857,8 +3857,8 @@ export default function Settlement() {
                                 paidCases.map(c => {
                                     const info = getPaidCommissionInfo(c);
                                     return (
-                                        <tr key={c.caseId} className="hover:bg-gray-50">
-                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                        <tr key={c.caseId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{c.customerName}</td>
                                             <td className="px-4 py-2 text-right text-gray-600">{info.totalCommission.toLocaleString()}만원</td>
                                             <td className="px-4 py-2 text-right text-green-600 font-bold">{info.paidCommission.toLocaleString()}만원</td>
                                             <td className="px-4 py-2 text-right text-orange-500">{(info.totalCommission - info.paidCommission).toLocaleString()}만원</td>
@@ -3868,9 +3868,9 @@ export default function Settlement() {
                             )}
                         </tbody>
                         {paidCases.length > 0 && (
-                            <tfoot className="bg-gray-50 font-bold">
+                            <tfoot className="bg-gray-50 dark:bg-gray-800 font-bold">
                                 <tr>
-                                    <td colSpan={2} className="px-4 py-2 text-center text-gray-700">합계</td>
+                                    <td colSpan={2} className="px-4 py-2 text-center text-gray-700 dark:text-gray-200">합계</td>
                                     <td className="px-4 py-2 text-right text-green-700">{totalPaid.toLocaleString()}만원</td>
                                     <td></td>
                                 </tr>
@@ -3884,7 +3884,7 @@ export default function Settlement() {
                 const { payouts } = getMonthlyExpectedCommission();
                 return (
                     <>
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold">
                             <tr>
                                 <th className="px-4 py-2">지급 예정일</th>
                                 <th className="px-4 py-2">고객명</th>
@@ -3896,9 +3896,9 @@ export default function Settlement() {
                                 <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">예정된 수령 수수료가 없습니다.</td></tr>
                             ) : (
                                 payouts.map((ep, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50">
+                                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         <td className="px-4 py-2 text-gray-600 font-medium">{ep.date}</td>
-                                        <td className="px-4 py-2 font-medium text-gray-900">{ep.customerName}</td>
+                                        <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{ep.customerName}</td>
                                         <td className="px-4 py-2 text-right text-emerald-600 font-bold">{ep.amount.toLocaleString()}만원</td>
                                     </tr>
                                 ))
@@ -3912,7 +3912,7 @@ export default function Settlement() {
                 const installmentCases = statsCases.filter(c => (parseInt(String(c.installmentMonths || ''), 10) || 1) > 1 && getPaidCommissionInfo(c).paidCommission < getPaidCommissionInfo(c).totalCommission);
                 return (
                     <>
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold">
                             <tr>
                                 <th className="px-4 py-2">고객명</th>
                                 <th className="px-4 py-2 text-center">진행 개월 수</th>
@@ -3930,8 +3930,8 @@ export default function Settlement() {
                                     const fee = c.contractFee || 0;
                                     const uncollectedAmount = Math.max(0, fee - actualDeposit);
                                     return (
-                                        <tr key={c.caseId} className="hover:bg-gray-50">
-                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                        <tr key={c.caseId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{c.customerName}</td>
                                             <td className="px-4 py-2 text-center text-indigo-600">{c.installmentMonths}개월</td>
                                             <td className="px-4 py-2 text-right text-gray-600">{c.contractFee?.toLocaleString()}만원</td>
                                             <td className="px-4 py-2 text-right text-green-600 font-medium">{actualDeposit.toLocaleString()}만원</td>
@@ -3948,7 +3948,7 @@ export default function Settlement() {
             case 'depositRate': {
                 return (
                     <>
-                        <thead className="bg-gray-100 text-gray-700 font-bold">
+                        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold">
                             <tr>
                                 <th className="px-4 py-2">고객명</th>
                                 <th className="px-4 py-2 text-center">입금 상태</th>
@@ -3971,8 +3971,8 @@ export default function Settlement() {
                                     const isFullyPaid = actualDeposit >= fee;
                                     const rate = fee > 0 ? Math.round((actualDeposit / fee) * 100) : 0;
                                     return (
-                                        <tr key={c.caseId} className="hover:bg-gray-50">
-                                            <td className="px-4 py-2 font-medium text-gray-900">{c.customerName}</td>
+                                        <tr key={c.caseId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{c.customerName}</td>
                                             <td className="px-4 py-2 text-center">
                                                 <span className={`px-2 py-0.5 rounded text-xs border ${isFullyPaid ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
                                                     {isFullyPaid ? '완납' : '미납/분납'}
@@ -4005,7 +4005,7 @@ export default function Settlement() {
         <div className="max-w-7xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">주간정산센터</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">주간정산센터</h2>
 
                 <div className="flex gap-2 items-center flex-wrap">
                     <div className="relative">
@@ -4056,7 +4056,7 @@ export default function Settlement() {
                             <ChevronLeft size={20} />
                         </button>
                         <div className="text-center min-w-[200px]">
-                            <p className="font-bold text-lg text-gray-800">{weekLabel}</p>
+                            <p className="font-bold text-lg text-gray-800 dark:text-white">{weekLabel}</p>
                             <p className="text-sm text-gray-500">
                                 {selectedWeekStart.toLocaleDateString('ko-KR')} ~ {getWeekSunday(selectedWeekStart).toLocaleDateString('ko-KR')}
                             </p>
@@ -4080,7 +4080,7 @@ export default function Settlement() {
                     onClick={() => setActiveTab('receivables')}
                     className={`px-6 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'receivables'
                         ? 'border-slate-900 text-slate-900 bg-slate-100'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     받을 돈
@@ -4090,8 +4090,8 @@ export default function Settlement() {
                         <button
                             onClick={() => setActiveTab('monday')}
                             className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'monday'
-                                ? 'border-blue-600 text-blue-600 bg-blue-50'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
                         >
                             📅 월요일 (확인)
@@ -4099,8 +4099,8 @@ export default function Settlement() {
                         <button
                             onClick={() => setActiveTab('tuesday')}
                             className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'tuesday'
-                                ? 'border-yellow-600 text-yellow-600 bg-yellow-50'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-yellow-600 dark:border-yellow-500 text-yellow-600 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/40'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
                         >
                             📄 화요일 (발행/수금)
@@ -4108,8 +4108,8 @@ export default function Settlement() {
                         <button
                             onClick={() => setActiveTab('wednesday')}
                             className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'wednesday'
-                                ? 'border-green-600 text-green-600 bg-green-50'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-green-600 dark:border-green-500 text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
                         >
                             💰 수요일 (지급)
@@ -4120,7 +4120,7 @@ export default function Settlement() {
                     onClick={() => setActiveTab('report')}
                     className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'report'
                         ? 'border-purple-600 text-purple-600 bg-purple-50'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     📊 리포트
@@ -4129,7 +4129,7 @@ export default function Settlement() {
                     onClick={() => setActiveTab('expenses')}
                     className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'expenses'
                         ? 'border-red-600 text-red-600 bg-red-50'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     💳 지출
@@ -4169,7 +4169,7 @@ export default function Settlement() {
             {activeTab === 'report' && renderReportTab()}
             {activeTab === 'expenses' && renderExpensesTab()}
             {isAll && activeTab !== 'report' && activeTab !== 'expenses' && activeTab !== 'receivables' && (
-                <div className="bg-gray-50 p-8 rounded-xl text-center">
+                <div className="bg-gray-50 dark:bg-gray-800/60 p-8 rounded-xl text-center border border-gray-200 dark:border-gray-700">
                     <p className="text-gray-500">주간 정산 기능은 특정 거래처를 선택해야 사용할 수 있습니다.</p>
                     <p className="text-sm text-gray-400 mt-2">통계를 보시려면 "리포트" 탭을 선택하세요.</p>
                 </div>
@@ -4197,7 +4197,7 @@ export default function Settlement() {
                 <div className="mt-4 flex justify-end">
                     <button
                         onClick={() => setActiveModalType(null)}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium"
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-sm font-medium transition-colors"
                     >
                         닫기
                     </button>
@@ -4216,7 +4216,7 @@ export default function Settlement() {
                 <div className="space-y-4">
                     {/* Date */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label>
                         <input
                             type="date"
                             className="w-full border rounded-lg p-2"
@@ -4227,7 +4227,7 @@ export default function Settlement() {
 
                     {/* Category */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">카테고리</label>
                         <select
                             className="w-full border rounded-lg p-2"
                             value={expenseForm.category || '광고비'}
@@ -4241,7 +4241,7 @@ export default function Settlement() {
 
                     {/* Amount */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">금액 (만원)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액 (만원)</label>
                         <input
                             type="number"
                             className="w-full border rounded-lg p-2"
@@ -4253,7 +4253,7 @@ export default function Settlement() {
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">내용 *</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">내용 *</label>
                         <input
                             type="text"
                             className="w-full border rounded-lg p-2"
@@ -4265,7 +4265,7 @@ export default function Settlement() {
 
                     {/* Memo */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">메모 (선택)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모 (선택)</label>
                         <textarea
                             className="w-full border rounded-lg p-2"
                             rows={2}
@@ -4288,7 +4288,7 @@ export default function Settlement() {
                                 setIsExpenseModalOpen(false);
                                 setEditingExpense(null);
                             }}
-                            className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-300"
+                            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                         >
                             취소
                         </button>
@@ -4313,7 +4313,7 @@ export default function Settlement() {
                             <p className="text-sm text-gray-500 mb-4">선택된 기간({month === 'all' ? year + '년 전체' : year + '년 ' + month + '월'})에 발생한 수수료 내역입니다.</p>
                             <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
                                 <table className="w-full text-sm min-w-max">
-                                    <thead className="bg-gray-50 sticky top-0 z-10">
+                                    <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 sticky top-0 z-10">
                                         <tr>
                                             <th className="py-2 px-3 text-left whitespace-nowrap">고객명</th>
                                             <th className="py-2 px-3 text-left whitespace-nowrap">파트너사</th>
@@ -4344,7 +4344,7 @@ export default function Settlement() {
                             <p className="text-sm text-gray-500 mb-4">이번 기간의 등록된 지출 상세 리스트입니다.</p>
                             <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
                                 <table className="w-full text-sm min-w-max">
-                                    <thead className="bg-gray-50 sticky top-0 z-10">
+                                    <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 sticky top-0 z-10">
                                         <tr>
                                             <th className="py-2 px-3 text-center whitespace-nowrap">날짜</th>
                                             <th className="py-2 px-3 text-center whitespace-nowrap">카테고리</th>
@@ -4354,7 +4354,7 @@ export default function Settlement() {
                                     </thead>
                                     <tbody>
                                         {expenses.filter(e => month === 'all' ? true : (e.date && e.date.startsWith(`${year}-${String(month).padStart(2, '0')}`))).map(e => (
-                                            <tr key={e.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                            <tr key={e.id} className="border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                                 <td className="py-2 px-3 text-center whitespace-nowrap">{e.date}</td>
                                                 <td className="py-2 px-3 text-center whitespace-nowrap"><span className="px-2 py-1 rounded text-xs text-white whitespace-nowrap inline-block" style={{ backgroundColor: CATEGORY_COLORS[e.category] }}>{e.category}</span></td>
                                                 <td className="py-2 px-3 text-left whitespace-nowrap">{e.description}</td>
