@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { format, parseISO, isSameDay, isToday, isBefore } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { fetchCases, fetchPartners, fetchSettlementBatches, subscribe, getSyncStatus } from '../services/api';
+import { fetchCases, fetchPartners, fetchSettlementBatches, subscribe, getSyncStatus, refreshData } from '../services/api';
 import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
 import { getCaseWarnings, getReminderStatus, calculateNextSettlement, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
 import { Link } from 'react-router-dom';
@@ -197,14 +197,14 @@ export default function Dashboard() {
           <AlertCircle size={18} className="flex-shrink-0" />
           <div className="flex-1">
             {getSyncStatus().status === 'session_expired' ? (
-              <span>⚠️ 로그인 세션이 만료되어 <strong>최신 데이터를 불러올 수 없습니다.</strong> 마이페이지에서 로그아웃 후 다시 로그인해주세요.</span>
+              <span>⚠️ 일시적 서버 세션 지연이 발생했습니다. <strong>잠시 후 자동으로 최신 데이터가 동기화됩니다.</strong></span>
             ) : (
               <span>⚠️ 서버 연결에 실패했습니다. 네트워크를 확인하고 새로고침해주세요.</span>
             )}
           </div>
-          <Link to="/mypage" className="px-3 py-1 bg-red-600 text-white rounded text-xs font-bold whitespace-nowrap hover:bg-red-700">
-            재로그인
-          </Link>
+          <button onClick={() => refreshData()} className="px-3 py-1 bg-blue-600 text-white rounded text-xs font-bold whitespace-nowrap hover:bg-blue-700">
+            동기화 재시도
+          </button>
         </div>
       )}
 

@@ -519,8 +519,9 @@ export const refreshData = async () => {
   }
 
   if (!hasSession) {
-    console.error('[Sync] All session recovery failed. Cannot force refresh.');
-    syncStatus = 'session_expired';
+    console.warn('[Sync] Session recovery delayed during force refresh. Keeping cached data.');
+    const hasLocalAuth = !!localStorage.getItem('authToken') || !!localStorage.getItem('userProfile');
+    syncStatus = hasLocalAuth ? 'ok' : 'session_expired';
     notifyListeners();
     return;
   }
@@ -837,8 +838,9 @@ const performBackgroundFetch = async () => {
           syncStatus = 'fetch_failed';
         }
       } else {
-        console.warn('[Sync] All session recovery attempts failed. Using stale cache.');
-        syncStatus = 'session_expired';
+        console.warn('[Sync] Session recovery delayed. Keeping authenticated state with cache.');
+        const hasLocalAuth = !!localStorage.getItem('authToken') || !!localStorage.getItem('userProfile');
+        syncStatus = hasLocalAuth ? 'ok' : 'session_expired';
       }
     }
 

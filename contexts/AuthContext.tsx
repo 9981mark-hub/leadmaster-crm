@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   const navigate = useNavigate();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!localStorage.getItem('authToken');
+    return !!localStorage.getItem('authToken') || !!localStorage.getItem('userProfile') || localStorage.getItem('leadmaster_persistent_auth') === 'true';
   });
 
   const [user, setUser] = useState<UserProfile | null>(() => {
@@ -174,6 +174,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       localStorage.setItem('authToken', credential);
       localStorage.setItem('userProfile', JSON.stringify(userProfile));
       localStorage.setItem('managerName', orgInfo?.displayName || name);
+      localStorage.setItem('leadmaster_persistent_auth', 'true');
 
       setIsAuthenticated(true);
       setUser(userProfile);
@@ -272,6 +273,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userProfile');
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('leadmaster_persistent_auth');
     clearOrgCache();
     setOrg(null);
     setIsAuthenticated(false);
