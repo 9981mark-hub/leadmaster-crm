@@ -152,7 +152,7 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
       <div className="px-5 py-3 flex flex-wrap items-center gap-2">
         <ShieldCheck size={18} className="text-emerald-600" />
         <h2 className="font-bold text-gray-800 dark:text-white">접근 기록</h2>
-        <span className="text-xs text-gray-400">누가 언제 어떤 리드를 열람·내보내기·삭제·녹음 재생했는지 · 1년 보관 · 관리자만 볼 수 있음</span>
+        <span className="text-xs text-gray-400">누가 언제 어떤 리드를 열람·내보내기·삭제·녹음 재생했는지 · 정책 연동 보관(6개월/1년/2년) · 관리자 전용</span>
         <div className="ml-auto flex items-center gap-3">
           {open && (
             <button onClick={() => fetchPage()} disabled={loading} className="text-xs text-gray-500 flex items-center gap-1 disabled:opacity-50">

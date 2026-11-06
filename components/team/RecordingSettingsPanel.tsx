@@ -75,7 +75,25 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           </label>
         </div>
         <div className="space-y-3 text-sm">
-          {/* 2026-11-02 "서버 임시 보관" 칸 삭제: 녹음은 구글 드라이브에만 저장 (018), 리드마스터 서버에는 파일이 없다 */}
+          {/* 데이터 및 녹음 보관 기간 설정 (6개월, 1년, 2년 선택) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-32 text-gray-600 dark:text-gray-300">데이터 보존 기간</span>
+            <select
+              value={s.retentionDays || 365}
+              onChange={e => setS({ ...s, retentionDays: parseInt(e.target.value, 10) || 365 })}
+              className={`${input} font-medium`}
+            >
+              <option value={180}>6개월 (180일)</option>
+              <option value={365}>1년 (365일 - 기본값)</option>
+              <option value={730}>2년 (730일 - 법적 권장)</option>
+              {s.retentionDays && ![180, 365, 730].includes(s.retentionDays) && (
+                <option value={s.retentionDays}>
+                  {s.retentionDays === 3650 ? '10년 (3650일 - 기존 설정)' : `${s.retentionDays}일 (기존 설정)`}
+                </option>
+              )}
+            </select>
+            <span className="text-xs text-gray-400">설정 기간 경과 시 자동 정리</span>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-32 text-gray-600 dark:text-gray-300">하루 AI 정리 상한</span>
             <input type="number" min={0} value={s.dailyAnalyzeCap} onChange={e => setS({ ...s, dailyAnalyzeCap: parseInt(e.target.value, 10) || 0 })} className={`${input} w-24`} /> <span className="text-xs text-gray-400">건 (비용 보호, 넘으면 다음 날)</span>

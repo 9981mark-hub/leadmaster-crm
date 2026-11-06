@@ -82,7 +82,15 @@ const CACHE_KEYS = {
 const loadFromStorage = () => {
   try {
     const storedPartners = localStorage.getItem(CACHE_KEYS.PARTNERS);
-    const storedCases = localStorage.getItem(CACHE_KEYS.CASES);
+    // [SECURITY & QUOTA FIX] 고객 민감정보(cases)는 영구 디스크(localStorage)가 아닌 탭 세션 스토리지(sessionStorage) 우선 로드
+    let storedCases = sessionStorage.getItem(CACHE_KEYS.CASES);
+    if (!storedCases) {
+      storedCases = localStorage.getItem(CACHE_KEYS.CASES);
+      // 기존 localStorage에 남아 있던 평문 캐시가 있다면 로드 후 디스크에서 즉시 안전 소각
+      if (storedCases) {
+        try { localStorage.removeItem(CACHE_KEYS.CASES); } catch { /* ignore */ }
+      }
+    }
     const storedPaths = localStorage.getItem(CACHE_KEYS.PATHS);
     const storedStatuses = localStorage.getItem(CACHE_KEYS.STATUSES);
     const storedSecondaryStatuses = localStorage.getItem(CACHE_KEYS.SECONDARY_STATUSES);
@@ -130,7 +138,13 @@ const saveToStorage = () => {
       aiSummary: '',  // AI 요약 (재생성 가능)
     }));
 
-    localStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(slimCases));
+    try {
+      sessionStorage.setItem(CACHE_KEYS.CASES, JSON.stringify(slimCases));
+    } catch (eSession) {
+      console.warn('[Storage] sessionStorage save failed, relying on memory state:', eSession);
+    }
+    // localStorage에는 더 이상 케이스 평문 데이터를 남기지 않음 (공용 PC 평문 디스크 방치 및 5MB 용량 초과 차단)
+    try { localStorage.removeItem(CACHE_KEYS.CASES); } catch { /* ignore */ }
     localStorage.setItem(CACHE_KEYS.PARTNERS, JSON.stringify(localPartners));
     localStorage.setItem(CACHE_KEYS.PATHS, JSON.stringify(localInboundPaths));
     localStorage.setItem(CACHE_KEYS.STATUSES, JSON.stringify(localStatuses));
