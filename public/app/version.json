@@ -1,7 +1,11 @@
 {
-  "versionCode": 19,
-  "versionName": "1.6.7",
-  "apkUrl": "LeadMaster.apk",
-  "notes": "수신 팝업 디자인 및 UI 전면 고도화(금융 3단 매트릭스, 최근 미수신 콜백 배너, 5대 템플릿 맞춤 UI, 통화 중 퀵 메모 연동, 비상 알림 폴백 완비)",
-  "required": false
+  "versionCode": 20,
+  "versionName": "1.6.8",
+  "releaseDate": "2026-11-06",
+  "notes": [
+    "1.6.8: 수신 팝업 팩트 뱃지(채무 1천만↑) 개편",
+    "권한 자가치유(Ghost Lock 감지 및 원터치 동기화 안내)",
+    "사전 정보 채무 정규식 정밀화 (월 상환액/급여 오인 방지)",
+    "최근 부재중 콜백 48시간 스마트 감지"
+  ]
 }
