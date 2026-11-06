@@ -1,7 +1,7 @@
 {
-  "versionCode": 17,
-  "versionName": "1.6.5",
+  "versionCode": 19,
+  "versionName": "1.6.7",
   "apkUrl": "LeadMaster.apk",
-  "notes": "수신 팝업 디자인 및 UI 전면 고도화(금융 3단 매트릭스, 최근 미수신 콜백 배너, 5대 템플릿 맞춤 UI, 통화 중 퀵 메모 연동)",
+  "notes": "수신 팝업 디자인 및 UI 전면 고도화(금융 3단 매트릭스, 최근 미수신 콜백 배너, 5대 템플릿 맞춤 UI, 통화 중 퀵 메모 연동, 비상 알림 폴백 완비)",
   "required": false
 }
