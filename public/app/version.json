@@ -1,7 +1,7 @@
 {
-  "versionCode": 15,
-  "versionName": "1.6.3",
+  "versionCode": 16,
+  "versionName": "1.6.4",
   "apkUrl": "LeadMaster.apk",
-  "notes": "연락처에 저장된 번호로 전화가 와도 수신 팝업이 뜹니다. 간편 콜 모드(메뉴 '간편모드')가 들어갔습니다.",
+  "notes": "통신 보안 강화(HTTPS/TLS 암호화 통신 강제화) 및 최신 보안 업데이트가 적용되었습니다.",
   "required": false
 }
