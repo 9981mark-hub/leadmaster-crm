@@ -13,6 +13,62 @@ const ActiveCallPopup: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // 만원 단위 포맷팅
+    const formatManwon = (val: number) => {
+        if (!val || val <= 0) return '0원';
+        if (val >= 10000) {
+            const uk = Math.floor(val / 10000);
+            const rem = val % 10000;
+            return rem > 0 ? `${uk}억 ${rem.toLocaleString()}만` : `${uk}억원`;
+        }
+        return `${val.toLocaleString()}만원`;
+    };
+
+    // 사전 접수 텍스트 정규식 폴백 추출
+    const extractDebtFromPreInfo = (text?: string): number => {
+        if (!text) return 0;
+        const match = text.match(/(?:채무|빚|대출|부채)\s*[:=\s]*([0-9,]+(?:\s*[천억만]|만\s*원|원)?)/);
+        if (!match) return 0;
+        const str = match[1].replace(/,/g, '').trim();
+        if (str.includes('억')) {
+            const parts = str.split('억');
+            const uk = parseFloat(parts[0]) || 0;
+            const rest = parts[1] ? parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0 : 0;
+            return uk * 10000 + rest;
+        }
+        if (str.includes('천')) {
+            const val = parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+            return val * 1000;
+        }
+        if (str.includes('만')) {
+            return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+        }
+        const rawVal = parseFloat(str) || 0;
+        return rawVal > 100000 ? Math.floor(rawVal / 10000) : rawVal;
+    };
+
+    const extractIncomeFromPreInfo = (text?: string): number => {
+        if (!text) return 0;
+        const match = text.match(/(?:소득|급여|월급|수입|실수령)\s*[:=\s]*([0-9,]+(?:\s*[천억만]|만\s*원|원)?)/);
+        if (!match) return 0;
+        const str = match[1].replace(/,/g, '').trim();
+        if (str.includes('만')) return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+        const rawVal = parseFloat(str) || 0;
+        return rawVal > 10000 ? Math.floor(rawVal / 10000) : rawVal;
+    };
+
+    const extractJobFromPreInfo = (text?: string): string => {
+        if (!text) return '';
+        const match = text.match(/(?:직업|직종|직무)\s*[:=\s]*([^\n,]+)/);
+        if (match && match[1]?.trim()) return match[1].trim();
+        if (text.includes('직장인')) return '직장인';
+        if (text.includes('사업자') || text.includes('자영업')) return '사업자';
+        if (text.includes('프리랜서')) return '프리랜서';
+        if (text.includes('주부')) return '주부';
+        if (text.includes('무직')) return '무직';
+        return '';
+    };
+
     // 사전 고객 정보 파싱 유틸
     const parsePreInfo = (preInfo?: string) => {
         if (!preInfo) return [];
@@ -243,6 +299,21 @@ const ActiveCallPopup: React.FC = () => {
                     </button>
                 </div>
 
+                {/* 부재 / 콜백 알림 배너 */}
+                {!isLoading && matchedCase && ((matchedCase.missedCallCount && matchedCase.missedCallCount > 0) || matchedCase.lastMissedCallAt) && (
+                    <div className="bg-amber-500/10 border-b border-amber-500/20 px-3.5 py-2 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 text-xs font-bold">
+                            <span className="text-sm animate-pulse">🔄</span>
+                            <span>콜백 인입 {matchedCase.missedCallCount ? `(부재중 ${matchedCase.missedCallCount}회)` : ''}</span>
+                        </div>
+                        {matchedCase.lastMissedCallAt && (
+                            <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-mono">
+                                {formatMemoDate(matchedCase.lastMissedCallAt)}
+                            </span>
+                        )}
+                    </div>
+                )}
+
                 {/* 본문 */}
                 <div className="px-4 py-4 text-center">
                     <p className="text-gray-800 dark:text-gray-200 font-bold text-lg">
@@ -293,6 +364,82 @@ const ActiveCallPopup: React.FC = () => {
                 {/* 사전 고객 정보 섹션 */}
                 {!isLoading && matchedCase && (
                     <>
+                        {(() => {
+                            const debtTotal = (matchedCase.creditLoan?.reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0) || 0) || extractDebtFromPreInfo(matchedCase.preInfo);
+                            const incomeNet = (matchedCase.incomeNet || 0) || extractIncomeFromPreInfo(matchedCase.preInfo);
+                            const jobType = (matchedCase.jobTypes && matchedCase.jobTypes.length > 0 ? matchedCase.jobTypes.join(', ') : '') || extractJobFromPreInfo(matchedCase.preInfo);
+                            const insurance = matchedCase.insurance4 || '';
+                            const housingStr = [matchedCase.housingType, matchedCase.rent ? `월${matchedCase.rent}만` : ''].filter(Boolean).join(' · ');
+                            const historyStr = matchedCase.historyType || (matchedCase.preInfo?.includes('기각') ? '기각 이력' : '이력 없음');
+                            const isEligible = debtTotal >= 1000;
+                            const hasFinancialInfo = debtTotal > 0 || incomeNet > 0 || Boolean(jobType);
+
+                            if (!hasFinancialInfo) return null;
+
+                            return (
+                                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-3">
+                                    <div className="grid grid-cols-3 gap-2 text-left">
+                                        {/* 1열: 총 채무액 */}
+                                        <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                    총 채무액
+                                                </span>
+                                                <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 block mt-0.5 truncate">
+                                                    {debtTotal > 0 ? formatManwon(debtTotal) : '미입력'}
+                                                </span>
+                                            </div>
+                                            {debtTotal > 0 && (
+                                                <div className="mt-1">
+                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                        isEligible 
+                                                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                                                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                                    }`}>
+                                                        {isEligible ? '회생 적격' : '상담 필요'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 2열: 월 순소득 */}
+                                        <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                    월 순소득
+                                                </span>
+                                                <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 block mt-0.5 truncate">
+                                                    {incomeNet > 0 ? formatManwon(incomeNet) : '미입력'}
+                                                </span>
+                                            </div>
+                                            <div className="mt-1 truncate">
+                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                                                    {[jobType, insurance === '가입' ? '4대' : insurance === '미가입' ? '미가입' : ''].filter(Boolean).join(' · ') || '직업 미입력'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* 3열: 주거 / 이력 */}
+                                        <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                    주거 / 이력
+                                                </span>
+                                                <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block mt-0.5 truncate">
+                                                    {housingStr || '주거 미입력'}
+                                                </span>
+                                            </div>
+                                            <div className="mt-1 truncate">
+                                                <span className={`text-[10px] font-medium ${historyStr.includes('기각') ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                    {historyStr}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
                         {/* 유입 경로 · 최초 등록일시 */}
                         <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3">
                             <div className="flex gap-3">
