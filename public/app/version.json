@@ -1,7 +1,7 @@
 {
-  "versionCode": 11,
-  "versionName": "1.6.2",
+  "versionCode": 15,
+  "versionName": "1.6.3",
   "apkUrl": "LeadMaster.apk",
-  "notes": "통화가 끝나면 통화기록을 10초 안에 바로 올립니다. 녹음은 회사 구글 드라이브에만 보관합니다.",
+  "notes": "연락처에 저장된 번호로 전화가 와도 수신 팝업이 뜹니다. 간편 콜 모드(메뉴 '간편모드')가 들어갔습니다.",
   "required": false
 }
