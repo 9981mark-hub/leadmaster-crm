@@ -1,7 +1,11 @@
 {
-  "versionCode": 21,
-  "versionName": "1.6.9",
+  "versionCode": 22,
+  "versionName": "1.7.0",
   "releaseDate": "2026-11-06",
-  "notes": "• 업데이트 안내 문구 표시 안정화\n• 그 밖의 기능은 1.6.8과 같습니다",
-  "required": false
+  "notes": [
+    "1.7.0: 삼성 통화 중 오버레이 차단 대응 QuickMemoActivity 다이얼로그 신설",
+    "수신 전화 고우선순위 Heads-Up 알림에 [상담 메모] 및 [고객 상세] 액션 버튼 장착",
+    "통화 화면 위에서 원터치로 즉시 메모 작성 및 CRM 자동 저장 지원",
+    "채무액/소득/직업 요약 및 메모 임시 저장(Draft) 완전 연동"
+  ]
 }
