@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X, Zap, Megaphone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -21,6 +21,8 @@ const AutoDial = lazyWithRetry(() => import('./pages/AutoDial'));
 const TeamPage = lazyWithRetry(() => import('./pages/TeamPage'));
 const PlatformPage = lazyWithRetry(() => import('./pages/PlatformPage'));
 const LiteCallPage = lazyWithRetry(() => import('./pages/LiteCallPage'));
+const NoticePage = lazyWithRetry(() => import('./pages/NoticePage'));
+import { NoticeBanner } from './components/NoticeBanner';
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ROLE_LABEL } from './services/org';
@@ -234,7 +236,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // [CRITICAL] Cache Buster / Force Version Update
   React.useEffect(() => {
-    const CURRENT_VERSION = "3.38";
+    const CURRENT_VERSION = "3.39";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
@@ -252,6 +254,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const navs = [
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
+    { to: '/notices', icon: Megaphone, label: '공지사항' },
     { to: '/schedule', icon: Calendar, label: '일정' },
     { to: '/cases', icon: Users, label: '케이스' },
     { to: '/lite', icon: Zap, label: '간편 콜 모드' },
@@ -302,7 +305,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-3' : 'px-3 py-2'} space-y-0.5`}>
           {(() => {
             const isActive = (to: string) => path === to || (path.startsWith('/case/') && to === '/cases');
-            const workNavPaths = ['/', '/schedule', '/cases', '/lite', '/new'];
+            const workNavPaths = ['/', '/notices', '/schedule', '/cases', '/lite', '/new'];
             const opsNavPaths = ['/telegram', '/auto-dial', '/settlement'];
             const adminNavPaths = ['/statistics', '/team', '/platform', '/settings', '/mypage'];
             const workNavs = visibleNavs.filter(n => workNavPaths.includes(n.to));
@@ -341,6 +344,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
+        <NoticeBanner />
         {/* Mobile Top Bar — [2026-11-02] 앱 안에서는 앱 자체 상단 바(LeadMaster·새로고침·메뉴)와 겹쳐서 숨김.
             오른쪽 자동통화 바로가기 아이콘은 삭제 (전화는 고객 번호를 누르면 걸림) */}
         {!inAndroidApp && (
@@ -473,6 +477,7 @@ const ProtectedRoutes = () => {
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/notices" element={<NoticePage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/cases" element={<CaseList />} />
           <Route path="/lite" element={<LiteCallPage />} />
