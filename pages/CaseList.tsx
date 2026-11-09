@@ -289,11 +289,15 @@ export default function CaseList() {
             // [NEW] Starred filter
             if (showStarredOnly && !c.isStarred) return false;
 
-            // [NEW] 2차/3차 상태 필터 (사무장 접수 선택 시)
+            // [NEW] 2차/3차 상태 필터 (사무장 접수 또는 사무장 큐 탭 선택 시)
             let matchesSecondary = true;
             let matchesTertiary = true;
-            if (statusFilters.includes('사무장 접수') && c.status === '사무장 접수') {
-                if (secondaryStatusFilter) {
+            if ((quickView === 'paralegal' || statusFilters.includes('사무장 접수')) && c.status === '사무장 접수') {
+                if (secondaryStatusFilter === '__none__') {
+                    matchesSecondary = !c.secondaryStatus;
+                } else if (secondaryStatusFilter === '__in_progress__') {
+                    matchesSecondary = !!c.secondaryStatus && c.secondaryStatus !== '연락안받음';
+                } else if (secondaryStatusFilter) {
                     matchesSecondary = c.secondaryStatus === secondaryStatusFilter;
                 }
                 if (tertiaryStatusFilter && matchesSecondary) {
@@ -924,6 +928,7 @@ export default function CaseList() {
                     isOpen={!!paralegalTargetCase}
                     onClose={() => setParalegalTargetCase(null)}
                     onDecision={handleParalegalDecision}
+                    secondaryStatuses={secondaryStatusesList}
                 />
             )}
             <ExportCaseModal
@@ -992,43 +997,75 @@ export default function CaseList() {
                             {(() => {
                                 const pCases = cases.filter(c => c.status === '사무장 접수' && !c.deletedAt && !c.isArchived);
                                 const newCount = pCases.filter(c => !c.secondaryStatus).length;
-                                const reworkCount = pCases.filter(c => c.secondaryStatus === '서류보완요청').length;
-                                const reviewingCount = pCases.filter(c => c.secondaryStatus === '심층상담중' || c.secondaryStatus === '고민중' || c.secondaryStatus === '출장예약' || c.secondaryStatus === '방문예약').length;
+                                const inProgressCount = pCases.filter(c => c.secondaryStatus && c.secondaryStatus !== '연락안받음').length;
+                                const missedCount = pCases.filter(c => c.secondaryStatus === '연락안받음').length;
                                 const contractedCount = cases.filter(c => c.status === '계약 완료' && !c.deletedAt && !c.isArchived).length;
 
                                 return (
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSecondaryStatusFilter(prev => prev === '__none__' ? '' : '__none__')}
+                                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                                secondaryStatusFilter === '__none__'
+                                                    ? 'bg-amber-500/30 border-amber-400 ring-2 ring-amber-400/50 shadow-md'
+                                                    : 'bg-white/10 dark:bg-black/20 hover:bg-white/15 border-white/10'
+                                            } flex items-center justify-between`}
+                                        >
                                             <div>
-                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">미확인 인계건</span>
+                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">미확인 인계</span>
                                                 <span className="text-lg font-black text-amber-300 mt-0.5 block">{newCount}건</span>
                                             </div>
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold">NEW</span>
-                                        </div>
+                                        </button>
 
-                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSecondaryStatusFilter(prev => prev === '__in_progress__' ? '' : '__in_progress__')}
+                                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                                secondaryStatusFilter === '__in_progress__'
+                                                    ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400/50 shadow-md'
+                                                    : 'bg-white/10 dark:bg-black/20 hover:bg-white/15 border-white/10'
+                                            } flex items-center justify-between`}
+                                        >
                                             <div>
-                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">심층 상담 진행</span>
-                                                <span className="text-lg font-black text-blue-300 mt-0.5 block">{reviewingCount}건</span>
+                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">사무장 직접 진행</span>
+                                                <span className="text-lg font-black text-blue-300 mt-0.5 block">{inProgressCount}건</span>
                                             </div>
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-blue-400/20 text-blue-300 font-bold">진행중</span>
-                                        </div>
+                                        </button>
 
-                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSecondaryStatusFilter(prev => prev === '연락안받음' ? '' : '연락안받음')}
+                                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                                secondaryStatusFilter === '연락안받음'
+                                                    ? 'bg-rose-500/30 border-rose-400 ring-2 ring-rose-400/50 shadow-md'
+                                                    : 'bg-white/10 dark:bg-black/20 hover:bg-white/15 border-white/10'
+                                            } flex items-center justify-between`}
+                                        >
                                             <div>
-                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">서류 보완 대기</span>
-                                                <span className="text-lg font-black text-orange-300 mt-0.5 block">{reworkCount}건</span>
+                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">연락안받음 (재시도)</span>
+                                                <span className="text-lg font-black text-rose-300 mt-0.5 block">{missedCount}건</span>
                                             </div>
-                                            <span className="text-xs px-1.5 py-0.5 rounded bg-orange-400/20 text-orange-300 font-bold">보완요청</span>
-                                        </div>
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-rose-400/20 text-rose-300 font-bold">집중관리</span>
+                                        </button>
 
-                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setQuickView('all');
+                                                setStatusFilters(['계약 완료']);
+                                                setSecondaryStatusFilter('');
+                                            }}
+                                            className="bg-white/10 dark:bg-black/20 hover:bg-white/15 p-3 rounded-xl border border-white/10 flex items-center justify-between text-left transition-all cursor-pointer"
+                                        >
                                             <div>
                                                 <span className="text-[10px] text-indigo-200 uppercase font-semibold block">최종 수임 체결</span>
                                                 <span className="text-lg font-black text-emerald-300 mt-0.5 block">{contractedCount}건</span>
                                             </div>
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-bold">계약완료</span>
-                                        </div>
+                                        </button>
                                     </div>
                                 );
                             })()}

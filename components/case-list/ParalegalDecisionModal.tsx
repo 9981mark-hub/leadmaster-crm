@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Scale, CheckCircle2, RotateCcw, XCircle, X, DollarSign, 
     Calendar, AlertTriangle, ShieldCheck, User, Phone, 
-    Briefcase, FileText, ArrowRight, Check, AlertCircle 
+    Briefcase, FileText, ArrowRight, Check, AlertCircle, PhoneMissed, Clock 
 } from 'lucide-react';
-import { Case } from '../../types';
+import { Case, MemoItem, ReminderItem } from '../../types';
 
 interface ParalegalDecisionModalProps {
     c: Case;
     isOpen: boolean;
+    secondaryStatuses?: string[];
     onClose: () => void;
     onDecision: (updates: Partial<Case>, successMessage: string) => Promise<void>;
 }
@@ -17,10 +18,12 @@ interface ParalegalDecisionModalProps {
 export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
     c,
     isOpen,
+    secondaryStatuses = [],
     onClose,
     onDecision
 }) => {
-    const [activeTab, setActiveTab] = useState<'contract' | 'rework' | 'reject'>('contract');
+    // 4대 탭: contract(수임완료) | progress(사무장 직접진행) | missed(연락안받음/부재) | reject(진행불가)
+    const [activeTab, setActiveTab] = useState<'contract' | 'progress' | 'missed' | 'reject'>('progress');
     const [submitting, setSubmitting] = useState(false);
 
     // 1. 수임 완료 필드
@@ -31,27 +34,57 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
         const pad = (n: number) => String(n).padStart(2, '0');
         return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     });
-    const [contractMemo, setContractMemo] = useState<string>('서류 완비 및 사무장 심층 상담 완료, 사건 수임 체결');
+    const [contractMemo, setContractMemo] = useState<string>('사무장 직접 심층 상담 완료 및 사건 수임 약정 체결');
 
-    // 2. 보완 요청 필드
-    const REWORK_PRESETS = [
-        '소득 증빙 서류(급여명세서/원천징수) 추가 확인 필요',
-        '부양가족 주민등록등본 및 가족관계증명서 발급 요청',
-        '최근 1년 대출금 사용처(계좌거래내역) 소명 필요',
-        '임대차계약서 확정일자 및 보증금 잔액 확인 필요',
-        '차량 또는 부동산 시세/담보대출 잔액 재확인',
-    ];
-    const [selectedReworkReason, setSelectedReworkReason] = useState<string>(REWORK_PRESETS[0]);
-    const [customReworkNote, setCustomReworkNote] = useState<string>('');
+    // 2. 사무장 직접 진행 관리 (2차 상태)
+    const availableSecondary = secondaryStatuses.length > 0 
+        ? secondaryStatuses 
+        : ['계약서작성', '착수금입금', '방문예약', '출장예약', '고민중', '관리중'];
+    const [selectedSecondary, setSelectedSecondary] = useState<string>(() => {
+        if (c.secondaryStatus && availableSecondary.includes(c.secondaryStatus)) return c.secondaryStatus;
+        return availableSecondary.includes('계약서작성') ? '계약서작성' : availableSecondary[0];
+    });
+    const [progressDetail, setProgressDetail] = useState<string>('');
+    const [customTertiary, setCustomTertiary] = useState<string>(c.tertiaryStatus || '');
 
-    // 3. 진행 불가/기각 필드
+    // 3. 인계 후 연락 안받음 (부재/재시도)
+    const getMissedReminderSlots = () => {
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        
+        // 오늘 18:00 (퇴근 후)
+        const dToday18 = new Date(now);
+        dToday18.setHours(18, 0, 0, 0);
+        if (dToday18 <= now) dToday18.setDate(dToday18.getDate() + 1);
+
+        // 내일 오전 10:00
+        const dTomorrow10 = new Date(now);
+        dTomorrow10.setDate(dTomorrow10.getDate() + 1);
+        dTomorrow10.setHours(10, 0, 0, 0);
+
+        // 내일 오후 14:00
+        const dTomorrow14 = new Date(now);
+        dTomorrow14.setDate(dTomorrow14.getDate() + 1);
+        dTomorrow14.setHours(14, 0, 0, 0);
+
+        return [
+            { label: '오늘 18:00 (퇴근 후)', datetime: fmt(dToday18) },
+            { label: '내일 10:00 (오전)', datetime: fmt(dTomorrow10) },
+            { label: '내일 14:00 (오후)', datetime: fmt(dTomorrow14) },
+        ];
+    };
+    const [selectedReminderSlot, setSelectedReminderSlot] = useState<{ label: string; datetime: string } | null>(getMissedReminderSlots()[0]);
+    const [missedNote, setMissedNote] = useState<string>('사무장 전화 시도했으나 미수신, 지정 시간 재통화 시도 예정');
+
+    // 4. 진행 불가/기각 필드
     const REJECT_PRESETS = [
         '총 채무 1,000만원 미만 (개인회생 신청 자격 미달)',
         '재산(청산가치)이 총 채무보다 많아 회생 불가',
-        '최근 대출 90% 이상 코인/도박/주식 탕진 (기각 위험 고위험)',
+        '최근 대출 90% 이상 코인/도박/주식 탕진 (기각 고위험)',
         '최근 5년 이내 회생/파산 면책 이력 존재 (재신청 기간 미도래)',
         '고객 단순 변심 또는 수임 비용 부담으로 진행 포기',
-        '연락 두절 (사무장 심층 전화 3회 이상 미수신)',
+        '장기 연락 두절 (3회 이상 전화 미수신으로 종결)',
     ];
     const [selectedRejectReason, setSelectedRejectReason] = useState<string>(REJECT_PRESETS[0]);
     const [customRejectNote, setCustomRejectNote] = useState<string>('');
@@ -78,60 +111,134 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
         setSubmitting(true);
         try {
             const nowIso = new Date().toISOString();
-            const pad = (n: number) => String(n).padStart(2, '0');
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            const actor = '사무장';
 
             if (activeTab === 'contract') {
-                // 수임 완료 처리
+                // 1. 수임 완료: 1차 상태 '계약 완료', 2차/3차 상태는 초기화 (기존 라이프사이클 정책 준수)
+                const log = {
+                    logId: Date.now().toString(),
+                    fromStatus: c.status,
+                    toStatus: '계약 완료',
+                    changedAt: nowIso,
+                    changedBy: actor,
+                    memo: `수임료 ${contractFee}만원 계약 체결 완료 (${contractType})`
+                };
                 const memoContent = `[사무장 수임 확정] 수임료 ${contractFee}만원 / 계약일: ${contractAt} / 종류: ${contractType}${contractMemo ? `\n비고: ${contractMemo}` : ''}`;
-                const newMemo = {
+                const newMemo: MemoItem = {
                     id: Date.now().toString(),
                     createdAt: nowIso,
                     content: memoContent
                 };
+
                 await onDecision({
                     status: '계약 완료',
-                    secondaryStatus: '수임계약체결',
-                    tertiaryStatus: '수임완료',
+                    secondaryStatus: undefined,
+                    tertiaryStatus: undefined,
                     contractAt,
                     contractFee,
                     contractType,
-                    specialMemo: [...(c.specialMemo || []), newMemo]
+                    statusLogs: [log, ...(c.statusLogs || [])],
+                    specialMemo: [newMemo, ...(c.specialMemo || [])]
                 }, `🎉 [${c.customerName}] 고객님의 사건이 수임 확정되었습니다! (수임료: ${contractFee}만원)`);
-            } else if (activeTab === 'rework') {
-                // 보완 요청 처리 (상태는 '사무장 접수' 유지하되 2차 상태를 '서류보완요청'으로 지정)
-                const fullReason = customReworkNote ? `${selectedReworkReason} (${customReworkNote})` : selectedReworkReason;
-                const memoContent = `[사무장 보완요청] 담당 상담원 재확인 요청: ${fullReason}`;
-                const newMemo = {
+
+            } else if (activeTab === 'progress') {
+                // 2. 사무장 직접 진행: 1차 상태 '사무장 접수' 유지 + 관리자 설정 2차 상태 연동
+                const prevSec = c.secondaryStatus || '없음';
+                const log = {
+                    logId: Date.now().toString(),
+                    fromStatus: `${c.status} (${prevSec})`,
+                    toStatus: `${c.status} (${selectedSecondary})`,
+                    changedAt: nowIso,
+                    changedBy: actor,
+                    memo: progressDetail || `사무장 진행 상태: ${selectedSecondary}`
+                };
+                // 기존 [2차 상태 변경] 정규식 포맷과 100% 일치시켜 시계 아이콘 툴팁 파싱 보장
+                const memoContent = `[2차 상태 변경] ${prevSec} → ${selectedSecondary}${progressDetail ? `\n사유: ${progressDetail}` : ''}`;
+                const newMemo: MemoItem = {
                     id: Date.now().toString(),
                     createdAt: nowIso,
                     content: memoContent
                 };
+
                 await onDecision({
                     status: '사무장 접수',
-                    secondaryStatus: '서류보완요청',
-                    tertiaryStatus: selectedReworkReason.substring(0, 20),
-                    specialMemo: [...(c.specialMemo || []), newMemo]
-                }, `⚠️ [${c.customerName}] 건이 1차 상담원에게 보완 요청되었습니다.`);
-            } else if (activeTab === 'reject') {
-                // 진행 불가(기각) 처리
-                const fullReason = customRejectNote ? `${selectedRejectReason} (${customRejectNote})` : selectedRejectReason;
-                const memoContent = `[사무장 불가판정] 진행 불가 사유: ${fullReason}`;
-                const newMemo = {
+                    secondaryStatus: selectedSecondary,
+                    tertiaryStatus: customTertiary || undefined,
+                    statusLogs: [log, ...(c.statusLogs || [])],
+                    specialMemo: [newMemo, ...(c.specialMemo || [])]
+                }, `✓ [${c.customerName}] 건의 진행 상태가 '${selectedSecondary}'(으)로 업데이트되었습니다.`);
+
+            } else if (activeTab === 'missed') {
+                // 3. 인계 후 연락 안받음: 2차 상태 '연락안받음' + 부재 카운트 증가 + 재통화 리마인더 등록
+                const prevSec = c.secondaryStatus || '없음';
+                const nextMissedCount = (c.missedCallCount || 0) + 1;
+                const log = {
+                    logId: Date.now().toString(),
+                    fromStatus: `${c.status} (${prevSec})`,
+                    toStatus: `${c.status} (연락안받음)`,
+                    changedAt: nowIso,
+                    changedBy: actor,
+                    memo: `사무장 통화 부재 (${nextMissedCount}회 시도) - ${selectedReminderSlot ? `재통화 예약: ${selectedReminderSlot.label}` : '재시도 필요'}`
+                };
+                const memoContent = `[2차 상태 변경] ${prevSec} → 연락안받음\n사유: 사무장 통화 시도 부재 (${nextMissedCount}회)${selectedReminderSlot ? ` [재통화 예약: ${selectedReminderSlot.label}]` : ''}${missedNote ? ` - ${missedNote}` : ''}`;
+                const newMemo: MemoItem = {
                     id: Date.now().toString(),
                     createdAt: nowIso,
                     content: memoContent
                 };
+
+                // 리마인더 추가
+                let newReminders = [...(c.reminders || [])];
+                if (selectedReminderSlot) {
+                    const r: ReminderItem = {
+                        id: Date.now().toString(),
+                        datetime: selectedReminderSlot.datetime,
+                        type: '통화',
+                        content: `[사무장 인계 부재 재시도] ${c.customerName} 고객님 통화 연결 재시도 (${nextMissedCount}회차)`,
+                        isCompleted: false
+                    };
+                    newReminders.push(r);
+                }
+
+                await onDecision({
+                    status: '사무장 접수',
+                    secondaryStatus: '연락안받음',
+                    tertiaryStatus: `부재${nextMissedCount}회`,
+                    missedCallCount: nextMissedCount,
+                    lastMissedCallAt: nowIso,
+                    reminders: newReminders,
+                    statusLogs: [log, ...(c.statusLogs || [])],
+                    specialMemo: [newMemo, ...(c.specialMemo || [])]
+                }, `📞 [${c.customerName}] 건이 '연락안받음'으로 처리되었습니다.${selectedReminderSlot ? ` (${selectedReminderSlot.label} 재통화 알람 등록)` : ''}`);
+
+            } else if (activeTab === 'reject') {
+                // 4. 진행 불가 (기각): 1차 상태 '진행불가', 2차/3차 상태는 초기화 + dropOffReason 저장
+                const log = {
+                    logId: Date.now().toString(),
+                    fromStatus: c.status,
+                    toStatus: '진행불가',
+                    changedAt: nowIso,
+                    changedBy: actor,
+                    memo: `사무장 기각/불가 판정: ${selectedRejectReason}`
+                };
+                const memoContent = `[사무장 불가판정] 사유: ${selectedRejectReason}${customRejectNote ? `\n상세: ${customRejectNote}` : ''}`;
+                const newMemo: MemoItem = {
+                    id: Date.now().toString(),
+                    createdAt: nowIso,
+                    content: memoContent
+                };
+
                 await onDecision({
                     status: '진행불가',
-                    secondaryStatus: '기각위험',
-                    tertiaryStatus: selectedRejectReason.substring(0, 20),
+                    secondaryStatus: undefined,
+                    tertiaryStatus: undefined,
                     dropOffReason: selectedRejectReason,
                     dropOffDetail: customRejectNote || undefined,
-                    specialMemo: [...(c.specialMemo || []), newMemo]
+                    statusLogs: [log, ...(c.statusLogs || [])],
+                    specialMemo: [newMemo, ...(c.specialMemo || [])]
                 }, `🛑 [${c.customerName}] 건이 '진행불가'로 처리되었습니다.`);
             }
+
             onClose();
         } catch (err) {
             console.error('사무장 판정 실패:', err);
@@ -146,23 +253,23 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh]"
             >
                 {/* 헤더 */}
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex items-center justify-between">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
                             <Scale size={20} />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="font-extrabold text-base tracking-tight">사무장 사건 심사 & 수임 판정</h3>
-                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                                    사무장 전용
+                                <h3 className="font-extrabold text-base tracking-tight">사무장 사건 심사 & 진행 관리</h3>
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
+                                    사무장 전용 관제
                                 </span>
                             </div>
                             <p className="text-xs text-indigo-200/80 mt-0.5">
-                                1차 문진 데이터 기반 심층 검토 및 수임 계약 / 보완 요청 / 불가 판정
+                                인계 사건 직접 진행 · 연락안받음 재시도 · 수임 계약 완료 및 기각 종결
                             </p>
                         </div>
                     </div>
@@ -176,7 +283,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
 
                 {/* 본문 스크롤 영역 */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
-                    {/* 1. 고객 문진 요약 카드 (Twenty CRM / LawWare 벤치마킹) */}
+                    {/* 1. 고객 문진 요약 카드 */}
                     <div className="bg-slate-50 dark:bg-gray-900/60 rounded-xl border border-slate-200 dark:border-gray-700/80 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200 dark:border-gray-700 text-xs">
                             <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-gray-100 text-sm">
@@ -235,67 +342,201 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             </div>
                         </div>
 
-                        {/* 1차 상담원 메모 요약 */}
+                        {/* 1차 상담원 최근 상담 메모 */}
                         {c.specialMemo && c.specialMemo.length > 0 && (
                             <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-gray-700 text-xs">
                                 <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-tight block mb-1">
                                     1차 상담원 통화 요약 메모
                                 </span>
-                                <p className="text-slate-700 dark:text-gray-300 line-clamp-2 bg-white/70 dark:bg-gray-800/60 p-2 rounded-lg border border-slate-200/60 dark:border-gray-700/60">
+                                <p className="text-slate-700 dark:text-gray-300 line-clamp-2 bg-white/70 dark:bg-gray-800/60 p-2 rounded-lg border border-slate-200/60 dark:border-gray-700/60 font-medium">
                                     {c.specialMemo[c.specialMemo.length - 1]?.content || '메모 없음'}
                                 </p>
                             </div>
                         )}
                     </div>
 
-                    {/* 2. 판정 액션 탭 선택 (수임 완료 / 보완 요청 / 진행 불가) */}
+                    {/* 2. 4대 실무 판정 탭 선택 (사무장 직접진행 / 연락안받음 / 수임완료 / 진행불가) */}
                     <div>
                         <label className="text-xs font-bold text-slate-700 dark:text-gray-300 mb-2 block">
-                            사무장 심사 판정 선택
+                            사무장 진행 단계 및 판정 선택
                         </label>
-                        <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-700">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-100 dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-700">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('progress')}
+                                className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                    activeTab === 'progress'
+                                        ? 'bg-indigo-600 text-white shadow-md'
+                                        : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200'
+                                }`}
+                            >
+                                <Briefcase size={14} />
+                                <span>사무장 직접 진행</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('missed')}
+                                className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                    activeTab === 'missed'
+                                        ? 'bg-amber-600 text-white shadow-md'
+                                        : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200'
+                                }`}
+                            >
+                                <PhoneMissed size={14} />
+                                <span>연락안받음/부재</span>
+                            </button>
+
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('contract')}
-                                className={`py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                                     activeTab === 'contract'
                                         ? 'bg-emerald-600 text-white shadow-md'
                                         : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200'
                                 }`}
                             >
-                                <CheckCircle2 size={15} />
+                                <CheckCircle2 size={14} />
                                 <span>수임 계약 체결</span>
                             </button>
 
                             <button
                                 type="button"
-                                onClick={() => setActiveTab('rework')}
-                                className={`py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                                    activeTab === 'rework'
-                                        ? 'bg-amber-600 text-white shadow-md'
-                                        : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200'
-                                }`}
-                            >
-                                <RotateCcw size={15} />
-                                <span>상담원 보완 요청</span>
-                            </button>
-
-                            <button
-                                type="button"
                                 onClick={() => setActiveTab('reject')}
-                                className={`py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                className={`py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                                     activeTab === 'reject'
                                         ? 'bg-rose-600 text-white shadow-md'
                                         : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200'
                                 }`}
                             >
-                                <XCircle size={15} />
+                                <XCircle size={14} />
                                 <span>진행 불가 (기각)</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* 3. 탭별 세부 입력 폼 */}
+                    {/* 3. 탭별 입력 폼 */}
+                    {/* A. 사무장 직접 진행 관리 (기존 2차 상태 100% 연동) */}
+                    {activeTab === 'progress' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/40 rounded-xl p-4 space-y-3.5"
+                        >
+                            <div className="flex items-center gap-2 text-indigo-900 dark:text-indigo-300 font-bold text-xs">
+                                <Briefcase size={16} />
+                                <span>인계 건의 99%는 사무장이 직접 서류 수집 및 약정 단계를 진행합니다.</span>
+                            </div>
+
+                            <div>
+                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
+                                    사무장 진행 단계 선택 (관리자 설정 2차 상태 목록 연동)
+                                </label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    {availableSecondary.map((status) => (
+                                        <button
+                                            key={status}
+                                            type="button"
+                                            onClick={() => setSelectedSecondary(status)}
+                                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center justify-between ${
+                                                selectedSecondary === status
+                                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            <span>{status}</span>
+                                            {selectedSecondary === status && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                        세부 관리 항목 / 3차 상태 (선택)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={customTertiary}
+                                        onChange={(e) => setCustomTertiary(e.target.value)}
+                                        placeholder="예: 서초 주사무소, 부양가족 등본 발급"
+                                        className="w-full text-xs font-medium px-3 py-2 rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 text-slate-800 dark:text-gray-100"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                        사무장 진행 메모 (선택)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={progressDetail}
+                                        onChange={(e) => setProgressDetail(e.target.value)}
+                                        placeholder="예: 목요일 오후 3시 방문 상담 확정"
+                                        className="w-full text-xs font-medium px-3 py-2 rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 text-slate-800 dark:text-gray-100"
+                                    />
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* B. 인계 후 연락 안받음 (부재/재시도) ★대표님 지침 핵심 */}
+                    {activeTab === 'missed' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4 space-y-3.5"
+                        >
+                            <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-xs">
+                                <PhoneMissed size={16} />
+                                <span>고객이 전화를 안 받거나 연락 두절된 건입니다. 2차 상태가 '연락안받음'으로 관리됩니다.</span>
+                            </div>
+
+                            <div>
+                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
+                                    골든타임 재통화 약속 시간 (원클릭 등록)
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {getMissedReminderSlots().map((slot, idx) => (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => setSelectedReminderSlot(slot)}
+                                            className={`px-3 py-2.5 rounded-lg text-xs font-bold border transition-all text-left flex items-center justify-between ${
+                                                selectedReminderSlot?.label === slot.label
+                                                    ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                                                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            <div className="flex flex-col">
+                                                <span>{slot.label}</span>
+                                                <span className={`text-[10px] font-mono ${selectedReminderSlot?.label === slot.label ? 'text-amber-100' : 'text-slate-400'}`}>
+                                                    {slot.datetime.substring(11)}
+                                                </span>
+                                            </div>
+                                            {selectedReminderSlot?.label === slot.label && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                    부재 특이사항 비고
+                                </label>
+                                <input
+                                    type="text"
+                                    value={missedNote}
+                                    onChange={(e) => setMissedNote(e.target.value)}
+                                    placeholder="예: 연결음 10회 가고 안 받음, 카톡 또는 문자 남김"
+                                    className="w-full text-xs font-medium px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-700 bg-white dark:bg-gray-800 text-slate-800 dark:text-gray-100"
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* C. 수임 계약 체결 (1차 상태: '계약 완료') */}
                     {activeTab === 'contract' && (
                         <motion.div
                             initial={{ opacity: 0, y: 5 }}
@@ -304,7 +545,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         >
                             <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
                                 <ShieldCheck size={16} />
-                                <span>계약 완료 시 1차 상담원에게 수임 인센티브가 자동 반영됩니다.</span>
+                                <span>계약 완료 시 1차 상담원에게 수임 실적 및 인센티브가 확정 연동됩니다.</span>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -349,8 +590,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                                         value={contractAt}
                                         onChange={(e) => setContractAt(e.target.value)}
                                         className="w-full text-xs font-medium px-3 py-2 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-gray-800 text-slate-800 dark:text-gray-100"
-                                    >
-                                    </input>
+                                    />
                                 </div>
                             </div>
 
@@ -369,55 +609,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         </motion.div>
                     )}
 
-                    {activeTab === 'rework' && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4 space-y-3.5"
-                        >
-                            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs">
-                                <AlertTriangle size={16} />
-                                <span>1차 상담원에게 재통화 및 서류 보완 미션이 전달됩니다.</span>
-                            </div>
-
-                            <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
-                                    보완 필요 사유 (프리셋 선택)
-                                </label>
-                                <div className="space-y-1.5">
-                                    {REWORK_PRESETS.map((reason, idx) => (
-                                        <button
-                                            key={idx}
-                                            type="button"
-                                            onClick={() => setSelectedReworkReason(reason)}
-                                            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium border transition-colors flex items-center justify-between ${
-                                                selectedReworkReason === reason
-                                                    ? 'bg-amber-100 dark:bg-amber-900/50 border-amber-400 text-amber-900 dark:text-amber-200 font-bold'
-                                                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:bg-slate-50'
-                                            }`}
-                                        >
-                                            <span>{reason}</span>
-                                            {selectedReworkReason === reason && <Check size={14} className="text-amber-600" />}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
-                                    상담원 전달 상세 지시 사항 (선택)
-                                </label>
-                                <textarea
-                                    value={customReworkNote}
-                                    onChange={(e) => setCustomReworkNote(e.target.value)}
-                                    rows={2}
-                                    placeholder="예: 고객님께 급여통장 최근 3개월 입금내역 사진 찍어서 카톡 전송 요청해주세요."
-                                    className="w-full text-xs p-2.5 rounded-lg border border-amber-200 dark:border-amber-700 bg-white dark:bg-gray-800 text-slate-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                                />
-                            </div>
-                        </motion.div>
-                    )}
-
+                    {/* D. 진행 불가 / 기각 (1차 상태: '진행불가') */}
                     {activeTab === 'reject' && (
                         <motion.div
                             initial={{ opacity: 0, y: 5 }}
@@ -426,7 +618,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         >
                             <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-xs">
                                 <AlertCircle size={16} />
-                                <span>사건이 '진행불가' 상태로 변경되며, 상담원 오문진 방지 통계에 반영됩니다.</span>
+                                <span>사건이 '진행불가' 상태로 변경되며, 관리자 이탈 분석 통계에 자동 집계됩니다.</span>
                             </div>
 
                             <div>
@@ -486,9 +678,11 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg flex items-center gap-1.5 transition-all active:scale-95 ${
                             activeTab === 'contract'
                                 ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-                                : activeTab === 'rework'
-                                    ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/30'
-                                    : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
+                                : activeTab === 'progress'
+                                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30'
+                                    : activeTab === 'missed'
+                                        ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/30'
+                                        : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
                         }`}
                     >
                         {submitting ? (
@@ -496,8 +690,9 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         ) : (
                             <>
                                 <span>
+                                    {activeTab === 'progress' && '사무장 진행 단계 저장'}
+                                    {activeTab === 'missed' && '연락안받음 저장 및 재통화 알람 등록'}
                                     {activeTab === 'contract' && '수임 확정 저장 및 인센티브 반영'}
-                                    {activeTab === 'rework' && '상담원 보완 요청 전송'}
                                     {activeTab === 'reject' && '진행 불가 판정 처리'}
                                 </span>
                                 <ArrowRight size={14} />

@@ -301,6 +301,9 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         {c.status === '사무장 접수' && (
                             <select aria-label="2차 상태" className={`${sel} border-purple-300 text-purple-800`} value={c.secondaryStatus || ''} onChange={(e) => onSecondaryStatusChangeStart(e.target.value || null)}>
                                 <option value="">2차 상태</option>
+                                {c.secondaryStatus && !secondaryStatuses.includes(c.secondaryStatus) && (
+                                    <option value={c.secondaryStatus}>{c.secondaryStatus}</option>
+                                )}
                                 {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         )}

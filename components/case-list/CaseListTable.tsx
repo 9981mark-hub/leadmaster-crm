@@ -17,7 +17,9 @@ import { useActiveCall } from '../../contexts/ActiveCallContext';
 const SECONDARY_STATUS_COLOR_MAP: Record<string, string> = {
     '고객취소': 'text-red-400',
     '진행불가': 'text-red-400',
-    '연락안받음': 'text-orange-400',
+    '연락안받음': 'text-orange-500 font-bold',
+    '서류보완요청': 'text-amber-500 font-bold',
+    '사무장부재': 'text-orange-500 font-bold',
     '출장예약': 'text-green-400',
     '방문예약': 'text-blue-400',
     '고민중': 'text-yellow-400',

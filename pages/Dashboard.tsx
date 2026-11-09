@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { KPICard } from '../components/ui/KPICard';
 import { CardSkeleton } from '../components/Skeleton';
 import RevenueWidget from '../components/RevenueWidget';
+import { ParalegalPipelineWidget } from '../components/dashboard/ParalegalPipelineWidget';
 import AiUsageWidget from '../components/AiUsageWidget';
 import { fetchDetailedAiUsage, DetailedAiUsage } from '../services/aiUsage';
 import { useAuth } from '../contexts/AuthContext';
@@ -270,6 +271,9 @@ export default function Dashboard() {
 
       {/* Revenue KPI Widget (관리자 전용: 회사 매출/수수료/미수금) */}
       {isAdmin && <RevenueWidget cases={cases} partners={partners} />}
+
+      {/* 사무장 인계 & 수임 파이프라인 관제 센터 (관리자 전용: 전환율 & 미컨택 관제) */}
+      {isAdmin && <ParalegalPipelineWidget cases={cases} isAdmin={isAdmin} />}
 
       {/* Gemini AI 실시간 사용량 & 비용 분석 위젯 (관리자 전용: AI 호출비용) */}
       {isAdmin && <AiUsageWidget />}
