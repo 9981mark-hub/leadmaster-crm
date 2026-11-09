@@ -20,6 +20,7 @@ class SpeechService {
   private isListening = false;
   private currentAudio: HTMLAudioElement | null = null;
   private useNeuralVoice = true; // 기본적으로 고음질 Neural Voice 사용
+  public lastEngineUsed: 'neural' | 'browser' = 'neural';
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -44,19 +45,24 @@ class SpeechService {
   }
 
   // 통합 발화 메서드 (Neural Voice 우선 시도 -> 실패 시 브라우저 Web Speech로 자동 Fallback)
-  public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<void> {
+  public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<'neural' | 'browser'> {
     this.stopSpeaking();
 
     if (this.useNeuralVoice) {
       try {
         const success = await this.speakNeural(text, options);
-        if (success) return;
+        if (success) {
+          this.lastEngineUsed = 'neural';
+          return 'neural';
+        }
       } catch (e) {
         console.warn('Neural voice playback failed, falling back to Web Speech API:', e);
       }
     }
 
-    return this.speakBrowser(text, options);
+    this.lastEngineUsed = 'browser';
+    await this.speakBrowser(text, options);
+    return 'browser';
   }
 
   // Microsoft Edge Neural Voice 재생 (실제 사람 통화 음질)

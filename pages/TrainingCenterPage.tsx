@@ -589,6 +589,28 @@ export default function TrainingCenterPage() {
                 </div>
               )}
             </div>
+
+            {/* Test Voice Button */}
+            <button
+              type="button"
+              onClick={async () => {
+                const sampleText = selectedPersona.initialMessage;
+                const engine = await speechService.speak(sampleText, {
+                  ...selectedPersona.speechOptions,
+                  rate: (selectedPersona.speechOptions.rate || 1.25) * speedMultiplier,
+                  neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
+                });
+                if (engine === 'neural') {
+                  showToast('🌟 실제 사람 신경망 목소리(Microsoft Edge Neural)로 재생되었습니다.', 'success');
+                } else {
+                  showToast('⚠️ 브라우저 기본 로컬 엔진(기계음)으로 재생되었습니다. [Edge Neural ON]을 확인해주세요.', 'info');
+                }
+              }}
+              className="w-full py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-blue-200/60 dark:border-blue-800/40"
+            >
+              <Volume2 className="w-3.5 h-3.5" />
+              🔊 {selectedPersona.customerName} 목소리 1초 미리듣기
+            </button>
           </div>
         </div>
 
