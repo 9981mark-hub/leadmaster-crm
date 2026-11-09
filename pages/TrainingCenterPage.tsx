@@ -62,6 +62,8 @@ export default function TrainingCenterPage() {
   const [isMicActive, setIsMicActive] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [useNeuralVoice, setUseNeuralVoice] = useState(true);
+  const [isPhoneFilterEnabled, setIsPhoneFilterEnabled] = useState(true);
+  const [activationUrl, setActivationUrl] = useState<string | null>(null);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.1); // 기본 +10% 가속 템포
   const [isAiReplying, setIsAiReplying] = useState(false);
 
@@ -194,7 +196,7 @@ export default function TrainingCenterPage() {
     }, 1200);
   };
 
-  // Toggle Microphone (스마트 침묵 감지: 750ms 침묵 시 즉시 전송)
+  // Toggle Microphone (스마트 침묵 감지: 500ms(0.5초) 침묵 시 즉시 전송)
   const toggleMicrophone = (forceStart?: boolean) => {
     const shouldStart = forceStart !== undefined ? forceStart : !isMicActive;
 
@@ -225,7 +227,7 @@ export default function TrainingCenterPage() {
             setInterimText(transcript);
             interimTextRef.current = transcript;
 
-            // [핵심 가속] 스마트 침묵 감지: 발화 멈춘 후 750ms 지나면 브라우저 대기 없이 즉시 전송!
+            // [핵심 가속] 스마트 침묵 감지: 발화 멈춘 후 500ms(0.5초) 지나면 브라우저 대기 없이 즉시 전송!
             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = setTimeout(() => {
               const text = interimTextRef.current.trim();
@@ -234,7 +236,7 @@ export default function TrainingCenterPage() {
                 interimTextRef.current = '';
                 handleSendAgentMessage(text);
               }
-            }, 750);
+            }, 500);
           }
         },
         (err) => {
@@ -515,7 +517,7 @@ export default function TrainingCenterPage() {
 
             {/* Neural Voice Toggle */}
             <div className="flex items-center justify-between text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-[11px]">고음질 사람 목소리</span>
+              <span className="font-medium text-[11px]">Google Neural2 고음질</span>
               <button
                 onClick={() => {
                   const next = !useNeuralVoice;
@@ -529,7 +531,31 @@ export default function TrainingCenterPage() {
                 }`}
               >
                 <Sparkles className="w-3 h-3" />
-                {useNeuralVoice ? 'Edge Neural ON' : '기본 브라우저'}
+                {useNeuralVoice ? 'Google Neural2 ON' : '기본 브라우저'}
+              </button>
+            </div>
+
+            {/* Telephone Filter Toggle */}
+            <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col">
+                <span className="font-medium text-[11px] flex items-center gap-1">
+                  📞 전화 수화기 음질 필터
+                </span>
+                <span className="text-[9px] text-gray-400">실제 스마트폰 통화 주파수(300~3400Hz) 모사</span>
+              </div>
+              <button
+                onClick={() => {
+                  const next = !isPhoneFilterEnabled;
+                  setIsPhoneFilterEnabled(next);
+                  speechService.setUsePhoneFilter(next);
+                }}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                  isPhoneFilterEnabled
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                }`}
+              >
+                {isPhoneFilterEnabled ? '필터 ON' : '원음'}
               </button>
             </div>
 
@@ -574,7 +600,7 @@ export default function TrainingCenterPage() {
               {useNeuralVoice ? (
                 <div>
                   <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center justify-between">
-                    <span>🌟 Microsoft Edge Neural Voice</span>
+                    <span>🌟 Google Cloud Neural2 Voice</span>
                     <span className="font-mono text-blue-700 dark:text-blue-300 font-bold">
                       {getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier)}
                     </span>
@@ -590,6 +616,27 @@ export default function TrainingCenterPage() {
               )}
             </div>
 
+            {/* Activation Banner if needed */}
+            {activationUrl && (
+              <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-[11px] space-y-1">
+                <div className="font-bold flex items-center gap-1 text-amber-800 dark:text-amber-300">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Google Cloud TTS 1초 활성화 필요
+                </div>
+                <p className="text-[10px] leading-tight text-amber-700 dark:text-amber-400">
+                  구글 콘솔에서 버튼 한 번만 클릭하면 월 100만 자 무료 고음질 신경망 보이스가 즉시 열립니다.
+                </p>
+                <a
+                  href={activationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-1 px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] transition-colors"
+                >
+                  🔗 구글 콘솔에서 [사용] 클릭하기 →
+                </a>
+              </div>
+            )}
+
             {/* Test Voice Button */}
             <button
               type="button"
@@ -601,9 +648,15 @@ export default function TrainingCenterPage() {
                   neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
                 });
                 if (engine === 'neural') {
-                  showToast('🌟 실제 사람 신경망 목소리(Microsoft Edge Neural)로 재생되었습니다.', 'success');
+                  setActivationUrl(null);
+                  showToast('🌟 실제 사람 신경망 목소리(Google Cloud Neural2 + 전화 수화기 필터)로 재생되었습니다.', 'success');
                 } else {
-                  showToast('⚠️ 브라우저 기본 로컬 엔진(기계음)으로 재생되었습니다. [Edge Neural ON]을 확인해주세요.', 'info');
+                  if (speechService.lastActivationUrl) {
+                    setActivationUrl(speechService.lastActivationUrl);
+                    showToast('⚠️ Google Cloud TTS API 활성화가 필요합니다. 좌측 패널의 [사용] 링크를 클릭해주세요.', 'warning');
+                  } else {
+                    showToast('⚠️ 브라우저 기본 로컬 엔진(전화기 필터 적용)으로 재생되었습니다.', 'info');
+                  }
                 }
               }}
               className="w-full py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-blue-200/60 dark:border-blue-800/40"
@@ -689,7 +742,7 @@ export default function TrainingCenterPage() {
                 <div className="flex items-center gap-2">
                   <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium border border-emerald-200/60 dark:border-emerald-800/40">
                     <Zap className="w-3 h-3 text-emerald-500" />
-                    0.7초 스마트 침묵 감지
+                    0.5초 스마트 침묵 감지
                   </span>
                   <span className="text-[11px] text-gray-400">
                     단축키: [Space] 즉시 대답
@@ -745,7 +798,7 @@ export default function TrainingCenterPage() {
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold animate-pulse flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
-                        듣고 있는 중 (0.7초 후 자동 전송)
+                        듣고 있는 중 (0.5초 후 자동 전송)
                       </span>
                       <button
                         type="button"

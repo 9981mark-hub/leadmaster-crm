@@ -1,26 +1,30 @@
 // ============================================
-// Web Speech API & Edge Neural Voice 음성 서비스 (2026-11-09)
-// Microsoft Edge Neural Voice (고음질 사람 음성) + Web Speech API (Fallback)
+// Web Speech API & Google Cloud Neural2 Voice 음성 서비스 (2026-11-09)
+// Google Cloud Text-to-Speech (Neural2 고음질) + 전화 수화기 필터 (Phone EQ) + Web Speech API (Fallback)
 // ============================================
 
 export interface SpeechVoiceOptions {
   pitch?: number; // Web Speech용 (0.9 ~ 1.1)
   rate?: number;  // Web Speech용 (1.0 ~ 1.5)
   gender?: 'male' | 'female';
-  neuralVoice?: string; // Edge Neural Voice ID (예: ko-KR-InJoonNeural, ko-KR-SunHiNeural, ko-KR-HyunsuMultilingualNeural)
-  neuralRate?: string;  // Edge Neural 속도 (예: +0%, +15%, -10%)
-  neuralPitch?: string; // Edge Neural 피치 (예: +0Hz, +2Hz, -5Hz)
+  neuralVoice?: string; // Google Neural2/Wavenet Voice ID (예: ko-KR-Neural2-C, ko-KR-Neural2-A, ko-KR-Wavenet-C)
+  neuralRate?: string;  // 속도 (예: +0%, +10%, +15%)
+  neuralPitch?: string; // 피치 (예: +0Hz, -3Hz)
 }
 
-const EDGE_TTS_ENDPOINT = 'https://cenksfblktflfurxjmtv.supabase.co/functions/v1/edge-tts';
+const TTS_ENDPOINT = 'https://cenksfblktflfurxjmtv.supabase.co/functions/v1/edge-tts';
 
 class SpeechService {
   private synth: SpeechSynthesis | null = null;
   private recognition: any = null;
   private isListening = false;
   private currentAudio: HTMLAudioElement | null = null;
+  private audioCtx: AudioContext | null = null;
+  private mediaSourceNode: MediaElementAudioSourceNode | null = null;
   private useNeuralVoice = true; // 기본적으로 고음질 Neural Voice 사용
+  private usePhoneFilter = true; // 실제 전화 통화 수화기 음질 필터 (300Hz ~ 3400Hz Bandpass)
   public lastEngineUsed: 'neural' | 'browser' = 'neural';
+  public lastActivationUrl: string | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -35,6 +39,15 @@ class SpeechService {
 
   public getUseNeuralVoice(): boolean {
     return this.useNeuralVoice;
+  }
+
+  // 전화 수화기 필터 활성화 여부 설정/조회
+  public setUsePhoneFilter(enable: boolean): void {
+    this.usePhoneFilter = enable;
+  }
+
+  public getUsePhoneFilter(): boolean {
+    return this.usePhoneFilter;
   }
 
   // 사용 가능한 한국어 브라우저 음성 목록
@@ -65,7 +78,7 @@ class SpeechService {
     return 'browser';
   }
 
-  // Microsoft Edge Neural Voice 재생 (실제 사람 통화 음질)
+  // Google Cloud Neural2 Voice 재생 (고음질 사람 통화 음질)
   public async speakNeural(text: string, options: SpeechVoiceOptions = {}): Promise<boolean> {
     const cleanText = text
       .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
@@ -77,14 +90,14 @@ class SpeechService {
 
     if (!cleanText) return true;
 
-    // 보이스 기본값: 성별 기반 또는 인준(남성) 기본
+    // 보이스 기본값: 성별 기반 또는 남성(Neural2-C) 기본
     let voice = options.neuralVoice;
     if (!voice) {
-      voice = options.gender === 'female' ? 'ko-KR-SunHiNeural' : 'ko-KR-InJoonNeural';
+      voice = options.gender === 'female' ? 'ko-KR-Neural2-A' : 'ko-KR-Neural2-C';
     }
 
     try {
-      const response = await fetch(EDGE_TTS_ENDPOINT, {
+      const response = await fetch(TTS_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,16 +109,26 @@ class SpeechService {
       });
 
       if (!response.ok) {
-        console.warn('Edge TTS endpoint returned status:', response.status);
+        const errJson = await response.json().catch(() => ({}));
+        if (errJson?.activationUrl) {
+          this.lastActivationUrl = errJson.activationUrl;
+        }
+        console.warn('TTS endpoint returned status:', response.status, errJson);
         return false;
       }
 
+      this.lastActivationUrl = null;
       const blob = await response.blob();
       const audioUrl = URL.createObjectURL(blob);
 
       return new Promise<boolean>((resolve) => {
         const audio = new Audio(audioUrl);
         this.currentAudio = audio;
+
+        // 전화 수화기 통화 질감 필터 적용 (Web Audio API)
+        if (this.usePhoneFilter) {
+          this.applyPhoneAudioPipeline(audio);
+        }
 
         audio.onended = () => {
           URL.revokeObjectURL(audioUrl);
@@ -134,8 +157,64 @@ class SpeechService {
         });
       });
     } catch (err) {
-      console.warn('Failed to fetch Edge TTS audio:', err);
+      console.warn('Failed to fetch TTS audio:', err);
       return false;
+    }
+  }
+
+  // Web Audio API를 활용한 실제 전화 수화기 통화 필터 (Telephone Bandpass EQ)
+  private applyPhoneAudioPipeline(audio: HTMLAudioElement): void {
+    try {
+      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtxClass) return;
+
+      if (!this.audioCtx) {
+        this.audioCtx = new AudioCtxClass();
+      }
+
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+
+      // 이전 연결 해제
+      if (this.mediaSourceNode) {
+        try { this.mediaSourceNode.disconnect(); } catch (_) {}
+      }
+
+      const source = this.audioCtx.createMediaElementSource(audio);
+      this.mediaSourceNode = source;
+
+      // 1. 전화 통화 저주파 컷 (Highpass 300Hz)
+      const highpass = this.audioCtx.createBiquadFilter();
+      highpass.type = 'highpass';
+      highpass.frequency.value = 320;
+      highpass.Q.value = 0.8;
+
+      // 2. 전화 통화 고주파 컷 (Lowpass 3400Hz - PSTN/VoLTE 대역 규격)
+      const lowpass = this.audioCtx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 3400;
+      lowpass.Q.value = 0.8;
+
+      // 3. 수화기 특유의 중역대 미세 부스트 (Peaking 1400Hz)
+      const midBoost = this.audioCtx.createBiquadFilter();
+      midBoost.type = 'peaking';
+      midBoost.frequency.value = 1400;
+      midBoost.Q.value = 1.2;
+      midBoost.gain.value = 2.5;
+
+      // 4. 출력 게인 조정 (볼륨 밸런스)
+      const gainNode = this.audioCtx.createGain();
+      gainNode.gain.value = 1.25;
+
+      // 체인 연결: Source -> Highpass -> Lowpass -> MidBoost -> Gain -> Destination
+      source.connect(highpass);
+      highpass.connect(lowpass);
+      lowpass.connect(midBoost);
+      midBoost.connect(gainNode);
+      gainNode.connect(this.audioCtx.destination);
+    } catch (e) {
+      console.warn('Could not apply phone audio filter, playing original audio:', e);
     }
   }
 
@@ -172,15 +251,17 @@ class SpeechService {
 
       const koVoices = this.getKoreanVoices();
       if (koVoices.length > 0) {
+        // 가장 자연스러운 음성(Natural, Google 등)을 1순위로 탐색
         const naturalVoice = koVoices.find(v => 
           v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Google')
         );
         
         if (options.gender === 'male') {
-          const maleVoice = koVoices.find(v => v.name.toLowerCase().includes('male') || v.name.includes('남성'));
+          const maleVoice = koVoices.find(v => v.name.toLowerCase().includes('male') || v.name.includes('남성') || v.name.includes('InJoon'));
           utterance.voice = maleVoice || naturalVoice || koVoices[0];
         } else {
-          utterance.voice = naturalVoice || koVoices[0];
+          const femaleVoice = koVoices.find(v => v.name.toLowerCase().includes('female') || v.name.includes('여성') || v.name.includes('SunHi'));
+          utterance.voice = femaleVoice || naturalVoice || koVoices[0];
         }
       }
 
