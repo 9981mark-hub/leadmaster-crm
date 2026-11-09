@@ -1,18 +1,25 @@
 // ============================================
-// Web Speech API STT/TTS 음성 서비스 (2026-11-09)
-// 브라우저 기본 내장 음성 엔진 활용 -> 외부 유료 API 비용 0원
+// Web Speech API & Edge Neural Voice 음성 서비스 (2026-11-09)
+// Microsoft Edge Neural Voice (고음질 사람 음성) + Web Speech API (Fallback)
 // ============================================
 
 export interface SpeechVoiceOptions {
-  pitch?: number; // 0.1 ~ 2.0 (기본 1.0, 50~60대는 0.75~0.85 추천)
-  rate?: number;  // 0.1 ~ 10.0 (기본 1.0, 급한 성격은 1.15 추천)
+  pitch?: number; // Web Speech용 (0.9 ~ 1.1)
+  rate?: number;  // Web Speech용 (1.0 ~ 1.5)
   gender?: 'male' | 'female';
+  neuralVoice?: string; // Edge Neural Voice ID (예: ko-KR-InJoonNeural, ko-KR-SunHiNeural, ko-KR-HyunsuMultilingualNeural)
+  neuralRate?: string;  // Edge Neural 속도 (예: +0%, +15%, -10%)
+  neuralPitch?: string; // Edge Neural 피치 (예: +0Hz, +2Hz, -5Hz)
 }
+
+const EDGE_TTS_ENDPOINT = 'https://cenksfblktflfurxjmtv.supabase.co/functions/v1/edge-tts';
 
 class SpeechService {
   private synth: SpeechSynthesis | null = null;
   private recognition: any = null;
   private isListening = false;
+  private currentAudio: HTMLAudioElement | null = null;
+  private useNeuralVoice = true; // 기본적으로 고음질 Neural Voice 사용
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -20,15 +27,112 @@ class SpeechService {
     }
   }
 
-  // 사용 가능한 한국어 음성 목록 가져오기
+  // Neural Voice 활성화 여부 설정/조회
+  public setUseNeuralVoice(enable: boolean): void {
+    this.useNeuralVoice = enable;
+  }
+
+  public getUseNeuralVoice(): boolean {
+    return this.useNeuralVoice;
+  }
+
+  // 사용 가능한 한국어 브라우저 음성 목록
   public getKoreanVoices(): SpeechSynthesisVoice[] {
     if (!this.synth) return [];
     const voices = this.synth.getVoices();
     return voices.filter(v => v.lang.startsWith('ko') || v.lang === 'ko_KR');
   }
 
-  // 텍스트를 음성으로 발화 (TTS)
-  public speak(text: string, options: SpeechVoiceOptions = {}): Promise<void> {
+  // 통합 발화 메서드 (Neural Voice 우선 시도 -> 실패 시 브라우저 Web Speech로 자동 Fallback)
+  public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<void> {
+    this.stopSpeaking();
+
+    if (this.useNeuralVoice) {
+      try {
+        const success = await this.speakNeural(text, options);
+        if (success) return;
+      } catch (e) {
+        console.warn('Neural voice playback failed, falling back to Web Speech API:', e);
+      }
+    }
+
+    return this.speakBrowser(text, options);
+  }
+
+  // Microsoft Edge Neural Voice 재생 (실제 사람 통화 음질)
+  public async speakNeural(text: string, options: SpeechVoiceOptions = {}): Promise<boolean> {
+    const cleanText = text
+      .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+      .replace(/[\.\.\.~"']/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) return true;
+
+    // 보이스 기본값: 성별 기반 또는 인준(남성) 기본
+    let voice = options.neuralVoice;
+    if (!voice) {
+      voice = options.gender === 'female' ? 'ko-KR-SunHiNeural' : 'ko-KR-InJoonNeural';
+    }
+
+    try {
+      const response = await fetch(EDGE_TTS_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanText,
+          voice,
+          rate: options.neuralRate || 'default',
+          pitch: options.neuralPitch || 'default',
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn('Edge TTS endpoint returned status:', response.status);
+        return false;
+      }
+
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+
+      return new Promise<boolean>((resolve) => {
+        const audio = new Audio(audioUrl);
+        this.currentAudio = audio;
+
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          resolve(true);
+        };
+
+        audio.onerror = (err) => {
+          console.warn('Audio playback error:', err);
+          URL.revokeObjectURL(audioUrl);
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          resolve(false);
+        };
+
+        audio.play().catch((playErr) => {
+          console.warn('Audio play() failed:', playErr);
+          URL.revokeObjectURL(audioUrl);
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          resolve(false);
+        });
+      });
+    } catch (err) {
+      console.warn('Failed to fetch Edge TTS audio:', err);
+      return false;
+    }
+  }
+
+  // 브라우저 내장 Web Speech API 발화 (Fallback)
+  public speakBrowser(text: string, options: SpeechVoiceOptions = {}): Promise<void> {
     return new Promise((resolve) => {
       if (!this.synth) {
         console.warn('SpeechSynthesis is not supported in this browser.');
@@ -36,11 +140,6 @@ class SpeechService {
         return;
       }
 
-      // 이전 발화 취소
-      this.synth.cancel();
-
-      // [자연스러운 한국어 발화 튜닝]
-      // 괄호 지문 (예: (한숨), [화를 내며]), 줄임표(...), 따옴표 등 어색한 침묵을 유발하는 기호 제거
       const cleanText = text
         .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
         .replace(/[\.\.\.~"']/g, ' ')
@@ -55,18 +154,14 @@ class SpeechService {
       const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = 'ko-KR';
       
-      // 피치 왜곡 방지 (0.9 ~ 1.08 범위 유지하여 기계음/괴물소리 방지)
       const rawPitch = options.pitch ?? 1.0;
       utterance.pitch = Math.max(0.9, Math.min(1.1, rawPitch));
       
-      // 실제 한국인 통화 템포로 기본 속도 상향 (기본 1.25배속)
       const rawRate = options.rate ?? 1.25;
       utterance.rate = Math.max(1.0, Math.min(1.6, rawRate));
 
-      // 한국어 고음질/자연스러운 음성 우선 매칭
       const koVoices = this.getKoreanVoices();
       if (koVoices.length > 0) {
-        // 1순위: Google 또는 Natural/Online 표기 음성
         const naturalVoice = koVoices.find(v => 
           v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Google')
         );
@@ -82,17 +177,31 @@ class SpeechService {
       utterance.onend = () => resolve();
       utterance.onerror = (e) => {
         console.warn('SpeechSynthesis error:', e);
-        resolve(); // 에러 발생해도 멈추지 않고 진행
+        resolve();
       };
 
       this.synth.speak(utterance);
     });
   }
 
-  // 발화 중단
+  // 발화 즉시 중단 (신경망 오디오 및 브라우저 TTS 모두 정지)
   public stopSpeaking(): void {
+    if (this.currentAudio) {
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+      } catch (e) {
+        // 무시
+      }
+      this.currentAudio = null;
+    }
+
     if (this.synth) {
-      this.synth.cancel();
+      try {
+        this.synth.cancel();
+      } catch (e) {
+        // 무시
+      }
     }
   }
 

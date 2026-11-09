@@ -60,6 +60,7 @@ export default function TrainingCenterPage() {
   const [interimText, setInterimText] = useState('');
   const [isMicActive, setIsMicActive] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
+  const [useNeuralVoice, setUseNeuralVoice] = useState(true);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.25);
   const [isAiReplying, setIsAiReplying] = useState(false);
 
@@ -131,7 +132,11 @@ export default function TrainingCenterPage() {
 
       // Speak AI customer first message
       if (isTtsEnabled) {
-        speechService.speak(firstMsg.text, { ...selectedPersona.speechOptions, rate: speedMultiplier });
+        speechService.speak(firstMsg.text, {
+          ...selectedPersona.speechOptions,
+          rate: speedMultiplier,
+          neuralRate: speedMultiplier >= 1.4 ? '+20%' : speedMultiplier >= 1.25 ? '+15%' : '+0%',
+        });
       }
 
       // Automatically enable mic if available
@@ -203,7 +208,11 @@ export default function TrainingCenterPage() {
 
       // Speak reply if TTS enabled
       if (isTtsEnabled) {
-        await speechService.speak(replyText, { ...selectedPersona.speechOptions, rate: speedMultiplier });
+        await speechService.speak(replyText, {
+          ...selectedPersona.speechOptions,
+          rate: speedMultiplier,
+          neuralRate: speedMultiplier >= 1.4 ? '+20%' : speedMultiplier >= 1.25 ? '+15%' : '+0%',
+        });
       }
     } catch (e) {
       console.error('Error generating AI reply:', e);
@@ -397,12 +406,39 @@ export default function TrainingCenterPage() {
           </div>
 
           {/* Quick Voice Settings */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 text-xs space-y-2">
-            <span className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-              Web Speech 음성 설정 (비용 ₩0)
-            </span>
+          <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 text-xs space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                음성 엔진 설정
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 font-bold">
+                무제한 무료 (₩0)
+              </span>
+            </div>
+
+            {/* Neural Voice Toggle */}
             <div className="flex items-center justify-between text-gray-600 dark:text-gray-400">
+              <span className="font-medium text-[11px]">고음질 사람 목소리</span>
+              <button
+                onClick={() => {
+                  const next = !useNeuralVoice;
+                  setUseNeuralVoice(next);
+                  speechService.setUseNeuralVoice(next);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  useNeuralVoice
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                <Sparkles className="w-3 h-3" />
+                {useNeuralVoice ? 'Edge Neural ON' : '기본 브라우저'}
+              </button>
+            </div>
+
+            {/* TTS Mute Toggle */}
+            <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
               <span>AI 음성 발화 (TTS)</span>
               <button
                 onClick={() => setIsTtsEnabled(!isTtsEnabled)}
@@ -411,11 +447,13 @@ export default function TrainingCenterPage() {
                 {isTtsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
               </button>
             </div>
-            <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1 border-t border-gray-200 dark:border-gray-700">
+
+            {/* Speed Multiplier */}
+            <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
               <span>말소리 속도</span>
               <div className="flex items-center gap-1">
                 {[
-                  { label: '1.0x 보통', val: 1.0 },
+                  { label: '1.0x', val: 1.0 },
                   { label: '1.25x 실전', val: 1.25 },
                   { label: '1.4x 빠름', val: 1.4 },
                 ].map(opt => (
@@ -434,9 +472,24 @@ export default function TrainingCenterPage() {
                 ))}
               </div>
             </div>
-            <p className="text-[10px] text-gray-400">
-              현재 페르소나 목소리: {selectedPersona.speechOptions.gender === 'female' ? '여성 톤' : '남성 톤'} (속도 {speedMultiplier}x)
-            </p>
+
+            {/* Current Voice Badge */}
+            <div className="p-2 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-[10px] text-blue-800 dark:text-blue-300 leading-snug">
+              {useNeuralVoice ? (
+                <div>
+                  <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center gap-1">
+                    🌟 Microsoft Edge Neural Voice
+                  </div>
+                  <div className="mt-0.5 text-blue-600 dark:text-blue-400">
+                    보이스: {selectedPersona.speechOptions.neuralVoice} ({selectedPersona.speechOptions.gender === 'female' ? '여성 신경망' : '남성 신경망'})
+                  </div>
+                </div>
+              ) : (
+                <div className="text-gray-500 dark:text-gray-400">
+                  브라우저 로컬 Web Speech 엔진 (기본 기계음)
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
