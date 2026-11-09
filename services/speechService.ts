@@ -141,12 +141,22 @@ class SpeechService {
       utterance.voice = chosenVoice;
     }
 
-    // 자연스러운 사람 발화 속도 (너무 빠르면 기계음처럼 들리므로 1.05~1.15 최적화)
-    const baseRate = options.rate ?? 1.1;
+    // 감정 분석 (느낌표/물음표 및 의심/분노/재촉 키워드 감지)
+    const isAgitated = /[!?]{1,}|(사기|경찰|신고|어디|당신|바빠|바쁘|장난|끊으|퇴짜|부결|참나|아니|무슨|대체)/.test(cleanText);
+
+    // 자연스러운 사람 발화 속도 (감정이 격앙될 때 쏘아붙이듯 약간 가속)
+    let baseRate = options.rate ?? 1.05;
+    if (isAgitated) {
+      baseRate = Math.min(1.25, baseRate * 1.08);
+    }
     utterance.rate = Math.max(0.95, Math.min(1.3, baseRate));
 
     // 피치 (0.50 ~ 1.3: 낮을수록 중후하고 나이든 어르신/중년 목소리)
-    const basePitch = options.pitch ?? 0.80;
+    // 화가 나거나 의심할 때는 성대가 긴장하여 약간 톤이 높아지며 강한 억양 형성
+    let basePitch = options.pitch ?? 0.80;
+    if (isAgitated) {
+      basePitch = Math.min(1.25, basePitch + 0.05);
+    }
     utterance.pitch = Math.max(0.50, Math.min(1.3, basePitch));
 
     const playedVoiceName = chosenVoice?.name || '기본 음성';

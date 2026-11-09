@@ -535,6 +535,31 @@ export default function TrainingCenterPage() {
               </span>
             </div>
 
+            {/* Browser Voice Separation Banner */}
+            {typeof window !== 'undefined' && /Edg\//i.test(navigator.userAgent) ? (
+              <div className="p-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-[10px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+                <span className="font-semibold flex items-center gap-1">
+                  <span>✨ Edge 고음질 성우 연동</span>
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-bold">
+                  남성(InJoon) / 여성(SunHi) 분리
+                </span>
+              </div>
+            ) : (
+              <div className="p-2.5 rounded-lg bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-[10px] text-amber-900 dark:text-amber-200 space-y-1">
+                <div className="font-bold flex items-center justify-between text-amber-800 dark:text-amber-300">
+                  <span>⚠️ Chrome 감지: 여성 음성 단일 지원</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 font-bold">구글 정책</span>
+                </div>
+                <p className="text-[9.5px] text-amber-700 dark:text-amber-300/90 leading-tight">
+                  크롬은 구글 정책상 한국어 남성 음성이 없고 <b>여성 보이스(Google 한국의) 1개</b>만 제공되어 피치만 낮춰서 출력됩니다.
+                </p>
+                <div className="pt-0.5 text-[9.5px] font-semibold text-indigo-700 dark:text-indigo-300">
+                  💡 <b>Microsoft Edge(엣지)</b>로 접속하시면 실제 <b>한국인 남성 성우(InJoon)</b>가 100% 무료 자동 분리됩니다!
+                </div>
+              </div>
+            )}
+
             {/* Telephone Filter Toggle */}
             <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
               <div className="flex flex-col">
