@@ -697,6 +697,7 @@ export default function TeamPage() {
                     <th className="text-left px-5 py-2">이름</th>
                     <th className="text-left px-3 py-2">이메일</th>
                     <th className="text-left px-3 py-2">역할</th>
+                    <th className="text-left px-3 py-2">업무 모드</th>
                     <th className="text-right px-3 py-2">담당 리드</th>
                     <th className="text-left px-3 py-2">최근 로그인</th>
                     <th className="text-right px-5 py-2">관리</th>
@@ -726,6 +727,31 @@ export default function TeamPage() {
                           <span className="text-gray-700 dark:text-gray-200">{ROLE_LABEL[m.role]}</span>
                         )}
                       </td>
+                      <td className="px-3 py-2.5">
+                        {m.role === 'agent' && canEditRole(m) ? (
+                          <select
+                            value={m.uiMode || 'standard'}
+                            disabled={busy}
+                            onChange={e => handleMemberChange(m, { uiMode: e.target.value as 'standard' | 'lite_only' })}
+                            className={`text-xs font-semibold rounded-lg px-2 py-1 border transition-colors ${
+                              m.uiMode === 'lite_only'
+                                ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+                                : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600'
+                            }`}
+                          >
+                            <option value="standard">일반 모드</option>
+                            <option value="lite_only">⚡ 간편콜 전용 (신입)</option>
+                          </select>
+                        ) : (
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            m.uiMode === 'lite_only'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300'
+                              : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {m.uiMode === 'lite_only' ? '⚡ 간편콜 전용' : '일반'}
+                          </span>
+                        )}
+                      </td>
                       <td className="px-3 py-2.5 text-right tabular-nums">{m.assignedCases.toLocaleString()}</td>
                       <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400">{fmtDate(m.lastSignInAt)}</td>
                       <td className="px-5 py-2.5 text-right">
@@ -751,7 +777,7 @@ export default function TeamPage() {
                     </tr>
                   ))}
                   {!loading && members.length === 0 && (
-                    <tr><td colSpan={6} className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
+                    <tr><td colSpan={7} className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
                   )}
                 </tbody>
               </table>

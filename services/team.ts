@@ -13,6 +13,7 @@ export interface TeamMember {
   joinedAt: string;
   lastSignInAt?: string;
   assignedCases: number;
+  uiMode: 'standard' | 'lite_only';
 }
 
 export interface TeamInvite {
@@ -47,18 +48,20 @@ export const fetchTeamMembers = async (): Promise<TeamMember[]> => {
     joinedAt: r.joined_at,
     lastSignInAt: r.last_sign_in_at || undefined,
     assignedCases: Number(r.assigned_cases || 0),
+    uiMode: (r.ui_mode as 'standard' | 'lite_only') || 'standard',
   }));
 };
 
 export const updateTeamMember = async (
   userId: string,
-  changes: { role?: OrgRole; status?: 'active' | 'disabled'; displayName?: string },
+  changes: { role?: OrgRole; status?: 'active' | 'disabled'; displayName?: string; uiMode?: 'standard' | 'lite_only' },
 ): Promise<void> => {
   const { error } = await need().rpc('update_org_member', {
     p_user_id: userId,
     p_role: changes.role ?? null,
     p_status: changes.status ?? null,
     p_display_name: changes.displayName ?? null,
+    p_ui_mode: changes.uiMode ?? null,
   });
   if (error) fail(error);
 };

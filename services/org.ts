@@ -14,6 +14,7 @@ export interface OrgInfo {
   role: OrgRole;
   displayName?: string;
   isPlatformAdmin: boolean;
+  uiMode?: 'standard' | 'lite_only';
 }
 
 export const HQ_ORG_ID = '00000000-0000-0000-0000-000000000001';
@@ -70,7 +71,7 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
   const [{ data: role }, { data: org }, { data: member }, { data: profile }] = await Promise.all([
     supabase.rpc('current_org_role'),
     supabase.from('organizations').select('id, name').eq('id', orgId).maybeSingle(),
-    supabase.from('org_members').select('display_name').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
+    supabase.from('org_members').select('display_name, ui_mode').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
     supabase.from('user_profiles').select('is_platform_admin').eq('user_id', userId).maybeSingle(),
   ]);
 
@@ -81,6 +82,7 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
     role: (role as OrgRole) || 'agent',
     displayName: member?.display_name || undefined,
     isPlatformAdmin: !!profile?.is_platform_admin,
+    uiMode: (member?.ui_mode as 'standard' | 'lite_only') || 'standard',
   };
   saveCachedOrg(info);
   return info;

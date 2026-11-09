@@ -141,6 +141,14 @@ const PlatformAdminOnly: React.FC<{ children: React.ReactElement }> = ({ childre
   return org?.isPlatformAdmin ? children : <Navigate to="/" replace />;
 };
 
+const StandardRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { isAdmin, org } = useAuth();
+  if (!isAdmin && org?.uiMode === 'lite_only') {
+    return <Navigate to="/lite" replace />;
+  }
+  return children;
+};
+
 const OrgBadge: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { org } = useAuth();
   if (!org) return null;
@@ -149,8 +157,12 @@ const OrgBadge: React.FC<{ compact?: boolean }> = ({ compact }) => {
       <span className={`truncate font-semibold text-gray-600 dark:text-gray-300 ${compact ? 'max-w-[110px] text-[11px]' : 'max-w-[150px] text-xs'}`}>
         {org.orgName}
       </span>
-      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${org.role === 'agent' ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
-        {ROLE_LABEL[org.role]}
+      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${
+        org.role === 'agent' 
+          ? (org.uiMode === 'lite_only' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300')
+          : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+      }`}>
+        {org.role === 'agent' && org.uiMode === 'lite_only' ? '신입 (간편콜)' : ROLE_LABEL[org.role]}
       </span>
     </div>
   );
@@ -241,7 +253,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // [CRITICAL] Cache Buster / Force Version Update
   React.useEffect(() => {
-    const CURRENT_VERSION = "3.40";
+    const CURRENT_VERSION = "3.41";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
@@ -277,11 +289,23 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     navs.splice(navs.length - 2, 0, { to: '/platform', icon: Building2, label: '회사 관리' });
   }
 
-  const visibleNavs = isAdmin ? navs : navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
-  // 모바일 하단 바 — 핵심 4개만 고정, 나머지는 "더보기" 그리드
-  const MOBILE_CORE_PATHS = ['/', '/cases', '/lite', '/new'];
+  const isLiteOnly = !isAdmin && org?.uiMode === 'lite_only';
+
+  let visibleNavs: any[];
+  if (isAdmin) {
+    visibleNavs = navs;
+  } else if (isLiteOnly) {
+    // 신입 상담원 간편콜 전용 모드: 간편콜, 공지사항, 일정, 마이페이지만 노출
+    const LITE_ONLY_PATHS = ['/lite', '/notices', '/schedule', '/mypage'];
+    visibleNavs = navs.filter(n => LITE_ONLY_PATHS.includes(n.to));
+  } else {
+    visibleNavs = navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
+  }
+
+  // 모바일 하단 바
+  const MOBILE_CORE_PATHS = isLiteOnly ? ['/lite', '/notices', '/schedule', '/mypage'] : ['/', '/cases', '/lite', '/new'];
   const mobileCoreTabs = visibleNavs.filter(n => MOBILE_CORE_PATHS.includes(n.to));
-  const mobileMoreItems = visibleNavs.filter(n => !MOBILE_CORE_PATHS.includes(n.to));
+  const mobileMoreItems = isLiteOnly ? [] : visibleNavs.filter(n => !MOBILE_CORE_PATHS.includes(n.to));
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try { return localStorage.getItem('sidebar_collapsed') === 'true'; } catch { return false; }
@@ -312,9 +336,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-3' : 'px-3 py-2'} space-y-0.5`}>
           {(() => {
             const isActive = (to: string) => path === to || (path.startsWith('/case/') && to === '/cases');
-            const workNavPaths = ['/', '/notices', '/schedule', '/cases', '/lite', '/new'];
+            const workNavPaths = isLiteOnly ? ['/lite', '/notices', '/schedule'] : ['/', '/notices', '/schedule', '/cases', '/lite', '/new'];
             const opsNavPaths = ['/telegram', '/auto-dial', '/settlement'];
-            const adminNavPaths = ['/statistics', '/team', '/platform', '/settings', '/mypage'];
+            const adminNavPaths = isLiteOnly ? ['/mypage'] : ['/statistics', '/team', '/platform', '/settings', '/mypage'];
             const workNavs = visibleNavs.filter(n => workNavPaths.includes(n.to));
             const opsNavs = visibleNavs.filter(n => opsNavPaths.includes(n.to));
             const adminNavs = visibleNavs.filter(n => adminNavPaths.includes(n.to));
@@ -483,14 +507,14 @@ const ProtectedRoutes = () => {
     <Layout>
       <ErrorBoundary>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<StandardRoute><Dashboard /></StandardRoute>} />
           <Route path="/notices" element={<NoticePage />} />
           <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/cases" element={<CaseList />} />
+          <Route path="/cases" element={<StandardRoute><CaseList /></StandardRoute>} />
           <Route path="/lite" element={<LiteCallPage />} />
-          <Route path="/new" element={<QuickNewCase />} />
-          <Route path="/new/full" element={<NewCase />} />
-          <Route path="/case/:caseId" element={<CaseDetail />} />
+          <Route path="/new" element={<StandardRoute><QuickNewCase /></StandardRoute>} />
+          <Route path="/new/full" element={<StandardRoute><NewCase /></StandardRoute>} />
+          <Route path="/case/:caseId" element={<StandardRoute><CaseDetail /></StandardRoute>} />
           <Route path="/telegram" element={<AdminOnly><TelegramSync /></AdminOnly>} />
           <Route path="/auto-dial" element={<PlatformAdminOnly><AutoDial /></PlatformAdminOnly>} />
           <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
