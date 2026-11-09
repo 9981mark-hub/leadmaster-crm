@@ -254,7 +254,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // [CRITICAL] Cache Buster / Force Version Update
   React.useEffect(() => {
-    const CURRENT_VERSION = "3.43";
+    const CURRENT_VERSION = "3.44";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
@@ -338,7 +338,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-3' : 'px-3 py-2'} space-y-0.5`}>
           {(() => {
             const isActive = (to: string) => path === to || (path.startsWith('/case/') && to === '/cases');
-            const workNavPaths = isLiteOnly ? ['/lite', '/notices', '/schedule'] : ['/', '/notices', '/schedule', '/cases', '/lite', '/new'];
+            const workNavPaths = isLiteOnly ? ['/lite', '/training', '/notices', '/schedule'] : ['/', '/notices', '/training', '/schedule', '/cases', '/lite', '/new'];
             const opsNavPaths = ['/telegram', '/auto-dial', '/settlement'];
             const adminNavPaths = isLiteOnly ? ['/mypage'] : ['/statistics', '/team', '/platform', '/settings', '/mypage'];
             const workNavs = visibleNavs.filter(n => workNavPaths.includes(n.to));
