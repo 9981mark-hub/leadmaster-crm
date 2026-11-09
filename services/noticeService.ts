@@ -181,14 +181,14 @@ export async function fetchDirectives(): Promise<Directive[]> {
   const sb = need();
   const { data, error } = await sb
     .from('directives')
-    .select('*, cases(name)')
+    .select('*, cases(customer_name)')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
 
   return (data || []).map((d: any) => ({
     ...d,
-    case_name: d.cases?.name || null
+    case_name: d.cases?.customer_name || null
   }));
 }
 
