@@ -24,6 +24,8 @@ class SpeechService {
   public lastEngineUsed: 'neural' | 'browser' = 'browser';
   public lastVoiceName = '';
   private cachedVoices: SpeechSynthesisVoice[] = [];
+  private ringOscillators: { osc1: OscillatorNode; osc2: OscillatorNode; gain: GainNode; ctx: AudioContext } | null = null;
+  private ringTimeoutId: any = null;
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -273,8 +275,10 @@ class SpeechService {
     });
   }
 
-  // 발화 즉시 중단
+  // 발화 및 신호음 즉시 중단
   public stopSpeaking(): void {
+    this.stopRingbackTone();
+
     if (this.currentAudio) {
       try {
         this.currentAudio.pause();
@@ -287,6 +291,86 @@ class SpeechService {
       try {
         this.synth.cancel();
       } catch (_) {}
+    }
+  }
+
+  // 아웃바운드 실전 전화 신호음 (한국 표준 440Hz+480Hz 통화연결음 모사)
+  public playRingbackTone(rings: number = 2): Promise<void> {
+    this.stopRingbackTone();
+
+    return new Promise((resolve) => {
+      try {
+        const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtxClass) {
+          setTimeout(resolve, 2500);
+          return;
+        }
+
+        const ctx = new AudioCtxClass();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(440, ctx.currentTime);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(480, ctx.currentTime);
+
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        let t = ctx.currentTime + 0.05;
+        for (let i = 0; i < rings; i++) {
+          // 1초간 뚜르르르 울림
+          gain.gain.setValueAtTime(0.08, t);
+          gain.gain.setValueAtTime(0.08, t + 0.95);
+          gain.gain.linearRampToValueAtTime(0.001, t + 1.0);
+          // 1.2초간 쉼
+          t += 2.2;
+        }
+
+        osc1.start(ctx.currentTime + 0.05);
+        osc2.start(ctx.currentTime + 0.05);
+        osc1.stop(t);
+        osc2.stop(t);
+
+        this.ringOscillators = { osc1, osc2, gain, ctx };
+
+        const totalMs = Math.max(1000, (t - ctx.currentTime) * 1000);
+        this.ringTimeoutId = setTimeout(() => {
+          this.stopRingbackTone();
+          resolve();
+        }, totalMs + 50);
+      } catch (e) {
+        console.warn('Ringback tone playback error:', e);
+        setTimeout(resolve, 2500);
+      }
+    });
+  }
+
+  // 신호음 즉시 정지
+  public stopRingbackTone(): void {
+    if (this.ringTimeoutId) {
+      clearTimeout(this.ringTimeoutId);
+      this.ringTimeoutId = null;
+    }
+    if (this.ringOscillators) {
+      try {
+        this.ringOscillators.osc1.stop();
+        this.ringOscillators.osc2.stop();
+        this.ringOscillators.osc1.disconnect();
+        this.ringOscillators.osc2.disconnect();
+        this.ringOscillators.gain.disconnect();
+        this.ringOscillators.ctx.close();
+      } catch (_) {}
+      this.ringOscillators = null;
     }
   }
 

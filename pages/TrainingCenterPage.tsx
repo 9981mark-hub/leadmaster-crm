@@ -195,8 +195,8 @@ export default function TrainingCenterPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [callState, inputText]);
 
-  // Start Call Simulation
-  const handleStartCall = () => {
+  // Start Call Simulation (아웃바운드 발신: 신호음 2회 울린 후 고객이 "여보세요" 수신)
+  const handleStartCall = async () => {
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
@@ -219,8 +219,11 @@ export default function TrainingCenterPage() {
       history: false,
     });
 
-    // Simulate ringtone delay (1.2s)
-    setTimeout(() => {
+    try {
+      // 한국 표준 전화 통화연결음 2회 울림 (뚜르르르~ ... 뚜르르르~ 약 3.2초)
+      await speechService.playRingbackTone(2);
+
+      // 고객이 전화를 받음 (아웃바운드 연결 완료)
       setCallState('connected');
       const firstMsg: TrainingMessage = {
         id: 'msg-' + Date.now(),
@@ -230,7 +233,7 @@ export default function TrainingCenterPage() {
       };
       setMessages([firstMsg]);
 
-      // Speak AI customer first message
+      // 고객의 첫 "여보세요?" 발화 (TTS)
       if (isTtsEnabled) {
         speechService.speak(firstMsg.text, {
           ...selectedPersona.speechOptions,
@@ -241,7 +244,18 @@ export default function TrainingCenterPage() {
 
       // Automatically enable mic if available
       toggleMicrophone(true);
-    }, 1200);
+    } catch (e) {
+      console.warn('Call start failed or cancelled:', e);
+      setCallState('idle');
+    }
+  };
+
+  // 발신 신호음 도중 취소
+  const handleCancelCalling = () => {
+    speechService.stopRingbackTone();
+    speechService.stopSpeaking();
+    setCallState('idle');
+    showToast('전화 발신을 취소했습니다.', 'info');
   };
 
   // Toggle Microphone (스마트 침묵 감지: 500ms(0.5초) 침묵 시 즉시 전송)
@@ -895,13 +909,15 @@ export default function TrainingCenterPage() {
                         <Clock className="w-3.5 h-3.5" /> 통화 연결 중: {formatTime(callDuration)}
                       </span>
                     ) : callState === 'calling' ? (
-                      <span className="text-amber-600 dark:text-amber-400">가상 전화 신호 가는 중...</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5 animate-pulse">
+                        <PhoneCall className="w-3.5 h-3.5 animate-bounce" /> 고객 스마트폰으로 전화 발신 중... (뚜르르르~ 🔔)
+                      </span>
                     ) : callState === 'evaluating' ? (
                       <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1">
                         <Sparkles className="w-3.5 h-3.5 animate-spin" /> AI 사무장 인계 문진 채점 및 리포트 작성 중...
                       </span>
                     ) : (
-                      <span>통화 대기 상태 (준비 완료 시 통화 시작 버튼을 누르세요)</span>
+                      <span>통화 대기 상태 (아웃바운드 발신 시작 버튼을 누르세요)</span>
                     )}
                   </p>
                 </div>
@@ -915,7 +931,15 @@ export default function TrainingCenterPage() {
                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.02]"
                   >
                     <PhoneCall className="w-4 h-4" />
-                    가상 통화 시작
+                    📞 아웃바운드 발신 시작
+                  </button>
+                ) : callState === 'calling' ? (
+                  <button
+                    onClick={handleCancelCalling}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-md shadow-amber-500/20 transition-all animate-pulse"
+                  >
+                    <PhoneOff className="w-4 h-4" />
+                    발신 신호음 취소
                   </button>
                 ) : callState === 'connected' ? (
                   <button
@@ -936,7 +960,7 @@ export default function TrainingCenterPage() {
                 <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs">
                   <span className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                     <PhoneCall className="w-3.5 h-3.5 text-blue-500" />
-                    실시간 모의 통화 대화록
+                    실시간 아웃바운드 통화 대화록
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium border border-emerald-200/60">
@@ -949,14 +973,43 @@ export default function TrainingCenterPage() {
                   </div>
                 </div>
 
+                {/* 📢 아웃바운드 상담원 첫 인사 가이드 배너 */}
+                {callState === 'connected' && (
+                  <div className="px-3.5 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border-b border-blue-200/80 dark:border-blue-800/60 flex items-center gap-2 text-xs">
+                    <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-black shrink-0">
+                      첫마디 미션
+                    </span>
+                    <p className="text-[11px] text-blue-950 dark:text-blue-200 leading-snug truncate">
+                      고객이 전화를 받았습니다! <strong>소속(법무법인/상호)</strong>과 <strong>신청 건</strong>을 밝히며 먼저 인사를 건네세요.
+                    </p>
+                  </div>
+                )}
+
                 {/* Chat Bubble Area */}
                 <div className="flex-1 p-4 overflow-y-auto space-y-3">
                   {messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
-                      <PhoneCall className="w-10 h-10 mb-2 stroke-1 text-gray-300 dark:text-gray-600" />
-                      <p className="text-xs font-medium">가상 통화 시작 버튼을 누르면</p>
-                      <p className="text-xs text-gray-500 mt-0.5">고객과의 실전 대화가 시작됩니다.</p>
-                    </div>
+                    callState === 'calling' ? (
+                      <div className="h-full flex flex-col items-center justify-center text-center p-6 text-amber-500 dark:text-amber-400 space-y-2">
+                        <div className="relative">
+                          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 animate-ping absolute inset-0 opacity-75" />
+                          <div className="w-16 h-16 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-lg relative">
+                            <PhoneCall className="w-8 h-8 animate-bounce" />
+                          </div>
+                        </div>
+                        <p className="text-sm font-bold text-gray-800 dark:text-gray-100 pt-2">
+                          {selectedPersona.customerName} 고객님께 전화를 걸고 있습니다...
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          신호음(뚜르르르~)이 2회 울린 뒤 고객이 "여보세요"하며 전화를 받습니다.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
+                        <PhoneCall className="w-10 h-10 mb-2 stroke-1 text-gray-300 dark:text-gray-600" />
+                        <p className="text-xs font-medium">아웃바운드 발신 시작 버튼을 누르면</p>
+                        <p className="text-xs text-gray-500 mt-0.5">신호음이 울린 후 고객이 전화를 받습니다.</p>
+                      </div>
+                    )
                   ) : (
                     messages.map(msg => (
                       <div
