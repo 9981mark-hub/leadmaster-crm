@@ -1,6 +1,30 @@
-import React from 'react';
-import { TrainingReport, TrainingPersona, TrainingSessionRecord } from '../../services/trainingService';
-import { Award, CheckCircle2, AlertTriangle, Lightbulb, Sparkles, X, RotateCcw, ArrowRight, Quote, Copy, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { TrainingReport, TrainingPersona, TrainingSessionRecord, updateAdminFeedback, AdminFeedback } from '../../services/trainingService';
+import {
+  Award,
+  CheckCircle2,
+  AlertTriangle,
+  Lightbulb,
+  Sparkles,
+  X,
+  RotateCcw,
+  ArrowRight,
+  Quote,
+  Copy,
+  Check,
+  FileText,
+  UserCheck,
+  CheckCircle,
+  XCircle,
+  Briefcase,
+  DollarSign,
+  Users,
+  Home,
+  CreditCard,
+  Clock,
+  History,
+  ShieldCheck,
+} from 'lucide-react';
 
 interface Props {
   report: TrainingReport;
@@ -21,7 +45,15 @@ export const TrainingReportModal: React.FC<Props> = ({
   onNextLevel,
   hasNextLevel,
 }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [briefingCopied, setBriefingCopied] = useState(false);
+
+  // 관리자 평가 상태
+  const existingFeedback = sessionRecord.adminFeedback;
+  const [adminGrade, setAdminGrade] = useState<'S' | 'A' | 'B' | 'C' | 'F'>(existingFeedback?.grade || 'A');
+  const [adminComment, setAdminComment] = useState(existingFeedback?.comment || '');
+  const [adminEvaluator, setAdminEvaluator] = useState(existingFeedback?.evaluatorName || '총괄팀장');
+  const [isSavedFeedback, setIsSavedFeedback] = useState(!!existingFeedback);
 
   const copyScript = () => {
     if (report.suggestedScript) {
@@ -31,15 +63,49 @@ export const TrainingReportModal: React.FC<Props> = ({
     }
   };
 
+  const copyBriefing = () => {
+    if (report.paralegalCard?.paralegalBriefing) {
+      navigator.clipboard.writeText(report.paralegalCard.paralegalBriefing);
+      setBriefingCopied(true);
+      setTimeout(() => setBriefingCopied(false), 2000);
+    }
+  };
+
+  const handleSaveAdminFeedback = () => {
+    const feedback: AdminFeedback = {
+      grade: adminGrade,
+      comment: adminComment.trim(),
+      evaluatedAt: new Date().toISOString(),
+      evaluatorName: adminEvaluator,
+    };
+    const success = updateAdminFeedback(sessionRecord.sessionId, feedback);
+    if (success) {
+      setIsSavedFeedback(true);
+      sessionRecord.adminFeedback = feedback;
+    }
+  };
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-emerald-500 border-emerald-500';
     if (score >= 70) return 'text-blue-500 border-blue-500';
     return 'text-amber-500 border-amber-500';
   };
 
+  const paralegalCard = report.paralegalCard;
+
+  const CHECKLIST_ITEMS = [
+    { key: 'jobAndEmployment', label: '1. 직업/재직형태', icon: Briefcase, ok: paralegalCard?.jobAndEmployment },
+    { key: 'monthlyRealIncome', label: '2. 월 실수령액', icon: DollarSign, ok: paralegalCard?.monthlyRealIncome },
+    { key: 'dependentsCount', label: '3. 부양가족 수', icon: Users, ok: paralegalCard?.dependentsCount },
+    { key: 'housingAndDeposit', label: '4. 주거/보증금', icon: Home, ok: paralegalCard?.housingAndDeposit },
+    { key: 'debtAmountAndReason', label: '5. 총 채무/원인', icon: CreditCard, ok: paralegalCard?.debtAmountAndReason },
+    { key: 'overdueStatusAndPeriod', label: '6. 연체여부/기간', icon: Clock, ok: paralegalCard?.overdueStatusAndPeriod },
+    { key: 'pastRehabHistory', label: '7. 과거 회생이력', icon: History, ok: paralegalCard?.pastRehabHistory },
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col">
+      <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col">
         {/* Header */}
         <div className="sticky top-0 z-10 px-6 py-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -48,7 +114,7 @@ export const TrainingReportModal: React.FC<Props> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                AI 모의 통화 진단 & 코칭 리포트
+                AI 모의 통화 진단 & 사무장 인계 리포트
                 <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-normal">
                   {persona.badge}
                 </span>
@@ -93,7 +159,80 @@ export const TrainingReportModal: React.FC<Props> = ({
                 </p>
               </div>
             </div>
+            {paralegalCard && (
+              <div className="flex flex-col items-center sm:items-end border-t sm:border-t-0 sm:border-l border-indigo-200 dark:border-indigo-900/60 pt-3 sm:pt-0 sm:pl-5">
+                <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">사무장 인계 완성도</span>
+                <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                  {paralegalCard.handoffScore}점
+                </span>
+                <span className="text-[10px] text-gray-400">7대 문진 항목 기반</span>
+              </div>
+            )}
           </div>
+
+          {/* 🌟 7대 사무장 인계 필수 문진 결과 섹션 */}
+          {paralegalCard && (
+            <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h4 className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                    사무장 인계 7대 문진 체크리스트 판정
+                  </h4>
+                </div>
+                <span className="text-xs text-blue-600 dark:text-blue-300 font-semibold">
+                  달성: {CHECKLIST_ITEMS.filter(c => c.ok).length} / 7항목
+                </span>
+              </div>
+
+              {/* 7대 항목 뱃지 그리드 */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                {CHECKLIST_ITEMS.map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-medium border ${
+                        item.ok
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                          : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+                      }`}
+                    >
+                      {item.ok ? <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> : <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />}
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 사무장 브리핑 요약문 카드 */}
+              {paralegalCard.paralegalBriefing && (
+                <div className="mt-3 p-3 rounded-xl bg-white dark:bg-gray-900 border border-blue-100 dark:border-blue-900 relative">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                      사무장 전달용 브리핑 요약문
+                    </span>
+                    <button
+                      onClick={copyBriefing}
+                      className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-blue-600"
+                    >
+                      {briefingCopied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                      {briefingCopied ? '복사됨' : '복사'}
+                    </button>
+                  </div>
+                  <pre className="text-xs font-sans text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                    {paralegalCard.paralegalBriefing}
+                  </pre>
+                  {paralegalCard.coachingAdvice && (
+                    <p className="mt-2 text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200/60">
+                      💡 <strong>인계 코칭:</strong> {paralegalCard.coachingAdvice}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Score Breakdown (3개 영역) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -213,19 +352,68 @@ export const TrainingReportModal: React.FC<Props> = ({
             </div>
           )}
 
-          {/* Sandbox Memo Result Summary */}
-          <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row justify-between gap-2">
-            <div>
-              <span className="font-semibold text-gray-800 dark:text-gray-200">상담원이 기록한 결과:</span>{' '}
-              <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-medium">
-                {sessionRecord.consultationResult || '미기록'}
-              </span>
-            </div>
-            {sessionRecord.agentMemo && (
-              <div className="truncate max-w-sm">
-                <span className="font-semibold text-gray-800 dark:text-gray-200">메모:</span> {sessionRecord.agentMemo}
+          {/* 👔 관리자(팀장) 직접 평가 및 코칭 피드백 섹션 */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50/60 to-orange-50/40 dark:from-amber-950/20 dark:to-orange-950/10 border border-amber-200 dark:border-amber-900/50">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <UserCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <h4 className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                  관리자(팀장) 직접 평가 및 코칭 피드백
+                </h4>
               </div>
-            )}
+              {isSavedFeedback && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 font-bold flex items-center gap-1">
+                  <Check className="w-3 h-3" /> 평가 저장됨
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">평가 등급:</span>
+                  {(['S', 'A', 'B', 'C', 'F'] as const).map(grade => (
+                    <button
+                      key={grade}
+                      onClick={() => { setAdminGrade(grade); setIsSavedFeedback(false); }}
+                      className={`px-3 py-1 text-xs font-black rounded-lg transition-all ${
+                        adminGrade === grade
+                          ? 'bg-amber-500 text-white shadow-sm scale-105'
+                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-amber-50'
+                      }`}
+                    >
+                      {grade}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">평가자:</span>
+                  <input
+                    type="text"
+                    value={adminEvaluator}
+                    onChange={e => { setAdminEvaluator(e.target.value); setIsSavedFeedback(false); }}
+                    className="w-24 text-xs px-2 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  />
+                </div>
+              </div>
+
+              <textarea
+                value={adminComment}
+                onChange={e => { setAdminComment(e.target.value); setIsSavedFeedback(false); }}
+                placeholder="신입 상담원에게 전달할 팀장의 직접 코칭 조언을 입력하세요. (예: 보이스피싱 의심 시 당황하지 말고 3대 무과금 원칙을 먼저 단호히 짚어줄 것)"
+                rows={2}
+                className="w-full text-xs p-2.5 rounded-xl bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900/80 focus:ring-1 focus:ring-amber-500 focus:outline-none placeholder-gray-400"
+              />
+
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSaveAdminFeedback}
+                  className="px-4 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-sm transition-all"
+                >
+                  팀장 평가 & 피드백 저장
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -251,7 +439,7 @@ export const TrainingReportModal: React.FC<Props> = ({
             )}
             <button
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+              className="px-5 py-2.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               닫기
             </button>
