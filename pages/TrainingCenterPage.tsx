@@ -64,8 +64,19 @@ export default function TrainingCenterPage() {
   const [useNeuralVoice, setUseNeuralVoice] = useState(true);
   const [isPhoneFilterEnabled, setIsPhoneFilterEnabled] = useState(true);
   const [activationUrl, setActivationUrl] = useState<string | null>(null);
-  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.1); // 기본 +10% 가속 템포
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.05); // 자연스러운 기본 사람 템포
+  const [ageTone, setAgeTone] = useState<'young' | 'middle' | 'senior' | 'elder'>('middle'); // 연령대 목소리 톤
   const [isAiReplying, setIsAiReplying] = useState(false);
+
+  // 캐릭터 기본 피치에 연령대 프리셋을 합성하는 헬퍼
+  const getCalculatedPitch = (basePitch = 0.80): number => {
+    let modifier = 0;
+    if (ageTone === 'young') modifier = +0.15;
+    else if (ageTone === 'middle') modifier = 0;
+    else if (ageTone === 'senior') modifier = -0.10;
+    else if (ageTone === 'elder') modifier = -0.20;
+    return Math.max(0.50, Math.min(1.25, basePitch + modifier));
+  };
 
   // 캐릭터 기본 억양에 사용자 지정 속도를 합성하는 헬퍼 (+10%, +25% 등)
   const getAdjustedRate = (baseRateStr: string = '+10%', multiplier: number): string => {
@@ -187,6 +198,7 @@ export default function TrainingCenterPage() {
         speechService.speak(firstMsg.text, {
           ...selectedPersona.speechOptions,
           rate: speedMultiplier,
+          pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
         });
       }
 
@@ -302,6 +314,7 @@ export default function TrainingCenterPage() {
         await speechService.speak(replyText, {
           ...selectedPersona.speechOptions,
           rate: speedMultiplier,
+          pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
         });
       }
     } catch (e) {
@@ -563,8 +576,8 @@ export default function TrainingCenterPage() {
               <div className="flex items-center gap-1">
                 {[
                   { label: '표준', val: 1.0 },
-                  { label: '자연스러움 (+10%)', val: 1.1 },
-                  { label: '실전 (+25%)', val: 1.25 },
+                  { label: '자연스러움 (+5%)', val: 1.05 },
+                  { label: '실전 (+15%)', val: 1.15 },
                 ].map(opt => (
                   <button
                     key={opt.val}
@@ -582,25 +595,49 @@ export default function TrainingCenterPage() {
               </div>
             </div>
 
+            {/* Age Tone Multiplier (연령대 목소리 톤) */}
+            <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col">
+                <span className="font-medium text-[11px]">연령대 목소리 톤</span>
+                <span className="text-[9px] text-gray-400">나이든 중후한 톤 / 청년 톤</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {[
+                  { label: '청년(20대)', val: 'young' as const },
+                  { label: '중년(40대)', val: 'middle' as const },
+                  { label: '장년(50대)', val: 'senior' as const },
+                  { label: '어르신(60대+)', val: 'elder' as const },
+                ].map(opt => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setAgeTone(opt.val)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                      ageTone === opt.val
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Current Voice Badge */}
-            <div className="p-2 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-[10px] text-blue-800 dark:text-blue-300 leading-snug">
-              {useNeuralVoice ? (
-                <div>
-                  <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center justify-between">
-                    <span>🌟 고음질 사람 신경망 보이스 (결제 불필요)</span>
-                    <span className="font-mono text-blue-700 dark:text-blue-300 font-bold">
-                      {getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier)}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 text-blue-600 dark:text-blue-400">
-                    {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '여성 페르소나' : '남성 페르소나'}) • 실제 통화 필터 {isPhoneFilterEnabled ? '적용됨' : '원음'}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-gray-500 dark:text-gray-400">
-                  브라우저 로컬 Web Speech 엔진 (기본 기계음)
-                </div>
-              )}
+            <div className="p-2.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-[10px] text-blue-800 dark:text-blue-300 leading-snug space-y-1">
+              <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center justify-between">
+                <span>🌟 {selectedPersona.customerName} ({selectedPersona.age}세 • {selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'})</span>
+                <span className="font-mono text-indigo-700 dark:text-indigo-300 font-bold">
+                  피치 {getCalculatedPitch(selectedPersona.speechOptions.pitch).toFixed(2)} / {speedMultiplier}배속
+                </span>
+              </div>
+              <div className="text-[10px] text-blue-700 dark:text-blue-300">
+                선택된 톤: <span className="font-bold underline">{ageTone === 'young' ? '20대 청년 톤' : ageTone === 'middle' ? '40대 중년 톤' : ageTone === 'senior' ? '50대 장년 톤' : '60대+ 어르신 톤'}</span> • 수화기 필터 {isPhoneFilterEnabled ? 'ON' : '원음'}
+              </div>
+              <div className="pt-1 border-t border-blue-200/50 dark:border-blue-900/50 text-[9px] text-gray-500 dark:text-gray-400">
+                💡 Windows는 <b>Microsoft Edge 브라우저</b> 접속 시 마이크로소프트 공식 성우 신경망 음성(InJoon/SunHi)이 100% 무료 자동 연동됩니다.
+              </div>
             </div>
 
             {/* Test Voice Button */}
@@ -608,16 +645,24 @@ export default function TrainingCenterPage() {
               type="button"
               onClick={async () => {
                 const sampleText = selectedPersona.initialMessage;
+                const calcPitch = getCalculatedPitch(selectedPersona.speechOptions.pitch);
                 const result = await speechService.speak(sampleText, {
                   ...selectedPersona.speechOptions,
                   rate: speedMultiplier,
+                  pitch: calcPitch,
                 });
-                showToast(`🔊 재생된 음성: [${result.voiceName}]`, 'success');
+                const toneLabels: Record<string, string> = {
+                  young: '20대 청년',
+                  middle: '40대 중년',
+                  senior: '50대 장년',
+                  elder: '60대+ 어르신',
+                };
+                showToast(`🔊 [${result.voiceName}] (피치: ${calcPitch.toFixed(2)}, ${toneLabels[ageTone]}, ${speedMultiplier}x)`, 'success');
               }}
               className="w-full py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-blue-200/60 dark:border-blue-800/40"
             >
               <Volume2 className="w-3.5 h-3.5" />
-              🔊 {selectedPersona.customerName} 목소리 1초 미리듣기
+              🔊 {selectedPersona.customerName} ({selectedPersona.age}세) 목소리 1초 미리듣기
             </button>
           </div>
         </div>
@@ -735,7 +780,11 @@ export default function TrainingCenterPage() {
                         {msg.text}
                         {msg.speaker === 'customer' && isTtsEnabled && (
                           <button
-                            onClick={() => speechService.speak(msg.text, { ...selectedPersona.speechOptions, rate: speedMultiplier })}
+                            onClick={() => speechService.speak(msg.text, {
+                              ...selectedPersona.speechOptions,
+                              rate: speedMultiplier,
+                              pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+                            })}
                             className="ml-2 text-gray-400 hover:text-blue-500 inline-block align-middle"
                             title="다시 듣기"
                           >

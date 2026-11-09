@@ -124,13 +124,13 @@ class SpeechService {
     let chosenVoice: SpeechSynthesisVoice | null = null;
 
     if (options.gender === 'female') {
-      chosenVoice = koVoices.find(v => v.name.includes('SunHi') && v.name.includes('Natural'))
+      chosenVoice = koVoices.find(v => (v.name.includes('SunHi') || v.name.includes('YuJin')) && v.name.includes('Natural'))
         || koVoices.find(v => v.name.includes('Google') || v.name.includes('한국의'))
         || koVoices.find(v => v.name.toLowerCase().includes('female') || v.name.includes('여성'))
         || koVoices.find(v => v.name.includes('Natural') || v.name.includes('Online'))
         || koVoices[0] || null;
     } else {
-      chosenVoice = koVoices.find(v => v.name.includes('InJoon') && v.name.includes('Natural'))
+      chosenVoice = koVoices.find(v => (v.name.includes('InJoon') || v.name.includes('BongJin')) && v.name.includes('Natural'))
         || koVoices.find(v => v.name.toLowerCase().includes('male') || v.name.includes('남성'))
         || koVoices.find(v => v.name.includes('Google') || v.name.includes('한국의'))
         || koVoices.find(v => v.name.includes('Natural') || v.name.includes('Online'))
@@ -145,9 +145,9 @@ class SpeechService {
     const baseRate = options.rate ?? 1.1;
     utterance.rate = Math.max(0.95, Math.min(1.3, baseRate));
 
-    // 피치 (자연스러운 한국어 톤 1.0)
-    const basePitch = options.pitch ?? 1.0;
-    utterance.pitch = Math.max(0.9, Math.min(1.1, basePitch));
+    // 피치 (0.50 ~ 1.3: 낮을수록 중후하고 나이든 어르신/중년 목소리)
+    const basePitch = options.pitch ?? 0.80;
+    utterance.pitch = Math.max(0.50, Math.min(1.3, basePitch));
 
     const playedVoiceName = chosenVoice?.name || '기본 음성';
 
