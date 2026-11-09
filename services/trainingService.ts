@@ -76,14 +76,14 @@ export const TRAINING_PERSONAS: TrainingPersona[] = [
     trainingGoal: '정중한 첫인사 및 소속 안내, 기대출 현황 청취, 본인 확인 멘트 숙달',
     speechOptions: {
       pitch: 1.0,
-      rate: 1.25,
+      rate: 1.35,
       gender: 'male',
       neuralVoice: 'ko-KR-InJoonNeural',
-      neuralRate: '+0%',
+      neuralRate: '+10%',
       neuralPitch: '+0Hz',
     },
     personaPrompt: '너는 42세 직장인 김순한이다. 성격이 온순하고 예의 바르다. 카드론 2천만 원을 매달 갚느라 이자가 부담되어 대환대출을 알아보고 있다. 상담원이 질문하면 차분하고 솔직하게 답한다. 상담원이 대환 조건과 절차를 친절히 설명해주면 감사해하며 안내에 잘 따른다.',
-    initialMessage: '네, 여보세요? 대출 상담 신청했던 김순한인데요. 지금 통화 가능한가요?',
+    initialMessage: '네 여보세요? 대출 상담 신청했던 김순한인데요. 지금 통화 가능한가요?',
   },
   {
     id: 'lv2',
@@ -103,10 +103,10 @@ export const TRAINING_PERSONAS: TrainingPersona[] = [
     trainingGoal: '10초 내 핵심 전달, 서두르는 고객 안심시키기, 짧은 통화 후 재통화 약속(리마인더) 성사',
     speechOptions: {
       pitch: 1.02,
-      rate: 1.35,
+      rate: 1.45,
       gender: 'female',
       neuralVoice: 'ko-KR-SunHiNeural',
-      neuralRate: '+15%',
+      neuralRate: '+25%',
       neuralPitch: '+2Hz',
     },
     personaPrompt: '너는 38세 식당 사장 박급해다. 지금 재료 준비와 배달 주문으로 몹시 바쁘고 정신이 없다. 3일 뒤 나갈 식자재 대금 2천만 원이 급하다. 상담원이 말을 길게 늘어놓으면 "아 사장님, 제가 지금 가게 손님 받아야 해서 바쁜데 용건만 딱 말해주세요!"라고 쏘아붙인다. 상담원이 신속하게 한도 조회와 가심사 절차를 2~3분 내로 끝내주거나 브레이크 타임(오후 3시)에 다시 연락주겠다고 약속하면 좋아한다.',
@@ -130,10 +130,10 @@ export const TRAINING_PERSONAS: TrainingPersona[] = [
     trainingGoal: '합법적 수집 경로 설명, 대출중개수수료 불법성 법정 고지, 고객의 불신 해소 및 전문성 입증',
     speechOptions: {
       pitch: 0.95,
-      rate: 1.2,
+      rate: 1.3,
       gender: 'male',
       neuralVoice: 'ko-KR-InJoonNeural',
-      neuralRate: '-5%',
+      neuralRate: '+5%',
       neuralPitch: '-3Hz',
     },
     personaPrompt: '너는 54세 도소매상 이의심이다. 빚이 많아 대출이 절실하지만 사기 대출에 대한 경계심이 하늘을 찌른다. 걸려온 전화에 "내 번호 어디서 알고 건 거요?", "선입금이나 수수료 요구하면 당장 경찰에 신고할 거요", "금리 몇 프로나 나온다고 번지르르하게 말하는 거요?"라며 꼬치꼬치 따지고 퉁명스럽게 묻는다. 상담원이 법적 등록번호와 무료 조회임을 명확히 고지하고 침착하게 신뢰를 주면 점차 경계를 푼다.',
@@ -157,10 +157,10 @@ export const TRAINING_PERSONAS: TrainingPersona[] = [
     trainingGoal: '감정적 경청과 공감, 현실적인 대안(서민금융 채무조정/개인회생 연계) 제시, 상담원 멘탈 관리',
     speechOptions: {
       pitch: 0.93,
-      rate: 1.15,
+      rate: 1.25,
       gender: 'male',
       neuralVoice: 'ko-KR-HyunsuMultilingualNeural',
-      neuralRate: '-10%',
+      neuralRate: '+0%',
       neuralPitch: '-5Hz',
     },
     personaPrompt: '너는 61세 최까다다. 빚이 6천 가까이 되고 연체가 시작되어 매일 독촉 전화에 시달려 신경이 곤두서 있다. "은행 가도 신용불량 직전이라고 다 퇴짜 맞았는데, 당신들이 무슨 재주로 돈을 내줘요?", "다 사기꾼들이지 희망고문 하지 마쇼!"라며 화를 내거나 비아냥댄다. 상담원이 감정적으로 맞서지 않고, 깊이 공감해주면서 현실적인 신용회복 및 정부지원 채무조정 제도를 진심으로 안내해주면 비로소 한숨을 쉬며 속사정을 털어놓는다.',
@@ -210,9 +210,10 @@ ${persona.personaPrompt}
 [대화 규칙 - 초고속 실전 통화 템포 준수]
 1. 실제 전화 통화이므로 길게 말하지 말고, **반드시 1~2문장(공백 포함 20~40자 내외)의 간결하고 현실적인 구어체**로만 즉시 대답하세요.
 2. 부연설명이나 지문(예: [한숨], (화를 내며))은 일절 넣지 말고, **고객의 대사 텍스트만** 바로 출력하세요.
-3. 상담원의 직전 질문이나 말에 집중하여 즉각적으로 반응하세요.
-4. ${persona.speechOptions.rate && persona.speechOptions.rate > 1.1 ? '말투를 빠르고 조급하게 하세요.' : ''}
-5. ${persona.age >= 50 ? '어르신 특유의 "~했소?", "~인가요?", "~합디다" 등 연령대 말투를 자연스럽게 사용하세요.' : ''}
+3. 말을 더듬거나 불필요한 쉼표(,)·줄임표(...)를 남발하지 말고, 실제 전화 통화처럼 한 호흡으로 자연스럽게 이어지는 매끄러운 한국어 구어체로 작성하세요.
+4. 상담원의 직전 질문이나 말에 집중하여 즉각적으로 반응하세요.
+5. ${persona.speechOptions.rate && persona.speechOptions.rate > 1.2 ? '말투를 빠르고 조급하게 하세요.' : ''}
+6. ${persona.age >= 50 ? '어르신 특유의 "~했소?", "~인가요?", "~합디다" 등 연령대 말투를 자연스럽게 사용하세요.' : ''}
 
 [최근 통화 내용]
 ${conversationText}

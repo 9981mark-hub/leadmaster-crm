@@ -62,8 +62,16 @@ export default function TrainingCenterPage() {
   const [isMicActive, setIsMicActive] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [useNeuralVoice, setUseNeuralVoice] = useState(true);
-  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.25);
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.1); // 기본 +10% 가속 템포
   const [isAiReplying, setIsAiReplying] = useState(false);
+
+  // 캐릭터 기본 억양에 사용자 지정 속도를 합성하는 헬퍼 (+10%, +25% 등)
+  const getAdjustedRate = (baseRateStr: string = '+10%', multiplier: number): string => {
+    const baseNum = parseInt(baseRateStr.replace(/[%+]/g, ''), 10) || 0;
+    const offset = Math.round((multiplier - 1.0) * 100);
+    const total = baseNum + offset;
+    return total >= 0 ? `+${total}%` : `${total}%`;
+  };
 
   // Smart Silence & Fast Trigger Refs
   const silenceTimerRef = useRef<any>(null);
@@ -176,8 +184,8 @@ export default function TrainingCenterPage() {
       if (isTtsEnabled) {
         speechService.speak(firstMsg.text, {
           ...selectedPersona.speechOptions,
-          rate: speedMultiplier,
-          neuralRate: speedMultiplier >= 1.4 ? '+20%' : speedMultiplier >= 1.25 ? '+15%' : '+0%',
+          rate: (selectedPersona.speechOptions.rate || 1.25) * speedMultiplier,
+          neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
         });
       }
 
@@ -292,8 +300,8 @@ export default function TrainingCenterPage() {
       if (isTtsEnabled) {
         await speechService.speak(replyText, {
           ...selectedPersona.speechOptions,
-          rate: speedMultiplier,
-          neuralRate: speedMultiplier >= 1.4 ? '+20%' : speedMultiplier >= 1.25 ? '+15%' : '+0%',
+          rate: (selectedPersona.speechOptions.rate || 1.25) * speedMultiplier,
+          neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
         });
       }
     } catch (e) {
@@ -538,12 +546,12 @@ export default function TrainingCenterPage() {
 
             {/* Speed Multiplier */}
             <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
-              <span>말소리 속도</span>
+              <span className="font-medium text-[11px]">말소리 속도</span>
               <div className="flex items-center gap-1">
                 {[
-                  { label: '1.0x', val: 1.0 },
-                  { label: '1.25x 실전', val: 1.25 },
-                  { label: '1.4x 빠름', val: 1.4 },
+                  { label: '표준', val: 1.0 },
+                  { label: '자연스러움 (+10%)', val: 1.1 },
+                  { label: '실전 (+25%)', val: 1.25 },
                 ].map(opt => (
                   <button
                     key={opt.val}
@@ -565,11 +573,14 @@ export default function TrainingCenterPage() {
             <div className="p-2 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-[10px] text-blue-800 dark:text-blue-300 leading-snug">
               {useNeuralVoice ? (
                 <div>
-                  <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center gap-1">
-                    🌟 Microsoft Edge Neural Voice
+                  <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center justify-between">
+                    <span>🌟 Microsoft Edge Neural Voice</span>
+                    <span className="font-mono text-blue-700 dark:text-blue-300 font-bold">
+                      {getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier)}
+                    </span>
                   </div>
                   <div className="mt-0.5 text-blue-600 dark:text-blue-400">
-                    보이스: {selectedPersona.speechOptions.neuralVoice} ({selectedPersona.speechOptions.gender === 'female' ? '여성 신경망' : '남성 신경망'})
+                    {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '여성 신경망' : '남성 신경망'}) • {selectedPersona.speechOptions.neuralVoice}
                   </div>
                 </div>
               ) : (

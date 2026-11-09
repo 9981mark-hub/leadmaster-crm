@@ -64,6 +64,8 @@ class SpeechService {
     const cleanText = text
       .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
       .replace(/[\.\.\.~"']/g, ' ')
+      .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+      .replace(/,\s*,/g, ',')
       .replace(/\s+/g, ' ')
       .trim();
 
@@ -82,7 +84,7 @@ class SpeechService {
         body: JSON.stringify({
           text: cleanText,
           voice,
-          rate: options.neuralRate || 'default',
+          rate: options.neuralRate || '+10%',
           pitch: options.neuralPitch || 'default',
         }),
       });
@@ -143,6 +145,8 @@ class SpeechService {
       const cleanText = text
         .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
         .replace(/[\.\.\.~"']/g, ' ')
+        .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+        .replace(/,\s*,/g, ',')
         .replace(/\s+/g, ' ')
         .trim();
 
