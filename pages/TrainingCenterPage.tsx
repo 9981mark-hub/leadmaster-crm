@@ -60,6 +60,7 @@ export default function TrainingCenterPage() {
   const [interimText, setInterimText] = useState('');
   const [isMicActive, setIsMicActive] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.25);
   const [isAiReplying, setIsAiReplying] = useState(false);
 
   // Sandbox Memo & Outcome state
@@ -130,7 +131,7 @@ export default function TrainingCenterPage() {
 
       // Speak AI customer first message
       if (isTtsEnabled) {
-        speechService.speak(firstMsg.text, selectedPersona.speechOptions);
+        speechService.speak(firstMsg.text, { ...selectedPersona.speechOptions, rate: speedMultiplier });
       }
 
       // Automatically enable mic if available
@@ -202,7 +203,7 @@ export default function TrainingCenterPage() {
 
       // Speak reply if TTS enabled
       if (isTtsEnabled) {
-        await speechService.speak(replyText, selectedPersona.speechOptions);
+        await speechService.speak(replyText, { ...selectedPersona.speechOptions, rate: speedMultiplier });
       }
     } catch (e) {
       console.error('Error generating AI reply:', e);
@@ -410,8 +411,31 @@ export default function TrainingCenterPage() {
                 {isTtsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
               </button>
             </div>
+            <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1 border-t border-gray-200 dark:border-gray-700">
+              <span>말소리 속도</span>
+              <div className="flex items-center gap-1">
+                {[
+                  { label: '1.0x 보통', val: 1.0 },
+                  { label: '1.25x 실전', val: 1.25 },
+                  { label: '1.4x 빠름', val: 1.4 },
+                ].map(opt => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setSpeedMultiplier(opt.val)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                      speedMultiplier === opt.val
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-[10px] text-gray-400">
-              현재 페르소나 목소리: {selectedPersona.speechOptions.gender === 'female' ? '여성 톤' : '남성 톤'} (Pitch {selectedPersona.speechOptions.pitch}, Rate {selectedPersona.speechOptions.rate})
+              현재 페르소나 목소리: {selectedPersona.speechOptions.gender === 'female' ? '여성 톤' : '남성 톤'} (속도 {speedMultiplier}x)
             </p>
           </div>
         </div>
@@ -523,7 +547,7 @@ export default function TrainingCenterPage() {
                         {msg.text}
                         {msg.speaker === 'customer' && isTtsEnabled && (
                           <button
-                            onClick={() => speechService.speak(msg.text, selectedPersona.speechOptions)}
+                            onClick={() => speechService.speak(msg.text, { ...selectedPersona.speechOptions, rate: speedMultiplier })}
                             className="ml-2 text-gray-400 hover:text-blue-500 inline-block align-middle"
                             title="다시 듣기"
                           >

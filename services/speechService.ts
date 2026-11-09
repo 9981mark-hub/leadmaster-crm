@@ -29,7 +29,7 @@ class SpeechService {
 
   // 텍스트를 음성으로 발화 (TTS)
   public speak(text: string, options: SpeechVoiceOptions = {}): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!this.synth) {
         console.warn('SpeechSynthesis is not supported in this browser.');
         resolve();
@@ -39,19 +39,43 @@ class SpeechService {
       // 이전 발화 취소
       this.synth.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ko-KR';
-      utterance.pitch = options.pitch ?? 1.0;
-      utterance.rate = options.rate ?? 1.0;
+      // [자연스러운 한국어 발화 튜닝]
+      // 괄호 지문 (예: (한숨), [화를 내며]), 줄임표(...), 따옴표 등 어색한 침묵을 유발하는 기호 제거
+      const cleanText = text
+        .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+        .replace(/[\.\.\.~"']/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
-      // 한국어 음성 매칭
+      if (!cleanText) {
+        resolve();
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'ko-KR';
+      
+      // 피치 왜곡 방지 (0.9 ~ 1.08 범위 유지하여 기계음/괴물소리 방지)
+      const rawPitch = options.pitch ?? 1.0;
+      utterance.pitch = Math.max(0.9, Math.min(1.1, rawPitch));
+      
+      // 실제 한국인 통화 템포로 기본 속도 상향 (기본 1.25배속)
+      const rawRate = options.rate ?? 1.25;
+      utterance.rate = Math.max(1.0, Math.min(1.6, rawRate));
+
+      // 한국어 고음질/자연스러운 음성 우선 매칭
       const koVoices = this.getKoreanVoices();
       if (koVoices.length > 0) {
+        // 1순위: Google 또는 Natural/Online 표기 음성
+        const naturalVoice = koVoices.find(v => 
+          v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Google')
+        );
+        
         if (options.gender === 'male') {
           const maleVoice = koVoices.find(v => v.name.toLowerCase().includes('male') || v.name.includes('남성'));
-          utterance.voice = maleVoice || koVoices[0];
+          utterance.voice = maleVoice || naturalVoice || koVoices[0];
         } else {
-          utterance.voice = koVoices[0];
+          utterance.voice = naturalVoice || koVoices[0];
         }
       }
 
