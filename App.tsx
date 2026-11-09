@@ -134,7 +134,12 @@ const MobileMoreMenu = ({ navs, path, onClose }: { navs: any[]; path: string; on
 );
 
 // 상담원(agent)에게 숨기는 관리자 전용 화면
-const ADMIN_ONLY_PATHS = ['/settlement', '/settings', '/statistics', '/team', '/platform'];
+const ADMIN_ONLY_PATHS = ['/settlement', '/settings', '/statistics', '/team', '/platform', '/telegram', '/auto-dial'];
+
+const PlatformAdminOnly: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { org } = useAuth();
+  return org?.isPlatformAdmin ? children : <Navigate to="/" replace />;
+};
 
 const OrgBadge: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { org } = useAuth();
@@ -236,7 +241,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // [CRITICAL] Cache Buster / Force Version Update
   React.useEffect(() => {
-    const CURRENT_VERSION = "3.39";
+    const CURRENT_VERSION = "3.40";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
@@ -260,15 +265,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/lite', icon: Zap, label: '간편 콜 모드' },
     { to: '/new', icon: PlusCircle, label: '신규등록' },
     { to: '/telegram', icon: Smartphone, label: 'TG연동', badge: pendingTgCount > 0 ? pendingTgCount : undefined },
-    { to: '/auto-dial', icon: PhoneCall, label: '자동통화' },
     { to: '/settlement', icon: Calculator, label: '정산' },
     { to: '/team', icon: UserCog, label: '팀 관리' },
     { to: '/settings', icon: Settings, label: '설정' },
     { to: '/mypage', icon: User, label: '마이' },
   ];
 
-  // HOST(플랫폼 관리자)에게만 "회사 관리" 메뉴
-  if (org?.isPlatformAdmin) navs.splice(navs.length - 2, 0, { to: '/platform', icon: Building2, label: '회사 관리' });
+  // HOST(플랫폼 최고관리자/대표님)에게만 미공개 기능 "자동통화" 및 "회사 관리" 메뉴 노출
+  if (org?.isPlatformAdmin) {
+    navs.splice(navs.length - 3, 0, { to: '/auto-dial', icon: PhoneCall, label: '자동통화' });
+    navs.splice(navs.length - 2, 0, { to: '/platform', icon: Building2, label: '회사 관리' });
+  }
 
   const visibleNavs = isAdmin ? navs : navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
   // 모바일 하단 바 — 핵심 4개만 고정, 나머지는 "더보기" 그리드
@@ -484,8 +491,8 @@ const ProtectedRoutes = () => {
           <Route path="/new" element={<QuickNewCase />} />
           <Route path="/new/full" element={<NewCase />} />
           <Route path="/case/:caseId" element={<CaseDetail />} />
-          <Route path="/telegram" element={<TelegramSync />} />
-          <Route path="/auto-dial" element={<AutoDial />} />
+          <Route path="/telegram" element={<AdminOnly><TelegramSync /></AdminOnly>} />
+          <Route path="/auto-dial" element={<PlatformAdminOnly><AutoDial /></PlatformAdminOnly>} />
           <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
           <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />
           <Route path="/settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />

@@ -16,6 +16,8 @@ import { CardSkeleton } from '../components/Skeleton';
 import RevenueWidget from '../components/RevenueWidget';
 import AiUsageWidget from '../components/AiUsageWidget';
 import { fetchDetailedAiUsage, DetailedAiUsage } from '../services/aiUsage';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchTeamMembers, TeamMember } from '../services/team';
 
 
 interface CaseListItemProps {
@@ -58,7 +60,10 @@ const CaseListItem: React.FC<CaseListItemProps> = ({ c, type, reminder }) => {
 
 export default function Dashboard() {
   const { theme } = useTheme();
+  const { isAdmin, org } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState<string>('all');
   const [partners, setPartners] = useState<Partner[]>([]);
   const [batches, setBatches] = useState<SettlementBatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +81,12 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDetailedAiUsage().then(res => setAiUsageSummary(res)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (isAdmin && org?.orgId) {
+      fetchTeamMembers().then(setTeamMembers).catch(() => setTeamMembers([]));
+    }
+  }, [isAdmin, org?.orgId]);
 
   useEffect(() => {
     Promise.all([fetchCases(), fetchPartners(), fetchSettlementBatches()]).then(([data, partnerData, batchData]) => {
@@ -116,12 +127,36 @@ export default function Dashboard() {
   const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
   const missedCallTiers = loadMissedCallTiers();
 
+  // 상담원은 오직 본인 배정 리드만, 관리자는 전체 대상
+  const isMyCase = useMemo(() => {
+    return (c: Case) => {
+      if (c.assignedUserId) return c.assignedUserId === org?.userId;
+      if (org?.displayName && c.managerName) return c.managerName === org.displayName;
+      return false;
+    };
+  }, [org?.userId, org?.displayName]);
+
+  const scopedCases = useMemo(() => {
+    if (!isAdmin) {
+      return cases.filter(isMyCase);
+    }
+    return cases;
+  }, [cases, isAdmin, isMyCase]);
+
+  // 차트 표시용 케이스 (관리자는 특정 상담원별 소팅 가능, 상담원은 본인 것만)
+  const chartCases = useMemo(() => {
+    if (!isAdmin) return scopedCases;
+    if (selectedMemberId === 'all') return cases;
+    if (selectedMemberId === 'unassigned') return cases.filter(c => !c.assignedUserId);
+    return cases.filter(c => c.assignedUserId === selectedMemberId);
+  }, [cases, scopedCases, isAdmin, selectedMemberId]);
+
   // [NEW] Calculate overdue missed call count (재통화 필요 건수) - using tiered intervals
-  const overdueMissedCallCount = cases.filter(c => isOverdueMissedCall(c, missedCallStatus, missedCallTiers)).length;
+  const overdueMissedCallCount = scopedCases.filter(c => isOverdueMissedCall(c, missedCallStatus, missedCallTiers)).length;
 
   // KPIs (Summary)
   // [FIX] 삭제된(휴지통) 케이스의 리마인더는 대시보드 카운트에서 제외
-  const activeCases = cases.filter(c => c.status !== '휴지통' && !c.deletedAt);
+  const activeCases = scopedCases.filter(c => c.status !== '휴지통' && !c.deletedAt);
   const allRemindersWithCase = activeCases.flatMap(c =>
     (c.reminders || []).map(r => ({ reminder: r, caseData: c }))
   );
@@ -151,7 +186,7 @@ export default function Dashboard() {
   });
 
   // Warnings - with details
-  const warningCasesWithDetails = cases.map(c => {
+  const warningCasesWithDetails = scopedCases.map(c => {
     const partner = partners.find(p => p.partnerId === c.partnerId);
     const warnings = getCaseWarnings(c, partner);
     return { caseData: c, warnings };
@@ -209,10 +244,10 @@ export default function Dashboard() {
       )}
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <KPICard title="오늘 리마인더" count={todayReminders.length} color="text-blue-600" icon={PhoneCall} />
+      <div className={`grid gap-4 ${isAdmin ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'}`}>
+        <KPICard title={isAdmin ? "오늘 리마인더" : "오늘 내 리마인더"} count={todayReminders.length} color="text-blue-600" icon={PhoneCall} />
         <div onClick={() => setShowOverdueModal(true)} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
-          <KPICard title="지연된 리마인더" count={overdueReminders.length} color="text-red-600" icon={Clock} />
+          <KPICard title={isAdmin ? "지연된 리마인더" : "지연된 내 리마인더"} count={overdueReminders.length} color="text-red-600" icon={Clock} />
         </div>
         <div onClick={() => setShowWarningModal(true)} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
           <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
@@ -220,37 +255,66 @@ export default function Dashboard() {
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
           <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText="구간별 알림 적용중" />
         </Link>
-        <div onClick={() => { const el = document.getElementById('ai-usage-widget'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
-          <KPICard
-            title="오늘 AI 사용량"
-            count={aiUsageSummary ? `${aiUsageSummary.todayCount}회` : '-'}
-            color="text-purple-600"
-            icon={Sparkles}
-            subText={aiUsageSummary ? `약 ₩${aiUsageSummary.todayCostKrw.toLocaleString()} (${aiUsageSummary.todayCount}/${aiUsageSummary.dailyCap})` : '실시간 집계'}
-          />
-        </div>
+        {isAdmin && (
+          <div onClick={() => { const el = document.getElementById('ai-usage-widget'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
+            <KPICard
+              title="오늘 AI 사용량"
+              count={aiUsageSummary ? `${aiUsageSummary.todayCount}회` : '-'}
+              color="text-purple-600"
+              icon={Sparkles}
+              subText={aiUsageSummary ? `약 ₩${aiUsageSummary.todayCostKrw.toLocaleString()} (${aiUsageSummary.todayCount}/${aiUsageSummary.dailyCap})` : '실시간 집계'}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Revenue KPI Widget */}
-      <RevenueWidget cases={cases} partners={partners} />
+      {/* Revenue KPI Widget (관리자 전용: 회사 매출/수수료/미수금) */}
+      {isAdmin && <RevenueWidget cases={cases} partners={partners} />}
 
-      {/* Gemini AI 실시간 사용량 & 비용 분석 위젯 */}
-      <AiUsageWidget />
+      {/* Gemini AI 실시간 사용량 & 비용 분석 위젯 (관리자 전용: AI 호출비용) */}
+      {isAdmin && <AiUsageWidget />}
 
       {/* Charts Section */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">영업 현황</h3>
-          <Link
-            to="/statistics"
-            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 hover:underline"
-          >
-            📊 상세 통계 보기 →
-          </Link>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div className="flex items-center gap-3">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">영업 현황</h3>
+            {isAdmin && teamMembers.length > 0 && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-gray-500 dark:text-gray-400">담당자별:</span>
+                <select
+                  value={selectedMemberId}
+                  onChange={e => setSelectedMemberId(e.target.value)}
+                  className="h-8 px-2.5 py-1 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">전체 상담원 (전사 통합)</option>
+                  <option value="unassigned">미배정 리드</option>
+                  {teamMembers.filter(m => m.status === 'active').map(m => (
+                    <option key={m.userId} value={m.userId}>
+                      {m.displayName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {!isAdmin && (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
+                내 배정 리드 기준
+              </span>
+            )}
+          </div>
+          {isAdmin && (
+            <Link
+              to="/statistics"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium flex items-center gap-1 hover:underline"
+            >
+              📊 상세 통계 보기 →
+            </Link>
+          )}
         </div>
         <div className="grid md:grid-cols-2 gap-6">
-          <MonthlyTrendChart cases={cases} isDark={theme === 'dark'} />
-          <StatusPieChart cases={cases} isDark={theme === 'dark'} />
+          <MonthlyTrendChart cases={chartCases} isDark={theme === 'dark'} />
+          <StatusPieChart cases={chartCases} isDark={theme === 'dark'} />
         </div>
       </div>
 

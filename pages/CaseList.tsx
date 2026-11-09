@@ -219,6 +219,12 @@ export default function CaseList() {
                 (c.reminders || []).some(r => String(r.content || '').toLowerCase().includes(q)) ||
                 matchingSmsPhones.includes(String(c.phone || '').replace(/[^0-9]/g, ''));
 
+            // 상담원(agent)은 오직 본인 배정 리드만 열람 가능 (타 상담원 리드 접근 차단)
+            if (!isAdmin && org?.userId) {
+                const isMine = c.assignedUserId === org.userId || (org.displayName && c.managerName === org.displayName);
+                if (!isMine) return false;
+            }
+
             if (quickView === 'today' && !(hasDueReminder(c) || c.isNew || isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers))) return false;
             if (quickView === 'mine' && c.assignedUserId !== org?.userId) return false;
             if (quickView === 'unassigned' && c.assignedUserId) return false;
@@ -287,16 +293,19 @@ export default function CaseList() {
     // 필터가 바뀌면 선택 해제
     useEffect(() => { setSelected(new Set()); }, [deferredSearch, statusFilters, inboundPathFilter, partnerFilter, quickView, assigneeFilter, viewMode, showNewOnly, showOverdueMissedOnly, showStarredOnly]);
 
-    // 빠른 보기 숫자 (휴지통 제외)
+    // 빠른 보기 숫자 (휴지통 제외, 상담원은 본인 배정 건만 집계)
     const viewCounts = useMemo(() => {
-        const live = cases.filter(c => c.status !== '휴지통' && !c.deletedAt && !c.isArchived);
+        let live = cases.filter(c => c.status !== '휴지통' && !c.deletedAt && !c.isArchived);
+        if (!isAdmin && org?.userId) {
+            live = live.filter(c => c.assignedUserId === org.userId || (org.displayName && c.managerName === org.displayName));
+        }
         return {
             all: live.length,
             today: live.filter(c => hasDueReminder(c) || c.isNew || isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)).length,
             mine: org?.userId ? live.filter(c => c.assignedUserId === org.userId).length : 0,
             unassigned: live.filter(c => !c.assignedUserId).length,
         };
-    }, [cases, hasDueReminder, missedCallStatus, missedCallIntervalTiers, org?.userId]);
+    }, [cases, hasDueReminder, missedCallStatus, missedCallIntervalTiers, org?.userId, org?.displayName, isAdmin]);
 
     const sortedCases = useMemo(() => {
         return [...filteredCases].sort((a, b) => {
