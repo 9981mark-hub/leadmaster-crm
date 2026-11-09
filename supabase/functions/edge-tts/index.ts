@@ -1,5 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { decodeBase64 } from 'https://deno.land/std@0.168.0/encoding/base64.ts';
+import { decodeBase64 } from 'jsr:@std/encoding@1/base64';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -7,24 +6,41 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Google Cloud Text-to-Speech API Key
-const GOOGLE_TTS_API_KEY = Deno.env.get('GOOGLE_TTS_API_KEY') || 'AIzaSyDawRS__NWpBQkw5v1TzyZ6wUEDQQv92XE';
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || '';
 
-// 보이스 ID 매핑 (기존 Edge TTS ID 및 Google Neural2/Wavenet ID 모두 지원)
-const VOICE_MAP: Record<string, string> = {
-  'ko-KR-InJoonNeural': 'ko-KR-Neural2-C',          // 40대 남성 (온순/차분)
-  'ko-KR-SunHiNeural': 'ko-KR-Neural2-A',           // 30대 여성 (바쁨/명랑)
-  'ko-KR-HyunsuMultilingualNeural': 'ko-KR-Wavenet-C', // 50대 남성 (의심/중후)
-  'ko-KR-Neural2-A': 'ko-KR-Neural2-A',
-  'ko-KR-Neural2-B': 'ko-KR-Neural2-B',
-  'ko-KR-Neural2-C': 'ko-KR-Neural2-C',
-  'ko-KR-Wavenet-A': 'ko-KR-Wavenet-A',
-  'ko-KR-Wavenet-B': 'ko-KR-Wavenet-B',
-  'ko-KR-Wavenet-C': 'ko-KR-Wavenet-C',
-  'ko-KR-Wavenet-D': 'ko-KR-Wavenet-D',
-};
+// PCM 24kHz Mono 16-bit to WAV 변환 헬퍼
+function pcmToWav(pcmBytes: Uint8Array, sampleRate = 24000, numChannels = 1, bitsPerSample = 16): Uint8Array {
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const dataSize = pcmBytes.length;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
 
-serve(async (req) => {
+  // RIFF Chunk
+  view.setUint32(0, 0x52494646, false); // "RIFF"
+  view.setUint32(4, 36 + dataSize, true);
+  view.setUint32(8, 0x57415645, false); // "WAVE"
+
+  // fmt Subchunk
+  view.setUint32(12, 0x666d7420, false); // "fmt "
+  view.setUint32(16, 16, true);          // Subchunk1Size (16 for PCM)
+  view.setUint16(20, 1, true);           // AudioFormat (1 for PCM)
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+
+  // data Subchunk
+  view.setUint32(36, 0x64617461, false); // "data"
+  view.setUint32(40, dataSize, true);
+
+  // Copy PCM data
+  new Uint8Array(buffer, 44).set(pcmBytes);
+  return new Uint8Array(buffer);
+}
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS });
   }
@@ -38,7 +54,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { text, voice = 'ko-KR-Neural2-C', rate = '+10%', pitch = 'default', apiKey = GOOGLE_TTS_API_KEY } = body;
+    const { text, voice = 'Puck', gender = 'male' } = body;
 
     if (!text || typeof text !== 'string') {
       return new Response(JSON.stringify({ error: 'Text is required' }), {
@@ -47,7 +63,6 @@ serve(async (req) => {
       });
     }
 
-    // 괄호 지문, 특수부호 정제
     const cleanText = text
       .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
       .replace(/[\.\.\.~"']/g, ' ')
@@ -57,96 +72,84 @@ serve(async (req) => {
       .trim();
 
     if (!cleanText) {
-      return new Response(JSON.stringify({ error: 'Empty text after cleaning' }), {
+      return new Response(JSON.stringify({ error: 'Empty text' }), {
         status: 400,
         headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
 
-    // 발화 속도 계산 (+10% -> 1.10, +0% -> 1.0, 1.25 -> 1.25)
-    let speakingRate = 1.1;
-    if (typeof rate === 'number') {
-      speakingRate = Math.min(Math.max(rate, 0.5), 2.0);
-    } else if (typeof rate === 'string') {
-      const match = rate.match(/^([+-]?\d+)%/);
-      if (match) {
-        const percent = parseInt(match[1], 10);
-        speakingRate = 1.0 + percent / 100;
-      }
+    // 보이스 선택: 남성은 Fenrir/Puck, 여성은 Aoede/Kore
+    let selectedVoice = 'Aoede';
+    if (gender === 'male' || voice.toLowerCase().includes('male') || voice.includes('InJoon') || voice.includes('Neural2-C')) {
+      selectedVoice = 'Fenrir';
     }
 
-    // 피치 계산
-    let pitchVal = 0.0;
-    if (typeof pitch === 'number') {
-      pitchVal = Math.min(Math.max(pitch, -20.0), 20.0);
-    } else if (typeof pitch === 'string') {
-      const match = pitch.match(/^([+-]?\d+)(Hz|st)?/);
-      if (match) {
-        pitchVal = parseFloat(match[1]);
-      }
-    }
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const prompt = `당신은 전화 통화 중인 고객입니다. 다음 대사를 실제 사람이 전화 수화기로 말하듯이 자연스러운 한국어 구어체와 감정을 담아 말하세요: "${cleanText}"`;
 
-    const selectedVoice = VOICE_MAP[voice] || (voice.startsWith('ko-KR-') ? voice : 'ko-KR-Neural2-C');
-
-    // Google Cloud Text-to-Speech API 호출
-    const googleTtsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
-    const ttsRes = await fetch(googleTtsUrl, {
+    const gRes = await fetch(geminiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        input: { text: cleanText },
-        voice: {
-          languageCode: 'ko-KR',
-          name: selectedVoice,
-        },
-        audioConfig: {
-          audioEncoding: 'MP3',
-          speakingRate,
-          pitch: pitchVal,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: selectedVoice,
+              },
+            },
+          },
         },
       }),
     });
 
-    if (!ttsRes.ok) {
-      const errJson = await ttsRes.json().catch(() => ({}));
-      const errMsg = errJson?.error?.message || `Google TTS error HTTP ${ttsRes.status}`;
-
-      // API 비활성화(403) 시 구체적인 활성화 URL 전달
-      if (ttsRes.status === 403 || errMsg.includes('Cloud Text-to-Speech API has not been used') || errMsg.includes('disabled')) {
-        return new Response(JSON.stringify({
-          error: 'GOOGLE_TTS_DISABLED',
-          message: 'Google Cloud Text-to-Speech API 활성화가 필요합니다.',
-          activationUrl: 'https://console.developers.google.com/apis/api/texttospeech.googleapis.com/overview?project=703402707746',
-        }), {
-          status: 403,
-          headers: { ...CORS, 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(JSON.stringify({ error: errMsg }), {
-        status: ttsRes.status,
+    if (!gRes.ok) {
+      const errText = await gRes.text().catch(() => '');
+      console.error('Gemini Audio error:', gRes.status, errText);
+      return new Response(JSON.stringify({ error: `Gemini audio error ${gRes.status}`, details: errText }), {
+        status: 500,
         headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
 
-    const ttsData = await ttsRes.json();
-    if (!ttsData.audioContent) {
-      throw new Error('No audioContent in Google TTS response');
+    const data = await gRes.json();
+    const candidate = data?.candidates?.[0];
+    const audioPart = candidate?.content?.parts?.find((p: any) => p.inlineData?.mimeType?.startsWith('audio/'));
+
+    if (!audioPart || !audioPart.inlineData?.data) {
+      return new Response(JSON.stringify({ error: 'No audio part', data }), {
+        status: 200,
+        headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
     }
 
-    const audioBytes = decodeBase64(ttsData.audioContent);
+    const rawPcm = decodeBase64(audioPart.inlineData.data);
+    const mime = audioPart.inlineData.mimeType || 'audio/pcm';
 
-    return new Response(audioBytes, {
+    // audio/pcm일 경우 브라우저 호환을 위해 표준 WAV 헤더 결합
+    let outputBytes: Uint8Array = rawPcm;
+    let outputMime = 'audio/wav';
+
+    if (mime.includes('pcm') || mime.includes('L16') || !mime.includes('wav')) {
+      // Gemini 2.0 Flash 오디오 기본 규격: 24,000Hz 1채널 16-bit PCM
+      outputBytes = pcmToWav(rawPcm, 24000, 1, 16);
+    } else {
+      outputMime = mime;
+    }
+
+    return new Response(outputBytes, {
       status: 200,
       headers: {
         ...CORS,
-        'Content-Type': 'audio/mpeg',
+        'Content-Type': outputMime,
         'Cache-Control': 'public, max-age=86400',
       },
     });
   } catch (err: any) {
     console.error('TTS execution failed:', err);
-    return new Response(JSON.stringify({ error: err.message || 'TTS execution failed' }), {
+    return new Response(JSON.stringify({ error: err.message || 'TTS failed' }), {
       status: 500,
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
