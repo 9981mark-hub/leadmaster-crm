@@ -186,8 +186,7 @@ export default function TrainingCenterPage() {
       if (isTtsEnabled) {
         speechService.speak(firstMsg.text, {
           ...selectedPersona.speechOptions,
-          rate: (selectedPersona.speechOptions.rate || 1.25) * speedMultiplier,
-          neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
+          rate: speedMultiplier,
         });
       }
 
@@ -302,8 +301,7 @@ export default function TrainingCenterPage() {
       if (isTtsEnabled) {
         await speechService.speak(replyText, {
           ...selectedPersona.speechOptions,
-          rate: (selectedPersona.speechOptions.rate || 1.25) * speedMultiplier,
-          neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
+          rate: speedMultiplier,
         });
       }
     } catch (e) {
@@ -515,24 +513,13 @@ export default function TrainingCenterPage() {
               </span>
             </div>
 
-            {/* Neural Voice Toggle */}
+            {/* High Quality Voice Indicator */}
             <div className="flex items-center justify-between text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-[11px]">Google Neural2 고음질</span>
-              <button
-                onClick={() => {
-                  const next = !useNeuralVoice;
-                  setUseNeuralVoice(next);
-                  speechService.setUseNeuralVoice(next);
-                }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  useNeuralVoice
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                }`}
-              >
+              <span className="font-medium text-[11px]">고음질 신경망 음성</span>
+              <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs">
                 <Sparkles className="w-3 h-3" />
-                {useNeuralVoice ? 'Google Neural2 ON' : '기본 브라우저'}
-              </button>
+                신경망 자동 우선 탑재
+              </span>
             </div>
 
             {/* Telephone Filter Toggle */}
@@ -621,16 +608,11 @@ export default function TrainingCenterPage() {
               type="button"
               onClick={async () => {
                 const sampleText = selectedPersona.initialMessage;
-                const engine = await speechService.speak(sampleText, {
+                const result = await speechService.speak(sampleText, {
                   ...selectedPersona.speechOptions,
-                  rate: (selectedPersona.speechOptions.rate || 1.25) * speedMultiplier,
-                  neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
+                  rate: speedMultiplier,
                 });
-                if (engine === 'neural') {
-                  showToast('🌟 실제 사람 신경망 목소리(고음질 사람 음성 + 전화 수화기 필터)로 재생되었습니다.', 'success');
-                } else {
-                  showToast('⚠️ 브라우저 기본 로컬 엔진(전화기 필터 적용)으로 재생되었습니다.', 'info');
-                }
+                showToast(`🔊 재생된 음성: [${result.voiceName}]`, 'success');
               }}
               className="w-full py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-blue-200/60 dark:border-blue-800/40"
             >
