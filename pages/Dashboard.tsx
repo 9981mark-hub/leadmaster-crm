@@ -108,25 +108,6 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto space-y-6 pt-6">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
-        </div>
-        <div className="h-64 glass-panel rounded-xl"></div>
-      </div>
-    );
-  }
-
-  // [NEW] Missed call settings from localStorage
-  const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
-  const missedCallTiers = loadMissedCallTiers();
-
   // 상담원은 오직 본인 배정 리드만, 관리자는 전체 대상
   const isMyCase = useMemo(() => {
     return (c: Case) => {
@@ -150,6 +131,25 @@ export default function Dashboard() {
     if (selectedMemberId === 'unassigned') return cases.filter(c => !c.assignedUserId);
     return cases.filter(c => c.assignedUserId === selectedMemberId);
   }, [cases, scopedCases, isAdmin, selectedMemberId]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6 pt-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+        <div className="h-64 glass-panel rounded-xl"></div>
+      </div>
+    );
+  }
+
+  // [NEW] Missed call settings from localStorage
+  const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
+  const missedCallTiers = loadMissedCallTiers();
 
   // [NEW] Calculate overdue missed call count (재통화 필요 건수) - using tiered intervals
   const overdueMissedCallCount = scopedCases.filter(c => isOverdueMissedCall(c, missedCallStatus, missedCallTiers)).length;
