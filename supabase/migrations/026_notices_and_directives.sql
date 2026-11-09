@@ -157,17 +157,17 @@ CREATE OR REPLACE FUNCTION public.mark_notice_read(p_notice_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public
-AS 
+AS $$
 BEGIN
     INSERT INTO public.notice_reads (notice_id, org_id, user_id, read_at, confirmed, confirmed_at)
     VALUES (p_notice_id, public.current_org_id(), auth.uid(), NOW(), TRUE, NOW())
     ON CONFLICT (notice_id, user_id) DO NOTHING;
     RETURN TRUE;
 END;
-;
+$$;
 
 -- 6. Realtime 연동 활성화 (새 공지 실시간 알림)
-DO 
+DO $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM pg_publication_tables 
@@ -182,6 +182,6 @@ BEGIN
     ) THEN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.directives;
     END IF;
-END ;
+END $$;
 
 COMMIT;
