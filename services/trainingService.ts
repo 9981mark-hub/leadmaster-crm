@@ -88,6 +88,108 @@ export interface TrainingSessionRecord {
   adminFeedback?: AdminFeedback;
 }
 
+// ============================================
+// 회사별·관리자별 맞춤형 훈련 정책 및 스크립트 설정 (Company Training Config)
+// ============================================
+export interface CompanyTrainingConfig {
+  companyName: string;          // 회사/법인명 (예: 법무법인 신안)
+  departmentName: string;       // 담당 부서/팀명 (예: 회생파산 전담센터)
+  leadChannelName: string;      // 인입 채널명 (예: 온라인 무료 안심 자가진단)
+  representativePhone: string;  // 공식 대표번호 (예: 02-588-7119)
+  standardOpening: string;      // 정규 첫인사 템플릿
+  quickOpening: string;         // 바쁜 고객용 10초 퀵 오프닝
+  requiredKeywords: string[];   // 필수 포함 키워드 (미언급 시 감점)
+  bannedKeywords: string[];     // 엄격 금지어 (과장광고 방지)
+  customQuestions: string[];    // 회사별 추가 문진 항목
+}
+
+export const PRESETS_CONFIG: Record<string, { label: string; desc: string; config: CompanyTrainingConfig }> = {
+  legal: {
+    label: '🏢 법무법인 회생/파산 전문',
+    desc: '개인회생·파산 법률사무소 표준 (법원 접수, 비밀보장, 수수료 0원)',
+    config: {
+      companyName: '법무법인 신안',
+      departmentName: '회생파산 종합지원센터',
+      leadChannelName: '온라인 무료 안심 자가진단',
+      representativePhone: '02-588-7119',
+      standardOpening: '안녕하십니까, {고객명} 고객님! {회사명} {부서명}의 {상담원명} 상담원입니다. 일전에 신청해주신 {인입채널} 관련하여 법원 감면 혜택 가심사차 연락드렸습니다. 지금 2분 정도 통화 괜찮으실까요?',
+      quickOpening: '바쁘신 시간 죄송합니다, 고객님! {회사명}입니다. 신청하신 서류 조건만 30초 내로 정리해 드리고 편하신 시간대로 다시 전화드리겠습니다!',
+      requiredKeywords: ['비밀 보장', '취소 수수료 없음', '법원 접수'],
+      bannedKeywords: ['100% 무조건 승인', '전액 탕감 보장', '불법 수수료'],
+      customQuestions: ['최근 1년 내 신규 대출 발생 여부', '배우자 명의 재산 유무'],
+    },
+  },
+  loan: {
+    label: '💳 서민금융 대환대출 전문',
+    desc: '중금리·고금리 대환 및 금융컨설팅 표준 (금감원 등록, 이자 절감)',
+    config: {
+      companyName: '서민금융 파트너스',
+      departmentName: '안심대환 상담팀',
+      leadChannelName: '정부지원 안심대환 간편조회',
+      representativePhone: '1588-4920',
+      standardOpening: '안녕하십니까, {고객명} 고객님! {회사명} {부서명}의 {상담원명}입니다. 일전에 조회해주신 {인입채널} 신청 건으로 금리 인하 가심사 결과 안내차 연락드렸습니다.',
+      quickOpening: '고객님, 지금 많이 바쁘신가요? {회사명}입니다! 30초만 대환 한도 확인해 드리고 오후 브레이크 타임에 재연락드릴까요?',
+      requiredKeywords: ['대출중개수수료 무료', '정식 등록 법인', '신용점수 영향 없음'],
+      bannedKeywords: ['작업대출', '선입금 요구', '무조건 100% 한도'],
+      customQuestions: ['기존 대출 금리대 (15% 이상 여부)', '월 소득 대비 상환액'],
+    },
+  },
+  business: {
+    label: '🏭 소상공인/자영업자 긴급지원',
+    desc: '자영업자 다중채무 및 세금 체납 긴급 분할지원 표준',
+    config: {
+      companyName: '소상공인 기업지원센터',
+      departmentName: '자영업자 재기지원팀',
+      leadChannelName: '사업자 긴급운영자금 자가진단',
+      representativePhone: '02-710-8800',
+      standardOpening: '사장님, 안녕하십니까! {회사명} {부서명}의 {상담원명}입니다. 남겨주신 {인입채널} 건으로 세금 체납 및 거래처 대금 정리 지원방안 안내차 연락드렸습니다.',
+      quickOpening: '사장님, 장사 준비로 많이 바쁘시죠? {회사명}입니다. 통화 가능하신 시간대만 지정해 주시면 그때 다시 연락드리겠습니다!',
+      requiredKeywords: ['세금 분할납부', '신용보증재단 연계', '사업자 등록 유지'],
+      bannedKeywords: ['일수 사채 대출', '통장 대여', '무조건 전액 지원'],
+      customQuestions: ['부가가치세 및 국세 체납액', '직원 4대보험 가입 여부'],
+    },
+  },
+};
+
+export const DEFAULT_TRAINING_CONFIG: CompanyTrainingConfig = PRESETS_CONFIG.legal.config;
+
+const CONFIG_STORAGE_KEY = 'lm_company_training_config';
+
+// 관리자 훈련 설정 로드
+export const getCompanyTrainingConfig = (): CompanyTrainingConfig => {
+  try {
+    const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+    return raw ? { ...DEFAULT_TRAINING_CONFIG, ...JSON.parse(raw) } : DEFAULT_TRAINING_CONFIG;
+  } catch {
+    return DEFAULT_TRAINING_CONFIG;
+  }
+};
+
+// 관리자 훈련 설정 저장
+export const saveCompanyTrainingConfig = (config: CompanyTrainingConfig): void => {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+  } catch (e) {
+    console.error('Failed to save company training config:', e);
+  }
+};
+
+// 템플릿 변수 동적 치환 함수
+export const interpolateOpeningScript = (
+  template: string,
+  config: CompanyTrainingConfig,
+  agentName: string = '상담원',
+  customerName: string = '고객님'
+): string => {
+  return template
+    .replace(/\{회사명\}/g, config.companyName || '법무법인')
+    .replace(/\{부서명\}/g, config.departmentName || '상담센터')
+    .replace(/\{상담원명\}/g, agentName)
+    .replace(/\{인입채널\}/g, config.leadChannelName || '무료 자가진단')
+    .replace(/\{대표번호\}/g, config.representativePhone || '대표번호')
+    .replace(/\{고객명\}/g, customerName);
+};
+
 // 6대 취약 유형별 타깃 훈련 카테고리 정의
 export type WeaknessCategoryId =
   | 'cat_senior_male'
@@ -665,6 +767,7 @@ export const generateAiCustomerReply = async (
   messages: TrainingMessage[],
   persona: TrainingPersona
 ): Promise<string> => {
+  const config = getCompanyTrainingConfig();
   const recentMessages = messages.slice(-6);
   const conversationText = recentMessages
     .map(m => `${m.speaker === 'agent' ? '상담원' : '고객(' + persona.customerName + ')'}: "${m.text}"`)
@@ -672,6 +775,11 @@ export const generateAiCustomerReply = async (
 
   const prompt = `당신은 상담원으로부터 **아웃바운드(발신) 전화를 수신한** 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job}) 역할입니다.
 전화벨이 울려서 막 "여보세요"하고 전화를 받았으며, 상대방이 누구인지 아직 정확히 모르는 상황입니다.
+
+[우리 회사 공식 프로필 (상담원이 밝혀야 하는 기준)]
+- 공식 회사명: "${config.companyName}" (${config.departmentName})
+- 공식 인입 채널: "${config.leadChannelName}"
+- 대표 유선 번호: "${config.representativePhone}"
 
 [고객 성향 및 배경]
 ${persona.personaPrompt}
@@ -681,13 +789,14 @@ ${persona.personaPrompt}
 - 소득: ${persona.salary}
 
 [대화 규칙 - 실전 아웃바운드 수신 상황]
-1. 당신은 전화를 수신한 입장이므로, 상담원이 먼저 인사를 건네고 소속(법무법인/회사명)과 본인 이름을 밝히며 상담 신청 건을 안내하는지 듣고 반응하세요.
-2. 만약 상담원이 소속이나 신청 건을 제대로 밝히지 않고 다짜고짜 캐물으면 "어디서 건 전화예요?", "누구신데요?"라고 따지거나 의심하세요.
-3. 실제 전화 통화이므로 **반드시 1~2문장(공백 포함 25~45자 내외)의 직설적이고 생생한 구어체**로 대답하세요.
-4. 부연설명이나 지문(예: [한숨], (화를 내며))은 일절 넣지 말고, **순수 대사 텍스트만** 바로 출력하세요.
-5. 고객의 성향(의심, 분노, 초조, 경계, 바쁨)에 맞춰 느낌표(!)나 물음표(?)를 적극적으로 사용하세요.
-6. 상담원이 "앱 설치나 비용 요구가 절대 없다", "포털 사이트에 저희 법인을 검색해 보시라"고 안심시키면 서서히 경계심을 누그러뜨리세요.
-7. ${persona.age >= 55 ? '50~60대 특유의 퉁명스러운 어르신 말투("~했소?", "~인가요?", "~하쇼!")를 자연스럽게 사용하세요.' : ''}
+1. 당신은 전화를 수신한 입장이므로, 상담원이 먼저 인사를 건네고 소속 회사명("${config.companyName}")과 신청 건("${config.leadChannelName}")을 정중히 밝히는지 주의 깊게 듣고 반응하세요.
+2. 상담원이 회사명이나 신청 건을 올바르게 밝히면 "아 네, 거기 신청했던 것 맞아요"라며 상담원의 질문을 경청하고 사연을 차분히 풀어나가세요.
+3. 만약 상담원이 회사명을 말하지 않고 얼버무리거나, 다짜고짜 개인정보부터 캐물으면: "어디서 건 전화예요?", "내 번호 어떻게 알았어요? 무슨 회사인데요?!"라고 의심하며 따지세요.
+4. 실제 전화 통화이므로 **반드시 1~2문장(공백 포함 25~45자 내외)의 직설적이고 생생한 구어체**로 대답하세요.
+5. 부연설명이나 지문(예: [한숨], (화를 내며))은 일절 넣지 말고, **순수 대사 텍스트만** 바로 출력하세요.
+6. 고객의 성향(의심, 분노, 초조, 경계, 바쁨)에 맞춰 느낌표(!)나 물음표(?)를 적극적으로 사용하세요.
+7. 상담원이 "앱 설치나 비용 요구가 절대 없다", "포털 사이트에 저희 법인을 검색해 보시라"고 안심시키면 서서히 경계심을 누그러뜨리세요.
+8. ${persona.age >= 55 ? '50~60대 특유의 퉁명스러운 어르신 말투("~했소?", "~인가요?", "~하쇼!")를 자연스럽게 사용하세요.' : ''}
 
 [최근 통화 내용]
 ${conversationText}
@@ -713,12 +822,19 @@ export const evaluateTrainingCall = async (
   messages: TrainingMessage[],
   persona: TrainingPersona
 ): Promise<TrainingReport> => {
+  const config = getCompanyTrainingConfig();
   const conversationText = messages
     .map(m => `${m.speaker === 'agent' ? '상담원' : '고객'}: ${m.text}`)
     .join('\n');
 
-  const prompt = `당신은 법률사무소 수석 사무장이자 금융 CRM 상담 품질 평가 감독관(QA 코치)입니다.
+  const prompt = `당신은 "${config.companyName}" 수석 사무장이자 금융 CRM 상담 품질 평가 감독관(QA 코치)입니다.
 신입 상담원이 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job})과 진행한 모의 상담 통화록을 정밀 평가하고 코칭 리포트 및 '사무장 인계 7대 문진 카드'를 JSON으로 작성하세요.
+
+[우리 회사 평가 준수 규칙]
+- 공식 회사명: "${config.companyName}" (상담 서두에 소속을 명확히 밝혔는지 필수 평가)
+- 공식 인입 채널: "${config.leadChannelName}"
+- 필수 포함 키워드: [${config.requiredKeywords.join(', ')}] (미언급 시 complianceScore 감점)
+- 엄격 금지어: [${config.bannedKeywords.join(', ')}] (발화 시 complianceScore 대폭 감점 및 weaknesses 지적)
 
 [고객 기본 정보]
 - 시나리오: ${persona.scenarioDescription}

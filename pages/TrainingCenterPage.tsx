@@ -13,9 +13,13 @@ import {
   generateCustomPersonaByCategory,
   WEAKNESS_CATEGORIES,
   WeaknessCategoryId,
+  getCompanyTrainingConfig,
+  interpolateOpeningScript,
+  CompanyTrainingConfig,
 } from '../services/trainingService';
 import { speechService } from '../services/speechService';
 import { TrainingReportModal } from '../components/training/TrainingReportModal';
+import { TrainingConfigModal } from '../components/training/TrainingConfigModal';
 import {
   GraduationCap,
   PhoneCall,
@@ -56,6 +60,7 @@ import {
   CheckSquare,
   Square,
   FileText,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -73,6 +78,8 @@ export default function TrainingCenterPage() {
   const [selectedPersona, setSelectedPersona] = useState<TrainingPersona>(() =>
     generateCustomPersonaByCategory('cat_phishing')
   );
+  const [trainingConfig, setTrainingConfig] = useState<CompanyTrainingConfig>(() => getCompanyTrainingConfig());
+  const [showConfigModal, setShowConfigModal] = useState(false);
   const [history, setHistory] = useState<TrainingSessionRecord[]>([]);
 
   // Call state: 'idle' | 'calling' | 'connected' | 'evaluating' | 'ended'
@@ -565,9 +572,18 @@ export default function TrainingCenterPage() {
                 팀원들이 수행한 실전 모의 통화의 녹음 로그, 7대 인계 항목 채점표를 열람하고 팀장 피드백 및 평가 등급(S/A/B/C/F)을 부여합니다.
               </p>
             </div>
-            <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
-              총 {history.length}건 기록
-            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowConfigModal(true)}
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02]"
+              >
+                <Settings className="w-4 h-4" />
+                ⚙️ 훈련 정책 & 첫인사 스크립트 설정
+              </button>
+              <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
+                총 {history.length}건 기록
+              </span>
+            </div>
           </div>
 
           {history.length === 0 ? (
@@ -975,12 +991,25 @@ export default function TrainingCenterPage() {
 
                 {/* 📢 아웃바운드 상담원 첫 인사 가이드 배너 */}
                 {callState === 'connected' && (
-                  <div className="px-3.5 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border-b border-blue-200/80 dark:border-blue-800/60 flex items-center gap-2 text-xs">
-                    <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-black shrink-0">
-                      첫마디 미션
-                    </span>
-                    <p className="text-[11px] text-blue-950 dark:text-blue-200 leading-snug truncate">
-                      고객이 전화를 받았습니다! <strong>소속(법무법인/상호)</strong>과 <strong>신청 건</strong>을 밝히며 먼저 인사를 건네세요.
+                  <div className="px-3.5 py-2.5 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 border-b border-blue-200/80 dark:border-blue-800/60 flex flex-col gap-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-black shrink-0">
+                          첫마디 미션
+                        </span>
+                        <span className="text-[10px] font-bold text-blue-900 dark:text-blue-200">
+                          [{trainingConfig.companyName}] 표준 오프닝 가이드
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowConfigModal(true)}
+                        className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                      >
+                        <Settings className="w-3 h-3" /> 스크립트 설정
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-blue-950 dark:text-blue-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                      💬 "{interpolateOpeningScript(trainingConfig.standardOpening, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName)}"
                     </p>
                   </div>
                 )}
@@ -1246,6 +1275,17 @@ export default function TrainingCenterPage() {
             handleStartCall();
           }}
           hasNextLevel={false}
+        />
+      )}
+
+      {/* ⚙️ 관리자 맞춤형 훈련 정책 및 첫인사 스크립트 설정 모달 */}
+      {showConfigModal && (
+        <TrainingConfigModal
+          onClose={() => setShowConfigModal(false)}
+          onSaved={newCfg => {
+            setTrainingConfig(newCfg);
+            showToast(`✅ [${newCfg.companyName}] 훈련 정책 및 오프닝 스크립트가 저장되었습니다.`, 'success');
+          }}
         />
       )}
     </div>
