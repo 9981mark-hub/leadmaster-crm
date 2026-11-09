@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useLayoutEffect, useRef, useCallback, useDeferredValue } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchTeamMembers, assignCases, TeamMember } from '../services/team';
+import { distributeCases } from '../services/distribution';
 import { applyLocalAssignment } from '../services/api';
 import { exportToExcel } from '../utils/xlsxExport';
 import { parseReminder } from '../utils';
@@ -705,6 +706,38 @@ export default function CaseList() {
         } finally { setBulkBusy(false); }
     };
 
+    // [다담세일즈형] 선택한 리드 활성 상담원 전원에게 균등 순번 배분
+    const bulkDistributeEvenly = async () => {
+        const ids: string[] = [];
+        selected.forEach(v => ids.push(v));
+        if (ids.length === 0) return;
+
+        const activeAgents = members.filter(m => m.status === 'active');
+        if (activeAgents.length === 0) {
+            showToast('리드를 배분할 활성 상담원이 없습니다.', 'error');
+            return;
+        }
+
+        if (!window.confirm(`선택한 리드 ${ids.length}건을 활성 상담원 ${activeAgents.length}명에게 균등 순번 배분하시겠습니까?`)) {
+            return;
+        }
+
+        setBulkBusy(true);
+        try {
+            const res = await distributeCases(ids, 'round_robin', activeAgents.map(a => a.userId), undefined, '리드 목록에서 일괄 균등 배분');
+            refetchCases();
+            const breakdown = Object.entries(res)
+                .map(([uid, cnt]) => `${memberName(uid)}: ${cnt}건`)
+                .join(', ');
+            showToast(`선택 리드 ${ids.length}건이 균등 배분되었습니다. (${breakdown})`, 'success');
+            setSelected(new Set());
+        } catch (e: any) {
+            showToast(`균등 배분 실패: ${e.message}`, 'error');
+        } finally {
+            setBulkBusy(false);
+        }
+    };
+
     // [015] 내보내기는 회사 관리자만 (버튼도 관리자에게만 보임). 접근 기록은 exportToExcel이 남긴다
     const bulkExport = () => {
         if (!isAdmin) { showToast('데이터 내보내기는 관리자만 가능합니다.', 'error'); return; }
@@ -809,12 +842,23 @@ export default function CaseList() {
                         {statuses.filter(s => s !== '휴지통' && !DROP_OFF_STATUSES.includes(s)).map(s => <option key={s} value={s} className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">{s}</option>)}
                     </select>
                     {isAdmin && members.length > 0 && (
-                        <select defaultValue="" disabled={bulkBusy} onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkAssign(v); }}
-                            className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="담당 배정">
-                            <option value="" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">담당 배정…</option>
-                            {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId} className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">{m.displayName}</option>)}
-                            <option value="__none__" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">배정 풀기</option>
-                        </select>
+                        <>
+                            <select defaultValue="" disabled={bulkBusy} onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkAssign(v); }}
+                                className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="담당 배정">
+                                <option value="" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">담당 배정…</option>
+                                {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId} className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">{m.displayName}</option>)}
+                                <option value="__none__" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">배정 풀기</option>
+                            </select>
+                            <button
+                                type="button"
+                                onClick={bulkDistributeEvenly}
+                                disabled={bulkBusy}
+                                className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium flex items-center gap-1 shadow-xs transition-colors"
+                                title="선택한 리드를 활성 상담원들에게 균등하게 1건씩 순번 배분합니다"
+                            >
+                                👥 상담원 균등 나눠주기
+                            </button>
+                        </>
                     )}
                     {isAdmin && <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>}
                     {isAdmin && viewMode === 'active' && (

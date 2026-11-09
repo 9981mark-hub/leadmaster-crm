@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Settings2, Save, Undo2, ArrowRightLeft, RefreshCw } from 'lucide-react';
+import {
+  Settings2, Save, Undo2, ArrowRightLeft, RefreshCw, Zap, Shuffle, RotateCcw,
+  AlertCircle, Users, CheckCircle2, PhoneMissed, Clock, ChevronRight, X
+} from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import {
   AgentOverview, DistributionSettings, DEFAULT_SETTINGS, METHOD_LABEL, DistributionMethod,
   fetchDistributionOverview, fetchDistributionSettings, saveAgentDistribution, saveDistributionSettings, transferCases,
+  executeInstantAutoReclaim, executeCrossAgentShuffle, reclaimAgentUntouchedOnly, fetchMissedCasesCount, fetchReclaimableCases,
+  ShuffleSummary, ReclaimSummary,
 } from '../../services/distribution';
 import { refreshLocalAssignments, fetchCases } from '../../services/api';
 
@@ -33,11 +38,29 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
   const [transferTo, setTransferTo] = useState('');
   const [transferScope, setTransferScope] = useState<'open' | 'all'>('open');
 
+  // [다담세일즈형 스마트 DB 순환 엔진]
+  const [reclaimableCount, setReclaimableCount] = useState<number>(0);
+  const [missedCount, setMissedCount] = useState<number>(0);
+  const [showShuffleModal, setShowShuffleModal] = useState<boolean>(false);
+  const [minMissedInput, setMinMissedInput] = useState<number>(3);
+  const [isShuffling, setIsShuffling] = useState<boolean>(false);
+  const [isReclaiming, setIsReclaiming] = useState<boolean>(false);
+
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [st, ov] = await Promise.all([fetchDistributionSettings(), fetchDistributionOverview()]);
-      setS(st); setSaved(st); setAgents(ov); setNotReady(false);
+      const [st, ov, recList, missRes] = await Promise.all([
+        fetchDistributionSettings(),
+        fetchDistributionOverview(),
+        fetchReclaimableCases().catch(() => []),
+        fetchMissedCasesCount(minMissedInput).catch(() => ({ total: 0, byAgent: {} })),
+      ]);
+      setS(st);
+      setSaved(st);
+      setAgents(ov);
+      setReclaimableCount(recList.length);
+      setMissedCount(missRes.total);
+      setNotReady(false);
     } catch (e: any) {
       // DB 업데이트(013) 전: 표·함수가 없음 → 안내만
       if (/does not exist|Could not find|schema cache/i.test(String(e?.message))) setNotReady(true);
@@ -45,7 +68,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, minMissedInput]);
   useEffect(() => { reload(); }, [reload]);
 
   const dirty = JSON.stringify({ ...s, exists: 0 }) !== JSON.stringify({ ...saved, exists: 0 });
@@ -99,6 +122,89 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
       showToast(`회수 실패: ${e.message}`, 'error');
     } finally {
       setBusy(false);
+    }
+  };
+
+  // [NEW] 미처리 DB만 쏙 빼서 회수
+  const handleReclaimUntouched = async (a: AgentOverview) => {
+    if (a.untouchedCases === 0) return showToast('미처리 리드가 없습니다.', 'info');
+    const choice = window.prompt(
+      `[${a.displayName}] 상담원의 아직 손대지 않은 미처리 리드 ${a.untouchedCases}건을 회수합니다.\n(진행 중인 다른 상담 건은 안전하게 유지됩니다)\n\n원하시는 방식을 입력하세요:\n1 : 다른 활성 상담원들에게 균등 재배분 (권장)\n2 : 미배정으로 회수 (관리자가 직접 나눔)`,
+      '1'
+    );
+    if (!choice) return;
+
+    const action = choice.trim() === '2' ? 'unassign' : 'reassign';
+    setBusy(true);
+    try {
+      const count = await reclaimAgentUntouchedOnly(a.userId, action);
+      if (action === 'reassign') {
+        await afterMove(`${a.displayName}님의 미처리 리드 ${count}건을 다른 상담원들에게 균등 재배분했습니다.`);
+      } else {
+        await afterMove(`${a.displayName}님의 미처리 리드 ${count}건을 미배정으로 회수했습니다.`);
+      }
+    } catch (e: any) {
+      showToast(`미처리 회수 실패: ${e.message}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // [NEW] 지금 즉시 미처리 DB 일괄 회수 & 재배분
+  const handleInstantAutoReclaim = async () => {
+    if (reclaimableCount === 0) {
+      return showToast('현재 회수 기준(시간 초과 및 미처리 상태)을 만족하는 리드가 없습니다.', 'info');
+    }
+    const actionLabel = s.reclaimAction === 'reassign' ? '활성 상담원들에게 순환 재배분' : '미배정(풀기)으로 회수';
+    if (!window.confirm(`조건(배정 후 ${(s.reclaimAfterMinutes / 60).toFixed(1)}시간 초과 미컨택)에 해당하는 리드 ${reclaimableCount}건을 즉시 회수하여 [${actionLabel}] 하시겠습니까?`)) {
+      return;
+    }
+
+    setIsReclaiming(true);
+    try {
+      const res: ReclaimSummary = await executeInstantAutoReclaim();
+      if (res.reclaimedCount === 0) {
+        showToast('회수 대상 리드가 없습니다.', 'info');
+      } else if (res.reassignedCount > 0) {
+        const breakdownStr = Object.entries(res.agentBreakdown)
+          .map(([uid, cnt]) => `${agents.find(a => a.userId === uid)?.displayName || '상담원'}: ${cnt}건`)
+          .join(', ');
+        await afterMove(`총 ${res.reclaimedCount}건의 미처리 DB를 회수하여 재배분했습니다. (${breakdownStr})`);
+      } else {
+        await afterMove(`총 ${res.reclaimedCount}건의 미처리 DB를 미배정으로 회수했습니다.`);
+      }
+    } catch (e: any) {
+      showToast(`미처리 DB 즉시 회수 실패: ${e.message}`, 'error');
+    } finally {
+      setIsReclaiming(false);
+    }
+  };
+
+  // [NEW] 부재중 DB 상담원 교차 셔플 실행
+  const handleCrossAgentShuffle = async () => {
+    if (missedCount === 0) {
+      return showToast(`현재 부재 ${minMissedInput}회 이상인 리드가 없습니다.`, 'info');
+    }
+    const activeReceivers = agents.filter(a => a.status === 'active' && a.receiving);
+    if (activeReceivers.length < 2) {
+      return showToast('교차 셔플을 진행하려면 리드를 수신할 활성 상담원이 최소 2명 이상이어야 합니다.', 'error');
+    }
+    if (!window.confirm(`부재 ${minMissedInput}회 이상인 리드 ${missedCount}건을 기존 담당자가 아닌 다른 상담원들에게 균등 교차 셔플 배분하시겠습니까? (새로운 상담원이 전화를 걸어 컨택률을 극대화합니다)`)) {
+      return;
+    }
+
+    setIsShuffling(true);
+    try {
+      const res: ShuffleSummary = await executeCrossAgentShuffle(minMissedInput);
+      setShowShuffleModal(false);
+      const breakdownStr = Object.entries(res.agentBreakdown)
+        .map(([uid, cnt]) => `${agents.find(a => a.userId === uid)?.displayName || '상담원'}: ${cnt}건`)
+        .join(', ');
+      await afterMove(`총 ${res.totalShuffled}건의 부재중 DB가 상담원 간 교차 셔플되었습니다! (${breakdownStr})`);
+    } catch (e: any) {
+      showToast(`부재중 DB 교차 셔플 실패: ${e.message}`, 'error');
+    } finally {
+      setIsShuffling(false);
     }
   };
 
@@ -229,6 +335,78 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
         </div>
       </div>
 
+      {/* ⚡ 실시간 DB 순환 & 스마트 액션 허브 (다담세일즈형) */}
+      <div className="p-5 border-t border-gray-100 dark:border-gray-700 bg-gradient-to-r from-slate-50 via-blue-50/40 to-indigo-50/30 dark:from-gray-900/40 dark:via-gray-800/60 dark:to-gray-900/40 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
+            <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+              실시간 DB 순환 & 교차 셔플 허브
+            </h3>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold">
+              다담세일즈형 쾌속 순환
+            </span>
+          </div>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            방치된 잠자는 DB를 깨워 통화 성공률을 20% 이상 반등시킵니다.
+          </span>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Action 1: 장기 미처리 DB 즉시 회수 */}
+          <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs flex flex-col justify-between gap-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-orange-500" /> 장기 미처리 DB 즉시 회수
+                </span>
+                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${reclaimableCount > 0 ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 animate-pulse' : 'bg-gray-100 text-gray-500'}`}>
+                  {reclaimableCount}건 대상
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                배정 후 <b>{(s.reclaimAfterMinutes / 60).toFixed(1)}시간</b> 동안 통화나 문자 기록이 없는 미컨택 DB를 지금 즉시 회수하여 활성 상담원들에게 균등 재배분하거나 미배정으로 전환합니다.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleInstantAutoReclaim}
+              disabled={isReclaiming || busy || reclaimableCount === 0}
+              className="w-full py-2 px-3 rounded-lg text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-98"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              {isReclaiming ? '회수 및 재배분 진행 중...' : `미처리 DB ${reclaimableCount}건 즉시 회수 실행`}
+            </button>
+          </div>
+
+          {/* Action 2: 부재중 DB 상담원 교차 셔플 */}
+          <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs flex flex-col justify-between gap-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
+                  <Shuffle className="w-4 h-4 text-blue-500" /> 부재중 DB 상담원 교차 셔플
+                </span>
+                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${missedCount > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' : 'bg-gray-100 text-gray-500'}`}>
+                  부재 {minMissedInput}회+ {missedCount}건
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                동일 상담원이 여러 번 걸어도 안 받는 DB를 <b>다른 상담원에게 교차 재배분</b>합니다. 목소리와 발신 번호가 바뀌어 고객이 전화를 받을 확률이 높아집니다.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowShuffleModal(true)}
+              disabled={isShuffling || busy || missedCount === 0}
+              className="w-full py-2 px-3 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-98"
+            >
+              <Shuffle className="w-3.5 h-3.5" />
+              부재중 DB 교차 셔플 설정 & 실행
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* 상담원별 현황 */}
       <div className="border-t border-gray-100 dark:border-gray-700 overflow-x-auto">
         <table className="w-full text-sm">
@@ -263,12 +441,29 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
                 </td>
                 <td className="px-2 py-2 text-right tabular-nums">{a.todayAssigned}</td>
                 <td className="px-2 py-2 text-right tabular-nums">{a.openCases}</td>
-                <td className={`px-2 py-2 text-right tabular-nums ${a.untouchedCases > 0 ? 'text-orange-600 font-semibold' : ''}`}>{a.untouchedCases}</td>
+                <td className="px-2 py-2 text-right">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <span className={`tabular-nums font-semibold ${a.untouchedCases > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
+                      {a.untouchedCases}
+                    </span>
+                    {a.untouchedCases > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleReclaimUntouched(a)}
+                        disabled={busy}
+                        title="진행 중 상담 건은 건드리지 않고, 손대지 않은 미처리 DB만 회수/재배분합니다"
+                        className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800 transition-colors"
+                      >
+                        회수
+                      </button>
+                    )}
+                  </div>
+                </td>
                 <td className="px-2 py-2 text-right tabular-nums text-gray-500">{a.totalCases}</td>
                 <td className="px-2 py-2 text-gray-500">{fmt(a.lastAssignedAt)}</td>
                 <td className="px-5 py-2 text-right">
                   <button onClick={() => reclaimAll(a)} disabled={busy || a.openCases === 0}
-                    className="text-xs text-orange-600 hover:underline disabled:opacity-30 inline-flex items-center gap-0.5"><Undo2 size={12} /> 진행 중 회수</button>
+                    className="text-xs text-orange-600 hover:underline disabled:opacity-30 inline-flex items-center gap-0.5"><Undo2 size={12} /> 진행 중 전체 회수</button>
                 </td>
               </tr>
             ))}
@@ -301,6 +496,88 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
           className="px-3 py-1.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-40">옮기기</button>
         <span className="text-xs text-gray-400">퇴사·휴가 때 사용. 일부만 옮기려면 아래 목록에서 골라 "직접 배정"</span>
       </div>
+
+      {/* [NEW] 부재중 DB 교차 셔플 모달 */}
+      {showShuffleModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-gray-200 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <Shuffle className="w-5 h-5 text-blue-600" />
+                <h3 className="font-bold text-base text-gray-900 dark:text-white">
+                  부재중 DB 상담원 교차 셔플
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowShuffleModal(false)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-blue-900 dark:text-blue-200 leading-relaxed">
+                💡 <strong>교차 셔플 원리 (다담세일즈형):</strong><br />
+                A 상담원의 부재중 DB는 B, C 상담원에게 가고, B 상담원의 부재중 DB는 A, C 상담원에게 균등 배분됩니다. 기존 담당자에게는 다시 배정되지 않아 새로운 목소리로 통화 성공률을 높입니다.
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                  부재 횟수 기준
+                </label>
+                <div className="flex items-center gap-2">
+                  {[2, 3, 4, 5].map(cnt => (
+                    <button
+                      key={cnt}
+                      type="button"
+                      onClick={async () => {
+                        setMinMissedInput(cnt);
+                        const res = await fetchMissedCasesCount(cnt).catch(() => ({ total: 0, byAgent: {} }));
+                        setMissedCount(res.total);
+                      }}
+                      className={`flex-1 py-1.5 rounded-lg font-bold border transition-all ${
+                        minMissedInput === cnt
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-transparent hover:bg-gray-200'
+                      }`}
+                    >
+                      {cnt}회 이상
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">교차 셔플 대상 리드</span>
+                <span className="text-base font-black text-blue-600 dark:text-blue-400">
+                  총 {missedCount}건
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={() => setShowShuffleModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleCrossAgentShuffle}
+                disabled={isShuffling || missedCount === 0}
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 flex items-center gap-1.5 shadow-md shadow-blue-500/20"
+              >
+                <Shuffle className="w-3.5 h-3.5" />
+                {isShuffling ? '교차 셔플 중...' : `지금 교차 셔플 실행 (${missedCount}건)`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
