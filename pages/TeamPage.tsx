@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
-  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive
+  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -237,6 +238,12 @@ export default function TeamPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            to="/training"
+            className="px-3 py-2 text-sm font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 flex items-center gap-1.5 shadow-xs transition-colors"
+          >
+            <GraduationCap size={16} /> 신입 트레이닝 센터
+          </Link>
           <button
             onClick={() => setShowUpload(true)}
             className="px-3.5 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm flex items-center gap-1.5"

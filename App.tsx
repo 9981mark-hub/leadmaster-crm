@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X, Zap, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X, Zap, Megaphone, GraduationCap } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -22,6 +22,7 @@ const TeamPage = lazyWithRetry(() => import('./pages/TeamPage'));
 const PlatformPage = lazyWithRetry(() => import('./pages/PlatformPage'));
 const LiteCallPage = lazyWithRetry(() => import('./pages/LiteCallPage'));
 const NoticePage = lazyWithRetry(() => import('./pages/NoticePage'));
+const TrainingCenterPage = lazyWithRetry(() => import('./pages/TrainingCenterPage'));
 import { NoticeBanner } from './components/NoticeBanner';
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -253,7 +254,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // [CRITICAL] Cache Buster / Force Version Update
   React.useEffect(() => {
-    const CURRENT_VERSION = "3.42";
+    const CURRENT_VERSION = "3.43";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
@@ -272,6 +273,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navs = [
     { to: '/', icon: LayoutDashboard, label: '대시보드' },
     { to: '/notices', icon: Megaphone, label: '공지사항' },
+    { to: '/training', icon: GraduationCap, label: '트레이닝' },
     { to: '/schedule', icon: Calendar, label: '일정' },
     { to: '/cases', icon: Users, label: '케이스' },
     { to: '/lite', icon: Zap, label: '간편 콜 모드' },
@@ -295,15 +297,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (isAdmin) {
     visibleNavs = navs;
   } else if (isLiteOnly) {
-    // 신입 상담원 간편콜 전용 모드: 간편콜, 공지사항, 일정, 마이페이지만 노출
-    const LITE_ONLY_PATHS = ['/lite', '/notices', '/schedule', '/mypage'];
+    // 신입 상담원 간편콜 전용 모드: 간편콜, 트레이닝, 공지사항, 일정, 마이페이지만 노출
+    const LITE_ONLY_PATHS = ['/lite', '/training', '/notices', '/schedule', '/mypage'];
     visibleNavs = navs.filter(n => LITE_ONLY_PATHS.includes(n.to));
   } else {
     visibleNavs = navs.filter(n => !ADMIN_ONLY_PATHS.includes(n.to));
   }
 
   // 모바일 하단 바
-  const MOBILE_CORE_PATHS = isLiteOnly ? ['/lite', '/notices', '/schedule', '/mypage'] : ['/', '/cases', '/lite', '/new'];
+  const MOBILE_CORE_PATHS = isLiteOnly ? ['/lite', '/training', '/notices', '/mypage'] : ['/', '/cases', '/lite', '/new'];
   const mobileCoreTabs = visibleNavs.filter(n => MOBILE_CORE_PATHS.includes(n.to));
   const mobileMoreItems = isLiteOnly ? [] : visibleNavs.filter(n => !MOBILE_CORE_PATHS.includes(n.to));
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -509,6 +511,7 @@ const ProtectedRoutes = () => {
         <Routes>
           <Route path="/" element={<StandardRoute><Dashboard /></StandardRoute>} />
           <Route path="/notices" element={<NoticePage />} />
+          <Route path="/training" element={<TrainingCenterPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/cases" element={<StandardRoute><CaseList /></StandardRoute>} />
           <Route path="/lite" element={<LiteCallPage />} />
