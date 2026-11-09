@@ -535,30 +535,21 @@ export default function TrainingCenterPage() {
               </span>
             </div>
 
-            {/* Browser Voice Separation Banner */}
-            {typeof window !== 'undefined' && /Edg\//i.test(navigator.userAgent) ? (
-              <div className="p-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-[10px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                <span className="font-semibold flex items-center gap-1">
-                  <span>✨ Edge 고음질 성우 연동</span>
+            {/* Google Cloud Neural2 Engine Active Banner */}
+            <div className="p-2.5 rounded-lg bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-[10px] text-emerald-900 dark:text-emerald-200 space-y-1">
+              <div className="font-bold flex items-center justify-between text-emerald-800 dark:text-emerald-300">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+                  Google Cloud Neural2 성우 가동 중
                 </span>
                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-bold">
-                  남성(InJoon) / 여성(SunHi) 분리
+                  매월 100만자 무료 (₩0)
                 </span>
               </div>
-            ) : (
-              <div className="p-2.5 rounded-lg bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-[10px] text-amber-900 dark:text-amber-200 space-y-1">
-                <div className="font-bold flex items-center justify-between text-amber-800 dark:text-amber-300">
-                  <span>⚠️ Chrome 감지: 여성 음성 단일 지원</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 font-bold">구글 정책</span>
-                </div>
-                <p className="text-[9.5px] text-amber-700 dark:text-amber-300/90 leading-tight">
-                  크롬은 구글 정책상 한국어 남성 음성이 없고 <b>여성 보이스(Google 한국의) 1개</b>만 제공되어 피치만 낮춰서 출력됩니다.
-                </p>
-                <div className="pt-0.5 text-[9.5px] font-semibold text-indigo-700 dark:text-indigo-300">
-                  💡 <b>Microsoft Edge(엣지)</b>로 접속하시면 실제 <b>한국인 남성 성우(InJoon)</b>가 100% 무료 자동 분리됩니다!
-                </div>
-              </div>
-            )}
+              <p className="text-[9.5px] text-emerald-700 dark:text-emerald-300/90 leading-tight">
+                크롬, 엣지, 모바일 앱 어디서나 실제 <b>한국인 남성 성우(Neural2-C)</b>와 <b>여성 성우(Neural2-A)</b>가 스튜디오 음질로 발화됩니다.
+              </p>
+            </div>
 
             {/* Telephone Filter Toggle */}
             <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
@@ -652,16 +643,20 @@ export default function TrainingCenterPage() {
             {/* Current Voice Badge */}
             <div className="p-2.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-[10px] text-blue-800 dark:text-blue-300 leading-snug space-y-1">
               <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center justify-between">
-                <span>🌟 {selectedPersona.customerName} ({selectedPersona.age}세 • {selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'})</span>
+                <span>🌟 {selectedPersona.customerName} ({selectedPersona.age}세 • {selectedPersona.speechOptions.gender === 'female' ? '여성 성우' : '남성 성우'})</span>
                 <span className="font-mono text-indigo-700 dark:text-indigo-300 font-bold">
-                  피치 {getCalculatedPitch(selectedPersona.speechOptions.pitch).toFixed(2)} / {speedMultiplier}배속
+                  {selectedPersona.speechOptions.neuralVoice}
                 </span>
               </div>
-              <div className="text-[10px] text-blue-700 dark:text-blue-300">
-                선택된 톤: <span className="font-bold underline">{ageTone === 'young' ? '20대 청년 톤' : ageTone === 'middle' ? '40대 중년 톤' : ageTone === 'senior' ? '50대 장년 톤' : '60대+ 어르신 톤'}</span> • 수화기 필터 {isPhoneFilterEnabled ? 'ON' : '원음'}
+              <div className="text-[10px] text-blue-700 dark:text-blue-300 flex items-center justify-between">
+                <span>톤: <span className="font-bold underline">{ageTone === 'young' ? '20대 청년 톤' : ageTone === 'middle' ? '40대 중년 톤' : ageTone === 'senior' ? '50대 장년 톤' : '60대+ 어르신 톤'}</span> • {speedMultiplier}배속</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  스튜디오 성우
+                </span>
               </div>
               <div className="pt-1 border-t border-blue-200/50 dark:border-blue-900/50 text-[9px] text-gray-500 dark:text-gray-400">
-                💡 Windows는 <b>Microsoft Edge 브라우저</b> 접속 시 마이크로소프트 공식 성우 신경망 음성(InJoon/SunHi)이 100% 무료 자동 연동됩니다.
+                실제 사람의 자연스러운 숨소리와 억양으로 발화되며, 수화기 필터({isPhoneFilterEnabled ? 'ON' : '원음'})가 적용됩니다.
               </div>
             </div>
 
@@ -682,12 +677,12 @@ export default function TrainingCenterPage() {
                   senior: '50대 장년',
                   elder: '60대+ 어르신',
                 };
-                showToast(`🔊 [${result.voiceName}] (피치: ${calcPitch.toFixed(2)}, ${toneLabels[ageTone]}, ${speedMultiplier}x)`, 'success');
+                showToast(`🔊 [${result.voiceName}] Google Cloud Neural2 성우 발화 성공! (${toneLabels[ageTone]})`, 'success');
               }}
-              className="w-full py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-blue-200/60 dark:border-blue-800/40"
+              className="w-full py-2.5 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-500/20"
             >
-              <Volume2 className="w-3.5 h-3.5" />
-              🔊 {selectedPersona.customerName} ({selectedPersona.age}세) 목소리 1초 미리듣기
+              <Volume2 className="w-4 h-4" />
+              🔊 {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'} 성우) 1초 미리듣기
             </button>
           </div>
         </div>

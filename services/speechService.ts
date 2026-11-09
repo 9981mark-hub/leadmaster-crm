@@ -13,6 +13,7 @@ export interface SpeechVoiceOptions {
 }
 
 class SpeechService {
+  private googleApiKey = 'AIzaSyDScHNsOhn_TqnZfcxoCt7uC-KtbAHVPNI';
   private synth: SpeechSynthesis | null = null;
   private recognition: any = null;
   private isListening = false;
@@ -89,10 +90,110 @@ class SpeechService {
   // 통합 발화 메서드 (항상 가장 고품질의 자연스러운 음성을 최우선 선택)
   public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<{ engine: 'neural' | 'browser'; voiceName: string }> {
     this.stopSpeaking();
+
+    // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 성우 엔진
+    if (this.googleApiKey) {
+      try {
+        const voiceName = await this.speakGoogleCloud(text, options);
+        this.lastEngineUsed = 'neural';
+        this.lastVoiceName = voiceName;
+        return { engine: 'neural', voiceName };
+      } catch (err) {
+        console.warn('Google Cloud TTS failed, falling back to browser:', err);
+      }
+    }
+
+    // 2순위: 브라우저 로컬 Web Speech 엔진 폴백
     this.lastEngineUsed = 'browser';
     const voiceName = await this.speakBrowser(text, options);
     this.lastVoiceName = voiceName;
     return { engine: 'browser', voiceName };
+  }
+
+  // Google Cloud Text-to-Speech API 고음질 신경망 성우 발화
+  public async speakGoogleCloud(text: string, options: SpeechVoiceOptions = {}): Promise<string> {
+    const cleanText = text
+      .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+      .replace(/[\.\.\.~"']/g, ' ')
+      .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+      .replace(/,\s*,/g, ',')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) return 'Empty';
+
+    const voiceName = options.neuralVoice || (options.gender === 'female' ? 'ko-KR-Neural2-A' : 'ko-KR-Neural2-C');
+    const ssmlGender = options.gender === 'female' ? 'FEMALE' : 'MALE';
+
+    // 감정 분석 (느낌표/물음표 및 의심/분노/재촉 키워드 감지)
+    const isAgitated = /[!?]{1,}|(사기|경찰|신고|어디|당신|바빠|바쁘|장난|끊으|퇴짜|부결|참나|아니|무슨|대체)/.test(cleanText);
+
+    // 속도 설정 (0.75 ~ 1.4)
+    let rate = options.rate ?? 1.05;
+    if (isAgitated) {
+      rate = Math.min(1.35, rate * 1.08);
+    }
+    const speakingRate = Math.max(0.75, Math.min(1.4, rate));
+
+    // 피치 설정 (-12.0 ~ +8.0 semitones)
+    // basePitch (0.50 ~ 1.30): 1.00 = 0st, 0.80 = -3.2st, 0.70 = -4.8st, 0.60 = -6.4st
+    let basePitch = options.pitch ?? 0.80;
+    if (isAgitated) {
+      basePitch = Math.min(1.25, basePitch + 0.05);
+    }
+    const pitchSemitones = Math.max(-12.0, Math.min(8.0, (basePitch - 1.0) * 16.0));
+
+    const apiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('lm_google_tts_key')) || this.googleApiKey;
+    const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input: { text: cleanText },
+        voice: {
+          languageCode: 'ko-KR',
+          name: voiceName,
+          ssmlGender,
+        },
+        audioConfig: {
+          audioEncoding: 'MP3',
+          speakingRate,
+          pitch: pitchSemitones,
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`Google Cloud TTS API Error (${res.status}): ${errText}`);
+    }
+
+    const data = await res.json();
+    if (!data.audioContent) {
+      throw new Error('No audioContent returned');
+    }
+
+    const audioUrl = `data:audio/mp3;base64,${data.audioContent}`;
+    const audio = new Audio(audioUrl);
+    this.currentAudio = audio;
+
+    return new Promise((resolve) => {
+      audio.onended = () => {
+        this.currentAudio = null;
+        resolve(voiceName);
+      };
+      audio.onerror = (e) => {
+        console.warn('Audio playback error:', e);
+        this.currentAudio = null;
+        resolve(voiceName);
+      };
+      audio.play().catch(e => {
+        console.warn('Audio play failed:', e);
+        this.currentAudio = null;
+        resolve(voiceName);
+      });
+    });
   }
 
   // 브라우저 내장 Web Speech API 발화 (Google 한국의 / Microsoft Natural 신경망 우선 선택)
