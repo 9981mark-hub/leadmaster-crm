@@ -37,6 +37,7 @@ import {
   AlertCircle,
   Save,
   Calendar,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -63,6 +64,16 @@ export default function TrainingCenterPage() {
   const [useNeuralVoice, setUseNeuralVoice] = useState(true);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.25);
   const [isAiReplying, setIsAiReplying] = useState(false);
+
+  // Smart Silence & Fast Trigger Refs
+  const silenceTimerRef = useRef<any>(null);
+  const interimTextRef = useRef<string>('');
+  const isAiReplyingRef = useRef<boolean>(false);
+
+  // Sync isAiReplying with ref
+  useEffect(() => {
+    isAiReplyingRef.current = isAiReplying;
+  }, [isAiReplying]);
 
   // Sandbox Memo & Outcome state
   const [consultationResult, setConsultationResult] = useState<string>('재통화예정');
@@ -101,21 +112,52 @@ export default function TrainingCenterPage() {
     };
   }, [callState]);
 
-  // Clean up speech on unmount
+  // Clean up speech and timers on unmount
   useEffect(() => {
     return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       speechService.stopListening();
       speechService.stopSpeaking();
     };
   }, []);
 
+  // Spacebar 단축키: 통화 중 스페이스바를 누르면 발화 중간 텍스트 즉시 대답 요청 (0초 반응)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInputFocused = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
+
+      if (e.code === 'Space' && !isInputFocused && callState === 'connected' && !isAiReplyingRef.current) {
+        const textToSend = (interimTextRef.current || inputText).trim();
+        if (textToSend) {
+          e.preventDefault();
+          if (silenceTimerRef.current) {
+            clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = null;
+          }
+          setInterimText('');
+          interimTextRef.current = '';
+          handleSendAgentMessage(textToSend);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [callState, inputText]);
+
   // Start Call Simulation
   const handleStartCall = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
     setCallState('calling');
     setCallDuration(0);
     setMessages([]);
     setInputText('');
     setInterimText('');
+    interimTextRef.current = '';
     setIsMemoSaved(false);
     setAgentMemo('');
 
@@ -144,41 +186,80 @@ export default function TrainingCenterPage() {
     }, 1200);
   };
 
-  // Toggle Microphone
+  // Toggle Microphone (스마트 침묵 감지: 750ms 침묵 시 즉시 전송)
   const toggleMicrophone = (forceStart?: boolean) => {
     const shouldStart = forceStart !== undefined ? forceStart : !isMicActive;
 
     if (shouldStart) {
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+
       const started = speechService.startListening(
         (transcript, isFinal) => {
+          if (isAiReplyingRef.current) return;
+
           if (isFinal) {
+            // 브라우저 공식 발화 종료 이벤트
+            if (silenceTimerRef.current) {
+              clearTimeout(silenceTimerRef.current);
+              silenceTimerRef.current = null;
+            }
+            const text = transcript.trim();
             setInterimText('');
-            if (transcript.trim()) {
-              handleSendAgentMessage(transcript.trim());
+            interimTextRef.current = '';
+            if (text) {
+              handleSendAgentMessage(text);
             }
           } else {
+            // 중간 인식 텍스트 실시간 반영
             setInterimText(transcript);
+            interimTextRef.current = transcript;
+
+            // [핵심 가속] 스마트 침묵 감지: 발화 멈춘 후 750ms 지나면 브라우저 대기 없이 즉시 전송!
+            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = setTimeout(() => {
+              const text = interimTextRef.current.trim();
+              if (text && !isAiReplyingRef.current) {
+                setInterimText('');
+                interimTextRef.current = '';
+                handleSendAgentMessage(text);
+              }
+            }, 750);
           }
         },
         (err) => {
           console.warn('Mic error or denied:', err);
           setIsMicActive(false);
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         },
         () => {
           setIsMicActive(false);
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         }
       );
       setIsMicActive(started);
     } else {
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
       speechService.stopListening();
       setIsMicActive(false);
       setInterimText('');
+      interimTextRef.current = '';
     }
   };
 
   // Send message from agent (via voice or text)
   const handleSendAgentMessage = async (textToSend: string) => {
     if (!textToSend.trim() || isAiReplying) return;
+
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
 
     const agentMsg: TrainingMessage = {
       id: 'msg-' + Date.now(),
@@ -191,10 +272,11 @@ export default function TrainingCenterPage() {
     setMessages(nextMessages);
     setInputText('');
     setInterimText('');
+    interimTextRef.current = '';
     setIsAiReplying(true);
 
     try {
-      // Generate customer AI reply
+      // Generate customer AI reply (초고속 단문 티키타카)
       const replyText = await generateAiCustomerReply(nextMessages, selectedPersona);
 
       const customerMsg: TrainingMessage = {
@@ -223,9 +305,15 @@ export default function TrainingCenterPage() {
 
   // End Call & Trigger AI Assessment
   const handleEndCall = async () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
     speechService.stopListening();
     speechService.stopSpeaking();
     setIsMicActive(false);
+    setInterimText('');
+    interimTextRef.current = '';
 
     if (messages.length < 2) {
       setCallState('idle');
@@ -565,9 +653,15 @@ export default function TrainingCenterPage() {
                   <PhoneCall className="w-3.5 h-3.5 text-blue-500" />
                   실시간 모의 통화 대화록
                 </span>
-                <span className="text-[11px] text-gray-400">
-                  마이크 발화 또는 텍스트 입력 가능
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium border border-emerald-200/60 dark:border-emerald-800/40">
+                    <Zap className="w-3 h-3 text-emerald-500" />
+                    0.7초 스마트 침묵 감지
+                  </span>
+                  <span className="text-[11px] text-gray-400">
+                    단축키: [Space] 즉시 대답
+                  </span>
+                </div>
               </div>
 
               {/* Chat Bubble Area */}
@@ -614,9 +708,30 @@ export default function TrainingCenterPage() {
 
                 {/* Live Speech Interim Bubble */}
                 {interimText && (
-                  <div className="flex flex-col items-end animate-pulse">
-                    <span className="text-[10px] text-blue-500 font-semibold mb-1">음성 인식 중...</span>
-                    <div className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs bg-blue-100/60 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 rounded-br-xs">
+                  <div className="flex flex-col items-end">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold animate-pulse flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
+                        듣고 있는 중 (0.7초 후 자동 전송)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const text = (interimTextRef.current || interimText).trim();
+                          if (text && !isAiReplying) {
+                            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+                            setInterimText('');
+                            interimTextRef.current = '';
+                            handleSendAgentMessage(text);
+                          }
+                        }}
+                        className="px-2 py-0.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold shadow-xs flex items-center gap-1 transition-transform hover:scale-105"
+                      >
+                        <Zap className="w-2.5 h-2.5" />
+                        즉시 대답 [Space]
+                      </button>
+                    </div>
+                    <div className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs bg-blue-100/70 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-800 rounded-br-xs shadow-xs">
                       {interimText}
                     </div>
                   </div>

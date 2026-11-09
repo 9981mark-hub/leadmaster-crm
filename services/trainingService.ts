@@ -191,12 +191,14 @@ export const saveTrainingSession = (record: TrainingSessionRecord): void => {
   }
 };
 
-// 가상 고객 AI 응답 생성 (1~2턴 티키타카)
+// 가상 고객 AI 응답 생성 (초고속 티키타카: 최근 6턴 압축 + 1~2문장 초단문 즉답)
 export const generateAiCustomerReply = async (
   messages: TrainingMessage[],
   persona: TrainingPersona
 ): Promise<string> => {
-  const conversationText = messages
+  // 최근 6개 메시지만 컨텍스트로 압축 (응답 레이턴시 0.3초대로 단축)
+  const recentMessages = messages.slice(-6);
+  const conversationText = recentMessages
     .map(m => `${m.speaker === 'agent' ? '상담원' : '고객(' + persona.customerName + ')'}: "${m.text}"`)
     .join('\n');
 
@@ -205,24 +207,24 @@ export const generateAiCustomerReply = async (
 [고객 성향 및 배경]
 ${persona.personaPrompt}
 
-[대화 규칙 - 절대 준수]
-1. 실제 전화 통화이므로 책 읽듯 길게 말하지 말고, **1~2문장의 간결하고 현실적인 구어체**로 대답하세요.
-2. 부연설명이나 지문(예: [한숨을 쉬며], (화를 내며))은 일절 넣지 말고, **고객의 대사 텍스트만** 바로 출력하세요.
-3. 상담원이 친절하고 전문적으로 답하면 호의적으로 반응하고, 상담원이 불친절하거나 핵심을 흐리면 고객 성향에 맞게 의심하거나 서두르세요.
+[대화 규칙 - 초고속 실전 통화 템포 준수]
+1. 실제 전화 통화이므로 길게 말하지 말고, **반드시 1~2문장(공백 포함 20~40자 내외)의 간결하고 현실적인 구어체**로만 즉시 대답하세요.
+2. 부연설명이나 지문(예: [한숨], (화를 내며))은 일절 넣지 말고, **고객의 대사 텍스트만** 바로 출력하세요.
+3. 상담원의 직전 질문이나 말에 집중하여 즉각적으로 반응하세요.
 4. ${persona.speechOptions.rate && persona.speechOptions.rate > 1.1 ? '말투를 빠르고 조급하게 하세요.' : ''}
 5. ${persona.age >= 50 ? '어르신 특유의 "~했소?", "~인가요?", "~합디다" 등 연령대 말투를 자연스럽게 사용하세요.' : ''}
 
-[지금까지의 통화 내용]
+[최근 통화 내용]
 ${conversationText}
 
-위 대화의 흐름에 맞춰 고객(${persona.customerName})의 다음 대사 1~2문장을 작성하세요:`;
+고객(${persona.customerName})의 다음 대사 1~2문장:`;
 
   try {
     const res = await callAi({
       task: 'summary_extract',
       prompt,
       responseMimeType: 'text/plain',
-      temperature: 0.7,
+      temperature: 0.6,
     });
     return res.text.trim().replace(/^["']|["']$/g, '');
   } catch (err: any) {
