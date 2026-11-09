@@ -26,6 +26,8 @@ import { CaseListFilter } from '../components/case-list/CaseListFilter';
 import { CaseListTable } from '../components/case-list/CaseListTable';
 import { CaseListPagination } from '../components/case-list/CaseListPagination';
 import { ExportCaseModal } from '../components/case-list/ExportCaseModal';
+import { ParalegalDecisionModal } from '../components/case-list/ParalegalDecisionModal';
+import { Scale } from 'lucide-react';
 import { CaseDetailDrawer } from '../components/case-list/CaseDetailDrawer';
 import { useActiveCall } from '../contexts/ActiveCallContext';
 
@@ -51,6 +53,17 @@ export default function CaseList() {
     const [layoutMode, setLayoutMode] = useState<'list' | 'kanban'>('list');
     // [NEW] 우측 슬라이드 퀵 인스펙터 (Peek Drawer)
     const [drawerCase, setDrawerCase] = useState<Case | null>(null);
+    const [paralegalTargetCase, setParalegalTargetCase] = useState<Case | null>(null);
+
+    const handleParalegalDecision = async (updates: Partial<Case>, successMessage: string) => {
+        if (!paralegalTargetCase) return;
+        await updateCaseMutation.mutateAsync({
+            id: paralegalTargetCase.caseId,
+            updates
+        });
+        showToast(successMessage, 'success');
+    };
+
     const { startCall } = useActiveCall();
 
     // [NEW] 이탈 사유 모달 (CaseList 빠른 상태 변경 시)
@@ -123,7 +136,7 @@ export default function CaseList() {
 
     // [2026-11-01] 빠른 보기 (오늘 할 일 · 내 담당 · 미배정) + 담당자 필터 + 쪽 크기 + 여러 건 선택
     const { org, isAdmin } = useAuth();
-    type QuickView = 'all' | 'today' | 'mine' | 'unassigned';
+    type QuickView = 'all' | 'today' | 'paralegal' | 'mine' | 'unassigned';
     const [quickView, setQuickView] = useState<QuickView>(() => {
         const saved = sessionStorage.getItem('lm_quickView') as QuickView;
         if (!isAdmin && (saved === 'mine' || saved === 'unassigned')) return 'all';
@@ -227,6 +240,7 @@ export default function CaseList() {
             }
 
             if (quickView === 'today' && !(hasDueReminder(c) || c.isNew || isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers))) return false;
+            if (quickView === 'paralegal' && c.status !== '사무장 접수') return false;
             if (quickView === 'mine' && c.assignedUserId !== org?.userId) return false;
             if (quickView === 'unassigned' && c.assignedUserId) return false;
             if (assigneeFilter) {
@@ -303,6 +317,7 @@ export default function CaseList() {
         return {
             all: live.length,
             today: live.filter(c => hasDueReminder(c) || c.isNew || isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)).length,
+            paralegal: live.filter(c => c.status === '사무장 접수').length,
             mine: org?.userId ? live.filter(c => c.assignedUserId === org.userId).length : 0,
             unassigned: live.filter(c => !c.assignedUserId).length,
         };
@@ -811,6 +826,7 @@ export default function CaseList() {
                     {([
                         { k: 'all', label: '전체', n: viewCounts.all },
                         { k: 'today', label: '오늘 할 일', n: viewCounts.today, hint: '오늘까지 잡힌 일정 · 신규 · 다시 걸 부재' },
+                        { k: 'paralegal', label: '🤝 사무장 인계 큐', n: viewCounts.paralegal, hint: '1차 상담 완료 후 사무장 심사 및 수임 판정 대기 사건' },
                         ...(isAdmin && org?.userId && viewCounts.mine > 0 ? [{ k: 'mine', label: '내 담당', n: viewCounts.mine }] : []),
                         ...(isAdmin ? [{ k: 'unassigned', label: '미배정', n: viewCounts.unassigned }] : []),
                     ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (
@@ -902,6 +918,14 @@ export default function CaseList() {
                 inboundPaths={inboundPaths}
             />
 
+            {paralegalTargetCase && (
+                <ParalegalDecisionModal
+                    c={paralegalTargetCase}
+                    isOpen={!!paralegalTargetCase}
+                    onClose={() => setParalegalTargetCase(null)}
+                    onDecision={handleParalegalDecision}
+                />
+            )}
             <ExportCaseModal
                 isOpen={isExportModalOpen && isAdmin}
                 onClose={() => setIsExportModalOpen(false)}
@@ -944,6 +968,72 @@ export default function CaseList() {
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
                 >
+                    {quickView === 'paralegal' && (
+                        <div className="mb-4 bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-indigo-700/40">
+                            <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5 pb-3 border-b border-indigo-700/50">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+                                        <Scale size={18} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-extrabold text-sm sm:text-base tracking-tight flex items-center gap-2">
+                                            <span>사무장 인계 수임 큐 (Paralegal Handoff Pipeline)</span>
+                                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">
+                                                전환율 극대화
+                                            </span>
+                                        </h3>
+                                        <p className="text-xs text-indigo-200/80 mt-0.5">
+                                            1차 상담원이 7대 문진을 마친 사건들입니다. [사무장 심사] 버튼을 눌러 수임 계약 체결, 서류 보완 요청, 또는 기각 판정을 처리하세요.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {(() => {
+                                const pCases = cases.filter(c => c.status === '사무장 접수' && !c.deletedAt && !c.isArchived);
+                                const newCount = pCases.filter(c => !c.secondaryStatus).length;
+                                const reworkCount = pCases.filter(c => c.secondaryStatus === '서류보완요청').length;
+                                const reviewingCount = pCases.filter(c => c.secondaryStatus === '심층상담중' || c.secondaryStatus === '고민중' || c.secondaryStatus === '출장예약' || c.secondaryStatus === '방문예약').length;
+                                const contractedCount = cases.filter(c => c.status === '계약 완료' && !c.deletedAt && !c.isArchived).length;
+
+                                return (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">미확인 인계건</span>
+                                                <span className="text-lg font-black text-amber-300 mt-0.5 block">{newCount}건</span>
+                                            </div>
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold">NEW</span>
+                                        </div>
+
+                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">심층 상담 진행</span>
+                                                <span className="text-lg font-black text-blue-300 mt-0.5 block">{reviewingCount}건</span>
+                                            </div>
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-blue-400/20 text-blue-300 font-bold">진행중</span>
+                                        </div>
+
+                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">서류 보완 대기</span>
+                                                <span className="text-lg font-black text-orange-300 mt-0.5 block">{reworkCount}건</span>
+                                            </div>
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-orange-400/20 text-orange-300 font-bold">보완요청</span>
+                                        </div>
+
+                                        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">최종 수임 체결</span>
+                                                <span className="text-lg font-black text-emerald-300 mt-0.5 block">{contractedCount}건</span>
+                                            </div>
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-bold">계약완료</span>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                    )}
                     <CaseListTable
                         cases={currentCases}
                         partners={partners}
@@ -958,6 +1048,7 @@ export default function CaseList() {
                         onStatusChange={handleQuickStatusChange}
                         onToggleStar={handleToggleStar}
                         onOpenDrawer={setDrawerCase}
+                        onOpenParalegalModal={setParalegalTargetCase}
                         selectedIds={selected}
                         onToggleSelect={toggleSelect}
                         onToggleSelectAll={toggleSelectAll}

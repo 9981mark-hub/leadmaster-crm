@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History, Archive } from 'lucide-react';
+import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History, Archive, Scale } from 'lucide-react';
 import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
 import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
@@ -131,6 +131,7 @@ interface CaseListTableProps {
     onStatusChange: (caseId: string, newStatus: string, oldStatus: string) => void; // [NEW]
     onToggleStar: (caseId: string, currentStarred: boolean) => void; // [NEW] 중요 표시
     onOpenDrawer?: (c: Case) => void; // [NEW] 퀵 인스펙터 슬라이드 드로어
+    onOpenParalegalModal?: (c: Case) => void; // [NEW] 사무장 사건 심사
     // [2026-11-01] 여러 건 선택 · 담당자 표시
     selectedIds?: Set<string>;
     onToggleSelect?: (caseId: string) => void;
@@ -152,6 +153,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     onStatusChange,
     onToggleStar,
     onOpenDrawer,
+    onOpenParalegalModal,
     selectedIds,
     onToggleSelect,
     onToggleSelectAll,
@@ -314,6 +316,15 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         </AnimatePresence>
                                     </div>
                                     {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
+                                    {c.status === '사무장 접수' && onOpenParalegalModal && (
+                                        <button
+                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenParalegalModal(c); }}
+                                            className="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs active:scale-95"
+                                        >
+                                            <Scale size={11} />
+                                            <span>사무장 심사</span>
+                                        </button>
+                                    )}
                                 </div>
                                 <span className="text-xs text-gray-400">{safeFormat(c.createdAt, 'MM-dd')}</span>
                             </div>
@@ -686,6 +697,16 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 }
                                                 content={() => <StatusHistoryTooltipContent c={c} />}
                                             />
+                                            {c.status === '사무장 접수' && onOpenParalegalModal && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); onOpenParalegalModal(c); }}
+                                                    className="mt-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs transition-all active:scale-95"
+                                                    title="사무장 사건 심사 & 수임 판정 열기"
+                                                >
+                                                    <Scale size={11} />
+                                                    <span>사무장 심사</span>
+                                                </button>
+                                            )}
 
                                             {/* Status Change Dropdown */}
                                             <AnimatePresence>

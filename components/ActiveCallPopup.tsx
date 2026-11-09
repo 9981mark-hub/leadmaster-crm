@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, PhoneOff, X, ExternalLink, Loader2, PhoneCall } from 'lucide-react';
+import { Phone, PhoneOff, X, ExternalLink, Loader2, PhoneCall, Clock, CheckCircle2 } from 'lucide-react';
 import { useActiveCall } from '../contexts/ActiveCallContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Case, MemoItem } from '../types';
@@ -10,6 +10,58 @@ const ActiveCallPopup: React.FC = () => {
     const [elapsed, setElapsed] = useState(0);
     const [matchedCase, setMatchedCase] = useState<Case | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isAddingReminder, setIsAddingReminder] = useState(false);
+    const [quickReminderFeedback, setQuickReminderFeedback] = useState<string | null>(null);
+
+    const getQuickReminderSlots = () => {
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        
+        const d30 = new Date(now.getTime() + 30 * 60 * 1000);
+        const d60 = new Date(now.getTime() + 60 * 60 * 1000);
+        
+        const d18 = new Date(now);
+        d18.setHours(18, 0, 0, 0);
+        if (d18 <= now) {
+            d18.setDate(d18.getDate() + 1);
+        }
+        
+        const dTomorrow10 = new Date(now);
+        dTomorrow10.setDate(dTomorrow10.getDate() + 1);
+        dTomorrow10.setHours(10, 0, 0, 0);
+        
+        return [
+            { label: '+30분', datetime: fmt(d30), desc: `${pad(d30.getHours())}:${pad(d30.getMinutes())}` },
+            { label: '+1시간', datetime: fmt(d60), desc: `${pad(d60.getHours())}:${pad(d60.getMinutes())}` },
+            { label: '오늘 18시', datetime: fmt(d18), desc: '퇴근 후' },
+            { label: '내일 10시', datetime: fmt(dTomorrow10), desc: '오전 10:00' },
+        ];
+    };
+
+    const handleAddQuickReminder = async (datetime: string, label: string) => {
+        if (!matchedCase || isAddingReminder) return;
+        setIsAddingReminder(true);
+        try {
+            const { updateCase } = await import('../services/api');
+            const newReminder = {
+                id: Date.now().toString(),
+                datetime,
+                type: '전화' as const,
+                content: `[통화중 빠른예약] ${label} 재통화 약속`,
+                isCompleted: false
+            };
+            const updatedReminders = [...(matchedCase.reminders || []), newReminder];
+            await updateCase(matchedCase.caseId, { reminders: updatedReminders });
+            setMatchedCase(prev => prev ? { ...prev, reminders: updatedReminders } : prev);
+            setQuickReminderFeedback(`✓ ${label} 등록 완료!`);
+            setTimeout(() => setQuickReminderFeedback(null), 3000);
+        } catch (err) {
+            console.error('재통화 빠른 예약 실패:', err);
+        } finally {
+            setIsAddingReminder(false);
+        }
+    };
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -501,6 +553,37 @@ const ActiveCallPopup: React.FC = () => {
                             );
                         })()}
                     </>
+                )}
+
+                {/* [NEW] 골든타임 재통화 빠른 예약 (Close CRM / Cal.com 벤치마킹) */}
+                {matchedCase && (
+                    <div className="border-t border-gray-100 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-950/20 px-3.5 py-2.5">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                                <Clock size={12} className="text-amber-600 dark:text-amber-400" />
+                                <span>골든타임 재통화 빠른 예약</span>
+                            </span>
+                            {quickReminderFeedback && (
+                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold animate-pulse">
+                                    {quickReminderFeedback}
+                                </span>
+                            )}
+                        </div>
+                        <div className="grid grid-cols-4 gap-1.5">
+                            {getQuickReminderSlots().map((slot, idx) => (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    disabled={isAddingReminder}
+                                    onClick={() => handleAddQuickReminder(slot.datetime, slot.label)}
+                                    className="py-1.5 px-1 rounded-lg text-[10px] font-bold bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 shadow-xs transition-all active:scale-95 text-center flex flex-col items-center justify-center"
+                                >
+                                    <span>{slot.label}</span>
+                                    <span className="text-[8px] text-amber-600/70 dark:text-amber-400/70 font-mono">{slot.desc}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 )}
 
                 {/* 하단 액션 */}
