@@ -600,13 +600,13 @@ export default function TrainingCenterPage() {
               {useNeuralVoice ? (
                 <div>
                   <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center justify-between">
-                    <span>🌟 Google Cloud Neural2 Voice</span>
+                    <span>🌟 고음질 사람 신경망 보이스 (결제 불필요)</span>
                     <span className="font-mono text-blue-700 dark:text-blue-300 font-bold">
                       {getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier)}
                     </span>
                   </div>
                   <div className="mt-0.5 text-blue-600 dark:text-blue-400">
-                    {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '여성 신경망' : '남성 신경망'}) • {selectedPersona.speechOptions.neuralVoice}
+                    {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '여성 페르소나' : '남성 페르소나'}) • 실제 통화 필터 {isPhoneFilterEnabled ? '적용됨' : '원음'}
                   </div>
                 </div>
               ) : (
@@ -615,27 +615,6 @@ export default function TrainingCenterPage() {
                 </div>
               )}
             </div>
-
-            {/* Activation Banner if needed */}
-            {activationUrl && (
-              <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-[11px] space-y-1">
-                <div className="font-bold flex items-center gap-1 text-amber-800 dark:text-amber-300">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Google Cloud TTS 1초 활성화 필요
-                </div>
-                <p className="text-[10px] leading-tight text-amber-700 dark:text-amber-400">
-                  구글 콘솔에서 버튼 한 번만 클릭하면 월 100만 자 무료 고음질 신경망 보이스가 즉시 열립니다.
-                </p>
-                <a
-                  href={activationUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-1 px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] transition-colors"
-                >
-                  🔗 구글 콘솔에서 [사용] 클릭하기 →
-                </a>
-              </div>
-            )}
 
             {/* Test Voice Button */}
             <button
@@ -648,15 +627,9 @@ export default function TrainingCenterPage() {
                   neuralRate: getAdjustedRate(selectedPersona.speechOptions.neuralRate, speedMultiplier),
                 });
                 if (engine === 'neural') {
-                  setActivationUrl(null);
-                  showToast('🌟 실제 사람 신경망 목소리(Google Cloud Neural2 + 전화 수화기 필터)로 재생되었습니다.', 'success');
+                  showToast('🌟 실제 사람 신경망 목소리(고음질 사람 음성 + 전화 수화기 필터)로 재생되었습니다.', 'success');
                 } else {
-                  if (speechService.lastActivationUrl) {
-                    setActivationUrl(speechService.lastActivationUrl);
-                    showToast('⚠️ Google Cloud TTS API 활성화가 필요합니다. 좌측 패널의 [사용] 링크를 클릭해주세요.', 'warning');
-                  } else {
-                    showToast('⚠️ 브라우저 기본 로컬 엔진(전화기 필터 적용)으로 재생되었습니다.', 'info');
-                  }
+                  showToast('⚠️ 브라우저 기본 로컬 엔진(전화기 필터 적용)으로 재생되었습니다.', 'info');
                 }
               }}
               className="w-full py-2 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-blue-200/60 dark:border-blue-800/40"

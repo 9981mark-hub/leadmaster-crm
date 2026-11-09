@@ -12,7 +12,8 @@ export interface SpeechVoiceOptions {
   neuralPitch?: string; // 피치 (예: +0Hz, -3Hz)
 }
 
-const TTS_ENDPOINT = 'https://cenksfblktflfurxjmtv.supabase.co/functions/v1/edge-tts';
+const VERCEL_TTS_ENDPOINT = 'https://leadmastercrm.vercel.app/api/tts';
+const SUPABASE_TTS_ENDPOINT = 'https://cenksfblktflfurxjmtv.supabase.co/functions/v1/edge-tts';
 
 class SpeechService {
   private synth: SpeechSynthesis | null = null;
@@ -96,24 +97,36 @@ class SpeechService {
       voice = options.gender === 'female' ? 'ko-KR-Neural2-A' : 'ko-KR-Neural2-C';
     }
 
+    const payload = JSON.stringify({
+      text: cleanText,
+      voice,
+      rate: options.neuralRate || '+10%',
+      pitch: options.neuralPitch || 'default',
+    });
+
     try {
-      const response = await fetch(TTS_ENDPOINT, {
+      // 1순위: Vercel Node.js 서버리스 (신용카드 불필요, 100% 완전 무료 고음질 사람 음성)
+      let response = await fetch(VERCEL_TTS_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: cleanText,
-          voice,
-          rate: options.neuralRate || '+10%',
-          pitch: options.neuralPitch || 'default',
-        }),
-      });
+        body: payload,
+      }).catch(() => null);
 
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
+      // 2순위: Supabase Edge Function fallback
+      if (!response || !response.ok) {
+        response = await fetch(SUPABASE_TTS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+        }).catch(() => null);
+      }
+
+      if (!response || !response.ok) {
+        const errJson = response ? await response.json().catch(() => ({})) : {};
         if (errJson?.activationUrl) {
           this.lastActivationUrl = errJson.activationUrl;
         }
-        console.warn('TTS endpoint returned status:', response.status, errJson);
+        console.warn('TTS endpoints returned non-ok response');
         return false;
       }
 
