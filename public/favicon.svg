@@ -1,38 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
-  <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#0f172a"/>
-    </linearGradient>
-    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#d97706"/>
-      <stop offset="50%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#fef08a"/>
-    </linearGradient>
-    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="100%" stop-color="#0284c7"/>
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
+  <!-- 🌟 LeadMaster CRM 2D Flat Minimalist Icon -->
+  <rect width="128" height="128" rx="28" fill="#1b50e6"/>
 
-  <!-- Squircle Base -->
-  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#bgGrad)" stroke="#38bdf8" stroke-width="2.5" stroke-opacity="0.4"/>
+  <!-- Headset Outer Band -->
+  <path d="M 37 92 A 38 38 0 1 1 96 53" fill="none" stroke="#ffffff" stroke-width="8.5" stroke-linecap="round"/>
 
-  <!-- Glowing Headset Band -->
-  <path d="M38 64 A 26 26 0 1 1 90 64" fill="none" stroke="url(#cyanGrad)" stroke-width="5" stroke-linecap="round" filter="url(#glow)"/>
+  <!-- Right Ear Cushion -->
+  <rect x="93" y="53" width="10" height="26" rx="5" fill="#ffffff"/>
 
-  <!-- Left Earpiece Cushion -->
-  <rect x="32" y="54" width="10" height="20" rx="5" fill="url(#cyanGrad)"/>
+  <!-- Center 'L' Monogram -->
+  <path d="M 43 40 H 55 V 84 H 89 V 95 H 43 Z" fill="#ffffff"/>
 
   <!-- Microphone Boom -->
-  <path d="M36 70 C 36 86, 52 94, 62 94" fill="none" stroke="url(#cyanGrad)" stroke-width="4" stroke-linecap="round"/>
-  <rect x="62" y="90" width="10" height="8" rx="4" fill="#38bdf8"/>
-
-  <!-- Dynamic Growth Arrow (L-shape to Upward Trend) -->
-  <path d="M48 42 L58 42 L58 74 L84 74 L84 82 L48 82 Z" fill="url(#goldGrad)" />
-  <path d="M60 70 L76 50 L88 58 L98 38 L84 38 L98 38 L98 52" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+  <path d="M 83 95 C 83 103, 76 107, 69 107" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- Microphone Tip -->
+  <rect x="61" y="103" width="15" height="8" rx="4" fill="#ffffff"/>
 </svg>

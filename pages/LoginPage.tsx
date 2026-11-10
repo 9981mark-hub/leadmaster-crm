@@ -15,7 +15,7 @@ export default function LoginPage() {
             <header className="border-b border-slate-850 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <img 
-                        src="./leadmaster_logo_120.png" 
+                        src="/leadmaster_logo_120.png" 
                         alt="LeadMaster" 
                         className="w-8 h-8 rounded-xl shadow-md border border-blue-500/30 object-cover"
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -55,7 +55,7 @@ export default function LoginPage() {
                     {/* 브랜드 아이콘 & 타이틀 */}
                     <div className="space-y-3">
                         <img 
-                            src="./leadmaster_logo_120.png" 
+                            src="/leadmaster_logo_120.png" 
                             alt="LeadMaster Logo" 
                             className="w-16 h-16 mx-auto rounded-2xl shadow-xl shadow-blue-500/10 border border-blue-500/30 object-cover"
                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
