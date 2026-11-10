@@ -125,14 +125,23 @@ export default function TrainingCenterPage() {
     return Math.max(0.50, Math.min(1.25, basePitch + modifier));
   };
 
-  // Smart Silence & Fast Trigger Refs
+  // Smart Silence & Turn Coordination Refs
   const silenceTimerRef = useRef<any>(null);
   const interimTextRef = useRef<string>('');
   const isAiReplyingRef = useRef<boolean>(false);
+  const turnIdRef = useRef<number>(0);
+  const isGeneratingReplyRef = useRef<boolean>(false);
+  const lastSentTextRef = useRef<string>('');
+  const lastSentTimeRef = useRef<number>(0);
+  const messagesRef = useRef<TrainingMessage[]>([]);
 
   useEffect(() => {
     isAiReplyingRef.current = isAiReplying;
   }, [isAiReplying]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Sandbox Memo & Outcome state
   const [consultationResult, setConsultationResult] = useState<string>('재통화예정');
@@ -312,6 +321,13 @@ export default function TrainingCenterPage() {
       setIsMicActive(false);
     }
 
+    // 턴 및 중복 방지 상태 초기화
+    turnIdRef.current = 0;
+    isGeneratingReplyRef.current = false;
+    lastSentTextRef.current = '';
+    lastSentTimeRef.current = 0;
+    messagesRef.current = [];
+
     setCallState('calling');
     setCallDuration(0);
     setMessages([]);
@@ -390,16 +406,12 @@ export default function TrainingCenterPage() {
           const clean = transcript.trim();
           if (!clean) return;
 
-          // 1. 실시간 말 끼어들기(Barge-in / Overlap) 완벽 지원:
-          // 고객이 말하는 도중이라도 상담원이 말을 시작하면 즉각 고객 TTS 음성을 중단하고 상담원 발화에 집중!
-          if (isAiReplyingRef.current) {
-            speechService.stopSpeaking();
-            isAiReplyingRef.current = false;
-            setIsAiReplying(false);
-          }
+          // 1. 실시간 말 끼어들기(Barge-in):
+          // 고객이 말하는 도중(TTS 재생 중)이라도 상담원이 말을 시작하면 고객 음성을 즉시 정지!
+          speechService.stopSpeaking();
 
           if (isFinal) {
-            // 브라우저가 문장 인식을 완료한 순간 지체 없이 즉시 전달 (0초)
+            // 브라우저가 문장 인식을 완료(isFinal: true)한 경우 지체 없이 즉시 전달 (0초)
             if (silenceTimerRef.current) {
               clearTimeout(silenceTimerRef.current);
               silenceTimerRef.current = null;
@@ -416,8 +428,10 @@ export default function TrainingCenterPage() {
             // 한국어 대화 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요 등)
             const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요)$/.test(clean);
 
-            // 질문이나 문장 종결 표현 감지 시 숨 고르는 찰나(220ms)에 바로 AI 전송! 일반 어구도 350ms 초고속 반응
-            const delayMs = isSentenceEnd ? 220 : 350;
+            // 사람이 자연스럽게 말할 때의 쉼 호흡(300~500ms)을 감안하여,
+            // 종결 어미가 있으면 550ms, 어미가 없으면 850ms의 안정적인 침묵 확인 후 1회 발송!
+            // (220ms처럼 너무 짧으면 한 문장을 말하는 도중에 3~4개로 쪼개져서 중복 응답 발생함)
+            const delayMs = isSentenceEnd ? 550 : 850;
 
             silenceTimerRef.current = setTimeout(() => {
               const text = interimTextRef.current.trim();
@@ -458,9 +472,22 @@ export default function TrainingCenterPage() {
     }
   };
 
-  // Send message from agent (via voice or text)
+  // Send message from agent (단일 턴 ID 및 중복 발송 엄격 제어 - 1문장 1응답 보장)
   const handleSendAgentMessage = async (textToSend: string) => {
-    if (!textToSend.trim()) return;
+    const cleanText = textToSend.trim();
+    if (!cleanText) return;
+
+    const now = Date.now();
+
+    // 🚨 핵심 방어 1: 중복 텍스트 및 초단위 연타 방지
+    // 직전에 보낸 텍스트와 동일하거나 1.8초 이내 동일 발화가 들어오면 무시!
+    if (lastSentTextRef.current === cleanText && (now - lastSentTimeRef.current) < 1800) {
+      console.log('중복 상담원 텍스트 발송 차단:', cleanText);
+      return;
+    }
+
+    lastSentTextRef.current = cleanText;
+    lastSentTimeRef.current = now;
 
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
@@ -470,26 +497,33 @@ export default function TrainingCenterPage() {
     // 고객의 발화 즉시 정지 (상담원 말씀 우선)
     speechService.stopSpeaking();
 
+    // 🚨 핵심 방어 2: 단일 턴 ID 발급 (이전 AI 응답이 늦게 오더라도 무효화!)
+    const myTurnId = ++turnIdRef.current;
+    isGeneratingReplyRef.current = true;
+    setIsAiReplying(true);
+
     const agentMsg: TrainingMessage = {
-      id: 'msg-' + Date.now(),
+      id: 'msg-' + now,
       speaker: 'agent',
-      text: textToSend.trim(),
+      text: cleanText,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     };
 
-    const nextMessages = [...messages, agentMsg];
+    // 항상 최신 messagesRef 기반으로 새 배열 생성
+    const nextMessages = [...messagesRef.current, agentMsg];
+    messagesRef.current = nextMessages;
     setMessages(nextMessages);
+
     setInputText('');
     setInterimText('');
     interimTextRef.current = '';
-    setIsAiReplying(true);
 
     try {
       const replyText = await generateAiCustomerReply(nextMessages, selectedPersona);
 
-      // AI 답변을 생성하는 동안 상담원이 또 다른 말씀을 이미 시작하셨다면 새 발화에 양보
-      if (interimTextRef.current) {
-        setIsAiReplying(false);
+      // 🚨 핵심 방어 3: AI 응답 생성 중 상담원이 새로운 말을 시작했거나 턴이 바뀌었으면 이 응답 폐기!
+      if (myTurnId !== turnIdRef.current || interimTextRef.current.trim()) {
+        console.log(`[Turn ${myTurnId}] 구버전 AI 응답 폐기:`, replyText);
         return;
       }
 
@@ -500,9 +534,18 @@ export default function TrainingCenterPage() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       };
 
-      setMessages(prev => [...prev, customerMsg]);
+      // 🚨 핵심 방어 4: 동일 고객 메시지가 이미 들어갔는지 중복 방지
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.speaker === 'customer' && last.text === replyText) {
+          return prev;
+        }
+        const updated = [...prev, customerMsg];
+        messagesRef.current = updated;
+        return updated;
+      });
 
-      if (isTtsEnabled) {
+      if (isTtsEnabled && myTurnId === turnIdRef.current) {
         await speechService.speak(replyText, {
           ...selectedPersona.speechOptions,
           rate: speedMultiplier,
@@ -512,7 +555,10 @@ export default function TrainingCenterPage() {
     } catch (e) {
       console.error('Error generating AI reply:', e);
     } finally {
-      setIsAiReplying(false);
+      if (myTurnId === turnIdRef.current) {
+        isGeneratingReplyRef.current = false;
+        setIsAiReplying(false);
+      }
     }
   };
 
