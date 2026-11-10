@@ -326,14 +326,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900">
       {/* Sidebar (Desktop) — 축소 토글 + 메뉴 그룹핑 */}
       <aside className={`hidden md:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${sidebarCollapsed ? 'w-[72px]' : 'w-60'}`}>
-        <div className={`flex items-center border-b border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'justify-center p-3' : 'justify-between p-4'}`}>
+        <div className={`flex items-center border-b border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'justify-center p-3' : 'justify-between px-4 py-3'}`}>
           {!sidebarCollapsed ? (
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img src="/leadmaster_logo_120.png" alt="LeadMaster Logo" className="w-8 h-8 rounded-xl shadow-sm shrink-0" />
-              <div className="min-w-0">
-                <h1 className="text-base font-bold text-gray-800 dark:text-white tracking-tight leading-snug">LeadMaster</h1>
-                <OrgBadge />
-              </div>
+            <div className="flex items-center gap-2 min-w-0">
+              <img 
+                src={theme === 'dark' ? "/leadmaster_logo_horizontal_dark.png" : "/leadmaster_logo_horizontal.png"} 
+                alt="LeadMaster CRM" 
+                className="h-6 w-auto object-contain shrink-0" 
+              />
+              <OrgBadge />
             </div>
           ) : (
             <img src="/leadmaster_logo_120.png" alt="LeadMaster Logo" className="w-8 h-8 rounded-xl shadow-sm cursor-pointer" onClick={toggleSidebar} title="LeadMaster CRM (클릭하여 메뉴 펼치기)" />
@@ -395,12 +396,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             오른쪽 자동통화 바로가기 아이콘은 삭제 (전화는 고객 번호를 누르면 걸림) */}
         {!inAndroidApp && (
           <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img src="/leadmaster_logo_120.png" alt="LeadMaster Logo" className="w-7 h-7 rounded-xl shadow-sm shrink-0" />
-              <div className="min-w-0">
-                <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight leading-none">LeadMaster</h1>
-                <OrgBadge compact />
-              </div>
+            <div className="flex items-center gap-2 min-w-0">
+              <img 
+                src={theme === 'dark' ? "/leadmaster_logo_horizontal_dark.png" : "/leadmaster_logo_horizontal.png"} 
+                alt="LeadMaster CRM" 
+                className="h-6 w-auto object-contain shrink-0" 
+              />
+              <OrgBadge compact />
             </div>
             <div className="flex items-center gap-2">
               <AttendanceHeaderWidget isDark={theme === 'dark'} />

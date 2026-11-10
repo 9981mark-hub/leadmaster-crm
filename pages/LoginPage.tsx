@@ -15,14 +15,10 @@ export default function LoginPage() {
             <header className="border-b border-slate-850 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <img 
-                        src="/leadmaster_logo_120.png" 
-                        alt="LeadMaster" 
-                        className="w-8 h-8 rounded-xl shadow-md border border-blue-500/30 object-cover"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        src="/leadmaster_logo_horizontal_dark.png" 
+                        alt="LeadMaster CRM" 
+                        className="h-7 w-auto object-contain"
                     />
-                    <span className="text-base font-extrabold tracking-tight text-white">
-                        LeadMaster <span className="text-blue-400 font-semibold text-xs ml-0.5">CRM</span>
-                    </span>
                 </div>
 
                 <div className="flex items-center gap-4 text-xs text-slate-400">
@@ -52,17 +48,13 @@ export default function LoginPage() {
             <main className="flex-1 flex items-center justify-center px-4 py-12">
                 <div className="w-full max-w-sm text-center space-y-8 animate-in fade-in duration-300">
                     
-                    {/* 브랜드 아이콘 & 타이틀 */}
-                    <div className="space-y-3">
+                    {/* 브랜드 가로형 풀 로고 & 서브타이틀 */}
+                    <div className="space-y-4">
                         <img 
-                            src="/leadmaster_logo_120.png" 
-                            alt="LeadMaster Logo" 
-                            className="w-16 h-16 mx-auto rounded-2xl shadow-xl shadow-blue-500/10 border border-blue-500/30 object-cover"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            src="/leadmaster_logo_horizontal_dark.png" 
+                            alt="LeadMaster CRM" 
+                            className="h-12 sm:h-14 w-auto mx-auto object-contain drop-shadow-md"
                         />
-                        <h1 className="text-2xl font-bold tracking-tight text-white">
-                            LeadMaster CRM
-                        </h1>
                         <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
                             법률·금융 아웃바운드 TM 및 상담 관리를 위한<br />
                             사내 승인 사용자 전용 플랫폼
