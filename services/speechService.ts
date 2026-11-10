@@ -17,6 +17,11 @@ class SpeechService {
   private synth: SpeechSynthesis | null = null;
   private recognition: any = null;
   private isListening = false;
+  private shouldBeListening = false;
+  private restartTimeout: any = null;
+  private onResultCb: ((transcript: string, isFinal: boolean) => void) | null = null;
+  private onErrorCb: ((error: any) => void) | null = null;
+  private onEndCb: (() => void) | null = null;
   private currentAudio: HTMLAudioElement | null = null;
   private audioCtx: AudioContext | null = null;
   private mediaSourceNode: MediaElementAudioSourceNode | null = null;
@@ -374,7 +379,43 @@ class SpeechService {
     }
   }
 
-  // 음성 인식 시작 (STT)
+  // 브라우저 Web Speech Recognition 지원 여부
+  public isSpeechRecognitionSupported(): boolean {
+    if (typeof window === 'undefined') return false;
+    return !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  }
+
+  // 마이크 권한 상태 사전 확인 (Permissions API 지원 시)
+  public async checkMicrophonePermission(): Promise<'granted' | 'denied' | 'prompt' | 'unsupported'> {
+    if (typeof window === 'undefined' || !navigator.permissions?.query) {
+      return 'unsupported';
+    }
+    try {
+      const status = await navigator.permissions.query({ name: 'microphone' as any });
+      return status.state; // 'granted' | 'denied' | 'prompt'
+    } catch (_) {
+      return 'unsupported';
+    }
+  }
+
+  // 마이크 권한 명시적 요청 (getUserMedia 프롬프트 트리거)
+  public async requestMicrophonePermission(): Promise<{ granted: boolean; error?: string }> {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      return { granted: false, error: 'not-supported' };
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // 권한 허용 성공 - 즉시 오디오 트랙을 정지하여 마이크 점유 해제
+      stream.getTracks().forEach(track => track.stop());
+      return { granted: true };
+    } catch (err: any) {
+      console.warn('Microphone permission request failed:', err);
+      const errorName = err?.name || 'UnknownError';
+      return { granted: false, error: errorName };
+    }
+  }
+
+  // 음성 인식 시작 (STT) - 크롬 침묵 자동 끊김(no-speech) 극복 및 지속 수신(Auto-restart)
   public startListening(
     onResult: (transcript: string, isFinal: boolean) => void,
     onError?: (error: any) => void,
@@ -382,15 +423,34 @@ class SpeechService {
   ): boolean {
     if (typeof window === 'undefined') return false;
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    if (!this.isSpeechRecognitionSupported()) {
       console.warn('SpeechRecognition is not supported in this browser.');
       return false;
     }
 
+    this.onResultCb = onResult;
+    this.onErrorCb = onError || null;
+    this.onEndCb = onEnd || null;
+    this.shouldBeListening = true;
+
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout);
+      this.restartTimeout = null;
+    }
+
+    return this.initAndStartRecognition();
+  }
+
+  private initAndStartRecognition(): boolean {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return false;
+
     try {
       if (this.recognition) {
-        this.recognition.abort();
+        try {
+          this.recognition.abort();
+        } catch (_) {}
+        this.recognition = null;
       }
 
       const reco = new SpeechRecognition();
@@ -411,42 +471,87 @@ class SpeechService {
           }
         }
 
-        if (finalTranscript) {
-          onResult(finalTranscript.trim(), true);
-        } else if (interimTranscript) {
-          onResult(interimTranscript.trim(), false);
+        if (this.onResultCb) {
+          if (finalTranscript) {
+            this.onResultCb(finalTranscript.trim(), true);
+          } else if (interimTranscript) {
+            this.onResultCb(interimTranscript.trim(), false);
+          }
         }
       };
 
       reco.onerror = (event: any) => {
-        console.warn('SpeechRecognition error:', event.error);
-        if (onError) onError(event.error);
+        const errType = event.error;
+        console.warn('SpeechRecognition error:', errType);
+
+        // 크롬은 4~5초 침묵 시 no-speech 에러를 발생시킴 -> 오류가 아니므로 무시하고 유지
+        if (errType === 'no-speech' || errType === 'aborted') {
+          return;
+        }
+
+        // 권한 거부 시 즉시 종료 및 콜백
+        if (errType === 'not-allowed' || errType === 'service-not-allowed') {
+          this.shouldBeListening = false;
+          this.isListening = false;
+          if (this.onErrorCb) this.onErrorCb(errType);
+          return;
+        }
+
+        if (this.onErrorCb) {
+          this.onErrorCb(errType);
+        }
       };
 
       reco.onend = () => {
         this.isListening = false;
-        if (onEnd) onEnd();
+
+        // 상담원 통화 연결 중일 때는 크롬이 끊더라도 즉시 자동 재연결(Auto-restart)
+        if (this.shouldBeListening) {
+          if (this.restartTimeout) clearTimeout(this.restartTimeout);
+          this.restartTimeout = setTimeout(() => {
+            if (this.shouldBeListening) {
+              this.initAndStartRecognition();
+            }
+          }, 150);
+        } else {
+          if (this.onEndCb) this.onEndCb();
+        }
       };
 
       reco.start();
       this.isListening = true;
       this.recognition = reco;
       return true;
-    } catch (err) {
-      console.error('Failed to start SpeechRecognition:', err);
-      if (onError) onError(err);
+    } catch (err: any) {
+      console.warn('Failed to start SpeechRecognition:', err);
+      // 이미 시작된 상태 에러(InvalidStateError) 대응
+      if (err?.name === 'InvalidStateError') {
+        this.isListening = true;
+        return true;
+      }
+      this.isListening = false;
+      if (this.onErrorCb) this.onErrorCb(err);
       return false;
     }
   }
 
-  // 음성 인식 종료
+  // 음성 인식 완전 종료
   public stopListening(): void {
-    if (this.recognition && this.isListening) {
-      try {
-        this.recognition.stop();
-      } catch (_) {}
-      this.isListening = false;
+    this.shouldBeListening = false;
+
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout);
+      this.restartTimeout = null;
     }
+
+    if (this.recognition) {
+      try {
+        this.recognition.abort();
+      } catch (_) {}
+      this.recognition = null;
+    }
+
+    this.isListening = false;
   }
 
   public getListeningStatus(): boolean {

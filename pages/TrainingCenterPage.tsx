@@ -61,6 +61,9 @@ import {
   Square,
   FileText,
   Settings,
+  Lock,
+  RefreshCw,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -92,6 +95,9 @@ export default function TrainingCenterPage() {
   const [inputText, setInputText] = useState('');
   const [interimText, setInterimText] = useState('');
   const [isMicActive, setIsMicActive] = useState(false);
+  const [isMicTesting, setIsMicTesting] = useState(false);
+  const [micTestResult, setMicTestResult] = useState('');
+  const [showMicPermissionModal, setShowMicPermissionModal] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [isPhoneFilterEnabled, setIsPhoneFilterEnabled] = useState(true);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.05);
@@ -202,12 +208,110 @@ export default function TrainingCenterPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [callState, inputText]);
 
-  // Start Call Simulation (아웃바운드 발신: 신호음 2회 울린 후 고객이 "여보세요" 수신)
+  // 마이크 사전 테스트 (통화 전 마이크 정상 작동 및 권한 사전 확인)
+  const handleMicTest = async () => {
+    if (isMicTesting) {
+      speechService.stopListening();
+      setIsMicTesting(false);
+      setIsMicActive(false);
+      showToast('마이크 테스트를 종료했습니다.', 'info');
+      return;
+    }
+
+    // 마이크 권한 요청
+    const perm = await speechService.requestMicrophonePermission();
+    if (!perm.granted) {
+      if (perm.error === 'NotAllowedError' || perm.error === 'PermissionDeniedError') {
+        setShowMicPermissionModal(true);
+      } else if (perm.error === 'NotFoundError' || perm.error === 'DevicesNotFoundError') {
+        showToast('연결된 마이크 기기를 찾을 수 없습니다. 마이크 연결을 확인해주세요.', 'error');
+      } else {
+        showToast(`마이크 접근에 실패했습니다: ${perm.error}`, 'error');
+      }
+      return;
+    }
+
+    setIsMicTesting(true);
+    setIsMicActive(true);
+    setMicTestResult('');
+    showToast('🎙️ 마이크 테스트 시작! "안녕하세요" 등 편하게 말씀해보세요. (6초간 진행)', 'info');
+
+    let speechCaptured = false;
+    const testStarted = speechService.startListening(
+      (transcript) => {
+        if (transcript) {
+          speechCaptured = true;
+          setMicTestResult(transcript);
+          showToast(`🎙️ 마이크 정상 인식: "${transcript}"`, 'success');
+        }
+      },
+      (err) => {
+        console.warn('Mic test error:', err);
+        setIsMicTesting(false);
+        setIsMicActive(false);
+        if (err === 'not-allowed') {
+          setShowMicPermissionModal(true);
+        }
+      },
+      () => {
+        setIsMicTesting(false);
+        setIsMicActive(false);
+      }
+    );
+
+    if (!testStarted) {
+      setIsMicTesting(false);
+      setIsMicActive(false);
+      showToast('음성 인식을 시작하지 못했습니다. 크롬/엣지 브라우저를 이용해주세요.', 'error');
+      return;
+    }
+
+    setTimeout(() => {
+      speechService.stopListening();
+      setIsMicTesting(false);
+      setIsMicActive(false);
+      if (!speechCaptured) {
+        showToast('마이크 입력이 감지되지 않았습니다. PC 마이크 볼륨을 확인해주세요.', 'info');
+      }
+    }, 6000);
+  };
+
+  // Start Call Simulation (아웃바운드 발신: 사전 마이크 권한 검증 -> 신호음 2회 -> 고객 수신)
   const handleStartCall = async () => {
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
+
+    // 1단계: 사용자 클릭 제스처가 살아있는 첫 순간에 브라우저 마이크 권한 즉시 요청 & 검증
+    if (speechService.isSpeechRecognitionSupported()) {
+      try {
+        const perm = await speechService.requestMicrophonePermission();
+        if (!perm.granted) {
+          if (perm.error === 'NotAllowedError' || perm.error === 'PermissionDeniedError') {
+            setShowMicPermissionModal(true);
+            return;
+          } else if (perm.error === 'NotFoundError' || perm.error === 'DevicesNotFoundError') {
+            showToast('연결된 마이크 기기를 찾을 수 없습니다. 마이크 연결을 확인해주세요.', 'error');
+            return;
+          } else {
+            console.warn('Microphone permission check result:', perm.error);
+          }
+        }
+      } catch (permErr) {
+        console.warn('Microphone permission exception:', permErr);
+      }
+    } else {
+      showToast('현재 브라우저는 음성 인식을 지원하지 않습니다. 키보드 타이핑 모드로 진행됩니다.', 'info');
+    }
+
+    // 테스트 모드였으면 종료
+    if (isMicTesting) {
+      speechService.stopListening();
+      setIsMicTesting(false);
+      setIsMicActive(false);
+    }
+
     setCallState('calling');
     setCallDuration(0);
     setMessages([]);
@@ -249,7 +353,7 @@ export default function TrainingCenterPage() {
         });
       }
 
-      // Automatically enable mic if available
+      // Automatically enable mic
       toggleMicrophone(true);
     } catch (e) {
       console.warn('Call start failed or cancelled:', e);
@@ -267,6 +371,12 @@ export default function TrainingCenterPage() {
 
   // Toggle Microphone (스마트 침묵 감지: 500ms(0.5초) 침묵 시 즉시 전송)
   const toggleMicrophone = (forceStart?: boolean) => {
+    // 통화 중이 아닐 때는 사전 마이크 테스트 실행
+    if (callState !== 'connected') {
+      handleMicTest();
+      return;
+    }
+
     const shouldStart = forceStart !== undefined ? forceStart : !isMicActive;
 
     if (shouldStart) {
@@ -307,6 +417,9 @@ export default function TrainingCenterPage() {
         },
         (err) => {
           console.warn('Mic error or denied:', err);
+          if (err === 'not-allowed') {
+            setShowMicPermissionModal(true);
+          }
           setIsMicActive(false);
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         },
@@ -316,6 +429,9 @@ export default function TrainingCenterPage() {
         }
       );
       setIsMicActive(started);
+      if (!started) {
+        showToast('마이크 음성 인식을 시작할 수 없습니다. 권한 설정을 확인하세요.', 'error');
+      }
     } else {
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
@@ -1014,6 +1130,76 @@ export default function TrainingCenterPage() {
                   </div>
                 )}
 
+                {/* 🎙️ 실시간 통화 중 마이크 수신 상태 배너 */}
+                {callState === 'connected' && (
+                  <div className={`px-3 py-1.5 border-b flex items-center justify-between text-xs transition-colors ${
+                    isMicActive
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
+                      : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      {isMicActive ? (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                          <span className="font-bold flex items-center gap-1">
+                            <Mic className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                            마이크 수신 중
+                          </span>
+                          <span className="text-[11px] text-emerald-700 dark:text-emerald-300 hidden sm:inline">
+                            말씀하시면 0.5초 침묵 감지 후 고객에게 전송됩니다.
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-amber-500" />
+                          <span className="font-bold flex items-center gap-1">
+                            <MicOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                            마이크 일시 중지
+                          </span>
+                          <span className="text-[11px] text-amber-700 dark:text-amber-300 hidden sm:inline">
+                            하단 마이크 버튼을 누르거나 텍스트를 직접 입력하세요.
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleMicrophone()}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors ${
+                        isMicActive
+                          ? 'bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-100 hover:bg-emerald-300'
+                          : 'bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-100 hover:bg-amber-300'
+                      }`}
+                    >
+                      {isMicActive ? '음소거' : '마이크 켜기'}
+                    </button>
+                  </div>
+                )}
+
+                {/* 🎙️ 통화 대기 중 마이크 사전 테스트 진행 배너 */}
+                {callState === 'idle' && isMicTesting && (
+                  <div className="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-blue-200 dark:border-blue-800 flex items-center justify-between text-xs text-blue-900 dark:text-blue-200 animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <Mic className="w-4 h-4 text-blue-600 animate-bounce" />
+                      <span className="font-bold">🎙️ 마이크 사전 테스트 중:</span>
+                      <span className="text-[11px] font-medium text-blue-800 dark:text-blue-200">
+                        {micTestResult ? `인식 결과: "${micTestResult}"` : '마이크에 대고 "안녕하세요" 등을 말씀해보세요...'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        speechService.stopListening();
+                        setIsMicTesting(false);
+                        setIsMicActive(false);
+                      }}
+                      className="px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold"
+                    >
+                      테스트 완료
+                    </button>
+                  </div>
+                )}
+
                 {/* Chat Bubble Area */}
                 <div className="flex-1 p-4 overflow-y-auto space-y-3">
                   {messages.length === 0 ? (
@@ -1124,15 +1310,31 @@ export default function TrainingCenterPage() {
                   <button
                     type="button"
                     onClick={() => toggleMicrophone()}
-                    disabled={callState !== 'connected'}
-                    className={`p-2.5 rounded-xl transition-all ${
-                      isMicActive
-                        ? 'bg-red-500 text-white shadow-md shadow-red-500/30 animate-pulse'
-                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100'
+                    disabled={callState === 'calling'}
+                    className={`p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 ${
+                      callState === 'connected'
+                        ? isMicActive
+                          ? 'bg-red-500 text-white shadow-md shadow-red-500/30 animate-pulse'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20'
+                        : isMicTesting
+                        ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 animate-pulse'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 hover:border-blue-400'
                     } disabled:opacity-40 disabled:cursor-not-allowed`}
-                    title={isMicActive ? '마이크 끄기' : '마이크 켜기 (STT)'}
+                    title={
+                      callState === 'connected'
+                        ? isMicActive
+                          ? '마이크 끄기 (음소거)'
+                          : '마이크 켜기 (STT 음성 수신)'
+                        : isMicTesting
+                        ? '마이크 테스트 중단'
+                        : '🎙️ 통화 전 마이크 사전 테스트 & 브라우저 권한 허용'
+                    }
                   >
-                    {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+                    {callState === 'connected' ? (
+                      isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />
+                    ) : (
+                      <Mic className={`w-4 h-4 ${isMicTesting ? 'animate-bounce' : ''}`} />
+                    )}
                   </button>
 
                   <input
@@ -1147,8 +1349,12 @@ export default function TrainingCenterPage() {
                     }}
                     placeholder={
                       callState === 'connected'
-                        ? '마이크로 말하거나 멘트를 입력하세요 (Enter)'
-                        : '통화 시작 후 멘트를 입력할 수 있습니다'
+                        ? isMicActive
+                          ? '마이크로 말씀하시거나 키보드로 직접 입력 (Enter)'
+                          : '마이크가 꺼져 있습니다. 마이크를 켜거나 입력하세요 (Enter)'
+                        : isMicTesting
+                        ? '🎙️ 마이크 테스트 진행 중... "안녕하세요" 말씀해보세요'
+                        : '통화 시작 후 멘트를 입력할 수 있습니다 (좌측 🎙️로 마이크 사전 테스트)'
                     }
                     disabled={callState !== 'connected' || isAiReplying}
                     className="flex-1 px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-900"
@@ -1287,6 +1493,103 @@ export default function TrainingCenterPage() {
             showToast(`✅ [${newCfg.companyName}] 훈련 정책 및 오프닝 스크립트가 저장되었습니다.`, 'success');
           }}
         />
+      )}
+
+      {/* 🎙️ 브라우저 마이크 권한 차단 해제 안내 모달 */}
+      {showMicPermissionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* 헤더 */}
+            <div className="px-5 py-4 bg-gradient-to-r from-red-500 to-rose-600 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-white/20 backdrop-blur-xs">
+                  <MicOff className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">마이크 권한 허용 안내</h3>
+                  <p className="text-[11px] text-red-100">AI 실전 롤플레잉 음성 대화를 위해 마이크가 필요합니다</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMicPermissionModal(false)}
+                className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 본문 (3단계 가이드) */}
+            <div className="p-5 space-y-3.5 text-xs">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                현재 브라우저에서 마이크 사용이 <span className="text-red-500 font-bold">차단</span>되어 있거나 허용되지 않았습니다. 아래 3단계를 진행해주시면 즉시 마이크로 대화하실 수 있습니다:
+              </p>
+
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    1
+                  </span>
+                  <div className="flex-1">
+                    <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                      주소창 좌측의 🔒(자물쇠) 또는 설정 아이콘 클릭
+                    </span>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                      브라우저 주소창 맨 앞의 🔒 자물쇠(또는 튜닝기) 아이콘을 누릅니다.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    2
+                  </span>
+                  <div className="flex-1">
+                    <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                      [마이크] 항목을 [허용]으로 변경
+                    </span>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                      마이크 토글을 켜거나 [허용(Allow)] 상태로 변경합니다.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    3
+                  </span>
+                  <div className="flex-1">
+                    <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                      페이지 새로고침 (F5) 후 재시도
+                    </span>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                      설정을 변경한 후 아래 [새로고침] 버튼을 눌러주세요.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 액션 버튼 */}
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  새로고침 (F5)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMicPermissionModal(false)}
+                  className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+                >
+                  닫기 (키보드 직접 입력)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
