@@ -27,13 +27,14 @@ import TeamCallAuditPanel from '../components/team/TeamCallAuditPanel';
 import LifecyclePolicyPanel from '../components/team/LifecyclePolicyPanel';
 import BulkInviteModal from '../components/team/BulkInviteModal';
 import MemberSecurityModal from '../components/team/MemberSecurityModal';
+import { AgentHRHub } from '../components/hr/AgentHRHub';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
   fetchAssignmentLogs, fetchImportBatches, ImportBatch
 } from '../services/distribution';
 import { usePartners, useStatuses, useInboundPaths } from '../services/queries';
 
-type TeamTab = 'performance' | 'call_audit' | 'bulk_assign' | 'rules' | 'lifecycle' | 'quality' | 'dnc' | 'members';
+type TeamTab = 'hr' | 'performance' | 'call_audit' | 'bulk_assign' | 'rules' | 'lifecycle' | 'quality' | 'dnc' | 'members';
 type AssignFilter = 'unassigned' | 'all' | string; // string = 특정 멤버 userId
 
 // tsconfig lib 설정상 Array.from(Set)이 unknown[]으로 추론되어 직접 변환
@@ -55,7 +56,7 @@ export default function TeamPage() {
   const queryClient = useQueryClient();
 
   // 상단 탭 상태
-  const [activeTab, setActiveTab] = useState<TeamTab>('performance');
+  const [activeTab, setActiveTab] = useState<TeamTab>('hr');
 
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<TeamInvite[]>([]);
@@ -291,8 +292,19 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* 7대 전문 탭 네비게이션 */}
+      {/* 8대 전문 탭 네비게이션 */}
       <div className="flex items-center gap-1 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-x-auto border border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setActiveTab('hr')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+            activeTab === 'hr'
+              ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Users size={16} /> 👥 직원 HR 종합 관제 (근태·급여)
+        </button>
+
         <button
           onClick={() => setActiveTab('performance')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
@@ -386,6 +398,11 @@ export default function TeamPage() {
           <Users size={16} /> 멤버 & 환경설정
         </button>
       </div>
+
+      {/* 탭 0: 올인원 HR 종합 관제 (근태·활동·실적·급여) */}
+      {activeTab === 'hr' && (
+        <AgentHRHub members={members} cases={cases} />
+      )}
 
       {/* 탭 1: 팀원 성과 & 인센티브 */}
       {activeTab === 'performance' && (

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, Mail, LogOut, ShieldCheck, Plus, Trash2, Users, Lock, Monitor, Globe, Phone, Bell } from 'lucide-react';
+import { User, Mail, LogOut, ShieldCheck, Plus, Trash2, Users, Lock, Monitor, Globe, Phone, Bell, Clock } from 'lucide-react';
+import { AttendanceHeaderWidget } from '../components/hr/AttendanceHeaderWidget';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { saveGlobalSettings } from '../services/api';
@@ -199,6 +200,19 @@ export default function MyPage() {
                                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">이메일은 Google 계정에서만 변경할 수 있습니다.</p>
                             </div>
                         </div>
+                    </Card>
+
+                    {/* 실시간 근태 및 출퇴근 체크 카드 */}
+                    <Card>
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                                <Clock size={16} className="text-indigo-600" /> 오늘 나의 근태 상태
+                            </span>
+                            <AttendanceHeaderWidget />
+                        </div>
+                        <p className="text-xs text-gray-400">
+                            출근, 자리비움(이석), 식사, 퇴근 상태를 클릭하여 변경할 수 있습니다.
+                        </p>
                     </Card>
 
                     {/* Logout Card */}

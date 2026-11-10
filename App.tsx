@@ -24,6 +24,7 @@ const LiteCallPage = lazyWithRetry(() => import('./pages/LiteCallPage'));
 const NoticePage = lazyWithRetry(() => import('./pages/NoticePage'));
 const TrainingCenterPage = lazyWithRetry(() => import('./pages/TrainingCenterPage'));
 import { NoticeBanner } from './components/NoticeBanner';
+import { AttendanceHeaderWidget } from './components/hr/AttendanceHeaderWidget';
 import { ToastProvider } from './contexts/ToastContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ROLE_LABEL } from './services/org';
@@ -364,7 +365,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             );
           })()}
         </nav>
-        <div className={`border-t border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'p-2' : 'p-3'}`}>
+        <div className={`border-t border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'p-2' : 'p-3'} space-y-2`}>
+          {!sidebarCollapsed && (
+            <div className="px-1 py-0.5 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-gray-400">근태 상태</span>
+              <AttendanceHeaderWidget isDark={theme === 'dark'} />
+            </div>
+          )}
           <button
             onClick={toggleTheme}
             className={`flex items-center w-full rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${sidebarCollapsed ? 'p-2.5 justify-center' : 'gap-3 px-3 py-2.5'}`}
@@ -387,13 +394,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <h1 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">LeadMaster</h1>
               <OrgBadge compact />
             </div>
-            <Link
-              to="/lite"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all"
-            >
-              <Zap size={14} className="fill-white" />
-              <span>간편모드</span>
-            </Link>
+            <div className="flex items-center gap-2">
+              <AttendanceHeaderWidget isDark={theme === 'dark'} />
+              <Link
+                to="/lite"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all"
+              >
+                <Zap size={14} className="fill-white" />
+                <span>간편모드</span>
+              </Link>
+            </div>
           </div>
         )}
 

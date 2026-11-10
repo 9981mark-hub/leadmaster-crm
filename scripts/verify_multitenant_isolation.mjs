@@ -94,7 +94,8 @@ const migrationFiles = [
   '025_retention_policy_options.sql',
   '026_notices_and_directives.sql',
   '027_agent_ui_mode.sql',
-  '028_agent_security_profiles.sql'
+  '028_agent_security_profiles.sql',
+  '029_hr_attendance_and_payroll.sql'
 ];
 
 for (const mf of migrationFiles) {
