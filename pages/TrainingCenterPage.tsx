@@ -369,7 +369,7 @@ export default function TrainingCenterPage() {
     showToast('전화 발신을 취소했습니다.', 'info');
   };
 
-  // Toggle Microphone (스마트 침묵 감지: 500ms(0.5초) 침묵 시 즉시 전송)
+  // Toggle Microphone (실전 전화처럼 버튼 조작 없는 100% 자동 핸즈프리 & 말 끼어들기 Barge-in 지원)
   const toggleMicrophone = (forceStart?: boolean) => {
     // 통화 중이 아닐 때는 사전 마이크 테스트 실행
     if (callState !== 'connected') {
@@ -387,32 +387,46 @@ export default function TrainingCenterPage() {
 
       const started = speechService.startListening(
         (transcript, isFinal) => {
-          if (isAiReplyingRef.current) return;
+          const clean = transcript.trim();
+          if (!clean) return;
+
+          // 1. 실시간 말 끼어들기(Barge-in / Overlap) 완벽 지원:
+          // 고객이 말하는 도중이라도 상담원이 말을 시작하면 즉각 고객 TTS 음성을 중단하고 상담원 발화에 집중!
+          if (isAiReplyingRef.current) {
+            speechService.stopSpeaking();
+            isAiReplyingRef.current = false;
+            setIsAiReplying(false);
+          }
 
           if (isFinal) {
+            // 브라우저가 문장 인식을 완료한 순간 지체 없이 즉시 전달 (0초)
             if (silenceTimerRef.current) {
               clearTimeout(silenceTimerRef.current);
               silenceTimerRef.current = null;
             }
-            const text = transcript.trim();
             setInterimText('');
             interimTextRef.current = '';
-            if (text) {
-              handleSendAgentMessage(text);
-            }
+            handleSendAgentMessage(clean);
           } else {
-            setInterimText(transcript);
-            interimTextRef.current = transcript;
+            setInterimText(clean);
+            interimTextRef.current = clean;
 
             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+            // 한국어 대화 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요 등)
+            const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요)$/.test(clean);
+
+            // 질문이나 문장 종결 표현 감지 시 숨 고르는 찰나(220ms)에 바로 AI 전송! 일반 어구도 350ms 초고속 반응
+            const delayMs = isSentenceEnd ? 220 : 350;
+
             silenceTimerRef.current = setTimeout(() => {
               const text = interimTextRef.current.trim();
-              if (text && !isAiReplyingRef.current) {
+              if (text) {
                 setInterimText('');
                 interimTextRef.current = '';
                 handleSendAgentMessage(text);
               }
-            }, 500);
+            }, delayMs);
           }
         },
         (err) => {
@@ -446,12 +460,15 @@ export default function TrainingCenterPage() {
 
   // Send message from agent (via voice or text)
   const handleSendAgentMessage = async (textToSend: string) => {
-    if (!textToSend.trim() || isAiReplying) return;
+    if (!textToSend.trim()) return;
 
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
+
+    // 고객의 발화 즉시 정지 (상담원 말씀 우선)
+    speechService.stopSpeaking();
 
     const agentMsg: TrainingMessage = {
       id: 'msg-' + Date.now(),
@@ -469,6 +486,12 @@ export default function TrainingCenterPage() {
 
     try {
       const replyText = await generateAiCustomerReply(nextMessages, selectedPersona);
+
+      // AI 답변을 생성하는 동안 상담원이 또 다른 말씀을 이미 시작하셨다면 새 발화에 양보
+      if (interimTextRef.current) {
+        setIsAiReplying(false);
+        return;
+      }
 
       const customerMsg: TrainingMessage = {
         id: 'msg-' + (Date.now() + 1),
@@ -1095,13 +1118,16 @@ export default function TrainingCenterPage() {
                     실시간 아웃바운드 통화 대화록
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium border border-emerald-200/60">
-                      <Zap className="w-3 h-3 text-emerald-500" />
-                      0.5초 침묵 감지
-                    </span>
-                    <span className="text-[11px] text-gray-400">
-                      [Space] 즉시 대답
-                    </span>
+                    {callState === 'connected' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        실시간 통화 연결 중
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-gray-400">
+                        발신 대기 상태
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -1130,9 +1156,9 @@ export default function TrainingCenterPage() {
                   </div>
                 )}
 
-                {/* 🎙️ 실시간 통화 중 마이크 수신 상태 배너 */}
+                {/* 🎙️ 실시간 통화 중 핸즈프리 자동 수신 배너 */}
                 {callState === 'connected' && (
-                  <div className={`px-3 py-1.5 border-b flex items-center justify-between text-xs transition-colors ${
+                  <div className={`px-3.5 py-2 border-b flex items-center justify-between text-xs transition-colors ${
                     isMicActive
                       ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
                       : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200'
@@ -1141,23 +1167,23 @@ export default function TrainingCenterPage() {
                       {isMicActive ? (
                         <>
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                          <span className="font-bold flex items-center gap-1">
+                          <span className="font-bold flex items-center gap-1.5">
                             <Mic className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                            마이크 수신 중
+                            실시간 자동 통화 모드
                           </span>
                           <span className="text-[11px] text-emerald-700 dark:text-emerald-300 hidden sm:inline">
-                            말씀하시면 0.5초 침묵 감지 후 고객에게 전송됩니다.
+                            (편하게 말씀하세요. 고객이 말하는 중에도 말씀하시면 즉시 듣고 반응합니다)
                           </span>
                         </>
                       ) : (
                         <>
                           <span className="w-2 h-2 rounded-full bg-amber-500" />
-                          <span className="font-bold flex items-center gap-1">
+                          <span className="font-bold flex items-center gap-1.5">
                             <MicOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                            마이크 일시 중지
+                            마이크 꺼짐 (음소거)
                           </span>
                           <span className="text-[11px] text-amber-700 dark:text-amber-300 hidden sm:inline">
-                            하단 마이크 버튼을 누르거나 텍스트를 직접 입력하세요.
+                            통화 중 음소거 상태입니다. 마이크를 켜시거나 키보드로 입력하세요.
                           </span>
                         </>
                       )}
@@ -1165,7 +1191,7 @@ export default function TrainingCenterPage() {
                     <button
                       type="button"
                       onClick={() => toggleMicrophone()}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors ${
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors ${
                         isMicActive
                           ? 'bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-100 hover:bg-emerald-300'
                           : 'bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-100 hover:bg-amber-300'
@@ -1263,30 +1289,14 @@ export default function TrainingCenterPage() {
                     ))
                   )}
 
-                  {/* Live Speech Interim Bubble */}
+                  {/* Live Speech Interim Bubble (실시간 발화 자막) */}
                   {interimText && (
                     <div className="flex flex-col items-end">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold animate-pulse flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
-                          듣고 있는 중 (0.5초 후 자동 전송)
+                          🎙️ 상담원 말씀하시는 중...
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const text = (interimTextRef.current || interimText).trim();
-                            if (text && !isAiReplying) {
-                              if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-                              setInterimText('');
-                              interimTextRef.current = '';
-                              handleSendAgentMessage(text);
-                            }
-                          }}
-                          className="px-2 py-0.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold shadow-xs flex items-center gap-1"
-                        >
-                          <Zap className="w-2.5 h-2.5" />
-                          즉시 대답 [Space]
-                        </button>
                       </div>
                       <div className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs bg-blue-100/70 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-800 rounded-br-xs shadow-xs">
                         {interimText}
@@ -1298,7 +1308,7 @@ export default function TrainingCenterPage() {
                   {isAiReplying && (
                     <div className="flex items-center gap-2 text-xs text-gray-400 italic py-1">
                       <Sparkles className="w-3.5 h-3.5 animate-spin text-purple-500" />
-                      <span>고객이 답변을 생각하는 중...</span>
+                      <span>고객이 답변하는 중...</span>
                     </div>
                   )}
 
@@ -1350,11 +1360,11 @@ export default function TrainingCenterPage() {
                     placeholder={
                       callState === 'connected'
                         ? isMicActive
-                          ? '마이크로 말씀하시거나 키보드로 직접 입력 (Enter)'
-                          : '마이크가 꺼져 있습니다. 마이크를 켜거나 입력하세요 (Enter)'
+                          ? '실시간 자동 통화 중... 편하게 말씀하세요 (키보드 직접 입력도 가능)'
+                          : '마이크가 음소거 상태입니다. 마이크를 켜시거나 키보드로 입력하세요'
                         : isMicTesting
                         ? '🎙️ 마이크 테스트 진행 중... "안녕하세요" 말씀해보세요'
-                        : '통화 시작 후 멘트를 입력할 수 있습니다 (좌측 🎙️로 마이크 사전 테스트)'
+                        : '통화 시작 후 자동으로 실시간 대화가 진행됩니다'
                     }
                     disabled={callState !== 'connected' || isAiReplying}
                     className="flex-1 px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-900"
