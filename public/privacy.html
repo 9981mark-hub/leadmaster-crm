@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>리드마스터 CRM - 개인정보처리방침</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.8; color: #1a1a1a; background: #fff; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .updated { color: #666; font-size: 14px; margin-bottom: 40px; }
+    h2 { font-size: 20px; font-weight: 600; margin: 36px 0 12px; padding-top: 12px; border-top: 1px solid #eee; }
+    h2:first-of-type { border-top: none; }
+    h3 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; }
+    p, li { font-size: 15px; color: #333; }
+    ul, ol { padding-left: 24px; margin: 8px 0; }
+    li { margin: 4px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+    th { background: #f8f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #2563eb; padding: 16px 20px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+    .footer { margin-top: 60px; padding-top: 24px; border-top: 2px solid #eee; font-size: 13px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>개인정보처리방침</h1>
+    <p class="updated">시행일: 2026년 11월 10일 | 최종 수정: 2026년 11월 10일</p>
+
+    <div class="highlight">
+      <strong>리드마스터 CRM</strong>(이하 "서비스")은 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 다음과 같이 개인정보처리방침을 수립·공개합니다.
+    </div>
+
+    <h2>제1조 (개인정보의 처리 목적)</h2>
+    <p>서비스는 다음의 목적을 위하여 개인정보를 처리합니다. 처리하는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 별도의 동의를 받는 등 필요한 조치를 이행합니다.</p>
+    <ol>
+      <li><strong>회원 가입 및 관리</strong>: 회원제 서비스 제공에 따른 본인 식별·인증, 회원자격 유지·관리, 서비스 부정이용 방지</li>
+      <li><strong>서비스 제공</strong>: 고객 상담 관리(CRM), 통화·문자 기록 연동, 리드 배분 및 전달, 통화 녹음 보관 및 AI 요약, 통계 분석</li>
+      <li><strong>Google 계정 연동</strong>: Google 로그인을 통한 본인 인증, Google Drive 연동을 통한 통화 녹음 파일 보관</li>
+    </ol>
+
+    <h2>제2조 (처리하는 개인정보의 항목)</h2>
+    <table>
+      <tr><th>구분</th><th>항목</th><th>보유 기간</th></tr>
+      <tr><td>회원 정보</td><td>이름, 이메일 주소, 프로필 사진 (Google 계정에서 제공)</td><td>회원 탈퇴 시까지</td></tr>
+      <tr><td>서비스 이용 기록</td><td>접속 일시, 접속 IP, 기능 사용 기록</td><td>회사별 설정 (6개월~2년)</td></tr>
+      <tr><td>고객 상담 데이터</td><td>고객 연락처, 상담 내용, 채무·소득 정보, 통화 녹음</td><td>회사별 설정에 따름</td></tr>
+    </table>
+
+    <h2>제3조 (Google API 서비스 이용)</h2>
+    <p>서비스는 Google API 서비스를 다음과 같이 이용합니다.</p>
+
+    <h3>3-1. Google 로그인 (OAuth 2.0)</h3>
+    <ul>
+      <li><strong>수집 정보</strong>: 이름, 이메일 주소, 프로필 사진</li>
+      <li><strong>사용 목적</strong>: 서비스 로그인 및 본인 인증</li>
+      <li><strong>권한 범위</strong>: <code>openid</code>, <code>email</code>, <code>profile</code></li>
+    </ul>
+
+    <h3>3-2. Google Drive 연동</h3>
+    <ul>
+      <li><strong>수집 정보</strong>: 연동된 Google Drive 폴더 정보, 업로드된 파일 메타데이터</li>
+      <li><strong>사용 목적</strong>: 통화 녹음 파일의 비공개 보관 및 재생</li>
+      <li><strong>권한 범위</strong>: <code>drive.file</code> (서비스가 생성하거나 사용자가 명시적으로 선택한 파일에만 접근)</li>
+      <li><strong>제한 사항</strong>: 사용자가 명시적으로 선택하거나 서비스가 생성한 파일 이외의 Google Drive 파일에는 접근하지 않습니다.</li>
+    </ul>
+
+    <div class="highlight">
+      <strong>Google API 서비스 사용자 데이터 정책 준수</strong><br>
+      리드마스터 CRM의 Google API 서비스 이용 및 Google API 서비스로부터 수신한 정보의 다른 앱으로의 전송은 <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Google API 서비스 사용자 데이터 정책</a>(제한적 사용 요건 포함)을 준수합니다.
+    </div>
+
+    <h2>제4조 (개인정보의 제3자 제공)</h2>
+    <p>서비스는 이용자의 개인정보를 제1조에서 명시한 범위 내에서만 처리하며, 이용자의 동의 없이 제3자에게 제공하지 않습니다. 다만, 다음의 경우에는 예외로 합니다.</p>
+    <ol>
+      <li>이용자가 사전에 동의한 경우</li>
+      <li>법령에 의하여 요구되는 경우</li>
+      <li>서비스 제공에 관한 계약 이행을 위해 필요한 경우 (예: 고객사 관리자가 거래처에 상담 리드를 전달하는 업무)</li>
+    </ol>
+
+    <h2>제5조 (개인정보의 처리위탁)</h2>
+    <table>
+      <tr><th>수탁업체</th><th>위탁 업무</th></tr>
+      <tr><td>Supabase Inc.</td><td>데이터베이스 호스팅 및 사용자 인증</td></tr>
+      <tr><td>Google LLC</td><td>사용자 인증(OAuth), 파일 저장(Drive), AI 분석(Gemini API), 음성 합성(TTS)</td></tr>
+      <tr><td>Vercel Inc.</td><td>웹 애플리케이션 호스팅</td></tr>
+    </table>
+
+    <h2>제6조 (개인정보의 파기)</h2>
+    <p>서비스는 개인정보의 보유 기간이 경과하거나 처리 목적이 달성된 경우에는 지체 없이 해당 개인정보를 파기합니다.</p>
+    <ul>
+      <li>전자적 파일: 복구 불가능한 방법으로 삭제</li>
+      <li>회원 탈퇴 시: 해당 계정의 모든 개인정보를 즉시 파기</li>
+      <li>고객사 계약 종료 시: 합의된 기간 내 모든 데이터 파기 또는 반환</li>
+    </ul>
+
+    <h2>제7조 (이용자의 권리·의무 및 행사 방법)</h2>
+    <p>이용자는 서비스에 대해 언제든지 다음 각 호의 권리를 행사할 수 있습니다.</p>
+    <ol>
+      <li>개인정보 열람 요구</li>
+      <li>오류 등이 있을 경우 정정 요구</li>
+      <li>삭제 요구</li>
+      <li>처리정지 요구</li>
+      <li>Google 계정 연동 해제 (Google 계정 설정 → 보안 → 서드파티 앱 접근 관리)</li>
+    </ol>
+
+    <h2>제8조 (개인정보의 안전성 확보 조치)</h2>
+    <p>서비스는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
+    <ul>
+      <li>모든 통신은 HTTPS/TLS로 암호화</li>
+      <li>데이터베이스 접근 권한을 회사·역할별로 분리 (Row Level Security)</li>
+      <li>접근 기록(열람·내보내기·삭제·재생) 자동 저장</li>
+      <li>통화 녹음 파일은 Google Drive 비공개 저장, 서버 경유 재생</li>
+      <li>API 키 및 인증 토큰은 서버에서만 관리</li>
+      <li>회사 간 데이터 완전 분리 (멀티테넌트 RLS)</li>
+    </ul>
+
+    <h2>제9조 (개인정보 보호 책임자)</h2>
+    <table>
+      <tr><th>구분</th><th>내용</th></tr>
+      <tr><td>서비스명</td><td>리드마스터 CRM (LeadMaster CRM)</td></tr>
+      <tr><td>책임자</td><td>진성훈</td></tr>
+      <tr><td>연락처</td><td>9981mark@gmail.com</td></tr>
+    </table>
+
+    <h2>제10조 (개인정보처리방침의 변경)</h2>
+    <p>이 개인정보처리방침은 2026년 11월 10일부터 적용됩니다. 변경 사항이 있을 경우 서비스 내 공지를 통해 안내합니다.</p>
+
+    <div class="footer">
+      <p>© 2026 리드마스터 CRM. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
