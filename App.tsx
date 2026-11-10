@@ -326,22 +326,50 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900">
       {/* Sidebar (Desktop) — 축소 토글 + 메뉴 그룹핑 */}
       <aside className={`hidden md:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${sidebarCollapsed ? 'w-[72px]' : 'w-60'}`}>
-        <div className={`flex items-center border-b border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'justify-center p-3' : 'justify-between px-4 py-3'}`}>
-          {!sidebarCollapsed ? (
-            <div className="flex items-center gap-2 min-w-0">
-              <img 
-                src={theme === 'dark' ? "/leadmaster_logo_horizontal_dark.png" : "/leadmaster_logo_horizontal.png"} 
-                alt="LeadMaster CRM" 
-                className="h-6 w-auto object-contain shrink-0" 
-              />
-              <OrgBadge />
-            </div>
+        <div className={`border-b border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'p-3 flex justify-center' : 'p-4'}`}>
+          {sidebarCollapsed ? (
+            <img 
+              src="/leadmaster_logo_120.png" 
+              alt="LeadMaster Logo" 
+              className="w-8 h-8 rounded-xl shadow-sm cursor-pointer hover:opacity-80 transition-opacity" 
+              onClick={toggleSidebar} 
+              title="LeadMaster CRM (클릭하여 메뉴 펼치기)" 
+            />
           ) : (
-            <img src="/leadmaster_logo_120.png" alt="LeadMaster Logo" className="w-8 h-8 rounded-xl shadow-sm cursor-pointer" onClick={toggleSidebar} title="LeadMaster CRM (클릭하여 메뉴 펼치기)" />
+            <div>
+              {/* 1행: 가로형 브랜드 로고 + 메뉴 접기 버튼 */}
+              <div className="flex items-center justify-between">
+                <img 
+                  src={theme === 'dark' ? "/leadmaster_logo_horizontal_dark.png" : "/leadmaster_logo_horizontal.png"} 
+                  alt="LeadMaster CRM" 
+                  className="h-6 w-auto object-contain shrink-0" 
+                />
+                <button 
+                  onClick={toggleSidebar} 
+                  className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition-colors shrink-0" 
+                  title="메뉴 접기"
+                >
+                  <ChevronsLeft size={18} />
+                </button>
+              </div>
+
+              {/* 2행: 소속 조직명 + 직책 배지 (가로 240px 내 깔끔 분리 배치) */}
+              <div className="mt-2.5 pt-2 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
+                <span className="truncate text-xs font-semibold text-gray-600 dark:text-gray-300 max-w-[130px]" title={org?.orgName}>
+                  {org?.orgName}
+                </span>
+                {org && (
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                    org.role === 'agent' 
+                      ? (org.uiMode === 'lite_only' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300')
+                      : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                  }`}>
+                    {org.role === 'agent' && org.uiMode === 'lite_only' ? '신입 (간편콜)' : ROLE_LABEL[org.role]}
+                  </span>
+                )}
+              </div>
+            </div>
           )}
-          <button onClick={toggleSidebar} className={`p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition-colors shrink-0 ${sidebarCollapsed ? 'hidden' : ''}`} title="메뉴 접기">
-            <ChevronsLeft size={18} />
-          </button>
         </div>
         <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-3' : 'px-3 py-2'} space-y-0.5`}>
           {(() => {
@@ -398,9 +426,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
             <div className="flex items-center gap-2 min-w-0">
               <img 
-                src={theme === 'dark' ? "/leadmaster_logo_horizontal_dark.png" : "/leadmaster_logo_horizontal.png"} 
-                alt="LeadMaster CRM" 
-                className="h-6 w-auto object-contain shrink-0" 
+                src="/leadmaster_logo_120.png" 
+                alt="LeadMaster" 
+                className="w-7 h-7 rounded-xl shrink-0 shadow-sm" 
               />
               <OrgBadge compact />
             </div>
