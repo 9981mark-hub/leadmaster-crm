@@ -123,3 +123,68 @@ export const assignRoundRobin = async (caseIds: string[], userIds: string[]): Pr
   for (const uid of userIds) result[uid] = await assignCases(buckets[uid], uid);
   return result;
 };
+
+export interface BulkInviteInput {
+  email: string;
+  displayName?: string;
+  role?: OrgRole;
+}
+
+export interface BulkInviteSummary {
+  total: number;
+  successCount: number;
+  failedCount: number;
+  errors: { email: string; reason: string }[];
+}
+
+/** 10~50명 상담원/관리자 원클릭 대량 초대 */
+export const bulkInviteMembers = async (
+  orgId: string,
+  entries: BulkInviteInput[]
+): Promise<BulkInviteSummary> => {
+  const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+  const errors: { email: string; reason: string }[] = [];
+  const validRows: any[] = [];
+  const seenEmails = new Set<string>();
+
+  for (const item of entries) {
+    const clean = item.email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+      errors.push({ email: item.email, reason: '유효하지 않은 이메일 형식' });
+      continue;
+    }
+    if (seenEmails.has(clean)) {
+      errors.push({ email: clean, reason: '입력 목록 내 중복' });
+      continue;
+    }
+    seenEmails.add(clean);
+    validRows.push({
+      org_id: orgId,
+      email: clean,
+      role: item.role || 'agent',
+      display_name: item.displayName?.trim() || clean.split('@')[0],
+      accepted_at: null,
+      expires_at: expiresAt,
+    });
+  }
+
+  let dbSuccessCount = 0;
+  if (validRows.length > 0) {
+    for (let i = 0; i < validRows.length; i += 50) {
+      const chunk = validRows.slice(i, i + 50);
+      const { error } = await need().from('org_invites').upsert(chunk, { onConflict: 'org_id,email' });
+      if (error) {
+        chunk.forEach(r => errors.push({ email: r.email, reason: error.message }));
+      } else {
+        dbSuccessCount += chunk.length;
+      }
+    }
+  }
+
+  return {
+    total: entries.length,
+    successCount: dbSuccessCount,
+    failedCount: errors.length,
+    errors,
+  };
+};

@@ -25,6 +25,7 @@ import DncManagementPanel from '../components/team/DncManagementPanel';
 import AgentPerformancePanel from '../components/team/AgentPerformancePanel';
 import TeamCallAuditPanel from '../components/team/TeamCallAuditPanel';
 import LifecyclePolicyPanel from '../components/team/LifecyclePolicyPanel';
+import BulkInviteModal from '../components/team/BulkInviteModal';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
   fetchAssignmentLogs, fetchImportBatches, ImportBatch
@@ -76,6 +77,7 @@ export default function TeamPage() {
   const [distMode, setDistMode] = useState<DistributeMode>('round_robin');
   const [distCounts, setDistCounts] = useState<Record<string, number>>({});
   const [showUpload, setShowUpload] = useState(false);
+  const [showBulkInvite, setShowBulkInvite] = useState(false);
   const [logs, setLogs] = useState<AssignmentLog[]>([]);
   const [panelKey, setPanelKey] = useState(0);
 
@@ -792,8 +794,17 @@ export default function TeamPage() {
 
             {/* 초대 */}
             <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/60 rounded-b-xl space-y-3">
-              <div className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200">
-                <UserPlus size={16} /> 새 멤버 초대
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200">
+                  <UserPlus size={16} /> 새 멤버 초대
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkInvite(true)}
+                  className="px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 dark:border-blue-800 shadow-sm"
+                >
+                  <Users size={14} /> 상담원 대량 초대 (10~50명)
+                </button>
               </div>
               <div className="flex flex-wrap gap-2">
                 <input
@@ -877,6 +888,18 @@ export default function TeamPage() {
           }}
         />
       )}
+
+      {/* 상담원 대량 초대 모달 */}
+      <BulkInviteModal
+        orgId={org.orgId}
+        isOpen={showBulkInvite}
+        onClose={() => setShowBulkInvite(false)}
+        onSuccess={() => {
+          reload();
+          queryClient.invalidateQueries({ queryKey: ['cases'] });
+        }}
+        existingEmails={members.map(m => m.email)}
+      />
     </div>
   );
 }
