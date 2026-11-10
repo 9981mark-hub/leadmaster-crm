@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
-  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap
+  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap, Shield
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -11,7 +11,7 @@ import { fetchCases, applyLocalAssignment, refreshLocalAssignments } from '../se
 import { ROLE_LABEL, OrgRole } from '../services/org';
 import {
   TeamMember, TeamInvite, fetchTeamMembers, updateTeamMember, fetchPendingInvites,
-  createInvite, cancelInvite, assignCases,
+  createInvite, cancelInvite, assignCases, revokeMemberSession, MemberSecurityProfile
 } from '../services/team';
 import { Case } from '../types';
 import TelegramBotSection from '../components/TelegramBotSection';
@@ -26,6 +26,7 @@ import AgentPerformancePanel from '../components/team/AgentPerformancePanel';
 import TeamCallAuditPanel from '../components/team/TeamCallAuditPanel';
 import LifecyclePolicyPanel from '../components/team/LifecyclePolicyPanel';
 import BulkInviteModal from '../components/team/BulkInviteModal';
+import MemberSecurityModal from '../components/team/MemberSecurityModal';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
   fetchAssignmentLogs, fetchImportBatches, ImportBatch
@@ -78,6 +79,7 @@ export default function TeamPage() {
   const [distCounts, setDistCounts] = useState<Record<string, number>>({});
   const [showUpload, setShowUpload] = useState(false);
   const [showBulkInvite, setShowBulkInvite] = useState(false);
+  const [securityTargetMember, setSecurityTargetMember] = useState<TeamMember | null>(null);
   const [logs, setLogs] = useState<AssignmentLog[]>([]);
   const [panelKey, setPanelKey] = useState(0);
 
@@ -216,6 +218,33 @@ export default function TeamPage() {
       await reload();
     } catch (e: any) {
       showToast(`변경 실패: ${e.message}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleSaveSecurityProfile = async (userId: string, profile: MemberSecurityProfile) => {
+    setBusy(true);
+    try {
+      await updateTeamMember(userId, { securityProfile: profile });
+      showToast('상담원 보안 설정이 저장되었습니다.', 'success');
+      await reload();
+    } catch (e: any) {
+      showToast(`보안 설정 저장 실패: ${e.message}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRevokeSession = async (userId: string) => {
+    if (!org) return;
+    setBusy(true);
+    try {
+      await revokeMemberSession(org.orgId, userId);
+      showToast('상담원의 세션이 즉시 강제 파기되었습니다.', 'success');
+      await reload();
+    } catch (e: any) {
+      showToast(`세션 파기 실패: ${e.message}`, 'error');
     } finally {
       setBusy(false);
     }
@@ -691,6 +720,22 @@ export default function TeamPage() {
                       </button>
                     ))}
                   </div>
+                  {canEditRole(m) && (
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700/50">
+                      <button
+                        type="button"
+                        onClick={() => setSecurityTargetMember(m)}
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                      >
+                        <Shield size={13} />
+                        <span>보안 설정 ({
+                          !m.securityProfile?.watermark && !m.securityProfile?.appCaptureBlock && !m.securityProfile?.masking && !m.securityProfile?.anomalyAlert
+                            ? '🌟 팀장급 해제'
+                            : '🛡️ 보안 적용'
+                        })</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
               {!loading && members.length === 0 && (
@@ -707,6 +752,7 @@ export default function TeamPage() {
                     <th className="text-left px-3 py-2">이메일</th>
                     <th className="text-left px-3 py-2">역할</th>
                     <th className="text-left px-3 py-2">업무 모드</th>
+                    <th className="text-left px-3 py-2">보안 통제</th>
                     <th className="text-right px-3 py-2">담당 리드</th>
                     <th className="text-left px-3 py-2">최근 로그인</th>
                     <th className="text-right px-5 py-2">관리</th>
@@ -761,6 +807,30 @@ export default function TeamPage() {
                           </span>
                         )}
                       </td>
+                      <td className="px-3 py-2.5">
+                        {canEditRole(m) ? (
+                          <button
+                            type="button"
+                            onClick={() => setSecurityTargetMember(m)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:shadow-xs cursor-pointer bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
+                          >
+                            <Shield size={13} className={
+                              !m.securityProfile?.watermark && !m.securityProfile?.appCaptureBlock && !m.securityProfile?.masking && !m.securityProfile?.anomalyAlert
+                                ? 'text-amber-500'
+                                : 'text-blue-500'
+                            } />
+                            <span>
+                              {!m.securityProfile?.watermark && !m.securityProfile?.appCaptureBlock && !m.securityProfile?.masking && !m.securityProfile?.anomalyAlert
+                                ? '🌟 팀장급 (해제)'
+                                : m.securityProfile?.watermark && m.securityProfile?.appCaptureBlock && m.securityProfile?.masking && m.securityProfile?.anomalyAlert
+                                  ? '🛡️ 표준 보안'
+                                  : '⚙️ 맞춤 보안'}
+                            </span>
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-400">자율 권한</span>
+                        )}
+                      </td>
                       <td className="px-3 py-2.5 text-right tabular-nums">{m.assignedCases.toLocaleString()}</td>
                       <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400">{fmtDate(m.lastSignInAt)}</td>
                       <td className="px-5 py-2.5 text-right">
@@ -786,7 +856,7 @@ export default function TeamPage() {
                     </tr>
                   ))}
                   {!loading && members.length === 0 && (
-                    <tr><td colSpan={7} className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
+                    <tr><td colSpan={8} className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -899,6 +969,15 @@ export default function TeamPage() {
           queryClient.invalidateQueries({ queryKey: ['cases'] });
         }}
         existingEmails={members.map(m => m.email)}
+      />
+
+      {/* 상담원별 차등 보안 설정 모달 */}
+      <MemberSecurityModal
+        member={securityTargetMember}
+        isOpen={securityTargetMember !== null}
+        onClose={() => setSecurityTargetMember(null)}
+        onSave={handleSaveSecurityProfile}
+        onRevokeSession={handleRevokeSession}
       />
     </div>
   );

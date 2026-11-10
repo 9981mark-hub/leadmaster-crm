@@ -92,7 +92,9 @@ const migrationFiles = [
   '020_dnc_and_smart_rotation.sql',
   '023_emergency_data_purge.sql',
   '025_retention_policy_options.sql',
-  '026_notices_and_directives.sql'
+  '026_notices_and_directives.sql',
+  '027_agent_ui_mode.sql',
+  '028_agent_security_profiles.sql'
 ];
 
 for (const mf of migrationFiles) {
@@ -144,6 +146,21 @@ const queryAsUser = async (role, uid, email, sql) => {
     await db.query(`SELECT set_config('request.jwt.claims', $1, true)`, [claims]);
     const res = await db.query(sql);
     await db.exec('ROLLBACK');
+    return { rows: res.rows, error: null };
+  } catch (e) {
+    await db.exec('ROLLBACK');
+    return { rows: [], error: e.message };
+  }
+};
+
+const mutateAsUser = async (role, uid, email, sql) => {
+  await db.exec('BEGIN');
+  try {
+    await db.exec(`SET LOCAL ROLE ${role}`);
+    const claims = uid ? JSON.stringify({ sub: uid, email, role }) : '';
+    await db.query(`SELECT set_config('request.jwt.claims', $1, true)`, [claims]);
+    const res = await db.query(sql);
+    await db.exec('COMMIT');
     return { rows: res.rows, error: null };
   } catch (e) {
     await db.exec('ROLLBACK');
@@ -243,6 +260,37 @@ const alphaBotTokenQuery = await queryAsUser(
   `SELECT value FROM settings WHERE org_id = '${ORG_A}' AND key = 'telegramBotToken'`
 );
 assertOk(alphaBotTokenQuery.rows.length === 0, '회사 B 대표가 회사 A의 텔레그램 봇 토큰 쿼리 시도 ➔ 0건 반환 (비밀값 완전 차단)');
+
+console.log('\n--- 6. 상담원별 차등 보안 프로필 및 세션 강제 파기 (028) ---');
+const membersRes = await queryAsUser(
+  'authenticated', USER_A_ADMIN, 'admin@alpha.com',
+  `SELECT * FROM public.list_org_members()`
+);
+const agentA = membersRes.rows.find(r => r.user_id === USER_A_AGENT);
+assertOk(agentA && agentA.security_profile?.watermark === true, '신입 상담원 보안 프로필 기본값 적용 (watermark: true)');
+
+// 대표가 팀장급 신뢰 상담원으로 보안 제한 해제(watermark: false, appCaptureBlock: false 등) 변경 테스트
+await mutateAsUser(
+  'authenticated', USER_A_ADMIN, 'admin@alpha.com',
+  `SELECT public.update_org_member('${USER_A_AGENT}'::uuid, NULL, NULL, NULL, NULL, '{"watermark":false,"appCaptureBlock":false,"masking":false,"anomalyAlert":false}'::jsonb)`
+);
+const updatedMembers = await queryAsUser(
+  'authenticated', USER_A_ADMIN, 'admin@alpha.com',
+  `SELECT * FROM public.list_org_members()`
+);
+const updatedAgentA = updatedMembers.rows.find(r => r.user_id === USER_A_AGENT);
+assertOk(updatedAgentA && updatedAgentA.security_profile?.watermark === false, '관리자가 팀장급 상담원 보안 제한 해제 적용 성공 (watermark: false)');
+
+// 관리자에 의한 상담원 세션 강제 파기(revoke_member_session) 테스트
+await mutateAsUser(
+  'authenticated', USER_A_ADMIN, 'admin@alpha.com',
+  `SELECT public.revoke_member_session('${USER_A_AGENT}'::uuid)`
+);
+const revokedMembers = await queryAsUser(
+  'authenticated', USER_A_ADMIN, 'admin@alpha.com',
+  `SELECT session_revoked_at FROM public.org_members WHERE user_id = '${USER_A_AGENT}'`
+);
+assertOk(revokedMembers.rows[0]?.session_revoked_at !== null, '관리자에 의한 원클릭 세션 강제 파기 타임스탬프 기록 확인');
 
 console.log('\n===============================================================');
 if (failures === 0) {

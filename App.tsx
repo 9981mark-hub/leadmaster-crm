@@ -35,6 +35,7 @@ import { ActiveCallProvider } from './contexts/ActiveCallContext';
 import ReminderNotificationContainer from './components/ReminderNotificationContainer';
 import ActiveCallPopup from './components/ActiveCallPopup';
 import NewCasePopup from './components/NewCasePopup';
+import SecurityWatermark from './components/SecurityWatermark';
 import { fetchPendingCount, subscribeTelegramFeedbacks } from './services/telegramFeedback';
 
 
@@ -570,6 +571,7 @@ export default function App() {
                     <ReminderNotificationContainer />
                     <ActiveCallPopup />
                     <NewCasePopup />
+                    <SecurityWatermark />
                   </Suspense>
                   </ActiveCallProvider>
                 </ReminderProvider>

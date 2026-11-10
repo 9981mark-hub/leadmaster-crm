@@ -7,6 +7,29 @@ import { supabase } from './supabase';
 
 export type OrgRole = 'owner' | 'admin' | 'agent';
 
+export interface MemberSecurityProfile {
+  watermark: boolean;         // 1. 화면 보안 워터마크
+  appCaptureBlock: boolean;   // 2. 안드로이드 앱 캡처 차단 (FLAG_SECURE)
+  masking: boolean;           // 3. 리드 목록 개인정보 마스킹 (전화번호/이름)
+  anomalyAlert: boolean;      // 4. 비정상 대량 열람 시 대표 텔레그램 알림
+}
+
+// 신입/일반 상담원 기본값: 전체 보안 제한 활성화 (ON)
+export const DEFAULT_AGENT_SECURITY_PROFILE: MemberSecurityProfile = {
+  watermark: true,
+  appCaptureBlock: true,
+  masking: true,
+  anomalyAlert: true,
+};
+
+// 팀장/신뢰 상담원 (또는 관리자/대표) 기본값: 전체 보안 제한 해제 (자율 권한 OFF)
+export const TRUSTED_TEAM_LEAD_SECURITY_PROFILE: MemberSecurityProfile = {
+  watermark: false,
+  appCaptureBlock: false,
+  masking: false,
+  anomalyAlert: false,
+};
+
 export interface OrgInfo {
   userId: string;
   orgId: string;
@@ -15,6 +38,8 @@ export interface OrgInfo {
   displayName?: string;
   isPlatformAdmin: boolean;
   uiMode?: 'standard' | 'lite_only';
+  securityProfile?: MemberSecurityProfile;
+  sessionRevokedAt?: string;
 }
 
 export const HQ_ORG_ID = '00000000-0000-0000-0000-000000000001';
@@ -71,9 +96,19 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
   const [{ data: role }, { data: org }, { data: member }, { data: profile }] = await Promise.all([
     supabase.rpc('current_org_role'),
     supabase.from('organizations').select('id, name').eq('id', orgId).maybeSingle(),
-    supabase.from('org_members').select('display_name, ui_mode').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
+    supabase.from('org_members').select('display_name, ui_mode, security_profile, session_revoked_at').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
     supabase.from('user_profiles').select('is_platform_admin').eq('user_id', userId).maybeSingle(),
   ]);
+
+  const rawSec = member?.security_profile as MemberSecurityProfile | undefined;
+  const secProfile: MemberSecurityProfile = rawSec 
+    ? {
+        watermark: rawSec.watermark ?? true,
+        appCaptureBlock: rawSec.appCaptureBlock ?? true,
+        masking: rawSec.masking ?? true,
+        anomalyAlert: rawSec.anomalyAlert ?? true,
+      }
+    : (isAdminRole(role as OrgRole) ? TRUSTED_TEAM_LEAD_SECURITY_PROFILE : DEFAULT_AGENT_SECURITY_PROFILE);
 
   const info: OrgInfo = {
     userId,
@@ -83,6 +118,8 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
     displayName: member?.display_name || undefined,
     isPlatformAdmin: !!profile?.is_platform_admin,
     uiMode: (member?.ui_mode as 'standard' | 'lite_only') || 'standard',
+    securityProfile: secProfile,
+    sessionRevokedAt: member?.session_revoked_at || undefined,
   };
   saveCachedOrg(info);
   return info;

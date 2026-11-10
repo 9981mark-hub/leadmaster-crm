@@ -10,7 +10,7 @@ import {
 } from '../services/api';
 import { supabase } from '../services/supabase';
 import { OrgInfo, resolveOrg, loadCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole } from '../services/org';
-import { syncAppSession, clearAppSession } from '../services/appBridge';
+import { syncAppSession, clearAppSession, syncAppSecurityProfile } from '../services/appBridge';
 
 interface UserProfile {
   email: string;
@@ -167,8 +167,9 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         // 같은 PC에서 다른 회사·계정으로 로그인한 경우 이전 캐시 삭제
         if (ensureCacheOwner(orgInfo)) resetInitState();
         setOrg(orgInfo);
-        // 안드로이드 앱 안이면 앱 전용 세션 전달 (앱 밖이면 아무것도 안 함)
+        // 안드로이드 앱 안이면 앱 전용 세션 및 보안 설정 전달 (앱 밖이면 아무것도 안 함)
         syncAppSession(orgInfo.userId);
+        syncAppSecurityProfile(orgInfo.securityProfile);
       }
 
       localStorage.setItem('authToken', credential);
@@ -240,6 +241,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
           }
           setOrg(info);
           syncAppSession(info.userId);
+          syncAppSecurityProfile(info.securityProfile);
         } else {
           setOrg(null);
         }
@@ -280,6 +282,26 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     setUser(null);
     navigate('/login');
   }, [navigate, setOrg]);
+
+  // [Security Feature 5] 관리자에 의한 원클릭 세션 즉시 강제 파기 (Instant Session Revoke) 실시간 수신
+  useEffect(() => {
+    if (!org || !supabase || !isAuthenticated) return;
+
+    const channel = supabase.channel(`org-${org.orgId}-security`)
+      .on('broadcast', { event: 'session_revoked' }, (payload: any) => {
+        const targetUserId = payload.payload?.userId;
+        if (targetUserId && targetUserId === org.userId) {
+          console.warn('[Security] Active session was revoked by administrator.');
+          alert('관리자에 의해 계정 세션이 강제 종료되었습니다.\n다시 로그인해 주세요.');
+          logout();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [org, isAuthenticated, logout]);
 
   // [권한 보안 강화] 관리자(owner·admin)만 관리자 권한 부여.
   // 시스템 호스트(9981mark@gmail.com)는 항상 관리자이며, 소속/역할이 확인되지 않은 일반 계정은 기본적으로 false (비관리자)

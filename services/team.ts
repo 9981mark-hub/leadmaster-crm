@@ -1,8 +1,11 @@
 // ============================================
-// 팀 관리 (멤버·초대·리드 배정) — DB 함수: 007_team_management.sql
+// 팀 관리 (멤버·초대·리드 배정) — DB 함수: 007_team_management.sql, 028_agent_security_profiles.sql
 // ============================================
 import { supabase } from './supabase';
-import { OrgRole } from './org';
+import { OrgRole, MemberSecurityProfile, DEFAULT_AGENT_SECURITY_PROFILE } from './org';
+
+export type { MemberSecurityProfile } from './org';
+export { DEFAULT_AGENT_SECURITY_PROFILE, TRUSTED_TEAM_LEAD_SECURITY_PROFILE } from './org';
 
 export interface TeamMember {
   userId: string;
@@ -14,6 +17,8 @@ export interface TeamMember {
   lastSignInAt?: string;
   assignedCases: number;
   uiMode: 'standard' | 'lite_only';
+  securityProfile: MemberSecurityProfile;
+  sessionRevokedAt?: string;
 }
 
 export interface TeamInvite {
@@ -49,12 +54,20 @@ export const fetchTeamMembers = async (): Promise<TeamMember[]> => {
     lastSignInAt: r.last_sign_in_at || undefined,
     assignedCases: Number(r.assigned_cases || 0),
     uiMode: (r.ui_mode as 'standard' | 'lite_only') || 'standard',
+    securityProfile: (r.security_profile as MemberSecurityProfile) || DEFAULT_AGENT_SECURITY_PROFILE,
+    sessionRevokedAt: r.session_revoked_at || undefined,
   }));
 };
 
 export const updateTeamMember = async (
   userId: string,
-  changes: { role?: OrgRole; status?: 'active' | 'disabled'; displayName?: string; uiMode?: 'standard' | 'lite_only' },
+  changes: { 
+    role?: OrgRole; 
+    status?: 'active' | 'disabled'; 
+    displayName?: string; 
+    uiMode?: 'standard' | 'lite_only';
+    securityProfile?: MemberSecurityProfile;
+  },
 ): Promise<void> => {
   const { error } = await need().rpc('update_org_member', {
     p_user_id: userId,
@@ -62,8 +75,28 @@ export const updateTeamMember = async (
     p_status: changes.status ?? null,
     p_display_name: changes.displayName ?? null,
     p_ui_mode: changes.uiMode ?? null,
+    p_security_profile: changes.securityProfile ?? null,
   });
   if (error) fail(error);
+};
+
+/** 관리자 전용: 상담원 세션 즉시 강제 파기 (Realtime 브로드캐스트 + DB 기록) */
+export const revokeMemberSession = async (orgId: string, userId: string): Promise<void> => {
+  const sb = need();
+  const { error } = await sb.rpc('revoke_member_session', { p_user_id: userId });
+  if (error) fail(error);
+
+  // 실시간 세션 파기 신호 전송 (접속 중인 웹/앱 즉시 강제 퇴출)
+  try {
+    const channel = sb.channel(`org-${orgId}-security`);
+    await channel.send({
+      type: 'broadcast',
+      event: 'session_revoked',
+      payload: { userId, timestamp: new Date().toISOString() },
+    });
+  } catch (e) {
+    console.warn('[Security] Realtime revoke broadcast error:', e);
+  }
 };
 
 export const fetchPendingInvites = async (orgId: string): Promise<TeamInvite[]> => {

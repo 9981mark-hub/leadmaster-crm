@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History, Archive, Scale } from 'lucide-react';
+import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History, Archive, Scale, Eye } from 'lucide-react';
 import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
 import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
@@ -11,6 +11,8 @@ import CallConfirmPopup from '../CallConfirmPopup';
 import { STATUS_COLOR_MAP } from '../../constants';
 import { fetchCaseStatusLogs, fetchCases, fetchPhonesWithSmsOut } from '../../services/api';
 import { useActiveCall } from '../../contexts/ActiveCallContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { logAccess } from '../../services/accessLog';
 
 // --- Shared Helper Components ---
 // Copied from CaseList.tsx
@@ -193,9 +195,39 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
         return !phonesWithSmsOut.has(normalizedPhone);
     };
 
+    // [Security Feature 3] 상담원별 리드 목록 개인정보 마스킹 (팀장급 해제 / 신입 마스킹)
+    const { org } = useAuth();
+    const isMaskingEnabled = org?.securityProfile?.masking ?? false;
+    const [unmaskedCases, setUnmaskedCases] = useState<Set<string>>(new Set());
+
+    const getDisplayName = (name: string, caseId: string) => {
+        if (!isMaskingEnabled || unmaskedCases.has(caseId)) return name;
+        const s = String(name || '').trim();
+        if (s.length <= 1) return s;
+        if (s.length === 2) return `${s[0]}*`;
+        return `${s[0]}${'*'.repeat(Math.min(s.length - 2, 2))}${s[s.length - 1]}`;
+    };
+
+    const getDisplayPhone = (phone: string, caseId: string) => {
+        if (!isMaskingEnabled || unmaskedCases.has(caseId)) return phone;
+        const digits = String(phone || '').replace(/[^0-9]/g, '');
+        if (digits.length >= 8) {
+            return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
+        }
+        return phone;
+    };
+
+    const handleUnmask = (e: React.MouseEvent, caseId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setUnmaskedCases(prev => new Set(prev).add(caseId));
+        logAccess('case_view', { caseId, detail: { unmasked_list_view: true } });
+    };
+
     const handlePhoneClick = (e: React.MouseEvent, customerName: string, phone: string, caseId?: string) => {
         e.preventDefault();
         e.stopPropagation();
+        if (caseId) setUnmaskedCases(prev => new Set(prev).add(caseId));
         // 모바일에서는 팝업 없이 바로 전화 연결 (Android 앱 WebView에서 tel: 처리)
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isMobile) {
@@ -334,7 +366,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                             <div className="flex justify-between items-center mt-1">
                                 <div className="flex items-center gap-2">
                                     <Link to={`/case/${c.caseId}`} onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }} className="font-bold text-lg text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">
-                                        {c.customerName}
+                                        {getDisplayName(c.customerName, c.caseId)}
                                     </Link>
                                     {c.isArchived && (
                                         <span className="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full font-medium" title={c.archivedReason || '보관됨'}>
@@ -356,10 +388,22 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     />
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
-                                    <button
-                                        onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
-                                        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors"
-                                    >{c.phone}</button>
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
+                                            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline active:text-blue-800 transition-colors"
+                                        >{getDisplayPhone(c.phone, c.caseId)}</button>
+                                        {isMaskingEnabled && !unmaskedCases.has(c.caseId) && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => handleUnmask(e, c.caseId)}
+                                                className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                title="마스킹 해제 (열람 기록 남김)"
+                                            >
+                                                <Eye size={13} />
+                                            </button>
+                                        )}
+                                    </div>
 
                                     {/* [Mobile] Missed Call Management */}
                                     {c.status === missedCallStatus && (
@@ -584,7 +628,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                                             >
                                                 <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
-                                                    {c.customerName}
+                                                    {getDisplayName(c.customerName, c.caseId)}
                                                 </span>
                                                 {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
                                                 {c.isArchived && <span className="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
@@ -642,12 +686,24 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         ? 'text-red-600 dark:text-red-400'
                                         : ''
                                         }`}>
-                                        <button
-                                            onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
-                                            className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
-                                        >
-                                            {c.phone}
-                                        </button>
+                                        <div className="flex items-center gap-1.5">
+                                            <button
+                                                onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
+                                                className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                                            >
+                                                {getDisplayPhone(c.phone, c.caseId)}
+                                            </button>
+                                            {isMaskingEnabled && !unmaskedCases.has(c.caseId) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => handleUnmask(e, c.caseId)}
+                                                    className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                    title="마스킹 해제 (열람 기록 남김)"
+                                                >
+                                                    <Eye size={12} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-4 py-3 relative">
                                         {/* [NEW] Status with Click-to-Change Dropdown */}

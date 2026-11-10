@@ -202,9 +202,61 @@ const seenRecently = (key: string): boolean => {
   }
 };
 
+interface AnomalyState {
+  views: { caseId: string; at: number }[];
+  lastAlertAt: number;
+}
+const anomalyTracker: AnomalyState = {
+  views: [],
+  lastAlertAt: 0,
+};
+
+/** [Security Feature 4] 5분 내 25건 이상 리드 연속 열람 시 이상 징후 자동 감지 및 대표 텔레그램 알림 */
+function checkAnomaly(caseId: string): void {
+  const org = loadCachedOrg();
+  // 팀장급(제한 해제) 또는 설정 꺼짐이면 검사하지 않음
+  if (!org || org.securityProfile?.anomalyAlert === false) return;
+
+  const now = Date.now();
+  // 최근 5분(300,000ms) 이전 기록 정리
+  anomalyTracker.views = anomalyTracker.views.filter(v => now - v.at <= 5 * 60 * 1000);
+  anomalyTracker.views.push({ caseId, at: now });
+
+  const distinctCases = new Set(anomalyTracker.views.map(v => v.caseId)).size;
+  const THRESHOLD = 25; // 5분간 25건 이상
+
+  if (distinctCases >= THRESHOLD && (now - anomalyTracker.lastAlertAt > 15 * 60 * 1000)) {
+    anomalyTracker.lastAlertAt = now;
+    console.warn(`[Security Alert] 이상 징후 감지: 5분 내 ${distinctCases}건 리드 연속 열람 (${org.displayName || org.userId})`);
+    
+    // 감사 로그에 보안 이상 징후 각인
+    logAccess('export', {
+      count: distinctCases,
+      detail: {
+        security_event: 'anomaly_bulk_view_alert',
+        distinct_count: distinctCases,
+        window_minutes: 5,
+        user: org.displayName || org.userId
+      }
+    });
+
+    // 텔레그램 알림 엣지 함수 호출
+    try {
+      supabase?.functions.invoke('telegram-deliver', {
+        body: {
+          action: 'admin_security_alert',
+          text: `🚨 [리드마스터 긴급 보안 경보]\n- 회사: ${org.orgName}\n- 상담원: ${org.displayName || '상담원'} (${org.userId.slice(0, 8)})\n- 내용: 최근 5분간 고객 리드 ${distinctCases}건을 비정상적으로 연속 열람하였습니다.\n- 시각: ${new Date().toLocaleTimeString('ko-KR')}`
+        }
+      }).catch(() => {});
+    } catch {}
+  }
+}
+
 /** 리드 상세를 열었을 때. 같은 탭에서 10분 안에 같은 리드를 다시 열면 건너뛴다 */
 export function logCaseView(caseId: string): void {
-  if (!caseId || seenRecently(`case:${caseId}`)) return;
+  if (!caseId) return;
+  checkAnomaly(caseId);
+  if (seenRecently(`case:${caseId}`)) return;
   logAccess('case_view', { caseId });
 }
 

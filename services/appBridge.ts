@@ -10,6 +10,7 @@ interface AppSessionBridge {
   getAppSessionUserId?: () => string;
   setAppSession?: (json: string) => boolean;
   clearAppSession?: () => void;
+  setAppSecurityProfile?: (json: string) => boolean;
 }
 
 const getBridge = (): AppSessionBridge | null => {
@@ -59,4 +60,15 @@ export const syncAppSession = (userId: string): Promise<void> => {
 
 export const clearAppSession = () => {
   try { getBridge()?.clearAppSession?.(); } catch { /* ignore */ }
+};
+
+/** 앱으로 상담원의 보안 프로필(앱 캡처 차단 FLAG_SECURE 등) 전달 */
+export const syncAppSecurityProfile = (securityProfile?: { appCaptureBlock?: boolean }): void => {
+  const bridge = getBridge();
+  if (!bridge || !securityProfile) return;
+  try {
+    bridge.setAppSecurityProfile?.(JSON.stringify(securityProfile));
+  } catch (e) {
+    console.warn('[AppSecurity] Failed to sync security profile to app:', e);
+  }
 };
