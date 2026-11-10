@@ -129,11 +129,16 @@ export default function TrainingCenterPage() {
   const silenceTimerRef = useRef<any>(null);
   const interimTextRef = useRef<string>('');
   const isAiReplyingRef = useRef<boolean>(false);
+  const callStateRef = useRef<'idle' | 'calling' | 'connected' | 'evaluating' | 'ended'>('idle');
   const turnIdRef = useRef<number>(0);
   const isGeneratingReplyRef = useRef<boolean>(false);
   const lastSentTextRef = useRef<string>('');
   const lastSentTimeRef = useRef<number>(0);
   const messagesRef = useRef<TrainingMessage[]>([]);
+
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
 
   useEffect(() => {
     isAiReplyingRef.current = isAiReplying;
@@ -351,6 +356,7 @@ export default function TrainingCenterPage() {
       await speechService.playRingbackTone(2);
 
       // 고객이 전화를 받음 (아웃바운드 연결 완료)
+      callStateRef.current = 'connected';
       setCallState('connected');
       const firstMsg: TrainingMessage = {
         id: 'msg-' + Date.now(),
@@ -359,6 +365,7 @@ export default function TrainingCenterPage() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       };
       setMessages([firstMsg]);
+      messagesRef.current = [firstMsg];
 
       // 고객의 첫 "여보세요?" 발화 (TTS)
       if (isTtsEnabled) {
@@ -369,10 +376,11 @@ export default function TrainingCenterPage() {
         });
       }
 
-      // Automatically enable mic
-      toggleMicrophone(true);
+      // 통화 연결 즉시 통화 전용 마이크 상시 활성화 (테스트 모드와 완전 분리)
+      startCallMicrophone();
     } catch (e) {
       console.warn('Call start failed or cancelled:', e);
+      callStateRef.current = 'idle';
       setCallState('idle');
     }
   };
@@ -381,95 +389,106 @@ export default function TrainingCenterPage() {
   const handleCancelCalling = () => {
     speechService.stopRingbackTone();
     speechService.stopSpeaking();
+    callStateRef.current = 'idle';
     setCallState('idle');
     showToast('전화 발신을 취소했습니다.', 'info');
   };
 
-  // Toggle Microphone (실전 전화처럼 버튼 조작 없는 100% 자동 핸즈프리 & 말 끼어들기 Barge-in 지원)
+  // 통화 중 마이크 상시 연결 및 수신 (자동 유지 & 말 끼어들기 Barge-in)
+  const startCallMicrophone = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+
+    setIsMicActive(true);
+
+    const started = speechService.startListening(
+      (transcript, isFinal) => {
+        const clean = transcript.trim();
+        if (!clean) return;
+
+        // 1. 실시간 말 끼어들기(Barge-in):
+        // 고객이 말하는 도중(TTS 재생 중)이라도 상담원이 말을 시작하면 고객 음성을 즉시 정지!
+        speechService.stopSpeaking();
+
+        if (isFinal) {
+          // 브라우저가 문장 인식을 완료(isFinal: true)한 경우 지체 없이 즉시 전달 (0초)
+          if (silenceTimerRef.current) {
+            clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = null;
+          }
+          setInterimText('');
+          interimTextRef.current = '';
+          handleSendAgentMessage(clean);
+        } else {
+          setInterimText(clean);
+          interimTextRef.current = clean;
+
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+          // 한국어 대화 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요 등)
+          const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요)$/.test(clean);
+
+          // 사람이 자연스럽게 말할 때의 쉼 호흡(300~500ms)을 감안하여,
+          // 종결 어미가 있으면 550ms, 어미가 없으면 850ms의 안정적인 침묵 확인 후 1회 발송!
+          const delayMs = isSentenceEnd ? 550 : 850;
+
+          silenceTimerRef.current = setTimeout(() => {
+            const text = interimTextRef.current.trim();
+            if (text) {
+              setInterimText('');
+              interimTextRef.current = '';
+              handleSendAgentMessage(text);
+            }
+          }, delayMs);
+        }
+      },
+      (err) => {
+        console.warn('SpeechRecognition error during call:', err);
+        // 브라우저 권한 차단 시에만 모달 표시 및 종료
+        if (err === 'not-allowed') {
+          setIsMicActive(false);
+          setShowMicPermissionModal(true);
+        }
+        // 일시적인 network/audio 오류 등은 setIsMicActive(false)를 절대 부르지 않고 자동 재연결 대기!
+      },
+      () => {
+        // 통화 연결 중일 때는 크롬 타임아웃 등으로 onEnd가 불려도 사용자가 음소거하지 않은 이상 마이크를 끄지 않음!
+        if (callStateRef.current !== 'connected') {
+          setIsMicActive(false);
+        }
+      }
+    );
+
+    if (started) {
+      setIsMicActive(true);
+    }
+  };
+
+  // Toggle Microphone (통화 중 음소거 토글 / 통화 전 마이크 테스트)
   const toggleMicrophone = (forceStart?: boolean) => {
-    // 통화 중이 아닐 때는 사전 마이크 테스트 실행
-    if (callState !== 'connected') {
-      handleMicTest();
+    // 1. 통화 중인 경우
+    if (callStateRef.current === 'connected') {
+      const shouldTurnOn = forceStart !== undefined ? forceStart : !isMicActive;
+      if (shouldTurnOn) {
+        startCallMicrophone();
+      } else {
+        // 사용자가 명시적으로 음소거 버튼을 눌렀을 때만 끔
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
+        }
+        speechService.stopListening();
+        setIsMicActive(false);
+        setInterimText('');
+        interimTextRef.current = '';
+      }
       return;
     }
 
-    const shouldStart = forceStart !== undefined ? forceStart : !isMicActive;
-
-    if (shouldStart) {
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = null;
-      }
-
-      const started = speechService.startListening(
-        (transcript, isFinal) => {
-          const clean = transcript.trim();
-          if (!clean) return;
-
-          // 1. 실시간 말 끼어들기(Barge-in):
-          // 고객이 말하는 도중(TTS 재생 중)이라도 상담원이 말을 시작하면 고객 음성을 즉시 정지!
-          speechService.stopSpeaking();
-
-          if (isFinal) {
-            // 브라우저가 문장 인식을 완료(isFinal: true)한 경우 지체 없이 즉시 전달 (0초)
-            if (silenceTimerRef.current) {
-              clearTimeout(silenceTimerRef.current);
-              silenceTimerRef.current = null;
-            }
-            setInterimText('');
-            interimTextRef.current = '';
-            handleSendAgentMessage(clean);
-          } else {
-            setInterimText(clean);
-            interimTextRef.current = clean;
-
-            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-
-            // 한국어 대화 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요 등)
-            const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요)$/.test(clean);
-
-            // 사람이 자연스럽게 말할 때의 쉼 호흡(300~500ms)을 감안하여,
-            // 종결 어미가 있으면 550ms, 어미가 없으면 850ms의 안정적인 침묵 확인 후 1회 발송!
-            // (220ms처럼 너무 짧으면 한 문장을 말하는 도중에 3~4개로 쪼개져서 중복 응답 발생함)
-            const delayMs = isSentenceEnd ? 550 : 850;
-
-            silenceTimerRef.current = setTimeout(() => {
-              const text = interimTextRef.current.trim();
-              if (text) {
-                setInterimText('');
-                interimTextRef.current = '';
-                handleSendAgentMessage(text);
-              }
-            }, delayMs);
-          }
-        },
-        (err) => {
-          console.warn('Mic error or denied:', err);
-          if (err === 'not-allowed') {
-            setShowMicPermissionModal(true);
-          }
-          setIsMicActive(false);
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        },
-        () => {
-          setIsMicActive(false);
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        }
-      );
-      setIsMicActive(started);
-      if (!started) {
-        showToast('마이크 음성 인식을 시작할 수 없습니다. 권한 설정을 확인하세요.', 'error');
-      }
-    } else {
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = null;
-      }
-      speechService.stopListening();
-      setIsMicActive(false);
-      setInterimText('');
-      interimTextRef.current = '';
-    }
+    // 2. 통화 중이 아닐 때는 사전 마이크 테스트 실행
+    handleMicTest();
   };
 
   // Send message from agent (단일 턴 ID 및 중복 발송 엄격 제어 - 1문장 1응답 보장)

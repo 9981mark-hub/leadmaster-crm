@@ -489,7 +489,7 @@ class SpeechService {
           return;
         }
 
-        // 권한 거부 시 즉시 종료 및 콜백
+        // 브라우저 마이크 권한 차단 시에만 완전 종료 및 컴포넌트 알림
         if (errType === 'not-allowed' || errType === 'service-not-allowed') {
           this.shouldBeListening = false;
           this.isListening = false;
@@ -497,9 +497,7 @@ class SpeechService {
           return;
         }
 
-        if (this.onErrorCb) {
-          this.onErrorCb(errType);
-        }
+        // 일시적인 network 또는 audio-capture glitch는 onend에서 자동 재시작되도록 마이크를 강제 종료하지 않음
       };
 
       reco.onend = () => {
