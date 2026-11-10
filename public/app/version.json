@@ -1,10 +1,10 @@
 {
-  "versionCode": 27,
-  "versionName": "1.7.5",
-  "releaseDate": "2026-11-07",
+  "versionCode": 28,
+  "versionName": "1.7.6",
+  "releaseDate": "2026-11-11",
   "notes": [
-    "1.7.5: 팝업 화면 최상단 밀착(y=10, 상단/내부 여백 최적화)으로 T전화 및 기본 전화 수신 팝업 가림 현상 완전 해소",
-    "보이스피싱 오탐지 위험 권한(ANSWER_PHONE_CALLS) 제거 및 보안 취약점 보완",
+    "1.7.6: 공식 도메인(https://www.lmaster.xyz/) 초고속 서버 연동 및 클린 URL 최적화",
+    "GitHub Pages 구버전 앱 접속 호환성 100% 복구 (HashRouter/BrowserRouter 듀얼 모드)",
     "수신 팝업 중복 호출 방지 및 In-place 화면 갱신 적용 (화면 깜빡임 완전 차단)",
     "실시간 상담 메모 작성 및 Supabase 동기화 지원"
   ]

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X, Zap, Megaphone, GraduationCap } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { lazyWithRetry } from './utils/lazyWithRetry';
@@ -597,7 +597,13 @@ const queryClient = new QueryClient({
   },
 });
 
-// 기존 #/ 북마크나 구 버전 링크로 접속 시 자동으로 깔끔한 URL로 리다이렉트
+// GitHub Pages 환경 판별 (구 안드로이드 앱 및 GitHub Pages 접속 호환성 100% 보장)
+const isGitHubPages = typeof window !== 'undefined' && (
+  window.location.hostname.includes('github.io') ||
+  window.location.pathname.startsWith('/leadmaster-crm')
+);
+
+// 기존 #/ 북마크나 구 버전 링크로 접속 시 자동으로 깔끔한 URL로 리다이렉트 (lmaster.xyz 전용)
 function HashRedirect() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -610,11 +616,13 @@ function HashRedirect() {
 }
 
 export default function App() {
+  const RouterComponent = isGitHubPages ? HashRouter : BrowserRouter;
+
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <HashRedirect />
+        <RouterComponent>
+          {!isGitHubPages && <HashRedirect />}
           <ToastProvider>
             <ThemeProvider>
               <AuthProvider>
@@ -639,7 +647,7 @@ export default function App() {
               </AuthProvider>
             </ThemeProvider>
           </ToastProvider>
-        </BrowserRouter>
+        </RouterComponent>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </GoogleOAuthProvider>
