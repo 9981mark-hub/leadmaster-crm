@@ -3,9 +3,31 @@ import { Case } from '../types';
 import { logAccess, canExportCaseData } from '../services/accessLog';
 
 /**
+ * [SECURITY] CSV / Formula Injection (CWE-1236) 방어:
+ * Excel/스프레드시트에서 수식으로 해석되는 시작 문자(=, +, -, @, 탭, CR)를 단일 따옴표(')로 무력화.
+ */
+export const sanitizeCellValue = (val: any): any => {
+    if (typeof val === 'string' && /^[=+\-@\t\r]/.test(val)) {
+        // 단순 음수 숫자 형태(-1500, -3.14)인 경우는 수식이 아니므로 유지
+        if (/^-[0-9]+(\.[0-9]+)?$/.test(val.trim())) return val;
+        return `'${val}`;
+    }
+    return val;
+};
+
+export const sanitizeRowData = (row: Record<string, any>): Record<string, any> => {
+    const sanitized: Record<string, any> = {};
+    for (const [k, v] of Object.entries(row)) {
+        sanitized[k] = sanitizeCellValue(v);
+    }
+    return sanitized;
+};
+
+/**
  * Export data to Excel file
  * 모든 엑셀 내보내기(리드 목록·정산)가 여기를 지난다.
  * [015] 회사 관리자만 내보낼 수 있고(화면 버튼도 숨김), 내보낼 때마다 접근 기록을 남긴다.
+ * [SECURITY] 수식 삽입(Formula Injection) 자동 소독 적용.
  * @param filename Filename without extension
  * @param data Array of objects to export
  * @param sheetName Name of the sheet (default: 'Sheet1')
@@ -17,9 +39,12 @@ export const exportToExcel = (filename: string, data: any[], sheetName: string =
         return false;
     }
 
+    // [SECURITY] 모든 셀의 수식 인젝션 무력화
+    const sanitizedData = data.map(row => (typeof row === 'object' && row !== null ? sanitizeRowData(row) : row));
+
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
+    const ws = XLSX.utils.json_to_sheet(sanitizedData);
 
     // Auto-width columns
     const colWidths = data.length > 0
