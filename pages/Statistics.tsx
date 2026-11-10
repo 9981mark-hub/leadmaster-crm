@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfWeek, endOfWeek, parse } from 'date-fns';
-import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords, fetchTaxInvoices, fetchTossAdsSheetUrl, saveTossAdsSheetUrl, syncTossAdsLive } from '../services/api';
+import { fetchCases, fetchPartners, fetchInboundPaths, fetchStatuses, fetchTossAdsRecords, fetchTaxInvoices, fetchTossAdsSheetUrl, saveTossAdsSheetUrl, syncTossAdsLive, updateCase } from '../services/api';
+import { PartnerB2BHub } from '../components/partner-hub/PartnerB2BHub';
 import { Case, Partner, CaseStatus } from '../types';
 import { calculatePayableCommission } from '../utils';
 import { ChevronLeft, TrendingUp, Users, DollarSign, Target, PieChart, BarChart3, Calendar, Phone, Building, ArrowRight, Filter, Save, AlertTriangle, Download, Printer, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw, Info, ExternalLink, HelpCircle } from 'lucide-react';
@@ -126,6 +127,18 @@ export default function Statistics() {
     }, [periodFilter, partnerFilter, pathFilter]);
 
     const { showToast } = useToast();
+
+    // B2B 인센티브 정산 상태 업데이트 핸들러
+    const handleUpdateCase = async (caseId: string, updates: Partial<Case>) => {
+        try {
+            await updateCase(caseId, updates);
+            setCases(prev => prev.map(c => c.caseId === caseId ? { ...c, ...updates } : c));
+            showToast('인센티브 정산 상태가 업데이트되었습니다.', 'success');
+        } catch (err) {
+            console.error('Failed to update case:', err);
+            showToast('정산 상태 변경 중 오류가 발생했습니다.', 'error');
+        }
+    };
     // Sub-tab for marketing
     const [marketingSubTab, setMarketingSubTab] = useState<'roi' | 'toss'>('roi');
 
@@ -1294,7 +1307,7 @@ export default function Statistics() {
                 {[
                     { id: 'overview', label: '📈 종합 분석', icon: BarChart3 },
                     { id: 'marketing', label: '💰 마케팅/ROI', icon: DollarSign },
-                    { id: 'partners', label: '🏢 거래처 성과', icon: Building },
+                    { id: 'partners', label: '🏢 제휴처 B2B 실적·인센티브', icon: Building },
                     { id: 'dropoffs', label: '⚠️ 이탈 분석', icon: AlertTriangle }
                 ].map(tab => {
                     const Icon = tab.icon;
@@ -2292,102 +2305,15 @@ export default function Statistics() {
                     )}
 
                     {/* ========================================================================= */}
-                    {/* TAB 3: PARTNER PERFORMANCE */}
+                    {/* TAB 3: B2B PARTNER PERFORMANCE & INCENTIVE HUB */}
                     {/* ========================================================================= */}
                     {activeTab === 'partners' && (
-                        <div className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <ChartSection title="🏢 거래처별 성과 (접수 건수 vs 계약 건수)">
-                                    <div className="h-[200px] md:h-[280px]">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={partnerData} layout="vertical">
-                                                <defs>
-                                                    <linearGradient id="partnerTotal" x1="0" y1="0" x2="1" y2="0">
-                                                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.2} />
-                                                    </linearGradient>
-                                                    <linearGradient id="partnerContract" x1="0" y1="0" x2="1" y2="0">
-                                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.2} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
-                                                <XAxis type="number" tick={{ fontSize: 11 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
-                                                <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
-                                                <Tooltip content={<CustomTooltip />} />
-                                                <Legend wrapperStyle={{ fontSize: '11px' }} />
-                                                <Bar dataKey="건수" fill="url(#partnerTotal)" radius={[0, 4, 4, 0]} name="접수 건수" />
-                                                <Bar dataKey="계약" fill="url(#partnerContract)" radius={[0, 4, 4, 0]} name="계약 건수" />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </ChartSection>
-
-                                <ChartSection title="🔄 2차 상태 분포 (사무장 접수 케이스)">
-                                    <div className="h-[200px] md:h-[280px]">
-                                        {secondaryStatusData.length > 0 ? (
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <RechartsPie>
-                                                    <Pie
-                                                        data={secondaryStatusData}
-                                                        cx="50%"
-                                                        cy="50%"
-                                                        innerRadius={50}
-                                                        outerRadius={80}
-                                                        dataKey="value"
-                                                        label={({ name, percent }) => percent > 0.05 ? `${name}` : ''}
-                                                    >
-                                                        {secondaryStatusData.map((_, i) => (
-                                                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                                        ))}
-                                                    </Pie>
-                                                    <Tooltip />
-                                                    <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: '11px' }} />
-                                                </RechartsPie>
-                                            </ResponsiveContainer>
-                                        ) : (
-                                            <div className="h-full flex items-center justify-center text-gray-400">
-                                                사무장 접수 케이스가 없습니다
-                                            </div>
-                                        )}
-                                    </div>
-                                </ChartSection>
-                            </div>
-
-                            <ChartSection title="🏆 거래처별 누적 매출 및 수임 성과 랭킹">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm text-left">
-                                        <thead>
-                                            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500">
-                                                <th className="py-2 px-3">순위</th>
-                                                <th className="py-2 px-3">거래처명</th>
-                                                <th className="text-right py-2 px-3">케이스 (접수)</th>
-                                                <th className="text-right py-2 px-3">계약 (전환)</th>
-                                                <th className="text-right py-2 px-3">계약 전환율</th>
-                                                <th className="text-right py-2 px-3 font-semibold text-purple-600">누적 수임료(매출)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {partnerRankingData.slice(0, 15).map((p, i) => (
-                                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                    <td className="py-2 px-3 font-bold text-gray-400">{i + 1}</td>
-                                                    <td className="py-2 px-3 font-semibold text-gray-800 dark:text-white">{p.name}</td>
-                                                    <td className="py-2 px-3 text-right">{p.건수}건</td>
-                                                    <td className="py-2 px-3 text-right text-green-600 font-semibold">{p.계약}건</td>
-                                                    <td className="py-2 px-3 text-right font-medium">{p.전환율}%</td>
-                                                    <td className="py-2 px-3 text-right font-bold text-purple-600 dark:text-purple-400">{p.금액.toLocaleString()}만원</td>
-                                                </tr>
-                                            ))}
-                                            {partnerRankingData.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={6} className="text-center py-6 text-gray-400">조회된 거래처 성과 정보가 없습니다.</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </ChartSection>
-                        </div>
+                        <PartnerB2BHub
+                            partners={partners}
+                            cases={cases}
+                            isDark={isDark}
+                            onUpdateCase={handleUpdateCase}
+                        />
                     )}
 
                     {/* ========================================================================= */}

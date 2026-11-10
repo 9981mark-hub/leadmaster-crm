@@ -3,13 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Scale, CheckCircle2, RotateCcw, XCircle, X, DollarSign, 
     Calendar, AlertTriangle, ShieldCheck, User, Phone, 
-    Briefcase, FileText, ArrowRight, Check, AlertCircle, PhoneMissed, Clock 
+    Briefcase, FileText, ArrowRight, Check, AlertCircle, PhoneMissed, Clock,
+    Building2, BadgePercent
 } from 'lucide-react';
-import { Case, MemoItem, ReminderItem } from '../../types';
+import { Case, MemoItem, ReminderItem, Partner } from '../../types';
+import { calculatePartnerIncentive } from '../../utils';
 
 interface ParalegalDecisionModalProps {
     c: Case;
     isOpen: boolean;
+    partners?: Partner[];
     secondaryStatuses?: string[];
     onClose: () => void;
     onDecision: (updates: Partial<Case>, successMessage: string) => Promise<void>;
@@ -18,6 +21,7 @@ interface ParalegalDecisionModalProps {
 export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
     c,
     isOpen,
+    partners = [],
     secondaryStatuses = [],
     onClose,
     onDecision
@@ -27,6 +31,10 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
     const [submitting, setSubmitting] = useState(false);
 
     // 1. 수임 완료 필드
+    const [selectedPartnerId, setSelectedPartnerId] = useState<string>(() => {
+        if (c.partnerId) return c.partnerId;
+        return partners.length > 0 ? partners[0].partnerId : '';
+    });
     const [contractFee, setContractFee] = useState<number>(c.contractFee || 200); // 만원
     const [contractType, setContractType] = useState<string>(c.caseType || '개인회생');
     const [contractAt, setContractAt] = useState<string>(() => {
@@ -35,6 +43,10 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
         return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     });
     const [contractMemo, setContractMemo] = useState<string>('사무장 직접 심층 상담 완료 및 사건 수임 약정 체결');
+
+    // 현재 선택된 거래처 및 예상 인센티브 산출
+    const currentPartner = partners.find(p => p.partnerId === selectedPartnerId);
+    const incentiveInfo = calculatePartnerIncentive(contractFee, contractType, currentPartner);
 
     // 2. 사무장 직접 진행 관리 (2차 상태)
     const availableSecondary = secondaryStatuses.length > 0 
@@ -115,15 +127,16 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
 
             if (activeTab === 'contract') {
                 // 1. 수임 완료: 1차 상태 '계약 완료', 2차/3차 상태는 초기화 (기존 라이프사이클 정책 준수)
+                const partnerName = currentPartner?.name || '미지정 사무소';
                 const log = {
                     logId: Date.now().toString(),
                     fromStatus: c.status,
                     toStatus: '계약 완료',
                     changedAt: nowIso,
                     changedBy: actor,
-                    memo: `수임료 ${contractFee}만원 계약 체결 완료 (${contractType})`
+                    memo: `[${partnerName}] 수임료 ${contractFee}만원 계약 체결 (${contractType}) / TM인센티브: ${incentiveInfo.amount}만원(${incentiveInfo.rateLabel})`
                 };
-                const memoContent = `[사무장 수임 확정] 수임료 ${contractFee}만원 / 계약일: ${contractAt} / 종류: ${contractType}${contractMemo ? `\n비고: ${contractMemo}` : ''}`;
+                const memoContent = `[사무장 수임 확정] 거래처: ${partnerName} / 수임료: ${contractFee}만원 / 계약일: ${contractAt} / 종류: ${contractType} / 예상인센티브: ${incentiveInfo.amount}만원(${incentiveInfo.rateLabel})${contractMemo ? `\n비고: ${contractMemo}` : ''}`;
                 const newMemo: MemoItem = {
                     id: Date.now().toString(),
                     createdAt: nowIso,
@@ -137,9 +150,12 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                     contractAt,
                     contractFee,
                     contractType,
+                    partnerId: selectedPartnerId || c.partnerId,
+                    expectedIncentiveFee: incentiveInfo.amount,
+                    incentiveStatus: 'unpaid',
                     statusLogs: [log, ...(c.statusLogs || [])],
                     specialMemo: [newMemo, ...(c.specialMemo || [])]
-                }, `🎉 [${c.customerName}] 고객님의 사건이 수임 확정되었습니다! (수임료: ${contractFee}만원)`);
+                }, `🎉 [${c.customerName}] 수임 확정! (${partnerName} / 수임료 ${contractFee}만 / TM인센티브 ${incentiveInfo.amount}만)`);
 
             } else if (activeTab === 'progress') {
                 // 2. 사무장 직접 진행: 1차 상태 '사무장 접수' 유지 + 관리자 설정 2차 상태 연동
@@ -543,9 +559,46 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-4 space-y-3.5"
                         >
-                            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
-                                <ShieldCheck size={16} />
-                                <span>계약 완료 시 1차 상담원에게 수임 실적 및 인센티브가 확정 연동됩니다.</span>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
+                                    <ShieldCheck size={16} />
+                                    <span>수임 확정 시 제휴처별 B2B 인센티브 및 상담원 실적이 자동 연동됩니다.</span>
+                                </div>
+                            </div>
+
+                            {/* 제휴 법률사무소 선택 & TM 인센티브 실시간 산출 */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-100 dark:border-emerald-800/60">
+                                <div>
+                                    <label className="text-[11px] font-bold text-slate-700 dark:text-gray-300 mb-1 flex items-center">
+                                        <Building2 size={13} className="mr-1 text-emerald-600" /> 수임 체결 법률사무소 / 법무법인
+                                    </label>
+                                    <select
+                                        value={selectedPartnerId}
+                                        onChange={(e) => setSelectedPartnerId(e.target.value)}
+                                        className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-700 text-slate-800 dark:text-gray-100 outline-none"
+                                    >
+                                        {partners.map(p => (
+                                            <option key={p.partnerId} value={p.partnerId}>
+                                                {p.name} {p.incentiveRate ? `(${p.incentiveRate}%)` : p.incentiveFixedAmount ? `(건당 ${p.incentiveFixedAmount}만)` : ''}
+                                            </option>
+                                        ))}
+                                        {partners.length === 0 && <option value="">거래처 없음</option>}
+                                    </select>
+                                </div>
+
+                                <div className="flex flex-col justify-center bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                    <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center mb-0.5">
+                                        <BadgePercent size={12} className="mr-1" /> TM사 예상 수령 인센티브
+                                    </span>
+                                    <div className="flex items-baseline justify-between">
+                                        <span className="text-base font-black text-emerald-700 dark:text-emerald-300">
+                                            ₩ {incentiveInfo.amount.toLocaleString()} <span className="text-xs font-semibold">만원</span>
+                                        </span>
+                                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">
+                                            {incentiveInfo.rateLabel}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

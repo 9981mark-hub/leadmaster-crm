@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, saveGlobalSettings } from '../services/api';
 import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAddTertiaryStatusMutation, useDeleteTertiaryStatusMutation } from '../services/queries';
 import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from '../types';
-import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle, Skull, ShieldAlert } from 'lucide-react';
+import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle, Skull, ShieldAlert, BadgePercent } from 'lucide-react';
 import { getDayName, loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
 import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, REHABILITATION_DOMAIN_KEYWORDS, CHECK_ITEMS, DEFAULT_CHECK_ITEMS, DEFAULT_CLASSIFICATION_GUIDE } from '../constants';
 import Modal from '../components/Modal';
@@ -1317,6 +1317,117 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Sections */}
+                        {/* B2B 제휴 담당자 및 인센티브 계약 설정 */}
+                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center justify-between">
+                                <span className="flex items-center">
+                                    <BadgePercent className="mr-2 text-indigo-600" size={20} /> B2B 인센티브 수수료 계약 조건
+                                </span>
+                                <span className="text-xs font-normal text-gray-500">TM사 수령 수수료 정책</span>
+                            </h3>
+
+                            {/* 담당자 정보 */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">담당 사무장 / 국장 성명</label>
+                                    <input
+                                        type="text"
+                                        placeholder="예: 김철수 사무장"
+                                        className="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:border-indigo-500"
+                                        value={editingPartner.managerName || ''}
+                                        onChange={e => setEditingPartner({ ...editingPartner, managerName: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">직통 연락처</label>
+                                    <input
+                                        type="text"
+                                        placeholder="예: 010-1234-5678"
+                                        className="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:border-indigo-500"
+                                        value={editingPartner.contactPhone || ''}
+                                        onChange={e => setEditingPartner({ ...editingPartner, contactPhone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 인센티브 방식 선택 */}
+                            <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/40 space-y-4">
+                                <div>
+                                    <label className="text-xs font-bold text-indigo-900 dark:text-indigo-200 block mb-2">인센티브 계산 방식</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { type: 'rate', label: '정률제 (%)', desc: '수임료의 일정 비율' },
+                                            { type: 'fixed', label: '건당 정액제', desc: '성공 건당 고정 금액' },
+                                            { type: 'tiered', label: '구간별 규칙', desc: '기존 수수료 테이블' }
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.type}
+                                                type="button"
+                                                onClick={() => setEditingPartner({ ...editingPartner, incentiveType: opt.type as any })}
+                                                className={`p-3 rounded-lg border text-left transition-all ${
+                                                    (editingPartner.incentiveType || 'rate') === opt.type
+                                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-indigo-300'
+                                                }`}
+                                            >
+                                                <div className="font-bold text-sm">{opt.label}</div>
+                                                <div className={`text-xs mt-0.5 ${(editingPartner.incentiveType || 'rate') === opt.type ? 'text-indigo-100' : 'text-gray-400'}`}>{opt.desc}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {(editingPartner.incentiveType || 'rate') === 'rate' && (
+                                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
+                                        <div>
+                                            <div className="text-sm font-bold text-gray-800 dark:text-white">기본 인센티브 요율</div>
+                                            <div className="text-xs text-gray-500">고객 수임료의 일정 비율을 TM사 수수료로 정산받습니다.</div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                className="w-20 p-2 text-right font-bold text-lg border border-indigo-300 dark:border-indigo-600 rounded-lg outline-none bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400"
+                                                value={editingPartner.incentiveRate ?? 30}
+                                                onChange={e => setEditingPartner({ ...editingPartner, incentiveRate: Number(e.target.value) })}
+                                            />
+                                            <span className="font-bold text-gray-600 dark:text-gray-300">%</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {editingPartner.incentiveType === 'fixed' && (
+                                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
+                                        <div>
+                                            <div className="text-sm font-bold text-gray-800 dark:text-white">건당 정액 수수료</div>
+                                            <div className="text-xs text-gray-500">수임 성공 1건당 고정 금액을 정산받습니다.</div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="w-24 p-2 text-right font-bold text-lg border border-indigo-300 dark:border-indigo-600 rounded-lg outline-none bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400"
+                                                value={editingPartner.incentiveFixedAmount ?? 50}
+                                                onChange={e => setEditingPartner({ ...editingPartner, incentiveFixedAmount: Number(e.target.value) })}
+                                            />
+                                            <span className="font-bold text-gray-600 dark:text-gray-300">만원</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">제휴처 특이사항 / 메모</label>
+                                    <input
+                                        type="text"
+                                        placeholder="예: 서울/수도권 회생 전문, 당일 계약 피드백 빠름, 착수금 100만 선지급 지원"
+                                        className="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 outline-none"
+                                        value={editingPartner.notes || ''}
+                                        onChange={e => setEditingPartner({ ...editingPartner, notes: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                         <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                             <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
                                 <CalendarCheck className="mr-2 text-blue-600" size={20} /> 정산 스케줄 설정

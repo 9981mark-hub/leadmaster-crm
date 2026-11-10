@@ -926,6 +926,7 @@ export default function CaseList() {
                 <ParalegalDecisionModal
                     c={paralegalTargetCase}
                     isOpen={!!paralegalTargetCase}
+                    partners={partners}
                     onClose={() => setParalegalTargetCase(null)}
                     onDecision={handleParalegalDecision}
                     secondaryStatuses={secondaryStatusesList}

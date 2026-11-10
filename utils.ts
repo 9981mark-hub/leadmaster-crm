@@ -1017,4 +1017,6 @@ export const extractBriefingFromSummary = (aiText: string | null | undefined, c:
   };
 };
 
+export { calculatePartnerIncentive } from './utils/settlement';
+
 

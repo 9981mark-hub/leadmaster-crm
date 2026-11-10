@@ -160,6 +160,10 @@ export interface Case {
   contractFee?: number; // Manwon
   contractType?: string; // 계약 종류 (예: 개인회생, 개인파산 등)
   incentiveTypeId?: string; // 인센티브 종류 ID
+  expectedIncentiveFee?: number; // TM사 예상 인센티브 (만원 단위)
+  actualIncentiveFee?: number; // TM사 실제 입금/확정 인센티브 (만원 단위)
+  incentiveStatus?: 'unpaid' | 'partial' | 'paid'; // 인센티브 정산 상태
+  incentivePaidAt?: string; // 인센티브 입금 완료일 (YYYY-MM-DD 또는 ISO)
 
   // New: Installment & Dynamic Deposits
   installmentMonths?: string; // "완납", "2개월" ...
@@ -276,6 +280,15 @@ export interface Partner {
 
   // [NEW] 텔레그램 연동 방 관리
   telegramChatId?: string;           // 텔레그램 수신 연동 방 ID (채팅방 고유 ID)
+
+  // [NEW B2B] 법률 파트너 인센티브 계약 설정
+  incentiveType?: 'rate' | 'fixed' | 'tiered'; // 수수료 유형: 정률(%) / 정액(만원) / 기존구간제
+  incentiveRate?: number;            // 정률 수수료율 (예: 30 = 수임료의 30%)
+  incentiveFixedAmount?: number;     // 건당 정액 수수료 (예: 50 = 50만원)
+  caseTypeRates?: Record<string, number>; // 사건 유형별 차등 요율 (예: {'개인회생': 30, '파산': 35})
+  managerName?: string;              // 법률사무소 담당 사무장/국장 성명
+  contactPhone?: string;             // 담당 사무장 직통 연락처
+  notes?: string;                    // 제휴 특이사항 (예: 서울회생 전문, 당일 피드백)
 }
 
 // 지급 파트너 프리셋 (설정에서 미리 저장)

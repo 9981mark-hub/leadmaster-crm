@@ -213,6 +213,51 @@ export const buildPartnerLedger = (partner: Partner, cases: Case[], collections:
   };
 };
 
+/**
+ * [B2B] 거래처(법률사무소)별 TM사 수령 인센티브 수수료 계산 엔진
+ * @param contractFee 총 수임료 (만원)
+ * @param caseType 사건 종류 (예: '개인회생', '파산' 등)
+ * @param partner 제휴 거래처 객체
+ * @returns TM사 수령 인센티브 금액 (만원)
+ */
+export const calculatePartnerIncentive = (
+  contractFee: number,
+  caseType?: string,
+  partner?: Partner | null
+): { amount: number; rateLabel: string; type: 'rate' | 'fixed' | 'tiered' } => {
+  if (!contractFee || contractFee <= 0) {
+    return { amount: 0, rateLabel: '0%', type: 'rate' };
+  }
+
+  if (!partner) {
+    // 파트너 미지정 시 기본 30% 정률
+    const amt = Math.round(contractFee * 0.3 * 10) / 10;
+    return { amount: amt, rateLabel: '30%', type: 'rate' };
+  }
+
+  const itype = partner.incentiveType || (partner.commissionRules && partner.commissionRules.length > 0 ? 'tiered' : 'rate');
+
+  if (itype === 'fixed') {
+    const fixedAmt = partner.incentiveFixedAmount ?? 50;
+    return { amount: fixedAmt, rateLabel: `건당 ${fixedAmt}만원`, type: 'fixed' };
+  }
+
+  if (itype === 'tiered' && partner.commissionRules && partner.commissionRules.length > 0) {
+    const rule = getMatchingRule(contractFee, partner.commissionRules);
+    const amt = rule ? rule.commission : 0;
+    return { amount: amt, rateLabel: rule ? `구간 ${amt}만원` : '미해당', type: 'tiered' };
+  }
+
+  // 기본 정률제(rate)
+  let rate = partner.incentiveRate ?? 30;
+  if (caseType && partner.caseTypeRates && typeof partner.caseTypeRates[caseType] === 'number') {
+    rate = partner.caseTypeRates[caseType];
+  }
+
+  const amt = Math.round(contractFee * (rate / 100) * 10) / 10;
+  return { amount: amt, rateLabel: `${rate}%`, type: 'rate' };
+};
+
 export const fmtMan = (v: number) => `${v.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}만원`;
 
 /** 월 정산서 글 (카톡·텔레그램에 붙여넣기) */
