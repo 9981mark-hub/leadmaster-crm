@@ -57,7 +57,7 @@ const call = async <T = any>(body: Record<string, unknown>): Promise<T> => {
 
 /** 구글 허락 화면으로 이동 (끝나면 지금 화면으로 돌아옴: #/team?drive=connected) */
 export const startDriveConnect = async () => {
-  const back = `${window.location.origin}${window.location.pathname}#/team`;
+  const back = `${window.location.origin}/team`;
   const { url } = await call<{ url: string }>({ action: 'start', return_to: back });
   window.location.assign(url);
 };
@@ -126,11 +126,11 @@ export const openDrivePicker = async (mode: 'folder' | 'files', parentId?: strin
 
 /** 연결 후 돌아왔을 때 주소의 drive=… 결과를 읽고 지운다 */
 export const takeDriveReturnFlag = (): string | null => {
-  const h = window.location.hash || '';
-  const m = h.match(/[?&]drive=([a-z_]+)/);
+  const query = window.location.search || window.location.hash || '';
+  const m = query.match(/[?&]drive=([a-z_]+)/);
   if (!m) return null;
-  const clean = h.replace(/([?&])drive=[a-z_]+&?/, '$1').replace(/[?&]$/, '');
-  window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${clean}`);
+  const clean = query.replace(/([?&])drive=[a-z_]+&?/, '$1').replace(/[?&]$/, '');
+  window.history.replaceState(null, '', `${window.location.pathname}${clean}`);
   return m[1];
 };
 

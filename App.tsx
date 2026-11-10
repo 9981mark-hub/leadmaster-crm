@@ -1,5 +1,5 @@
-import React, { Suspense, lazy, useState } from 'react';
-import { HashRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Users, PlusCircle, Calculator, Settings, User, Moon, Sun, Loader2, Smartphone, Calendar, PhoneCall, UserCog, Building2, ChevronsLeft, ChevronsRight, BarChart3, Grid3X3, X, Zap, Megaphone, GraduationCap } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { lazyWithRetry } from './utils/lazyWithRetry';
@@ -559,11 +559,24 @@ const queryClient = new QueryClient({
   },
 });
 
+// 기존 #/ 북마크나 구 버전 링크로 접속 시 자동으로 깔끔한 URL로 리다이렉트
+function HashRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (window.location.hash && window.location.hash.startsWith('#/')) {
+      const cleanPath = window.location.hash.replace(/^#/, '');
+      navigate(cleanPath, { replace: true });
+    }
+  }, [navigate]);
+  return null;
+}
+
 export default function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
-        <HashRouter>
+        <BrowserRouter>
+          <HashRedirect />
           <ToastProvider>
             <ThemeProvider>
               <AuthProvider>
@@ -588,7 +601,7 @@ export default function App() {
               </AuthProvider>
             </ThemeProvider>
           </ToastProvider>
-        </HashRouter>
+        </BrowserRouter>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </GoogleOAuthProvider>

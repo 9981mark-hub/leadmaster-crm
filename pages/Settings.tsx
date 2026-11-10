@@ -608,11 +608,11 @@ export default function SettingsPage() {
                         <p className="text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 p-3 rounded border border-indigo-100 dark:border-gray-700 mt-3">
                             봇 연결 상태 확인과 웹훅 재등록은 <b>팀 관리 → 텔레그램 봇 연결</b>에서 합니다.
                             거래처별 방은 아래 <b>거래처 → 텔레그램 수신 연동</b>에서 고릅니다.
-                            <button type="button" onClick={() => window.location.hash = '#/team'} className="ml-2 text-indigo-700 underline font-medium">팀 관리로 이동</button>
+                            <button type="button" onClick={() => window.location.href = '/team'} className="ml-2 text-indigo-700 underline font-medium">팀 관리로 이동</button>
                         </p>
                     </div>
                     <div>
-                        <button type="button" onClick={() => window.location.hash = '#/telegram'} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full md:w-auto transition-colors font-medium">
+                        <button type="button" onClick={() => window.location.href = '/telegram'} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full md:w-auto transition-colors font-medium">
                             대기 중인 피드백 관리 센터로 이동 →
                         </button>
                     </div>

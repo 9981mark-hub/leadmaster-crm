@@ -5,8 +5,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
-    // GitHub Pages는 /leadmaster-crm/ 아래, Vercel은 도메인 루트(/)에서 연다 (Vercel 빌드 때 VERCEL=1)
-    base: process.env.VERCEL ? '/' : '/leadmaster-crm/',
+    // 공식 도메인(lmaster.xyz) 및 Vercel 루트 배포 기준 base
+    base: process.env.GITHUB_PAGES ? '/leadmaster-crm/' : '/',
     server: {
       port: 3000,
       host: '0.0.0.0',
