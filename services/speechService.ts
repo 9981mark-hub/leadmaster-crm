@@ -10,6 +10,7 @@ export interface SpeechVoiceOptions {
   neuralVoice?: string;
   neuralRate?: string;
   neuralPitch?: string;
+  emotion?: 'angry' | 'annoyed' | 'anxious' | 'calm';
 }
 
 class SpeechService {
@@ -146,6 +147,23 @@ class SpeechService {
     return { engine: 'browser', voiceName };
   }
 
+  // 문장 감정 분석 (화남/분노/짜증/의심/불안/차분)
+  public detectEmotion(text: string): 'angry' | 'annoyed' | 'anxious' | 'calm' {
+    // 1. 극대노 / 분노 / 고소 / 신고 (느낌표 2개 이상이거나 격한 표현)
+    if (/[!?]{2,}|(사기|경찰|신고|고소|소송|장난|당장|끊어|쳐넣|닥쳐|닥치|집어치|가만 안|똑바로 말)/.test(text)) {
+      return 'angry';
+    }
+    // 2. 기분 나쁨 / 짜증 / 경계 / 의심 (의심 및 쌀쌀맞은 어조)
+    if (/[!?]|(어디|당신|바빠|바쁘|참나|아니|무슨|대체|누구|왜|됐|필요없|싫|귀찮|뭔|웃기|헛소리|협박|개인정보|불법|따지|따져|스팸|보이스피싱|번호 어떻게)/.test(text)) {
+      return 'annoyed';
+    }
+    // 3. 불안 / 초조 / 절박
+    if (/(압류|독촉|신용불량|어떡해|어떻게|정말|진짜|살려|힘들|파산|빚|이자|도와)/.test(text)) {
+      return 'anxious';
+    }
+    return 'calm';
+  }
+
   // Google Cloud Text-to-Speech API 고음질 신경망 성우 발화
   public async speakGoogleCloud(text: string, options: SpeechVoiceOptions = {}): Promise<string> {
     const cleanText = text
@@ -161,23 +179,34 @@ class SpeechService {
     const voiceName = options.neuralVoice || (options.gender === 'female' ? 'ko-KR-Neural2-A' : 'ko-KR-Neural2-C');
     const ssmlGender = options.gender === 'female' ? 'FEMALE' : 'MALE';
 
-    // 감정 분석 (느낌표/물음표 및 의심/분노/재촉 키워드 감지)
-    const isAgitated = /[!?]{1,}|(사기|경찰|신고|어디|당신|바빠|바쁘|장난|끊으|퇴짜|부결|참나|아니|무슨|대체)/.test(cleanText);
+    // 감정 분석 (옵션 지정 우선 + 문장 키워드/문장부호 정밀 판별)
+    const emotion = options.emotion || this.detectEmotion(cleanText);
 
-    // 속도 설정 (0.75 ~ 1.4)
-    let rate = options.rate ?? 1.05;
-    if (isAgitated) {
-      rate = Math.min(1.35, rate * 1.08);
+    // 속도 설정 (기본 1.20x 기준 + 감정에 따른 쏘아붙이기 가속)
+    let rate = options.rate ?? 1.20;
+    if (emotion === 'angry') {
+      rate = Math.min(1.45, rate * 1.15); // 분노 시 15% 가속 (쏘아붙이듯 빠른 호흡)
+    } else if (emotion === 'annoyed') {
+      rate = Math.min(1.40, rate * 1.08); // 짜증/경계 시 8% 가속
+    } else if (emotion === 'anxious') {
+      rate = Math.min(1.35, rate * 1.05); // 불안/초조 시 5% 가속
     }
-    const speakingRate = Math.max(0.75, Math.min(1.4, rate));
+    const speakingRate = Math.max(0.75, Math.min(1.45, rate));
 
-    // 피치 설정 (-12.0 ~ +8.0 semitones)
-    // basePitch (0.50 ~ 1.30): 1.00 = 0st, 0.80 = -3.2st, 0.70 = -4.8st, 0.60 = -6.4st
+    // 피치 설정 (-12.0 ~ +10.0 semitones)
+    // 기분 나쁘거나 화가 나면 성대가 긴장하여 목소리 톤이 확 올라감!
     let basePitch = options.pitch ?? 0.80;
-    if (isAgitated) {
-      basePitch = Math.min(1.25, basePitch + 0.05);
+    let pitchOffsetSemitones = 0;
+    if (emotion === 'angry') {
+      pitchOffsetSemitones = +5.2; // 톤이 대폭 치솟음! (+5.2 semitones의 고음 분노 톤)
+    } else if (emotion === 'annoyed') {
+      pitchOffsetSemitones = +3.2; // 약간 기분 나쁘고 따지는 듯한 날카로운 톤 (+3.2st)
+    } else if (emotion === 'anxious') {
+      pitchOffsetSemitones = +2.0; // 상기되고 초조한 톤 (+2.0st)
     }
-    const pitchSemitones = Math.max(-12.0, Math.min(8.0, (basePitch - 1.0) * 16.0));
+
+    const calculatedSemitones = (basePitch - 1.0) * 16.0 + pitchOffsetSemitones;
+    const pitchSemitones = Math.max(-12.0, Math.min(10.0, calculatedSemitones));
 
     const apiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('lm_google_tts_key')) || this.googleApiKey;
     const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
@@ -290,23 +319,30 @@ class SpeechService {
       utterance.voice = chosenVoice;
     }
 
-    // 감정 분석 (느낌표/물음표 및 의심/분노/재촉 키워드 감지)
-    const isAgitated = /[!?]{1,}|(사기|경찰|신고|어디|당신|바빠|바쁘|장난|끊으|퇴짜|부결|참나|아니|무슨|대체)/.test(cleanText);
+    // 감정 분석 (옵션 지정 우선 + 문장 키워드/문장부호 정밀 판별)
+    const emotion = options.emotion || this.detectEmotion(cleanText);
 
     // 자연스러운 사람 발화 속도 (감정이 격앙될 때 쏘아붙이듯 약간 가속)
-    let baseRate = options.rate ?? 1.05;
-    if (isAgitated) {
-      baseRate = Math.min(1.25, baseRate * 1.08);
+    let baseRate = options.rate ?? 1.20;
+    if (emotion === 'angry') {
+      baseRate = Math.min(1.45, baseRate * 1.15);
+    } else if (emotion === 'annoyed') {
+      baseRate = Math.min(1.40, baseRate * 1.08);
+    } else if (emotion === 'anxious') {
+      baseRate = Math.min(1.35, baseRate * 1.05);
     }
-    utterance.rate = Math.max(0.95, Math.min(1.3, baseRate));
+    utterance.rate = Math.max(0.95, Math.min(1.45, baseRate));
 
-    // 피치 (0.50 ~ 1.3: 낮을수록 중후하고 나이든 어르신/중년 목소리)
-    // 화가 나거나 의심할 때는 성대가 긴장하여 약간 톤이 높아지며 강한 억양 형성
+    // 피치 (0.50 ~ 1.4: 화가 나거나 의심할 때는 성대가 긴장하여 목소리 톤이 확 올라감!)
     let basePitch = options.pitch ?? 0.80;
-    if (isAgitated) {
-      basePitch = Math.min(1.25, basePitch + 0.05);
+    if (emotion === 'angry') {
+      basePitch = Math.min(1.40, basePitch + 0.32); // Web Speech pitch 대폭 상승
+    } else if (emotion === 'annoyed') {
+      basePitch = Math.min(1.25, basePitch + 0.20); // Web Speech pitch 상승
+    } else if (emotion === 'anxious') {
+      basePitch = Math.min(1.15, basePitch + 0.12);
     }
-    utterance.pitch = Math.max(0.50, Math.min(1.3, basePitch));
+    utterance.pitch = Math.max(0.50, Math.min(1.40, basePitch));
 
     const playedVoiceName = chosenVoice?.name || '기본 음성';
 

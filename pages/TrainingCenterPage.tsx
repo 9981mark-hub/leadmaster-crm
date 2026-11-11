@@ -100,7 +100,10 @@ export default function TrainingCenterPage() {
   const [showMicPermissionModal, setShowMicPermissionModal] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [isPhoneFilterEnabled, setIsPhoneFilterEnabled] = useState(true);
-  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.05);
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(() => {
+    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('lm_training_speed') : null;
+    return saved ? parseFloat(saved) : 1.20;
+  });
   const [ageTone, setAgeTone] = useState<'young' | 'middle' | 'senior' | 'elder'>('middle');
   const [isAiReplying, setIsAiReplying] = useState(false);
   const [isCustomerSpeaking, setIsCustomerSpeaking] = useState(false);
@@ -372,10 +375,12 @@ export default function TrainingCenterPage() {
       // 고객이 전화를 받음 (아웃바운드 연결 완료)
       callStateRef.current = 'connected';
       setCallState('connected');
+      const firstEmotion = speechService.detectEmotion(selectedPersona.initialMessage);
       const firstMsg: TrainingMessage = {
         id: 'msg-' + Date.now(),
         speaker: 'customer',
         text: selectedPersona.initialMessage,
+        emotion: firstEmotion,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       };
       setMessages([firstMsg]);
@@ -391,6 +396,7 @@ export default function TrainingCenterPage() {
             ...selectedPersona.speechOptions,
             rate: speedMultiplier,
             pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+            emotion: firstEmotion,
           });
         } finally {
           setIsCustomerSpeaking(false);
@@ -430,7 +436,7 @@ export default function TrainingCenterPage() {
   };
 
   // 고객 메시지 다시 듣기 (스피커 아이콘 클릭 시 안전 재생 & 마이크 복원)
-  const handleReplayCustomerMessage = async (text: string) => {
+  const handleReplayCustomerMessage = async (text: string, emotion?: 'angry' | 'annoyed' | 'anxious' | 'calm') => {
     if (isCustomerSpeaking) return;
     setIsCustomerSpeaking(true);
     speechService.stopListening();
@@ -439,6 +445,7 @@ export default function TrainingCenterPage() {
         ...selectedPersona.speechOptions,
         rate: speedMultiplier,
         pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+        emotion: emotion || speechService.detectEmotion(text),
       });
     } finally {
       setIsCustomerSpeaking(false);
@@ -596,25 +603,41 @@ export default function TrainingCenterPage() {
     interimTextRef.current = '';
 
     try {
-      const replyText = await generateAiCustomerReply(nextMessages, selectedPersona);
+      const replyRaw = await generateAiCustomerReply(nextMessages, selectedPersona);
 
       // 🚨 핵심 방어 3: AI 응답 생성 중 상담원이 새로운 말을 시작했거나 턴이 바뀌었으면 이 응답 폐기!
       if (myTurnId !== turnIdRef.current || interimTextRef.current.trim()) {
-        console.log(`[Turn ${myTurnId}] 구버전 AI 응답 폐기:`, replyText);
+        console.log(`[Turn ${myTurnId}] 구버전 AI 응답 폐기:`, replyRaw);
         return;
+      }
+
+      // 감정 태그([화남], [짜증], [불안], [차분]) 파싱 및 텍스트 정제
+      let parsedEmotion: 'angry' | 'annoyed' | 'anxious' | 'calm' = 'calm';
+      let cleanCustomerText = replyRaw.trim();
+      const emotionMatch = cleanCustomerText.match(/^\[(화남|짜증|불안|차분)\]\s*/);
+      if (emotionMatch) {
+        const tag = emotionMatch[1];
+        cleanCustomerText = cleanCustomerText.replace(/^\[(화남|짜증|불안|차분)\]\s*/, '').trim();
+        if (tag === '화남') parsedEmotion = 'angry';
+        else if (tag === '짜증') parsedEmotion = 'annoyed';
+        else if (tag === '불안') parsedEmotion = 'anxious';
+        else if (tag === '차분') parsedEmotion = 'calm';
+      } else {
+        parsedEmotion = speechService.detectEmotion(cleanCustomerText);
       }
 
       const customerMsg: TrainingMessage = {
         id: 'msg-' + (Date.now() + 1),
         speaker: 'customer',
-        text: replyText,
+        text: cleanCustomerText,
+        emotion: parsedEmotion,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       };
 
       // 🚨 핵심 방어 4: 동일 고객 메시지가 이미 들어갔는지 중복 방지
       setMessages(prev => {
         const last = prev[prev.length - 1];
-        if (last && last.speaker === 'customer' && last.text === replyText) {
+        if (last && last.speaker === 'customer' && last.text === cleanCustomerText) {
           return prev;
         }
         const updated = [...prev, customerMsg];
@@ -628,10 +651,11 @@ export default function TrainingCenterPage() {
           (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
         } catch (_) {}
         try {
-          await speechService.speak(replyText, {
+          await speechService.speak(cleanCustomerText, {
             ...selectedPersona.speechOptions,
             rate: speedMultiplier,
             pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+            emotion: parsedEmotion,
           });
         } finally {
           setIsCustomerSpeaking(false);
@@ -1131,15 +1155,21 @@ export default function TrainingCenterPage() {
                 <span className="font-medium text-[11px]">말소리 속도</span>
                 <div className="flex items-center gap-1">
                   {[
-                    { label: '표준', val: 1.0 },
-                    { label: '자연스러움', val: 1.05 },
-                    { label: '실전 (+15%)', val: 1.15 },
+                    { label: '느긋함 (1.05x)', val: 1.05 },
+                    { label: '실전 (+15% 기본) 1.20x', val: 1.20 },
+                    { label: '빠른 통화 (1.30x)', val: 1.30 },
+                    { label: '초고속 (1.40x)', val: 1.40 },
                   ].map(opt => (
                     <button
                       key={opt.val}
                       type="button"
-                      onClick={() => setSpeedMultiplier(opt.val)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                      onClick={() => {
+                        setSpeedMultiplier(opt.val);
+                        try {
+                          localStorage.setItem('lm_training_speed', String(opt.val));
+                        } catch (_) {}
+                      }}
+                      className={`px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition-colors ${
                         speedMultiplier === opt.val
                           ? 'bg-blue-600 text-white shadow-xs'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'
@@ -1156,11 +1186,13 @@ export default function TrainingCenterPage() {
                 type="button"
                 onClick={async () => {
                   const sampleText = selectedPersona.initialMessage;
+                  const sampleEmotion = speechService.detectEmotion(sampleText);
                   const calcPitch = getCalculatedPitch(selectedPersona.speechOptions.pitch);
                   const result = await speechService.speak(sampleText, {
                     ...selectedPersona.speechOptions,
                     rate: speedMultiplier,
                     pitch: calcPitch,
+                    emotion: sampleEmotion,
                   });
                   showToast(`🔊 [${result.voiceName}] ${selectedPersona.customerName} 성우 발화 테스트 완료!`, 'success');
                 }}
@@ -1398,6 +1430,22 @@ export default function TrainingCenterPage() {
                           <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400">
                             {msg.speaker === 'agent' ? '나 (상담원)' : `고객 (${selectedPersona.customerName})`}
                           </span>
+                          {msg.speaker === 'customer' && msg.emotion && (
+                            <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                              msg.emotion === 'angry'
+                                ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-300 dark:border-red-800'
+                                : msg.emotion === 'annoyed'
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                                : msg.emotion === 'anxious'
+                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-300 dark:border-purple-800'
+                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                            }`}>
+                              {msg.emotion === 'angry' && '😡 톤 대폭 상승 (화남)'}
+                              {msg.emotion === 'annoyed' && '😒 톤 상승 (짜증/경계)'}
+                              {msg.emotion === 'anxious' && '😰 초조/불안'}
+                              {msg.emotion === 'calm' && '😌 차분/경청'}
+                            </span>
+                          )}
                           <span className="text-[10px] text-gray-400">{msg.timestamp}</span>
                         </div>
                         <div
@@ -1410,7 +1458,7 @@ export default function TrainingCenterPage() {
                           {msg.text}
                           {msg.speaker === 'customer' && isTtsEnabled && (
                             <button
-                              onClick={() => handleReplayCustomerMessage(msg.text)}
+                              onClick={() => handleReplayCustomerMessage(msg.text, msg.emotion)}
                               className="ml-2 text-gray-400 hover:text-blue-500 inline-block align-middle"
                               title="다시 듣기 (재생 후 마이크 자동 재개)"
                             >
