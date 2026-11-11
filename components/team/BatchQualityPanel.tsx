@@ -774,6 +774,46 @@ export default function BatchQualityPanel() {
                 />
               </div>
 
+              {/* 3000건/50만원 패키지 간편 계산 도구 */}
+              <div className="p-2.5 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-bold text-indigo-950 dark:text-indigo-200">
+                  <span>📦 대량 패키지 간편 계산 (예: 3000건에 50만원)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    id="quick_pkg_leads"
+                    placeholder="수량 (예: 3000)"
+                    defaultValue={editingBatch.inserted || 3000}
+                    className="w-24 px-2 py-1 text-xs rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 font-bold"
+                  />
+                  <span className="text-[11px] text-gray-500">건에</span>
+                  <input
+                    type="number"
+                    id="quick_pkg_price"
+                    placeholder="총액 (예: 500000)"
+                    defaultValue={500000}
+                    className="flex-1 px-2 py-1 text-xs rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 font-bold"
+                  />
+                  <span className="text-[11px] text-gray-500">원</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const lEl = document.getElementById('quick_pkg_leads') as HTMLInputElement;
+                      const pEl = document.getElementById('quick_pkg_price') as HTMLInputElement;
+                      const l = Math.max(1, parseInt(lEl?.value) || 1);
+                      const p = Math.max(0, parseInt(pEl?.value) || 0);
+                      const u = Math.round(p / l);
+                      setEditUnitCost(u);
+                      setEditTotalCost(p);
+                    }}
+                    className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shrink-0 shadow-2xs"
+                  >
+                    단가 환산 적용
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">

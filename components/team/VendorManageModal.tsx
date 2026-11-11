@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Building2, Plus, Edit2, Trash2, Check, X, ShieldAlert, 
-  Phone, DollarSign, FileText, Loader2, Sparkles, RefreshCw
+  Phone, DollarSign, FileText, Loader2, Sparkles, RefreshCw,
+  Package, Tag
 } from 'lucide-react';
 import { 
   LeadVendor, fetchLeadVendors, createLeadVendor, 
@@ -25,10 +26,13 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Form State
+  // Form State: CPL 방식 또는 N건당 N원(패키지) 방식 완벽 지원
   const [formData, setFormData] = useState({
     name: '',
+    pricingType: 'cpl' as 'cpl' | 'package',
     defaultUnitCost: 25000,
+    packageLeads: 3000,
+    packagePrice: 500000,
     leadType: '개인회생',
     asPolicy: '결번/중복 7일 이내 100% 무상 교환 또는 차감',
     contactPerson: '',
@@ -58,7 +62,10 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
     setEditingId(null);
     setFormData({
       name: '',
+      pricingType: 'cpl',
       defaultUnitCost: 25000,
+      packageLeads: 3000,
+      packagePrice: 500000,
       leadType: '개인회생',
       asPolicy: '결번/중복 7일 이내 100% 무상 교환 또는 차감',
       contactPerson: '',
@@ -68,15 +75,23 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
 
   const startEdit = (v: LeadVendor) => {
     setEditingId(v.id);
+    const isPkg = v.pricingType === 'package';
     setFormData({
       name: v.name,
+      pricingType: isPkg ? 'package' : 'cpl',
       defaultUnitCost: v.defaultUnitCost,
+      packageLeads: v.packageLeads || 3000,
+      packagePrice: v.packagePrice || (v.defaultUnitCost ? v.defaultUnitCost * 3000 : 500000),
       leadType: v.leadType,
       asPolicy: v.asPolicy || '',
       contactPerson: v.contactPerson || '',
       memo: v.memo || '',
     });
   };
+
+  const computedUnitCost = formData.pricingType === 'package'
+    ? (formData.packageLeads > 0 && formData.packagePrice > 0 ? Math.round(formData.packagePrice / formData.packageLeads) : 0)
+    : formData.defaultUnitCost;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,25 +102,23 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
 
     setLoading(true);
     try {
+      const payload = {
+        name: formData.name.trim(),
+        pricingType: formData.pricingType,
+        packageLeads: formData.pricingType === 'package' ? formData.packageLeads : 0,
+        packagePrice: formData.pricingType === 'package' ? formData.packagePrice : 0,
+        defaultUnitCost: computedUnitCost,
+        leadType: formData.leadType,
+        asPolicy: formData.asPolicy,
+        contactPerson: formData.contactPerson,
+        memo: formData.memo,
+      };
+
       if (editingId) {
-        await updateLeadVendor(editingId, {
-          name: formData.name.trim(),
-          defaultUnitCost: formData.defaultUnitCost,
-          leadType: formData.leadType,
-          asPolicy: formData.asPolicy,
-          contactPerson: formData.contactPerson,
-          memo: formData.memo,
-        });
+        await updateLeadVendor(editingId, payload);
         showToast(`거래처 '${formData.name}' 정보가 수정되었습니다.`, 'success');
       } else {
-        await createLeadVendor({
-          name: formData.name.trim(),
-          defaultUnitCost: formData.defaultUnitCost,
-          leadType: formData.leadType,
-          asPolicy: formData.asPolicy,
-          contactPerson: formData.contactPerson,
-          memo: formData.memo,
-        });
+        await createLeadVendor(payload);
         showToast(`새 거래처 '${formData.name}'이(가) 등록되었습니다.`, 'success');
       }
       resetForm();
@@ -134,7 +147,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[92vh] overflow-hidden">
         
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/50">
@@ -150,7 +163,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                 </span>
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                DB 공급사별 기본 매입 단가(CPL) 및 A/S 환불 기준을 설정하여 회차 등록 시 자동 세팅합니다.
+                건당 CPL 방식 및 <strong>대량 패키지 구매(3,000건에 50만원 등)</strong> 정산 방식을 자유롭게 등록하고 관리합니다.
               </p>
             </div>
           </div>
@@ -192,50 +205,140 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                   <input
                     type="text"
                     required
-                    placeholder="예: 패스트애드, 메타 랜딩 1팀, 네이버 파워링크"
+                    placeholder="예: 패스트애드, 메타 1팀, 네이버 파워링크, 대량DB센터"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                      기본 매입 단가 (CPL)
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        min="0"
-                        step="1000"
-                        placeholder="25000"
-                        value={formData.defaultUnitCost}
-                        onChange={(e) => setFormData({ ...formData, defaultUnitCost: Number(e.target.value) })}
-                        className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                      />
-                      <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">₩</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                      취급 DB 유형
-                    </label>
-                    <select
-                      value={formData.leadType}
-                      onChange={(e) => setFormData({ ...formData, leadType: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                {/* 매입 정산 방식 선택 (CPL vs 대량 패키지) */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    매입 비용 정산 방식 선택
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-200/80 dark:bg-gray-700/80 rounded-lg text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, pricingType: 'cpl' })}
+                      className={`py-1.5 rounded-md font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                        formData.pricingType === 'cpl'
+                          ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
                     >
-                      <option value="개인회생">개인회생</option>
-                      <option value="파산">파산</option>
-                      <option value="신용회복">신용회복</option>
-                      <option value="새출발기금">새출발기금</option>
-                      <option value="종합 채무조정">종합 채무조정</option>
-                      <option value="대출/금융">대출/금융</option>
-                    </select>
+                      <Tag size={13} /> 건당 단가 (CPL)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, pricingType: 'package' })}
+                      className={`py-1.5 rounded-md font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                        formData.pricingType === 'package'
+                          ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <Package size={13} /> 📦 대량 패키지 (N건에 N원)
+                    </button>
                   </div>
                 </div>
+
+                {/* 방식 1: CPL 건당 단가 입력 */}
+                {formData.pricingType === 'cpl' ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        기본 매입 단가 (CPL)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1000"
+                          placeholder="25000"
+                          value={formData.defaultUnitCost}
+                          onChange={(e) => setFormData({ ...formData, defaultUnitCost: Number(e.target.value) })}
+                          className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 font-semibold"
+                        />
+                        <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">₩</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        취급 DB 유형
+                      </label>
+                      <select
+                        value={formData.leadType}
+                        onChange={(e) => setFormData({ ...formData, leadType: e.target.value })}
+                        className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="개인회생">개인회생</option>
+                        <option value="파산">파산</option>
+                        <option value="신용회복">신용회복</option>
+                        <option value="새출발기금">새출발기금</option>
+                        <option value="대출/금융">대출/금융</option>
+                      </select>
+                    </div>
+                  </div>
+                ) : (
+                  /* 방식 2: 대량 패키지 (예: 3000건에 50만원) */
+                  <div className="space-y-2 p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
+                    <div className="flex items-center justify-between text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                      <span>대량 패키지 계약 조건</span>
+                      <span className="text-[11px] font-normal text-indigo-600 dark:text-indigo-400">
+                        예: 3,000건에 50만원
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                          공급 수량 (건수)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="1"
+                            step="100"
+                            placeholder="3000"
+                            value={formData.packageLeads}
+                            onChange={(e) => setFormData({ ...formData, packageLeads: Math.max(0, Number(e.target.value)) })}
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                          패키지 총 매입금액 (원)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            step="10000"
+                            placeholder="500000"
+                            value={formData.packagePrice}
+                            onChange={(e) => setFormData({ ...formData, packagePrice: Math.max(0, Number(e.target.value)) })}
+                            className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
+                          />
+                          <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">₩</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 실시간 단가 환산 표시 배너 */}
+                    <div className="flex items-center justify-between pt-2 border-t border-indigo-200/60 dark:border-indigo-800/60 text-xs">
+                      <span className="text-gray-600 dark:text-gray-300 text-[11px]">
+                        💡 <strong>{formData.packageLeads.toLocaleString()}건</strong>에 <strong>₩{formData.packagePrice.toLocaleString()}원</strong>
+                      </span>
+                      <span className="font-extrabold text-indigo-700 dark:text-indigo-300">
+                        건당 환산 단가: ₩{computedUnitCost.toLocaleString()}원
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
@@ -312,7 +415,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[460px] pr-1">
+            <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[490px] pr-1">
               {vendors.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 text-xs">
                   등록된 거래처가 없습니다. 좌측에서 신규 거래처를 등록하세요.
@@ -328,17 +431,27 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     }`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-sm text-gray-900 dark:text-white">
                             {v.name}
                           </span>
                           <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
                             {v.leadType}
                           </span>
-                          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                            CPL ₩{v.defaultUnitCost.toLocaleString()}
-                          </span>
+                          
+                          {/* 가격 모델 뱃지 */}
+                          {v.pricingType === 'package' ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                              <Package size={11} />
+                              {(v.packageLeads || 0).toLocaleString()}건 ₩{(v.packagePrice || 0).toLocaleString()}원 (건당 ₩{v.defaultUnitCost.toLocaleString()})
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                              <Tag size={11} />
+                              건당 CPL ₩{v.defaultUnitCost.toLocaleString()}
+                            </span>
+                          )}
                         </div>
 
                         {v.asPolicy && (
@@ -356,7 +469,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
                         <button
                           onClick={() => startEdit(v)}
                           className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
@@ -381,7 +494,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
             <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
               <Sparkles size={16} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
               <span>
-                <strong>팁:</strong> 여기서 등록된 거래처는 DB 일괄 업로드 창에서 <strong>최근 거래처 칩</strong>으로 바로 뜨며, 선택 시 기본 단가가 자동 적용됩니다.
+                <strong>팁:</strong> <strong>"3,000건에 50만원"</strong> 같은 대량 구매 거래처는 <strong>[대량 패키지]</strong> 방식을 선택하시면 건당 환산 단가(약 ₩167원)가 자동 산출되어 회차 등록 시 그대로 적용됩니다.
               </span>
             </div>
           </div>

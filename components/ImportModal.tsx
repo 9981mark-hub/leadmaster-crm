@@ -43,9 +43,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     // [Added] Load all cases for global duplicate check
     const [existingCases, setExistingCases] = useState<Case[]>([]);
 
-    // [030] DB 거래처 & 회차 매입 비용 관제 State
+    // [030/031] DB 거래처 & 회차 매입 비용 관제 State (CPL 및 3000건/50만원 패키지 지원)
     const [vendors, setVendors] = useState<LeadVendor[]>([]);
     const [selectedVendor, setSelectedVendor] = useState<string>('');
+    const [pricingMode, setPricingMode] = useState<'cpl' | 'package'>('cpl');
+    const [pkgLeads, setPkgLeads] = useState<number>(3000);
+    const [pkgPrice, setPkgPrice] = useState<number>(500000);
     const [unitCost, setUnitCost] = useState<number>(25000);
     const [totalCost, setTotalCost] = useState<number>(0);
     const [batchName, setBatchName] = useState<string>('');
@@ -59,7 +62,17 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
             if (vList.length > 0 && !selectedVendor) {
                 const first = vList[0];
                 setSelectedVendor(first.name);
-                setUnitCost(first.defaultUnitCost || 25000);
+                if (first.pricingType === 'package') {
+                    setPricingMode('package');
+                    setPkgLeads(first.packageLeads || 3000);
+                    setPkgPrice(first.packagePrice || 500000);
+                    setUnitCost(first.defaultUnitCost || 167);
+                    setTotalCost(first.packagePrice || 500000);
+                } else {
+                    setPricingMode('cpl');
+                    setUnitCost(first.defaultUnitCost || 25000);
+                    setTotalCost(0);
+                }
                 const today = new Date().toLocaleDateString('ko-KR');
                 setBatchName(`${today} 1차 (${first.name})`);
             }
@@ -73,8 +86,17 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         const match = vendors.find(v => v.name === vendorName);
         const today = new Date().toLocaleDateString('ko-KR');
         if (match) {
-            const cost = match.defaultUnitCost || 0;
-            setUnitCost(cost);
+            if (match.pricingType === 'package') {
+                setPricingMode('package');
+                setPkgLeads(match.packageLeads || 3000);
+                setPkgPrice(match.packagePrice || 500000);
+                setUnitCost(match.defaultUnitCost || 167);
+                setTotalCost(match.packagePrice || 500000);
+            } else {
+                setPricingMode('cpl');
+                setUnitCost(match.defaultUnitCost || 25000);
+                setTotalCost(0);
+            }
             setBatchName(`${today} 1차 (${match.name})`);
         } else {
             setBatchName(`${today} 1차 (${vendorName})`);
@@ -686,63 +708,162 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                             </div>
                         </div>
 
-                        {/* 3행: 회차명 & 리드 단가(CPL) & 총 매입비 스마트 계산기 */}
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-1 border-t border-indigo-100/60 dark:border-indigo-900/30">
-                            <div className="sm:col-span-6">
-                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                    회차명 (Batch Name)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={batchName}
-                                    onChange={(e) => setBatchName(e.target.value)}
-                                    placeholder="예: 2026.11.11 1차 (패스트애드)"
-                                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                />
+                        {/* 3행: 회차명 & 매입 정산 방식(CPL vs 3000건에 50만원 패키지) 스마트 계산기 */}
+                        <div className="space-y-2 pt-1 border-t border-indigo-100/60 dark:border-indigo-900/30">
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+                                <div className="sm:col-span-5">
+                                    <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                        회차명 (Batch Name)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={batchName}
+                                        onChange={(e) => setBatchName(e.target.value)}
+                                        placeholder="예: 2026.11.11 1차 (패스트애드)"
+                                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                </div>
+
+                                {/* 정산 방식 토글 (건당 CPL vs 대량 패키지) */}
+                                <div className="sm:col-span-3">
+                                    <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                        정산 방식
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-1 p-0.5 bg-gray-200 dark:bg-gray-700 rounded-lg text-[11px]">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPricingMode('cpl')}
+                                            className={`py-1 rounded-md font-semibold transition-all ${
+                                                pricingMode === 'cpl'
+                                                    ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                                                    : 'text-gray-600 dark:text-gray-300'
+                                            }`}
+                                        >
+                                            건당 CPL
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setPricingMode('package');
+                                                const u = pkgLeads > 0 && pkgPrice > 0 ? Math.round(pkgPrice / pkgLeads) : 0;
+                                                setUnitCost(u);
+                                                setTotalCost(pkgPrice);
+                                            }}
+                                            className={`py-1 rounded-md font-semibold transition-all ${
+                                                pricingMode === 'package'
+                                                    ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                                                    : 'text-gray-600 dark:text-gray-300'
+                                            }`}
+                                        >
+                                            📦 패키지
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {pricingMode === 'cpl' ? (
+                                    <>
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                                건당 단가 (CPL)
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="1000"
+                                                    value={unitCost}
+                                                    onChange={(e) => {
+                                                        const val = Number(e.target.value);
+                                                        setUnitCost(val);
+                                                        setTotalCost(0);
+                                                    }}
+                                                    className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold"
+                                                />
+                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-400">₩</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                                총 매입 결제액
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="10000"
+                                                    value={totalCost > 0 ? totalCost : (unitCost > 0 && (
+                                                        activeTab === 'excel' ? excelPreview.filter(c => !c.duplicateInfo).length :
+                                                        activeTab === 'sheet' ? getSheetFilledRows().length :
+                                                        activeTab === 'ocr' ? (ocrPreview ? 1 : 0) : 1
+                                                    ) * unitCost || 0)}
+                                                    onChange={(e) => setTotalCost(Number(e.target.value))}
+                                                    placeholder="자동 계산"
+                                                    className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold"
+                                                />
+                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-400">₩</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                                공급 수량 (건)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                step="100"
+                                                value={pkgLeads}
+                                                onChange={(e) => {
+                                                    const l = Math.max(1, Number(e.target.value));
+                                                    setPkgLeads(l);
+                                                    const u = Math.round(pkgPrice / l);
+                                                    setUnitCost(u);
+                                                    setTotalCost(pkgPrice);
+                                                }}
+                                                className="w-full px-2 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
+                                            />
+                                        </div>
+
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                                패키지 총액 (원)
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="10000"
+                                                    value={pkgPrice}
+                                                    onChange={(e) => {
+                                                        const p = Math.max(0, Number(e.target.value));
+                                                        setPkgPrice(p);
+                                                        const u = pkgLeads > 0 ? Math.round(p / pkgLeads) : 0;
+                                                        setUnitCost(u);
+                                                        setTotalCost(p);
+                                                    }}
+                                                    className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
+                                                />
+                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-400">₩</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
-                            <div className="sm:col-span-3">
-                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                    건당 매입단가 (CPL)
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="1000"
-                                        value={unitCost}
-                                        onChange={(e) => {
-                                            const val = Number(e.target.value);
-                                            setUnitCost(val);
-                                            setTotalCost(0);
-                                        }}
-                                        className="w-full pl-6 pr-2 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 tabular-nums font-semibold"
-                                    />
-                                    <span className="absolute left-2 top-1.5 text-xs text-gray-400">₩</span>
+                            {/* 패키지 모드 환산 안내 배너 */}
+                            {pricingMode === 'package' && (
+                                <div className="flex items-center justify-between text-[11px] px-2.5 py-1 rounded-md bg-indigo-100/70 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200 font-medium">
+                                    <span>
+                                        📦 대량 패키지 적용: <strong>{pkgLeads.toLocaleString()}건</strong>에 <strong>₩{pkgPrice.toLocaleString()}원</strong>
+                                    </span>
+                                    <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                                        👉 1건당 환산 단가: ₩{(pkgLeads > 0 ? Math.round(pkgPrice / pkgLeads) : 0).toLocaleString()}원
+                                    </span>
                                 </div>
-                            </div>
-
-                            <div className="sm:col-span-3">
-                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                    총 매입 결제액
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="10000"
-                                        value={totalCost > 0 ? totalCost : (unitCost > 0 && (
-                                            activeTab === 'excel' ? excelPreview.filter(c => !c.duplicateInfo).length :
-                                            activeTab === 'sheet' ? getSheetFilledRows().length :
-                                            activeTab === 'ocr' ? (ocrPreview ? 1 : 0) : 1
-                                        ) * unitCost || 0)}
-                                        onChange={(e) => setTotalCost(Number(e.target.value))}
-                                        placeholder="자동 계산"
-                                        className="w-full pl-6 pr-2 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 tabular-nums font-semibold"
-                                    />
-                                    <span className="absolute left-2 top-1.5 text-xs text-gray-400">₩</span>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
