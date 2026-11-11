@@ -94,9 +94,16 @@ class SpeechService {
     return this.usePhoneFilter;
   }
 
+  // 현재 TTS 발화 중인지 확인
+  public isSpeaking(): boolean {
+    return !!(this.currentAudio && !this.currentAudio.paused) || !!(this.synth && this.synth.speaking);
+  }
+
   // 통합 발화 메서드 (항상 가장 고품질의 자연스러운 음성을 최우선 선택)
   public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<{ engine: 'neural' | 'browser'; voiceName: string }> {
     this.stopSpeaking();
+    // 모바일 오디오 덕킹(볼륨 꺼짐) 방지를 위해 발화 중에는 마이크 수신 정지
+    this.stopListening();
 
     // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 성우 엔진
     if (this.googleApiKey) {
@@ -183,6 +190,7 @@ class SpeechService {
 
     const audioUrl = `data:audio/mp3;base64,${data.audioContent}`;
     const audio = new Audio(audioUrl);
+    audio.volume = 1.0;
     this.currentAudio = audio;
 
     return new Promise((resolve) => {
@@ -302,6 +310,7 @@ class SpeechService {
   // 아웃바운드 실전 전화 신호음 (한국 표준 440Hz+480Hz 통화연결음 모사)
   public playRingbackTone(rings: number = 2): Promise<void> {
     this.stopRingbackTone();
+    this.stopListening();
 
     return new Promise((resolve) => {
       try {

@@ -103,6 +103,7 @@ export default function TrainingCenterPage() {
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.05);
   const [ageTone, setAgeTone] = useState<'young' | 'middle' | 'senior' | 'elder'>('middle');
   const [isAiReplying, setIsAiReplying] = useState(false);
+  const [isCustomerSpeaking, setIsCustomerSpeaking] = useState(false);
 
   // Live Paralegal Checklist state during call
   const [liveChecklist, setLiveChecklist] = useState({
@@ -352,6 +353,11 @@ export default function TrainingCenterPage() {
     });
 
     try {
+      // 모바일 볼륨 최적화 브릿지 호출 (볼륨 덕킹 해제 및 스피커폰 모드)
+      try {
+        (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
+      } catch (_) {}
+
       // 한국 표준 전화 통화연결음 2회 울림 (뚜르르르~ ... 뚜르르르~ 약 3.2초)
       await speechService.playRingbackTone(2);
 
@@ -368,18 +374,28 @@ export default function TrainingCenterPage() {
       messagesRef.current = [firstMsg];
 
       // 고객의 첫 "여보세요?" 발화 (TTS)
+      // 💡 모바일 오디오 덕킹(볼륨 꺼짐) 방지 핵심:
+      // 고객이 말하는 도중에는 마이크를 켜지 않아 안드로이드가 스피커 볼륨을 줄이지 않고 100% 크게 들림!
       if (isTtsEnabled) {
-        speechService.speak(firstMsg.text, {
-          ...selectedPersona.speechOptions,
-          rate: speedMultiplier,
-          pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
-        });
+        setIsCustomerSpeaking(true);
+        try {
+          await speechService.speak(firstMsg.text, {
+            ...selectedPersona.speechOptions,
+            rate: speedMultiplier,
+            pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+          });
+        } finally {
+          setIsCustomerSpeaking(false);
+        }
       }
 
-      // 통화 연결 즉시 통화 전용 마이크 상시 활성화 (테스트 모드와 완전 분리)
-      startCallMicrophone();
+      // 고객 발화가 끝난 후, 또는 TTS 비활성 시 마이크 청취 즉시 개시!
+      if (callStateRef.current === 'connected') {
+        startCallMicrophone();
+      }
     } catch (e) {
       console.warn('Call start failed or cancelled:', e);
+      setIsCustomerSpeaking(false);
       callStateRef.current = 'idle';
       setCallState('idle');
     }
@@ -389,9 +405,20 @@ export default function TrainingCenterPage() {
   const handleCancelCalling = () => {
     speechService.stopRingbackTone();
     speechService.stopSpeaking();
+    setIsCustomerSpeaking(false);
     callStateRef.current = 'idle';
     setCallState('idle');
     showToast('전화 발신을 취소했습니다.', 'info');
+  };
+
+  // 고객 말 끊고 즉시 답변하기 (Barge-in 인터럽트)
+  const handleInterruptCustomer = () => {
+    speechService.stopSpeaking();
+    setIsCustomerSpeaking(false);
+    if (callStateRef.current === 'connected') {
+      startCallMicrophone();
+      showToast('고객 발화를 끊고 마이크를 켰습니다. 편하게 말씀하세요!', 'info');
+    }
   };
 
   // 통화 중 마이크 상시 연결 및 수신 (자동 유지 & 말 끼어들기 Barge-in)
@@ -513,8 +540,10 @@ export default function TrainingCenterPage() {
       silenceTimerRef.current = null;
     }
 
-    // 고객의 발화 즉시 정지 (상담원 말씀 우선)
+    // 상담원이 말을 마쳤으므로 마이크 일시 정지 (고객 TTS 재생 중 모바일 오디오 볼륨 꺼짐 방지)
+    speechService.stopListening();
     speechService.stopSpeaking();
+    setIsMicActive(false);
 
     // 🚨 핵심 방어 2: 단일 턴 ID 발급 (이전 AI 응답이 늦게 오더라도 무효화!)
     const myTurnId = ++turnIdRef.current;
@@ -565,18 +594,28 @@ export default function TrainingCenterPage() {
       });
 
       if (isTtsEnabled && myTurnId === turnIdRef.current) {
-        await speechService.speak(replyText, {
-          ...selectedPersona.speechOptions,
-          rate: speedMultiplier,
-          pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
-        });
+        setIsCustomerSpeaking(true);
+        try {
+          await speechService.speak(replyText, {
+            ...selectedPersona.speechOptions,
+            rate: speedMultiplier,
+            pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+          });
+        } finally {
+          setIsCustomerSpeaking(false);
+        }
       }
     } catch (e) {
       console.error('Error generating AI reply:', e);
     } finally {
+      setIsCustomerSpeaking(false);
       if (myTurnId === turnIdRef.current) {
         isGeneratingReplyRef.current = false;
         setIsAiReplying(false);
+        // 고객 발화가 끝난 후 통화 연결 중이면 마이크 자동 재개!
+        if (callStateRef.current === 'connected') {
+          startCallMicrophone();
+        }
       }
     }
   };
@@ -589,6 +628,7 @@ export default function TrainingCenterPage() {
     }
     speechService.stopListening();
     speechService.stopSpeaking();
+    setIsCustomerSpeaking(false);
     setIsMicActive(false);
     setInterimText('');
     interimTextRef.current = '';
@@ -1370,10 +1410,27 @@ export default function TrainingCenterPage() {
                   )}
 
                   {/* AI Thinking Animation */}
-                  {isAiReplying && (
+                  {isAiReplying && !isCustomerSpeaking && (
                     <div className="flex items-center gap-2 text-xs text-gray-400 italic py-1">
                       <Sparkles className="w-3.5 h-3.5 animate-spin text-purple-500" />
                       <span>고객이 답변하는 중...</span>
+                    </div>
+                  )}
+
+                  {/* Customer Speaking Status Banner (고객 발화 중 & 즉시 끼어들기) */}
+                  {isCustomerSpeaking && (
+                    <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs shadow-xs animate-pulse">
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="w-4 h-4 animate-bounce text-purple-600 dark:text-purple-400" />
+                        <span className="font-bold">고객 말씀 중... (스피커로 크게 들립니다)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleInterruptCustomer}
+                        className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] shadow-sm transition-all"
+                      >
+                        말 끊고 바로 답하기 🖐️
+                      </button>
                     </div>
                   )}
 
@@ -1424,7 +1481,9 @@ export default function TrainingCenterPage() {
                     }}
                     placeholder={
                       callState === 'connected'
-                        ? isMicActive
+                        ? isCustomerSpeaking
+                          ? '고객 발화 중... (끝나면 마이크가 자동으로 켜집니다)'
+                          : isMicActive
                           ? '실시간 자동 통화 중... 편하게 말씀하세요 (키보드 직접 입력도 가능)'
                           : '마이크가 음소거 상태입니다. 마이크를 켜시거나 키보드로 입력하세요'
                         : isMicTesting
