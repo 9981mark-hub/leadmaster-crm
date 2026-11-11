@@ -353,6 +353,9 @@ export default function TrainingCenterPage() {
     });
 
     try {
+      // 모바일 오디오 Autoplay 권한 사전 해제 (사용자 클릭 제스처 시점)
+      speechService.unlockAudio();
+
       // 모바일 볼륨 최적화 브릿지 호출 (볼륨 덕킹 해제 및 스피커폰 모드)
       try {
         (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
@@ -360,6 +363,11 @@ export default function TrainingCenterPage() {
 
       // 한국 표준 전화 통화연결음 2회 울림 (뚜르르르~ ... 뚜르르르~ 약 3.2초)
       await speechService.playRingbackTone(2);
+
+      // 모바일 볼륨 재점검 (신호음 후 고객 발화 전 스피커 음량 100% 보장)
+      try {
+        (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
+      } catch (_) {}
 
       // 고객이 전화를 받음 (아웃바운드 연결 완료)
       callStateRef.current = 'connected';
@@ -421,7 +429,27 @@ export default function TrainingCenterPage() {
     }
   };
 
-  // 통화 중 마이크 상시 연결 및 수신 (자동 유지 & 말 끼어들기 Barge-in)
+  // 고객 메시지 다시 듣기 (스피커 아이콘 클릭 시 안전 재생 & 마이크 복원)
+  const handleReplayCustomerMessage = async (text: string) => {
+    if (isCustomerSpeaking) return;
+    setIsCustomerSpeaking(true);
+    speechService.stopListening();
+    try {
+      await speechService.speak(text, {
+        ...selectedPersona.speechOptions,
+        rate: speedMultiplier,
+        pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+      });
+    } finally {
+      setIsCustomerSpeaking(false);
+      // 다시 듣기가 끝난 후 통화 연결 중이면 마이크 자동 복원!
+      if (callStateRef.current === 'connected') {
+        startCallMicrophone();
+      }
+    }
+  };
+
+  // 통화 중 마이크 상시 연결 및 수신 (자동 유지 & 스마트 침묵 턴테이킹)
   const startCallMicrophone = () => {
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
@@ -439,37 +467,31 @@ export default function TrainingCenterPage() {
         // 고객이 말하는 도중(TTS 재생 중)이라도 상담원이 말을 시작하면 고객 음성을 즉시 정지!
         speechService.stopSpeaking();
 
-        if (isFinal) {
-          // 브라우저가 문장 인식을 완료(isFinal: true)한 경우 지체 없이 즉시 전달 (0초)
-          if (silenceTimerRef.current) {
-            clearTimeout(silenceTimerRef.current);
-            silenceTimerRef.current = null;
-          }
-          setInterimText('');
-          interimTextRef.current = '';
-          handleSendAgentMessage(clean);
-        } else {
-          setInterimText(clean);
-          interimTextRef.current = clean;
+        // 2. 실시간 발화 자막 업데이트 (상담원이 말하는 중임을 시각적으로 확인)
+        setInterimText(clean);
+        interimTextRef.current = clean;
 
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-
-          // 한국어 대화 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요 등)
-          const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요)$/.test(clean);
-
-          // 사람이 자연스럽게 말할 때의 쉼 호흡(300~500ms)을 감안하여,
-          // 종결 어미가 있으면 550ms, 어미가 없으면 850ms의 안정적인 침묵 확인 후 1회 발송!
-          const delayMs = isSentenceEnd ? 550 : 850;
-
-          silenceTimerRef.current = setTimeout(() => {
-            const text = interimTextRef.current.trim();
-            if (text) {
-              setInterimText('');
-              interimTextRef.current = '';
-              handleSendAgentMessage(text);
-            }
-          }, delayMs);
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
         }
+
+        // 한국어 완성형 문장 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요, ?, . 등)
+        const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요)$/.test(clean);
+
+        // 사람이 말할 때 자연스러운 숨 고름과 문장 마무리를 위한 침묵 대기 시간:
+        // - 완성형 문장 종결 어미가 감지되었을 때: 1100ms 침묵 대기 후 전송
+        // - 미완성 단어/호흡 멈춤(중간 쉼): 1600ms 침묵 대기 후 전송 (말이 중간에 끊기지 않고 완전한 문장으로 결합되도록 보장)
+        const delayMs = isSentenceEnd ? 1100 : 1600;
+
+        silenceTimerRef.current = setTimeout(() => {
+          const text = interimTextRef.current.trim();
+          if (text) {
+            setInterimText('');
+            interimTextRef.current = '';
+            handleSendAgentMessage(text);
+          }
+        }, delayMs);
       },
       (err) => {
         console.warn('SpeechRecognition error during call:', err);
@@ -595,6 +617,9 @@ export default function TrainingCenterPage() {
 
       if (isTtsEnabled && myTurnId === turnIdRef.current) {
         setIsCustomerSpeaking(true);
+        try {
+          (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
+        } catch (_) {}
         try {
           await speechService.speak(replyText, {
             ...selectedPersona.speechOptions,
@@ -1378,13 +1403,9 @@ export default function TrainingCenterPage() {
                           {msg.text}
                           {msg.speaker === 'customer' && isTtsEnabled && (
                             <button
-                              onClick={() => speechService.speak(msg.text, {
-                                ...selectedPersona.speechOptions,
-                                rate: speedMultiplier,
-                                pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
-                              })}
+                              onClick={() => handleReplayCustomerMessage(msg.text)}
                               className="ml-2 text-gray-400 hover:text-blue-500 inline-block align-middle"
-                              title="다시 듣기"
+                              title="다시 듣기 (재생 후 마이크 자동 재개)"
                             >
                               <Volume2 className="w-3.5 h-3.5 inline" />
                             </button>

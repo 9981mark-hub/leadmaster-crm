@@ -23,6 +23,7 @@ class SpeechService {
   private onErrorCb: ((error: any) => void) | null = null;
   private onEndCb: (() => void) | null = null;
   private currentAudio: HTMLAudioElement | null = null;
+  private unlockedAudio: HTMLAudioElement | null = null;
   private audioCtx: AudioContext | null = null;
   private mediaSourceNode: MediaElementAudioSourceNode | null = null;
   private usePhoneFilter = true; // 실제 전화 통화 수화기 음질 필터 (300Hz ~ 3400Hz Bandpass)
@@ -97,6 +98,27 @@ class SpeechService {
   // 현재 TTS 발화 중인지 확인
   public isSpeaking(): boolean {
     return !!(this.currentAudio && !this.currentAudio.paused) || !!(this.synth && this.synth.speaking);
+  }
+
+  // 모바일 브라우저/웹뷰 Autoplay 제한 해제 (사용자 최초 제스처 시 호출)
+  public unlockAudio(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      if (!this.unlockedAudio) {
+        this.unlockedAudio = new Audio();
+      }
+      // 0.01초 무음 MP3 버퍼 재생을 통해 브라우저 오디오 정책상 '사용자 상호작용 승인(User-Activated)' 상태로 영구 전환
+      this.unlockedAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA///////AAAA8EwAAMEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+      const playPromise = this.unlockedAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          if (this.unlockedAudio && this.unlockedAudio.src.startsWith('data:audio/mp3;base64,//uQx')) {
+            this.unlockedAudio.pause();
+            this.unlockedAudio.currentTime = 0;
+          }
+        }).catch(() => {});
+      }
+    } catch (_) {}
   }
 
   // 통합 발화 메서드 (항상 가장 고품질의 자연스러운 음성을 최우선 선택)
@@ -189,25 +211,36 @@ class SpeechService {
     }
 
     const audioUrl = `data:audio/mp3;base64,${data.audioContent}`;
-    const audio = new Audio(audioUrl);
+    // 재사용 가능한 사전 승인(unlocked) 오디오 객체 우선 사용 (Autoplay 차단 원천 해결)
+    const audio = this.unlockedAudio || new Audio();
+    this.unlockedAudio = audio;
+    audio.src = audioUrl;
     audio.volume = 1.0;
     this.currentAudio = audio;
 
     return new Promise((resolve) => {
-      audio.onended = () => {
-        this.currentAudio = null;
-        resolve(voiceName);
+      let resolved = false;
+      const finish = () => {
+        if (!resolved) {
+          resolved = true;
+          this.currentAudio = null;
+          resolve(voiceName);
+        }
       };
+
+      audio.onended = finish;
       audio.onerror = (e) => {
         console.warn('Audio playback error:', e);
-        this.currentAudio = null;
-        resolve(voiceName);
+        finish();
       };
-      audio.play().catch(e => {
-        console.warn('Audio play failed:', e);
-        this.currentAudio = null;
-        resolve(voiceName);
-      });
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((e) => {
+          console.warn('Audio play failed:', e);
+          finish();
+        });
+      }
     });
   }
 
@@ -311,6 +344,7 @@ class SpeechService {
   public playRingbackTone(rings: number = 2): Promise<void> {
     this.stopRingbackTone();
     this.stopListening();
+    this.unlockAudio(); // 발신 사용자 제스처 시점에 오디오 잠금 해제 미리 수행
 
     return new Promise((resolve) => {
       try {
