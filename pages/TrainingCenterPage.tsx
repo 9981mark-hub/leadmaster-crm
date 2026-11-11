@@ -477,12 +477,19 @@ export default function TrainingCenterPage() {
         }
 
         // 한국어 완성형 문장 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요, ?, . 등)
-        const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요)$/.test(clean);
+        const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요|거예요|할게요)$/.test(clean);
 
-        // 사람이 말할 때 자연스러운 숨 고름과 문장 마무리를 위한 침묵 대기 시간:
-        // - 완성형 문장 종결 어미가 감지되었을 때: 1100ms 침묵 대기 후 전송
-        // - 미완성 단어/호흡 멈춤(중간 쉼): 1600ms 침묵 대기 후 전송 (말이 중간에 끊기지 않고 완전한 문장으로 결합되도록 보장)
-        const delayMs = isSentenceEnd ? 1100 : 1600;
+        // 실제 사람 간의 전화 통화 반응 속도(300ms~600ms)에 맞춘 초고속 자연스러운 턴테이킹:
+        // 1) 브라우저 문장 인식 확정(isFinal) + 문장 종결 어미 감지 시: 380ms (초고속 즉답)
+        // 2) 실시간 인식(interim) 상태에서 종결 어미 감지 시: 500ms
+        // 3) 종결 어미 없으나 문장 확정(isFinal)된 경우: 680ms
+        // 4) 문장 중간의 자연스러운 숨 고름(쉼표): 950ms (말이 중간에 끊기지 않고 완전한 문장으로 결합되도록 보장)
+        let delayMs = 950;
+        if (isSentenceEnd) {
+          delayMs = isFinal ? 380 : 500;
+        } else if (isFinal) {
+          delayMs = 680;
+        }
 
         silenceTimerRef.current = setTimeout(() => {
           const text = interimTextRef.current.trim();
@@ -548,8 +555,8 @@ export default function TrainingCenterPage() {
     const now = Date.now();
 
     // 🚨 핵심 방어 1: 중복 텍스트 및 초단위 연타 방지
-    // 직전에 보낸 텍스트와 동일하거나 1.8초 이내 동일 발화가 들어오면 무시!
-    if (lastSentTextRef.current === cleanText && (now - lastSentTimeRef.current) < 1800) {
+    // 직전에 보낸 텍스트와 동일하거나 0.9초 이내 동일 발화가 들어오면 무시!
+    if (lastSentTextRef.current === cleanText && (now - lastSentTimeRef.current) < 900) {
       console.log('중복 상담원 텍스트 발송 차단:', cleanText);
       return;
     }
