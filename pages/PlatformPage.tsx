@@ -15,7 +15,7 @@ const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('ko-KR
 
 /** HOST(플랫폼 관리자) 전용: 고객 회사 만들기·목록·실시간 과금 정산·사용 중지 관제 */
 export default function PlatformPage() {
-  const { org } = useAuth();
+  const { org, isPlatformAdmin } = useAuth();
   const { showToast } = useToast();
   const [orgs, setOrgs] = useState<PlatformOrg[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,7 @@ export default function PlatformPage() {
 
   const billingSummary = useMemo(() => computeBillingSummary(orgs), [orgs]);
 
-  if (!org?.isPlatformAdmin) {
+  if (!isPlatformAdmin) {
     return <div className="p-6 text-gray-500">플랫폼 관리자만 볼 수 있는 화면입니다.</div>;
   }
 

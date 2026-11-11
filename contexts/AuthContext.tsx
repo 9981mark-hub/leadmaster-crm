@@ -25,6 +25,8 @@ interface AuthContextType {
   org: OrgInfo | null;
   /** 관리자 메뉴 표시 여부. 회사 정보를 아직 모르면 true (본사 사용자 화면이 갑자기 줄지 않게) */
   isAdmin: boolean;
+  /** 플랫폼 총괄 최고관리자(HOST) 여부. 고객사 대표/관리자가 아닌 플랫폼 운영자("나") 전용 */
+  isPlatformAdmin: boolean;
   allowedEmails: string[];
   loginWithGoogle: (credential: string) => void;
   sendEmailOtp: (email: string) => Promise<void>;
@@ -375,10 +377,15 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     return false;
   }, [user?.email, org]);
 
+  // [플랫폼 총괄 최고관리자] 플랫폼 HOST/슈퍼관리자 (고객사 대표·관리자가 아닌 플랫폼 마스터 "나")
+  const isPlatformAdmin = useMemo(() => {
+    return user?.email === '9981mark@gmail.com' || !!org?.isPlatformAdmin;
+  }, [user?.email, org?.isPlatformAdmin]);
+
   const value = useMemo(() => ({
-    isAuthenticated, user, org, isAdmin, allowedEmails,
+    isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails,
     loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail,
-  }), [isAuthenticated, user, org, isAdmin, allowedEmails, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail]);
+  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail]);
 
   return (
     <AuthContext.Provider value={value}>

@@ -61,7 +61,7 @@ const CaseListItem: React.FC<CaseListItemProps> = ({ c, type, reminder }) => {
 
 export default function Dashboard() {
   const { theme } = useTheme();
-  const { isAdmin, org } = useAuth();
+  const { isAdmin, isPlatformAdmin, org } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<string>('all');
@@ -80,8 +80,10 @@ export default function Dashboard() {
   const [aiUsageSummary, setAiUsageSummary] = useState<DetailedAiUsage | null>(null);
 
   useEffect(() => {
-    fetchDetailedAiUsage().then(res => setAiUsageSummary(res)).catch(() => {});
-  }, []);
+    if (isPlatformAdmin) {
+      fetchDetailedAiUsage().then(res => setAiUsageSummary(res)).catch(() => {});
+    }
+  }, [isPlatformAdmin]);
 
   useEffect(() => {
     if (isAdmin && org?.orgId) {
@@ -256,7 +258,8 @@ export default function Dashboard() {
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
           <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText="구간별 알림 적용중" />
         </Link>
-        {isAdmin && (
+        {/* 총괄 운영자/HOST 전용: 일반 고객사 및 회사 관리자 비노출 */}
+        {isPlatformAdmin && (
           <div onClick={() => { const el = document.getElementById('ai-usage-widget'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
             <KPICard
               title="오늘 AI 사용량"
@@ -275,8 +278,8 @@ export default function Dashboard() {
       {/* 사무장 인계 & 수임 파이프라인 관제 센터 (관리자 전용: 전환율 & 미컨택 관제) */}
       {isAdmin && <ParalegalPipelineWidget cases={cases} isAdmin={isAdmin} />}
 
-      {/* Gemini AI 실시간 사용량 & 비용 분석 위젯 (관리자 전용: AI 호출비용) */}
-      {isAdmin && <AiUsageWidget />}
+      {/* Gemini AI 실시간 사용량 & 비용 분석 위젯 (플랫폼 총괄 최고관리자/HOST 전용: 고객사 및 회사 관리자 비노출 격리) */}
+      {isPlatformAdmin && <AiUsageWidget />}
 
       {/* Charts Section */}
       <div className="space-y-2">

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { DetailedAiUsage, fetchDetailedAiUsage, GEMINI_EXCHANGE_RATE } from '../services/aiUsage';
+import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
 
 interface Props {
@@ -12,12 +13,14 @@ interface Props {
 }
 
 export default function AiUsageWidget({ className = '' }: Props) {
+  const { isPlatformAdmin } = useAuth();
   const [data, setData] = useState<DetailedAiUsage | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'tasks' | 'logs' | 'pricing'>('tasks');
   const mountedRef = useRef(true);
 
   const loadData = useCallback(async (isSilent = false) => {
+    if (!isPlatformAdmin) return;
     if (!isSilent) setLoading(true);
     try {
       const result = await fetchDetailedAiUsage();
@@ -34,6 +37,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
   }, []);
 
   useEffect(() => {
+    if (!isPlatformAdmin) return;
     mountedRef.current = true;
     loadData();
 
@@ -70,6 +74,9 @@ export default function AiUsageWidget({ className = '' }: Props) {
   const dailyCap = data?.dailyCap ?? 300;
   const todayPercentage = Math.min(100, Math.round((todayCount / (dailyCap || 1)) * 100));
   const isCapWarning = todayPercentage >= 80;
+
+  // 플랫폼 총괄 최고관리자(HOST)가 아닌 경우 일체 렌더링하지 않음
+  if (!isPlatformAdmin) return null;
 
   return (
     <div id="ai-usage-widget" className={`glass-panel p-5 rounded-2xl space-y-4 border border-purple-100 dark:border-purple-900/40 shadow-xs ${className}`}>

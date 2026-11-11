@@ -40,8 +40,7 @@ import { fetchTeamMembers, TeamMember } from '../services/team';
 import { PlatformOrg, fetchOrganizations } from '../services/platform';
 
 export const NoticePage: React.FC = () => {
-  const { isAdmin, org, user } = useAuth();
-  const isPlatformAdmin = !!org?.isPlatformAdmin;
+  const { isAdmin, isPlatformAdmin, org, user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 

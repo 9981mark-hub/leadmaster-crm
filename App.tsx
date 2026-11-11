@@ -140,8 +140,8 @@ const MobileMoreMenu = ({ navs, path, onClose }: { navs: any[]; path: string; on
 const ADMIN_ONLY_PATHS = ['/settlement', '/settings', '/statistics', '/team', '/platform', '/telegram', '/auto-dial'];
 
 const PlatformAdminOnly: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { org } = useAuth();
-  return org?.isPlatformAdmin ? children : <Navigate to="/" replace />;
+  const { isPlatformAdmin } = useAuth();
+  return isPlatformAdmin ? children : <Navigate to="/" replace />;
 };
 
 const StandardRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
@@ -175,7 +175,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
   const { theme, toggleTheme } = useTheme();
-  const { isAdmin, org } = useAuth();
+  const { isAdmin, isPlatformAdmin, org } = useAuth();
   const [pendingTgCount, setPendingTgCount] = React.useState(0);
 
   React.useEffect(() => {
@@ -288,7 +288,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   // HOST(플랫폼 최고관리자/대표님)에게만 미공개 기능 "자동통화" 및 "회사 관리" 메뉴 노출
-  if (org?.isPlatformAdmin) {
+  if (isPlatformAdmin) {
     navs.splice(navs.length - 3, 0, { to: '/auto-dial', icon: PhoneCall, label: '자동통화' });
     navs.splice(navs.length - 2, 0, { to: '/platform', icon: Building2, label: '회사 관리' });
   }
@@ -573,7 +573,7 @@ const ProtectedRoutes = () => {
           <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />
           <Route path="/settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />
           <Route path="/team" element={<AdminOnly><TeamPage /></AdminOnly>} />
-          <Route path="/platform" element={<AdminOnly><PlatformPage /></AdminOnly>} />
+          <Route path="/platform" element={<PlatformAdminOnly><PlatformPage /></PlatformAdminOnly>} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
