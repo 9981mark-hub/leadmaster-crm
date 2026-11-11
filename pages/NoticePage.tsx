@@ -36,11 +36,9 @@ import {
 import { fetchTeamMembers, TeamMember } from '../services/team';
 
 export const NoticePage: React.FC = () => {
-  const { role, user } = useAuth();
+  const { isAdmin, user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-
-  const isAdmin = role === 'admin' || role === 'owner';
 
   // Tabs: 'notices' | 'directives'
   const [activeTab, setActiveTab] = useState<'notices' | 'directives'>('notices');

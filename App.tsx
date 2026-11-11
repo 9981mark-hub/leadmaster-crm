@@ -329,7 +329,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className={`border-b border-gray-100 dark:border-gray-700 ${sidebarCollapsed ? 'p-3 flex justify-center' : 'p-4'}`}>
           {sidebarCollapsed ? (
             <img 
-              src="/leadmaster_logo_120.png" 
+              src={`${import.meta.env.BASE_URL}leadmaster_logo_120.png`} 
               alt="LeadMaster Logo" 
               className="w-8 h-8 rounded-xl shadow-sm cursor-pointer hover:opacity-80 transition-opacity" 
               onClick={toggleSidebar} 
@@ -340,7 +340,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               {/* 1행: 가로형 브랜드 로고 + 메뉴 접기 버튼 */}
               <div className="flex items-center justify-between">
                 <img 
-                  src={theme === 'dark' ? "/leadmaster_logo_horizontal_dark.png" : "/leadmaster_logo_horizontal.png"} 
+                  src={theme === 'dark' ? `${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png` : `${import.meta.env.BASE_URL}leadmaster_logo_horizontal.png`} 
                   alt="LeadMaster CRM" 
                   className="h-6 w-auto object-contain shrink-0" 
                 />
@@ -426,7 +426,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
             <div className="flex items-center gap-2 min-w-0">
               <img 
-                src="/leadmaster_logo_120.png" 
+                src={`${import.meta.env.BASE_URL}leadmaster_logo_120.png`} 
                 alt="LeadMaster" 
                 className="w-7 h-7 rounded-xl shrink-0 shadow-sm" 
               />

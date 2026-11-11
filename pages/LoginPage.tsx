@@ -54,7 +54,7 @@ export default function LoginPage() {
             <header className="border-b border-slate-850 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <img 
-                        src="/leadmaster_logo_horizontal_dark.png" 
+                        src={`${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png`} 
                         alt="LeadMaster CRM" 
                         className="h-7 w-auto object-contain"
                     />
@@ -90,7 +90,7 @@ export default function LoginPage() {
                     {/* 브랜드 가로형 풀 로고 & 서브타이틀 */}
                     <div className="space-y-4">
                         <img 
-                            src="/leadmaster_logo_horizontal_dark.png" 
+                            src={`${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png`} 
                             alt="LeadMaster CRM" 
                             className="h-12 sm:h-14 w-auto mx-auto object-contain drop-shadow-md"
                         />
