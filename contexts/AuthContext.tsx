@@ -27,6 +27,8 @@ interface AuthContextType {
   isAdmin: boolean;
   allowedEmails: string[];
   loginWithGoogle: (credential: string) => void;
+  sendEmailOtp: (email: string) => Promise<void>;
+  verifyEmailOtp: (email: string, code: string) => Promise<void>;
 
   logout: () => void;
   addAllowedEmail: (email: string) => void;
@@ -187,6 +189,68 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     }
   }, [navigate, setOrg]);
 
+  const sendEmailOtp = useCallback(async (email: string) => {
+    if (!supabase) throw new Error('Supabase 데이터베이스가 연결되지 않았습니다.');
+    const cleanEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithOtp({
+      email: cleanEmail,
+      options: { shouldCreateUser: true }
+    });
+    if (error) throw error;
+  }, []);
+
+  const verifyEmailOtp = useCallback(async (email: string, code: string) => {
+    if (!supabase) throw new Error('Supabase 데이터베이스가 연결되지 않았습니다.');
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanCode,
+      type: 'email'
+    });
+    if (error || !data.session) {
+      throw error || new Error('인증번호가 일치하지 않거나 만료되었습니다.');
+    }
+
+    const authUser = data.session.user;
+    const userEmail = authUser.email || cleanEmail;
+    const name = authUser.user_metadata?.full_name || userEmail.split('@')[0];
+    const userProfile = { email: userEmail, name, picture: authUser.user_metadata?.avatar_url };
+
+    // 소속 회사 확인 (초대가 있으면 자동 수락)
+    let orgInfo: OrgInfo | null = null;
+    let orgChecked = false;
+    try {
+      orgInfo = await resolveOrg();
+      orgChecked = true;
+    } catch (e) {
+      console.warn('[Auth] Org check failed:', e);
+    }
+
+    if (!orgInfo) {
+      const allowedByList = !orgChecked && allowedEmailsRef.current.includes(userEmail);
+      if (!allowedByList && userEmail !== '9981mark@gmail.com') {
+        if (supabase) await supabase.auth.signOut({ scope: 'local' });
+        throw new Error(orgChecked
+          ? '초대받지 않은 계정입니다.\n회사 관리자에게 초대를 요청하세요.'
+          : '접근 권한을 확인하지 못했습니다.\n잠시 후 다시 시도해주세요.');
+      }
+    } else {
+      if (ensureCacheOwner(orgInfo)) resetInitState();
+      setOrg(orgInfo);
+      syncAppSession(orgInfo.userId);
+      syncAppSecurityProfile(orgInfo.securityProfile);
+    }
+
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    localStorage.setItem('managerName', orgInfo?.displayName || name);
+    localStorage.setItem('leadmaster_persistent_auth', 'true');
+
+    setIsAuthenticated(true);
+    setUser(userProfile);
+    navigate('/');
+  }, [navigate, setOrg]);
+
   // [Session Recovery] - Non-destructive with Supabase refreshSession
   useEffect(() => {
     let cancelled = false;
@@ -313,8 +377,8 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
   const value = useMemo(() => ({
     isAuthenticated, user, org, isAdmin, allowedEmails,
-    loginWithGoogle, logout, addAllowedEmail, removeAllowedEmail,
-  }), [isAuthenticated, user, org, isAdmin, allowedEmails, loginWithGoogle, logout, addAllowedEmail, removeAllowedEmail]);
+    loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail,
+  }), [isAuthenticated, user, org, isAdmin, allowedEmails, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail]);
 
   return (
     <AuthContext.Provider value={value}>

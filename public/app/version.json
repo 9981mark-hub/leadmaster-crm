@@ -1,11 +1,11 @@
 {
-  "versionCode": 28,
-  "versionName": "1.7.6",
+  "versionCode": 29,
+  "versionName": "1.7.7",
   "releaseDate": "2026-11-11",
   "notes": [
-    "1.7.6: 공식 도메인(https://www.lmaster.xyz/) 초고속 서버 연동 및 클린 URL 최적화",
-    "GitHub Pages 구버전 앱 접속 호환성 100% 복구 (HashRouter/BrowserRouter 듀얼 모드)",
-    "수신 팝업 중복 호출 방지 및 In-place 화면 갱신 적용 (화면 깜빡임 완전 차단)",
-    "실시간 상담 메모 작성 및 Supabase 동기화 지원"
+    "1.7.7: 안드로이드 필수 권한 점검 오작동 완전 해결 (READ_PHONE_NUMBERS 제거로 전화·통화기록·문자 즉각 허용 감지)",
+    "앱 내 구글 로그인 팝업 및 WebSettingsCompat allowlist 최적화 (X-Requested-With 차단 해소)",
+    "사내 업무 계정 이메일 인증번호(OTP) 간편 로그인 시스템 추가 탑재",
+    "공식 도메인(https://www.lmaster.xyz/) 클린 URL 및 듀얼 라우터 완벽 연동"
   ]
 }
