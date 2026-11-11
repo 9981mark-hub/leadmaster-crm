@@ -262,17 +262,39 @@ export const findExistingPhones = async (phones: string[]): Promise<Map<string, 
   return out;
 };
 
-export const createImportBatch = async (b: { name: string; source?: string; fileName?: string; totalRows: number; distribution: any }): Promise<string> => {
-  const { data, error } = await need().from('lead_import_batches').insert({
-    name: b.name, source: b.source || null, file_name: b.fileName || null, total_rows: b.totalRows, distribution: b.distribution,
-  }).select('id').single();
+export const createImportBatch = async (b: {
+  name: string;
+  source?: string;
+  vendorName?: string;
+  unitCost?: number;
+  totalCost?: number;
+  fileName?: string;
+  totalRows: number;
+  distribution?: any;
+}): Promise<string> => {
+  const payload: any = {
+    name: b.name,
+    source: b.vendorName || b.source || null,
+    vendor_name: b.vendorName || b.source || null,
+    file_name: b.fileName || null,
+    total_rows: b.totalRows,
+    unit_cost: b.unitCost ? Math.max(0, b.unitCost) : 0,
+    total_cost: b.totalCost ? Math.max(0, b.totalCost) : (b.unitCost && b.totalRows ? b.unitCost * b.totalRows : 0),
+    distribution: b.distribution || {},
+  };
+  const { data, error } = await need().from('lead_import_batches').insert(payload).select('id').single();
   if (error) fail(error);
   return data!.id;
 };
 
-export const updateImportBatch = async (id: string, v: { inserted: number; duplicates: number; invalid: number; distribution?: any }): Promise<void> => {
+export const updateImportBatch = async (
+  id: string,
+  v: { inserted: number; duplicates: number; invalid: number; distribution?: any; totalCost?: number; unitCost?: number }
+): Promise<void> => {
   const patch: any = { inserted: v.inserted, duplicates: v.duplicates, invalid: v.invalid };
   if (v.distribution) patch.distribution = v.distribution;
+  if (v.totalCost !== undefined) patch.total_cost = v.totalCost;
+  if (v.unitCost !== undefined) patch.unit_cost = v.unitCost;
   const { error } = await need().from('lead_import_batches').update(patch).eq('id', id);
   if (error) fail(error);
 };

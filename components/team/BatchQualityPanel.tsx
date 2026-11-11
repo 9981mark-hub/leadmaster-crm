@@ -3,12 +3,14 @@ import {
   Layers, RefreshCw, TrendingUp, PhoneCall, Send, Award, DollarSign,
   AlertTriangle, FileSpreadsheet, Building2, Crown, CheckCircle2,
   Copy, Download, Edit3, X, ArrowUpRight, ShieldAlert, BadgePercent,
-  Search, Filter, ChevronRight
+  Search, Filter, ChevronRight, Sparkles, Plus
 } from 'lucide-react';
 import {
   fetchBatchQualityStats, updateBatchCost, computeVendorStats,
   BatchQualityMetric, VendorSummaryStat
 } from '../../services/batchQuality';
+import { retroactiveBatchExistingLeads } from '../../services/vendor';
+import { VendorManageModal } from './VendorManageModal';
 import { useToast } from '../../contexts/ToastContext';
 
 export default function BatchQualityPanel() {
@@ -22,6 +24,8 @@ export default function BatchQualityPanel() {
   const [gradeFilter, setGradeFilter] = useState<string>('all');
 
   // 모달 상태
+  const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
+  const [isRetroactiveLoading, setIsRetroactiveLoading] = useState(false);
   const [editingBatch, setEditingBatch] = useState<BatchQualityMetric | null>(null);
   const [editUnitCost, setEditUnitCost] = useState<number>(0);
   const [editTotalCost, setEditTotalCost] = useState<number>(0);
@@ -44,6 +48,24 @@ export default function BatchQualityPanel() {
       setLoading(false);
     }
   }, [showToast]);
+
+  const handleRetroactiveBatch = async () => {
+    if (!window.confirm('기존에 등록되어 있으나 회차(Batch)가 지정되지 않은 과거 고객 DB들을\n유입경로 및 등록 월별로 묶어 실시간 회차 통계로 변환할까요?')) return;
+    setIsRetroactiveLoading(true);
+    try {
+      const res = await retroactiveBatchExistingLeads();
+      if (res.casesLinked > 0) {
+        showToast(`과거 데이터 ${res.casesLinked.toLocaleString()}건을 ${res.batchesCreated}개 회차로 성공적으로 묶었습니다!`, 'success');
+      } else {
+        showToast('소급 묶음화할 미회차 과거 데이터가 없습니다.', 'info');
+      }
+      await loadData();
+    } catch (err: any) {
+      showToast(err.message || '소급 묶음 실패', 'error');
+    } finally {
+      setIsRetroactiveLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -206,6 +228,24 @@ export default function BatchQualityPanel() {
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            onClick={() => setIsVendorModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors shadow-2xs"
+          >
+            <Building2 size={14} />
+            DB 거래처 관리
+          </button>
+          <button
+            type="button"
+            onClick={handleRetroactiveBatch}
+            disabled={isRetroactiveLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors shadow-2xs"
+            title="기존에 등록된 과거 DB들을 유입경로/월별로 묶어 즉시 회차화합니다."
+          >
+            <Sparkles size={14} className={isRetroactiveLoading ? 'animate-spin' : ''} />
+            기존 DB 자동 묶기
+          </button>
+          <button
             onClick={loadData}
             disabled={loading}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -359,7 +399,39 @@ export default function BatchQualityPanel() {
           {loading ? (
             <div className="text-center py-16 text-gray-400">거래처 성과 데이터를 집계하는 중...</div>
           ) : filteredVendors.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">등록된 DB 거래처 데이터가 없습니다.</div>
+            <div className="text-center py-16 px-4">
+              <div className="max-w-md mx-auto space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto text-gray-400">
+                  <Building2 size={24} />
+                </div>
+                <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  등록된 DB 거래처 성과 데이터가 없습니다
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  우측 상단 <strong>[신규 DB 일괄/간편 등록]</strong> 시 DB 거래처를 선택하고 매입 단가를 지정하면 실시간으로 성과가 분석됩니다.<br/>
+                  이미 CRM에 등록된 과거 고객 DB가 있다면 아래 버튼으로 즉시 회차화할 수 있습니다.
+                </p>
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleRetroactiveBatch}
+                    disabled={isRetroactiveLoading}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    <Sparkles size={14} className={isRetroactiveLoading ? 'animate-spin' : ''} />
+                    기존 등록 DB 자동 묶기 (소급 적용)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsVendorModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold transition-colors"
+                  >
+                    <Building2 size={14} />
+                    DB 거래처 관리
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <table className="w-full text-sm text-left">
               <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs uppercase tracking-wider">
@@ -508,7 +580,30 @@ export default function BatchQualityPanel() {
           {loading ? (
             <div className="text-center py-16 text-gray-400">회차별 손익 데이터를 불러오는 중...</div>
           ) : filteredBatches.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">등록된 엑셀 업로드 회차가 없습니다.</div>
+            <div className="text-center py-16 px-4">
+              <div className="max-w-md mx-auto space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto text-gray-400">
+                  <FileSpreadsheet size={24} />
+                </div>
+                <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  등록된 회차(Batch) 데이터가 없습니다
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  신규 DB 등록 시 회차가 자동 생성되며, 과거 데이터가 있다면 자동 묶기로 즉시 생성할 수 있습니다.
+                </p>
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleRetroactiveBatch}
+                    disabled={isRetroactiveLoading}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    <Sparkles size={14} className={isRetroactiveLoading ? 'animate-spin' : ''} />
+                    기존 등록 DB 자동 묶기 (소급 적용)
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <table className="w-full text-sm text-left">
               <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs uppercase tracking-wider">

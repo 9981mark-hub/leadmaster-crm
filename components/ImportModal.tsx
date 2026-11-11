@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, Check, Loader2, List, Sparkles, Grid, Trash2 } from 'lucide-react';
+import { Download, Upload, FileText, Image as ImageIcon, X, Plus, AlertCircle, Check, Loader2, List, Sparkles, Grid, Trash2, Building2, DollarSign, Layers } from 'lucide-react';
+import { LeadVendor, fetchLeadVendors } from '../services/vendor';
+import { createImportBatch, updateImportBatch } from '../services/distribution';
+import { VendorManageModal } from './team/VendorManageModal';
 import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase, fetchCases } from '../services/api';
 import { Partner, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
@@ -39,6 +42,44 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     // [Added] Load all cases for global duplicate check
     const [existingCases, setExistingCases] = useState<Case[]>([]);
+
+    // [030] DB 거래처 & 회차 매입 비용 관제 State
+    const [vendors, setVendors] = useState<LeadVendor[]>([]);
+    const [selectedVendor, setSelectedVendor] = useState<string>('');
+    const [unitCost, setUnitCost] = useState<number>(25000);
+    const [totalCost, setTotalCost] = useState<number>(0);
+    const [batchName, setBatchName] = useState<string>('');
+    const [isVendorManageOpen, setIsVendorManageOpen] = useState(false);
+    const [uploadedFileName, setUploadedFileName] = useState<string>('');
+
+    const loadVendorList = async () => {
+        try {
+            const vList = await fetchLeadVendors();
+            setVendors(vList);
+            if (vList.length > 0 && !selectedVendor) {
+                const first = vList[0];
+                setSelectedVendor(first.name);
+                setUnitCost(first.defaultUnitCost || 25000);
+                const today = new Date().toLocaleDateString('ko-KR');
+                setBatchName(`${today} 1차 (${first.name})`);
+            }
+        } catch (e) {
+            console.warn('[ImportModal] fetchLeadVendors failed:', e);
+        }
+    };
+
+    const handleSelectVendor = (vendorName: string) => {
+        setSelectedVendor(vendorName);
+        const match = vendors.find(v => v.name === vendorName);
+        const today = new Date().toLocaleDateString('ko-KR');
+        if (match) {
+            const cost = match.defaultUnitCost || 0;
+            setUnitCost(cost);
+            setBatchName(`${today} 1차 (${match.name})`);
+        } else {
+            setBatchName(`${today} 1차 (${vendorName})`);
+        }
+    };
 
     // Excel State
     const [excelPreview, setExcelPreview] = useState<(Partial<Case> & { duplicateInfo?: Case })[]>([]);
@@ -100,6 +141,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     React.useEffect(() => {
         if (isOpen) {
             fetchCases().then(setExistingCases);
+            loadVendorList();
         }
     }, [isOpen]);
 
@@ -172,6 +214,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setUploadedFileName(file.name);
 
         const reader = new FileReader();
         reader.onload = (evt) => {
@@ -260,30 +303,86 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         reader.readAsArrayBuffer(file);
     };
 
-    const submitExcel = async () => {
-        if (excelPreview.length === 0) return;
-
-        // [Feature] Filter Duplicates automatically
-        const validCases = excelPreview.filter(c => !c.duplicateInfo);
-        const skippedCount = excelPreview.length - validCases.length;
+    // [030] 4대 등록 방식(엑셀/AI/시트/수기) 공통 회차 생성 & DB 거래처/비용 자동 각인 엔진
+    const executeBatchImport = async (
+        rawCases: Partial<Case>[],
+        sourceMethod: string,
+        fileName?: string
+    ): Promise<{ inserted: number; skipped: number; batchId?: string }> => {
+        const validCases = rawCases.filter(c => !c.phone || !checkIsDuplicate(c.phone, existingCases));
+        const skippedCount = rawCases.length - validCases.length;
 
         if (validCases.length === 0) {
-            showToast('등록 가능한 신규 연락처가 없습니다.', 'error');
-            return;
+            throw new Error('등록 가능한 신규 연락처가 없습니다 (전원 기존 등록 중복).');
         }
 
+        const vendorName = selectedVendor.trim() || '직접 등록/미지정';
+        const finalBatchName = batchName.trim() || `${new Date().toLocaleDateString('ko-KR')} ${vendorName} (${validCases.length}건)`;
+        const finalTotalCost = totalCost > 0 ? totalCost : (unitCost > 0 ? unitCost * validCases.length : 0);
+
+        let batchId: string | undefined;
+        try {
+            batchId = await createImportBatch({
+                name: finalBatchName,
+                source: vendorName,
+                vendorName: vendorName,
+                unitCost: unitCost,
+                totalCost: finalTotalCost,
+                fileName: fileName || uploadedFileName || `${sourceMethod}_등록`,
+                totalRows: rawCases.length,
+                distribution: {},
+            });
+        } catch (err) {
+            console.warn('[ImportModal] createImportBatch failed, fallback without batch:', err);
+        }
+
+        const casesWithBatch = validCases.map(c => ({
+            ...c,
+            importBatchId: batchId || c.importBatchId,
+            inboundPath: vendorName || c.inboundPath || 'DB',
+            isNew: true,
+            isViewed: false,
+            managerName: c.managerName || localStorage.getItem('managerName') || '미지정',
+        }));
+
+        await batchCreateCases(casesWithBatch);
+
+        if (batchId) {
+            try {
+                await updateImportBatch(batchId, {
+                    inserted: validCases.length,
+                    duplicates: skippedCount,
+                    invalid: 0,
+                    totalCost: finalTotalCost,
+                    unitCost: unitCost,
+                });
+            } catch (e) {
+                console.warn('[ImportModal] updateImportBatch failed:', e);
+            }
+        }
+
+        return { inserted: validCases.length, skipped: skippedCount, batchId };
+    };
+
+    const submitExcel = async () => {
+        if (excelPreview.length === 0) return;
         setIsLoading(true);
         try {
-            await batchCreateCases(validCases);
+            const validSubset = excelPreview.filter(c => !c.duplicateInfo);
+            const { inserted, skipped } = await executeBatchImport(
+                validSubset,
+                '엑셀대량',
+                uploadedFileName || 'excel_import.xlsx'
+            );
 
-            let message = `${validCases.length}건이 등록되었습니다.`;
-            if (skippedCount > 0) message += ` (중복 ${skippedCount}건 제외)`;
+            let message = `${inserted}건이 등록되었습니다.`;
+            if (skipped > 0) message += ` (중복 ${skipped}건 제외)`;
 
-            showToast(message);
+            showToast(message, 'success');
             onSuccess();
             onClose();
-        } catch (e) {
-            showToast('일괄 등록 중 오류가 발생했습니다.', 'error');
+        } catch (e: any) {
+            showToast(e.message || '일괄 등록 중 오류가 발생했습니다.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -362,12 +461,16 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         if (!ocrPreview) return;
         setIsLoading(true);
         try {
-            await createCase(ocrPreview);
-            showToast('케이스가 등록되었습니다.');
+            const { inserted } = await executeBatchImport(
+                [ocrPreview],
+                'AI_OCR',
+                ocrFile?.name
+            );
+            showToast(`AI 인식 케이스가 등록되었습니다 (${inserted}건).`, 'success');
             onSuccess();
             onClose();
-        } catch (e) {
-            showToast('등록 실패', 'error');
+        } catch (e: any) {
+            showToast(e.message || '등록 실패', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -393,8 +496,11 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         }
         setIsLoading(true);
         try {
-            await createCase({ ...manualForm, isNew: true, isViewed: false });
-            showToast('케이스가 등록되었습니다.');
+            const { inserted } = await executeBatchImport(
+                [manualForm],
+                '간편수기'
+            );
+            showToast(`케이스가 등록되었습니다 (${inserted}건).`, 'success');
 
             // Clear Draft on Success
             sessionStorage.removeItem('lm_manual_draft');
@@ -402,15 +508,15 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 customerName: '',
                 phone: '',
                 partnerId: partners?.[0]?.partnerId || '',
-                inboundPath: inboundPaths?.[0] || '',
+                inboundPath: selectedVendor || inboundPaths?.[0] || '',
                 caseType: '개인회생',
                 preInfo: ''
             });
 
             onSuccess();
             onClose();
-        } catch (e) {
-            showToast('등록 실패', 'error');
+        } catch (e: any) {
+            showToast(e.message || '등록 실패', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -488,27 +594,20 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         const casesToCreate = filledRows.map(r => ({
             ...r,
             phone: formatPhone(r.phone),
-            isNew: true,
-            isViewed: false,
-            managerName: localStorage.getItem('managerName') || '미지정'
         }));
-        const validCases = casesToCreate.filter(c => !checkIsDuplicate(c.phone, existingCases));
-        const skippedCount = casesToCreate.length - validCases.length;
-
-        if (validCases.length === 0) {
-            showToast('등록 가능한 신규 연락처가 없습니다.', 'error');
-            return;
-        }
         setIsLoading(true);
         try {
-            await batchCreateCases(validCases);
-            let message = `${validCases.length}건이 등록되었습니다.`;
-            if (skippedCount > 0) message += ` (중복 ${skippedCount}건 제외)`;
-            showToast(message);
+            const { inserted, skipped } = await executeBatchImport(
+                casesToCreate,
+                '시트입력'
+            );
+            let message = `${inserted}건이 등록되었습니다.`;
+            if (skipped > 0) message += ` (중복 ${skipped}건 제외)`;
+            showToast(message, 'success');
             onSuccess();
             onClose();
-        } catch (e) {
-            showToast('일괄 등록 중 오류가 발생했습니다.', 'error');
+        } catch (e: any) {
+            showToast(e.message || '일괄 등록 중 오류가 발생했습니다.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -516,7 +615,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div className={`bg-white rounded-xl shadow-2xl w-full ${activeTab === 'sheet' ? 'max-w-4xl' : 'max-w-2xl'} max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300`}>
+            <div className={`bg-white rounded-xl shadow-2xl w-full ${activeTab === 'sheet' ? 'max-w-5xl' : 'max-w-3xl'} max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300`}>
                 {/* Header */}
                 <div className="p-4 border-b flex justify-between items-center bg-gray-50">
                     <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -526,6 +625,126 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
                         <X size={24} />
                     </button>
+                </div>
+
+                {/* [030] DB 거래처(공급사) & 회차 매입 비용 관제 헤더 바 */}
+                <div className="bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-indigo-50/80 dark:from-indigo-950/40 dark:via-gray-850 dark:to-indigo-950/40 border-b border-indigo-100 dark:border-indigo-900/50 p-4">
+                    <div className="space-y-3">
+                        {/* 1행: 거래처 타이틀 & 빠른 거래처 관리 버튼 */}
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                                    <Building2 size={14} />
+                                </div>
+                                <span className="text-xs font-bold text-gray-900 dark:text-white">
+                                    DB 거래처(공급사) 선택
+                                </span>
+                                <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                                    * 회차 품질·전환율 및 ROI 관제 집계의 기준이 됩니다.
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsVendorManageOpen(true)}
+                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-md border border-indigo-200 dark:border-indigo-800 shadow-2xs hover:bg-indigo-50 transition-colors"
+                            >
+                                <Plus size={12} /> 거래처 추가/관리
+                            </button>
+                        </div>
+
+                        {/* 2행: 거래처 선택 드롭다운 + 인기/최근 거래처 칩 */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <select
+                                value={selectedVendor}
+                                onChange={(e) => handleSelectVendor(e.target.value)}
+                                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 min-w-[200px]"
+                            >
+                                {vendors.map((v) => (
+                                    <option key={v.id} value={v.name}>
+                                        {v.name} (단가: ₩{v.defaultUnitCost.toLocaleString()})
+                                    </option>
+                                ))}
+                                <option value="직접 등록/미지정">직접 등록/미지정</option>
+                            </select>
+
+                            {/* 빠른 선택 칩 */}
+                            <div className="flex flex-wrap items-center gap-1.5">
+                                {vendors.slice(0, 4).map((v) => (
+                                    <button
+                                        key={v.id}
+                                        type="button"
+                                        onClick={() => handleSelectVendor(v.name)}
+                                        className={`text-[11px] px-2.5 py-1 rounded-full font-medium transition-all ${
+                                            selectedVendor === v.name
+                                                ? 'bg-indigo-600 text-white shadow-2xs font-bold'
+                                                : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100/60'
+                                        }`}
+                                    >
+                                        {v.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 3행: 회차명 & 리드 단가(CPL) & 총 매입비 스마트 계산기 */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-1 border-t border-indigo-100/60 dark:border-indigo-900/30">
+                            <div className="sm:col-span-6">
+                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                    회차명 (Batch Name)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={batchName}
+                                    onChange={(e) => setBatchName(e.target.value)}
+                                    placeholder="예: 2026.11.11 1차 (패스트애드)"
+                                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                    건당 매입단가 (CPL)
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1000"
+                                        value={unitCost}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            setUnitCost(val);
+                                            setTotalCost(0);
+                                        }}
+                                        className="w-full pl-6 pr-2 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 tabular-nums font-semibold"
+                                    />
+                                    <span className="absolute left-2 top-1.5 text-xs text-gray-400">₩</span>
+                                </div>
+                            </div>
+
+                            <div className="sm:col-span-3">
+                                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                    총 매입 결제액
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="10000"
+                                        value={totalCost > 0 ? totalCost : (unitCost > 0 && (
+                                            activeTab === 'excel' ? excelPreview.filter(c => !c.duplicateInfo).length :
+                                            activeTab === 'sheet' ? getSheetFilledRows().length :
+                                            activeTab === 'ocr' ? (ocrPreview ? 1 : 0) : 1
+                                        ) * unitCost || 0)}
+                                        onChange={(e) => setTotalCost(Number(e.target.value))}
+                                        placeholder="자동 계산"
+                                        className="w-full pl-6 pr-2 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 tabular-nums font-semibold"
+                                    />
+                                    <span className="absolute left-2 top-1.5 text-xs text-gray-400">₩</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Tabs */}
@@ -951,6 +1170,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
                 </div>
             </div>
+            {/* 거래처 추가/관리 모달 */}
+            <VendorManageModal
+                isOpen={isVendorManageOpen}
+                onClose={() => setIsVendorManageOpen(false)}
+                onUpdated={loadVendorList}
+            />
         </div>
     );
 }
