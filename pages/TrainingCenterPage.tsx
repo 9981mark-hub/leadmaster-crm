@@ -1655,17 +1655,37 @@ export default function TrainingCenterPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          try {
-                            (window as any).AndroidBridge?.openAppSettings?.();
-                          } catch (e) {
-                            showToast('설정 화면을 열 수 없습니다. 휴대폰 설정에서 직접 열어주세요.', 'error');
+                          const bridge = (window as any).AndroidBridge;
+                          if (bridge && typeof bridge.openAppSettings === 'function') {
+                            try {
+                              bridge.openAppSettings();
+                              return;
+                            } catch (e) {
+                              console.warn('openAppSettings error:', e);
+                            }
                           }
+                          // 구버전이거나 브릿지 미지원 시 친절한 안내 토스트
+                          showToast('휴대폰 [설정] → [애플리케이션] → [LeadMaster] → [권한]에서 마이크를 [허용]으로 켜주세요!', 'warning', 7000);
                         }}
                         className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all text-xs"
                       >
                         <Settings className="w-4 h-4" />
                         휴대폰 앱 설정 열기 (마이크 허용)
                       </button>
+
+                      {/* 구버전 호환 안내 박스 */}
+                      <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                        💡 <strong>버튼 반응이 없는 경우(구버전):</strong> 스마트폰의 <strong>[설정]</strong> 앱 → <strong>[애플리케이션]</strong> → <strong>[LeadMaster]</strong> → <strong>[권한]</strong> → <strong>[마이크]</strong>를 [앱 사용 중에만 허용]으로 켜주시면 즉시 연결됩니다.
+                      </div>
+
+                      <a
+                        href="/app/LeadMaster.apk"
+                        download="LeadMaster.apk"
+                        className="w-full py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold flex items-center justify-center gap-1.5 transition-all text-xs border border-gray-300 dark:border-gray-600"
+                      >
+                        📥 최신 v1.7.9 앱 다운로드 (마이크 자동 허용 버전)
+                      </a>
+
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
