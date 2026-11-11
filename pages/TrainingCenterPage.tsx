@@ -1594,75 +1594,244 @@ export default function TrainingCenterPage() {
               </button>
             </div>
 
-            {/* 본문 (3단계 가이드) */}
-            <div className="p-5 space-y-3.5 text-xs">
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                현재 브라우저에서 마이크 사용이 <span className="text-red-500 font-bold">차단</span>되어 있거나 허용되지 않았습니다. 아래 3단계를 진행해주시면 즉시 마이크로 대화하실 수 있습니다:
-              </p>
+            {/* 본문 (환경별 맞춤 가이드: 앱/모바일/PC 구분) */}
+            {(() => {
+              const isNativeApp = typeof window !== 'undefined' && !!(window as any).AndroidBridge;
+              const isMobile = typeof window !== 'undefined' && (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768);
 
-              <div className="space-y-2.5">
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                    1
-                  </span>
-                  <div className="flex-1">
-                    <span className="font-bold text-gray-800 dark:text-gray-200 block">
-                      주소창 좌측의 🔒(자물쇠) 또는 설정 아이콘 클릭
-                    </span>
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                      브라우저 주소창 맨 앞의 🔒 자물쇠(또는 튜닝기) 아이콘을 누릅니다.
-                    </span>
+              if (isNativeApp) {
+                return (
+                  <div className="p-5 space-y-3.5 text-xs">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      리드마스터 모바일 앱에는 주소창이 없으므로 <span className="text-red-500 font-bold">휴대폰 앱 설정에서 마이크를 허용</span>해야 합니다:
+                    </p>
+
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                          1
+                        </span>
+                        <div className="flex-1">
+                          <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                            아래 [휴대폰 앱 설정 열기] 버튼 클릭
+                          </span>
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                            버튼을 누르면 LeadMaster 앱 설정 화면으로 바로 이동합니다.
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                          2
+                        </span>
+                        <div className="flex-1">
+                          <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                            [권한] → [마이크] 선택
+                          </span>
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                            '권한' 목록에서 '마이크'를 찾아 [앱 사용 중에만 허용]으로 켜주세요.
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                          3
+                        </span>
+                        <div className="flex-1">
+                          <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                            설정 완료 후 앱으로 복귀
+                          </span>
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                            뒤로가기로 앱에 돌아와 [새로고침]을 누르시면 즉시 마이크 대화가 가능합니다.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 액션 버튼 */}
+                    <div className="pt-2 flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          try {
+                            (window as any).AndroidBridge?.openAppSettings?.();
+                          } catch (e) {
+                            showToast('설정 화면을 열 수 없습니다. 휴대폰 설정에서 직접 열어주세요.', 'error');
+                          }
+                        }}
+                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all text-xs"
+                      >
+                        <Settings className="w-4 h-4" />
+                        휴대폰 앱 설정 열기 (마이크 허용)
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => window.location.reload()}
+                          className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          새로고침
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowMicPermissionModal(false)}
+                          className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+                        >
+                          닫기
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              if (isMobile) {
+                return (
+                  <div className="p-5 space-y-3.5 text-xs">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      모바일 브라우저에서 마이크 사용이 <span className="text-red-500 font-bold">차단</span>되어 있습니다:
+                    </p>
+
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                          1
+                        </span>
+                        <div className="flex-1">
+                          <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                            브라우저 메뉴 (우측 상단 ⋮ 또는 주소창 설정) 클릭
+                          </span>
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                            크롬/삼성인터넷 브라우저의 메뉴 또는 주소창 옆 설정 아이콘을 누릅니다.
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                          2
+                        </span>
+                        <div className="flex-1">
+                          <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                            [설정] → [사이트 설정] → [마이크]
+                          </span>
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                            '차단됨' 목록에서 lmaster.xyz를 찾아 [허용]으로 변경해주세요.
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                          3
+                        </span>
+                        <div className="flex-1">
+                          <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                            페이지 새로고침
+                          </span>
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                            설정 변경 후 아래 [새로고침] 버튼을 눌러주세요.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        새로고침
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowMicPermissionModal(false)}
+                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+                      >
+                        닫기
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              // PC 데스크톱 기본 안내
+              return (
+                <div className="p-5 space-y-3.5 text-xs">
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    현재 브라우저에서 마이크 사용이 <span className="text-red-500 font-bold">차단</span>되어 있거나 허용되지 않았습니다. 아래 3단계를 진행해주시면 즉시 마이크로 대화하실 수 있습니다:
+                  </p>
+
+                  <div className="space-y-2.5">
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        1
+                      </span>
+                      <div className="flex-1">
+                        <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                          주소창 좌측의 🔒(자물쇠) 또는 설정 아이콘 클릭
+                        </span>
+                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          브라우저 주소창 맨 앞의 🔒 자물쇠(또는 튜닝기) 아이콘을 누릅니다.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        2
+                      </span>
+                      <div className="flex-1">
+                        <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                          [마이크] 항목을 [허용]으로 변경
+                        </span>
+                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          마이크 토글을 켜거나 [허용(Allow)] 상태로 변경합니다.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        3
+                      </span>
+                      <div className="flex-1">
+                        <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                          페이지 새로고침 (F5) 후 재시도
+                        </span>
+                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          설정을 변경한 후 아래 [새로고침] 버튼을 눌러주세요.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 액션 버튼 */}
+                  <div className="pt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      새로고침 (F5)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowMicPermissionModal(false)}
+                      className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+                    >
+                      닫기 (키보드 직접 입력)
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                    2
-                  </span>
-                  <div className="flex-1">
-                    <span className="font-bold text-gray-800 dark:text-gray-200 block">
-                      [마이크] 항목을 [허용]으로 변경
-                    </span>
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                      마이크 토글을 켜거나 [허용(Allow)] 상태로 변경합니다.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                    3
-                  </span>
-                  <div className="flex-1">
-                    <span className="font-bold text-gray-800 dark:text-gray-200 block">
-                      페이지 새로고침 (F5) 후 재시도
-                    </span>
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                      설정을 변경한 후 아래 [새로고침] 버튼을 눌러주세요.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 액션 버튼 */}
-              <div className="pt-2 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => window.location.reload()}
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  새로고침 (F5)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowMicPermissionModal(false)}
-                  className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
-                >
-                  닫기 (키보드 직접 입력)
-                </button>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         </div>
       )}
