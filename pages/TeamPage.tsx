@@ -16,7 +16,7 @@ import {
 import { Case } from '../types';
 import TelegramBotSection from '../components/TelegramBotSection';
 import DistributionPanel from '../components/team/DistributionPanel';
-import LeadUploadModal from '../components/team/LeadUploadModal';
+import ImportModal from '../components/ImportModal';
 import RecordingSettingsPanel from '../components/team/RecordingSettingsPanel';
 import AccessLogPanel from '../components/team/AccessLogPanel';
 import BulkDistributionSection from '../components/team/BulkDistributionSection';
@@ -278,9 +278,10 @@ export default function TeamPage() {
           </Link>
           <button
             onClick={() => setShowUpload(true)}
-            className="px-3.5 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm flex items-center gap-1.5"
+            className="px-3.5 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm flex items-center gap-1.5 transition-all"
+            title="케이스 일괄/간편 등록 (엑셀 대량 업로드, AI 영수증/신청서 OCR, 시트 입력, 간편 수기 등록)"
           >
-            <FileUp size={16} /> 신규 DB 업로드
+            <FileUp size={16} /> 신규 DB 일괄/간편 등록
           </button>
           <button
             onClick={reload}
@@ -962,19 +963,20 @@ export default function TeamPage() {
         </div>
       )}
 
-      {/* 업로드 모달 */}
-      {showUpload && (
-        <LeadUploadModal
-          agents={agents.map(a => ({ userId: a.userId, displayName: a.displayName }))}
-          partners={partners}
-          onClose={() => setShowUpload(false)}
-          onDone={() => {
-            queryClient.invalidateQueries({ queryKey: ['cases'] });
-            setPanelKey(k => k + 1);
-            reload();
-          }}
-        />
-      )}
+      {/* 케이스 페이지와 100% 동일한 통합 [케이스 일괄/간편 등록] 모달 */}
+      <ImportModal
+        isOpen={showUpload}
+        onClose={() => setShowUpload(false)}
+        onSuccess={() => {
+          setShowUpload(false);
+          queryClient.invalidateQueries({ queryKey: ['cases'] });
+          setPanelKey(k => k + 1);
+          reload();
+          showToast('신규 DB 등록이 완료되었습니다. [대용량 리드 배정] 탭에서 상담원에게 즉시 배분하실 수 있습니다.', 'success');
+        }}
+        partners={partners}
+        inboundPaths={inboundPaths}
+      />
 
       {/* 상담원 대량 초대 모달 */}
       <BulkInviteModal
