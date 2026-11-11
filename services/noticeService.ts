@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export interface Notice {
   id: string;
-  org_id: string;
+  org_id?: string | null;
   created_by: string;
   created_by_name?: string;
   title: string;
@@ -18,6 +18,11 @@ export interface Notice {
   updated_at: string;
   is_read?: boolean;
   read_count?: number;
+  // 멀티테넌트 B2B SaaS 플랫폼 공지 전용 필드
+  is_platform_notice?: boolean;
+  platform_target_role?: 'all' | 'admins_only';
+  target_org_ids?: string[];
+  require_popup_lock?: boolean;
 }
 
 export interface Directive {
@@ -116,7 +121,7 @@ export async function fetchNotices(): Promise<Notice[]> {
   }));
 }
 
-// 3. 새 공지사항 등록 (관리자)
+// 3. 새 공지사항 등록 (관리자 / 플랫폼 총괄 운영자)
 export async function createNotice(payload: {
   title: string;
   content: string;
@@ -126,6 +131,11 @@ export async function createNotice(payload: {
   target_ids?: string[];
   is_pinned?: boolean;
   ends_at?: string | null;
+  // 플랫폼 공지 전용 파라미터
+  is_platform_notice?: boolean;
+  platform_target_role?: 'all' | 'admins_only';
+  target_org_ids?: string[];
+  require_popup_lock?: boolean;
 }): Promise<Notice> {
   const sb = need();
   const { data: { user } } = await sb.auth.getUser();
@@ -137,7 +147,11 @@ export async function createNotice(payload: {
       ...payload,
       created_by: user.id,
       notice_type: payload.notice_type || 'general',
-      display_mode: payload.display_mode || 'banner'
+      display_mode: payload.display_mode || 'banner',
+      is_platform_notice: !!payload.is_platform_notice,
+      platform_target_role: payload.platform_target_role || 'all',
+      target_org_ids: payload.target_org_ids || [],
+      require_popup_lock: !!payload.require_popup_lock
     }])
     .select()
     .single();
