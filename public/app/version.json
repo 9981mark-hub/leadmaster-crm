@@ -1,11 +1,11 @@
 {
-  "versionCode": 29,
-  "versionName": "1.7.7",
+  "versionCode": 30,
+  "versionName": "1.7.8",
   "releaseDate": "2026-11-11",
   "notes": [
-    "1.7.7: 안드로이드 필수 권한 점검 오작동 완전 해결 (READ_PHONE_NUMBERS 제거로 전화·통화기록·문자 즉각 허용 감지)",
-    "앱 내 구글 로그인 팝업 및 WebSettingsCompat allowlist 최적화 (X-Requested-With 차단 해소)",
-    "사내 업무 계정 이메일 인증번호(OTP) 간편 로그인 시스템 추가 탑재",
-    "공식 도메인(https://www.lmaster.xyz/) 클린 URL 및 듀얼 라우터 완벽 연동"
+    "1.7.8: 전화 및 통화기록 권한 개별 분리 점검 (폰 설정 허용 즉각 반영)",
+    "문자(SMS) 권한 권장 항목으로 분리하여 전화 팝업 차단 오작동 해소",
+    "실시간 권한 감지 상태 요약 바 및 구버전 감지 배너 탑재",
+    "삼성 보안 위험 자동 차단 안내 및 원터치 업데이트 지원"
   ]
 }
