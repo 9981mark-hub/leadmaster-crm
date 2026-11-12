@@ -1,253 +1,326 @@
 import React, { useEffect, useState } from 'react';
-import { fetchPartners, savePartner, deletePartner, fetchInboundPaths, addInboundPath, deleteInboundPath, fetchCases, fetchStatuses, addStatus, deleteStatus, fetchEmailNotificationSettings, saveEmailNotificationSettings, EmailNotificationSettings, fetchSecondaryStatuses, addSecondaryStatus, deleteSecondaryStatus, fetchTertiaryStatuses, addTertiaryStatus, deleteTertiaryStatus, saveGlobalSettings } from '../services/api';
-import { useAddSecondaryStatusMutation, useDeleteSecondaryStatusMutation, useAddTertiaryStatusMutation, useDeleteTertiaryStatusMutation } from '../services/queries';
-import { CommissionRule, Partner, Case, CaseStatus, MissedCallIntervalTier, DEFAULT_INTERVAL_TIERS, TelegramRoomTarget } from '../types';
-import { Plus, Trash2, CalendarCheck, Save, Megaphone, Info, Building, Edit3, Check, AlertTriangle, User, Sparkles, ListChecks, Mail, Download, Upload, MessageSquare, MessageCircle, Skull, ShieldAlert, BadgePercent } from 'lucide-react';
-import { getDayName, loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
-import { AVAILABLE_FIELDS_CONFIG, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT, REHABILITATION_DOMAIN_KEYWORDS, CHECK_ITEMS, DEFAULT_CHECK_ITEMS, DEFAULT_CLASSIFICATION_GUIDE } from '../constants';
+import {
+    fetchPartners,
+    savePartner,
+    deletePartner,
+    fetchInboundPaths,
+    addInboundPath,
+    deleteInboundPath,
+    fetchCases,
+    fetchStatuses,
+    addStatus,
+    deleteStatus,
+    fetchEmailNotificationSettings,
+    saveEmailNotificationSettings,
+    fetchSecondaryStatuses,
+    fetchTertiaryStatuses,
+    saveGlobalSettings
+} from '../services/api';
+import {
+    useAddSecondaryStatusMutation,
+    useDeleteSecondaryStatusMutation,
+    useAddTertiaryStatusMutation,
+    useDeleteTertiaryStatusMutation
+} from '../services/queries';
+import {
+    CommissionRule,
+    Partner,
+    Case,
+    CaseStatus,
+    MissedCallIntervalTier,
+    TelegramRoomTarget
+} from '../types';
+import {
+    Building,
+    Sliders,
+    MessageCircle,
+    Shield,
+    Search,
+    AlertTriangle,
+    Save,
+    Trash2,
+    Check
+} from 'lucide-react';
+import { loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
+import {
+    DEFAULT_SUMMARY_TEMPLATE,
+    DEFAULT_AI_PROMPT,
+    REHABILITATION_DOMAIN_KEYWORDS,
+    AVAILABLE_FIELDS_CONFIG
+} from '../constants';
 import Modal from '../components/Modal';
-import TelegramChatPicker from '../components/TelegramChatPicker';
 import { EmergencyPurgeModal } from '../components/settings/EmergencyPurgeModal';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchAiUsage, AiUsage } from '../services/aiProxy';
 
+// 신규 모듈형 4대 탭 컴포넌트
+import { PartnerSettingsTab } from '../components/settings/tabs/PartnerSettingsTab';
+import { OperationsSettingsTab } from '../components/settings/tabs/OperationsSettingsTab';
+import { IntegrationsSettingsTab } from '../components/settings/tabs/IntegrationsSettingsTab';
+import { DataSecurityTab } from '../components/settings/tabs/DataSecurityTab';
+
+type SettingsMainTab = 'partners' | 'operations' | 'integrations' | 'data_security';
+
 export default function SettingsPage() {
+    // -------------------------------------------------------------
+    // Global State & Navigation
+    // -------------------------------------------------------------
+    const [activeTab, setActiveTab] = useState<SettingsMainTab>('partners');
+    const [searchQuery, setSearchQuery] = useState('');
+    const { showToast } = useToast();
+    const { isAdmin, org } = useAuth();
+
+    // -------------------------------------------------------------
+    // 1. Partners State
+    // -------------------------------------------------------------
     const [partners, setPartners] = useState<Partner[]>([]);
     const [cases, setCases] = useState<Case[]>([]);
     const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
     const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+    const [isSavingPartner, setIsSavingPartner] = useState(false);
 
-    const [inboundPaths, setInboundPaths] = useState<string[]>([]);
-    const [newPath, setNewPath] = useState('');
+    // Modals for Partner
+    const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [isAddPartnerModalOpen, setAddPartnerModalOpen] = useState(false);
+    const [newPartnerName, setNewPartnerName] = useState('');
+    const [newRule, setNewRule] = useState<Partial<CommissionRule>>({
+        minFee: 0,
+        maxFee: 0,
+        commission: 0,
+        fullPayoutThreshold: 0,
+        priority: 1,
+        active: true
+    });
 
-    const [statuses, setStatuses] = useState<CaseStatus[]>([]);
-    const [newStatus, setNewStatus] = useState('');
-
-    // [NEW] Secondary Statuses (2차 상태)
-    const [secondaryStatuses, setSecondaryStatuses] = useState<string[]>([]);
-    const [newSecondaryStatus, setNewSecondaryStatus] = useState('');
-
-    // [NEW] Tertiary Statuses (3차 상태)
-    const [tertiaryStatuses, setTertiaryStatuses] = useState<Record<string, string[]>>({});
-    const [selectedTertiarySecondary, setSelectedTertiarySecondary] = useState<string>(''); // which 2차 상태 is selected for editing
-    const [newTertiaryStatus, setNewTertiaryStatus] = useState('');
-
+    // -------------------------------------------------------------
+    // 2. Operations State
+    // -------------------------------------------------------------
     const [managerName, setManagerName] = useState('Mark');
-    // [Missed Call Settings] saved in localStorage
-    const [missedCallStatus, setMissedCallStatus] = useState('부재');
     const [missedCallIntervalTiers, setMissedCallIntervalTiers] = useState<MissedCallIntervalTier[]>(() => loadMissedCallTiers());
 
-    // [NEW] Telegram Rooms
-    const [telegramRooms, setTelegramRooms] = useState<TelegramRoomTarget[]>(() => loadTelegramRooms());
-    const [newTelegramRoomName, setNewTelegramRoomName] = useState('');
-    const [newTelegramRoomUrl, setNewTelegramRoomUrl] = useState('');
-
-    // Email Notification Settings
-    const [emailNotificationEnabled, setEmailNotificationEnabled] = useState(false);
-    const [emailNotificationRecipients, setEmailNotificationRecipients] = useState<string[]>([]);
-    const [emailNotificationMinutes, setEmailNotificationMinutes] = useState(10);
-    const [newEmailRecipient, setNewEmailRecipient] = useState('');
-    const [emailSettingsLoaded, setEmailSettingsLoaded] = useState(false);
-    const [emailSettingsSaved, setEmailSettingsSaved] = useState(true); // true = no unsaved changes
-    const [emailSettingsLoading, setEmailSettingsLoading] = useState(true);
-
-    const { showToast } = useToast();
-
-    // Modal State
-    const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-
-    // Path Deletion State
+    // Inbound Paths
+    const [inboundPaths, setInboundPaths] = useState<string[]>([]);
+    const [newPath, setNewPath] = useState('');
     const [isPathDeleteModalOpen, setPathDeleteModalOpen] = useState(false);
     const [pathToDelete, setPathToDelete] = useState<string | null>(null);
     const [pathMigrationTarget, setPathMigrationTarget] = useState<string>('');
     const [affectedPathCaseCount, setAffectedPathCaseCount] = useState(0);
 
-    // Status Deletion State
+    // 1st Statuses
+    const [statuses, setStatuses] = useState<CaseStatus[]>([]);
+    const [newStatus, setNewStatus] = useState('');
     const [isStatusDeleteModalOpen, setStatusDeleteModalOpen] = useState(false);
     const [statusToDelete, setStatusToDelete] = useState<string | null>(null);
     const [migrationTarget, setMigrationTarget] = useState<string>('');
     const [affectedCaseCount, setAffectedCaseCount] = useState(0);
 
-    const [isAddPartnerModalOpen, setAddPartnerModalOpen] = useState(false);
-    const [newPartnerName, setNewPartnerName] = useState('');
+    // 2nd Statuses
+    const [secondaryStatuses, setSecondaryStatuses] = useState<string[]>([]);
+    const [newSecondaryStatus, setNewSecondaryStatus] = useState('');
 
+    // 3rd Statuses
+    const [tertiaryStatuses, setTertiaryStatuses] = useState<Record<string, string[]>>({});
+    const [selectedTertiarySecondary, setSelectedTertiarySecondary] = useState<string>('');
+    const [newTertiaryStatus, setNewTertiaryStatus] = useState('');
 
-    // Rules State
-    const [newRule, setNewRule] = useState<Partial<CommissionRule>>({ minFee: 0, maxFee: 0, commission: 0, fullPayoutThreshold: 0, priority: 1, active: true });
+    // Email Notifications
+    const [emailNotificationEnabled, setEmailNotificationEnabled] = useState(false);
+    const [emailNotificationRecipients, setEmailNotificationRecipients] = useState<string[]>([]);
+    const [emailNotificationMinutes, setEmailNotificationMinutes] = useState(10);
+    const [newEmailRecipient, setNewEmailRecipient] = useState('');
+    const [emailSettingsLoading, setEmailSettingsLoading] = useState(false);
 
-    // AI는 서버(ai-proxy)에서 실행 → 키·모델 설정 없음. 관리자에게 오늘 사용량만 보여 준다 (016 get_ai_usage)
-    const { isAdmin, org } = useAuth();
-    const [isEmergencyPurgeOpen, setIsEmergencyPurgeOpen] = useState(false);
+    // -------------------------------------------------------------
+    // 3. Integrations & AI State
+    // -------------------------------------------------------------
+    const [telegramRooms, setTelegramRooms] = useState<TelegramRoomTarget[]>(() => loadTelegramRooms());
     const [aiUsage, setAiUsage] = useState<AiUsage | null>(null);
-    useEffect(() => {
-        if (!isAdmin) return;
-        let alive = true;
-        fetchAiUsage()
-            .then(u => { if (alive) setAiUsage(u); })
-            .catch(e => console.warn('[AI] 사용량 조회 실패 (016 적용 전이면 정상):', e?.message || e));
-        return () => { alive = false; };
-    }, [isAdmin]);
-
-    // [New] AI Vocabulary Biasing Keywords State
     const [aiKeywords, setAiKeywords] = useState(() => localStorage.getItem('lm_aiKeywords') || REHABILITATION_DOMAIN_KEYWORDS.join(', '));
 
+    // -------------------------------------------------------------
+    // 4. Data & Security State
+    // -------------------------------------------------------------
+    const [isEmergencyPurgeOpen, setIsEmergencyPurgeOpen] = useState(false);
+
+    // Status Queries
     const addSecondaryStatusMutation = useAddSecondaryStatusMutation();
     const deleteSecondaryStatusMutation = useDeleteSecondaryStatusMutation();
     const addTertiaryStatusMutation = useAddTertiaryStatusMutation();
     const deleteTertiaryStatusMutation = useDeleteTertiaryStatusMutation();
 
-
-
+    // -------------------------------------------------------------
+    // Initial Data Fetch
+    // -------------------------------------------------------------
     useEffect(() => {
-        Promise.all([fetchPartners(), fetchCases(), fetchInboundPaths(), fetchStatuses(), fetchSecondaryStatuses(), fetchTertiaryStatuses()]).then(([pData, cData, iData, sData, ssData, tsData]) => {
-            setPartners(pData);
-            setCases(cData);
-            setInboundPaths(iData);
-            setStatuses(sData);
-            setSecondaryStatuses(ssData);
-            setTertiaryStatuses(tsData);
-            if (pData.length > 0) {
-                // Select the first partner initially
-                setSelectedPartnerId(pData[0].partnerId);
-                setEditingPartner(JSON.parse(JSON.stringify(pData[0])));
-            }
-        });
-
-        const storedManagerName = localStorage.getItem('managerName');
-        if (storedManagerName) setManagerName(storedManagerName);
-
-        const storedStats = localStorage.getItem('lm_missedStatus');
-        if (storedStats) setMissedCallStatus(storedStats);
-
-        const storedTiers = localStorage.getItem('lm_missedIntervalTiers');
-        if (storedTiers) {
+        const loadInitialData = async () => {
             try {
-                const parsed = JSON.parse(storedTiers);
-                if (Array.isArray(parsed) && parsed.length > 0) setMissedCallIntervalTiers(parsed);
-            } catch (e) {}
-        }
+                const [pData, cData, pathData, statusData, secData, terData, emailData] = await Promise.all([
+                    fetchPartners(),
+                    fetchCases(),
+                    fetchInboundPaths(),
+                    fetchStatuses(),
+                    fetchSecondaryStatuses(),
+                    fetchTertiaryStatuses(),
+                    fetchEmailNotificationSettings()
+                ]);
 
-        // Load Email Notification Settings
-        fetchEmailNotificationSettings().then(settings => {
-            setEmailNotificationEnabled(settings.enabled);
-            setEmailNotificationRecipients(settings.recipients || []);
-            setEmailNotificationMinutes(settings.minutesBefore);
-            setEmailSettingsLoaded(true);
-            setEmailSettingsLoading(false);
-        }).catch(() => {
-            setEmailSettingsLoading(false);
-        });
+                setPartners(pData);
+                setCases(cData);
+                setInboundPaths(pathData);
+                setStatuses(statusData);
+                setSecondaryStatuses(secData);
+                setTertiaryStatuses(terData);
+
+                if (pData.length > 0) {
+                    setSelectedPartnerId(pData[0].partnerId);
+                    setEditingPartner(JSON.parse(JSON.stringify(pData[0])));
+                }
+
+                if (secData.length > 0) {
+                    setSelectedTertiarySecondary(secData[0]);
+                }
+
+                if (emailData) {
+                    setEmailNotificationEnabled(emailData.enabled);
+                    setEmailNotificationRecipients(emailData.recipients || []);
+                    setEmailNotificationMinutes(emailData.minutesBefore || 10);
+                }
+
+                const savedManager = localStorage.getItem('lm_managerName');
+                if (savedManager) setManagerName(savedManager);
+            } catch (err) {
+                console.error('[Settings] 데이터 로드 실패:', err);
+                showToast('설정 데이터를 불러오는 중 오류가 발생했습니다.', 'error');
+            }
+        };
+
+        loadInitialData();
     }, []);
 
-    const handleSelectPartner = (p: Partner) => {
-        setSelectedPartnerId(p.partnerId);
-        setEditingPartner(JSON.parse(JSON.stringify(p))); // Deep copy for editing
+    // Load AI Usage for Admin
+    useEffect(() => {
+        if (!isAdmin) return;
+        let alive = true;
+        fetchAiUsage()
+            .then(u => { if (alive) setAiUsage(u); })
+            .catch(e => console.warn('[AI] 사용량 조회 실패:', e?.message || e));
+        return () => { alive = false; };
+    }, [isAdmin]);
+
+    // Partner Selection Change
+    useEffect(() => {
+        if (selectedPartnerId) {
+            const partner = partners.find(p => p.partnerId === selectedPartnerId);
+            if (partner) {
+                setEditingPartner(JSON.parse(JSON.stringify(partner)));
+            }
+        }
+    }, [selectedPartnerId]);
+
+    // Save Missed Call Tiers to LocalStorage
+    useEffect(() => {
+        localStorage.setItem('lm_missedCallIntervalTiers', JSON.stringify(missedCallIntervalTiers));
+    }, [missedCallIntervalTiers]);
+
+    // -------------------------------------------------------------
+    // Partner Actions
+    // -------------------------------------------------------------
+    const handleSavePartner = async () => {
+        if (!editingPartner) return;
+        setIsSavingPartner(true);
+        try {
+            await savePartner(editingPartner);
+            const updated = partners.map(p => p.partnerId === editingPartner.partnerId ? editingPartner : p);
+            setPartners(updated);
+            showToast(`'${editingPartner.name}' 거래처 설정이 저장되었습니다.`);
+        } catch (e) {
+            console.error(e);
+            showToast('거래처 설정 저장 중 오류가 발생했습니다.', 'error');
+        } finally {
+            setIsSavingPartner(false);
+        }
     };
 
-    const handleSaveManagerName = async () => {
-        // Save to LocalStorage & DB (Supabase)
-        await saveGlobalSettings({
-            managerName,
-            missedCallIntervalTiers
-            // [Fix] Do not save API Key here to prevent overwrite. Use dedicated AI Settings save.
-        });
-        showToast('공통 설정이 저장되었습니다.');
-    };
-
-    const handleCreatePartner = () => {
-        setNewPartnerName('');
-        setAddPartnerModalOpen(true);
-    };
-
-    const executeCreatePartner = async () => {
-        if (!newPartnerName.trim()) {
-            showToast('거래처 이름을 입력해주세요.', 'error');
+    const handleDeletePartnerClick = () => {
+        if (!editingPartner) return;
+        const assigned = cases.filter(c => c.partnerId === editingPartner.partnerId);
+        if (assigned.length > 0) {
+            showToast(`'${editingPartner.name}'에 배정된 사건이 ${assigned.length}건 있어 삭제할 수 없습니다.`, 'error');
             return;
         }
-        const newPartnerData: Partner = {
-            partnerId: `p_${Date.now()}`,
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDeletePartner = async () => {
+        if (!editingPartner) return;
+        try {
+            const partnerName = editingPartner.name;
+            const updated = await deletePartner(editingPartner.partnerId);
+            setPartners(updated);
+            if (updated.length > 0) {
+                setSelectedPartnerId(updated[0].partnerId);
+            } else {
+                setSelectedPartnerId(null);
+                setEditingPartner(null);
+            }
+            setDeleteModalOpen(false);
+            showToast(`'${partnerName}' 거래처가 삭제되었습니다.`);
+        } catch (e) {
+            console.error(e);
+            showToast('거래처 삭제 중 오류가 발생했습니다.', 'error');
+        }
+    };
+
+    const handleAddPartner = async () => {
+        if (!newPartnerName.trim()) return;
+        const newP: Partner = {
+            partnerId: `partner_${Date.now()}`,
             name: newPartnerName.trim(),
             active: true,
-            settlementConfig: { cutoffDay: 0, payoutDay: 2, payoutWeekDelay: 0, downPaymentPercentage: 10, firstPayoutPercentage: 50 },
+            settlementConfig: { cutoffDay: 1, payoutDay: 3, payoutWeekDelay: 0, downPaymentPercentage: 10, firstPayoutPercentage: 50 },
             commissionRules: [],
             summaryTemplate: DEFAULT_SUMMARY_TEMPLATE,
             aiPromptTemplate: DEFAULT_AI_PROMPT,
             requiredFields: AVAILABLE_FIELDS_CONFIG.map(f => f.key)
         };
-
-        const updatedPartners = await savePartner(newPartnerData);
-        const addedPartner = updatedPartners.find(p => p.partnerId === newPartnerData.partnerId);
-
-        setPartners(updatedPartners);
-        if (addedPartner) {
-            setSelectedPartnerId(addedPartner.partnerId);
-            setEditingPartner(JSON.parse(JSON.stringify(addedPartner)));
+        try {
+            await savePartner(newP);
+            const updated = [...partners, newP];
+            setPartners(updated);
+            setSelectedPartnerId(newP.partnerId);
+            setNewPartnerName('');
+            setAddPartnerModalOpen(false);
+            showToast(`새 거래처 '${newP.name}'가 등록되었습니다.`);
+        } catch (e) {
+            console.error(e);
+            showToast('거래처 등록 실패', 'error');
         }
-        setAddPartnerModalOpen(false);
-        showToast('새로운 거래처가 추가되었습니다.');
     };
 
-
-    const handleSavePartner = async () => {
-        if (!editingPartner) return;
-        const updatedList = await savePartner(editingPartner);
-        setPartners(updatedList);
-        showToast('변경사항이 저장되었습니다.');
-    };
-
-    const handleDeletePartner = () => {
-        if (!editingPartner) return;
-
-        if (partners.length <= 1) {
-            showToast("최소 1개의 거래처는 존재해야 합니다.", 'error');
-            return;
-        }
-
-        const assignedCases = cases.filter(c => c.partnerId === editingPartner.partnerId);
-        if (assignedCases.length > 0) {
-            showToast(`'${editingPartner.name}'에 배정된 사건이 있어 삭제할 수 없습니다.`, 'error');
-            return;
-        }
-
-        setDeleteModalOpen(true);
-    };
-
-    const executeDeletePartner = async () => {
-        if (!editingPartner) return;
-
-        const partnerName = editingPartner.name;
-        const updatedPartners = await deletePartner(editingPartner.partnerId);
-        setPartners(updatedPartners);
-
-        if (updatedPartners.length > 0) {
-            setSelectedPartnerId(updatedPartners[0].partnerId);
-            setEditingPartner(JSON.parse(JSON.stringify(updatedPartners[0])));
-        } else {
-            setSelectedPartnerId(null);
-            setEditingPartner(null);
-        }
-
-        setDeleteModalOpen(false);
-        showToast(`'${partnerName}' 거래처가 삭제되었습니다.`);
-    }
-
-    // Rule Helpers
+    // Commission Rule Actions
     const handleAddRule = () => {
-        if (!editingPartner || newRule.minFee === undefined || newRule.commission === undefined) return;
+        if (!editingPartner) return;
+        if (newRule.minFee === undefined || newRule.commission === undefined) {
+            showToast('최소 수임료와 수수료는 필수입니다.', 'error');
+            return;
+        }
         const rule: CommissionRule = {
-            ruleId: Date.now().toString(),
-            minFee: newRule.minFee || 0,
-            maxFee: newRule.maxFee || 0,
-            commission: newRule.commission || 0,
-            fullPayoutThreshold: newRule.fullPayoutThreshold || 0,
-            priority: newRule.priority || 1,
+            ruleId: `rule_${Date.now()}`,
+            minFee: Number(newRule.minFee),
+            maxFee: Number(newRule.maxFee) || 0,
+            commission: Number(newRule.commission),
+            fullPayoutThreshold: Number(newRule.fullPayoutThreshold) || 0,
+            priority: Number(newRule.priority) || 1,
             active: true,
             updatedAt: new Date().toISOString()
         };
-        const updatedRules = [...editingPartner.commissionRules, rule];
-        setEditingPartner({ ...editingPartner, commissionRules: updatedRules });
+        setEditingPartner({
+            ...editingPartner,
+            commissionRules: [...editingPartner.commissionRules, rule]
+        });
         setNewRule({ minFee: 0, maxFee: 0, commission: 0, fullPayoutThreshold: 0, priority: 1, active: true });
+        showToast('수수료 규칙이 추가되었습니다.');
     };
 
     const handleDeleteRule = (id: string) => {
@@ -256,23 +329,38 @@ export default function SettingsPage() {
             ...editingPartner,
             commissionRules: editingPartner.commissionRules.filter(r => r.ruleId !== id)
         });
+        showToast('수수료 규칙이 삭제되었습니다.');
     };
 
-    // Inbound Path Helpers
+    const toggleField = (key: string) => {
+        if (!editingPartner) return;
+        const current = editingPartner.requiredFields || [];
+        const updated = current.includes(key) ? current.filter(k => k !== key) : [...current, key];
+        setEditingPartner({ ...editingPartner, requiredFields: updated });
+    };
+
+    // -------------------------------------------------------------
+    // Operations Actions
+    // -------------------------------------------------------------
+    const handleSaveManagerName = () => {
+        localStorage.setItem('lm_managerName', managerName);
+        showToast('담당자 이름이 저장되었습니다.');
+    };
+
+    // Inbound Path
     const handleAddPath = async () => {
         if (!newPath.trim()) return;
-        if (inboundPaths.includes(newPath)) {
+        if (inboundPaths.includes(newPath.trim())) {
             showToast('이미 존재하는 경로입니다.', 'error');
             return;
         }
-        await addInboundPath(newPath);
-        setInboundPaths([...inboundPaths, newPath]);
+        await addInboundPath(newPath.trim());
+        setInboundPaths([...inboundPaths, newPath.trim()]);
         setNewPath('');
         showToast('유입 경로가 추가되었습니다.');
     };
 
     const handleDeletePath = (path: string) => {
-        // Check if used
         const count = cases.filter(c => c.inboundPath === path).length;
         if (count > 0) {
             setAffectedPathCaseCount(count);
@@ -284,2064 +372,568 @@ export default function SettingsPage() {
         }
     };
 
-    const executeDeletePath = async (pathToDeleteName?: string) => {
-        const targetPath = pathToDeleteName || pathToDelete;
-        if (!targetPath) return;
-
+    const executeDeletePath = async (target?: string) => {
+        const delPath = target || pathToDelete;
+        if (!delPath) return;
         try {
             if (isPathDeleteModalOpen && !pathMigrationTarget) {
                 showToast('이관할 경로를 선택해주세요.', 'error');
                 return;
             }
-
-            await deleteInboundPath(targetPath, pathMigrationTarget || undefined);
-
-            // Refetch to update UI
+            await deleteInboundPath(delPath, pathMigrationTarget || undefined);
             const [pData, cData] = await Promise.all([fetchInboundPaths(), fetchCases()]);
             setInboundPaths(pData);
             setCases(cData);
-
             setPathDeleteModalOpen(false);
             setPathToDelete(null);
             setPathMigrationTarget('');
-            showToast(`'${targetPath}' 경로가 삭제되었습니다.`);
+            showToast(`'${delPath}' 경로가 삭제되었습니다.`);
         } catch (e) {
-            console.error(e);
             showToast('경로 삭제 중 오류가 발생했습니다.', 'error');
         }
     };
 
-    // Status Management Helpers
+    // 1st Status
     const handleAddStatus = async () => {
         if (!newStatus.trim()) return;
-        if (statuses.includes(newStatus)) {
+        if (statuses.includes(newStatus.trim())) {
             showToast('이미 존재하는 상태입니다.', 'error');
             return;
         }
-        const updated = await addStatus(newStatus);
+        const updated = await addStatus(newStatus.trim());
         setStatuses(updated);
         setNewStatus('');
         showToast('상태가 추가되었습니다.');
     };
 
     const handleDeleteStatus = (status: string) => {
-        // Check if used
         const count = cases.filter(c => c.status === status).length;
         if (count > 0) {
             setAffectedCaseCount(count);
             setStatusToDelete(status);
-            setMigrationTarget(''); // Reset
+            setMigrationTarget('');
             setStatusDeleteModalOpen(true);
         } else {
-            // Direct delete if not used
             executeDeleteStatus(status);
         }
     };
 
-    const executeDeleteStatus = async (statusToDeleteName?: string) => {
-        const targetStatus = statusToDeleteName || statusToDelete;
-        if (!targetStatus) return;
-
+    const executeDeleteStatus = async (target?: string) => {
+        const delStatus = target || statusToDelete;
+        if (!delStatus) return;
         try {
-            // If modal is open, we need migration target
-            // BUG FIX: Ensure we check if we are truly in "migration mode" (modal open)
-            // If deleting directly (no modal), migrationTarget is not needed.
-            // However, executeDeleteStatus is called directly for 0 cases. 
-            // In that case isStatusDeleteModalOpen is false.
             if (isStatusDeleteModalOpen && !migrationTarget) {
                 showToast('이관할 상태를 선택해주세요.', 'error');
                 return;
             }
-
-            const updated = await deleteStatus(targetStatus, migrationTarget || undefined);
+            const updated = await deleteStatus(delStatus, migrationTarget || undefined);
             setStatuses(updated);
-
-            // Refetch cases to reflect migration
             const updatedCases = await fetchCases();
             setCases(updatedCases);
-
             setStatusDeleteModalOpen(false);
             setStatusToDelete(null);
             setMigrationTarget('');
-            showToast(`'${targetStatus}' 상태가 삭제되었습니다.`);
-        } catch (e: any) {
+            showToast(`'${delStatus}' 상태가 삭제되었습니다.`);
+        } catch (e) {
             showToast('상태 삭제 중 오류가 발생했습니다.', 'error');
-            console.error(e);
         }
     };
 
-    // Field Config Helper
-    const toggleField = (key: string) => {
-        if (!editingPartner) return;
-        const current = editingPartner.requiredFields || [];
-        const updated = current.includes(key) ? current.filter(k => k !== key) : [...current, key];
-        setEditingPartner({ ...editingPartner, requiredFields: updated });
+    // 2nd Status
+    const handleAddSecondaryStatus = async () => {
+        if (!newSecondaryStatus.trim()) return;
+        if (secondaryStatuses.includes(newSecondaryStatus.trim())) {
+            showToast('이미 존재하는 2차 상태입니다.', 'error');
+            return;
+        }
+        await addSecondaryStatusMutation.mutateAsync(newSecondaryStatus.trim());
+        setSecondaryStatuses([...secondaryStatuses, newSecondaryStatus.trim()]);
+        setNewSecondaryStatus('');
+        showToast('2차 상태가 추가되었습니다.');
     };
 
+    const handleDeleteSecondaryStatus = async (status: string) => {
+        await deleteSecondaryStatusMutation.mutateAsync(status);
+        setSecondaryStatuses(secondaryStatuses.filter(s => s !== status));
+        if (selectedTertiarySecondary === status) {
+            setSelectedTertiarySecondary('');
+        }
+        showToast('2차 상태가 삭제되었습니다.');
+    };
+
+    // 3rd Status
+    const handleAddTertiaryStatus = async () => {
+        if (!selectedTertiarySecondary || !newTertiaryStatus.trim()) return;
+        const currentList = tertiaryStatuses[selectedTertiarySecondary] || [];
+        if (currentList.includes(newTertiaryStatus.trim())) {
+            showToast('이미 존재하는 3차 상태입니다.', 'error');
+            return;
+        }
+        await addTertiaryStatusMutation.mutateAsync({
+            secondaryStatus: selectedTertiarySecondary,
+            status: newTertiaryStatus.trim()
+        });
+        setTertiaryStatuses({
+            ...tertiaryStatuses,
+            [selectedTertiarySecondary]: [...currentList, newTertiaryStatus.trim()]
+        });
+        setNewTertiaryStatus('');
+        showToast('3차 상태가 추가되었습니다.');
+    };
+
+    const handleDeleteTertiaryStatus = async (parent: string, status: string) => {
+        await deleteTertiaryStatusMutation.mutateAsync({ secondaryStatus: parent, status });
+        setTertiaryStatuses({
+            ...tertiaryStatuses,
+            [parent]: (tertiaryStatuses[parent] || []).filter(t => t !== status)
+        });
+        showToast('3차 상태가 삭제되었습니다.');
+    };
+
+    // Email Settings
+    const handleSaveEmailSettings = async () => {
+        setEmailSettingsLoading(true);
+        try {
+            await saveEmailNotificationSettings({
+                enabled: emailNotificationEnabled,
+                recipients: emailNotificationRecipients,
+                minutesBefore: emailNotificationMinutes
+            });
+            showToast('이메일 알림 설정이 저장되었습니다.');
+        } catch (e) {
+            showToast('이메일 설정 저장 실패', 'error');
+        } finally {
+            setEmailSettingsLoading(false);
+        }
+    };
+
+    // -------------------------------------------------------------
+    // Integrations & AI Actions
+    // -------------------------------------------------------------
+    const handleSaveTelegramRooms = (rooms: TelegramRoomTarget[]) => {
+        saveTelegramRooms(rooms);
+    };
+
+    const handleSaveAiKeywords = () => {
+        localStorage.setItem('lm_aiKeywords', aiKeywords);
+        showToast('도메인 어휘 보정 키워드가 저장되었습니다.');
+    };
+
+    // -------------------------------------------------------------
+    // Data & Security Actions
+    // -------------------------------------------------------------
+    const handleDownloadBackup = () => {
+        const backupData = {
+            version: '4.5',
+            exportedAt: new Date().toISOString(),
+            cases: localStorage.getItem('lm_cases'),
+            partners: localStorage.getItem('lm_partners'),
+            paths: localStorage.getItem('lm_paths'),
+            statuses: localStorage.getItem('lm_statuses'),
+            secondaryStatuses: localStorage.getItem('lm_secondary_statuses'),
+        };
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `leadmaster_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('백업 파일이 안전하게 다운로드되었습니다.');
+    };
+
+    const handleRestoreBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const data = JSON.parse(evt.target?.result as string);
+                if (!data.version || !data.cases) {
+                    showToast('유효하지 않은 백업 파일입니다.', 'error');
+                    return;
+                }
+                if (!window.confirm(`백업 파일 정보:\n- 내보낸 날짜: ${data.exportedAt || '알 수 없음'}\n\n이 백업으로 시스템 로컬 데이터를 복원하시겠습니까?`)) return;
+                if (data.cases) localStorage.setItem('lm_cases', data.cases);
+                if (data.partners) localStorage.setItem('lm_partners', data.partners);
+                if (data.paths) localStorage.setItem('lm_paths', data.paths);
+                if (data.statuses) localStorage.setItem('lm_statuses', data.statuses);
+                if (data.secondaryStatuses) localStorage.setItem('lm_secondary_statuses', data.secondaryStatuses);
+                showToast('백업이 복원되었습니다. 페이지를 새로고침합니다...');
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (err) {
+                showToast('백업 파일을 읽는 중 오류가 발생했습니다.', 'error');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    };
+
+    const handleForceSync = () => {
+        if (!window.confirm('로컬 캐시를 삭제하고 서버에서 데이터를 다시 불러올까요?\n\n💡 먼저 상단의 "백업 다운로드" 버튼으로 백업해두세요!')) return;
+        localStorage.removeItem('lm_cases');
+        localStorage.removeItem('lm_partners');
+        localStorage.removeItem('lm_paths');
+        localStorage.removeItem('lm_statuses');
+        showToast('캐시를 삭제했습니다. 최신 데이터를 동기화합니다...');
+        setTimeout(() => window.location.reload(), 1000);
+    };
+
+    // -------------------------------------------------------------
+    // Render
+    // -------------------------------------------------------------
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+            {/* 1. 최상단 헤더 & 빠른 검색바 */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-gray-200/80 dark:border-gray-700/80">
                 <div className="flex items-center gap-3">
-                    <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 shrink-0">
-                        <span className="text-lg">⚙️</span>
+                    <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                        <Sliders size={22} />
                     </div>
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">설정</h1>
-                        <p className="hidden sm:block text-sm text-gray-500 dark:text-gray-400 mt-0.5">시스템 설정, 거래처, 상태 관리</p>
-                    </div>
-                </div>
-            </div>
-            <div className="flex gap-6">
-                {/* 좌측 카테고리 내비 (PC only) */}
-                <nav className="hidden lg:block w-48 shrink-0">
-                    <div className="sticky top-0 space-y-0.5">
-                        {[
-                            { id: 'global', label: '공통 설정', icon: '⚙️' },
-                            { id: 'telegram', label: '텔레그램 연동', icon: '📱' },
-                            { id: 'data', label: '데이터 관리', icon: '💾' },
-                            { id: 'ai', label: 'AI 설정', icon: '✨' },
-                            { id: 'email', label: '이메일 알림', icon: '📧' },
-                            { id: 'status', label: '상태 관리', icon: '📋' },
-                            { id: 'partner', label: '거래처 관리', icon: '🏢' },
-                            { id: 'intake', label: '접수확인 · AI', icon: '📝' },
-                            ...(org?.role === 'owner' ? [{ id: 'danger', label: '위험 구역 (파기)', icon: '🚨' }] : []),
-                        ].map(s => (
-                            <button key={s.id} onClick={() => { const el = document.getElementById(`settings-${s.id}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 rounded-lg transition-colors text-left">
-                                <span className="text-xs">{s.icon}</span>
-                                <span>{s.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                </nav>
-                {/* 우측 콘텐츠 */}
-                <div className="flex-1 min-w-0 space-y-6">
-            {/* Global Settings */}
-            <div id="settings-global" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <User className="mr-2 text-gray-600 dark:text-gray-400" size={20} /> 공통 설정
-                </h3>
-                <div className="max-w-2xl space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">담당자 이름</label>
-                        <input
-                            type="text"
-                            placeholder="담당자 이름"
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded outline-none"
-                            value={managerName}
-                            onChange={e => setManagerName(e.target.value)}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                            신규 생성 시 담당자, 요약문 템플릿 {'{{managerName}}'}에 사용됩니다.
+                        <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
+                            시스템 설정
+                        </h1>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            거래처별 정산 정책, 상담 상태 체계, 텔레그램 연동 및 데이터 백업을 통합 관리합니다.
                         </p>
                     </div>
-
-                    <hr className="border-gray-100" />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">부재 카운트 대상 상태</label>
-                            <select
-                                className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white"
-                                value={missedCallStatus}
-                                onChange={e => setMissedCallStatus(e.target.value)}
-                            >
-                                {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                            <p className="text-xs text-gray-500 mt-1">
-                                이 상태일 때만 '부재 확인' 버튼이 표시됩니다.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">재통화 알림 주기 (등록일 기준)</label>
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                            <div className="hidden md:flex items-center bg-gray-50 dark:bg-gray-700/60 px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 text-[11px] font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                <div className="w-16 shrink-0">단계</div>
-                                <div className="flex-1 text-center">구간 (등록 경과일)</div>
-                                <div className="w-8 shrink-0"></div>
-                                <div className="w-40 shrink-0 text-center">알림 주기</div>
-                                <div className="w-8 shrink-0"></div>
-                            </div>
-                            {missedCallIntervalTiers.map((tier, idx) => {
-                                const stageColors = ['bg-emerald-100 text-emerald-700 border-emerald-200','bg-amber-100 text-amber-700 border-amber-200','bg-rose-100 text-rose-700 border-rose-200','bg-violet-100 text-violet-700 border-violet-200','bg-cyan-100 text-cyan-700 border-cyan-200'];
-                                const colorClass = stageColors[idx % stageColors.length];
-                                return (
-                                    <div key={idx} className={`flex flex-wrap md:flex-nowrap items-center gap-2 px-4 py-3 ${idx > 0 ? 'border-t border-gray-100' : ''} hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors`}>
-                                        <div className="w-full md:w-16 shrink-0 flex items-center justify-between md:justify-start">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${colorClass}`}>{idx + 1}단계</span>
-                                            <div className="md:hidden">{missedCallIntervalTiers.length > 1 && (<button type="button" onClick={() => setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14} /></button>)}</div>
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-center gap-1.5">
-                                            <span className="text-xs text-gray-400 whitespace-nowrap">등록 후</span>
-                                            <input type="number" className="w-14 py-1.5 px-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md text-sm text-center focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 outline-none" value={tier.minDays} min={0} onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,minDays:Number(e.target.value)}; const m=n[idx].maxDays; n[idx].label=m===0?`${n[idx].minDays}일 이상`:`${n[idx].minDays}~${m}일`; setMissedCallIntervalTiers(n); }} />
-                                            <span className="text-gray-300 text-lg">~</span>
-                                            <input type="number" className="w-14 py-1.5 px-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md text-sm text-center focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 outline-none" value={tier.maxDays} min={0} placeholder="∞" onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,maxDays:Number(e.target.value)}; const m=n[idx].maxDays; n[idx].label=m===0?`${n[idx].minDays}일 이상`:`${n[idx].minDays}~${m}일`; setMissedCallIntervalTiers(n); }} />
-                                            <span className="text-xs text-gray-500">일</span>
-                                        </div>
-                                        <div className="w-8 shrink-0 flex items-center justify-center"><span className="text-gray-300 text-lg">→</span></div>
-                                        <div className="w-40 shrink-0 flex items-center justify-center gap-1.5">
-                                            <input type="number" className="w-14 py-1.5 px-1 border-2 border-blue-300 dark:border-blue-700 rounded-md text-sm text-center font-bold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/40 focus:ring-2 focus:ring-blue-200 outline-none" value={tier.interval} min={1} onChange={e => { const n=[...missedCallIntervalTiers]; n[idx]={...tier,interval:Number(e.target.value)}; setMissedCallIntervalTiers(n); }} />
-                                            <span className="text-xs text-gray-500 whitespace-nowrap">일 후 알림</span>
-                                        </div>
-                                        <div className="hidden md:flex w-8 shrink-0 items-center justify-end">{missedCallIntervalTiers.length > 1 ? (<button type="button" onClick={() => setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx))} className="text-gray-300 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors" title="삭제"><Trash2 size={15} /></button>) : <div className="w-8" />}</div>
-                                    </div>
-                                );
-                            })}
-                            <div className="border-t border-gray-100 px-4 py-2">
-                                <button type="button" onClick={() => { const l=missedCallIntervalTiers[missedCallIntervalTiers.length-1]; const nd=l?(l.maxDays||l.minDays+30):0; setMissedCallIntervalTiers([...missedCallIntervalTiers.map((t,i)=>i===missedCallIntervalTiers.length-1&&t.maxDays===0?{...t,maxDays:nd,label:`${t.minDays}~${nd}일`}:t),{minDays:nd,maxDays:0,interval:21,label:`${nd}일 이상`}]); }} className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-xs text-gray-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-1">
-                                    <Plus size={14} /> 구간 추가
-                                </button>
-                            </div>
-                        </div>
-                        <p className="text-xs text-gray-400 mt-1.5">최초 등록일 기준 경과일에 따라 알림 주기가 차등 적용됩니다. (0 = 무한)</p>
-                    </div>
-
-                    <div className="pt-2">
-                        <button type="button" onClick={handleSaveManagerName} className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 w-full md:w-auto">
-                            설정 저장
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Telegram Integration Settings */}
-            <div id="settings-telegram" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                    <MessageCircle size={100} />
-                </div>
-                <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4 flex items-center relative z-10">
-                    <MessageCircle className="mr-2 text-indigo-500" size={20} /> 텔레그램 연동 관리
-                </h3>
-                <div className="max-w-2xl space-y-6 relative z-10">
-                    {/* [NEW] 텔레그램 수동 전송 방 관리 */}
-                    <div className="space-y-3 border-b border-indigo-50 pb-6">
-                        <h4 className="font-bold text-indigo-800 dark:text-indigo-300 text-sm">텔레그램 직접 전송 (AI 요약문 출력용 방 설정)</h4>
-                        <div className="flex flex-col md:flex-row gap-2">
-                            <input 
-                                type="text" 
-                                placeholder="방 이름 (예: 직원 공유방)" 
-                                className="flex-1 p-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded outline-none focus:ring-2 focus:ring-indigo-300"
-                                value={newTelegramRoomName}
-                                onChange={e => setNewTelegramRoomName(e.target.value)}
-                            />
-                            <input 
-                                type="text" 
-                                placeholder="방 URL (https://t.me/...)" 
-                                className="flex-[2] p-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded outline-none focus:ring-2 focus:ring-indigo-300"
-                                value={newTelegramRoomUrl}
-                                onChange={e => setNewTelegramRoomUrl(e.target.value)}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter') {
-                                        if (!newTelegramRoomName.trim() || !newTelegramRoomUrl.trim()) {
-                                            showToast('방 이름과 주소를 모두 입력해주세요.', 'error');
-                                            return;
-                                        }
-                                        const updated = [...telegramRooms, {
-                                            id: Date.now().toString(),
-                                            name: newTelegramRoomName.trim(),
-                                            url: newTelegramRoomUrl.trim()
-                                        }];
-                                        setTelegramRooms(updated);
-                                        saveTelegramRooms(updated);
-                                        setNewTelegramRoomName('');
-                                        setNewTelegramRoomUrl('');
-                                        showToast('텔레그램 방이 추가되었습니다.');
-                                    }
-                                }}
-                            />
-                            <button 
-                                type="button"
-                                onClick={() => {
-                                    if (!newTelegramRoomName.trim() || !newTelegramRoomUrl.trim()) {
-                                        showToast('방 이름과 주소를 모두 입력해주세요.', 'error');
-                                        return;
-                                    }
-                                    const updated = [...telegramRooms, {
-                                        id: Date.now().toString(),
-                                        name: newTelegramRoomName.trim(),
-                                        url: newTelegramRoomUrl.trim()
-                                    }];
-                                    setTelegramRooms(updated);
-                                    saveTelegramRooms(updated);
-                                    setNewTelegramRoomName('');
-                                    setNewTelegramRoomUrl('');
-                                    showToast('텔레그램 방이 추가되었습니다.');
-                                }}
-                                className="bg-indigo-600 text-white px-3 py-2 text-sm rounded hover:bg-indigo-700 whitespace-nowrap"
-                            >
-                                추가
-                            </button>
-                        </div>
-                        {telegramRooms.length > 0 && (
-                            <div className="bg-white dark:bg-gray-700 border dark:border-gray-600 rounded dark:text-white">
-                                {telegramRooms.map((room, idx) => (
-                                    <div key={room.id} className={`flex items-center justify-between p-3 ${idx < telegramRooms.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                                        <div className="flex flex-col">
-                                            <span className="font-bold text-sm text-gray-700 dark:text-white">{room.name}</span>
-                                            <span className="text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-md">{room.url}</span>
-                                        </div>
-                                        <button 
-                                            type="button" 
-                                            onClick={() => {
-                                                const updated = telegramRooms.filter(r => r.id !== room.id);
-                                                setTelegramRooms(updated);
-                                                saveTelegramRooms(updated);
-                                                showToast('텔레그램 방이 삭제되었습니다.');
-                                            }}
-                                            className="text-gray-400 hover:text-red-500 p-2"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <div className="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/50 rounded-lg p-4">
-                        <h4 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2">텔레그램 피드백 자동 수집</h4>
-                        <p className="text-sm text-indigo-700 dark:text-indigo-200 mb-2">
-                            변호사 사무실 방의 피드백을 회사 봇이 받아 AI가 분류하고 CRM에 반영합니다.
-                            <br />- <b>[자동 반영]</b> 부재, 명함발송, 재통화요청 등
-                            <br />- <b>[승인 대기]</b> 미팅취소, 타사무소선택, 계약완료 등 중요 변경사항
-                        </p>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 p-3 rounded border border-indigo-100 dark:border-gray-700 mt-3">
-                            봇 연결 상태 확인과 웹훅 재등록은 <b>팀 관리 → 텔레그램 봇 연결</b>에서 합니다.
-                            거래처별 방은 아래 <b>거래처 → 텔레그램 수신 연동</b>에서 고릅니다.
-                            <button type="button" onClick={() => window.location.href = '/team'} className="ml-2 text-indigo-700 underline font-medium">팀 관리로 이동</button>
-                        </p>
-                    </div>
-                    <div>
-                        <button type="button" onClick={() => window.location.href = '/telegram'} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full md:w-auto transition-colors font-medium">
-                            대기 중인 피드백 관리 센터로 이동 →
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Data Force Sync */}
-            <div id="settings-data" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-orange-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <AlertTriangle className="mr-2 text-orange-500" size={20} /> 데이터 동기화
-                </h3>
-                <div className="max-w-lg space-y-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                        PC와 모바일 간 케이스 숫자가 다를 경우, 로컬 캐시를 삭제하고 서버에서 최신 데이터를 다시 불러옵니다.
-                    </p>
-
-                    {/* Backup & Restore Section */}
-                    <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-lg p-4 space-y-3">
-                        <p className="text-sm font-medium text-blue-800 dark:text-blue-300">📦 로컬 데이터 백업 / 복원</p>
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const backupData = {
-                                        version: '3.19',
-                                        exportedAt: new Date().toISOString(),
-                                        cases: localStorage.getItem('lm_cases'),
-                                        partners: localStorage.getItem('lm_partners'),
-                                        paths: localStorage.getItem('lm_paths'),
-                                        statuses: localStorage.getItem('lm_statuses'),
-                                        secondaryStatuses: localStorage.getItem('lm_secondary_statuses'),
-                                    };
-
-                                    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-                                    const url = URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = `leadmaster_backup_${new Date().toISOString().slice(0, 10)}.json`;
-                                    a.click();
-                                    URL.revokeObjectURL(url);
-
-                                    showToast('백업 파일이 다운로드되었습니다.');
-                                }}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium flex items-center gap-2"
-                            >
-                                <Download size={16} /> 백업 다운로드
-                            </button>
-
-                            <label className="bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 px-4 py-2 rounded hover:bg-blue-50 dark:hover:bg-gray-700 font-medium flex items-center gap-2 cursor-pointer">
-                                <Upload size={16} /> 백업 복원
-                                <input
-                                    type="file"
-                                    accept=".json"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-
-                                        const reader = new FileReader();
-                                        reader.onload = (evt) => {
-                                            try {
-                                                const data = JSON.parse(evt.target?.result as string);
-
-                                                if (!data.version || !data.cases) {
-                                                    showToast('유효하지 않은 백업 파일입니다.', 'error');
-                                                    return;
-                                                }
-
-                                                if (!window.confirm(`백업 파일 정보:\n- 내보낸 날짜: ${data.exportedAt || '알 수 없음'}\n\n이 백업으로 로컬 데이터를 복원하시겠습니까?`)) return;
-
-                                                // Restore data
-                                                if (data.cases) localStorage.setItem('lm_cases', data.cases);
-                                                if (data.partners) localStorage.setItem('lm_partners', data.partners);
-                                                if (data.paths) localStorage.setItem('lm_paths', data.paths);
-                                                if (data.statuses) localStorage.setItem('lm_statuses', data.statuses);
-                                                if (data.secondaryStatuses) localStorage.setItem('lm_secondary_statuses', data.secondaryStatuses);
-
-                                                showToast('백업이 복원되었습니다. 페이지를 새로고침합니다...');
-                                                setTimeout(() => window.location.reload(), 1000);
-                                            } catch (err) {
-                                                showToast('백업 파일을 읽는 중 오류가 발생했습니다.', 'error');
-                                            }
-                                        };
-                                        reader.readAsText(file);
-                                        e.target.value = ''; // Reset input
-                                    }}
-                                />
-                            </label>
-                        </div>
-                        <p className="text-xs text-blue-600">
-                            💡 동기화 전에 백업을 다운로드해두면 문제 발생 시 복원할 수 있습니다.
-                        </p>
-                    </div>
-
-                    <hr className="border-gray-200" />
-
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                        <p className="text-xs text-orange-700 flex items-start">
-                            <Info size={14} className="mr-1 mt-0.5 flex-shrink-0" />
-                            강제 동기화는 로컬 캐시만 삭제합니다. 서버(Supabase)에 저장된 데이터는 영향받지 않습니다.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            if (!window.confirm('로컬 캐시를 삭제하고 서버에서 데이터를 다시 불러올까요?\n\n💡 먼저 위의 "백업 다운로드" 버튼으로 백업해두세요!')) return;
-
-                            // Clear local cache
-                            localStorage.removeItem('lm_cases');
-                            localStorage.removeItem('lm_partners');
-                            localStorage.removeItem('lm_paths');
-                            localStorage.removeItem('lm_statuses');
-
-                            showToast('캐시를 삭제했습니다. 페이지를 새로고침합니다...');
-
-                            // Reload page after short delay
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
-                        }}
-                        className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 w-full md:w-auto font-medium"
-                    >
-                        🔄 데이터 강제 동기화
-                    </button>
-                </div>
-            </div>
-
-            {/* AI Settings */}
-            <div id="settings-ai" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <Sparkles className="mr-2 text-purple-600" size={20} /> AI 설정
-                </h3>
-                <div className="max-w-md space-y-4">
-                    <div className="p-3 rounded-lg border border-purple-100 bg-purple-50">
-                        <p className="text-sm font-medium text-purple-900">AI는 서버에서 실행됩니다. 키를 입력할 필요가 없습니다.</p>
-                        <p className="text-xs text-purple-700 mt-1">
-                            통화 녹음 요약, 이미지·문서 인식, 영수증 스캔은 로그인만 하면 쓸 수 있습니다. 회사마다 하루 사용 횟수 상한이 있습니다.
-                        </p>
-                        {aiUsage && (
-                            <p className="text-xs text-purple-900 mt-2">
-                                오늘 <b>{aiUsage.today.toLocaleString()}</b> / {aiUsage.cap.toLocaleString()}회 사용
-                                · 이번 달 {aiUsage.month.toLocaleString()}회
-                                (토큰 입력 {aiUsage.inputTokensMonth.toLocaleString()} · 출력 {aiUsage.outputTokensMonth.toLocaleString()})
-                            </p>
-                        )}
-                    </div>
-
-                    <hr className="border-gray-100" />
-
-                    {/* AI Speech Vocabulary Biasing (Domain Keywords) */}
-                    <div>
-                        <div className="flex justify-between items-center mb-1">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                🎙️ 음성인식 보정 전문 용어 사전 (단어 등록)
-                            </label>
-                            <button
-                                onClick={() => {
-                                    if (window.confirm('전문 용어 사전을 기본 단어 목록으로 복원하시겠습니까?')) {
-                                        const defaultWords = REHABILITATION_DOMAIN_KEYWORDS.join(', ');
-                                        setAiKeywords(defaultWords);
-                                        localStorage.setItem('lm_aiKeywords', defaultWords);
-                                        saveGlobalSettings({ aiKeywords: defaultWords });
-                                        showToast('기본 단어 목록으로 복원되었습니다.');
-                                    }
-                                }}
-                                className="text-xs text-gray-500 hover:text-purple-600 underline cursor-pointer"
-                            >
-                                기본값 복원
-                            </button>
-                        </div>
-                        <p className="text-xs text-gray-500 mb-2">
-                            통화 녹음 전사 시 금융사명(대부업체, 저축은행), 법률 용어 등 인식이 잘 되도록 AI에게 사전 주입할 단어들을 쉼표(,)로 구분하여 등록하세요.
-                        </p>
-                        <textarea
-                            className="w-full h-24 p-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none leading-relaxed font-sans"
-                            value={aiKeywords}
-                            onChange={(e) => setAiKeywords(e.target.value)}
-                            placeholder="개인회생, 파산면책, 금지명령, 대부업체명, 저축은행명 등..."
-                        />
-                        <div className="flex justify-end mt-1.5">
-                            <button
-                                onClick={() => {
-                                    const trimmed = aiKeywords.trim();
-                                    localStorage.setItem('lm_aiKeywords', trimmed);
-                                    saveGlobalSettings({ aiKeywords: trimmed });
-                                    showToast('전문 용어 사전이 저장되었습니다.');
-                                }}
-                                className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 font-bold shadow-sm cursor-pointer"
-                            >
-                                단어 사전 저장
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Email Notification Settings */}
-            <div id="settings-email" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4 flex items-center justify-between">
-                    <span className="flex items-center">
-                        <Mail className="mr-2 text-blue-600" size={20} /> 이메일 알림 설정
-                    </span>
-                    <div className="flex items-center gap-2">
-                        {!emailSettingsSaved && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                                ⚠ 저장 필요
-                            </span>
-                        )}
-                        {emailSettingsLoaded && emailNotificationRecipients.length > 0 && emailSettingsSaved && (
-                            <span className={`text-xs px-2 py-1 rounded-full ${emailNotificationEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                                {emailNotificationEnabled ? '✓ 활성화됨' : '비활성화'}
-                            </span>
-                        )}
-                    </div>
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">리마인더 일정을 이메일로 미리 받아보세요. PC를 보지 않을 때도 알림을 받을 수 있습니다.</p>
-
-                {emailSettingsLoading ? (
-                    <div className="text-center py-8 text-gray-400">
-                        <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mb-2"></div>
-                        <p className="text-sm">설정 불러오는 중...</p>
-                    </div>
-                ) : (
-                    <div className="space-y-4 max-w-xl">
-                        {/* Enable Toggle */}
-                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                            <div>
-                                <span className="font-medium text-gray-700 dark:text-white">이메일 알림 활성화</span>
-                                <p className="text-xs text-gray-500 mt-0.5">활성화하면 리마인더 전에 이메일을 받습니다.</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setEmailNotificationEnabled(!emailNotificationEnabled);
-                                    setEmailSettingsSaved(false);
-                                }}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}
-                            >
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-200 transition-transform ${emailNotificationEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                            </button>
-                        </div>
-
-                        {/* Minutes Before Dropdown */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">사전 알림 시간</label>
-                            <select
-                                className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white"
-                                value={emailNotificationMinutes}
-                                onChange={e => {
-                                    setEmailNotificationMinutes(Number(e.target.value));
-                                    setEmailSettingsSaved(false);
-                                }}
-                            >
-                                <option value={10}>10분 전</option>
-                                <option value={30}>30분 전</option>
-                                <option value={60}>1시간 전</option>
-                            </select>
-                        </div>
-
-                        {/* Email Recipients */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수신 이메일 주소</label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="email"
-                                    placeholder="이메일 주소 입력 후 + 버튼 또는 Enter"
-                                    className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    value={newEmailRecipient}
-                                    onChange={e => setNewEmailRecipient(e.target.value)}
-                                    onKeyDown={e => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            if (newEmailRecipient.trim() && newEmailRecipient.includes('@')) {
-                                                if (!emailNotificationRecipients.includes(newEmailRecipient.trim())) {
-                                                    setEmailNotificationRecipients([...emailNotificationRecipients, newEmailRecipient.trim()]);
-                                                    setEmailSettingsSaved(false);
-                                                }
-                                                setNewEmailRecipient('');
-                                            }
-                                        }
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (newEmailRecipient.trim() && newEmailRecipient.includes('@')) {
-                                            if (!emailNotificationRecipients.includes(newEmailRecipient.trim())) {
-                                                setEmailNotificationRecipients([...emailNotificationRecipients, newEmailRecipient.trim()]);
-                                                setEmailSettingsSaved(false);
-                                            }
-                                            setNewEmailRecipient('');
-                                        }
-                                    }}
-                                    className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
-                                >
-                                    <Plus size={20} />
-                                </button>
-                            </div>
-
-                            {/* Registered Emails List */}
-                            <div className="mt-3">
-                                {emailNotificationRecipients.length > 0 ? (
-                                    <div className="space-y-2">
-                                        <p className="text-xs text-gray-500 font-medium">등록된 이메일 ({emailNotificationRecipients.length}개)</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {emailNotificationRecipients.map(email => (
-                                                <div key={email} className="flex items-center bg-blue-50 dark:bg-blue-950/40 rounded-full px-3 py-1.5 text-sm text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/50">
-                                                    <span className="mr-1">📧</span> {email}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setEmailNotificationRecipients(emailNotificationRecipients.filter(e => e !== email));
-                                                            setEmailSettingsSaved(false);
-                                                        }}
-                                                        className="ml-2 text-blue-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5"
-                                                        title="삭제 (저장 버튼을 눌러야 반영됩니다)"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p className="text-xs text-gray-400 py-2">등록된 이메일이 없습니다. 위에서 이메일을 추가해주세요.</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="pt-3 border-t">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        await saveEmailNotificationSettings({
-                                            enabled: emailNotificationEnabled,
-                                            recipients: emailNotificationRecipients,
-                                            minutesBefore: emailNotificationMinutes
-                                        });
-                                        setEmailSettingsSaved(true);
-                                        showToast('이메일 알림 설정이 저장되었습니다.');
-                                    }}
-                                    className={`px-4 py-2 rounded font-medium ${!emailSettingsSaved ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-                                >
-                                    {!emailSettingsSaved ? '💾 변경사항 저장' : '✓ 저장됨'}
-                                </button>
-                                {!emailSettingsSaved && (
-                                    <span className="text-xs text-yellow-600">
-                                        변경사항이 있습니다. 저장 버튼을 눌러주세요.
-                                    </span>
-                                )}
-                            </div>
-                            {emailNotificationRecipients.length > 0 && emailSettingsSaved && (
-                                <p className="text-xs text-gray-500 mt-2">
-                                    💡 {emailNotificationRecipients.length}개 이메일로 리마인더 {emailNotificationMinutes}분 전에 알림이 발송됩니다.
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-
-
-            <div id="settings-status" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <Megaphone className="mr-2 text-purple-600" size={20} /> 유입 경로 설정
-                </h3>
-                <div className="space-y-4">
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            placeholder="새로운 유입 경로 (예: 틱톡 광고)"
-                            className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={newPath}
-                            onChange={e => setNewPath(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleAddPath()}
-                        />
-                        <button type="button" onClick={handleAddPath} className="bg-purple-600 text-white px-4 rounded hover:bg-purple-700">
-                            <Plus size={20} />
-                        </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {inboundPaths.map(path => (
-                            <div key={path} className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-                                {path}
-                                <button type="button" onClick={() => handleDeletePath(path)} className="ml-2 text-gray-400 hover:text-red-500">
-                                    <Trash2 size={14} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <ListChecks className="mr-2 text-green-600" size={20} /> 상태 관리
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">케이스의 진행 상태를 관리합니다. 사용 중인 상태를 삭제하면 이관 절차가 진행됩니다.</p>
-                <div className="space-y-4">
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            placeholder="새로운 상태 (예: 서류 검토중)"
-                            className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={newStatus}
-                            onChange={e => setNewStatus(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleAddStatus()}
-                        />
-                        <button type="button" onClick={handleAddStatus} className="bg-green-600 text-white px-4 rounded hover:bg-green-700">
-                            <Plus size={20} />
-                        </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {statuses.map(status => (
-                            <div key={status} className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-                                {status}
-                                <button type="button" onClick={() => handleDeleteStatus(status)} className="ml-2 text-gray-400 hover:text-red-500">
-                                    <Trash2 size={14} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* 2차 상태 관리 (사무장 접수 이후) */}
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <ListChecks className="mr-2 text-purple-600" size={20} /> 2차 상태 관리
-                    <span className="ml-2 text-xs font-normal text-gray-500 bg-purple-50 px-2 py-0.5 rounded-full">사무장 접수 이후</span>
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">"사무장 접수" 이후 2차 관리 단계에서 사용할 상태들을 관리합니다.</p>
-                <div className="space-y-4">
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            placeholder="새로운 2차 상태 (예: 계약서 작성)"
-                            className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={newSecondaryStatus}
-                            onChange={e => setNewSecondaryStatus(e.target.value)}
-                            onKeyDown={e => {
-                                if (e.key === 'Enter' && newSecondaryStatus.trim()) {
-                                    addSecondaryStatusMutation.mutate(newSecondaryStatus.trim(), {
-                                        onSuccess: (updatedList) => {
-                                            setSecondaryStatuses(updatedList);
-                                            setNewSecondaryStatus('');
-                                        }
-                                    });
-                                }
-                            }}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (newSecondaryStatus.trim()) {
-                                    addSecondaryStatusMutation.mutate(newSecondaryStatus.trim(), {
-                                        onSuccess: (updatedList) => {
-                                            setSecondaryStatuses(updatedList);
-                                            setNewSecondaryStatus('');
-                                        }
-                                    });
-                                }
-                            }}
-                            className="bg-purple-600 text-white px-4 rounded hover:bg-purple-700"
-                        >
-                            <Plus size={20} />
-                        </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {secondaryStatuses.map(status => (
-                            <div key={status} className="flex items-center bg-purple-50 rounded-full px-3 py-1.5 text-sm text-purple-700 border border-purple-200">
-                                {status}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (confirm(`"${status}" 상태를 삭제하시겠습니까?`)) {
-                                            deleteSecondaryStatusMutation.mutate(status, {
-                                                onSuccess: (updatedList) => setSecondaryStatuses(updatedList)
-                                            });
-                                        }
-                                    }}
-                                    className="ml-2 text-purple-400 hover:text-red-500"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                            </div>
-                        ))}
-                        {secondaryStatuses.length === 0 && (
-                            <p className="text-xs text-gray-400">등록된 2차 상태가 없습니다.</p>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* 3차 상태 관리 (2차 상태별 세부 단계) */}
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                    <ListChecks className="mr-2 text-amber-600" size={20} /> 3차 상태 관리
-                    <span className="ml-2 text-xs font-normal text-gray-500 bg-amber-50 px-2 py-0.5 rounded-full">2차 상태별 세부 단계</span>
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">"사무장 접수" → 2차 상태 이후의 세부 관리 단계를 설정합니다. 2차 상태를 선택한 뒤 3차 상태를 추가하세요.</p>
-                <div className="space-y-4">
-                    {/* 2차 상태 선택 드롭다운 */}
-                    <div className="flex gap-2 items-end">
-                        <div className="flex-1">
-                            <label className="block text-xs font-medium text-purple-600 mb-1">2차 상태 선택</label>
-                            <select
-                                className="w-full p-2 border border-purple-300 rounded bg-purple-50 text-purple-800 font-medium"
-                                value={selectedTertiarySecondary}
-                                onChange={e => { setSelectedTertiarySecondary(e.target.value); setNewTertiaryStatus(''); }}
-                            >
-                                <option value="">-- 2차 상태를 선택하세요 --</option>
-                                {secondaryStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* 3차 상태 추가 (2차 상태가 선택된 경우에만) */}
-                    {selectedTertiarySecondary && (
-                        <>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    placeholder={`"${selectedTertiarySecondary}"의 새 3차 상태 (예: 일정확인)`}
-                                    className="flex-1 p-2 border rounded border-amber-300 focus:ring-2 focus:ring-amber-500 outline-none"
-                                    value={newTertiaryStatus}
-                                    onChange={e => setNewTertiaryStatus(e.target.value)}
-                                    onKeyDown={e => {
-                                        if (e.key === 'Enter' && newTertiaryStatus.trim()) {
-                                            addTertiaryStatusMutation.mutate(
-                                                { secondaryStatus: selectedTertiarySecondary, status: newTertiaryStatus.trim() },
-                                                {
-                                                    onSuccess: (updatedMap) => {
-                                                        setTertiaryStatuses(updatedMap);
-                                                        setNewTertiaryStatus('');
-                                                    }
-                                                }
-                                            );
-                                        }
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (newTertiaryStatus.trim()) {
-                                            addTertiaryStatusMutation.mutate(
-                                                { secondaryStatus: selectedTertiarySecondary, status: newTertiaryStatus.trim() },
-                                                {
-                                                    onSuccess: (updatedMap) => {
-                                                        setTertiaryStatuses(updatedMap);
-                                                        setNewTertiaryStatus('');
-                                                    }
-                                                }
-                                            );
-                                        }
-                                    }}
-                                    className="bg-amber-600 text-white px-4 rounded hover:bg-amber-700"
-                                >
-                                    <Plus size={20} />
-                                </button>
-                            </div>
-
-                            {/* 현재 선택된 2차 상태의 3차 상태 목록 */}
-                            <div>
-                                <p className="text-xs text-gray-500 font-medium mb-2">
-                                    📋 "{selectedTertiarySecondary}"의 3차 상태 ({(tertiaryStatuses[selectedTertiarySecondary] || []).length}개)
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    {(tertiaryStatuses[selectedTertiarySecondary] || []).map(status => (
-                                        <div key={status} className="flex items-center bg-amber-50 rounded-full px-3 py-1.5 text-sm text-amber-700 border border-amber-200">
-                                            {status}
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    if (confirm(`"${status}" 3차 상태를 삭제하시겠습니까?`)) {
-                                                        deleteTertiaryStatusMutation.mutate(
-                                                            { secondaryStatus: selectedTertiarySecondary, status },
-                                                            {
-                                                                onSuccess: (updatedMap) => setTertiaryStatuses(updatedMap)
-                                                            }
-                                                        );
-                                                    }
-                                                }}
-                                                className="ml-2 text-amber-400 hover:text-red-500"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    {(tertiaryStatuses[selectedTertiarySecondary] || []).length === 0 && (
-                                        <p className="text-xs text-gray-400">등록된 3차 상태가 없습니다. 위에서 추가해주세요.</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* 전체 매핑 요약 */}
-                            {Object.keys(tertiaryStatuses).length > 0 && (
-                                <div className="mt-4 pt-3 border-t border-gray-100">
-                                    <p className="text-xs text-gray-500 font-medium mb-2">📊 전체 3차 상태 매핑 요약</p>
-                                    <div className="space-y-1">
-                                        {(Object.entries(tertiaryStatuses) as [string, string[]][]).map(([sec, list]) => (
-                                            <div key={sec} className="flex items-center gap-2 text-xs">
-                                                <span className={`px-2 py-0.5 rounded-full font-medium ${sec === selectedTertiarySecondary ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
-                                                    {sec}
-                                                </span>
-                                                <span className="text-gray-400">→</span>
-                                                <span className="text-amber-700">{list.join(', ')}</span>
-                                                <span className="text-gray-400 ml-1">({list.length}개)</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {!selectedTertiarySecondary && secondaryStatuses.length > 0 && (
-                        <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded">💡 위에서 2차 상태를 선택하면 해당 상태의 3차 상태를 관리할 수 있습니다.</p>
-                    )}
-                    {secondaryStatuses.length === 0 && (
-                        <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded">⚠️ 먼저 2차 상태를 등록해주세요.</p>
-                    )}
-                </div>
-            </div>
-
-            <div className="grid md:grid-cols-4 gap-6">
-                {/* Partner List Wrapper */}
-                <div id="settings-partner" className="md:col-span-1">
-                    {/* Mobile: Horizontal scrollable list */}
-                    <div className="md:hidden mb-4">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-bold text-gray-700 dark:text-gray-200">거래처 선택</h3>
-                            <button type="button" onClick={handleCreatePartner} className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                                <Plus size={18} />
-                            </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {partners.map(p => (
-                                <button
-                                    type="button"
-                                    key={p.partnerId}
-                                    onClick={() => handleSelectPartner(p)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap border transition-colors ${selectedPartnerId === p.partnerId ? 'bg-blue-600 text-white border-blue-600 shadow' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600'}`}
-                                >
-                                    {p.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Desktop: Vertical list (sidebar) */}
-                    <div className="hidden md:block space-y-3">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-bold text-gray-700 dark:text-gray-200">거래처 목록</h3>
-                            <button type="button" onClick={handleCreatePartner} className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                                <Plus size={18} />
-                            </button>
-                        </div>
-                        <div className="space-y-1">
-                            {partners.map(p => (
-                                <button
-                                    type="button"
-                                    key={p.partnerId}
-                                    onClick={() => handleSelectPartner(p)}
-                                    className={`w-full text-left p-3 rounded-lg flex items-center justify-between ${selectedPartnerId === p.partnerId ? 'bg-blue-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'}`}
-                                >
-                                    <span className="font-medium truncate">{p.name}</span>
-                                    {selectedPartnerId === p.partnerId && <Check size={16} />}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
                 </div>
 
-                {/* Main Content: Partner Detail */}
-                {editingPartner && (
-                    <div className="md:col-span-3 space-y-6">
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <Building size={24} className="text-gray-400" />
-                                <div>
-                                    <label className="text-xs text-gray-500 block mb-1">거래처명</label>
-                                    <input
-                                        type="text"
-                                        className="text-xl font-bold text-gray-800 dark:text-white border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 outline-none pb-1 bg-transparent w-full"
-                                        value={editingPartner.name}
-                                        onChange={e => setEditingPartner({ ...editingPartner, name: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-2 self-end sm:self-center">
-                                <button type="button" onClick={handleDeletePartner} className="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm flex items-center transition-colors">
-                                    <Trash2 size={16} className="mr-1" /> 삭제
-                                </button>
-                                <button type="button" onClick={handleSavePartner} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center transition-colors shadow-sm">
-                                    <Save size={16} className="mr-2" /> 저장
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Sections */}
-                        {/* B2B 제휴 담당자 및 인센티브 계약 설정 */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center justify-between">
-                                <span className="flex items-center">
-                                    <BadgePercent className="mr-2 text-indigo-600" size={20} /> B2B 인센티브 수수료 계약 조건
-                                </span>
-                                <span className="text-xs font-normal text-gray-500">TM사 수령 수수료 정책</span>
-                            </h3>
-
-                            {/* 담당자 정보 */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">담당 사무장 / 국장 성명</label>
-                                    <input
-                                        type="text"
-                                        placeholder="예: 김철수 사무장"
-                                        className="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:border-indigo-500"
-                                        value={editingPartner.managerName || ''}
-                                        onChange={e => setEditingPartner({ ...editingPartner, managerName: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">직통 연락처</label>
-                                    <input
-                                        type="text"
-                                        placeholder="예: 010-1234-5678"
-                                        className="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:border-indigo-500"
-                                        value={editingPartner.contactPhone || ''}
-                                        onChange={e => setEditingPartner({ ...editingPartner, contactPhone: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* 인센티브 방식 선택 */}
-                            <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/40 space-y-4">
-                                <div>
-                                    <label className="text-xs font-bold text-indigo-900 dark:text-indigo-200 block mb-2">인센티브 계산 방식</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {[
-                                            { type: 'rate', label: '정률제 (%)', desc: '수임료의 일정 비율' },
-                                            { type: 'fixed', label: '건당 정액제', desc: '성공 건당 고정 금액' },
-                                            { type: 'tiered', label: '구간별 규칙', desc: '기존 수수료 테이블' }
-                                        ].map(opt => (
-                                            <button
-                                                key={opt.type}
-                                                type="button"
-                                                onClick={() => setEditingPartner({ ...editingPartner, incentiveType: opt.type as any })}
-                                                className={`p-3 rounded-lg border text-left transition-all ${
-                                                    (editingPartner.incentiveType || 'rate') === opt.type
-                                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-indigo-300'
-                                                }`}
-                                            >
-                                                <div className="font-bold text-sm">{opt.label}</div>
-                                                <div className={`text-xs mt-0.5 ${(editingPartner.incentiveType || 'rate') === opt.type ? 'text-indigo-100' : 'text-gray-400'}`}>{opt.desc}</div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {(editingPartner.incentiveType || 'rate') === 'rate' && (
-                                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
-                                        <div>
-                                            <div className="text-sm font-bold text-gray-800 dark:text-white">기본 인센티브 요율</div>
-                                            <div className="text-xs text-gray-500">고객 수임료의 일정 비율을 TM사 수수료로 정산받습니다.</div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                className="w-20 p-2 text-right font-bold text-lg border border-indigo-300 dark:border-indigo-600 rounded-lg outline-none bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400"
-                                                value={editingPartner.incentiveRate ?? 30}
-                                                onChange={e => setEditingPartner({ ...editingPartner, incentiveRate: Number(e.target.value) })}
-                                            />
-                                            <span className="font-bold text-gray-600 dark:text-gray-300">%</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {editingPartner.incentiveType === 'fixed' && (
-                                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
-                                        <div>
-                                            <div className="text-sm font-bold text-gray-800 dark:text-white">건당 정액 수수료</div>
-                                            <div className="text-xs text-gray-500">수임 성공 1건당 고정 금액을 정산받습니다.</div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                className="w-24 p-2 text-right font-bold text-lg border border-indigo-300 dark:border-indigo-600 rounded-lg outline-none bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400"
-                                                value={editingPartner.incentiveFixedAmount ?? 50}
-                                                onChange={e => setEditingPartner({ ...editingPartner, incentiveFixedAmount: Number(e.target.value) })}
-                                            />
-                                            <span className="font-bold text-gray-600 dark:text-gray-300">만원</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div>
-                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">제휴처 특이사항 / 메모</label>
-                                    <input
-                                        type="text"
-                                        placeholder="예: 서울/수도권 회생 전문, 당일 계약 피드백 빠름, 착수금 100만 선지급 지원"
-                                        className="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 outline-none"
-                                        value={editingPartner.notes || ''}
-                                        onChange={e => setEditingPartner({ ...editingPartner, notes: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <CalendarCheck className="mr-2 text-blue-600" size={20} /> 정산 스케줄 설정
-                            </h3>
-                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 space-y-4">
-                                {/* Timing Settings */}
-                                <div>
-                                    <h4 className="text-sm font-bold text-blue-800 mb-2">📅 정산 주기</h4>
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                        <div className="bg-white dark:bg-gray-800 p-3 rounded border border-blue-200 dark:border-blue-800">
-                                            <span className="text-xs text-gray-500 block mb-1">마감 요일</span>
-                                            <select
-                                                className="w-full text-sm font-bold bg-transparent outline-none"
-                                                value={editingPartner.settlementConfig.cutoffDay}
-                                                onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, cutoffDay: Number(e.target.value) } })}
-                                            >
-                                                {[0, 1, 2, 3, 4, 5, 6].map(d => <option key={d} value={d}>{getDayName(d)}요일</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="bg-white dark:bg-gray-800 p-3 rounded border border-blue-200 dark:border-blue-800">
-                                            <span className="text-xs text-gray-500 block mb-1">지급 시기</span>
-                                            <select
-                                                className="w-full text-sm font-bold bg-transparent outline-none"
-                                                value={editingPartner.settlementConfig.payoutWeekDelay}
-                                                onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, payoutWeekDelay: Number(e.target.value) } })}
-                                            >
-                                                <option value={0}>이번 주 (금주)</option>
-                                                <option value={1}>다음 주 (차주)</option>
-                                            </select>
-                                        </div>
-                                        <div className="bg-white dark:bg-gray-800 p-3 rounded border border-blue-200 dark:border-blue-800">
-                                            <span className="text-xs text-gray-500 block mb-1">지급 요일</span>
-                                            <select
-                                                className="w-full text-sm font-bold bg-transparent outline-none"
-                                                value={editingPartner.settlementConfig.payoutDay}
-                                                onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, payoutDay: Number(e.target.value) } })}
-                                            >
-                                                {[0, 1, 2, 3, 4, 5, 6].map(d => <option key={d} value={d}>{getDayName(d)}요일</option>)}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <hr className="border-blue-200" />
-
-                                {/* Rate Settings */}
-                                <div>
-                                    <h4 className="text-sm font-bold text-blue-800 mb-2">💸 지급 비율</h4>
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                        <div className="bg-white dark:bg-gray-800 p-3 rounded border border-blue-200 dark:border-blue-800 flex items-center justify-between">
-                                            <span className="text-xs text-gray-500">계약금 비율</span>
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="number" className="w-12 text-right font-bold outline-none border-b border-gray-300 focus:border-blue-500 mr-1"
-                                                    value={editingPartner.settlementConfig.downPaymentPercentage}
-                                                    onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, downPaymentPercentage: Number(e.target.value) } })}
-                                                />
-                                                <span className="text-sm">%</span>
-                                            </div>
-                                        </div>
-                                        <div className="bg-white dark:bg-gray-800 p-3 rounded border border-blue-200 dark:border-blue-800 flex items-center justify-between">
-                                            <span className="text-xs text-gray-500">선지급 비율</span>
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="number" className="w-12 text-right font-bold outline-none border-b border-gray-300 focus:border-blue-500 mr-1"
-                                                    value={editingPartner.settlementConfig.firstPayoutPercentage}
-                                                    onChange={e => setEditingPartner({ ...editingPartner, settlementConfig: { ...editingPartner.settlementConfig, firstPayoutPercentage: Number(e.target.value) } })}
-                                                />
-                                                <span className="text-sm">%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p className="text-[10px] text-blue-600 mt-2 ml-1">
-                                        * 수임료 구간 최저값 × 계약금 비율 이상 입금 시, 수수료의 선지급 비율만큼 지급합니다.<br />
-                                        * 예: 400~499 구간, 10% → 40만원 이상 입금 시 수수료 50% 선지급<br />
-                                        * 나머지는 수당 룰의 "100% 지급 기준 금액" 이상 입금 시 받습니다. 기준을 0으로 두면 수임료 전액 입금 시로 계산합니다.
-                                    </p>
-                                </div>
-
-                                <hr className="border-blue-200" />
-
-                                {/* [2026-11-01] 받을 돈 계산용: 부가세, 받기로 한 기한 */}
-                                <div>
-                                    <h4 className="text-sm font-bold text-blue-800 mb-2">🧾 청구 방식</h4>
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                        <div className="bg-white dark:bg-gray-800 p-3 rounded border border-blue-200 dark:border-blue-800">
-                                            <span className="text-xs text-gray-500 block mb-1">수수료 부가세</span>
-                                            <select
-                                                className="w-full text-sm font-bold bg-transparent outline-none"
-                                                value={editingPartner.vatMode || 'separate'}
-                                                onChange={e => setEditingPartner({ ...editingPartner, vatMode: e.target.value as any })}
-                                            >
-                                                <option value="separate">별도 (수수료 + 10% 받음)</option>
-                                                <option value="included">포함 (수수료 안에 부가세 포함)</option>
-                                                <option value="none">없음</option>
-                                            </select>
-                                        </div>
-                                        <div className="bg-white dark:bg-gray-800 p-3 rounded border border-blue-200 dark:border-blue-800 flex items-center justify-between">
-                                            <span className="text-xs text-gray-500">연체 판단 여유</span>
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="number" min={0} className="w-12 text-right font-bold outline-none border-b border-gray-300 focus:border-blue-500 mr-1"
-                                                    value={editingPartner.paymentTermDays ?? 7}
-                                                    onChange={e => setEditingPartner({ ...editingPartner, paymentTermDays: Math.max(0, Number(e.target.value) || 0) })}
-                                                />
-                                                <span className="text-sm">일</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p className="text-[10px] text-blue-600 mt-2 ml-1">* 정산 → 받을 돈에서 청구액·연체를 이 설정으로 계산합니다. 받을 날은 위 마감·지급 요일로 정하고, 요일 설정이 없을 때만 "연체 판단 여유" 일수를 씁니다.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* [NEW] Telegram Webhook Mapping Section */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-blue-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <MessageCircle className="mr-2 text-blue-500" size={20} /> 텔레그램 수신 연동 (웹훅)
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                이 거래처(변호사 사무실)의 텔레그램 방입니다. 리드 상세의 <b>[텔레그램 전달]</b>은 이 방으로 보내고,
-                                이 방에서 온 피드백은 이 거래처 고객 안에서만 찾습니다.
-                            </p>
-                            <TelegramChatPicker
-                                value={editingPartner.telegramChatId || ''}
-                                onChange={v => setEditingPartner({ ...editingPartner, telegramChatId: v })}
-                            />
-                        </div>
-
-                        {/* Deposit Names Section - Bank Transaction Matching */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                🏦 입금자명 설정 (거래내역 자동 매칭)
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                이 거래처에서 수수료를 입금할 때 사용하는 이름을 등록해 두면, 은행 거래내역 업로드 시 자동으로 매칭됩니다.
-                            </p>
-
-                            <div className="bg-indigo-50 p-4 rounded-lg mb-4">
-                                <h4 className="text-xs font-bold text-indigo-700 mb-3 uppercase tracking-wider">등록된 입금자명</h4>
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    {(editingPartner.depositNames || []).length > 0 ? (
-                                        editingPartner.depositNames?.map((name, idx) => (
-                                            <div key={idx} className="flex items-center bg-white dark:bg-gray-700 rounded-full px-3 py-1.5 text-sm text-indigo-700 dark:text-indigo-300 border border-indigo-200">
-                                                <span className="mr-1">👤</span> {name}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const updated = (editingPartner.depositNames || []).filter((_, i) => i !== idx);
-                                                        setEditingPartner({ ...editingPartner, depositNames: updated });
-                                                    }}
-                                                    className="ml-2 text-indigo-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5"
-                                                    title="삭제"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-sm text-indigo-400">등록된 입금자명이 없습니다.</p>
-                                    )}
-                                </div>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        id="newDepositName"
-                                        className="flex-1 p-2 border rounded text-sm"
-                                        placeholder="입금자명 입력 (예: 안철형)"
-                                        onKeyDown={e => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                const input = e.target as HTMLInputElement;
-                                                if (input.value.trim()) {
-                                                    const current = editingPartner.depositNames || [];
-                                                    if (!current.includes(input.value.trim())) {
-                                                        setEditingPartner({ ...editingPartner, depositNames: [...current, input.value.trim()] });
-                                                    }
-                                                    input.value = '';
-                                                }
-                                            }
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const input = document.getElementById('newDepositName') as HTMLInputElement;
-                                            if (input?.value.trim()) {
-                                                const current = editingPartner.depositNames || [];
-                                                if (!current.includes(input.value.trim())) {
-                                                    setEditingPartner({ ...editingPartner, depositNames: [...current, input.value.trim()] });
-                                                    showToast('입금자명이 추가되었습니다. 저장 버튼을 눌러주세요.');
-                                                }
-                                                input.value = '';
-                                            }
-                                        }}
-                                        className="bg-indigo-600 text-white px-4 rounded hover:bg-indigo-700"
-                                    >
-                                        <Plus size={20} />
-                                    </button>
-                                </div>
-                                <p className="text-xs text-indigo-500 mt-2">
-                                    💡 예: "안철형", "명율", "법무법인명율" 등 거래처에서 입금 시 표시되는 이름
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Payout Partner Presets Section */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                💳 지급 파트너 프리셋
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                자주 지급하는 파트너를 미리 등록해두면 정산 시 빠르게 선택할 수 있습니다.
-                            </p>
-
-                            {/* Add New Preset */}
-                            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                <h4 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">새 프리셋 추가</h4>
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                                    <div>
-                                        <label className="text-[10px] text-gray-500 block mb-1">파트너명</label>
-                                        <input
-                                            type="text"
-                                            id="newPresetName"
-                                            className="w-full p-2 border rounded text-sm"
-                                            placeholder="마케팅 A사"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-gray-500 block mb-1">계좌 정보</label>
-                                        <input
-                                            type="text"
-                                            id="newPresetAccount"
-                                            className="w-full p-2 border rounded text-sm"
-                                            placeholder="국민 111-222-333"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-gray-500 block mb-1">기본 금액 (만원)</label>
-                                        <input
-                                            type="number"
-                                            id="newPresetAmount"
-                                            className="w-full p-2 border rounded text-sm"
-                                            placeholder="100"
-                                        />
-                                    </div>
-                                    <div className="flex items-end">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const nameEl = document.getElementById('newPresetName') as HTMLInputElement;
-                                                const accountEl = document.getElementById('newPresetAccount') as HTMLInputElement;
-                                                const amountEl = document.getElementById('newPresetAmount') as HTMLInputElement;
-
-                                                if (!nameEl?.value.trim() || !accountEl?.value.trim()) {
-                                                    showToast('파트너명과 계좌 정보를 입력해주세요.', 'error');
-                                                    return;
-                                                }
-
-                                                const newPreset = {
-                                                    id: `preset-${Date.now()}`,
-                                                    name: nameEl.value.trim(),
-                                                    accountInfo: accountEl.value.trim(),
-                                                    defaultAmount: parseInt(amountEl?.value) || undefined
-                                                };
-
-                                                const currentPresets = editingPartner?.payoutPartnerPresets || [];
-                                                setEditingPartner({
-                                                    ...editingPartner!,
-                                                    payoutPartnerPresets: [...currentPresets, newPreset]
-                                                });
-
-                                                nameEl.value = '';
-                                                accountEl.value = '';
-                                                amountEl.value = '';
-                                                showToast('프리셋이 추가되었습니다. 저장 버튼을 눌러주세요.');
-                                            }}
-                                            className="w-full bg-green-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-green-700"
-                                        >
-                                            <Plus size={16} className="inline mr-1" /> 추가
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Preset List */}
-                            <div className="space-y-2">
-                                {(editingPartner?.payoutPartnerPresets || []).length === 0 ? (
-                                    <p className="text-sm text-gray-400 py-4 text-center">등록된 프리셋이 없습니다.</p>
-                                ) : (
-                                    (editingPartner?.payoutPartnerPresets || []).map(preset => (
-                                        <div key={preset.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="flex items-center gap-4">
-                                                <div>
-                                                    <span className="font-medium text-gray-800 dark:text-white">{preset.name}</span>
-                                                    <span className="text-sm text-gray-500 ml-2">{preset.accountInfo}</span>
-                                                </div>
-                                                {preset.defaultAmount && (
-                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                                                        기본 {preset.defaultAmount}만원
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const updatedPresets = (editingPartner?.payoutPartnerPresets || []).filter(p => p.id !== preset.id);
-                                                    setEditingPartner({
-                                                        ...editingPartner!,
-                                                        payoutPartnerPresets: updatedPresets
-                                                    });
-                                                    showToast('프리셋이 삭제되었습니다. 저장 버튼을 눌러주세요.');
-                                                }}
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4">수당 계산 룰</h3>
-                            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                <h4 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">새로운 규칙 추가</h4>
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                                    <div>
-                                        <label className="text-[10px] text-gray-500 block mb-1">최소 금액</label>
-                                        <input
-                                            type="number"
-                                            className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                            placeholder="0"
-                                            value={newRule.minFee}
-                                            onChange={e => setNewRule({ ...newRule, minFee: Number(e.target.value) })}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-gray-500 block mb-1">최대 (0=무제한)</label>
-                                        <input
-                                            type="number"
-                                            className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                            placeholder="0"
-                                            value={newRule.maxFee}
-                                            onChange={e => setNewRule({ ...newRule, maxFee: Number(e.target.value) })}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-green-700 font-bold block mb-1">지급 수당</label>
-                                        <input
-                                            type="number"
-                                            className="w-full p-2 border border-green-200 bg-green-50 rounded text-sm font-bold text-green-800 focus:ring-2 focus:ring-green-500 outline-none"
-                                            placeholder="0"
-                                            value={newRule.commission}
-                                            onChange={e => setNewRule({ ...newRule, commission: Number(e.target.value) })}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-blue-700 font-bold block mb-1">완납 기준</label>
-                                        <input
-                                            type="number"
-                                            className="w-full p-2 border border-blue-200 bg-blue-50 rounded text-sm font-bold text-blue-800 focus:ring-2 focus:ring-blue-500 outline-none"
-                                            placeholder="0"
-                                            value={newRule.fullPayoutThreshold}
-                                            onChange={e => setNewRule({ ...newRule, fullPayoutThreshold: Number(e.target.value) })}
-                                        />
-                                    </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={handleAddRule}
-                                    className="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                                >
-                                    <Plus size={16} /> 규칙 추가하기
-                                </button>
-                            </div>
-
-                            {/* Mobile Card List for Rules */}
-                            <div className="md:hidden space-y-2">
-                                {editingPartner.commissionRules.map(r => (
-                                    <div key={r.ruleId} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-3 flex justify-between items-center shadow-sm">
-                                        <div className="flex-1">
-                                            <div className="text-xs text-gray-500 mb-1">
-                                                {r.minFee.toLocaleString()} ~ {r.maxFee ? r.maxFee.toLocaleString() : '무제한'}
-                                            </div>
-                                            <div className="font-bold text-green-700 flex items-center gap-2">
-                                                <span>수당: {r.commission.toLocaleString()}만원</span>
-                                            </div>
-                                            <div className="text-xs text-blue-600 mt-1">
-                                                완납기준: {r.fullPayoutThreshold.toLocaleString()}만원
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDeleteRule(r.ruleId)}
-                                            className="p-2 text-red-500 hover:bg-red-50 rounded ml-2"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                ))}
-                                {editingPartner.commissionRules.length === 0 && (
-                                    <p className="text-center text-gray-400 py-4 text-sm">등록된 규칙이 없습니다.</p>
-                                )}
-                            </div>
-
-                            {/* Desktop Table for Rules */}
-                            <div className="hidden md:block max-h-40 overflow-y-auto border rounded">
-                                <table className="w-full text-xs text-left">
-                                    <thead className="bg-gray-100 sticky top-0">
-                                        <tr>
-                                            <th className="p-2">구간 (만원)</th>
-                                            <th className="p-2">지급 수당</th>
-                                            <th className="p-2">완납 기준</th>
-                                            <th className="p-2 text-center">관리</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {editingPartner.commissionRules.map(r => (
-                                            <tr key={r.ruleId} className="border-b hover:bg-gray-50 transition-colors">
-                                                <td className="p-2 font-medium">{r.minFee.toLocaleString()} ~ {r.maxFee ? r.maxFee.toLocaleString() : '∞'}</td>
-                                                <td className="p-2 font-bold text-green-700">{r.commission.toLocaleString()}만원</td>
-                                                <td className="p-2 text-blue-600 font-medium">{r.fullPayoutThreshold.toLocaleString()}만원</td>
-                                                <td className="p-2 text-center">
-                                                    <button type="button" onClick={() => handleDeleteRule(r.ruleId)} className="text-red-500 hover:text-red-700">
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* [NEW] Bank Account Info Section */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <Building className="mr-2 text-yellow-600" size={20} /> 입금 계좌 정보
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">정산 안내 시 자동으로 포함될 계좌 정보입니다.</p>
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                <div>
-                                    <label className="text-xs text-gray-500 block mb-1">은행명</label>
-                                    <input
-                                        type="text"
-                                        className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none"
-                                        placeholder="예: 카카오뱅크"
-                                        value={editingPartner.bankInfo?.bankName || ''}
-                                        onChange={e => setEditingPartner({
-                                            ...editingPartner,
-                                            bankInfo: { ...editingPartner.bankInfo, bankName: e.target.value, accountNumber: editingPartner.bankInfo?.accountNumber || '', accountHolder: editingPartner.bankInfo?.accountHolder || '' }
-                                        })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-xs text-gray-500 block mb-1">계좌번호</label>
-                                    <input
-                                        type="text"
-                                        className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none"
-                                        placeholder="예: 3333-01-1234567"
-                                        value={editingPartner.bankInfo?.accountNumber || ''}
-                                        onChange={e => setEditingPartner({
-                                            ...editingPartner,
-                                            bankInfo: { ...editingPartner.bankInfo, bankName: editingPartner.bankInfo?.bankName || '', accountNumber: e.target.value, accountHolder: editingPartner.bankInfo?.accountHolder || '' }
-                                        })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-xs text-gray-500 block mb-1">예금주</label>
-                                    <input
-                                        type="text"
-                                        className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none"
-                                        placeholder="예: 홍길동"
-                                        value={editingPartner.bankInfo?.accountHolder || ''}
-                                        onChange={e => setEditingPartner({
-                                            ...editingPartner,
-                                            bankInfo: { ...editingPartner.bankInfo, bankName: editingPartner.bankInfo?.bankName || '', accountNumber: editingPartner.bankInfo?.accountNumber || '', accountHolder: e.target.value }
-                                        })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* [NEW] Kakao Templates Section */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <MessageSquare className="mr-2 text-yellow-500" size={20} /> 카톡 템플릿 설정
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">주간 정산 시 사용할 카카오톡 메시지 템플릿입니다.</p>
-
-                            <div className="space-y-6">
-                                {/* Invoice Notice Template */}
-                                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                                    <h4 className="text-sm font-bold text-yellow-800 mb-2 flex items-center">
-                                        📄 발행 완료 안내 (화요일)
-                                    </h4>
-                                    <p className="text-xs text-yellow-600 mb-3">세금계산서 발행 후 거래처에 보낼 안내 메시지입니다.</p>
-                                    <textarea
-                                        className="w-full h-32 p-3 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white dark:bg-gray-700 dark:text-white"
-                                        placeholder={`예시:
-안녕하세요, {{거래처명}}님!
-{{주차라벨}} 정산 세금계산서 발행 완료되었습니다.
-
-공급가: {{공급가}}원
-VAT: {{VAT}}원
-합계: {{합계}}원
-
-입금 계좌: {{계좌정보}}
-
-확인 부탁드립니다. 감사합니다!`}
-                                        value={editingPartner.kakaoTemplates?.invoiceNotice || ''}
-                                        onChange={e => setEditingPartner({
-                                            ...editingPartner,
-                                            kakaoTemplates: { ...editingPartner.kakaoTemplates, invoiceNotice: e.target.value }
-                                        })}
-                                    />
-                                </div>
-
-                                {/* Payout Request Template */}
-                                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                                    <h4 className="text-sm font-bold text-green-800 mb-2 flex items-center">
-                                        💰 파트너 세금계산서 요청 (수요일)
-                                    </h4>
-                                    <p className="text-xs text-green-600 mb-3">파트너 지급 후 매입 세금계산서 발행 요청 메시지입니다.</p>
-                                    <textarea
-                                        className="w-full h-32 p-3 border border-green-200 dark:border-green-800 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-gray-700 dark:text-white"
-                                        placeholder={`예시:
-안녕하세요, {{거래처명}}님!
-{{주차라벨}} 수당 {{지급액}}원 송금 완료되었습니다.
-
-세금계산서 발행 부탁드립니다.
-감사합니다!`}
-                                        value={editingPartner.kakaoTemplates?.payoutRequest || ''}
-                                        onChange={e => setEditingPartner({
-                                            ...editingPartner,
-                                            kakaoTemplates: { ...editingPartner.kakaoTemplates, payoutRequest: e.target.value }
-                                        })}
-                                    />
-                                </div>
-                            </div>
-
-                            <p className="text-[10px] text-gray-500 mt-3">
-                                * 템플릿 치환자: {'{{거래처명}}'}, {'{{주차라벨}}'}, {'{{공급가}}'}, {'{{VAT}}'}, {'{{합계}}'}, {'{{계좌정보}}'}, {'{{지급액}}'}
-                            </p>
-                        </div>
-
-                        {/* [2026-11-01] 상담·AI 정리 설정: 필수 확인 항목 + 분류 기준 (통화 녹음 AI 정리와 상담 진행 화면이 같이 씀) */}
-                        <div id="settings-intake" className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-5">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 flex items-center">
-                                    <ListChecks className="mr-2 text-emerald-600" size={20} /> 필수 확인 항목
-                                </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-3">이 사무실에 넘기기 전에 상담원이 꼭 물어볼 항목입니다. 상담 화면에 진행률로 보이고, 통화 녹음 AI 정리가 빠진 항목을 알려줍니다.</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {CHECK_ITEMS.map(item => {
-                                        const current = editingPartner.checkItems || DEFAULT_CHECK_ITEMS;
-                                        const on = current.includes(item.key);
-                                        return (
-                                            <button
-                                                type="button"
-                                                key={item.key}
-                                                onClick={() => setEditingPartner({ ...editingPartner, checkItems: on ? current.filter(k => k !== item.key) : [...current, item.key] })}
-                                                className={`px-3 py-1.5 rounded-full text-sm border ${on ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 font-bold' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600'}`}
-                                            >
-                                                {item.label}{on && ' ✓'}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-gray-700 dark:text-gray-100">분류 기준</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">AI가 통화 내용을 듣고 이 기준으로 "개인회생 가능 / 파산 검토 / 진행 어려움" 같이 분류합니다. 사무실이 쓰는 말로 적으세요.</p>
-                                <textarea
-                                    className="w-full h-28 p-3 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none dark:bg-gray-700 dark:text-white"
-                                    value={editingPartner.aiClassificationGuide ?? DEFAULT_CLASSIFICATION_GUIDE}
-                                    onChange={e => setEditingPartner({ ...editingPartner, aiClassificationGuide: e.target.value })}
-                                />
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded p-2">통화 녹음 AI 정리는 아래 <b>AI 요약 프롬프트</b>(요약 작성 규칙)와 <b>요약문 양식</b>(사무실 보고서 양식)도 그대로 따릅니다.</p>
-                        </div>
-
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <Edit3 className="mr-2 text-indigo-600" size={20} /> 등록 화면 추가 항목
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">신규 등록·상담 화면에 보일 추가 입력 칸을 선택하세요.</p>
-                            <div className="flex flex-wrap gap-2">
-                                {AVAILABLE_FIELDS_CONFIG.map(field => (
-                                    <button
-                                        type="button"
-                                        key={field.key}
-                                        onClick={() => toggleField(field.key)}
-                                        className={`px-3 py-1.5 rounded-full text-sm border ${editingPartner.requiredFields.includes(field.key) ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700 font-bold' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600'}`}
-                                    >
-                                        {field.label} {editingPartner.requiredFields.includes(field.key) && '✓'}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* AI Prompt Settings */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <Sparkles className="mr-2 text-purple-600" size={20} /> AI 요약 프롬프트 설정
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">통화 녹음 요약을 어떻게 쓸지 AI에게 주는 규칙입니다. 자동 업로드된 녹음과 직접 올린 녹음 모두 이 규칙을 씁니다.</p>
-                            <textarea
-                                className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-purple-500 outline-none dark:bg-gray-700 dark:text-white"
-                                value={editingPartner.aiPromptTemplate || DEFAULT_AI_PROMPT}
-                                onChange={e => setEditingPartner({ ...editingPartner, aiPromptTemplate: e.target.value })}
-                                placeholder="AI 프롬프트를 입력하세요."
-                            />
-                        </div>
-
-                        {/* OCR Prompt Settings */}
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <Sparkles className="mr-2 text-pink-600" size={20} /> OCR 인식 프롬프트 설정 (Gemini)
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">이미지/PDF 업로드 시 Gemini에게 보낼 지시사항을 설정합니다. (JSON 필드 정의 필수)</p>
-                            <textarea
-                                className="w-full h-40 p-3 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-pink-500 outline-none font-mono dark:bg-gray-700 dark:text-white"
-                                value={editingPartner.ocrPromptTemplate || DEFAULT_OCR_PROMPT}
-                                onChange={e => setEditingPartner({ ...editingPartner, ocrPromptTemplate: e.target.value })}
-                                placeholder="OCR 프롬프트를 입력하세요."
-                            />
-                        </div>
-
-                        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center">
-                                <Info className="mr-2 text-orange-600" size={20} /> 요약문 양식
-                            </h3>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <textarea
-                                    className="w-full h-64 p-3 border border-gray-300 dark:border-gray-600 rounded text-sm font-mono whitespace-pre dark:bg-gray-700 dark:text-white"
-                                    value={editingPartner.summaryTemplate}
-                                    onChange={e => setEditingPartner({ ...editingPartner, summaryTemplate: e.target.value })}
-                                />
-                                <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded text-xs text-gray-600 dark:text-gray-400 h-64 overflow-y-auto">
-                                    <p className="font-bold mb-2">사용 가능한 치환자:</p>
-                                    <ul className="space-y-1 list-disc pl-4">
-                                        <li><code>{'{{managerName}}'}</code> 담당자명</li>
-                                        <li><code>{'{{customerName}}'}</code> 고객명</li>
-                                        <li><code>{'{{phone}}'}</code> 연락처</li>
-                                        <li><code>{'{{birth}}'}</code> 출생년도</li>
-                                        <li><code>{'{{gender}}'}</code> 성별</li>
-                                        <li><code>{'{{region}}'}</code> 거주지역</li>
-                                        <li><code>{'{{jobTypes}}'}</code> 직업</li>
-                                        <li><code>{'{{insurance4}}'}</code> 4대보험</li>
-                                        <li><code>{'{{maritalStatus}}'}</code> 결혼 여부</li>
-                                        <li><code>{'{{childrenCount}}'}</code> 미성년 자녀 수</li>
-                                        <li><code>{'{{incomeDetails}}'}</code> 월 소득 (직업별)</li>
-                                        <li><code>{'{{loanMonthlyPay}}'}</code> 월 대출 납입금</li>
-                                        <li><code>{'{{housingType}}'}</code> 주거 형태 · <code>{'{{housingDetail}}'}</code> 주거 종류</li>
-                                        <li><code>{'{{depositRentStr}}'}</code> 보증금·월세·시세</li>
-                                        <li><code>{'{{assetsStr}}'}</code> 재산 목록</li>
-                                        <li><code>{'{{creditLoanStr}}'}</code> 신용 채무 (카드 포함, 합계)</li>
-                                        <li><code>{'{{collateralStr}}'}</code> 담보 채무 (합계)</li>
-                                        <li><code>{'{{debtTotalStr}}'}</code> 총 채무 (신용+담보)</li>
-                                        <li><code>{'{{creditCardUse}}'}</code> 신용카드 사용 · <code>{'{{creditCardAmountStr}}'}</code> 사용액</li>
-                                        <li><code>{'{{historyStr}}'}</code> 회생·파산 이력</li>
-                                        <li><code>{'{{specialMemo}}'}</code> 상담 메모 (상태 변경 기록 제외)</li>
-                                    </ul>
-                                    <p className="mt-2 text-gray-500">통화 녹음 AI 정리는 이 양식의 줄 순서를 그대로 지켜 "사무실 보고서"를 만듭니다.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* 위험 구역 (Danger Zone) - 회사 최고 대표(Owner) 전용 긴급 영구 파기 */}
-            {org?.role === 'owner' && (
-                <div id="settings-danger" className="bg-rose-50/30 dark:bg-rose-950/20 p-4 md:p-6 rounded-xl shadow-xs border-2 border-rose-500/40 space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5">
-                            <span className="p-2 bg-rose-600 text-white rounded-xl shadow-xs">
-                                <Skull size={20} />
-                            </span>
-                            <div>
-                                <h3 className="text-base md:text-lg font-bold text-rose-950 dark:text-rose-200 flex items-center gap-2">
-                                    위험 구역 (Danger Zone)
-                                    <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-rose-600 text-white">
-                                        대표자 전용
-                                    </span>
-                                </h3>
-                                <p className="text-xs text-rose-800 dark:text-rose-300/80 mt-0.5">
-                                    비상 상황(개인정보 침해 위험, 법적 분쟁, 긴급 감사 등)에 대비하여 자사 소속의 모든 고객 DB와 통화 녹음을 즉시 영구 파기합니다.
-                                </p>
-                            </div>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={() => setIsEmergencyPurgeOpen(true)}
-                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm active:scale-95"
-                        >
-                            <ShieldAlert size={15} />
-                            <span>회사 데이터 긴급 영구 파기</span>
-                        </button>
-                    </div>
-
-                    <div className="p-3.5 bg-rose-950/10 dark:bg-rose-950/40 border border-rose-500/30 rounded-lg text-xs text-rose-900 dark:text-rose-300 space-y-1">
-                        <p className="font-semibold flex items-center gap-1">
-                            <AlertTriangle size={14} className="text-rose-500 shrink-0" />
-                            영구 파기 실행 시 발생하는 영향:
-                        </p>
-                        <ul className="list-disc list-inside space-y-0.5 pl-1 text-[11px] text-rose-800 dark:text-rose-300/90">
-                            <li>등록된 모든 고객 리드({cases.length.toLocaleString()}건), 상담 메모, 채무 정보가 영구 삭제됩니다.</li>
-                            <li>통화 녹음 음성 파일, Gemini AI 요약문, STT 대화록 원본이 물리적으로 완전 소멸됩니다.</li>
-                            <li>수신동의 DB 회차 및 수신거부(DNC) 목록이 초기화됩니다.</li>
-                            <li>오직 회사 최고 대표(Owner)만 실행 가능하며, 삭제된 데이터는 본사를 포함해 어떠한 방법으로도 절대 복구할 수 없습니다.</li>
-                        </ul>
-                    </div>
-                </div>
-            )}
-
-            {/* MODALS */}
-            <Modal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
-                title="거래처 삭제 확인"
-            >
-                <div>
-                    <div className="flex items-start gap-3">
-                        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
-                        </div>
-                        <div className="mt-0 text-left">
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                정말로 <span className="font-bold text-gray-900 dark:text-white">'{editingPartner?.name}'</span> 거래처를 삭제하시겠습니까?
-                                <br />
-                                이 작업은 되돌릴 수 없습니다.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
-                        <button
-                            type="button"
-                            onClick={executeDeletePartner}
-                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                            삭제
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setDeleteModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
-                        >
-                            취소
-                        </button>
-                    </div>
-                </div>
-            </Modal>
-
-            <Modal
-                isOpen={isAddPartnerModalOpen}
-                onClose={() => setAddPartnerModalOpen(false)}
-                title="새 거래처 추가"
-            >
-                <div>
-                    <label htmlFor="new-partner-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        거래처 이름
-                    </label>
+                <div className="w-full md:w-72 relative">
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                         type="text"
-                        id="new-partner-name"
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        value={newPartnerName}
-                        onChange={(e) => setNewPartnerName(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && executeCreatePartner()}
-                        placeholder="예: 미래 법률사무소"
-                        autoFocus
+                        placeholder="설정 항목 검색 (예: 부재콜, 정산, 텔레그램)"
+                        className="w-full pl-9 pr-3 py-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20"
+                        value={searchQuery}
+                        onChange={e => {
+                            const q = e.target.value;
+                            setSearchQuery(q);
+                            if (q.includes('거래처') || q.includes('정산') || q.includes('수수료') || q.includes('계좌')) {
+                                setActiveTab('partners');
+                            } else if (q.includes('콜') || q.includes('부재') || q.includes('상태') || q.includes('유입') || q.includes('이메일') || q.includes('담당자')) {
+                                setActiveTab('operations');
+                            } else if (q.includes('텔레') || q.includes('봇') || q.includes('ai') || q.includes('단어') || q.includes('키워드')) {
+                                setActiveTab('integrations');
+                            } else if (q.includes('백업') || q.includes('복원') || q.includes('파기') || q.includes('삭제')) {
+                                setActiveTab('data_security');
+                            }
+                        }}
                     />
-                    <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
-                        <button
-                            type="button"
-                            onClick={executeCreatePartner}
-                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                            추가
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setAddPartnerModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
-                        >
-                            취소
-                        </button>
-                    </div>
                 </div>
-            </Modal>
+            </div>
 
-            <Modal
-                isOpen={isPathDeleteModalOpen}
-                onClose={() => setPathDeleteModalOpen(false)}
-                title="유입 경로 삭제 확인"
-            >
-                <div>
-                    <div className="flex items-start gap-3 mb-4">
-                        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
-                        </div>
-                        <div className="mt-0 text-left">
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                정말로 <span className="font-bold text-gray-900 dark:text-white">'{pathToDelete}'</span> 경로를 삭제하시겠습니까?
-                            </p>
-                            {affectedPathCaseCount > 0 && (
-                                <div className="mt-2 bg-yellow-50 dark:bg-yellow-950/40 p-3 rounded-md border border-yellow-100 dark:border-yellow-900/50">
-                                    <p className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-1">
-                                        ⚠️ 현재 이 경로로 등록된 건수: {affectedPathCaseCount}건
-                                    </p>
-                                    <p className="text-xs text-yellow-700 dark:text-yellow-300/80 mb-2">
-                                        삭제 시 해당 건들의 유입 경로를 아래 경로로 일괄 변경해야 합니다.
-                                    </p>
-                                    <select
-                                        className="w-full p-2 border dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 dark:text-white"
-                                        value={pathMigrationTarget}
-                                        onChange={e => setPathMigrationTarget(e.target.value)}
-                                    >
-                                        <option value="">-- 이관할 경로 선택 --</option>
-                                        {inboundPaths.filter(p => p !== pathToDelete).map(p => (
-                                            <option key={p} value={p}>{p}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
-                        <button
-                            type="button"
-                            onClick={() => executeDeletePath()}
-                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                            삭제 및 이관
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setPathDeleteModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
-                        >
-                            취소
-                        </button>
-                    </div>
-                </div>
-            </Modal>
+            {/* 2. 대분류 4대 탭 바 */}
+            <div className="bg-gray-100/80 dark:bg-gray-800/80 p-1.5 rounded-2xl flex items-center space-x-1 overflow-x-auto shadow-inner">
+                <button
+                    onClick={() => setActiveTab('partners')}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        activeTab === 'partners'
+                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <Building size={16} />
+                    <span>1. 거래처 맞춤 관리</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300">
+                        {partners.length}개
+                    </span>
+                </button>
 
-            <Modal
-                isOpen={isStatusDeleteModalOpen}
-                onClose={() => setStatusDeleteModalOpen(false)}
-                title="상태 삭제 확인"
-            >
-                <div>
-                    <div className="flex items-start gap-3 mb-4">
-                        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
-                        </div>
-                        <div className="mt-0 text-left">
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                정말로 <span className="font-bold text-gray-900 dark:text-white">'{statusToDelete}'</span> 상태를 삭제하시겠습니까?
-                            </p>
-                            {affectedCaseCount > 0 && (
-                                <div className="mt-2 bg-yellow-50 dark:bg-yellow-950/40 p-3 rounded-md border border-yellow-100 dark:border-yellow-900/50">
-                                    <p className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-1">
-                                        ⚠️ 현재 이 상태로 등록된 건수: {affectedCaseCount}건
-                                    </p>
-                                    <p className="text-xs text-yellow-700 dark:text-yellow-300/80 mb-2">
-                                        삭제 시 해당 건들의 상태를 아래 상태로 일괄 변경해야 합니다.
-                                    </p>
-                                    <select
-                                        className="w-full p-2 border dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 dark:text-white"
-                                        value={migrationTarget}
-                                        onChange={e => setMigrationTarget(e.target.value)}
-                                    >
-                                        <option value="">-- 이관할 상태 선택 --</option>
-                                        {statuses.filter(s => s !== statusToDelete).map(s => (
-                                            <option key={s} value={s}>{s}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
-                        <button
-                            type="button"
-                            onClick={() => executeDeleteStatus()}
-                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                            삭제 및 이관
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setStatusDeleteModalOpen(false)}
-                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
-                        >
-                            취소
-                        </button>
-                    </div>
-                </div>
-            </Modal>
+                <button
+                    onClick={() => setActiveTab('operations')}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        activeTab === 'operations'
+                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <Sliders size={16} />
+                    <span>2. 공통 업무 설정</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                        콜/상태
+                    </span>
+                </button>
 
-            {/* 비상 데이터 영구 파기 모달 */}
-            <EmergencyPurgeModal
-                isOpen={isEmergencyPurgeOpen}
-                onClose={() => setIsEmergencyPurgeOpen(false)}
-                cases={cases}
-            />
-                </div>{/* end flex-1 content */}
-            </div>{/* end flex gap-6 */}
-        </div >
+                <button
+                    onClick={() => setActiveTab('integrations')}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        activeTab === 'integrations'
+                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <MessageCircle size={16} />
+                    <span>3. 외부 연동 & AI</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300">
+                        텔레그램/AI
+                    </span>
+                </button>
+
+                <button
+                    onClick={() => setActiveTab('data_security')}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        activeTab === 'data_security'
+                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <Shield size={16} />
+                    <span>4. 데이터 & 보안</span>
+                </button>
+            </div>
+
+            {/* 3. 탭별 메인 뷰 */}
+            <div className="pt-2">
+                {activeTab === 'partners' && (
+                    <PartnerSettingsTab
+                        partners={partners}
+                        selectedPartnerId={selectedPartnerId}
+                        setSelectedPartnerId={setSelectedPartnerId}
+                        editingPartner={editingPartner}
+                        setEditingPartner={setEditingPartner}
+                        onSavePartner={handleSavePartner}
+                        onDeletePartner={handleDeletePartnerClick}
+                        onOpenAddModal={() => setAddPartnerModalOpen(true)}
+                        newRule={newRule}
+                        setNewRule={setNewRule}
+                        onAddRule={handleAddRule}
+                        onDeleteRule={handleDeleteRule}
+                        toggleField={toggleField}
+                        cases={cases}
+                        isSaving={isSavingPartner}
+                    />
+                )}
+
+                {activeTab === 'operations' && (
+                    <OperationsSettingsTab
+                        managerName={managerName}
+                        setManagerName={setManagerName}
+                        onSaveManagerName={handleSaveManagerName}
+                        missedCallIntervalTiers={missedCallIntervalTiers}
+                        setMissedCallIntervalTiers={setMissedCallIntervalTiers}
+                        inboundPaths={inboundPaths}
+                        newPath={newPath}
+                        setNewPath={setNewPath}
+                        onAddPath={handleAddPath}
+                        onDeletePath={handleDeletePath}
+                        statuses={statuses}
+                        newStatus={newStatus}
+                        setNewStatus={setNewStatus}
+                        onAddStatus={handleAddStatus}
+                        onDeleteStatus={handleDeleteStatus}
+                        secondaryStatuses={secondaryStatuses}
+                        newSecondaryStatus={newSecondaryStatus}
+                        setNewSecondaryStatus={setNewSecondaryStatus}
+                        onAddSecondaryStatus={handleAddSecondaryStatus}
+                        onDeleteSecondaryStatus={handleDeleteSecondaryStatus}
+                        tertiaryStatuses={tertiaryStatuses}
+                        selectedTertiarySecondary={selectedTertiarySecondary}
+                        setSelectedTertiarySecondary={setSelectedTertiarySecondary}
+                        newTertiaryStatus={newTertiaryStatus}
+                        setNewTertiaryStatus={setNewTertiaryStatus}
+                        onAddTertiaryStatus={handleAddTertiaryStatus}
+                        onDeleteTertiaryStatus={handleDeleteTertiaryStatus}
+                        emailNotificationEnabled={emailNotificationEnabled}
+                        setEmailNotificationEnabled={setEmailNotificationEnabled}
+                        emailNotificationRecipients={emailNotificationRecipients}
+                        setEmailNotificationRecipients={setEmailNotificationRecipients}
+                        emailNotificationMinutes={emailNotificationMinutes}
+                        setEmailNotificationMinutes={setEmailNotificationMinutes}
+                        newEmailRecipient={newEmailRecipient}
+                        setNewEmailRecipient={setNewEmailRecipient}
+                        onSaveEmailSettings={handleSaveEmailSettings}
+                        emailSettingsLoading={emailSettingsLoading}
+                    />
+                )}
+
+                {activeTab === 'integrations' && (
+                    <IntegrationsSettingsTab
+                        telegramRooms={telegramRooms}
+                        setTelegramRooms={setTelegramRooms}
+                        onSaveTelegramRooms={handleSaveTelegramRooms}
+                        aiUsage={aiUsage}
+                        aiKeywords={aiKeywords}
+                        setAiKeywords={setAiKeywords}
+                        onSaveAiKeywords={handleSaveAiKeywords}
+                        isAdmin={isAdmin}
+                    />
+                )}
+
+                {activeTab === 'data_security' && (
+                    <DataSecurityTab
+                        onDownloadBackup={handleDownloadBackup}
+                        onRestoreBackup={handleRestoreBackup}
+                        onForceSync={handleForceSync}
+                        isOwner={org?.role === 'owner'}
+                        onOpenEmergencyPurge={() => setIsEmergencyPurgeOpen(true)}
+                    />
+                )}
+            </div>
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal 1: 거래처 삭제 확인 모달                                */}
+            {/* ------------------------------------------------------------- */}
+            {isDeleteModalOpen && editingPartner && (
+                <Modal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="거래처 삭제">
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                            정말로 <strong className="text-rose-600">'{editingPartner.name}'</strong> 거래처를 삭제하시겠습니까?
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            연관된 수수료 규칙 및 서식 설정이 모두 삭제됩니다.
+                        </p>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                onClick={() => setDeleteModalOpen(false)}
+                                className="px-4 py-2 border rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={confirmDeletePartner}
+                                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-xs"
+                            >
+                                삭제
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal 2: 새 거래처 등록 모달                                   */}
+            {/* ------------------------------------------------------------- */}
+            {isAddPartnerModalOpen && (
+                <Modal isOpen={isAddPartnerModalOpen} onClose={() => setAddPartnerModalOpen(false)} title="새 거래처 등록">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">거래처 상호명</label>
+                            <input
+                                type="text"
+                                placeholder="예: 한울 법률사무소"
+                                className="w-full p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                value={newPartnerName}
+                                onChange={e => setNewPartnerName(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddPartner(); } }}
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                onClick={() => setAddPartnerModalOpen(false)}
+                                className="px-4 py-2 border rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleAddPartner}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs"
+                            >
+                                등록
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal 3: 유입경로 삭제 마이그레이션 모달                     */}
+            {/* ------------------------------------------------------------- */}
+            {isPathDeleteModalOpen && pathToDelete && (
+                <Modal isOpen={isPathDeleteModalOpen} onClose={() => setPathDeleteModalOpen(false)} title="유입 경로 삭제 및 이관">
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                            '<strong className="text-blue-600">{pathToDelete}</strong>' 경로를 사용하는 사건이{' '}
+                            <strong>{affectedPathCaseCount}건</strong> 있습니다.
+                        </p>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1">
+                                기존 사건들을 이관할 대상 경로:
+                            </label>
+                            <select
+                                className="w-full p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                value={pathMigrationTarget}
+                                onChange={e => setPathMigrationTarget(e.target.value)}
+                            >
+                                <option value="">-- 이관할 경로 선택 --</option>
+                                {inboundPaths.filter(p => p !== pathToDelete).map(p => (
+                                    <option key={p} value={p}>{p}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                onClick={() => setPathDeleteModalOpen(false)}
+                                className="px-4 py-2 border rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={() => executeDeletePath()}
+                                disabled={!pathMigrationTarget}
+                                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50"
+                            >
+                                이관 후 삭제
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal 4: 1차 상태 삭제 마이그레이션 모달                     */}
+            {/* ------------------------------------------------------------- */}
+            {isStatusDeleteModalOpen && statusToDelete && (
+                <Modal isOpen={isStatusDeleteModalOpen} onClose={() => setStatusDeleteModalOpen(false)} title="상태 삭제 및 이관">
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                            '<strong className="text-blue-600">{statusToDelete}</strong>' 상태인 사건이{' '}
+                            <strong>{affectedCaseCount}건</strong> 있습니다.
+                        </p>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1">
+                                기존 사건들을 이관할 대상 상태:
+                            </label>
+                            <select
+                                className="w-full p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                value={migrationTarget}
+                                onChange={e => setMigrationTarget(e.target.value)}
+                            >
+                                <option value="">-- 이관할 상태 선택 --</option>
+                                {statuses.filter(s => s !== statusToDelete).map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                onClick={() => setStatusDeleteModalOpen(false)}
+                                className="px-4 py-2 border rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={() => executeDeleteStatus()}
+                                disabled={!migrationTarget}
+                                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50"
+                            >
+                                이관 후 삭제
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal 5: 긴급 데이터 파기 모달                                */}
+            {/* ------------------------------------------------------------- */}
+            {isEmergencyPurgeOpen && (
+                <EmergencyPurgeModal
+                    isOpen={isEmergencyPurgeOpen}
+                    onClose={() => setIsEmergencyPurgeOpen(false)}
+                />
+            )}
+        </div>
     );
 }
