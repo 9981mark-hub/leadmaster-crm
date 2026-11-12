@@ -256,7 +256,7 @@ export default function Dashboard() {
           <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
         </div>
         <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
-          <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText="구간별 알림 적용중" />
+          <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText="구간별 알림 적용중" pulseGlow={overdueMissedCallCount > 0} />
         </Link>
         {/* 총괄 운영자/HOST 전용: 일반 고객사 및 회사 관리자 비노출 */}
         {isPlatformAdmin && (

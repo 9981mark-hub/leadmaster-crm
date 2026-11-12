@@ -23,6 +23,8 @@ interface CaseListHeaderProps {
     /** 데이터 내보내기 버튼 표시 (회사 관리자만). 기본 false */
     canExport?: boolean;
     onOpenNewCaseModal?: () => void;
+    density?: 'standard' | 'compact';
+    onToggleDensity?: () => void;
 }
 
 export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
@@ -42,7 +44,9 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     onResetPage,
     onExportClick,
     canExport = false,
-    onOpenNewCaseModal
+    onOpenNewCaseModal,
+    density = 'standard',
+    onToggleDensity
 }) => {
     return (
         <div className="space-y-4">
@@ -150,6 +154,16 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             <span className="text-xs text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
                         )}
                     </div>
+                    {onToggleDensity && (
+                        <button
+                            type="button"
+                            onClick={onToggleDensity}
+                            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-2xs transition-colors whitespace-nowrap"
+                            title={density === 'compact' ? '표준 보기로 전환' : '컴팩트(압축) 보기로 전환'}
+                        >
+                            <span>{density === 'compact' ? '표준 뷰' : '압축 뷰'}</span>
+                        </button>
+                    )}
                     {onOpenNewCaseModal && (
                         <button
                             type="button"

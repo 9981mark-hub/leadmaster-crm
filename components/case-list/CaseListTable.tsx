@@ -141,6 +141,7 @@ interface CaseListTableProps {
     onToggleSelect?: (caseId: string) => void;
     onToggleSelectAll?: (caseIds: string[], on: boolean) => void;
     memberName?: (userId?: string) => string;
+    density?: 'standard' | 'compact';
 }
 
 export const CaseListTable: React.FC<CaseListTableProps> = ({
@@ -162,7 +163,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     onToggleSelect,
     onToggleSelectAll,
     memberName,
+    density = 'standard',
 }) => {
+    const isCompact = density === 'compact';
+    const cellPadding = isCompact ? 'py-1.5 px-3' : 'py-3 px-4';
+    const headerPadding = isCompact ? 'py-2 px-3' : 'py-3 px-4';
+    const textScale = isCompact ? 'text-xs' : 'text-sm';
     const selectable = !!onToggleSelect && (viewMode === 'active' || viewMode === 'archived');
     const pageIds = cases.map(c => c.caseId);
     const allOnPage = selectable && pageIds.length > 0 && pageIds.every(id => selectedIds?.has(id));
@@ -561,24 +567,24 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
             {/* Desktop View (Table) */}
             <div className="hidden md:block flex-1">
-                <table className="w-full text-sm text-left text-gray-600 dark:text-gray-300 table-fixed">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase font-medium text-xs">
+                <table className={`w-full ${textScale} text-left text-slate-600 dark:text-slate-300 table-fixed`}>
+                    <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 uppercase font-semibold text-xs border-b border-slate-200 dark:border-slate-700">
                         <tr>
                             {selectable && (
-                                <th className="pl-3 pr-1 py-3 w-[3%] text-center">
+                                <th className={`pl-3 pr-1 ${headerPadding} w-[3%] text-center`}>
                                     <input type="checkbox" aria-label="이 쪽 모두 선택" checked={allOnPage} onChange={() => onToggleSelectAll?.(pageIds, !allOnPage)} />
                                 </th>
                             )}
-                            <th className="px-2 py-3 w-[3%] text-center"><Star size={14} className="inline text-gray-400" /></th>
-                            <th className="px-4 py-3 w-[14%]">유형/경로/거래처</th>
-                            <th className="px-4 py-3 w-[11%]">고객명</th>
-                            <th className="px-4 py-3 w-[12%]">연락처</th>
-                            <th className="px-4 py-3 w-[10%]">상태</th>
-                            <th className="px-4 py-3 w-[10%]">등록일</th>
-                            <th className="px-4 py-3 w-[10%]">최종상담일</th>
-                            <th className={`px-4 py-3 ${viewMode === 'active' ? 'w-[30%]' : 'w-[20%]'}`}>리마인더</th>
+                            <th className={`px-2 ${headerPadding} w-[3%] text-center`}><Star size={14} className="inline text-gray-400" /></th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[14%]`}>유형/경로/거래처</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[11%]`}>고객명</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[12%]`}>연락처</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%]`}>상태</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%]`}>등록일</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%]`}>최종상담일</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} ${viewMode === 'active' ? 'w-[30%]' : 'w-[20%]'}`}>리마인더</th>
                             {viewMode !== 'active' && (
-                                <th className="px-4 py-3 w-[10%] text-center">
+                                <th className={`px-3 md:px-4 ${headerPadding} w-[10%] text-center`}>
                                     {viewMode === 'archived' ? '보관·삭제' : '휴지통 관리'}
                                 </th>
                             )}
@@ -599,12 +605,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     className={`border-b border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700/60 transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : c.isStarred ? 'bg-amber-50/40 dark:bg-amber-900/10' : ''}`}
                                 >
                                     {selectable && (
-                                        <td className="pl-3 pr-1 py-3 text-center">
+                                        <td className={`pl-3 pr-1 ${cellPadding} text-center`}>
                                             <input type="checkbox" aria-label={`${c.customerName} 선택`} checked={isSelected} onChange={() => onToggleSelect?.(c.caseId)} />
                                         </td>
                                     )}
                                     {/* [NEW] Star Column */}
-                                    <td className="px-2 py-3 text-center">
+                                    <td className={`px-2 ${cellPadding} text-center`}>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
                                             className={`p-1 rounded-full transition-all hover:scale-110 ${c.isStarred ? 'text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-amber-300 dark:text-gray-600 dark:hover:text-amber-400'}`}
@@ -613,14 +619,14 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
                                         </button>
                                     </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex flex-col gap-1">
+                                    <td className={cellPadding}>
+                                        <div className="flex flex-col gap-0.5">
                                             <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
                                             <span className="text-[10px] text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
                                             <span className="text-[10px] text-gray-400 dark:text-gray-500">{partner?.name}</span>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3">
+                                    <td className={cellPadding}>
                                         <div className="flex items-center gap-1.5">
                                             <Link
                                                 to={`/case/${c.caseId}`}
@@ -682,7 +688,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             </div>
                                         )}
                                     </td>
-                                    <td className={`px-4 py-3 font-medium ${c.status === '진행불가' || c.status === '고객취소'
+                                    <td className={`${cellPadding} font-medium font-mono tabular-nums ${c.status === '진행불가' || c.status === '고객취소'
                                         ? 'text-red-600 dark:text-red-400'
                                         : ''
                                         }`}>
@@ -705,7 +711,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 relative">
+                                    <td className={`${cellPadding} relative`}>
                                         {/* [NEW] Status with Click-to-Change Dropdown */}
                                         <div className="relative" ref={openDropdownId === c.caseId ? dropdownRef : null}>
                                             <HoverCheckTooltip
@@ -823,13 +829,13 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         )}
 
                                     </td>
-                                    <td className="px-4 py-3 text-xs text-gray-500">
+                                    <td className={`${cellPadding} text-xs font-mono tabular-nums text-gray-500`}>
                                         {safeFormat(c.createdAt, 'yyyy-MM-dd')}
                                     </td>
-                                    <td className="px-4 py-3 text-xs text-gray-500">
+                                    <td className={`${cellPadding} text-xs font-mono tabular-nums text-gray-500`}>
                                         {safeFormat(lastConsultDate, 'yyyy-MM-dd')}
                                     </td>
-                                    <td className="px-4 py-3 text-xs">
+                                    <td className={`${cellPadding} text-xs font-mono tabular-nums`}>
                                         {overdueReminder && (
                                             <div className="mb-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-semibold dark:bg-red-900/30 dark:text-red-300" title={overdueReminder.content || ''}>
                                                 지난 일정 {overdueReminder.datetime.slice(5)}
@@ -870,7 +876,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         ) : (overdueReminder ? null : '-')}
                                     </td>
                                     {viewMode !== 'active' && (
-                                        <td className="px-4 py-3 text-center">
+                                        <td className={`${cellPadding} text-center`}>
                                             {viewMode === 'trash' ? (
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button

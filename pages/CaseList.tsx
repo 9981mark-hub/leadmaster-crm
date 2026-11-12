@@ -31,6 +31,7 @@ import { Scale } from 'lucide-react';
 import { CaseDetailDrawer } from '../components/case-list/CaseDetailDrawer';
 import { useActiveCall } from '../contexts/ActiveCallContext';
 import { QuickNewCaseModal } from '../components/case-list/QuickNewCaseModal';
+import { FilterChipsBar } from '../components/case-list/FilterChipsBar';
 
 export default function CaseList() {
     const navigate = useNavigate();
@@ -53,6 +54,21 @@ export default function CaseList() {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'active' | 'archived' | 'trash'>('active');
     const [layoutMode, setLayoutMode] = useState<'list' | 'kanban'>('list');
+    const [density, setDensity] = useState<'standard' | 'compact'>(() => {
+        try {
+            return (localStorage.getItem('lm_case_density') as 'standard' | 'compact') || 'standard';
+        } catch {
+            return 'standard';
+        }
+    });
+
+    const toggleDensity = () => {
+        setDensity(prev => {
+            const next = prev === 'standard' ? 'compact' : 'standard';
+            try { localStorage.setItem('lm_case_density', next); } catch {}
+            return next;
+        });
+    };
     // [NEW] 우측 슬라이드 퀵 인스펙터 (Peek Drawer)
     const [drawerCase, setDrawerCase] = useState<Case | null>(null);
     const [paralegalTargetCase, setParalegalTargetCase] = useState<Case | null>(null);
@@ -814,6 +830,8 @@ export default function CaseList() {
                 onExportClick={() => { if (isAdmin) setIsExportModalOpen(true); else showToast('데이터 내보내기는 관리자만 가능합니다.', 'error'); }}
                 canExport={isAdmin}
                 onOpenNewCaseModal={() => setIsNewCaseModalOpen(true)}
+                density={density}
+                onToggleDensity={toggleDensity}
             />
 
             <CaseListFilter
@@ -837,6 +855,47 @@ export default function CaseList() {
                 onOpenImportModal={() => setIsImportModalOpen(true)}
                 onOpenStatusVisibilityModal={() => setIsVisibilityModalOpen(true)}
                 onResetPage={() => setCurrentPage(1)}
+            />
+
+            {/* Filter Chips Bar (Active Filters Visualization) */}
+            <FilterChipsBar
+                search={search}
+                onClearSearch={() => { setSearch(''); setCurrentPage(1); }}
+                statusFilters={statusFilters}
+                onRemoveStatusFilter={(s) => {
+                    setStatusFilters(prev => prev.filter(x => x !== s));
+                    setCurrentPage(1);
+                }}
+                partnerFilter={partnerFilter}
+                onClearPartnerFilter={() => { setPartnerFilter(''); setCurrentPage(1); }}
+                partners={partners}
+                inboundPathFilter={inboundPathFilter}
+                onClearInboundPathFilter={() => { setInboundPathFilter(''); setCurrentPage(1); }}
+                dateFilterStart={dateFilterStart}
+                dateFilterEnd={dateFilterEnd}
+                onClearDateFilter={() => { setDateFilterStart(''); setDateFilterEnd(''); setCurrentPage(1); }}
+                showStarredOnly={showStarredOnly}
+                onToggleStarred={() => { setShowStarredOnly(false); setCurrentPage(1); }}
+                showNewOnly={showNewOnly}
+                onToggleNewOnly={() => { setShowNewOnly(false); setCurrentPage(1); }}
+                showOverdueMissedOnly={showOverdueMissedOnly}
+                onToggleOverdueMissedOnly={() => { setShowOverdueMissedOnly(false); setCurrentPage(1); }}
+                assigneeFilter={assigneeFilter}
+                onClearAssigneeFilter={() => { setAssigneeFilter(''); setCurrentPage(1); }}
+                assigneeName={memberName(assigneeFilter)}
+                onResetAllFilters={() => {
+                    setSearch('');
+                    setStatusFilters([]);
+                    setPartnerFilter('');
+                    setInboundPathFilter('');
+                    setDateFilterStart('');
+                    setDateFilterEnd('');
+                    setShowStarredOnly(false);
+                    setShowNewOnly(false);
+                    setShowOverdueMissedOnly(false);
+                    setAssigneeFilter('');
+                    setCurrentPage(1);
+                }}
             />
 
             {/* 빠른 보기 + 담당자 */}
@@ -1115,6 +1174,7 @@ export default function CaseList() {
                         onToggleSelect={toggleSelect}
                         onToggleSelectAll={toggleSelectAll}
                         memberName={showAssignee ? memberName : undefined}
+                        density={density}
                     />
 
                     <CaseListPagination
