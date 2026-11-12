@@ -507,7 +507,7 @@ async function matchCustomerToCase(customerName: string, partnerId: string | nul
 
 const AUTO_APPLY_TYPES = new Set([
   '부재', '지속부재', '명함발송', '재통화요청', '통화예약', '일반메모', '비피드백', '진행불가', '안부인사', '마감인사', '일반대화',
-  '출장예약', '방문예약', '내방예약', '미팅예약', '미팅', '상담예약'
+  '출장예약', '방문예약', '내방예약', '미팅예약', '미팅', '상담예약', '서류안내', '비용부담거절'
 ]);
 
 const URGENCY_MAP: Record<string, string> = {
@@ -666,12 +666,18 @@ async function autoApplyFeedback(
 
   // Status updates (2차 상태 for most feedback)
   if (feedbackType === '부재' || feedbackType === '지속부재') {
+    updates.status = '재통화 예정';
     updates.secondary_status = '부재';
     updates.missed_call_count = (caseData.missed_call_count || 0) + 1;
     updates.last_missed_call_at = new Date().toISOString();
-  }
-  if (feedbackType === '진행불가') {
-    updates.secondary_status = '진행불가';
+  } else if (feedbackType === '진행불가') {
+    updates.status = '진행불가';
+    updates.secondary_status = '조건불가';
+  } else if (feedbackType === '비용부담거절') {
+    updates.status = '재통화 예정';
+    updates.secondary_status = '1차 재케어 요망';
+  } else if (feedbackType === '서류안내' || feedbackType === '명함발송') {
+    updates.secondary_status = '서류안내중';
   }
 
   // Add status log ALWAYS
