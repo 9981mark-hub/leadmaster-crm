@@ -143,15 +143,35 @@ export async function fetchCasePendingCount(caseId: string): Promise<number> {
 // Update Operations
 // ============================================
 
-/** 피드백 승인 (CRM 반영 완료 표시) */
+export interface ConfirmFeedbackOptions {
+  selectedCaseId?: string;
+  customStatus?: string;
+  customSecondaryStatus?: string;
+  incrementMissedCall?: boolean;
+  missedCallCount?: number;
+  addCalendar?: boolean;
+  scheduleDateTime?: string;
+  scheduleType?: string;
+  scheduleLocation?: string;
+  amounts?: { totalFee?: number; deposit?: number };
+  appliedBy?: string;
+  careNeeded?: boolean;
+}
+
+/** 피드백 승인 (CRM 반영 완료 표시) - 단건 및 옵션 지원 */
 export async function confirmFeedback(
   feedback: TelegramFeedback,
-  appliedBy: string = 'User',
-  selectedCaseId?: string
+  appliedByOrOptions: string | ConfirmFeedbackOptions = 'User',
+  legacyCaseId?: string
 ): Promise<boolean> {
+  const options: ConfirmFeedbackOptions = typeof appliedByOrOptions === 'object'
+    ? appliedByOrOptions
+    : { appliedBy: appliedByOrOptions, selectedCaseId: legacyCaseId };
+
   if (!supabase) return false;
 
-  const targetCaseId = selectedCaseId || feedback.matchedCaseId;
+  const appliedBy = options.appliedBy || 'User';
+  const targetCaseId = options.selectedCaseId || feedback.matchedCaseId;
   if (!targetCaseId) {
     console.error('[TG] Cannot apply feedback without a target Case ID');
     return false;
@@ -175,7 +195,52 @@ export async function confirmFeedback(
     const updates: Record<string, any> = {};
     const classification = feedback.aiClassification || {} as any;
     const { feedbackType, suggestedStatus, suggestedMemo } = classification;
-    const memoPrefix = `[TG-조작] ${feedback.senderName}:`;
+    
+    // 상태 및 보조상태 적용 (커스텀 룰 또는 제안 상태 우선)
+    const finalTargetStatus = options.customStatus || suggestedStatus;
+    if (finalTargetStatus) {
+      updates.status = finalTargetStatus;
+    }
+    if (options.customSecondaryStatus) {
+      updates.secondary_status = options.customSecondaryStatus;
+    }
+
+    // 부재 카운팅 처리
+    if (options.incrementMissedCall ?? (feedbackType === '부재' || feedbackType === '지속부재')) {
+      if (!options.customSecondaryStatus && !updates.secondary_status) {
+        updates.secondary_status = '부재';
+      }
+      const newCount = options.missedCallCount ? Math.max(caseData.missed_call_count || 0, options.missedCallCount) : ((caseData.missed_call_count || 0) + 1);
+      updates.missed_call_count = newCount;
+      updates.last_missed_call_at = new Date().toISOString();
+    }
+
+    // 금액 (수임료 / 착수금) 적용
+    if (options.amounts?.totalFee) {
+      updates.actual_fee = options.amounts.totalFee;
+    }
+    if (options.amounts?.deposit) {
+      updates.deposit = options.amounts.deposit;
+    }
+
+    // 출장 / 내방 / 방문 캘린더 리마인더 자동 생성
+    if (options.addCalendar && options.scheduleDateTime) {
+      const currentReminders = getArray(caseData.reminders);
+      const reminderType = (options.scheduleType === '내방' ? '방문' : options.scheduleType === '통화예약' ? '재통화' : '출장');
+      const newReminder = {
+        id: `rem-tg-${Date.now()}`,
+        type: reminderType,
+        datetime: options.scheduleDateTime,
+        note: `[TG-${feedback.senderName}] ${options.scheduleLocation ? `[${options.scheduleLocation}] ` : ''}${feedback.feedbackContent.substring(0, 100)}`,
+        isCompleted: false,
+        createdAt: new Date().toISOString(),
+      };
+      updates.reminders = [newReminder, ...currentReminders];
+    }
+
+    // 특이 메모 추가
+    const isCare = options.careNeeded;
+    const memoPrefix = isCare ? `[⚠️ 1차 TM 재관리 요망] [TG] ${feedback.senderName}:` : `[TG] ${feedback.senderName}:`;
     const memoContent = suggestedMemo || feedback.feedbackContent;
 
     const currentMemos = getArray(caseData.special_memo);
@@ -186,28 +251,17 @@ export async function confirmFeedback(
     };
     updates.special_memo = [newMemo, ...currentMemos];
 
-    if (feedbackType === '부재' || feedbackType === '지속부재') {
-      updates.secondary_status = '부재';
-      updates.missed_call_count = (caseData.missed_call_count || 0) + 1;
-      updates.last_missed_call_at = new Date().toISOString();
-    }
-    if (feedbackType === '진행불가') {
-      updates.secondary_status = '진행불가';
-    }
-
+    // 상태 변경 이력 로그
     const currentLogs = getArray(caseData.status_logs);
     const log = {
       logId: Date.now().toString(),
       fromStatus: `${caseData.status} (${caseData.secondary_status || '없음'})`,
-      toStatus: `${caseData.status} (${suggestedStatus || caseData.secondary_status || '없음'})`,
+      toStatus: `${updates.status || caseData.status} (${updates.secondary_status || caseData.secondary_status || '없음'})`,
       changedAt: new Date().toISOString(),
       changedBy: `TG-${feedback.senderName}`,
       memo: memoContent.substring(0, 200),
     };
     updates.status_logs = [log, ...currentLogs];
-
-    // [REMOVED] Reminder creation — AI가 추출한 날짜가 부정확하여 리마인더 자동 생성 비활성화
-    // 상담 이력(메모/상태 로그)에만 기록됨
 
     // 2. Update case
     const { error: caseUpdateError } = await supabase
@@ -259,6 +313,41 @@ export async function dismissFeedback(feedbackId: string): Promise<boolean> {
 
   if (error) {
     console.error('[TG] dismissFeedback error:', error);
+    return false;
+  }
+  return true;
+}
+
+/** 대량 피드백 일괄 승인 */
+export async function confirmBatchFeedbacks(
+  items: { feedback: TelegramFeedback; options?: ConfirmFeedbackOptions }[],
+  appliedBy: string = 'User'
+): Promise<{ success: number; failed: number }> {
+  let success = 0;
+  let failed = 0;
+  for (const item of items) {
+    const ok = await confirmFeedback(item.feedback, { ...item.options, appliedBy });
+    if (ok) success++;
+    else failed++;
+  }
+  return { success, failed };
+}
+
+/** 대량 피드백 일괄 무시 */
+export async function dismissBatchFeedbacks(feedbackIds: string[]): Promise<boolean> {
+  if (!supabase || feedbackIds.length === 0) return false;
+  const { error } = await supabase
+    .from('telegram_feedbacks')
+    .update({
+      is_confirmed: true,
+      is_applied: false,
+      applied_at: new Date().toISOString(),
+      applied_by: 'dismissed',
+    })
+    .in('id', feedbackIds);
+
+  if (error) {
+    console.error('[TG] dismissBatchFeedbacks error:', error);
     return false;
   }
   return true;
