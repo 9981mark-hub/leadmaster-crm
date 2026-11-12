@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { 
     Smartphone, CheckCircle, Clock, AlertTriangle, MessageSquare, ChevronRight, ChevronLeft, 
     Check, X, History, Trash2, Calendar, Sparkles, Zap, Shield, Settings2, Building2, User, 
-    Search, CheckSquare, Square, RefreshCw, PhoneCall, DollarSign, MapPin, AlertCircle
+    Search, CheckSquare, Square, RefreshCw, PhoneCall, DollarSign, MapPin, AlertCircle, RotateCcw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TelegramFeedback, Case, Partner, CaseStatus } from '../types';
@@ -11,6 +11,7 @@ import {
     fetchAllFeedbacks,
     confirmFeedback, 
     dismissFeedback, 
+    reopenFeedback,
     confirmBatchFeedbacks,
     dismissBatchFeedbacks,
     subscribeTelegramFeedbacks,
@@ -406,6 +407,20 @@ export default function TelegramSync() {
         }
     };
 
+    // Reopen Feedback (Move back to Pending)
+    const handleReopen = async (id: string) => {
+        setIsActionBusy(true);
+        const success = await reopenFeedback(id);
+        setIsActionBusy(false);
+
+        if (success) {
+            showToast('피드백이 승인 대기열로 복구되었습니다.', 'success');
+            loadData();
+        } else {
+            showToast('복구 처리에 실패했습니다.', 'error');
+        }
+    };
+
     // Bulk Confirm (Selected)
     const handleBulkConfirmSelected = async () => {
         const toConfirm = filteredPending.filter(f => selectedIds.has(f.id) && f.matchedCaseId);
@@ -752,6 +767,21 @@ export default function TelegramSync() {
                                 className="w-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1 disabled:opacity-50"
                             >
                                 <X size={14} /> 무시
+                            </button>
+                        </div>
+                    )}
+
+                    {/* History Actions: Reopen to Pending */}
+                    {isHistory && (
+                        <div className="flex flex-col gap-1.5 shrink-0 w-28">
+                            <button
+                                onClick={() => handleReopen(f.id)}
+                                disabled={isActionBusy}
+                                className="w-full px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 bg-gray-100 hover:bg-purple-50 dark:bg-gray-700 dark:hover:bg-purple-900/30 rounded-xl transition flex items-center justify-center gap-1 disabled:opacity-50 border border-gray-200 dark:border-gray-600"
+                                title="승인 또는 무시 처리를 취소하고 다시 승인 대기열로 복구합니다."
+                            >
+                                <RotateCcw size={12} />
+                                <span>대기열 복구</span>
                             </button>
                         </div>
                     )}

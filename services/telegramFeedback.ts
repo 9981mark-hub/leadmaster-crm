@@ -318,6 +318,25 @@ export async function dismissFeedback(feedbackId: string): Promise<boolean> {
   return true;
 }
 
+/** 피드백 대기열로 복구 (승인/무시 상태를 취소하고 승인 대기로 원복) */
+export async function reopenFeedback(feedbackId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('telegram_feedbacks')
+    .update({
+      is_confirmed: false,
+      is_applied: false,
+      applied_at: null,
+      applied_by: null,
+    })
+    .eq('id', feedbackId);
+
+  if (error) {
+    console.error('[TG] reopenFeedback error:', error);
+    return false;
+  }
+  return true;
+}
+
 /** 대량 피드백 일괄 승인 */
 export async function confirmBatchFeedbacks(
   items: { feedback: TelegramFeedback; options?: ConfirmFeedbackOptions }[],
