@@ -289,6 +289,12 @@ export interface Partner {
   managerName?: string;              // 법률사무소 담당 사무장/국장 성명
   contactPhone?: string;             // 담당 사무장 직통 연락처
   notes?: string;                    // 제휴 특이사항 (예: 서울회생 전문, 당일 피드백)
+
+  // [NEW v4.5] 거래처별 정산 주기 및 맞춤 수수료 요율
+  custom_commission_rate?: number;
+  settlement_cycle?: 'weekly' | 'biweekly' | 'monthly_fixed';
+  settlement_day_of_week?: number;
+  settlement_day_of_month?: number;
 }
 
 // 지급 파트너 프리셋 (설정에서 미리 저장)

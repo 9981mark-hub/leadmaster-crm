@@ -5,7 +5,7 @@ import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch,
 import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, TossAdsRecord, TossAdsWeeklySummary } from '../types';
 import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
 import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
-import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download } from 'lucide-react';
+import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download, Settings, DollarSign, TrendingUp, Users, Database } from 'lucide-react';
 import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
 import ReceiptOcrSection from '../components/ReceiptOcrSection';
@@ -22,9 +22,35 @@ import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../ut
 import { useToast } from '../contexts/ToastContext';
 import * as XLSX from 'xlsx';
 import ReceivablesTab from '../components/settlement/ReceivablesTab';
+import PartnerSettlementOverviewTab from '../components/settlement/PartnerSettlementOverviewTab';
+import AgentCommissionTab from '../components/settlement/AgentCommissionTab';
+import DbCostSettlementTab from '../components/settlement/DbCostSettlementTab';
+import IntegratedPnLTab from '../components/settlement/IntegratedPnLTab';
+import SettlementPolicyModal from '../components/settlement/SettlementPolicyModal';
+import {
+    SettlementPolicy,
+    DEFAULT_SETTLEMENT_POLICY,
+    fetchSettlementPolicy,
+    computePartnerSettlementCards,
+    computeAgentSettlementRows,
+    computeIntegratedPnLSummary,
+} from '../services/settlementMasterService';
+import { fetchCollections, Collection } from '../services/settlementLedger';
+import { fetchBatchQualityStats, BatchQualityMetric } from '../services/batchQuality';
+import { fetchTeamMembers, TeamMember } from '../services/team';
 import { todayKST, CANCELLED_STATUSES } from '../utils/settlement';
 
-type TabType = 'receivables' | 'monday' | 'tuesday' | 'wednesday' | 'report' | 'expenses';
+type TabType =
+    | 'overview'
+    | 'agent_commission'
+    | 'db_cost'
+    | 'integrated_pnl'
+    | 'receivables'
+    | 'monday'
+    | 'tuesday'
+    | 'wednesday'
+    | 'report'
+    | 'expenses';
 
 export default function Settlement() {
     const { showToast } = useToast();
@@ -35,8 +61,15 @@ export default function Settlement() {
     const [month, setMonth] = useState<number | 'all'>('all');
     const [loading, setLoading] = useState(true);
 
+    // 차세대 정산 마스터 State (v4.5)
+    const [settlementPolicy, setSettlementPolicy] = useState<SettlementPolicy>(DEFAULT_SETTLEMENT_POLICY);
+    const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+    const [collections, setCollections] = useState<Collection[]>([]);
+    const [batchQualityList, setBatchQualityList] = useState<BatchQualityMetric[]>([]);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
     // Weekly Settlement Center State
-    const [activeTab, setActiveTab] = useState<TabType>('receivables');
+    const [activeTab, setActiveTab] = useState<TabType>('overview');
     const [selectedWeekStart, setSelectedWeekStart] = useState<Date>(() => getWeekMonday(new Date()));
     const [batches, setBatches] = useState<SettlementBatch[]>([]);
     const [loadingBatches, setLoadingBatches] = useState(false);
@@ -69,6 +102,23 @@ export default function Settlement() {
     const tossAdsFileInputRef = useRef<HTMLInputElement>(null);
     const [uploadingTossAds, setUploadingTossAds] = useState(false);
 
+    const reloadMasterSettlementData = async () => {
+        try {
+            const [policy, col, bq, tm] = await Promise.all([
+                fetchSettlementPolicy(),
+                fetchCollections(),
+                fetchBatchQualityStats(150),
+                fetchTeamMembers(),
+            ]);
+            setSettlementPolicy(policy);
+            setCollections(col || []);
+            setBatchQualityList(bq || []);
+            setTeamMembers(tm || []);
+        } catch (err) {
+            console.warn('[Settlement] reloadMasterSettlementData error:', err);
+        }
+    };
+
     useEffect(() => {
         const loadData = async () => {
             // Initial load (may get cached/empty data)
@@ -77,6 +127,9 @@ export default function Settlement() {
             setPartners(p);
             if (p.length > 0) setSelectedPartnerId(p[0].partnerId);
             setLoading(false);
+
+            // 차세대 정산 마스터 데이터 병렬 로드
+            reloadMasterSettlementData();
 
             // Re-fetch after delay to get Supabase data (background sync)
             setTimeout(async () => {
@@ -96,6 +149,27 @@ export default function Settlement() {
         };
         loadData();
     }, []);
+
+    // 차세대 정산 데이터 실시간 집계 (v4.5)
+    const partnerSettlementCards = React.useMemo(() => {
+        return computePartnerSettlementCards(partners, cases, collections);
+    }, [partners, cases, collections]);
+
+    const agentSettlementRows = React.useMemo(() => {
+        return computeAgentSettlementRows(cases, partners, settlementPolicy, teamMembers);
+    }, [cases, partners, settlementPolicy, teamMembers]);
+
+    const integratedPnLSummary = React.useMemo(() => {
+        return computeIntegratedPnLSummary(
+            partnerSettlementCards,
+            agentSettlementRows,
+            batchQualityList,
+            expenses,
+            settlementPolicy,
+            year,
+            month
+        );
+    }, [partnerSettlementCards, agentSettlementRows, batchQualityList, expenses, settlementPolicy, year, month]);
 
     // Load batches when partner or week changes
     useEffect(() => {
@@ -4003,21 +4077,123 @@ export default function Settlement() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">주간정산센터</h2>
+            {/* 1. Header (차세대 통합 정산 & 경영 손익 센터 v4.5) */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl backdrop-blur">
+                <div>
+                    <h2 className="text-2xl font-black text-white flex items-center gap-2.5">
+                        <DollarSign className="w-7 h-7 text-emerald-400" />
+                        통합 정산 & 경영 손익(P&L) 센터
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+                            v4.5 Master
+                        </span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                        거래처별 정산 시기·금액·건수 관제 및 DB구매원가·상담원수당·손익 일괄 분석 (팀 관리 100% 직통)
+                    </p>
+                </div>
 
-                <div className="flex gap-2 items-center flex-wrap">
+                <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-end">
+                    {/* 연도/월 선택기 */}
+                    <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-2 py-1 rounded-xl text-xs">
+                        <select
+                            className="bg-transparent text-white font-bold cursor-pointer outline-none"
+                            value={year}
+                            onChange={e => setYear(Number(e.target.value))}
+                        >
+                            {Array.from({ length: 13 }, (_, i) => 2024 + i).map(y => (
+                                <option key={y} value={y} className="bg-slate-900 text-white">{y}년</option>
+                            ))}
+                        </select>
+                        <span className="text-slate-600">/</span>
+                        <select
+                            className="bg-transparent text-white font-bold cursor-pointer outline-none"
+                            value={month}
+                            onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                        >
+                            <option value="all" className="bg-slate-900 text-white">전체 월</option>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                                <option key={m} value={m} className="bg-slate-900 text-white">{m}월</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* 거래처 셀렉트 박스 */}
                     <div className="relative">
                         <select
-                            className="bg-white dark:bg-gray-800 border dark:border-gray-600 p-2 pl-9 rounded text-lg font-bold text-indigo-700 dark:text-indigo-300 min-w-[200px] outline-none cursor-pointer"
+                            className="bg-slate-950 border border-slate-800 pl-8 pr-4 py-1.5 rounded-xl text-xs font-bold text-indigo-300 outline-none cursor-pointer"
                             value={selectedPartnerId}
                             onChange={e => setSelectedPartnerId(e.target.value)}
                         >
-                            <option value="all">전체 통계 (Total)</option>
-                            {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
+                            <option value="all" className="bg-slate-900 text-white">전체 거래처 (Total)</option>
+                            {partners.map(p => <option key={p.partnerId} value={p.partnerId} className="bg-slate-900 text-white">{p.name}</option>)}
                         </select>
-                        <Building className="absolute left-3 top-3 text-indigo-500" size={18} />
+                        <Building className="absolute left-2.5 top-2 text-indigo-400" size={14} />
+                    </div>
+
+                    {/* 정산 정책 설정 모달 버튼 */}
+                    <button
+                        onClick={() => setIsPolicyModalOpen(true)}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all shadow-md"
+                    >
+                        <Settings className="w-3.5 h-3.5" />
+                        정산 정책 및 분배 설정
+                    </button>
+                </div>
+            </div>
+
+            {/* 2. 최상단 상시 노출: 통합 경영 손익(P&L) 글로벌 KPI 전광판 */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 shadow-md">
+                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-lg">
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1">
+                        <span>🏢 거래처 총 수수료 매출</span>
+                        <span className="text-sky-400 font-bold">청구</span>
+                    </div>
+                    <div className="text-lg font-black text-white">
+                        ₩{integratedPnLSummary.totalRevenueWon.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                        입금 ₩{integratedPnLSummary.collectedRevenueWon.toLocaleString()} / 미수 ₩{integratedPnLSummary.outstandingRevenueWon.toLocaleString()}
+                    </div>
+                </div>
+
+                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-lg">
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1">
+                        <span>👥 상담원 총 수당</span>
+                        <span className="text-emerald-400 font-bold">인건비</span>
+                    </div>
+                    <div className="text-lg font-black text-emerald-400">
+                        ₩{integratedPnLSummary.totalAgentCommissionWon.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                        회사 마진 ₩{integratedPnLSummary.totalCompanyMarginWon.toLocaleString()} 공제
+                    </div>
+                </div>
+
+                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-lg">
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1">
+                        <span>📦 DB 구매 원가</span>
+                        <span className="text-rose-400 font-bold">팀관리 연동</span>
+                    </div>
+                    <div className="text-lg font-black text-rose-400">
+                        ₩{integratedPnLSummary.totalDbCostWon.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                        총 지출 ₩{integratedPnLSummary.totalExpensesWon.toLocaleString()} 중 원가
+                    </div>
+                </div>
+
+                <div className="p-3 bg-slate-950/70 border border-emerald-900/40 rounded-lg">
+                    <div className="flex items-center justify-between text-[11px] text-emerald-400 font-semibold mb-1">
+                        <span>📊 최종 영업 순이익</span>
+                        <span className="text-emerald-300 font-bold">{integratedPnLSummary.profitMarginRate}%</span>
+                    </div>
+                    <div className={`text-lg font-black ${
+                        integratedPnLSummary.netProfitWon >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                        ₩{integratedPnLSummary.netProfitWon.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                        실현금흐름: ₩{integratedPnLSummary.netCashFlowWon.toLocaleString()}
                     </div>
                 </div>
             </div>
@@ -4049,7 +4225,7 @@ export default function Settlement() {
             </div>
 
             {/* Week Navigator (for settlement tabs) */}
-            {activeTab !== 'report' && activeTab !== 'receivables' && !isAll && (
+            {activeTab !== 'report' && activeTab !== 'receivables' && activeTab !== 'overview' && activeTab !== 'agent_commission' && activeTab !== 'db_cost' && activeTab !== 'integrated_pnl' && !isAll && (
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <button onClick={goToPrevWeek} className="p-2 hover:bg-gray-100 rounded">
@@ -4075,11 +4251,51 @@ export default function Settlement() {
             )}
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 overflow-x-auto">
+            <div className="flex border-b border-gray-200 dark:border-slate-800 overflow-x-auto gap-1">
+                <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'overview'
+                        ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                >
+                    <Building className="w-4 h-4" />
+                    🏢 거래처별 정산 관제
+                </button>
+                <button
+                    onClick={() => setActiveTab('agent_commission')}
+                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'agent_commission'
+                        ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                >
+                    <Users className="w-4 h-4" />
+                    👥 상담원 수당 대장
+                </button>
+                <button
+                    onClick={() => setActiveTab('db_cost')}
+                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'db_cost'
+                        ? 'border-rose-500 text-rose-400 bg-rose-500/10'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                >
+                    <Database className="w-4 h-4" />
+                    📦 DB 구매비용 대장
+                </button>
+                <button
+                    onClick={() => setActiveTab('integrated_pnl')}
+                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'integrated_pnl'
+                        ? 'border-amber-500 text-amber-400 bg-amber-500/10'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                >
+                    <TrendingUp className="w-4 h-4" />
+                    📊 종합 손익 & 현금흐름
+                </button>
                 <button
                     onClick={() => setActiveTab('receivables')}
-                    className={`px-6 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'receivables'
-                        ? 'border-slate-900 text-slate-900 bg-slate-100'
+                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'receivables'
+                        ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
@@ -4089,7 +4305,7 @@ export default function Settlement() {
                     <>
                         <button
                             onClick={() => setActiveTab('monday')}
-                            className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'monday'
+                            className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'monday'
                                 ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
@@ -4098,7 +4314,7 @@ export default function Settlement() {
                         </button>
                         <button
                             onClick={() => setActiveTab('tuesday')}
-                            className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'tuesday'
+                            className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'tuesday'
                                 ? 'border-yellow-600 dark:border-yellow-500 text-yellow-600 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/40'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
@@ -4107,7 +4323,7 @@ export default function Settlement() {
                         </button>
                         <button
                             onClick={() => setActiveTab('wednesday')}
-                            className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'wednesday'
+                            className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'wednesday'
                                 ? 'border-green-600 dark:border-green-500 text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
@@ -4118,7 +4334,7 @@ export default function Settlement() {
                 )}
                 <button
                     onClick={() => setActiveTab('report')}
-                    className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'report'
+                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'report'
                         ? 'border-purple-600 text-purple-600 bg-purple-50'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
@@ -4127,7 +4343,7 @@ export default function Settlement() {
                 </button>
                 <button
                     onClick={() => setActiveTab('expenses')}
-                    className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'expenses'
+                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'expenses'
                         ? 'border-red-600 text-red-600 bg-red-50'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
@@ -4162,13 +4378,43 @@ export default function Settlement() {
             )}
 
             {/* Tab Content */}
+            {activeTab === 'overview' && (
+                <PartnerSettlementOverviewTab
+                    partners={partners}
+                    cases={safeCases}
+                    collections={collections}
+                    onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
+                />
+            )}
+            {activeTab === 'agent_commission' && (
+                <AgentCommissionTab
+                    agentRows={agentSettlementRows}
+                    policy={settlementPolicy}
+                    onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
+                />
+            )}
+            {activeTab === 'db_cost' && (
+                <DbCostSettlementTab
+                    batchQualityList={batchQualityList}
+                    onRefresh={reloadMasterSettlementData}
+                    totalRevenueWon={integratedPnLSummary.totalRevenueWon}
+                />
+            )}
+            {activeTab === 'integrated_pnl' && (
+                <IntegratedPnLTab
+                    summary={integratedPnLSummary}
+                    policy={settlementPolicy}
+                    year={year}
+                    month={month}
+                />
+            )}
             {activeTab === 'receivables' && <ReceivablesTab cases={safeCases} partners={partners} />}
             {activeTab === 'monday' && !isAll && renderMondayTab()}
             {activeTab === 'tuesday' && !isAll && renderTuesdayTab()}
             {activeTab === 'wednesday' && !isAll && renderWednesdayTab()}
             {activeTab === 'report' && renderReportTab()}
             {activeTab === 'expenses' && renderExpensesTab()}
-            {isAll && activeTab !== 'report' && activeTab !== 'expenses' && activeTab !== 'receivables' && (
+            {isAll && activeTab !== 'report' && activeTab !== 'expenses' && activeTab !== 'receivables' && activeTab !== 'overview' && activeTab !== 'agent_commission' && activeTab !== 'db_cost' && activeTab !== 'integrated_pnl' && (
                 <div className="bg-gray-50 dark:bg-gray-800/60 p-8 rounded-xl text-center border border-gray-200 dark:border-gray-700">
                     <p className="text-gray-500">주간 정산 기능은 특정 거래처를 선택해야 사용할 수 있습니다.</p>
                     <p className="text-sm text-gray-400 mt-2">통계를 보시려면 "리포트" 탭을 선택하세요.</p>
@@ -4421,6 +4667,17 @@ export default function Settlement() {
                     )}
                 </div>
             </Modal>
+
+            {/* Settlement Policy Modal (v4.5) */}
+            <SettlementPolicyModal
+                isOpen={isPolicyModalOpen}
+                onClose={() => setIsPolicyModalOpen(false)}
+                initialPolicy={settlementPolicy}
+                onSaved={(savedPolicy) => {
+                    setSettlementPolicy(savedPolicy);
+                    reloadMasterSettlementData();
+                }}
+            />
         </div>
     );
 }

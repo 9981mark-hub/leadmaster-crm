@@ -5,6 +5,8 @@
 import { supabase, saveSettingToSupabase } from './supabase';
 import { Collection } from '../utils/settlement';
 
+export type { Collection };
+
 const KEY = 'partnerCollections';
 const LOCAL = 'lm_partner_collections';
 
