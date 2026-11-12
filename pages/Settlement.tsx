@@ -431,6 +431,15 @@ export default function Settlement() {
     const weekLabel = getWeekLabel(selectedWeekStart);
     const currentBatch = (Array.isArray(batches) ? batches : []).find(b => b.weekLabel === weekLabel && b.partnerId === selectedPartnerId);
 
+    // [거래처별 맞춤 요일 동적 라벨 (타사 범용 호환)]
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const cutoffDayName = currentPartner?.settlementConfig?.cutoffDay !== undefined
+        ? `${dayNames[currentPartner.settlementConfig.cutoffDay]}`
+        : '월';
+    const payoutDayName = currentPartner?.settlementConfig?.payoutDay !== undefined
+        ? `${dayNames[currentPartner.settlementConfig.payoutDay]}`
+        : '수';
+
     // Navigate weeks
     const goToPrevWeek = () => {
         const prev = new Date(selectedWeekStart);
@@ -911,11 +920,16 @@ export default function Settlement() {
     const renderMondayTab = () => (
         <div className="space-y-6">
             <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-xl border border-blue-100 dark:border-blue-900/40">
-                <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
-                    <Calendar className="mr-2" size={20} /> 월요일: 정산 확인
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                    해당 주차에 정산 대상 딜을 확인하고, 거래처 카톡 확인 증빙을 기록합니다.
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                    <h3 className="font-bold text-blue-800 dark:text-blue-300 text-lg flex items-center">
+                        <Calendar className="mr-2" size={20} /> 1단계: 정산 대상 건 대사 및 확인
+                    </h3>
+                    <span className="text-xs px-2.5 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full font-bold">
+                        거래처 설정: 매주 {cutoffDayName}요일 마감
+                    </span>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    해당 주차에 거래처와 정산할 대상 딜(수임 건)을 대사하고, 거래처 카톡/이메일 확인 증빙을 기록합니다.
                 </p>
 
                 {!currentBatch ? (
@@ -1072,21 +1086,26 @@ export default function Settlement() {
     const renderTuesdayTab = () => (
         <div className="space-y-6">
             <div className="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-xl border border-yellow-100 dark:border-yellow-900/40">
-                <h3 className="font-bold text-yellow-800 mb-4 text-lg flex items-center">
-                    <FileText className="mr-2" size={20} /> 화요일: 발행 / 수금
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                    세금계산서를 발행하고, 수금 상태를 관리합니다.
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                    <h3 className="font-bold text-yellow-800 dark:text-yellow-300 text-lg flex items-center">
+                        <FileText className="mr-2" size={20} /> 2단계: 세금계산서 발행 및 수금 확인
+                    </h3>
+                    <span className="text-xs px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 rounded-full font-bold">
+                        청구 및 입금 관리
+                    </span>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    확인된 정산 금액에 대해 세금계산서를 발행하고, 거래처로부터의 입금(수금) 상태를 확인합니다.
                 </p>
 
                 {!currentBatch ? (
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-                        <p className="text-gray-500">먼저 월요일 탭에서 배치를 생성해주세요.</p>
+                        <p className="text-gray-500">먼저 1단계(확인) 탭에서 배치를 생성해주세요.</p>
                     </div>
                 ) : currentBatch.status === 'draft' ? (
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
                         <AlertTriangle className="mx-auto text-yellow-500 mb-2" size={32} />
-                        <p className="text-gray-600">먼저 월요일 탭에서 정산 확인을 완료해주세요.</p>
+                        <p className="text-gray-600">먼저 1단계(확인) 탭에서 정산 확인을 완료해주세요.</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -1272,14 +1291,19 @@ export default function Settlement() {
             <div className="space-y-6">
                 {/* Section 1: 수금 정보 */}
                 <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-xl border border-blue-100 dark:border-blue-900/40">
-                    <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
-                        💰 수금 정보 (거래처에서 받을 금액)
-                    </h3>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                        <h3 className="font-bold text-blue-800 dark:text-blue-300 text-lg flex items-center">
+                            💰 3단계: 수금 확인 및 수당 지급 처리
+                        </h3>
+                        <span className="text-xs px-2.5 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full font-bold">
+                            거래처 설정: 매주 {payoutDayName}요일 지급
+                        </span>
+                    </div>
 
                     {!currentBatch || !['collected', 'invoiced', 'confirmed', 'paid', 'completed'].includes(currentBatch.status) ? (
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
                             <AlertTriangle className="mx-auto text-yellow-500 mb-2" size={32} />
-                            <p className="text-gray-600">화요일 탭에서 발행을 먼저 완료해주세요.</p>
+                            <p className="text-gray-600">먼저 2단계(청구/수금) 탭에서 발행을 완료해주세요.</p>
                         </div>
                     ) : (
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -3759,16 +3783,19 @@ export default function Settlement() {
         return differenceInDays(notificationToday, parseISO(lastDateStr)) >= 30;
     }).length;
 
-    // 2. Weekly Task Check
+    // 2. Weekly Task Check (거래처별 마감/지급 요일 동적 반영)
     let weeklyTaskAlert: { type: 'warning' | 'info', msg: string } | null = null;
-    if (notificationDayOfWeek === 1) { // Monday
-        if (!currentBatch) weeklyTaskAlert = { type: 'warning', msg: '월요일입니다. 금주 정산 배치를 생성하고 확인해주세요.' };
-        else if (currentBatch.status === 'draft') weeklyTaskAlert = { type: 'info', msg: '정산 내역을 확인하고 확정(Confirmed)해주세요.' };
-    } else if (notificationDayOfWeek === 2) { // Tuesday
-        if (currentBatch && !currentBatch.invoiceInfo) weeklyTaskAlert = { type: 'warning', msg: '화요일입니다. 세금계산서 발행 및 수금 확인이 필요합니다.' };
-    } else if (notificationDayOfWeek === 3) { // Wednesday
+    const targetCutoffDay = currentPartner?.settlementConfig?.cutoffDay ?? 1;
+    const targetPayoutDay = currentPartner?.settlementConfig?.payoutDay ?? 3;
+
+    if (notificationDayOfWeek === targetCutoffDay) {
+        if (!currentBatch) weeklyTaskAlert = { type: 'warning', msg: `오늘은 정산 마감일(${cutoffDayName}요일)입니다. 금주 정산 배치를 생성하고 확인해주세요.` };
+        else if (currentBatch.status === 'draft') weeklyTaskAlert = { type: 'info', msg: '정산 대상 내역을 확인하고 확정(Confirmed)해주세요.' };
+    } else if (notificationDayOfWeek === (targetCutoffDay % 7) + 1) {
+        if (currentBatch && !currentBatch.invoiceInfo) weeklyTaskAlert = { type: 'warning', msg: '세금계산서 청구 발행 및 입금(수금) 확인이 필요한 시점입니다.' };
+    } else if (notificationDayOfWeek === targetPayoutDay) {
         if (currentBatch && currentBatch.status !== 'completed' && currentBatch.status !== 'paid')
-            weeklyTaskAlert = { type: 'warning', msg: '수요일입니다. 파트너 수수료 지급을 진행해주세요.' };
+            weeklyTaskAlert = { type: 'warning', msg: `오늘은 수수료 지급일(${payoutDayName}요일)입니다. 수수료 지급 처리를 진행해주세요.` };
     }
 
     const renderDynamicModalContent = () => {
@@ -4334,8 +4361,9 @@ export default function Settlement() {
                                 ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
+                            title={`1단계: 정산 대상 건 대사 및 확인 (거래처 마감: 매주 ${cutoffDayName}요일)`}
                         >
-                            📅 월요일 (확인)
+                            📅 1단계: 확인 ({cutoffDayName})
                         </button>
                         <button
                             onClick={() => setActiveTab('tuesday')}
@@ -4343,8 +4371,9 @@ export default function Settlement() {
                                 ? 'border-yellow-600 dark:border-yellow-500 text-yellow-600 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/40'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
+                            title="2단계: 세금계산서 청구 발행 및 입금(수금) 확인"
                         >
-                            📄 화요일 (발행/수금)
+                            📄 2단계: 청구/수금
                         </button>
                         <button
                             onClick={() => setActiveTab('wednesday')}
@@ -4352,8 +4381,9 @@ export default function Settlement() {
                                 ? 'border-green-600 dark:border-green-500 text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
+                            title={`3단계: 수금 확인 및 수당 지급 처리 (지급 요일: 매주 ${payoutDayName}요일)`}
                         >
-                            💰 수요일 (지급)
+                            💰 3단계: 지급 ({payoutDayName})
                         </button>
                     </>
                 )}
