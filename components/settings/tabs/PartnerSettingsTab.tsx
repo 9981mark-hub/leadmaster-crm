@@ -4,8 +4,9 @@ import { SettingsCard } from '../SettingsCard';
 import { SettingsRow } from '../SettingsRow';
 import { AVAILABLE_FIELDS_CONFIG, CHECK_ITEMS, DEFAULT_CHECK_ITEMS, DEFAULT_SUMMARY_TEMPLATE, DEFAULT_AI_PROMPT, DEFAULT_OCR_PROMPT } from '../../../constants';
 import { getDayName } from '../../../utils';
-import { Building, Plus, Trash2, Save, Sparkles, FileText, Check, DollarSign, Calendar, MessageCircle, AlertCircle } from 'lucide-react';
+import { Building, Plus, Trash2, Save, Sparkles, FileText, Check, DollarSign, Calendar, MessageCircle, AlertCircle, Users, ExternalLink } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
+import TelegramChatPicker from '../../TelegramChatPicker';
 
 interface PartnerSettingsTabProps {
     partners: Partner[];
@@ -45,6 +46,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
     const { showToast } = useToast();
     const [subTab, setSubTab] = useState<'basic' | 'commission' | 'forms' | 'ai'>('basic');
     const [newDepositName, setNewDepositName] = useState('');
+
+    // 정산 파트너 프리셋 상태
+    const [newPresetName, setNewPresetName] = useState('');
+    const [newPresetAccount, setNewPresetAccount] = useState('');
+    const [newPresetAmount, setNewPresetAmount] = useState<number | ''>('');
 
     if (!editingPartner) {
         return (
@@ -91,6 +97,38 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
             ...editingPartner,
             depositNames: current.filter(n => n !== name)
         });
+    };
+
+    // 정산 지급 파트너 프리셋 핸들러
+    const handleAddPreset = () => {
+        if (!newPresetName.trim() || !newPresetAccount.trim()) {
+            showToast('파트너명과 계좌 정보를 입력해주세요.', 'error');
+            return;
+        }
+        const newPreset = {
+            id: `preset-${Date.now()}`,
+            name: newPresetName.trim(),
+            accountInfo: newPresetAccount.trim(),
+            defaultAmount: newPresetAmount !== '' ? Number(newPresetAmount) : undefined
+        };
+        const currentPresets = editingPartner.payoutPartnerPresets || [];
+        setEditingPartner({
+            ...editingPartner,
+            payoutPartnerPresets: [...currentPresets, newPreset]
+        });
+        setNewPresetName('');
+        setNewPresetAccount('');
+        setNewPresetAmount('');
+        showToast('정산 지급 파트너 프리셋이 추가되었습니다.');
+    };
+
+    const handleDeletePreset = (id: string) => {
+        const currentPresets = editingPartner.payoutPartnerPresets || [];
+        setEditingPartner({
+            ...editingPartner,
+            payoutPartnerPresets: currentPresets.filter(p => p.id !== id)
+        });
+        showToast('프리셋이 삭제되었습니다.');
     };
 
     return (
@@ -467,6 +505,99 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 </div>
                             </div>
                         </SettingsRow>
+                    </SettingsCard>
+
+                    {/* 정산 파트너 프리셋 */}
+                    <SettingsCard
+                        title="정산 파트너 프리셋 (수수료 지급처 계좌 목록)"
+                        description="3단계 수당 지급 처리 시 빠르게 선택할 수 있는 협력 변호사/팀장의 계좌 및 기본 지급액 프리셋입니다."
+                        icon={<Users size={18} />}
+                    >
+                        <div className="space-y-4">
+                            {/* 프리셋 목록 */}
+                            <div className="space-y-2">
+                                {(editingPartner.payoutPartnerPresets || []).map(preset => (
+                                    <div
+                                        key={preset.id}
+                                        className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-200 dark:border-gray-700"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-bold text-xs text-gray-900 dark:text-gray-100">{preset.name}</span>
+                                            <span className="text-xs text-gray-500 font-mono">{preset.accountInfo}</span>
+                                            {preset.defaultAmount && (
+                                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300 border border-green-200 dark:border-green-800">
+                                                    기본 {preset.defaultAmount}만원
+                                                </span>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeletePreset(preset.id)}
+                                            className="text-gray-400 hover:text-rose-500 p-1 transition-colors"
+                                            title="프리셋 삭제"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {(editingPartner.payoutPartnerPresets || []).length === 0 && (
+                                    <div className="text-center py-6 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                                        등록된 지급처 프리셋이 없습니다. 아래에서 추가하세요.
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 신규 프리셋 등록 폼 */}
+                            <div className="p-4 bg-gray-50/70 dark:bg-gray-750/70 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <h4 className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase mb-3">
+                                    + 새 지급 파트너 프리셋 등록
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                    <input
+                                        type="text"
+                                        placeholder="파트너명 (예: 안철형 변호사)"
+                                        className="p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none font-bold"
+                                        value={newPresetName}
+                                        onChange={e => setNewPresetName(e.target.value)}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="은행 및 계좌번호 (예: 국민 123-45-6789)"
+                                        className="p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                        value={newPresetAccount}
+                                        onChange={e => setNewPresetAccount(e.target.value)}
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="기본 지급액 (만원, 선택사항)"
+                                        className="p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                        value={newPresetAmount}
+                                        onChange={e => setNewPresetAmount(e.target.value === '' ? '' : Number(e.target.value))}
+                                    />
+                                </div>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleAddPreset}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                                    >
+                                        프리셋 추가
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </SettingsCard>
+
+                    {/* 거래처 전용 텔레그램 연동 방 */}
+                    <SettingsCard
+                        title="거래처 전용 텔레그램 연동 방 (사건 전달 · 피드백 자동수집)"
+                        description="이 거래처(변호사 사무실)의 전용 텔레그램 방입니다. 리드 상세의 [텔레그램 전달]은 이 방으로 전송되고, 이 방에서 수신된 피드백은 해당 거래처 고객과 자동 매칭됩니다."
+                        icon={<MessageCircle size={18} />}
+                    >
+                        <TelegramChatPicker
+                            value={editingPartner.telegramChatId || ''}
+                            onChange={v => setEditingPartner({ ...editingPartner, telegramChatId: v })}
+                        />
                     </SettingsCard>
                 </div>
             )}

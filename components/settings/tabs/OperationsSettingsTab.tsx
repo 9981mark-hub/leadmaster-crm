@@ -6,10 +6,12 @@ import { User, PhoneCall, ListFilter, Mail, Plus, Trash2, Save, ArrowRight, Laye
 import { useToast } from '../../../contexts/ToastContext';
 
 interface OperationsSettingsTabProps {
-    // 1. 담당자
+    // 1. 담당자 및 부재 기준 상태
     managerName: string;
     setManagerName: (name: string) => void;
     onSaveManagerName: () => void;
+    missedCallStatus: string;
+    setMissedCallStatus: (status: string) => void;
 
     // 2. 부재콜 주기
     missedCallIntervalTiers: MissedCallIntervalTier[];
@@ -62,6 +64,8 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
     managerName,
     setManagerName,
     onSaveManagerName,
+    missedCallStatus,
+    setMissedCallStatus,
     missedCallIntervalTiers,
     setMissedCallIntervalTiers,
     inboundPaths,
@@ -123,7 +127,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
             {/* 1. 기본 담당자 설정 */}
             <SettingsCard
                 title="기본 업무 정보"
-                description="신규 상담 접수 및 요약 템플릿의 기본 담당자 정보를 설정합니다."
+                description="신규 상담 접수 기본 배정 담당자와 부재콜 감지 기준 상태를 설정합니다."
                 icon={<User size={18} />}
             >
                 <SettingsRow label="기본 담당자명" description="신규 생성 건 기본 배정 및 카톡 요약문의 {{managerName}}에 치환됩니다.">
@@ -142,6 +146,22 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                             저장
                         </button>
                     </div>
+                </SettingsRow>
+
+                <SettingsRow label="부재 콜 기준 상태" description="케이스가 이 상태일 때만 '부재 확인' 버튼 및 재통화 타이머가 동작합니다.">
+                    <select
+                        className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                        value={missedCallStatus}
+                        onChange={e => {
+                            setMissedCallStatus(e.target.value);
+                            localStorage.setItem('lm_missedStatus', e.target.value);
+                            showToast(`부재 기준 상태가 '${e.target.value}'(으)로 변경되었습니다.`);
+                        }}
+                    >
+                        {statuses.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                        ))}
+                    </select>
                 </SettingsRow>
             </SettingsCard>
 

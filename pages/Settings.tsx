@@ -97,6 +97,7 @@ export default function SettingsPage() {
     // 2. Operations State
     // -------------------------------------------------------------
     const [managerName, setManagerName] = useState('Mark');
+    const [missedCallStatus, setMissedCallStatus] = useState(() => localStorage.getItem('lm_missedStatus') || '부재');
     const [missedCallIntervalTiers, setMissedCallIntervalTiers] = useState<MissedCallIntervalTier[]>(() => loadMissedCallTiers());
 
     // Inbound Paths
@@ -711,6 +712,8 @@ export default function SettingsPage() {
                         managerName={managerName}
                         setManagerName={setManagerName}
                         onSaveManagerName={handleSaveManagerName}
+                        missedCallStatus={missedCallStatus}
+                        setMissedCallStatus={setMissedCallStatus}
                         missedCallIntervalTiers={missedCallIntervalTiers}
                         setMissedCallIntervalTiers={setMissedCallIntervalTiers}
                         inboundPaths={inboundPaths}
