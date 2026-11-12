@@ -30,6 +30,7 @@ import { ParalegalDecisionModal } from '../components/case-list/ParalegalDecisio
 import { Scale } from 'lucide-react';
 import { CaseDetailDrawer } from '../components/case-list/CaseDetailDrawer';
 import { useActiveCall } from '../contexts/ActiveCallContext';
+import { QuickNewCaseModal } from '../components/case-list/QuickNewCaseModal';
 
 export default function CaseList() {
     const navigate = useNavigate();
@@ -47,6 +48,7 @@ export default function CaseList() {
     const deleteCaseMutation = useDeleteCaseMutation();
 
     // State
+    const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'active' | 'archived' | 'trash'>('active');
@@ -86,6 +88,18 @@ export default function CaseList() {
             return [];
         }
     });
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Alt + N or Option + N 으로 빠른 등록 모달 열기
+            if (e.altKey && (e.key === 'n' || e.key === 'N' || e.key === 'ㅜ')) {
+                e.preventDefault();
+                setIsNewCaseModalOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     useEffect(() => {
         localStorage.setItem('lm_hiddenStatuses', JSON.stringify(hiddenStatuses));
@@ -799,6 +813,7 @@ export default function CaseList() {
                 onResetPage={() => setCurrentPage(1)}
                 onExportClick={() => { if (isAdmin) setIsExportModalOpen(true); else showToast('데이터 내보내기는 관리자만 가능합니다.', 'error'); }}
                 canExport={isAdmin}
+                onOpenNewCaseModal={() => setIsNewCaseModalOpen(true)}
             />
 
             <CaseListFilter
@@ -920,6 +935,15 @@ export default function CaseList() {
                 onSuccess={() => { refetchCases(); setCurrentPage(1); }}
                 partners={partners}
                 inboundPaths={inboundPaths}
+            />
+
+            <QuickNewCaseModal
+                isOpen={isNewCaseModalOpen}
+                onClose={() => setIsNewCaseModalOpen(false)}
+                onSuccess={() => {
+                    refetchCases();
+                    setCurrentPage(1);
+                }}
             />
 
             {paralegalTargetCase && (

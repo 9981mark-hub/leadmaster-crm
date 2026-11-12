@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Phone, X, ArrowUpDown, AlertTriangle, Zap } from 'lucide-react';
+import { Sparkles, Phone, X, ArrowUpDown, AlertTriangle, Zap, Plus } from 'lucide-react';
 import { MissedCallIntervalTier } from '../../types';
 import { getSyncStatus } from '../../services/api';
 
@@ -22,6 +22,7 @@ interface CaseListHeaderProps {
     onExportClick: () => void;
     /** 데이터 내보내기 버튼 표시 (회사 관리자만). 기본 false */
     canExport?: boolean;
+    onOpenNewCaseModal?: () => void;
 }
 
 export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
@@ -40,7 +41,8 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     onManualRefresh,
     onResetPage,
     onExportClick,
-    canExport = false
+    canExport = false,
+    onOpenNewCaseModal
 }) => {
     return (
         <div className="space-y-4">
@@ -148,6 +150,17 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             <span className="text-xs text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
                         )}
                     </div>
+                    {onOpenNewCaseModal && (
+                        <button
+                            type="button"
+                            onClick={onOpenNewCaseModal}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs active:scale-95 transition-all whitespace-nowrap"
+                            title="새 고객 케이스 빠른 등록 (Alt+N)"
+                        >
+                            <Plus size={14} />
+                            <span>신규 등록</span>
+                        </button>
+                    )}
                     <Link
                         to="/lite"
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all whitespace-nowrap"

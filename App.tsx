@@ -279,7 +279,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/schedule', icon: Calendar, label: '일정' },
     { to: '/cases', icon: Users, label: '케이스' },
     { to: '/lite', icon: Zap, label: '간편 콜 모드' },
-    { to: '/new', icon: PlusCircle, label: '신규등록' },
     { to: '/telegram', icon: Smartphone, label: 'TG연동', badge: pendingTgCount > 0 ? pendingTgCount : undefined },
     { to: '/settlement', icon: Calculator, label: '정산' },
     { to: '/team', icon: UserCog, label: '팀 관리' },
