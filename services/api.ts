@@ -2372,7 +2372,22 @@ const saveExpenses = () => {
 };
 
 // Default expense categories
-export const EXPENSE_CATEGORIES: ExpenseCategory[] = ['광고비', '마케팅비', '사무비용', '인건비', '교통비', '식대', '기타', '페이백'];
+export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
+  '임대료',
+  '유류비',
+  '리스비',
+  '통신비',
+  '광고비',
+  '마케팅비',
+  '사무비용',
+  '소모품비',
+  '인건비',
+  '복리후생비',
+  '식대',
+  '교통비',
+  '페이백',
+  '기타',
+];
 
 // Fetch all expenses (optionally filter by partner and/or year)
 export const fetchExpenses = async (partnerId?: string, year?: number): Promise<ExpenseItem[]> => {
@@ -2475,14 +2490,20 @@ export const getExpenseStats = async (year: number, month?: number | 'all', part
   const total = filtered.reduce((sum, e) => sum + (e.amount || 0), 0);
 
   const byCategory: Record<ExpenseCategory, number> = {
+    '임대료': 0,
+    '유류비': 0,
+    '리스비': 0,
+    '통신비': 0,
     '광고비': 0,
     '마케팅비': 0,
     '사무비용': 0,
+    '소모품비': 0,
     '인건비': 0,
-    '교통비': 0,
+    '복리후생비': 0,
     '식대': 0,
+    '교통비': 0,
+    '페이백': 0,
     '기타': 0,
-    '페이백': 0
   };
 
   filtered.forEach(e => {

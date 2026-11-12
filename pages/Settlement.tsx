@@ -85,7 +85,26 @@ export default function Settlement() {
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
     const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
     const [expenseForm, setExpenseForm] = useState<Partial<ExpenseItem>>({ category: '광고비', amount: 0, description: '', date: todayKST() });
-    const [expenseStats, setExpenseStats] = useState<{ total: number; byCategory: Record<ExpenseCategory, number>; byMonth: { month: string; amount: number }[] }>({ total: 0, byCategory: { '광고비': 0, '마케팅비': 0, '사무비용': 0, '인건비': 0, '교통비': 0, '식대': 0, '기타': 0, '페이백': 0 }, byMonth: [] });
+    const [expenseStats, setExpenseStats] = useState<{ total: number; byCategory: Record<ExpenseCategory, number>; byMonth: { month: string; amount: number }[] }>({
+        total: 0,
+        byCategory: {
+            '임대료': 0,
+            '유류비': 0,
+            '리스비': 0,
+            '통신비': 0,
+            '광고비': 0,
+            '마케팅비': 0,
+            '사무비용': 0,
+            '소모품비': 0,
+            '인건비': 0,
+            '복리후생비': 0,
+            '식대': 0,
+            '교통비': 0,
+            '페이백': 0,
+            '기타': 0,
+        },
+        byMonth: []
+    });
 
     // KPI Modal State for Expenses Tab
     const [activeExpenseKpiModal, setActiveExpenseKpiModal] = useState<'commission' | 'expense' | 'ad_ratio' | 'net_profit' | null>(null);
@@ -2275,14 +2294,20 @@ export default function Settlement() {
 
     // Expense category colors for charts
     const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
+        '임대료': '#6366f1',
+        '유류비': '#f97316',
+        '리스비': '#06b6d4',
+        '통신비': '#3b82f6',
         '광고비': '#ef4444',
-        '마케팅비': '#f97316',
+        '마케팅비': '#fb923c',
         '사무비용': '#eab308',
+        '소모품비': '#14b8a6',
         '인건비': '#22c55e',
-        '교통비': '#3b82f6',
+        '복리후생비': '#ec4899',
         '식대': '#8b5cf6',
-        '기타': '#6b7280',
-        '페이백': '#d946ef'
+        '교통비': '#0284c7',
+        '페이백': '#d946ef',
+        '기타': '#6b7280'
     };
 
     // Expense handlers
