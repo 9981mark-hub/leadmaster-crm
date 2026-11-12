@@ -192,3 +192,43 @@
 .dark textarea::placeholder {
   color: #9ca3af; /* gray-400 */
 }
+
+
+/* ========================================================
+   Enterprise Motion & Page Transition Tokens (v2.0)
+   ======================================================== */
+@keyframes pageGlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-in {
+  animation: pageGlideIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes softPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: softPulseGlow 2.5s infinite;
+}
+
+/* Safe Area Insets for Mobile App & Notch */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+}
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 0.5rem);
+}
