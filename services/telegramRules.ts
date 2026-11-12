@@ -48,7 +48,7 @@ export const PRESET_SMART_DEFAULT: TelegramCompanyRules = {
   '출장예약': {
     feedbackType: '출장예약',
     label: '출장 상담 예약',
-    applyMode: 'pending',
+    applyMode: 'auto', // 즉시 자동 저장 (캘린더 리마인더 생성 및 상태 반영)
     targetStatus: '상담중',
     targetSecondaryStatus: '출장예약',
     incrementMissedCall: false,
@@ -59,9 +59,20 @@ export const PRESET_SMART_DEFAULT: TelegramCompanyRules = {
   '방문예약': {
     feedbackType: '방문예약',
     label: '내방 / 방문 예약',
-    applyMode: 'pending',
+    applyMode: 'auto', // 즉시 자동 저장
     targetStatus: '상담중',
     targetSecondaryStatus: '내방예약',
+    incrementMissedCall: false,
+    queueToLiteDial: false,
+    autoCalendar: true,
+    flagCareNeeded: false,
+  },
+  '미팅예약': {
+    feedbackType: '미팅예약',
+    label: '미팅 / 상담 예약',
+    applyMode: 'auto', // 즉시 자동 저장
+    targetStatus: '상담중',
+    targetSecondaryStatus: '미팅예약',
     incrementMissedCall: false,
     queueToLiteDial: false,
     autoCalendar: true,

@@ -2,7 +2,7 @@
  * 한국어 텔레그램 피드백 텍스트 분석 및 스마트 엔티티 추출 유틸리티
  * 
  * 실제 텔레그램 4개 대화방(2,926개 메시지 / 894건 피드백) 패턴 기반:
- * - 1) 출장/내방/방문 예약 일시 및 장소 추출
+ * - 1) 출장/내방/방문/미팅 예약 일시 및 장소 추출 (상대 날짜 금일/내일 및 취소 일정 제외 완벽 지원)
  * - 2) 부재 차수(부재2, 부재3) 감지
  * - 3) 1차 상담원 재관리(Care) 요망 감지
  * - 4) 수임료/착수금/입금액 감지
@@ -11,10 +11,10 @@
 
 export interface ParsedFeedbackSchedule {
   isSchedule: boolean;
-  type: '출장' | '내방' | '방문' | '통화예약' | '상담';
-  datetimeStr?: string;      // ISO string or YYYY-MM-DD HH:mm
-  dateDisplay?: string;      // 예: "2026-04-17 (금) 11:00"
-  location?: string;         // 예: "부산", "용인", "마산"
+  type: '출장' | '내방' | '방문' | '통화예약' | '상담' | '미팅';
+  datetimeStr?: string;      // ISO string or YYYY-MM-DDTHH:mm:00
+  dateDisplay?: string;      // 예: "11월 12일(목) 오후 1시 00분 [미팅]"
+  location?: string;         // 예: "부산", "용인", "안양"
   rawText?: string;
 }
 
@@ -79,7 +79,7 @@ export function analyzeTelegramFeedbackText(content: string, referenceDate: Date
     insights.customerName = slashMatch[1];
     insights.cleanContent = slashMatch[2].trim();
   } else {
-    const spaceMatch = text.match(/^([가-힣]{2,4})\s+(부재|출장|내방|방문|재전|통화|계약|수임|명함|비용|조건|서류|상의|현재)/);
+    const spaceMatch = text.match(/^([가-힣]{2,4})\s+(부재|출장|내방|방문|미팅|재전|통화|계약|수임|명함|비용|조건|서류|상의|현재)/);
     if (spaceMatch) {
       insights.customerName = spaceMatch[1];
       insights.cleanContent = text.substring(spaceMatch[1].length).trim();
@@ -126,83 +126,135 @@ export function analyzeTelegramFeedbackText(content: string, referenceDate: Date
     };
   }
 
-  // 5. 출장 / 내방 / 방문 / 통화예약 일정 파싱
-  const isScheduleKeyword = /출장|내방|방문|통화예약|재통화하기로|만나기|면담/.test(text);
+  // 5. 출장 / 내방 / 방문 / 통화예약 / 미팅 일정 파싱
+  const isScheduleKeyword = /출장|내방|방문|통화예약|재통화하기로|만나기|면담|미팅|상담예약|약속/.test(text);
   if (isScheduleKeyword) {
-    let scheduleType: ParsedFeedbackSchedule['type'] = '출장';
+    let scheduleType: ParsedFeedbackSchedule['type'] = '미팅';
     if (/내방/.test(text)) scheduleType = '내방';
+    else if (/출장/.test(text)) scheduleType = '출장';
     else if (/방문/.test(text)) scheduleType = '방문';
-    else if (/통화예약|통화요청/.test(text)) scheduleType = '통화예약';
+    else if (/미팅/.test(text)) scheduleType = '미팅';
+    else if (/통화예약|통화요청|재통화/.test(text)) scheduleType = '통화예약';
+    else scheduleType = '상담';
 
-    // 날짜 및 시간 추출
-    // 패턴 예: "4월 17일 금 오전 11시", "1/8(수)오후2시", "13일 오후2시", "9일 금요일 10시"
     const currentYear = referenceDate.getFullYear();
-    let month = referenceDate.getMonth() + 1;
-    let day = referenceDate.getDate();
+    let targetYear = currentYear;
+    let targetMonth = referenceDate.getMonth() + 1;
+    let targetDay = referenceDate.getDate();
     let hour = 14; // 기본 오후 2시
     let minute = 0;
     let foundDate = false;
+    let foundTime = false;
 
-    // "M월 D일" or "M/D"
-    const mdMatch = text.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/) || text.match(/(\d{1,2})\/(\d{1,2})/);
-    if (mdMatch) {
-      month = parseInt(mdMatch[1], 10);
-      day = parseInt(mdMatch[2], 10);
+    // 상대 날짜 감지
+    const hasToday = /(?:금일|오늘|당일)/.test(text);
+    const hasTomorrow = /(?:내일|명일)/.test(text);
+    const hasDayAfterTomorrow = /모레/.test(text);
+
+    // 과거 취소/연기된 일자 색출 (예: '11/3일 출장예정이었다가 취소하셨는데')
+    const canceledDateRegex = /(\d{1,2}\s*월\s*\d{1,2}\s*일|\d{1,2}\/\d{1,2}|\d{1,2}\s*일)[^\n\.\,]*?(?:취소|연기|불발)/g;
+    const canceledDates = new Set<string>();
+    let cm: RegExpExecArray | null;
+    while ((cm = canceledDateRegex.exec(text)) !== null) {
+      canceledDates.add(cm[1].replace(/\s+/g, ''));
+    }
+
+    if (hasTomorrow) {
+      const t = new Date(referenceDate);
+      t.setDate(t.getDate() + 1);
+      targetMonth = t.getMonth() + 1;
+      targetDay = t.getDate();
+      foundDate = true;
+    } else if (hasDayAfterTomorrow) {
+      const t = new Date(referenceDate);
+      t.setDate(t.getDate() + 2);
+      targetMonth = t.getMonth() + 1;
+      targetDay = t.getDate();
+      foundDate = true;
+    } else if (hasToday) {
+      targetMonth = referenceDate.getMonth() + 1;
+      targetDay = referenceDate.getDate();
       foundDate = true;
     } else {
-      // "D일" (이번 달 또는 다음 달)
-      const dMatch = text.match(/(\d{1,2})\s*일/);
-      if (dMatch) {
-        day = parseInt(dMatch[1], 10);
+      // 절대 날짜 매칭 ("M월 D일" or "M/D")
+      const mdMatches = [...text.matchAll(/(\d{1,2})\s*월\s*(\d{1,2})\s*일|(\d{1,2})\/(\d{1,2})/g)];
+      for (const m of mdMatches) {
+        const raw = m[0].replace(/\s+/g, '');
+        if (canceledDates.has(raw)) continue; // 취소된 일자 스킵
+        targetMonth = parseInt(m[1] || m[3], 10);
+        targetDay = parseInt(m[2] || m[4], 10);
         foundDate = true;
+        break;
+      }
+
+      if (!foundDate) {
+        // "D일"
+        const dMatches = [...text.matchAll(/(\d{1,2})\s*일/g)];
+        for (const m of dMatches) {
+          const raw = m[0].replace(/\s+/g, '');
+          if (canceledDates.has(raw)) continue;
+          targetDay = parseInt(m[1], 10);
+          foundDate = true;
+          break;
+        }
       }
     }
 
-    // 시간: "오전 11시", "오후 2시", "14시", "오후2시30분"
-    const timeMatch = text.match(/(오전|오후|낮|저녁|아침)?\s*(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분)?/) || text.match(/(\d{1,2}):(\d{2})/);
-    if (timeMatch) {
-      if (timeMatch[3] !== undefined) {
-        // "오전/오후 시 분" 형식
-        const ampm = timeMatch[1];
-        let h = parseInt(timeMatch[2], 10);
-        const m = timeMatch[3] ? parseInt(timeMatch[3], 10) : 0;
-        if (ampm === '오후' || ampm === '저녁') {
+    // 시간 파싱 (절대 NaN 방지 및 비즈니스 오후 시간 스마트 보정)
+    const colonMatch = text.match(/(\d{1,2}):(\d{2})/);
+    if (colonMatch) {
+      hour = parseInt(colonMatch[1], 10);
+      minute = parseInt(colonMatch[2], 10);
+      foundTime = true;
+    } else {
+      // 한국어 시간 패턴: (오전|오후|낮|저녁|아침|밤)? N시 (M분/반)?
+      const korTimeMatch = text.match(/(오전|오후|낮|저녁|아침|밤)?\s*(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분|\s*반)?/);
+      if (korTimeMatch) {
+        const ampm = korTimeMatch[1];
+        let h = parseInt(korTimeMatch[2], 10);
+        let m = 0;
+        if (korTimeMatch[0].includes('반')) {
+          m = 30;
+        } else if (korTimeMatch[3]) {
+          m = parseInt(korTimeMatch[3], 10);
+        }
+
+        if (ampm === '오후' || ampm === '저녁' || ampm === '밤') {
           if (h < 12) h += 12;
         } else if (ampm === '오전' || ampm === '아침') {
           if (h === 12) h = 0;
         } else {
-          // 오전/오후 명시 없는데 1~6시면 보통 오후
+          // 비즈니스 미팅/상담: 1시~6시 사이는 통상 오후(13~18시)로 해석
           if (h >= 1 && h <= 6) h += 12;
         }
-        hour = h;
-        minute = m;
-      } else if (timeMatch[2] !== undefined) {
-        // "HH:MM" 형식
-        hour = parseInt(timeMatch[1], 10);
-        minute = parseInt(timeMatch[2], 10);
+        hour = isNaN(h) ? 14 : h;
+        minute = isNaN(m) ? 0 : m;
+        foundTime = true;
       }
     }
 
     // 지역/장소 추출 (예: "부산 출장예약", "용인 출장", "가포고등학교", "마산")
-    const locMatch = text.match(/([가-힣]{2,10}(?:시|군|구|동|역|학교|빌딩)?)\s*(?:출장|내방|방문|에서)/);
+    const locMatch = text.match(/([가-힣]{2,10}(?:시|군|구|동|역|학교|빌딩)?)\s*(?:출장|내방|방문|미팅|에서)/);
     const location = locMatch ? locMatch[1] : undefined;
 
-    if (foundDate || timeMatch) {
+    if (foundDate || foundTime) {
       const pad = (n: number) => String(n).padStart(2, '0');
-      const dateStr = `${currentYear}-${pad(month)}-${pad(day)}`;
+      const dateStr = `${targetYear}-${pad(targetMonth)}-${pad(targetDay)}`;
       const timeStr = `${pad(hour)}:${pad(minute)}`;
       const datetimeIso = `${dateStr}T${timeStr}:00`;
 
       // 요일 구하기
-      const dateObj = new Date(currentYear, month - 1, day);
+      const dateObj = new Date(targetYear, targetMonth - 1, targetDay);
       const daysKo = ['일', '월', '화', '수', '목', '금', '토'];
       const dayOfWeek = daysKo[dateObj.getDay()];
+      const displayHour = hour >= 12 ? (hour > 12 ? hour - 12 : 12) : (hour === 0 ? 12 : hour);
+      const ampmKo = hour >= 12 ? '오후' : '오전';
 
       insights.schedule = {
         isSchedule: true,
         type: scheduleType,
         datetimeStr: datetimeIso,
-        dateDisplay: `${month}월 ${day}일(${dayOfWeek}) ${hour >= 12 ? '오후' : '오전'} ${hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour)}시${minute > 0 ? ` ${minute}분` : ''}${location ? ` [${location}]` : ''}`,
+        dateDisplay: `${targetMonth}월 ${targetDay}일(${dayOfWeek}) ${ampmKo} ${displayHour}시 ${pad(minute)}분 [${scheduleType}${location ? ` - ${location}` : ''}]`,
         location,
         rawText: text,
       };

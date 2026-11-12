@@ -506,7 +506,8 @@ async function matchCustomerToCase(customerName: string, partnerId: string | nul
 // ============================================
 
 const AUTO_APPLY_TYPES = new Set([
-  '부재', '지속부재', '명함발송', '재통화요청', '통화예약', '일반메모', '비피드백', '진행불가', '안부인사', '마감인사', '일반대화'
+  '부재', '지속부재', '명함발송', '재통화요청', '통화예약', '일반메모', '비피드백', '진행불가', '안부인사', '마감인사', '일반대화',
+  '출장예약', '방문예약', '내방예약', '미팅예약', '미팅', '상담예약'
 ]);
 
 const URGENCY_MAP: Record<string, string> = {
@@ -520,6 +521,115 @@ const URGENCY_MAP: Record<string, string> = {
   '자산포기불가': 'normal',
   '고객거부': 'info',
 };
+
+function extractScheduleFromText(text: string, referenceDate: Date = new Date()): { datetimeIso: string; type: string } | null {
+  const isScheduleKeyword = /출장|내방|방문|통화예약|재통화하기로|만나기|면담|미팅|상담예약|약속/.test(text);
+  if (!isScheduleKeyword) return null;
+
+  let scheduleType = '미팅';
+  if (/내방/.test(text)) scheduleType = '내방';
+  else if (/출장/.test(text)) scheduleType = '출장';
+  else if (/방문/.test(text)) scheduleType = '방문';
+  else if (/미팅/.test(text)) scheduleType = '미팅';
+  else if (/통화예약|통화요청|재통화/.test(text)) scheduleType = '통화예약';
+
+  const currentYear = referenceDate.getFullYear();
+  let targetYear = currentYear;
+  let targetMonth = referenceDate.getMonth() + 1;
+  let targetDay = referenceDate.getDate();
+  let hour = 14;
+  let minute = 0;
+  let foundDate = false;
+  let foundTime = false;
+
+  const hasToday = /(?:금일|오늘|당일)/.test(text);
+  const hasTomorrow = /(?:내일|명일)/.test(text);
+  const hasDayAfterTomorrow = /모레/.test(text);
+
+  const canceledDateRegex = /(\d{1,2}\s*월\s*\d{1,2}\s*일|\d{1,2}\/\d{1,2}|\d{1,2}\s*일)[^\n\.\,]*?(?:취소|연기|불발)/g;
+  const canceledDates = new Set<string>();
+  let cm: RegExpExecArray | null;
+  while ((cm = canceledDateRegex.exec(text)) !== null) {
+    canceledDates.add(cm[1].replace(/\s+/g, ''));
+  }
+
+  if (hasTomorrow) {
+    const t = new Date(referenceDate);
+    t.setDate(t.getDate() + 1);
+    targetMonth = t.getMonth() + 1;
+    targetDay = t.getDate();
+    foundDate = true;
+  } else if (hasDayAfterTomorrow) {
+    const t = new Date(referenceDate);
+    t.setDate(t.getDate() + 2);
+    targetMonth = t.getMonth() + 1;
+    targetDay = t.getDate();
+    foundDate = true;
+  } else if (hasToday) {
+    targetMonth = referenceDate.getMonth() + 1;
+    targetDay = referenceDate.getDate();
+    foundDate = true;
+  } else {
+    const mdMatches = [...text.matchAll(/(\d{1,2})\s*월\s*(\d{1,2})\s*일|(\d{1,2})\/(\d{1,2})/g)];
+    for (const m of mdMatches) {
+      const raw = m[0].replace(/\s+/g, '');
+      if (canceledDates.has(raw)) continue;
+      targetMonth = parseInt(m[1] || m[3], 10);
+      targetDay = parseInt(m[2] || m[4], 10);
+      foundDate = true;
+      break;
+    }
+    if (!foundDate) {
+      const dMatches = [...text.matchAll(/(\d{1,2})\s*일/g)];
+      for (const m of dMatches) {
+        const raw = m[0].replace(/\s+/g, '');
+        if (canceledDates.has(raw)) continue;
+        targetDay = parseInt(m[1], 10);
+        foundDate = true;
+        break;
+      }
+    }
+  }
+
+  const colonMatch = text.match(/(\d{1,2}):(\d{2})/);
+  if (colonMatch) {
+    hour = parseInt(colonMatch[1], 10);
+    minute = parseInt(colonMatch[2], 10);
+    foundTime = true;
+  } else {
+    const korTimeMatch = text.match(/(오전|오후|낮|저녁|아침|밤)?\s*(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분|\s*반)?/);
+    if (korTimeMatch) {
+      const ampm = korTimeMatch[1];
+      let h = parseInt(korTimeMatch[2], 10);
+      let m = 0;
+      if (korTimeMatch[0].includes('반')) {
+        m = 30;
+      } else if (korTimeMatch[3]) {
+        m = parseInt(korTimeMatch[3], 10);
+      }
+      if (ampm === '오후' || ampm === '저녁' || ampm === '밤') {
+        if (h < 12) h += 12;
+      } else if (ampm === '오전' || ampm === '아침') {
+        if (h === 12) h = 0;
+      } else {
+        if (h >= 1 && h <= 6) h += 12;
+      }
+      hour = isNaN(h) ? 14 : h;
+      minute = isNaN(m) ? 0 : m;
+      foundTime = true;
+    }
+  }
+
+  if (!foundDate && !foundTime) return null;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const dateStr = `${targetYear}-${pad(targetMonth)}-${pad(targetDay)}`;
+  const timeStr = `${pad(hour)}:${pad(minute)}`;
+  return {
+    datetimeIso: `${dateStr}T${timeStr}:00`,
+    type: scheduleType,
+  };
+}
 
 async function autoApplyFeedback(
   caseId: string,
@@ -576,8 +686,27 @@ async function autoApplyFeedback(
   };
   updates.status_logs = [log, ...currentLogs];
 
-  // [REMOVED] Reminder creation — AI가 추출한 날짜가 부정확하여 리마인더 자동 생성 비활성화
-  // 상담 이력(메모/상태 로그)에만 기록됨
+  // 출장 / 내방 / 미팅 / 방문 예약 시 캘린더 리마인더 자동 생성
+  if (['출장예약', '방문예약', '내방예약', '미팅예약', '미팅', '통화예약'].includes(feedbackType) || /출장|내방|방문|미팅|통화예약/.test(originalText)) {
+    const sched = extractScheduleFromText(originalText, new Date());
+    if (sched && sched.datetimeIso) {
+      const currentReminders = getArray(caseData.reminders);
+      const reminderType = (sched.type === '내방' || sched.type === '방문' ? '방문' : sched.type === '통화예약' ? '재통화' : sched.type === '미팅' ? '미팅' : '출장');
+      const newReminder = {
+        id: `rem-tg-${Date.now()}`,
+        type: reminderType,
+        datetime: sched.datetimeIso,
+        note: `[TG-${senderName}] ${originalText.substring(0, 100)}`,
+        isCompleted: false,
+        createdAt: new Date().toISOString(),
+      };
+      updates.reminders = [newReminder, ...currentReminders];
+      if (caseData.status !== '상담중' && caseData.status !== '계약 완료') {
+        updates.status = '상담중';
+      }
+      updates.secondary_status = feedbackType;
+    }
+  }
 
   // 웹 CRM의 증분 동기화(updated_at 기준)가 이 변경을 놓치지 않도록 명시적으로 기록
   updates.updated_at = new Date().toISOString();

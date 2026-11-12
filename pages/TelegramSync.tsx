@@ -743,7 +743,7 @@ export default function TelegramSync() {
                                     disabled={isActionBusy}
                                     className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1 disabled:opacity-50"
                                 >
-                                    <Check size={14} /> 승인
+                                    <Check size={14} /> {ins?.schedule?.isSchedule ? '일정 즉시 저장' : '승인'}
                                 </button>
                             )}
                             <button
@@ -1039,16 +1039,14 @@ export default function TelegramSync() {
                         </div>
 
                         {/* One-click Confirm All Matched (Auto-Pilot) */}
-                        {isAdmin && (
-                            <button
-                                onClick={handleConfirmAllMatched}
-                                disabled={isActionBusy || filteredPending.filter(f => f.matchedCaseId).length === 0}
-                                className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs disabled:opacity-40"
-                            >
-                                <Zap size={14} className="text-amber-300" />
-                                <span>AI 추천대로 전체 일괄 승인</span>
-                            </button>
-                        )}
+                        <button
+                            onClick={handleConfirmAllMatched}
+                            disabled={isActionBusy || filteredPending.filter(f => f.matchedCaseId).length === 0}
+                            className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs disabled:opacity-40"
+                        >
+                            <Zap size={14} className="text-amber-300" />
+                            <span>AI 추천대로 전체 일괄 저장·승인</span>
+                        </button>
                     </div>
 
                     {/* Pending List Contents */}

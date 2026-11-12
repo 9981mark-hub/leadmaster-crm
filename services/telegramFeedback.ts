@@ -226,7 +226,7 @@ export async function confirmFeedback(
     // 출장 / 내방 / 방문 캘린더 리마인더 자동 생성
     if (options.addCalendar && options.scheduleDateTime) {
       const currentReminders = getArray(caseData.reminders);
-      const reminderType = (options.scheduleType === '내방' ? '방문' : options.scheduleType === '통화예약' ? '재통화' : '출장');
+      const reminderType = (options.scheduleType === '내방' || options.scheduleType === '방문' ? '방문' : options.scheduleType === '통화예약' ? '재통화' : options.scheduleType === '미팅' ? '미팅' : '출장');
       const newReminder = {
         id: `rem-tg-${Date.now()}`,
         type: reminderType,
