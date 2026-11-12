@@ -10,7 +10,7 @@ interface AgentCommissionTabProps {
 }
 
 export default function AgentCommissionTab({
-  agentRows,
+  agentRows = [],
   policy,
   onOpenPolicyModal,
 }: AgentCommissionTabProps) {
@@ -18,23 +18,25 @@ export default function AgentCommissionTab({
   const [sortBy, setSortBy] = useState<'commission_desc' | 'cases_desc' | 'name_asc'>('commission_desc');
   const [selectedAgent, setSelectedAgent] = useState<AgentSettlementRowItem | null>(null);
 
+  const safeRows = useMemo(() => Array.isArray(agentRows) ? agentRows : [], [agentRows]);
+
   // 1. 전체 합계 지표 계산
   const totalStats = useMemo(() => {
-    const totalCases = agentRows.reduce((sum, r) => sum + r.caseCount, 0);
-    const totalPartnerFee = agentRows.reduce((sum, r) => sum + r.totalPartnerFeeWon, 0);
-    const totalCompanyMargin = agentRows.reduce((sum, r) => sum + r.companyShareWon, 0);
-    const totalAgentCommission = agentRows.reduce((sum, r) => sum + r.agentShareWon, 0);
+    const totalCases = safeRows.reduce((sum, r) => sum + (r.caseCount || 0), 0);
+    const totalPartnerFee = safeRows.reduce((sum, r) => sum + (r.totalPartnerFeeWon || 0), 0);
+    const totalCompanyMargin = safeRows.reduce((sum, r) => sum + (r.companyShareWon || 0), 0);
+    const totalAgentCommission = safeRows.reduce((sum, r) => sum + (r.agentShareWon || 0), 0);
     return {
       totalCases,
       totalPartnerFee,
       totalCompanyMargin,
       totalAgentCommission,
     };
-  }, [agentRows]);
+  }, [safeRows]);
 
   // 2. 지급 일정 정보
-  const nextPayoutDate = agentRows[0]?.nextPayoutDate || '-';
-  const payoutDDay = agentRows[0]?.payoutDDay ?? 0;
+  const nextPayoutDate = safeRows[0]?.nextPayoutDate || '-';
+  const payoutDDay = safeRows[0]?.payoutDDay ?? 0;
 
   let payoutScheduleLabel = '매월 10일 정산';
   if (policy.agentPayoutCycle === 'weekly_fixed') {
@@ -58,9 +60,9 @@ export default function AgentCommissionTab({
 
   // 3. 필터 및 정렬
   const filteredAndSortedRows = useMemo(() => {
-    let list = agentRows.filter(r =>
-      r.agentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.agentId.toLowerCase().includes(searchTerm.toLowerCase())
+    let list = safeRows.filter(r =>
+      (r.agentName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.agentId || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (sortBy === 'commission_desc') {

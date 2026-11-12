@@ -19,13 +19,11 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import * as XLSX from 'xlsx';
 
 interface IntegratedPnLTabProps {
-  summary: IntegratedPnLSummary;
+  summary?: IntegratedPnLSummary;
   policy: SettlementPolicy;
   year: number;
   month: number | 'all';
 }
-
-const COLORS = ['#f43f5e', '#10b981', '#f59e0b', '#6366f1'];
 
 export default function IntegratedPnLTab({
   summary,
@@ -33,40 +31,60 @@ export default function IntegratedPnLTab({
   year,
   month,
 }: IntegratedPnLTabProps) {
+  const s: IntegratedPnLSummary = useMemo(() => {
+    return summary || {
+      year,
+      month,
+      totalRevenueWon: 0,
+      collectedRevenueWon: 0,
+      outstandingRevenueWon: 0,
+      totalCompanyMarginWon: 0,
+      totalAgentCommissionWon: 0,
+      totalDbCostWon: 0,
+      totalFixedCostWon: 0,
+      totalExpensesWon: 0,
+      netProfitWon: 0,
+      profitMarginRate: 0,
+      cashInflowWon: 0,
+      cashOutflowWon: 0,
+      netCashFlowWon: 0,
+    };
+  }, [summary, year, month]);
+
   // 비용 구조 도넛 데이터
   const costBreakdownData = useMemo(() => {
     return [
-      { name: 'DB 구매 원가', value: summary.totalDbCostWon, color: '#f43f5e' },
-      { name: '상담원 수당', value: summary.totalAgentCommissionWon, color: '#10b981' },
-      { name: '일반 운영/고정비', value: summary.totalFixedCostWon, color: '#f59e0b' },
+      { name: 'DB 구매 원가', value: s.totalDbCostWon || 0, color: '#f43f5e' },
+      { name: '상담원 수당', value: s.totalAgentCommissionWon || 0, color: '#10b981' },
+      { name: '일반 운영/고정비', value: s.totalFixedCostWon || 0, color: '#f59e0b' },
     ].filter(d => d.value > 0);
-  }, [summary]);
+  }, [s]);
 
   // 비교 차트 데이터 (매출 vs 총비용 vs 순이익)
   const comparisonData = useMemo(() => {
     return [
       {
         name: month === 'all' ? `${year}년 누적` : `${year}년 ${month}월`,
-        총매출: summary.totalRevenueWon,
-        총비용: summary.totalExpensesWon,
-        영업순이익: summary.netProfitWon,
+        총매출: s.totalRevenueWon || 0,
+        총비용: s.totalExpensesWon || 0,
+        영업순이익: s.netProfitWon || 0,
       },
     ];
-  }, [summary, year, month]);
+  }, [s, year, month]);
 
   // 엑셀 내보내기
   const handleExportExcel = () => {
     const exportData = [
-      { '항목': '총 수수료 매출 (청구 기준)', '금액(원)': summary.totalRevenueWon },
-      { '항목': '실제 통장 입금액 (수납 기준)', '금액(원)': summary.collectedRevenueWon },
-      { '항목': '거래처 미수금 잔액', '금액(원)': summary.outstandingRevenueWon },
-      { '항목': '(-) DB 구매 원가', '금액(원)': summary.totalDbCostWon },
-      { '항목': '(-) 상담원 수당 지출', '금액(원)': summary.totalAgentCommissionWon },
-      { '항목': '(-) 일반 운영비 및 고정비', '금액(원)': summary.totalFixedCostWon },
-      { '항목': '총 지출 합계', '금액(원)': summary.totalExpensesWon },
-      { '항목': '(=) 최종 영업 순이익', '금액(원)': summary.netProfitWon },
-      { '항목': '영업 순이익률(%)', '금액(원)': summary.profitMarginRate },
-      { '항목': '실제 순현금흐름 (Cash Flow)', '금액(원)': summary.netCashFlowWon },
+      { '항목': '총 수수료 매출 (청구 기준)', '금액(원)': s.totalRevenueWon },
+      { '항목': '실제 통장 입금액 (수납 기준)', '금액(원)': s.collectedRevenueWon },
+      { '항목': '거래처 미수금 잔액', '금액(원)': s.outstandingRevenueWon },
+      { '항목': '(-) DB 구매 원가', '금액(원)': s.totalDbCostWon },
+      { '항목': '(-) 상담원 수당 지출', '금액(원)': s.totalAgentCommissionWon },
+      { '항목': '(-) 일반 운영비 및 고정비', '금액(원)': s.totalFixedCostWon },
+      { '항목': '총 지출 합계', '금액(원)': s.totalExpensesWon },
+      { '항목': '(=) 최종 영업 순이익', '금액(원)': s.netProfitWon },
+      { '항목': '영업 순이익률(%)', '금액(원)': s.profitMarginRate },
+      { '항목': '실제 순현금흐름 (Cash Flow)', '금액(원)': s.netCashFlowWon },
     ];
 
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -93,11 +111,11 @@ export default function IntegratedPnLTab({
             </span>
           </div>
           <div className="text-2xl font-black text-white tracking-tight">
-            ₩{summary.totalRevenueWon.toLocaleString()}
+            ₩{(s.totalRevenueWon || 0).toLocaleString()}
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
-            <span>실제 입금: ₩{summary.collectedRevenueWon.toLocaleString()}</span>
-            <span className="text-amber-400">미수: ₩{summary.outstandingRevenueWon.toLocaleString()}</span>
+            <span>실제 입금: ₩{(s.collectedRevenueWon || 0).toLocaleString()}</span>
+            <span className="text-amber-400">미수: ₩{(s.outstandingRevenueWon || 0).toLocaleString()}</span>
           </div>
         </div>
 
@@ -113,11 +131,11 @@ export default function IntegratedPnLTab({
             </span>
           </div>
           <div className="text-2xl font-black text-rose-400 tracking-tight">
-            ₩{summary.totalExpensesWon.toLocaleString()}
+            ₩{(s.totalExpensesWon || 0).toLocaleString()}
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
-            <span>DB원가: ₩{summary.totalDbCostWon.toLocaleString()}</span>
-            <span>상담원: ₩{summary.totalAgentCommissionWon.toLocaleString()}</span>
+            <span>DB원가: ₩{(s.totalDbCostWon || 0).toLocaleString()}</span>
+            <span>상담원: ₩{(s.totalAgentCommissionWon || 0).toLocaleString()}</span>
           </div>
         </div>
 
@@ -129,15 +147,15 @@ export default function IntegratedPnLTab({
               최종 영업 순이익
             </span>
             <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-              summary.netProfitWon >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+              (s.netProfitWon || 0) >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
             }`}>
-              {summary.profitMarginRate}% 이익률
+              {s.profitMarginRate || 0}% 이익률
             </span>
           </div>
           <div className={`text-2xl font-black tracking-tight ${
-            summary.netProfitWon >= 0 ? 'text-emerald-400' : 'text-rose-400'
+            (s.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
           }`}>
-            ₩{summary.netProfitWon.toLocaleString()}
+            ₩{(s.netProfitWon || 0).toLocaleString()}
           </div>
           <div className="mt-2 text-xs text-emerald-200/80">
             {periodLabel} 실영업 결산
@@ -157,12 +175,12 @@ export default function IntegratedPnLTab({
               </span>
             </div>
             <div className={`text-2xl font-black tracking-tight ${
-              summary.netCashFlowWon >= 0 ? 'text-amber-400' : 'text-rose-400'
+              (s.netCashFlowWon || 0) >= 0 ? 'text-amber-400' : 'text-rose-400'
             }`}>
-              ₩{summary.netCashFlowWon.toLocaleString()}
+              ₩{(s.netCashFlowWon || 0).toLocaleString()}
             </div>
             <div className="mt-2 text-xs text-slate-400">
-              실입금 ₩{summary.cashInflowWon.toLocaleString()} - 실출금 ₩{summary.cashOutflowWon.toLocaleString()}
+              실입금 ₩{(s.cashInflowWon || 0).toLocaleString()} - 실출금 ₩{(s.cashOutflowWon || 0).toLocaleString()}
             </div>
           </div>
         </div>
@@ -198,11 +216,11 @@ export default function IntegratedPnLTab({
               </span>
               <div>
                 <div className="font-bold text-white font-sans">총 수수료 매출 (Gross Revenue)</div>
-                <div className="text-xs text-slate-400 font-sans">거래처 계약 수수료 총액 (입금확인 ₩{summary.collectedRevenueWon.toLocaleString()} + 미수금 ₩{summary.outstandingRevenueWon.toLocaleString()})</div>
+                <div className="text-xs text-slate-400 font-sans">거래처 계약 수수료 총액 (입금확인 ₩{(s.collectedRevenueWon || 0).toLocaleString()} + 미수금 ₩{(s.outstandingRevenueWon || 0).toLocaleString()})</div>
               </div>
             </div>
             <div className="text-base font-black text-sky-400">
-              + ₩{summary.totalRevenueWon.toLocaleString()}
+              + ₩{(s.totalRevenueWon || 0).toLocaleString()}
             </div>
           </div>
 
@@ -218,7 +236,7 @@ export default function IntegratedPnLTab({
               </div>
             </div>
             <div className="text-base font-bold text-rose-400">
-              - ₩{summary.totalDbCostWon.toLocaleString()}
+              - ₩{(s.totalDbCostWon || 0).toLocaleString()}
             </div>
           </div>
 
@@ -236,7 +254,7 @@ export default function IntegratedPnLTab({
               </div>
             </div>
             <div className="text-base font-bold text-emerald-400">
-              - ₩{summary.totalAgentCommissionWon.toLocaleString()}
+              - ₩{(s.totalAgentCommissionWon || 0).toLocaleString()}
             </div>
           </div>
 
@@ -252,7 +270,7 @@ export default function IntegratedPnLTab({
               </div>
             </div>
             <div className="text-base font-bold text-amber-400">
-              - ₩{summary.totalFixedCostWon.toLocaleString()}
+              - ₩{(s.totalFixedCostWon || 0).toLocaleString()}
             </div>
           </div>
 
@@ -266,18 +284,18 @@ export default function IntegratedPnLTab({
                 <div className="text-base font-black text-white font-sans flex items-center gap-2">
                   (=) 최종 영업 순이익 (Net Operating Profit)
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold font-sans border border-emerald-500/30">
-                    순이익률 {summary.profitMarginRate}%
+                    순이익률 {s.profitMarginRate || 0}%
                   </span>
                 </div>
                 <div className="text-xs text-emerald-300/80 font-sans mt-0.5">
-                  총 매출 ₩{summary.totalRevenueWon.toLocaleString()} - 총 지출 ₩{summary.totalExpensesWon.toLocaleString()}
+                  총 매출 ₩{(s.totalRevenueWon || 0).toLocaleString()} - 총 지출 ₩{(s.totalExpensesWon || 0).toLocaleString()}
                 </div>
               </div>
             </div>
             <div className={`text-2xl font-black ${
-              summary.netProfitWon >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              (s.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
             }`}>
-              ₩{summary.netProfitWon.toLocaleString()}
+              ₩{(s.netProfitWon || 0).toLocaleString()}
             </div>
           </div>
         </div>
@@ -292,7 +310,7 @@ export default function IntegratedPnLTab({
               <PieIcon className="w-4 h-4 text-amber-400" />
               지출 비용 구조 분해 (원가 vs 인건비 vs 운영비)
             </h4>
-            <span className="text-xs text-slate-400 font-mono">총 ₩{summary.totalExpensesWon.toLocaleString()}</span>
+            <span className="text-xs text-slate-400 font-mono">총 ₩{(s.totalExpensesWon || 0).toLocaleString()}</span>
           </div>
 
           {costBreakdownData.length === 0 ? (

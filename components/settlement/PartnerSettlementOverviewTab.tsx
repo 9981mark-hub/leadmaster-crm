@@ -12,35 +12,55 @@ import {
   Filter, FileText, ArrowUpRight
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
-import { PartnerSettlementCardItem } from '../../services/settlementMasterService';
+import { PartnerSettlementCardItem, computePartnerSettlementCards } from '../../services/settlementMasterService';
 import { exportToExcel } from '../../utils/xlsxExport';
+import { Partner, Case } from '../../types';
+import { Collection } from '../../utils/settlement';
 
 interface PartnerSettlementOverviewTabProps {
-  partnerCards: PartnerSettlementCardItem[];
+  partnerCards?: PartnerSettlementCardItem[];
+  partners?: Partner[];
+  cases?: Case[];
+  collections?: Collection[];
   onSelectPartner?: (partnerId: string) => void;
+  onOpenPolicyModal?: () => void;
 }
 
 export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTabProps> = ({
-  partnerCards,
+  partnerCards = [],
+  partners,
+  cases,
+  collections,
   onSelectPartner,
+  onOpenPolicyModal,
 }) => {
   const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [cycleFilter, setCycleFilter] = useState<'all' | 'weekly' | 'monthly'>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // partnerCards가 직접 주어지지 않고 partners/cases가 주어진 경우 자동 계산
+  const effectiveCards = useMemo(() => {
+    if (Array.isArray(partnerCards) && partnerCards.length > 0) return partnerCards;
+    if (Array.isArray(partners) && Array.isArray(cases) && partners.length > 0) {
+      return computePartnerSettlementCards(partners, cases, collections || []);
+    }
+    return Array.isArray(partnerCards) ? partnerCards : [];
+  }, [partnerCards, partners, cases, collections]);
+
   // 상단 집계 지표
   const totals = useMemo(() => {
+    const cards = effectiveCards || [];
     return {
-      partnerCount: partnerCards.length,
-      billedWon: partnerCards.reduce((s, c) => s + c.billedCommissionWon, 0),
-      collectedWon: partnerCards.reduce((s, c) => s + c.collectedCommissionWon, 0),
-      outstandingWon: partnerCards.reduce((s, c) => s + c.outstandingWon, 0),
-      overdueWon: partnerCards.reduce((s, c) => s + c.overdueWon, 0),
-      dueSoonWon: partnerCards.reduce((s, c) => s + c.dueSoonWon, 0),
-      totalCases: partnerCards.reduce((s, c) => s + c.caseCount, 0),
+      partnerCount: cards.length,
+      billedWon: cards.reduce((s, c) => s + (c.billedCommissionWon || 0), 0),
+      collectedWon: cards.reduce((s, c) => s + (c.collectedCommissionWon || 0), 0),
+      outstandingWon: cards.reduce((s, c) => s + (c.outstandingWon || 0), 0),
+      overdueWon: cards.reduce((s, c) => s + (c.overdueWon || 0), 0),
+      dueSoonWon: cards.reduce((s, c) => s + (c.dueSoonWon || 0), 0),
+      totalCases: cards.reduce((s, c) => s + (c.caseCount || 0), 0),
     };
-  }, [partnerCards]);
+  }, [effectiveCards]);
 
   const collectionRate = totals.billedWon > 0
     ? Math.round((totals.collectedWon / totals.billedWon) * 100)
@@ -48,7 +68,8 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
 
   // 필터링된 카드 목록
   const filteredCards = useMemo(() => {
-    return partnerCards.filter(c => {
+    const cards = effectiveCards || [];
+    return cards.filter(c => {
       if (searchTerm && !c.partnerName.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
@@ -56,7 +77,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
       if (cycleFilter === 'monthly' && c.settlementCycleDisplay.includes('매주')) return false;
       return true;
     });
-  }, [partnerCards, searchTerm, cycleFilter]);
+  }, [effectiveCards, searchTerm, cycleFilter]);
 
   // 텔레그램 / 카카오톡 전송용 포맷 텍스트 복사
   const handleCopyStatement = (card: PartnerSettlementCardItem) => {
@@ -82,7 +103,8 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
 
   // 엑셀 다운로드
   const handleExportExcel = () => {
-    const rows = partnerCards.map(c => ({
+    const cards = effectiveCards || [];
+    const rows = cards.map(c => ({
       '거래처명': c.partnerName,
       '정산 주기': c.settlementCycleDisplay,
       '다음 정산일': c.nextSettlementDate,

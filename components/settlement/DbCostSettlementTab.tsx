@@ -11,7 +11,7 @@ interface DbCostSettlementTabProps {
 }
 
 export default function DbCostSettlementTab({
-  batchQualityList,
+  batchQualityList = [],
   onRefresh,
   totalRevenueWon = 0,
 }: DbCostSettlementTabProps) {
@@ -24,25 +24,27 @@ export default function DbCostSettlementTab({
   const [editVendorName, setEditVendorName] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const safeBatches = useMemo(() => Array.isArray(batchQualityList) ? batchQualityList : [], [batchQualityList]);
+
   // 1. 공급사(Vendor) 고유 목록
   const vendors = useMemo(() => {
     const set = new Set<string>();
-    batchQualityList.forEach(b => {
+    safeBatches.forEach(b => {
       if (b.vendorName) set.add(b.vendorName);
     });
     return Array.from(set);
-  }, [batchQualityList]);
+  }, [safeBatches]);
 
   // 2. 검색 및 필터링
   const filteredBatches = useMemo(() => {
-    return batchQualityList.filter(b => {
+    return safeBatches.filter(b => {
       const matchSearch =
-        b.batchName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.vendorName.toLowerCase().includes(searchTerm.toLowerCase());
+        (b.batchName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.vendorName || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchVendor = selectedVendor === 'all' || b.vendorName === selectedVendor;
       return matchSearch && matchVendor;
     });
-  }, [batchQualityList, searchTerm, selectedVendor]);
+  }, [safeBatches, searchTerm, selectedVendor]);
 
   // 3. 상단 핵심 KPI 집계
   const stats = useMemo(() => {

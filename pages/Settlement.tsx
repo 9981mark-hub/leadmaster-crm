@@ -4149,10 +4149,10 @@ export default function Settlement() {
                         <span className="text-sky-400 font-bold">청구</span>
                     </div>
                     <div className="text-lg font-black text-white">
-                        ₩{integratedPnLSummary.totalRevenueWon.toLocaleString()}
+                        ₩{(integratedPnLSummary?.totalRevenueWon || 0).toLocaleString()}
                     </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                        입금 ₩{integratedPnLSummary.collectedRevenueWon.toLocaleString()} / 미수 ₩{integratedPnLSummary.outstandingRevenueWon.toLocaleString()}
+                        입금 ₩{(integratedPnLSummary?.collectedRevenueWon || 0).toLocaleString()} / 미수 ₩{(integratedPnLSummary?.outstandingRevenueWon || 0).toLocaleString()}
                     </div>
                 </div>
 
@@ -4162,10 +4162,10 @@ export default function Settlement() {
                         <span className="text-emerald-400 font-bold">인건비</span>
                     </div>
                     <div className="text-lg font-black text-emerald-400">
-                        ₩{integratedPnLSummary.totalAgentCommissionWon.toLocaleString()}
+                        ₩{(integratedPnLSummary?.totalAgentCommissionWon || 0).toLocaleString()}
                     </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                        회사 마진 ₩{integratedPnLSummary.totalCompanyMarginWon.toLocaleString()} 공제
+                        회사 마진 ₩{(integratedPnLSummary?.totalCompanyMarginWon || 0).toLocaleString()} 공제
                     </div>
                 </div>
 
@@ -4175,25 +4175,25 @@ export default function Settlement() {
                         <span className="text-rose-400 font-bold">팀관리 연동</span>
                     </div>
                     <div className="text-lg font-black text-rose-400">
-                        ₩{integratedPnLSummary.totalDbCostWon.toLocaleString()}
+                        ₩{(integratedPnLSummary?.totalDbCostWon || 0).toLocaleString()}
                     </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                        총 지출 ₩{integratedPnLSummary.totalExpensesWon.toLocaleString()} 중 원가
+                        총 지출 ₩{(integratedPnLSummary?.totalExpensesWon || 0).toLocaleString()} 중 원가
                     </div>
                 </div>
 
                 <div className="p-3 bg-slate-950/70 border border-emerald-900/40 rounded-lg">
                     <div className="flex items-center justify-between text-[11px] text-emerald-400 font-semibold mb-1">
                         <span>📊 최종 영업 순이익</span>
-                        <span className="text-emerald-300 font-bold">{integratedPnLSummary.profitMarginRate}%</span>
+                        <span className="text-emerald-300 font-bold">{integratedPnLSummary?.profitMarginRate || 0}%</span>
                     </div>
                     <div className={`text-lg font-black ${
-                        integratedPnLSummary.netProfitWon >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                        (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
                     }`}>
-                        ₩{integratedPnLSummary.netProfitWon.toLocaleString()}
+                        ₩{(integratedPnLSummary?.netProfitWon || 0).toLocaleString()}
                     </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                        실현금흐름: ₩{integratedPnLSummary.netCashFlowWon.toLocaleString()}
+                        실현금흐름: ₩{(integratedPnLSummary?.netCashFlowWon || 0).toLocaleString()}
                     </div>
                 </div>
             </div>
@@ -4380,6 +4380,7 @@ export default function Settlement() {
             {/* Tab Content */}
             {activeTab === 'overview' && (
                 <PartnerSettlementOverviewTab
+                    partnerCards={partnerSettlementCards}
                     partners={partners}
                     cases={safeCases}
                     collections={collections}
