@@ -129,8 +129,19 @@ class SpeechService {
     // 모바일 오디오 덕킹(볼륨 꺼짐) 방지를 위해 발화 중에는 마이크 수신 정지
     this.stopListening();
 
-    // 0순위: 안드로이드 네이티브 앱 환경인 경우 스마트폰 순정 TextToSpeech 엔진 최우선 사용!
-    // (별도 유료 API 키 없어도 삼성/구글 한국어 고음질 음성으로 100% 무결점 즉시 발화)
+    // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 전문 성우 엔진 (실제 사람과 유사한 최고음질)
+    if (this.neuralEnabled) {
+      try {
+        const voiceName = await this.speakGoogleCloud(text, options);
+        this.lastEngineUsed = 'neural';
+        this.lastVoiceName = voiceName;
+        return { engine: 'neural', voiceName };
+      } catch (err) {
+        console.warn('Google Cloud TTS failed, falling back to local engine:', err);
+      }
+    }
+
+    // 2순위 (폴백): 구글 클라우드 실패 시 안드로이드 스마트폰 순정 TTS 우선 사용
     if (typeof window !== 'undefined' && (window as any).AndroidBridge?.isNativeTtsAvailable?.()) {
       try {
         const voiceName = await this.speakNativeAndroid(text, options);
@@ -142,19 +153,7 @@ class SpeechService {
       }
     }
 
-    // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 성우 엔진
-    if (this.neuralEnabled) {
-      try {
-        const voiceName = await this.speakGoogleCloud(text, options);
-        this.lastEngineUsed = 'neural';
-        this.lastVoiceName = voiceName;
-        return { engine: 'neural', voiceName };
-      } catch (err) {
-        console.warn('Google Cloud TTS failed, falling back to browser:', err);
-      }
-    }
-
-    // 2순위: 브라우저 로컬 Web Speech 엔진 폴백
+    // 3순위 (폴백): PC 브라우저 로컬 Web Speech 엔진
     this.lastEngineUsed = 'browser';
     const voiceName = await this.speakBrowser(text, options);
     this.lastVoiceName = voiceName;

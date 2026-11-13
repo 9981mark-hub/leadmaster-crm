@@ -14,7 +14,7 @@ const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: 
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const TTS_KEY = Deno.env.get('GOOGLE_TTS_API_KEY') || '';
+const TTS_KEY = Deno.env.get('GOOGLE_TTS_API_KEY') || 'AIzaSyCfYZpkp6NYgb1minapeMSEknBtq1UGOjY';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
