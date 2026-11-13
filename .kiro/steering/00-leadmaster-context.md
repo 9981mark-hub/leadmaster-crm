@@ -4,6 +4,18 @@
 
 **작업을 다시 시작할 때는 `docs/작업_이어가기.md`부터 읽는다** (현재 상태·대표님 확인 대기·남은 작업 순서·스크립트 사용법을 한 장으로 정리, 2026-11-01). 작업이 끝날 때마다 그 문서도 갱신한다.
 
+- **최신 현황 (2026-11-13 기준, [AGY] 완료)**:
+  - **전사 UI/UX 디자인 시스템 개편 완료 (Phase 1, 2, 3)**:
+    - 글로벌 앱바(테넌트 워크스페이스 스위처, 전역 빠른 검색 `Ctrl+K`, 알림 센터, 출퇴근 위젯).
+    - 4대 기능별 그룹 사이드바(`📌 콜 영업/상담`, `💰 정산/경영`, `⚡ 연동/소통`, `⚙️ 시스템 관리`) & 72px 미니 접기 모드.
+    - 모바일 5대 엄지존 하단 고정 탭바(`MobileBottomBar.tsx`) 및 150ms 미세 전환(`animate-page-in`).
+    - 케이스 관리: 고밀도 스탠다드/컴팩트 뷰 밀도 토글, 실시간 필터 칩 바(`FilterChipsBar.tsx`), 빠른 신규 등록 모달(`QuickNewCaseModal.tsx`, `Alt+N`).
+    - 대시보드: KPI 카운트업 모션(`useCountUp.ts`) 및 부재 골든타임 펄스 글로우.
+    - 로그인 포털(`LoginPage.tsx`): B2B SaaS 2열 쇼케이스, 구글 원클릭 / 이메일 OTP 탭, 모바일 APK(v1.8.0) 다운로드/설치 가이드 연동.
+    - 플랫폼 관리(`PlatformPage.tsx`): 실시간 과금 KPI 카운트업 및 테넌트 관제.
+  - **단일 원본 경로**: `D:\안티그래피티 작업\01_03-leadmaster-crm` (심링크: `C:\Users\JSH\Downloads\01_03-leadmaster-crm`, Junction으로 100% 동일).
+  - **배포 주소**: GitHub Pages (`https://9981mark-hub.github.io/leadmaster-crm/`), Vercel (`https://leadmastercrm.vercel.app`). GitHub Actions 배포 성공 상태.
+
 ## 서비스
 - 토스애즈·메타·카카오 등 광고로 모은 개인회생/파산 리드를 1차 콜로 상담하고, 기초 내용을 광고 위탁 변호사 사무실(파트너)에 전달하는 영업 CRM.
 - 웹 CRM + 안드로이드 앱(구글 플레이 미등록, 삼성폰에 APK 직접 설치). 앱은 웹을 WebView로 띄우고 전화·문자·팝업 등 네이티브 기능을 붙인다.
