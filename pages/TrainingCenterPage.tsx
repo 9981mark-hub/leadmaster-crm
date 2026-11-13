@@ -1152,7 +1152,7 @@ export default function TrainingCenterPage() {
                     </div>
                   </div>
 
-                  {/* 수석 사무장 법률 가심사 정답 카드 (토글) */}
+                  {/* 결론 요구 고객 대응용 1차 가심사 가이드 (필요 시에만 펼침) */}
                   {selectedPersona.groundTruth && (
                     <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-800/60">
                       <button
@@ -1161,13 +1161,18 @@ export default function TrainingCenterPage() {
                         className="w-full flex items-center justify-between text-[11px] font-bold text-indigo-700 dark:text-indigo-300 hover:underline"
                       >
                         <span className="flex items-center gap-1">
-                          ⚖️ 수석 사무장 가심사 타깃 (Ground Truth)
+                          💡 결론 요구 고객 대응용 가심사 가이드
                         </span>
-                        <span>{showGroundTruth ? '▲ 숨기기' : '▼ 펼쳐보기'}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 font-semibold">
+                          {showGroundTruth ? '▲ 접기' : '▼ 필요시 열기'}
+                        </span>
                       </button>
 
                       {showGroundTruth && (
-                        <div className="mt-2 p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-900 text-[11px] space-y-1">
+                        <div className="mt-2 p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-900 text-[11px] space-y-1.5">
+                          <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-[10px] text-amber-800 dark:text-amber-200 leading-tight">
+                            ⚠️ <strong>1차 상담 주의:</strong> 확정 금액을 단정하면 2차 상담 시 민원이 발생합니다. "단순 가계산 범위"로만 완충하고 수석 사무장 정밀 상담으로 인계하세요.
+                          </div>
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-gray-900 dark:text-white">신청 적격 판정:</span>
                             <span className="px-1.5 py-0.5 rounded font-black text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200">
