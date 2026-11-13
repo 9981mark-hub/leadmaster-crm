@@ -6,6 +6,9 @@ import { callAi } from './aiProxy';
 import { SpeechVoiceOptions } from './speechService';
 import { StoreKeySpec, peekOrgStore, loadOrgStore, mutateOrgStore, readLegacyJson, canWriteOrgStore } from './orgStore';
 import { loadCachedOrg, isAdminRole } from './org';
+import { GroundTruthLegalDiagnosis, generateInfinitePersona, INFINITE_THEMES, InfinitePersonaTheme } from './trainingProceduralEngine';
+
+export { INFINITE_THEMES, type InfinitePersonaTheme, type GroundTruthLegalDiagnosis };
 
 export interface TrainingPersona {
   id: string;
@@ -27,6 +30,7 @@ export interface TrainingPersona {
   personaPrompt: string;
   initialMessage: string;
   category?: WeaknessCategoryId;
+  groundTruth?: GroundTruthLegalDiagnosis;
 }
 
 export interface TrainingMessage {
@@ -670,65 +674,9 @@ export const generateCustomPersonaByCategory = (categoryId: WeaknessCategoryId):
   }
 };
 
-// 완전 무작위 실전 AI 고객 생성기 (Combinatorial Random Matrix)
-export const generateRandomCustomerPersona = (): TrainingPersona => {
-  const randLastName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-  const jobItem = JOB_PROFILES[Math.floor(Math.random() * JOB_PROFILES.length)];
-  const isFemale = jobItem.gender === 'female';
-  const firstName = isFemale
-    ? FEMALE_NAMES[Math.floor(Math.random() * FEMALE_NAMES.length)]
-    : MALE_NAMES[Math.floor(Math.random() * MALE_NAMES.length)];
-  const fullName = `${randLastName}${firstName}`;
-  const debt = DEBT_ORIGINS[Math.floor(Math.random() * DEBT_ORIGINS.length)];
-  const housing = ASSET_HOUSINGS[Math.floor(Math.random() * ASSET_HOUSINGS.length)];
-  const age = 30 + Math.floor(Math.random() * 34); // 30~64세
-  const timestamp = Date.now();
-
-  let voice = 'ko-KR-Neural2-C';
-  let pitch = 0.80;
-  let rate = 1.05;
-
-  if (isFemale) {
-    voice = 'ko-KR-Neural2-A';
-    pitch = 0.90;
-    rate = 1.10;
-  } else if (age >= 55) {
-    voice = 'ko-KR-Wavenet-D';
-    pitch = 0.60;
-    rate = 0.95;
-  } else if (age >= 45) {
-    voice = 'ko-KR-Wavenet-C';
-    pitch = 0.70;
-    rate = 1.0;
-  }
-
-  return {
-    id: `rand_${timestamp}`,
-    level: 3,
-    badge: '🎲 무작위 실전',
-    customerName: fullName,
-    age,
-    gender: isFemale ? 'female' : 'male',
-    phone: `010-${Math.floor(2000 + Math.random() * 7000)}-${Math.floor(1000 + Math.random() * 8999)}`,
-    job: jobItem.job,
-    salary: jobItem.salary,
-    debtSummary: debt.summary,
-    housing,
-    difficulty: '실전',
-    title: `${debt.origin} 사연의 실전 고객`,
-    scenarioDescription: `${debt.detail}. 주거는 ${housing}이며 직업은 ${jobItem.job}입니다.`,
-    trainingGoal: '7대 필수 정보를 자연스럽게 문진하여 사무장 인계 카드를 완벽하게 완성하기',
-    speechOptions: {
-      pitch,
-      rate,
-      gender: isFemale ? 'female' : 'male',
-      neuralVoice: voice,
-      neuralRate: '+5%',
-      neuralPitch: isFemale ? '-2Hz' : '-8Hz',
-    },
-    personaPrompt: `너는 ${age}세 ${fullName}(${jobItem.job})이다. 사연: ${debt.detail}. 재산: ${housing}. 소득: ${jobItem.salary}. 모르는 번호로 걸려온 전화를 받고 "네, 여보세요?"라고 받았다. 상담원이 소속을 밝히고 무료 상담 신청 건이라고 설명하면 "아... 네, 맞아요. 그때 신청했던 것 같은데..."라며 고민스러운 목소리로 답한다. 단, 처음부터 술술 다 불지 말고 상담원이 정중하고 명확하게 질문할 때마다 하나씩 차분히 털어놓는다. 1~2문장의 직설적이고 생생한 실전 구어체로 대화한다.`,
-    initialMessage: `네, 여보세요?`,
-  };
+// 실전 텔레그램 접수 데이터(487건) 기반 무한 AI 고객 생성기 (Combinatorial Procedural Engine)
+export const generateRandomCustomerPersona = (themeId: string = 'all'): TrainingPersona => {
+  return generateInfinitePersona(themeId);
 };
 
 // ============================================
@@ -948,6 +896,14 @@ export const evaluateTrainingCall = async (
 - 채무: ${persona.debtSummary}
 - 재산: ${persona.housing}
 - 소득: ${persona.salary}
+${persona.groundTruth ? `
+[2026 회생·파산 법률 연산 Ground Truth (사무장 내부 정답 진단서)]
+- 신청 적격 판정: ${persona.groundTruth.suitability} (${persona.groundTruth.suitabilityReason})
+- 법정 인정 생계비: ${Math.round(persona.groundTruth.recognizedLivingCost / 10000)}만 원
+- 예상 월 변제금: 약 ${Math.round(persona.groundTruth.expectedMonthlyPayment / 10000)}만 원 (${persona.groundTruth.expectedRepaymentPeriod}개월 납입, 총 ${Math.round(persona.groundTruth.totalRepaymentAmount / 10000)}만 원, 원금 탕감률 약 ${persona.groundTruth.estimatedForgivenessRate}%)
+- 관할 법원 실무: ${persona.groundTruth.courtRuleNote}
+* 평가 지침: 상담원이 고객과의 대화 및 문진에서 위 법률 정답 조건(${persona.groundTruth.suitability})에 맞추어 올바른 변제금과 절차를 안내했는지 평가하고 coachingAdvice에 반영하세요.
+` : ''}
 
 [사무장 인계 7대 필수 문진 항목 채점 기준]
 1. 직업 및 재직형태 (4대보험/사업자/일용직 등)

@@ -19,6 +19,7 @@ import {
   getCompanyTrainingConfig,
   interpolateOpeningScript,
   CompanyTrainingConfig,
+  INFINITE_THEMES,
 } from '../services/trainingService';
 import { speechService } from '../services/speechService';
 import { TrainingReportModal } from '../components/training/TrainingReportModal';
@@ -87,6 +88,8 @@ export default function TrainingCenterPage() {
   const [trainingConfig, setTrainingConfig] = useState<CompanyTrainingConfig>(() => getCompanyTrainingConfig());
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [history, setHistory] = useState<TrainingSessionRecord[]>([]);
+  const [selectedThemeId, setSelectedThemeId] = useState<string>('all');
+  const [showGroundTruth, setShowGroundTruth] = useState<boolean>(false);
 
   // Call state: 'idle' | 'calling' | 'connected' | 'evaluating' | 'ended'
   const [callState, setCallState] = useState<'idle' | 'calling' | 'connected' | 'evaluating' | 'ended'>('idle');
@@ -788,16 +791,18 @@ export default function TrainingCenterPage() {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // New Random Persona Generator
-  const handleGenerateRandom = () => {
+  // 실전 텔레그램 접수 DB 기반 무한 AI 고객 생성기
+  const handleGenerateRandom = (themeId?: string) => {
     if (callState === 'connected') {
       if (!confirm('통화 진행 중입니다. 새 고객을 생성하시겠습니까?')) return;
       handleEndCall();
     }
-    const newPersona = generateRandomCustomerPersona();
+    const targetTheme = themeId || selectedThemeId;
+    if (themeId) setSelectedThemeId(themeId);
+    const newPersona = generateRandomCustomerPersona(targetTheme);
     setSelectedPersona(newPersona);
     setMessages([]);
-    showToast(`🎲 새 고객 [${newPersona.customerName}] (${newPersona.age}세, ${newPersona.badge}) 생성 완료!`, 'success');
+    showToast(`🎲 실전 고객 [${newPersona.customerName}] (${newPersona.age}세, ${newPersona.badge}) 생성 완료!`, 'success');
   };
 
   // Category Clinic Persona Picker
@@ -1076,39 +1081,118 @@ export default function TrainingCenterPage() {
             )}
 
             {activeTab === 'random' && (
-              /* 🎲 무규칙 실전 AI 고객 생성 뷰 */
+              /* 🎲 실전 텔레그램 접수 DB 기반 무한 AI 고객 생성 뷰 */
               <div className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                     <Dice5 className="w-4 h-4 text-blue-600" />
-                    무규칙 다변량 고객 엔진
+                    실전 텔레그램 접수 기반 무한 고객 엔진
                   </h2>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold">
+                    487건 실전 DB
+                  </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                  채무 원인(코인/사기/사업 실패/간병비 등), 재산(자가/전세/담보/무재산), 직업 및 돌발 상황을 무작위로 교차 결합하여 수백 명의 새로운 고객을 즉시 소환합니다.
+                  실제 접수된 직업, 채무, 주거, 부양가족, 특이상황과 2026 회생·파산 법률 알고리즘을 결합하여 매번 완전히 새로운 실전 고객을 즉시 소환합니다.
                 </p>
+
+                {/* 테마 선택 칩 */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                    <span>🎯 집중 연습 테마 선택</span>
+                    <span className="text-[10px] font-normal text-gray-400">클릭 즉시 소환</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {INFINITE_THEMES.map(t => {
+                      const isThemeActive = selectedThemeId === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => handleGenerateRandom(t.id)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                            isThemeActive
+                              ? 'bg-blue-600 text-white font-bold shadow-sm'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          {t.badge}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 <button
                   type="button"
-                  onClick={handleGenerateRandom}
-                  className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                  onClick={() => handleGenerateRandom()}
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
                 >
                   <Dice5 className="w-4 h-4" />
-                  🎲 새로운 무작위 고객 1초 소환하기
+                  🎲 새로운 실전 고객 1초 소환하기
                 </button>
 
-                <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-xs space-y-1.5">
-                  <div className="font-bold text-blue-900 dark:text-blue-200">
-                    현재 생성된 고객: {selectedPersona.customerName} ({selectedPersona.age}세, {selectedPersona.job})
+                {/* 현재 생성된 고객 상세 카드 */}
+                <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-blue-950 dark:text-blue-100 text-sm">
+                      {selectedPersona.customerName} ({selectedPersona.age}세, {selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'})
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-600 text-white font-bold">
+                      {selectedPersona.badge}
+                    </span>
                   </div>
-                  <div className="text-[11px] text-gray-600 dark:text-gray-300">
-                    • 채무: {selectedPersona.debtSummary}
+
+                  <div className="grid grid-cols-1 gap-1 text-[11px] text-gray-700 dark:text-gray-200">
+                    <div>💼 <strong>직업/소득:</strong> {selectedPersona.job} ({selectedPersona.salary})</div>
+                    <div>💳 <strong>채무 현황:</strong> {selectedPersona.debtSummary}</div>
+                    <div>🏠 <strong>주거/재산:</strong> {selectedPersona.housing}</div>
+                    <div className="text-gray-600 dark:text-gray-300 pt-1 border-t border-blue-200/50 dark:border-blue-800/50">
+                      📖 <strong>배경 사연:</strong> {selectedPersona.scenarioDescription}
+                    </div>
                   </div>
-                  <div className="text-[11px] text-gray-600 dark:text-gray-300">
-                    • 주거/재산: {selectedPersona.housing}
-                  </div>
-                  <div className="text-[10px] text-blue-600 dark:text-blue-400 pt-1 border-t border-blue-200/50">
-                    🎯 목표: {selectedPersona.trainingGoal}
+
+                  {/* 수석 사무장 법률 가심사 정답 카드 (토글) */}
+                  {selectedPersona.groundTruth && (
+                    <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-800/60">
+                      <button
+                        type="button"
+                        onClick={() => setShowGroundTruth(!showGroundTruth)}
+                        className="w-full flex items-center justify-between text-[11px] font-bold text-indigo-700 dark:text-indigo-300 hover:underline"
+                      >
+                        <span className="flex items-center gap-1">
+                          ⚖️ 수석 사무장 가심사 타깃 (Ground Truth)
+                        </span>
+                        <span>{showGroundTruth ? '▲ 숨기기' : '▼ 펼쳐보기'}</span>
+                      </button>
+
+                      {showGroundTruth && (
+                        <div className="mt-2 p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-900 text-[11px] space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-gray-900 dark:text-white">신청 적격 판정:</span>
+                            <span className="px-1.5 py-0.5 rounded font-black text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200">
+                              {selectedPersona.groundTruth.suitability}
+                            </span>
+                          </div>
+                          <div className="text-gray-600 dark:text-gray-300 text-[10px]">
+                            {selectedPersona.groundTruth.suitabilityReason}
+                          </div>
+                          <div className="grid grid-cols-2 gap-1 pt-1 text-[10px]">
+                            <div>• 인정 생계비: <strong>{Math.round(selectedPersona.groundTruth.recognizedLivingCost / 10000)}만 원</strong></div>
+                            <div>• 예상 월 변제: <strong>{Math.round(selectedPersona.groundTruth.expectedMonthlyPayment / 10000)}만 원</strong></div>
+                            <div>• 변제 기간: <strong>{selectedPersona.groundTruth.expectedRepaymentPeriod}개월</strong></div>
+                            <div>• 예상 탕감률: <strong>약 {selectedPersona.groundTruth.estimatedForgivenessRate}%</strong></div>
+                          </div>
+                          <div className="text-[10px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
+                            🏛️ {selectedPersona.groundTruth.courtRuleNote}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="text-[10px] text-blue-700 dark:text-blue-300 pt-1 font-semibold">
+                    🎯 <strong>훈련 목표:</strong> {selectedPersona.trainingGoal}
                   </div>
                 </div>
               </div>
