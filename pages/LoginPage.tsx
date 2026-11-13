@@ -6,63 +6,19 @@ import {
     Download, 
     X, 
     Shield, 
-    Mail, 
-    KeyRound, 
-    Loader2, 
-    ArrowRight,
+    Sparkles,
     Zap,
     Cpu,
     Coins,
-    CheckCircle2,
-    Lock,
-    ExternalLink,
     Building2,
-    Sparkles
+    CheckCircle2
 } from 'lucide-react';
 
 export default function LoginPage() {
-    const { loginWithGoogle, sendEmailOtp, verifyEmailOtp } = useAuth();
+    const { loginWithGoogle } = useAuth();
     const [showGuide, setShowGuide] = useState(false);
-    const [authMethod, setAuthMethod] = useState<'google' | 'otp'>('google');
-    const [email, setEmail] = useState('');
-    const [otpCode, setOtpCode] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
-    const [otpLoading, setOtpLoading] = useState(false);
-    const [otpError, setOtpError] = useState<string | null>(null);
-    const [otpSuccess, setOtpSuccess] = useState<string | null>(null);
 
     const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-
-    const handleSendOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email.trim()) return;
-        setOtpLoading(true);
-        setOtpError(null);
-        setOtpSuccess(null);
-        try {
-            await sendEmailOtp(email.trim());
-            setOtpSent(true);
-            setOtpSuccess('인증번호 6자리가 메일로 전송되었습니다. 메일함을 확인해주세요.');
-        } catch (err: any) {
-            setOtpError(err.message || '인증번호 발송에 실패했습니다.');
-        } finally {
-            setOtpLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!otpCode.trim()) return;
-        setOtpLoading(true);
-        setOtpError(null);
-        try {
-            await verifyEmailOtp(email.trim(), otpCode.trim());
-        } catch (err: any) {
-            setOtpError(err.message || '인증번호 확인에 실패했습니다.');
-        } finally {
-            setOtpLoading(false);
-        }
-    };
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative overflow-hidden">
@@ -74,20 +30,19 @@ export default function LoginPage() {
 
             {/* 📱 모바일 브라우저 전용 앱 다운로드 스마트 알림바 */}
             {isAndroidDevice && (
-                <div className="relative z-20 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-700 text-white px-4 py-2.5 flex items-center justify-between text-xs shadow-md border-b border-white/10">
-                    <div className="flex items-center gap-2 font-medium">
-                        <Smartphone size={16} className="text-blue-200 animate-pulse" />
-                        <span>리드마스터 모바일 앱 (v1.8.3)으로 최적화된 통화 업무를 시작하세요</span>
+                <div className="relative z-20 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-700 text-white px-4 py-2 flex items-center justify-between text-xs shadow-md border-b border-white/10">
+                    <div className="flex items-center gap-1.5 font-bold text-xs truncate">
+                        <Smartphone size={15} className="text-blue-200 shrink-0" />
+                        <span>리드마스터 모바일 앱</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <a
-                            href="./app/LeadMaster.apk"
-                            download="LeadMaster.apk"
-                            className="bg-white text-blue-800 font-bold px-3 py-1 rounded-md text-[11px] hover:bg-blue-50 transition-colors shadow-xs"
-                        >
-                            앱 다운로드
-                        </a>
-                    </div>
+                    <a
+                        href="./app/LeadMaster.apk"
+                        download="LeadMaster.apk"
+                        className="shrink-0 bg-white text-blue-800 font-bold px-3 py-1 rounded-md text-xs hover:bg-blue-50 transition-colors shadow-xs flex items-center gap-1 whitespace-nowrap"
+                    >
+                        <Download size={13} className="shrink-0" />
+                        <span>앱 다운로드</span>
+                    </a>
                 </div>
             )}
 
@@ -204,41 +159,10 @@ export default function LoginPage() {
                             </p>
                         </div>
 
-                        {/* 로그인 방식 전환 탭 */}
-                        <div className="grid grid-cols-2 p-1 bg-slate-950/70 border border-slate-800 rounded-xl text-xs font-semibold">
-                            <button
-                                type="button"
-                                onClick={() => { setAuthMethod('google'); setOtpError(null); }}
-                                className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                                    authMethod === 'google' 
-                                        ? 'bg-blue-600 text-white shadow-xs font-bold' 
-                                        : 'text-slate-400 hover:text-slate-200'
-                                }`}
-                            >
-                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M12.24 10.285V13.4h6.887C18.2 15.614 15.645 18 12.24 18c-3.315 0-6-2.685-6-6s2.685-6 6-6c1.47 0 2.81.53 3.86 1.41l2.36-2.36C16.89 3.55 14.7 2.7 12.24 2.7 7.14 2.7 3 6.84 3 11.94s4.14 9.24 9.24 9.24c5.38 0 8.95-3.78 8.95-9.11 0-.62-.06-1.12-.17-1.785h-8.78z" />
-                                </svg>
-                                <span>구글 원클릭</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => { setAuthMethod('otp'); setOtpError(null); }}
-                                className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                                    authMethod === 'otp' 
-                                        ? 'bg-blue-600 text-white shadow-xs font-bold' 
-                                        : 'text-slate-400 hover:text-slate-200'
-                                }`}
-                            >
-                                <Mail size={13} />
-                                <span>이메일 인증</span>
-                            </button>
-                        </div>
-
-                        {/* 구글 로그인 영역 */}
-                        {authMethod === 'google' && (
-                            <div className="space-y-4 py-2">
-                                <div className="flex justify-center">
+                        {/* 구글 로그인 전용 영역 (흰 여백 완전 제거 & 다크 테마 완벽 일체화) */}
+                        <div className="space-y-4 pt-2">
+                            <div className="w-full flex justify-center">
+                                <div className="w-full max-w-[320px] flex justify-center rounded-full overflow-hidden shadow-lg border border-slate-700/60 bg-slate-950">
                                     <GoogleLogin
                                         onSuccess={(credentialResponse) => {
                                             if (credentialResponse.credential) {
@@ -247,97 +171,20 @@ export default function LoginPage() {
                                         }}
                                         onError={() => {
                                             console.log('Login Failed');
-                                            alert('구글 로그인 창이 닫혔거나 차단되었습니다.\n[이메일 인증] 탭을 이용해주세요.');
-                                            setAuthMethod('otp');
+                                            alert('구글 로그인 창이 닫혔거나 차단되었습니다. 브라우저 팝업 설정을 확인해주세요.');
                                         }}
                                         shape="pill"
                                         size="large"
-                                        theme="filled_blue"
+                                        theme="filled_black"
                                         text="continue_with"
                                         width="320"
                                     />
                                 </div>
-                                <p className="text-[11px] text-center text-slate-500 leading-relaxed">
-                                    사내 워크스페이스에 등록된 전용 구글 계정으로 원클릭 로그인됩니다.
-                                </p>
                             </div>
-                        )}
-
-                        {/* 이메일 OTP 인증 로그인 영역 */}
-                        {authMethod === 'otp' && (
-                            <div className="space-y-4">
-                                {otpError && (
-                                    <div className="p-3 rounded-xl bg-red-950/60 border border-red-800 text-xs text-red-300 flex items-start gap-2">
-                                        <X size={15} className="mt-0.5 shrink-0 text-red-400" />
-                                        <span>{otpError}</span>
-                                    </div>
-                                )}
-                                {otpSuccess && (
-                                    <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 flex items-start gap-2">
-                                        <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
-                                        <span>{otpSuccess}</span>
-                                    </div>
-                                )}
-
-                                {!otpSent ? (
-                                    <form onSubmit={handleSendOtp} className="space-y-3.5">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-slate-300">사내 승인 업무용 이메일</label>
-                                            <input
-                                                type="email"
-                                                required
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="예: agent@leadmaster.kr 또는 gmail.com"
-                                                className="w-full px-3.5 py-2.5 text-xs bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                            />
-                                        </div>
-
-                                        <button
-                                            type="submit"
-                                            disabled={otpLoading || !email.trim()}
-                                            className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-sm"
-                                        >
-                                            {otpLoading ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
-                                            <span>{otpLoading ? '인증번호 발송 중...' : '인증번호 발송하기'}</span>
-                                        </button>
-                                    </form>
-                                ) : (
-                                    <form onSubmit={handleVerifyOtp} className="space-y-3.5">
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-slate-400">발송 대상: <strong className="text-slate-200">{email}</strong></span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { setOtpSent(false); setOtpSuccess(null); }}
-                                                    className="text-blue-400 hover:underline font-medium text-[11px]"
-                                                >
-                                                    이메일 재입력
-                                                </button>
-                                            </div>
-                                            <input
-                                                type="text"
-                                                required
-                                                maxLength={8}
-                                                value={otpCode}
-                                                onChange={(e) => setOtpCode(e.target.value)}
-                                                placeholder="메일로 받은 6자리 인증번호"
-                                                className="w-full px-3 py-2.5 text-center tracking-widest text-lg font-mono font-bold bg-slate-950 border border-blue-500 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                            />
-                                        </div>
-
-                                        <button
-                                            type="submit"
-                                            disabled={otpLoading || !otpCode.trim()}
-                                            className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-sm"
-                                        >
-                                            {otpLoading ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
-                                            <span>{otpLoading ? '확인 중...' : '인증 확인 및 워크스페이스 입장'}</span>
-                                        </button>
-                                    </form>
-                                )}
-                            </div>
-                        )}
+                            <p className="text-[11px] text-center text-slate-400 leading-relaxed">
+                                사내 워크스페이스에 등록된 전용 구글 계정으로 원클릭 로그인됩니다.
+                            </p>
+                        </div>
 
                         {/* 모바일 APK 전용 안내 바 */}
                         <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
