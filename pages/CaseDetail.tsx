@@ -20,6 +20,7 @@ import { TelegramDeliverModal } from '../components/case-detail/TelegramDeliverM
 import { CallRecordingsTab } from '../components/case-detail/CallRecordingsTab';
 import { logCaseView } from '../services/accessLog';
 import { registerDnc } from '../services/dnc';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -38,6 +39,8 @@ export default function CaseDetail() {
     const { data: globalSecondaryStatuses = [] } = useSecondaryStatuses();
     const { data: globalTertiaryStatuses = {} } = useTertiaryStatuses();
     const updateCaseMutation = useUpdateCaseMutation();
+    // [KIRO 2026-11-13] 수임료/정산 탭은 회사 관리자만 (상담원 권한 격리)
+    const { isAdmin } = useAuth();
 
     // UI State
     const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline' | 'calls_sms' | 'recordings'>('info');
@@ -886,7 +889,7 @@ export default function CaseDetail() {
                         { id: 'summary', label: '요약문' },
                         { id: 'calls_sms', label: '통화·문자 기록' },
                         { id: 'timeline', label: '타임라인' },
-                        { id: 'settlement', label: '수임료/정산' }
+                        ...(isAdmin ? [{ id: 'settlement', label: '수임료/정산' }] : [])
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -954,7 +957,7 @@ export default function CaseDetail() {
                         />
                     )}
 
-                    {activeTab === 'settlement' && (
+                    {activeTab === 'settlement' && isAdmin && (
                         <CaseSettlementTab
                             c={c}
                             commission={commission}

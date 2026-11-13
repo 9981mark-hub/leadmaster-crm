@@ -29,16 +29,18 @@ import IntegratedPnLTab from '../components/settlement/IntegratedPnLTab';
 import SettlementPolicyModal from '../components/settlement/SettlementPolicyModal';
 import {
     SettlementPolicy,
+    SettlementPolicySource,
     DEFAULT_SETTLEMENT_POLICY,
-    fetchSettlementPolicy,
+    loadSettlementPolicy,
     computePartnerSettlementCards,
-    computeAgentSettlementRows,
+    computeAgentSettlement,
     computeIntegratedPnLSummary,
 } from '../services/settlementMasterService';
 import { fetchCollections, Collection } from '../services/settlementLedger';
 import { fetchBatchQualityStats, BatchQualityMetric } from '../services/batchQuality';
 import { fetchTeamMembers, TeamMember } from '../services/team';
-import { todayKST, CANCELLED_STATUSES } from '../utils/settlement';
+import { useAuth } from '../contexts/AuthContext';
+import { todayKST, CANCELLED_STATUSES, addDays as addDaysKST, dueDateFor, computeCaseCommission, invoiceSplitOf, vatModeOf, roundWonPrecision } from '../utils/settlement';
 
 type TabType =
     | 'overview'
@@ -62,8 +64,14 @@ export default function Settlement() {
     const [loading, setLoading] = useState(true);
 
     // 차세대 정산 마스터 State (v4.5)
+    const { org } = useAuth();
     const [settlementPolicy, setSettlementPolicy] = useState<SettlementPolicy>(DEFAULT_SETTLEMENT_POLICY);
+    // 정책 출처: saved 가 아니면 화면에 "기본값(저장 안 됨)" 표시
+    const [policySource, setPolicySource] = useState<SettlementPolicySource>('no_org');
+    const [policyMessage, setPolicyMessage] = useState<string | undefined>(undefined);
     const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+    // 경영 손익용 지출 (거래처 필터 없이 회사 전체, 연도 기준)
+    const [pnlExpenses, setPnlExpenses] = useState<ExpenseItem[]>([]);
     const [collections, setCollections] = useState<Collection[]>([]);
     const [batchQualityList, setBatchQualityList] = useState<BatchQualityMetric[]>([]);
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -123,13 +131,15 @@ export default function Settlement() {
 
     const reloadMasterSettlementData = async () => {
         try {
-            const [policy, col, bq, tm] = await Promise.all([
-                fetchSettlementPolicy(),
+            const [policyLoad, col, bq, tm] = await Promise.all([
+                loadSettlementPolicy(org?.orgId),
                 fetchCollections(),
                 fetchBatchQualityStats(150),
                 fetchTeamMembers(),
             ]);
-            setSettlementPolicy(policy);
+            setSettlementPolicy(policyLoad.policy);
+            setPolicySource(policyLoad.source);
+            setPolicyMessage(policyLoad.message);
             setCollections(col || []);
             setBatchQualityList(bq || []);
             setTeamMembers(tm || []);
@@ -174,21 +184,30 @@ export default function Settlement() {
         return computePartnerSettlementCards(partners, cases, collections);
     }, [partners, cases, collections]);
 
-    const agentSettlementRows = React.useMemo(() => {
-        return computeAgentSettlementRows(cases, partners, settlementPolicy, teamMembers);
-    }, [cases, partners, settlementPolicy, teamMembers]);
+    // 상담원 수당: 선택한 연/월에 지급 사유가 생긴 수수료만 (받을 돈 원장과 같은 기준·한국 날짜)
+    const agentSettlement = React.useMemo(() => {
+        return computeAgentSettlement(cases, partners, settlementPolicy, teamMembers, { year, month, collections });
+    }, [cases, partners, settlementPolicy, teamMembers, year, month, collections]);
+    const agentSettlementRows = agentSettlement.rows;
+
+    useEffect(() => {
+        let alive = true;
+        fetchExpenses(undefined, year).then(list => { if (alive) setPnlExpenses(Array.isArray(list) ? list : []); });
+        return () => { alive = false; };
+    }, [year, expenses]);
 
     const integratedPnLSummary = React.useMemo(() => {
-        return computeIntegratedPnLSummary(
-            partnerSettlementCards,
-            agentSettlementRows,
+        return computeIntegratedPnLSummary({
+            partners,
+            cases,
+            collections,
+            agentRows: agentSettlementRows,
             batchQualityList,
-            expenses,
-            settlementPolicy,
+            expenseItems: pnlExpenses,
             year,
-            month
-        );
-    }, [partnerSettlementCards, agentSettlementRows, batchQualityList, expenses, settlementPolicy, year, month]);
+            month,
+        });
+    }, [partners, cases, collections, agentSettlementRows, batchQualityList, pnlExpenses, year, month]);
 
     // Load batches when partner or week changes
     useEffect(() => {
@@ -430,6 +449,8 @@ export default function Settlement() {
     const currentPartner = !isAll ? partners.find(p => p.partnerId === selectedPartnerId) : null;
     const weekLabel = getWeekLabel(selectedWeekStart);
     const currentBatch = (Array.isArray(batches) ? batches : []).find(b => b.weekLabel === weekLabel && b.partnerId === selectedPartnerId);
+    // 2단계 세금계산서 기본값: 거래처 부가세 방식(별도·포함·없음)을 따르고 원 단위까지 유지 (만원 반올림 안 함)
+    const batchInvoiceDefaults = invoiceSplitOf(currentBatch?.totalCommission || 0, vatModeOf(currentPartner));
 
     // [거래처별 맞춤 요일 동적 라벨 (타사 범용 호환)]
     const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
@@ -509,7 +530,7 @@ export default function Settlement() {
     // Update invoice info
     const handleSaveInvoice = async (invoiceData: { issueDate: string; supplyAmount: number; vat: number; approvalNumber: string }) => {
         if (!currentBatch) return;
-        const total = invoiceData.supplyAmount + invoiceData.vat;
+        const total = roundWonPrecision(invoiceData.supplyAmount + invoiceData.vat);
         await updateSettlementBatch(currentBatch.batchId, {
             invoiceInfo: { ...invoiceData, total },
             status: 'invoiced'
@@ -744,13 +765,11 @@ export default function Settlement() {
 
     // Helper to get monthly expected commission payouts (지급 예정일이 해당 월에 속하는 수수료)
     const getMonthlyExpectedCommission = () => {
+        // 받을 돈 원장과 같은 계산 (utils/settlement): 거래처 수당 규칙 구간·마감/지급 요일·한국 날짜
         const monthPrefix = month === 'all'
             ? `${year}-`
             : `${year}-${String(month).padStart(2, '0')}`;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayStr = today.toISOString().slice(0, 10);
+        const todayStr = todayKST();
 
         let expectedCount = 0;
         let expectedAmount = 0;
@@ -758,83 +777,18 @@ export default function Settlement() {
 
         partnerCases.forEach(c => {
             const p = findPartnerForCase(c);
-            if (!p || !p.settlementConfig || !p.commissionRules) return;
-
-            const rule = p.commissionRules.find(r =>
-                r.active && (c.contractFee || 0) >= r.minFee && ((c.contractFee || 0) <= r.maxFee || r.maxFee === 0)
-            );
-            if (!rule) return;
-
-            const config = p.settlementConfig;
-            const totalCommission = rule.commission;
-            // [FIX] 구간 최저값(rule.minFee) 기준으로 계약금 비율 적용
-            const downPaymentThreshold = (rule.minFee || c.contractFee || 0) * (config.downPaymentPercentage / 100);
-            const fullPayoutThreshold = rule.fullPayoutThreshold || totalCommission;
-            const firstPayoutAmount = totalCommission * (config.firstPayoutPercentage / 100);
-            const secondPayoutAmount = totalCommission - firstPayoutAmount;
-
-            // 모든 입금 내역
-            const allDeposits = (c.depositHistory || []).sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
-
-            let cumulativeDeposit = 0;
-            let firstPayoutTriggered = false;
-            let secondPayoutTriggered = false;
-
-            allDeposits.forEach(deposit => {
-                if (!deposit.date) return;
-                cumulativeDeposit += deposit.amount;
-                const depositDate = new Date(deposit.date);
-                const isFutureDeposit = depositDate > today;
-
-                // 지급일 계산 (입금 주차 마감 후 다음 주 화요일)
-                const calcPayoutDate = (dDate: string) => {
-                    const d = new Date(dDate);
-                    const dayOfWeek = d.getDay(); // 0=일, 1=월, ..., 6=토
-                    // 다음 일요일까지 남은 일수
-                    const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
-                    const weekEnd = new Date(d);
-                    weekEnd.setDate(d.getDate() + daysToSunday);
-                    // 다음 화요일 = 일요일 + 2일
-                    const payoutDate = new Date(weekEnd);
-                    payoutDate.setDate(weekEnd.getDate() + 2);
-                    if (config.payoutWeekDelay === 1) {
-                        payoutDate.setDate(payoutDate.getDate() + 7);
-                    }
-                    return payoutDate.toISOString().slice(0, 10);
-                };
-
-                // 1차 지급 조건
-                if (!firstPayoutTriggered && cumulativeDeposit >= downPaymentThreshold) {
-                    firstPayoutTriggered = true;
-                    const payoutDateStr = calcPayoutDate(deposit.date);
-                    // 지급일이 미래이고 해당 월에 속하면
-                    if (payoutDateStr > todayStr && payoutDateStr.startsWith(monthPrefix)) {
-                        expectedCount++;
-                        expectedAmount += firstPayoutAmount;
-                        expectedPayouts.push({
-                            date: payoutDateStr,
-                            amount: firstPayoutAmount,
-                            customerName: c.customerName || ''
-                        });
-                    }
-                }
-
-                // 2차 지급 조건
-                if (!secondPayoutTriggered && cumulativeDeposit >= fullPayoutThreshold) {
-                    secondPayoutTriggered = true;
-                    const payoutDateStr = calcPayoutDate(deposit.date);
-                    if (payoutDateStr > todayStr && payoutDateStr.startsWith(monthPrefix)) {
-                        expectedCount++;
-                        expectedAmount += secondPayoutAmount;
-                        expectedPayouts.push({
-                            date: payoutDateStr,
-                            amount: secondPayoutAmount,
-                            customerName: c.customerName || ''
-                        });
-                    }
+            if (!p) return;
+            const cc = computeCaseCommission(c, p, todayStr);
+            cc.stages.forEach(s => {
+                // 지급일이 미래이고 해당 월에 속하면
+                if (s.dueAt > todayStr && s.dueAt.startsWith(monthPrefix)) {
+                    expectedCount++;
+                    expectedAmount += s.amount;
+                    expectedPayouts.push({ date: s.dueAt, amount: s.amount, customerName: c.customerName || '' });
                 }
             });
         });
+        expectedAmount = Math.round(expectedAmount * 10) / 10;
 
         // 가장 빠른 지급 예정일 찾기
         const sortedPayouts = expectedPayouts.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
@@ -1127,7 +1081,8 @@ export default function Settlement() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded text-sm"
-                                        defaultValue={currentBatch.invoiceInfo?.supplyAmount || currentBatch.totalCommission}
+                                        step="any"
+                                        defaultValue={currentBatch.invoiceInfo?.supplyAmount ?? batchInvoiceDefaults.supply}
                                         id="supplyAmount"
                                     />
                                 </div>
@@ -1136,7 +1091,8 @@ export default function Settlement() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded text-sm"
-                                        defaultValue={currentBatch.invoiceInfo?.vat || Math.round(currentBatch.totalCommission * 0.1)}
+                                        step="any"
+                                        defaultValue={currentBatch.invoiceInfo?.vat ?? batchInvoiceDefaults.vat}
                                         id="vat"
                                     />
                                 </div>
@@ -1182,9 +1138,9 @@ export default function Settlement() {
                                     {currentPartner.kakaoTemplates.invoiceNotice
                                         .replace(/\{\{거래처명\}\}/g, currentPartner.name)
                                         .replace(/\{\{주차라벨\}\}/g, currentBatch.weekLabel)
-                                        .replace(/\{\{공급가\}\}/g, (currentBatch.invoiceInfo?.supplyAmount || currentBatch.totalCommission).toLocaleString())
-                                        .replace(/\{\{VAT\}\}/g, (currentBatch.invoiceInfo?.vat || Math.round(currentBatch.totalCommission * 0.1)).toLocaleString())
-                                        .replace(/\{\{합계\}\}/g, (currentBatch.invoiceInfo?.total || Math.round(currentBatch.totalCommission * 1.1)).toLocaleString())
+                                        .replace(/\{\{공급가\}\}/g, (currentBatch.invoiceInfo?.supplyAmount ?? batchInvoiceDefaults.supply).toLocaleString('ko-KR', { maximumFractionDigits: 4 }))
+                                        .replace(/\{\{VAT\}\}/g, (currentBatch.invoiceInfo?.vat ?? batchInvoiceDefaults.vat).toLocaleString('ko-KR', { maximumFractionDigits: 4 }))
+                                        .replace(/\{\{합계\}\}/g, (currentBatch.invoiceInfo?.total ?? roundWonPrecision((currentBatch.invoiceInfo?.supplyAmount ?? batchInvoiceDefaults.supply) + (currentBatch.invoiceInfo?.vat ?? batchInvoiceDefaults.vat))).toLocaleString('ko-KR', { maximumFractionDigits: 4 }))
                                         .replace(/\{\{계좌정보\}\}/g, currentPartner.bankInfo
                                             ? `${currentPartner.bankInfo.bankName} ${currentPartner.bankInfo.accountNumber} (${currentPartner.bankInfo.accountHolder})`
                                             : '(계좌정보 미설정)')}
@@ -1259,7 +1215,8 @@ export default function Settlement() {
             setBatches(prev => prev.map(b => b.batchId === currentBatch.batchId ? { ...b, collectionInfo, status: 'collected' as any } : b));
             
             // [NEW] Payback Auto-registration based on weekly batch
-            const paybackAmount = Math.round(currentBatch.totalCommission * 0.05);
+            // 만원 단위지만 원 단위까지 유지 (예: 11만원의 5% = 0.55만원 = 5,500원)
+            const paybackAmount = roundWonPrecision(currentBatch.totalCommission * 0.05);
             // 같은 주차 페이백이 이미 있으면 다시 넣지 않는다 (수금 버튼을 두 번 눌렀을 때 중복 방지)
             const existingPayback = (await fetchExpenses(undefined, Number(currentBatch.startDate.slice(0, 4))))
                 .some(e => e.category === '페이백' && (e.description || '').includes(currentBatch.weekLabel));
@@ -1800,8 +1757,7 @@ export default function Settlement() {
 
             {/* Future Cashflow Prediction */}
             {(() => {
-                const today = new Date();
-                const todayStr = today.toISOString().split('T')[0];
+                const todayStr = todayKST();
 
                 // Collect future deposits from all cases
                 interface FutureDeposit {
@@ -1854,16 +1810,8 @@ export default function Settlement() {
                         // 3. 추가 지급액 = 총 지급 가능액 - 이미 지급된 금액
                         const incrementalPayout = Math.max(0, payableInfo.payable - alreadyPaid);
 
-                        // Calculate payout date: next Tuesday after the week containing this deposit
-                        const depositDate = new Date(dep.date);
-                        const dayOfWeek = depositDate.getDay();
-                        // Find next Tuesday (day 2)
-                        let daysUntilTuesday = (2 - dayOfWeek + 7) % 7;
-                        if (daysUntilTuesday === 0) daysUntilTuesday = 7; // If it's Tuesday, next Tuesday
-                        // If deposit is Mon-Sun, payout is next week's Tuesday (2 days after week end)
-                        const weekEnd = new Date(depositDate);
-                        weekEnd.setDate(weekEnd.getDate() + (7 - dayOfWeek)); // Go to next Sunday
-                        weekEnd.setDate(weekEnd.getDate() + 2); // Add 2 days = Tuesday
+                        // 받을 날: 거래처 정산 스케줄(마감 요일 → 지급 요일, 지급 주 지연) — 받을 돈 원장과 같은 계산
+                        const payoutDateStr = dueDateFor(String(dep.date).slice(0, 10), currentPartner);
 
                         futureDeposits.push({
                             caseId: c.caseId,
@@ -1874,7 +1822,7 @@ export default function Settlement() {
                             contractFee: c.contractFee || 0,
                             totalDeposited: cumulativeDeposit,
                             expectedPayout: incrementalPayout, // 이제 추가 지급액만 표시
-                            payoutDate: weekEnd.toISOString().split('T')[0]
+                            payoutDate: payoutDateStr
                         });
                     });
                 });
@@ -1883,9 +1831,7 @@ export default function Settlement() {
                 futureDeposits.sort((a, b) => String(a.depositDate || '').localeCompare(String(b.depositDate || '')));
 
                 // Take only next 60 days
-                const sixtyDaysLater = new Date(today);
-                sixtyDaysLater.setDate(sixtyDaysLater.getDate() + 60);
-                const sixtyDaysStr = sixtyDaysLater.toISOString().split('T')[0];
+                const sixtyDaysStr = addDaysKST(todayStr, 60);
                 const nearFutureDeposits = futureDeposits.filter(d => d.depositDate <= sixtyDaysStr);
 
                 // Calculate totals
@@ -2341,12 +2287,18 @@ export default function Settlement() {
             return;
         }
 
-        if (editingExpense) {
-            await updateExpense(editingExpense.id, expenseForm);
-            showToast('지출이 수정되었습니다.', 'success');
-        } else {
-            await createExpense({ ...expenseForm, partnerId: selectedPartnerId !== 'all' ? selectedPartnerId : undefined });
-            showToast('지출이 등록되었습니다.', 'success');
+        // [KIRO 2026-11-13] 서버 저장 실패(권한·네트워크) 시 모달을 닫지 않고 오류를 보여준다
+        try {
+            if (editingExpense) {
+                await updateExpense(editingExpense.id, expenseForm);
+                showToast('지출이 수정되었습니다.', 'success');
+            } else {
+                await createExpense({ ...expenseForm, partnerId: selectedPartnerId !== 'all' ? selectedPartnerId : undefined });
+                showToast('지출이 등록되었습니다.', 'success');
+            }
+        } catch (e: any) {
+            showToast(`저장 실패: ${e?.message || '알 수 없는 오류'}`, 'error');
+            return;
         }
 
         // Refresh data
@@ -2363,7 +2315,7 @@ export default function Settlement() {
 
     const handleDeleteExpense = async (id: string) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
-        await deleteExpense(id);
+        try { await deleteExpense(id); } catch (e: any) { showToast(`삭제 실패: ${e?.message || '알 수 없는 오류'}`, 'error'); return; }
         showToast('지출이 삭제되었습니다.', 'success');
         const [expenseList, stats] = await Promise.all([
             fetchExpenses(selectedPartnerId, year),
@@ -4190,6 +4142,14 @@ export default function Settlement() {
                         <Settings className="w-3.5 h-3.5" />
                         정산 정책 및 분배 설정
                     </button>
+                    {policySource !== 'saved' && (
+                        <span
+                            className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40"
+                            title={policyMessage || '저장된 정산 정책이 없어 기본값(회사 40% : 상담원 60%)으로 계산합니다.'}
+                        >
+                            {policySource === 'table_missing' ? '서버 업데이트 필요 · 기본값(저장 안 됨)' : '기본값(저장 안 됨)'}
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -4198,11 +4158,16 @@ export default function Settlement() {
                 <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-lg">
                     <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1">
                         <span>🏢 거래처 총 수수료 매출</span>
-                        <span className="text-sky-400 font-bold">청구</span>
+                        <span className="text-sky-400 font-bold">공급가</span>
                     </div>
                     <div className="text-lg font-black text-white">
                         ₩{(integratedPnLSummary?.totalRevenueWon || 0).toLocaleString()}
                     </div>
+                    {(integratedPnLSummary?.totalVatWon || 0) > 0 && (
+                        <div className="text-[10px] text-slate-500 mt-0.5">
+                            부가세 별도 ₩{(integratedPnLSummary?.totalVatWon || 0).toLocaleString()} (매출 아님)
+                        </div>
+                    )}
                     <div className="text-[10px] text-slate-400 mt-0.5">
                         입금 ₩{(integratedPnLSummary?.collectedRevenueWon || 0).toLocaleString()} / 미수 ₩{(integratedPnLSummary?.outstandingRevenueWon || 0).toLocaleString()}
                     </div>
@@ -4445,7 +4410,11 @@ export default function Settlement() {
             {activeTab === 'agent_commission' && (
                 <AgentCommissionTab
                     agentRows={agentSettlementRows}
+                    problemCases={agentSettlement.problems}
                     policy={settlementPolicy}
+                    policyIsDefault={policySource !== 'saved'}
+                    policyMessage={policyMessage}
+                    periodLabel={month === 'all' ? `${year}년 전체` : `${year}년 ${month}월`}
                     onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
                 />
             )}
@@ -4462,6 +4431,7 @@ export default function Settlement() {
                     policy={settlementPolicy}
                     year={year}
                     month={month}
+                    policyIsDefault={policySource !== 'saved'}
                 />
             )}
             {activeTab === 'receivables' && <ReceivablesTab cases={safeCases} partners={partners} />}
@@ -4729,8 +4699,13 @@ export default function Settlement() {
                 isOpen={isPolicyModalOpen}
                 onClose={() => setIsPolicyModalOpen(false)}
                 initialPolicy={settlementPolicy}
-                onSaved={(savedPolicy) => {
+                orgId={org?.orgId || ''}
+                policySource={policySource}
+                policyMessage={policyMessage}
+                onSuccess={(savedPolicy) => {
                     setSettlementPolicy(savedPolicy);
+                    setPolicySource('saved');
+                    setPolicyMessage(undefined);
                     reloadMasterSettlementData();
                 }}
             />

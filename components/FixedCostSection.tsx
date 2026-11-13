@@ -1,17 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createExpense, EXPENSE_CATEGORIES } from '../services/api';
 import { ExpenseCategory } from '../types';
-
-interface FixedCost {
-    id: string;
-    name: string;
-    amount: number;
-    category: ExpenseCategory;
-    dueDay: number; // 매월 결제일 (1-31)
-    description: string;
-    isActive: boolean;
-    createdAt: string;
-}
+import { useOrgStore, mutateOrgStore } from '../services/orgStore';
+import { FIXED_COSTS_SPEC, FixedCost } from '../services/orgData';
 
 interface FixedCostSectionProps {
     year: number;
@@ -19,10 +10,11 @@ interface FixedCostSectionProps {
     onExpenseCreated?: () => void;
 }
 
-const FIXED_COST_KEY = 'lm_fixed_costs';
-
 const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpenseCreated }) => {
-    const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([]);
+    // [2026-11-13 KIRO] 고정비는 회사별 서버(settings 'fixedCosts')가 원본
+    const { value: storedCosts } = useOrgStore(FIXED_COSTS_SPEC);
+    const fixedCosts: FixedCost[] = Array.isArray(storedCosts) ? storedCosts : [];
+    const [saving, setSaving] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -32,34 +24,23 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
         description: ''
     });
 
-    // 고정비 로드
-    const loadFixedCosts = () => {
+    // 서버 최신 목록에 변경을 적용해 저장 (성공하면 화면은 구독으로 갱신)
+    const saveFixedCosts = async (mutate: (list: FixedCost[]) => FixedCost[]): Promise<boolean> => {
+        setSaving(true);
         try {
-            const stored = localStorage.getItem(FIXED_COST_KEY);
-            if (stored) {
-                setFixedCosts(JSON.parse(stored));
+            const res = await mutateOrgStore(FIXED_COSTS_SPEC, list => mutate(Array.isArray(list) ? list : []));
+            if (!res.ok) {
+                alert(`고정비를 저장하지 못했습니다. ${res.error}`);
+                return false;
             }
-        } catch (e) {
-            console.error('Failed to load fixed costs:', e);
+            return true;
+        } finally {
+            setSaving(false);
         }
     };
-
-    // 고정비 저장
-    const saveFixedCosts = (costs: FixedCost[]) => {
-        try {
-            localStorage.setItem(FIXED_COST_KEY, JSON.stringify(costs));
-            setFixedCosts(costs);
-        } catch (e) {
-            console.error('Failed to save fixed costs:', e);
-        }
-    };
-
-    useEffect(() => {
-        loadFixedCosts();
-    }, []);
 
     // 고정비 추가
-    const handleAdd = () => {
+    const handleAdd = async () => {
         if (!formData.name || formData.amount <= 0) {
             alert('항목명과 금액을 입력해주세요.');
             return;
@@ -76,7 +57,8 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
             createdAt: new Date().toISOString()
         };
 
-        saveFixedCosts([...fixedCosts, newCost]);
+        const ok = await saveFixedCosts(list => [...list.filter(c => c.id !== newCost.id), newCost]);
+        if (!ok) return;
         setIsAddModalOpen(false);
         setFormData({
             name: '',
@@ -90,14 +72,18 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
     // 고정비 삭제
     const handleDelete = (id: string) => {
         if (confirm('이 고정비를 삭제하시겠습니까?')) {
-            saveFixedCosts(fixedCosts.filter(c => c.id !== id));
+            saveFixedCosts(list => list.filter(c => c.id !== id));
         }
     };
 
     // 고정비 활성화/비활성화
     const toggleActive = (id: string) => {
-        saveFixedCosts(fixedCosts.map(c =>
-            c.id === id ? { ...c, isActive: !c.isActive } : c
+        if (saving) return;
+        const target = fixedCosts.find(c => c.id === id);
+        if (!target) return;
+        const nextActive = !target.isActive;
+        saveFixedCosts(list => list.map(c =>
+            c.id === id ? { ...c, isActive: nextActive } : c
         ));
     };
 
@@ -128,8 +114,9 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
             alert(`${activeCosts.length}개 고정비가 지출로 등록되었습니다.`);
             onExpenseCreated?.();
         } catch (e) {
+            // 저장 실패 안내는 createExpense가 이미 띄운다 (중간에 멈췄으면 그 전 항목은 등록됨)
             console.error('Failed to register expenses:', e);
-            alert('지출 등록 중 오류가 발생했습니다.');
+            onExpenseCreated?.();
         }
     };
 

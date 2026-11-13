@@ -22,7 +22,7 @@ export const todayKST = (): string => {
   return d.toISOString().slice(0, 10);
 };
 
-const addDays = (ymd: string, days: number): string => {
+export const addDays = (ymd: string, days: number): string => {
   const [y, m, d] = ymd.split('-').map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d + days));
   return dt.toISOString().slice(0, 10);
@@ -59,6 +59,23 @@ export const vatModeOf = (p?: Partner | null): VatMode => (p?.vatMode || 'separa
 /** 청구액(사무실이 실제로 보낼 돈) = 수수료 + 부가세(별도일 때) */
 export const billedOf = (amount: number, mode: VatMode) => mode === 'separate' ? round1(amount * 1.1) : round1(amount);
 export const VAT_LABEL: Record<VatMode, string> = { separate: '부가세 별도 (+10%)', included: '부가세 포함', none: '부가세 없음' };
+
+/** 만원 금액을 원 단위 정밀도(소수 4자리)로 맞춘다 — 0.5만원을 1만원으로 올리지 않는다 */
+export const roundWonPrecision = (man: number): number => Math.round((Number(man) || 0) * 10000) / 10000;
+
+/**
+ * 세금계산서 기본값 (만원, 원 단위 정밀도)
+ * - separate: 수수료 = 공급가, 부가세 = 10% 별도
+ * - included: 수수료 안에 부가세 포함 → 공급가 = 수수료 ÷ 1.1
+ * - none: 부가세 없음
+ */
+export const invoiceSplitOf = (commission: number, mode: VatMode): { supply: number; vat: number; total: number } => {
+  const won = Math.round((Number(commission) || 0) * 10000);
+  let supplyWon = won, vatWon = 0;
+  if (mode === 'separate') vatWon = Math.round(won * 0.1);
+  else if (mode === 'included') { supplyWon = Math.round(won / 1.1); vatWon = won - supplyWon; }
+  return { supply: supplyWon / 10000, vat: vatWon / 10000, total: (supplyWon + vatWon) / 10000 };
+};
 
 export interface StageLine {
   key: string;            // `${caseId}:${stage}`

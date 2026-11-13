@@ -33,7 +33,7 @@ interface CaseListFilterProps {
     statuses: CaseStatus[];
     secondaryStatuses: string[];
     tertiaryStatuses: Record<string, string[]>;
-    onOpenImportModal: () => void;
+    onOpenImportModal?: () => void; // [KIRO 2026-11-13] 관리자만 전달 (없으면 업로드 버튼 숨김)
     onOpenStatusVisibilityModal: () => void;
     onResetPage: () => void;
 }
@@ -97,16 +97,16 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     <Star size={18} fill={showStarredOnly ? 'currentColor' : 'none'} />
                 </button>
                 {/* Cloud Upload Button (Mobile Only) */}
-                <button
+                {onOpenImportModal && <button
                     type="button"
                     onClick={(e) => {
                         e.preventDefault();
-                        onOpenImportModal();
+                        onOpenImportModal?.();
                     }}
                     className="xl:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
                 >
                     <Upload size={18} />
-                </button>
+                </button>}
             </div>
 
             <div className="flex flex-wrap gap-1 w-full xl:w-auto items-center">
@@ -277,7 +277,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             </select>
                         </div>
 
-                        <button
+                        {onOpenImportModal && <button
                             type="button"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -286,7 +286,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             className="hidden xl:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
                         >
                             <Upload size={18} />
-                        </button>
+                        </button>}
 
                         <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex items-center gap-1">
                             <button

@@ -7,6 +7,13 @@
 --   2) list_org_members() RPC 갱신: security_profile, session_revoked_at 반환
 --   3) update_org_member() RPC 갱신: p_security_profile 파라미터 지원
 --   4) revoke_member_session() RPC 신설: 관리자에 의한 원클릭 세션 강제 파기
+-- 여러 번 실행해도 된다.
+-- [2026-11-13 KIRO 변경]
+--   - 027_agent_ui_mode 의 list_org_members / update_org_member 를 이 파일이 최종 정의 (027 다음에 실행)
+--   - update_org_member: 007(4칸)·027(5칸) 옛 함수까지 DROP → 6칸 하나만 남김 (웹 이름과 같음)
+--   - list_org_members / update_org_member: EXECUTE anon 회수
+--   - revoke_member_session: 같은 회사 멤버인지 확인
+--   - 주의: 접근 기록 action 은 015 CHECK 목록에 맞춰 'export' + detail.event='session_revoked' 로 남긴다
 -- =============================================
 
 BEGIN;
@@ -67,7 +74,13 @@ AS $$
   ORDER BY CASE m.role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, 3;
 $$;
 
+REVOKE ALL ON FUNCTION public.list_org_members() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.list_org_members() TO authenticated;
+
 -- 3. update_org_member() RPC 갱신
+--    웹(services/team.ts updateTeamMember)이 보내는 이름: p_user_id, p_role, p_status, p_display_name, p_ui_mode, p_security_profile
+--    예전 겹치는 함수(007의 4칸, 027의 5칸)를 모두 지워 PostgREST가 헷갈리지 않게 한다
+DROP FUNCTION IF EXISTS public.update_org_member(uuid, text, text, text);
 DROP FUNCTION IF EXISTS public.update_org_member(uuid, text, text, text, text);
 DROP FUNCTION IF EXISTS public.update_org_member(uuid, text, text, text, text, jsonb);
 
@@ -127,6 +140,9 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.update_org_member(uuid, text, text, text, text, jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.update_org_member(uuid, text, text, text, text, jsonb) TO authenticated;
+
 -- 4. 원클릭 세션 즉시 강제 파기 RPC
 CREATE OR REPLACE FUNCTION public.revoke_member_session(p_user_id uuid)
 RETURNS boolean
@@ -140,6 +156,10 @@ DECLARE
 BEGIN
   IF v_org IS NULL THEN RAISE EXCEPTION '소속 회사가 없습니다'; END IF;
   IF v_my_role NOT IN ('owner', 'admin') THEN RAISE EXCEPTION '관리자만 세션을 종료할 수 있습니다'; END IF;
+  -- 같은 회사 멤버만 (다른 회사 사용자 ID를 넣으면 기록만 남고 성공처럼 보이던 문제)
+  IF NOT EXISTS (SELECT 1 FROM public.org_members WHERE org_id = v_org AND user_id = p_user_id) THEN
+    RAISE EXCEPTION '같은 회사 멤버가 아닙니다';
+  END IF;
 
   UPDATE public.org_members
   SET session_revoked_at = now()

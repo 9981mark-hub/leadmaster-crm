@@ -1,0 +1,20 @@
+# 운영 DB 적용 순서 (2026-11-13 KIRO)
+# 운영에 이미 있는 것: 001~018, 023, 024, 026, 027_agent_ui_mode
+# 아래를 위에서부터 한 파일씩 실행한다. 각 파일은 BEGIN/COMMIT 한 덩어리이고, 다시 실행해도 된다.
+# 027_agent_ui_mode 가 운영에 있어야 028_agent_security_profiles 가 맞게 덮어쓴다 (list_org_members / update_org_member 최종 정의).
+# 019 는 024(is_archived), 028_vendor 는 019(dnc_filtered), 030 은 028_vendor(vendor_name), 031 은 030(lead_vendors)이 먼저 있어야 한다.
+# scripts/verify_multitenant_isolation.mjs 가 이 파일을 읽어 같은 순서로 검사한다.
+019_bulk_distribution_and_quality.sql
+020_dnc_and_smart_rotation.sql
+021_agent_kpi_and_incentive.sql
+022_custom_incentive_types_and_schedule.sql
+025_retention_policy_options.sql
+027_platform_notices_multitenant.sql
+028_agent_security_profiles.sql
+028_vendor_lead_quality_roi.sql
+029_hr_attendance_and_payroll.sql
+030_lead_vendors_and_retroactive_batch.sql
+031_vendor_package_pricing.sql
+032_auto_dial_v4.sql
+033_settlement_policies_and_split.sql
+034_notice_read_guard.sql

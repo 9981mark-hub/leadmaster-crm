@@ -71,17 +71,19 @@ export const TrainingReportModal: React.FC<Props> = ({
     }
   };
 
-  const handleSaveAdminFeedback = () => {
+  const handleSaveAdminFeedback = async () => {
     const feedback: AdminFeedback = {
       grade: adminGrade,
       comment: adminComment.trim(),
       evaluatedAt: new Date().toISOString(),
       evaluatorName: adminEvaluator,
     };
-    const success = updateAdminFeedback(sessionRecord.sessionId, feedback);
-    if (success) {
+    const result = await updateAdminFeedback(sessionRecord.sessionId, feedback);
+    if (result.ok) {
       setIsSavedFeedback(true);
       sessionRecord.adminFeedback = feedback;
+    } else {
+      alert(`피드백을 저장하지 못했습니다. ${result.error || ''}`);
     }
   };
 

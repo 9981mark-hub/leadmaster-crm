@@ -4,7 +4,7 @@ import {
     Clock, CheckCircle2, Coffee, AlertCircle, LogOut, 
     ChevronDown, UserCheck, Play, Pause, Power
 } from 'lucide-react';
-import { AttendanceStatus, recordMyAttendanceStatus } from '../../services/hr';
+import { AttendanceStatus, recordMyAttendanceStatus, fetchMyTodayAttendance } from '../../services/hr';
 import { useToast } from '../../contexts/ToastContext';
 
 interface AttendanceHeaderWidgetProps {
@@ -15,15 +15,37 @@ export const AttendanceHeaderWidget: React.FC<AttendanceHeaderWidgetProps> = ({
     isDark = false
 }) => {
     const { showToast } = useToast();
-    const [status, setStatus] = useState<AttendanceStatus>(() => {
-        return (localStorage.getItem('lm_my_attendance_status') as AttendanceStatus) || 'off';
-    });
+    // [2026-11-13 KIRO] 근태는 서버(agent_attendance_logs)가 원본. 브라우저 값(lm_my_attendance_status)은 쓰지 않는다.
+    const [status, setStatus] = useState<AttendanceStatus>('off');
     const [isOpen, setIsOpen] = useState(false);
-    const [clockInTime, setClockInTime] = useState<string | null>(() => {
-        return localStorage.getItem('lm_my_clock_in_time');
-    });
+    const [busy, setBusy] = useState(false);
+    const [clockInTime, setClockInTime] = useState<string | null>(null);
     const [elapsedMinutes, setElapsedMinutes] = useState(0);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const lastLoadRef = useRef(0);
+
+    // 서버에서 내 오늘 근태 불러오기 (처음 + 탭 복귀 시 5분에 한 번)
+    useEffect(() => {
+        let alive = true;
+        const load = async () => {
+            lastLoadRef.current = Date.now();
+            const mine = await fetchMyTodayAttendance();
+            if (!alive || !mine) return;
+            setStatus(mine.currentStatus);
+            setClockInTime(mine.currentStatus !== 'off' ? (mine.clockInAt || null) : null);
+        };
+        load();
+        // 예전 브라우저 근태 값 정리 (서버와 어긋난 값이 다시 쓰이지 않게)
+        try {
+            localStorage.removeItem('lm_my_attendance_status');
+            localStorage.removeItem('lm_my_clock_in_time');
+        } catch { /* ignore */ }
+        const onVisible = () => {
+            if (document.visibilityState === 'visible' && Date.now() - lastLoadRef.current > 5 * 60 * 1000) load();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => { alive = false; document.removeEventListener('visibilitychange', onVisible); };
+    }, []);
 
     // 경과 시간 계산
     useEffect(() => {
@@ -57,19 +79,20 @@ export const AttendanceHeaderWidget: React.FC<AttendanceHeaderWidgetProps> = ({
     // 상태 변경 핸들러
     const handleChangeStatus = async (nextStatus: AttendanceStatus) => {
         setIsOpen(false);
+        if (busy) return;
+        setBusy(true);
+        const wasClockedIn = !!clockInTime;
         try {
-            await recordMyAttendanceStatus(nextStatus);
-            setStatus(nextStatus);
-            localStorage.setItem('lm_my_attendance_status', nextStatus);
+            // 서버 기록이 성공했을 때만 화면을 바꾸고 안내한다
+            const saved = await recordMyAttendanceStatus(nextStatus);
+            setStatus(saved.currentStatus);
+            lastLoadRef.current = Date.now();
 
-            if (nextStatus === 'working' && !clockInTime) {
-                const nowIso = new Date().toISOString();
-                setClockInTime(nowIso);
-                localStorage.setItem('lm_my_clock_in_time', nowIso);
+            if (nextStatus === 'working' && !wasClockedIn) {
+                setClockInTime(saved.clockInAt || new Date().toISOString());
                 showToast('출근 처리되었습니다. 오늘도 파이팅입니다!', 'success');
             } else if (nextStatus === 'off') {
                 setClockInTime(null);
-                localStorage.removeItem('lm_my_clock_in_time');
                 showToast('퇴근 처리되었습니다. 수고하셨습니다!', 'info');
             } else if (nextStatus === 'away') {
                 showToast('자리비움(이석) 상태로 변경되었습니다.', 'warning');
@@ -78,9 +101,11 @@ export const AttendanceHeaderWidget: React.FC<AttendanceHeaderWidgetProps> = ({
             } else {
                 showToast('업무 중 상태로 복귀했습니다.', 'success');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to change attendance status:', err);
-            showToast('근태 상태 변경에 실패했습니다.', 'error');
+            showToast(err?.message || '근태 상태 변경에 실패했습니다.', 'error');
+        } finally {
+            setBusy(false);
         }
     };
 

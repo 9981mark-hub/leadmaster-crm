@@ -1,23 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Plus, Trash2, Download, AlertTriangle, CheckCircle } from 'lucide-react';
-
-// ─── Types ───────────────────────────────────────────────
-type IncomeType = '사업소득(3.3%)' | '기타소득(8.8%)' | '근로소득(간이세액)' | '일용근로(2.7%)';
-
-interface WithholdingRecord {
-    id: string;
-    payDate: string;           // 지급일
-    name: string;              // 이름/상호
-    payAmount: number;         // 지급액 (원)
-    incomeType: IncomeType;    // 소득구분
-    withholdingTax: number;    // 원천징수액
-    localIncomeTax: number;    // 지방소득세 (원천세의 10%)
-    netAmount: number;         // 실지급액
-    filingMonth: string;       // 원천세 신고월 (지급월+1)
-    isFilingDone: boolean;     // 신고 완료 여부
-    memo: string;
-}
+import { useOrgStore, mutateOrgStore } from '../services/orgStore';
+import { WITHHOLDING_SPEC, WithholdingRecord, WithholdingData, IncomeType } from '../services/orgData';
 
 const INCOME_RATES: Record<IncomeType, number> = {
     '사업소득(3.3%)': 0.033,
@@ -26,16 +11,18 @@ const INCOME_RATES: Record<IncomeType, number> = {
     '일용근로(2.7%)': 0.027,
 };
 
-const STORAGE_KEY = 'leadmaster_withholding_records';
+// [2026-11-13 KIRO] 원천세 기록·반기납 설정은 회사별 서버(settings 'withholdingRecords')가 원본
+const recordsOf = (d: WithholdingData | undefined): WithholdingRecord[] =>
+    d && Array.isArray(d.records) ? d.records : [];
 
-function loadRecords(): WithholdingRecord[] {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
-}
-function saveRecords(records: WithholdingRecord[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+/** 서버 최신값에 변경을 적용해 저장. 실패하면 안내 후 false */
+async function saveWithholding(mutate: (d: WithholdingData) => WithholdingData): Promise<boolean> {
+    const res = await mutateOrgStore(WITHHOLDING_SPEC, d => mutate({ records: recordsOf(d), semiAnnual: !!d?.semiAnnual }));
+    if (!res.ok) {
+        alert(`원천세 기록을 저장하지 못했습니다. ${res.error}`);
+        return false;
+    }
+    return true;
 }
 
 function calcRecord(
@@ -77,36 +64,28 @@ const EMPTY_FORM = {
 };
 
 export default function WithholdingTaxSection({ year }: { year: number }) {
-    const [records, setRecords] = useState<WithholdingRecord[]>([]);
+    const { value: stored } = useOrgStore(WITHHOLDING_SPEC);
+    const records = useMemo(
+        () => recordsOf(stored).filter(r => (r.payDate || '').startsWith(String(year))),
+        [stored, year]
+    );
+    const isSemiAnnual = !!stored?.semiAnnual;
     const [form, setForm] = useState({ ...EMPTY_FORM });
     const [showForm, setShowForm] = useState(false);
-    const [isSemiAnnual, setIsSemiAnnual] = useState(false);
-
-    useEffect(() => {
-        setRecords(loadRecords().filter(r => r.payDate.startsWith(String(year))));
-        const semiAnnualSetting = localStorage.getItem('leadmaster_withholding_semi_annual') === 'true';
-        setIsSemiAnnual(semiAnnualSetting);
-    }, [year]);
-
-    const refreshFromStorage = () => {
-        setRecords(loadRecords().filter(r => r.payDate.startsWith(String(year))));
-    };
 
     const toggleSemiAnnual = () => {
         const newVal = !isSemiAnnual;
-        setIsSemiAnnual(newVal);
-        localStorage.setItem('leadmaster_withholding_semi_annual', String(newVal));
-        
-        // 기존 레코드들의 신고월 재계산
-        const all = loadRecords().map(r => ({
-            ...r,
-            ...calcRecord(r.payDate, r.payAmount, r.incomeType, newVal)
+        // 반기납 설정 + 기존 기록들의 신고월 재계산
+        saveWithholding(d => ({
+            semiAnnual: newVal,
+            records: d.records.map(r => ({
+                ...r,
+                ...calcRecord(r.payDate, r.payAmount, r.incomeType, newVal)
+            })),
         }));
-        saveRecords(all);
-        refreshFromStorage();
     };
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
         if (!form.name || !form.payDate || form.payAmount <= 0) {
             alert('이름, 지급일, 지급액을 모두 입력해주세요.');
             return;
@@ -118,26 +97,25 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
             ...calc,
             isFilingDone: false,
         };
-        const all = loadRecords();
-        saveRecords([...all, newRecord]);
+        const ok = await saveWithholding(d => ({ ...d, records: [...d.records.filter(r => r.id !== newRecord.id), newRecord] }));
+        if (!ok) return;
         setForm({ ...EMPTY_FORM });
         setShowForm(false);
-        refreshFromStorage();
     };
 
     const handleDelete = (id: string) => {
         if (!confirm('삭제하시겠습니까?')) return;
-        const all = loadRecords().filter(r => r.id !== id);
-        saveRecords(all);
-        refreshFromStorage();
+        saveWithholding(d => ({ ...d, records: d.records.filter(r => r.id !== id) }));
     };
 
     const toggleFiling = (id: string) => {
-        const all = loadRecords().map(r =>
-            r.id === id ? { ...r, isFilingDone: !r.isFilingDone } : r
-        );
-        saveRecords(all);
-        refreshFromStorage();
+        const target = records.find(r => r.id === id);
+        if (!target) return;
+        const nextDone = !target.isFilingDone;
+        saveWithholding(d => ({
+            ...d,
+            records: d.records.map(r => (r.id === id ? { ...r, isFilingDone: nextDone } : r)),
+        }));
     };
 
     const handleExport = () => {

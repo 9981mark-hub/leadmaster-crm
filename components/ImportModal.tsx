@@ -361,7 +361,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         const casesWithBatch = validCases.map(c => ({
             ...c,
             importBatchId: batchId || c.importBatchId,
-            inboundPath: vendorName || c.inboundPath || 'DB',
+            // [KIRO 2026-11-13] 파일에 적힌 유입경로를 우선 (예전엔 공급처 이름으로 전부 덮어씀)
+            inboundPath: c.inboundPath || selectedVendor.trim() || 'DB',
             isNew: true,
             isViewed: false,
             managerName: c.managerName || localStorage.getItem('managerName') || '미지정',

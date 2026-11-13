@@ -24,7 +24,8 @@ import {
   caseToDb as caseToDbFn
 } from './supabase';
 import { logAccess, maskedCaseLabel } from './accessLog';
-import { loadCachedOrg, isAdminRole } from './org';
+import { loadCachedOrg, isAdminRole, HQ_ORG_ID } from './org';
+import { fetchSettingsExceptOrgStore, isOrgStoreKey, markOrgStoreKeysChanged, loadOrgStore, peekOrgStore, mutateOrgStore, subscribeOrgStore, readLegacyJson, reportOrgStoreError, canWriteOrgStore, StoreKeySpec } from './orgStore';
 
 
 // --- CONFIGURATION ---
@@ -211,8 +212,15 @@ export const isCaseSeen = (caseId: string): boolean => {
 // ------------------------------------------------------------------
 
 // POST Helper (Fire & Forget, No-CORS)
+/**
+ * [2026-11-13 KIRO] 본사 구글 시트 연동은 본사(HQ_ORG_ID) 로그인일 때만.
+ * 회사 정보를 모르거나 다른 회사면 아무것도 보내지 않는다 (고객사 데이터가 본사 시트로 가던 문제 차단).
+ */
+const isHqSession = (): boolean => loadCachedOrg()?.orgId === HQ_ORG_ID;
+
 const syncToSheet = async (payload: any) => {
   if (!GOOGLE_SCRIPT_URL) return;
+  if (!isHqSession()) return;
   try {
     const payloadWithAuth = { ...payload, token: GOOGLE_SCRIPT_TOKEN };
     await fetch(GOOGLE_SCRIPT_URL, {
@@ -229,6 +237,8 @@ const syncToSheet = async (payload: any) => {
 // GET Helper
 const fetchFromSheet = async (target: 'leads' | 'settings') => {
   if (!GOOGLE_SCRIPT_URL) return null;
+  // 본사 시트 내용을 다른 회사 화면으로 가져오지 않는다
+  if (!isHqSession()) return null;
   const apiType = target;
   try {
     const response = await fetch(`${GOOGLE_SCRIPT_URL}?type=${apiType}&token=${encodeURIComponent(GOOGLE_SCRIPT_TOKEN)}&_t=${Date.now()}`);
@@ -450,7 +460,7 @@ const setupRealtimeSubscription = () => {
       try {
         const [partners, settings] = await Promise.all([
           fetchPartnersFromSupabase(),
-          fetchSettingsFromSupabase()
+          fetchSettingsExceptOrgStore()
         ]);
 
         if (partners && partners.length > 0) {
@@ -559,7 +569,7 @@ export const refreshData = async () => {
 
     // 4. Settings도 갱신
     try {
-      const settings = await fetchSettingsFromSupabase();
+      const settings = await fetchSettingsExceptOrgStore();
       if (settings && Object.keys(settings).length > 0) {
         if (settings.partners) localPartners = settings.partners;
         if (settings.inboundPaths) localInboundPaths = settings.inboundPaths;
@@ -730,8 +740,11 @@ const performIncrementalFetch = async (): Promise<void> => {
 
     let changed = false;
 
-    if (changedSettingKeys.length > 0) {
-      const settings = await fetchSettingsFromSupabase();
+    // [2026-11-13 KIRO] 회사별 저장소 key(지출·은행 거래내역 등)는 쓰는 화면이 있을 때만 그 key만 다시 받는다
+    const storeKeysChanged = changedSettingKeys.filter(isOrgStoreKey);
+    if (storeKeysChanged.length > 0) markOrgStoreKeysChanged(storeKeysChanged);
+    if (changedSettingKeys.some(k => !isOrgStoreKey(k))) {
+      const settings = await fetchSettingsExceptOrgStore();
       if (Object.keys(settings).length > 0) {
         applySettingsData(settings);
         changed = true;
@@ -837,7 +850,7 @@ const performBackgroundFetch = async () => {
             console.log(`[Sync] Supabase: ${supabaseCases.length} cases loaded`);
           }
           // Fetch validation data
-          const supabaseSettings = await fetchSettingsFromSupabase();
+          const supabaseSettings = await fetchSettingsExceptOrgStore();
           if (Object.keys(supabaseSettings).length > 0) settingsData = supabaseSettings;
           // [Fix] Removed fetchPartnersFromSupabase() call - it returns empty commissionRules.
           // Partners with full data (including commissionRules) are loaded from settingsData.partners below.
@@ -846,6 +859,13 @@ const performBackgroundFetch = async () => {
           syncStatus = 'ok';
           lastSyncAt = new Date().toISOString();
           fetchedFromServer = true;
+
+          // [2026-11-13 KIRO] 정산 화면이 동기로 읽는 회사별 데이터(은행 거래내역·세무 알림)를 관리자만 미리 확인.
+          // 브라우저 사본이 있으면 updated_at만 묻고, 바뀐 경우에만 값을 받는다. 처음 로그인 때 1회 이전도 여기서 일어난다.
+          if (isAdminRole(loadCachedOrg()?.role)) {
+            loadBankTransactionsFromServer().catch(() => undefined);
+            loadTaxRemindersFromServer().catch(() => undefined);
+          }
 
         } catch (supabaseError) {
           console.warn('[Sync] Supabase fetch failed:', supabaseError);
@@ -2014,6 +2034,8 @@ export const uploadRecording = async (file: File): Promise<{ url: string, id: st
   // Assuming the user's GAS script handles CORS properly (options/headers).
 
   if (!GOOGLE_SCRIPT_URL) throw new Error("Backend URL missing");
+  // [2026-11-13 KIRO] 본사 Apps Script 드라이브는 본사 전용
+  if (!isHqSession()) throw new Error('이 업로드 기능은 본사 전용입니다 (통화 녹음은 통화 녹음·AI 탭에서 회사 드라이브로 올려 주세요)');
 
   const response = await fetch(GOOGLE_SCRIPT_URL, {
     method: 'POST',
@@ -2200,6 +2222,26 @@ export const deleteSettlementBatch = async (batchId: string): Promise<boolean> =
   return false;
 };
 
+// [KIRO 2026-11-13] 주간 정산 묶음: 그 주에 "발생한" 수수료 단계만 합산 (누적 지급액을 매주 다시 더하던 중복 청구 수정)
+const WEEKLY_BATCH_STATUSES = ['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'];
+const computeWeekBatchTotals = async (partnerId: string, startDate: string, endDate: string) => {
+  const partner = localPartners.find(p => p.partnerId === partnerId);
+  const { computeCaseCommission } = await import('../utils/settlement');
+  const dealIds: string[] = [];
+  let totalContractFee = 0;
+  let totalCommission = 0;
+  for (const c of localCases) {
+    if (c.partnerId !== partnerId || !c.contractFee) continue;
+    if (!WEEKLY_BATCH_STATUSES.includes(c.status)) continue;
+    const stages = partner ? computeCaseCommission(c, partner).stages.filter(st => st.earnedAt >= startDate && st.earnedAt <= endDate) : [];
+    if (stages.length === 0) continue;
+    dealIds.push(c.caseId);
+    totalContractFee += c.contractFee || 0;
+    totalCommission += stages.reduce((s, st) => s + st.amount, 0);
+  }
+  return { dealIds, totalContractFee, totalCommission: Math.round(totalCommission * 10) / 10 };
+};
+
 // [NEW] Refresh an existing batch with latest case data
 export const refreshWeeklyBatch = async (batchId: string): Promise<SettlementBatch | null> => {
   ensureBatchesLoaded();
@@ -2208,38 +2250,7 @@ export const refreshWeeklyBatch = async (batchId: string): Promise<SettlementBat
   if (!batch) return null;
 
   const { startDate, endDate, partnerId } = batch;
-  const partner = localPartners.find(p => p.partnerId === partnerId);
-
-  // Re-find deals based on DEPOSIT DATE (not contract date)
-  const weekDeals = localCases.filter(c => {
-    if (c.partnerId !== partnerId) return false;
-    if (!c.contractFee) return false;
-    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
-
-    // Check depositHistory array first (new method), then fallback to legacy fields
-    const deposits = (c.depositHistory && c.depositHistory.length > 0)
-      ? c.depositHistory
-      : [
-        { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
-        { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
-      ];
-
-    // Check if any deposit falls within this week
-    return deposits.some(d => d.date && d.date >= startDate && d.date <= endDate);
-  });
-
-  // Recalculate totals using payable commission
-  const dealIds = weekDeals.map(d => d.caseId);
-  const totalContractFee = weekDeals.reduce((sum, d) => sum + (d.contractFee || 0), 0);
-
-  let totalCommission = 0;
-  if (partner) {
-    const { calculatePayableCommission } = await import('../utils');
-    totalCommission = weekDeals.reduce((sum, d) => {
-      const { payable } = calculatePayableCommission(d, partner.commissionRules, partner.settlementConfig);
-      return sum + payable;
-    }, 0);
-  }
+  const { dealIds, totalContractFee, totalCommission } = await computeWeekBatchTotals(partnerId, startDate, endDate);
 
   // Update batch
   const idx = localSettlementBatches.findIndex(b => b.batchId === batchId);
@@ -2277,39 +2288,7 @@ export const generateWeeklyBatch = async (partnerId: string, weekStart: Date): P
     return existing;
   }
 
-  const partner = localPartners.find(p => p.partnerId === partnerId);
-
-  // Find deals with deposits in this week (DEPOSIT DATE based, not contract date)
-  const weekDeals = localCases.filter(c => {
-    if (c.partnerId !== partnerId) return false;
-    if (!c.contractFee) return false;
-    if (!['계약 완료', '1차 입금완료', '2차 입금완료', '진행중', '사무장 접수'].includes(c.status)) return false;
-
-    // Check depositHistory array first (new method), then fallback to legacy fields
-    const deposits = (c.depositHistory && c.depositHistory.length > 0)
-      ? c.depositHistory
-      : [
-        { date: c.deposit1Date || '', amount: c.deposit1Amount || 0 },
-        { date: c.deposit2Date || '', amount: c.deposit2Amount || 0 }
-      ];
-
-    // Check if any deposit falls within this week
-    return deposits.some(d => d.date && d.date >= startDateStr && d.date <= endDateStr);
-  });
-
-  // Calculate totals
-  const dealIds = weekDeals.map(d => d.caseId);
-  const totalContractFee = weekDeals.reduce((sum, d) => sum + (d.contractFee || 0), 0);
-
-  // Calculate payable commission (based on deposit amounts, not full commission)
-  let totalCommission = 0;
-  if (partner) {
-    const { calculatePayableCommission } = await import('../utils');
-    totalCommission = weekDeals.reduce((sum, d) => {
-      const { payable } = calculatePayableCommission(d, partner.commissionRules, partner.settlementConfig);
-      return sum + payable;
-    }, 0);
-  }
+  const { dealIds, totalContractFee, totalCommission } = await computeWeekBatchTotals(partnerId, startDateStr, endDateStr);
 
   // Create new batch
   return createSettlementBatch({
@@ -2348,27 +2327,39 @@ export const getSettlementStatusLabel = (status: SettlementBatchStatus): string 
 // EXPENSE MANAGEMENT (지출 관리)
 // ============================================
 
-// Helper to ensure expenses are loaded
-const ensureExpensesLoaded = () => {
-  if (!expensesInitialized) {
-    const stored = localStorage.getItem(CACHE_KEYS.EXPENSES);
-    if (stored) {
-      try {
-        localExpenses = JSON.parse(stored);
-      } catch (e) {
-        localExpenses = [];
-      }
-    }
-    expensesInitialized = true;
-  }
+// [2026-11-13 KIRO] 지출은 회사별 서버(settings 'expenses')가 원본.
+// 예전에는 쓰기만 하고 읽지 않아서, 캐시가 빈 PC에서 저장하면 서버 목록을 통째로 덮어쓸 수 있었다.
+// 이제 읽을 때 서버 값을 받고, 저장할 때는 서버 최신값 위에 변경 1건만 적용한다.
+const EXPENSES_SPEC: StoreKeySpec<ExpenseItem[]> = {
+  key: 'expenses',
+  empty: () => [],
+  legacy: () => readLegacyJson<ExpenseItem[]>(CACHE_KEYS.EXPENSES),
+  legacyKeys: [CACHE_KEYS.EXPENSES],
 };
 
-// Save expenses to storage and sync to server
-const saveExpenses = () => {
-  localStorage.setItem(CACHE_KEYS.EXPENSES, JSON.stringify(localExpenses));
-  // Sync to Supabase settings
-  saveSettingToSupabase('expenses', localExpenses);
+// 서버에서 지출 목록 확인 (5분 안에 다시 부르면 메모리 값)
+const ensureExpensesLoaded = async () => {
+  const list = await loadOrgStore(EXPENSES_SPEC);
+  localExpenses = Array.isArray(list) ? list : [];
+  expensesInitialized = true;
+};
+
+// 서버 최신 목록에 변경을 적용해서 저장. 실패하면 한국어 메시지로 예외.
+const saveExpenses = async (mutate: (list: ExpenseItem[]) => ExpenseItem[]) => {
+  const res = await mutateOrgStore(EXPENSES_SPEC, list => mutate(Array.isArray(list) ? list : []));
+  if (!res.ok) {
+    reportOrgStoreError(`지출을 저장하지 못했습니다. ${res.error}`);
+    throw new Error(res.error);
+  }
+  localExpenses = res.value;
+  expensesInitialized = true;
   syncToSheet({ target: 'settings', action: 'update', key: 'expenses', value: localExpenses });
+};
+
+/** 지출 목록 (위험 점검 등 다른 화면용) */
+export const fetchAllExpenses = async (): Promise<ExpenseItem[]> => {
+  await ensureExpensesLoaded();
+  return [...localExpenses];
 };
 
 // Default expense categories
@@ -2391,7 +2382,7 @@ export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
 
 // Fetch all expenses (optionally filter by partner and/or year)
 export const fetchExpenses = async (partnerId?: string, year?: number): Promise<ExpenseItem[]> => {
-  ensureExpensesLoaded();
+  await ensureExpensesLoaded();
 
   let result = [...localExpenses];
 
@@ -2411,7 +2402,7 @@ export const fetchExpenses = async (partnerId?: string, year?: number): Promise<
 
 // Create a new expense
 export const createExpense = async (expense: Partial<ExpenseItem>): Promise<ExpenseItem> => {
-  ensureExpensesLoaded();
+  await ensureExpensesLoaded();
 
   const now = new Date().toISOString();
   const newExpense: ExpenseItem = {
@@ -2427,8 +2418,7 @@ export const createExpense = async (expense: Partial<ExpenseItem>): Promise<Expe
     updatedAt: now
   };
 
-  localExpenses.unshift(newExpense);
-  saveExpenses();
+  await saveExpenses(list => [newExpense, ...list.filter(e => e.id !== newExpense.id)]);
   notifyListeners();
 
   return newExpense;
@@ -2436,32 +2426,31 @@ export const createExpense = async (expense: Partial<ExpenseItem>): Promise<Expe
 
 // Update an expense
 export const updateExpense = async (id: string, updates: Partial<ExpenseItem>): Promise<ExpenseItem | null> => {
-  ensureExpensesLoaded();
+  await ensureExpensesLoaded();
 
-  const idx = localExpenses.findIndex(e => e.id === id);
-  if (idx === -1) return null;
-
-  localExpenses[idx] = {
-    ...localExpenses[idx],
-    ...updates,
-    updatedAt: new Date().toISOString()
-  };
-
-  saveExpenses();
+  const hit: { item: ExpenseItem | null } = { item: null };
+  const now = new Date().toISOString();
+  await saveExpenses(list => list.map(e => {
+    if (e.id !== id) return e;
+    hit.item = { ...e, ...updates, id: e.id, updatedAt: now };
+    return hit.item;
+  }));
+  if (!hit.item) return null;
   notifyListeners();
 
-  return localExpenses[idx];
+  return hit.item;
 };
 
 // Delete an expense
 export const deleteExpense = async (id: string): Promise<boolean> => {
-  ensureExpensesLoaded();
+  await ensureExpensesLoaded();
 
-  const idx = localExpenses.findIndex(e => e.id === id);
-  if (idx === -1) return false;
-
-  localExpenses.splice(idx, 1);
-  saveExpenses();
+  const hit = { found: false };
+  await saveExpenses(list => list.filter(e => {
+    if (e.id === id) { hit.found = true; return false; }
+    return true;
+  }));
+  if (!hit.found) return false;
   notifyListeners();
 
   return true;
@@ -2473,7 +2462,7 @@ export const getExpenseStats = async (year: number, month?: number | 'all', part
   byCategory: Record<ExpenseCategory, number>;
   byMonth: { month: string; amount: number }[];
 }> => {
-  ensureExpensesLoaded();
+  await ensureExpensesLoaded();
 
   let filtered = localExpenses.filter(e => {
     if (!e.date) return false;
@@ -2541,29 +2530,54 @@ const AD_KEYWORDS = ['토스', '비바리퍼블리', 'toss', 'viva', '네이버'
 // 이자 키워드
 const INTEREST_KEYWORDS = ['이자', '예금이자', '입출금통장 이자'];
 
-// 로컬스토리지에서 거래내역 로드
+// [2026-11-13 KIRO] 은행 거래내역은 회사별 서버(settings 'bankTransactions')가 원본.
+// 조회 함수들은 화면 코드가 동기로 부르므로 메모리 값을 바로 주고, 서버 확인은 뒤에서 한다.
+// 저장은 화면에 먼저 반영하고 서버 최신값 위에 같은 변경을 적용해 올린다(실패하면 안내 후 서버 값으로 되돌림).
+// 크기: 거래 1건 약 0.3KB → 4MB(약 1만 건) 넘으면 저장 거부, 1.5MB 넘으면 경고 로그.
+const BANK_TX_SPEC: StoreKeySpec<BankTransaction[]> = {
+  key: 'bankTransactions',
+  empty: () => [],
+  legacy: () => readLegacyJson<BankTransaction[]>(CACHE_KEYS_TRANSACTIONS),
+  legacyKeys: [CACHE_KEYS_TRANSACTIONS],
+  // 빈 칸은 빼서 크기를 줄인다
+  compact: list => (Array.isArray(list) ? list : []).map(tx => {
+    const out: any = {};
+    Object.entries(tx).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') out[k] = v; });
+    return out as BankTransaction;
+  }),
+  warnBytes: 1.5 * 1024 * 1024,
+};
+
 const loadTransactions = (): BankTransaction[] => {
-  if (transactionsInitialized) return localTransactions;
-  try {
-    const stored = localStorage.getItem(CACHE_KEYS_TRANSACTIONS);
-    if (stored) {
-      localTransactions = JSON.parse(stored);
-    }
-  } catch (e) {
-    console.warn('Failed to load transactions from localStorage:', e);
-  }
+  const list = peekOrgStore(BANK_TX_SPEC);
+  localTransactions = Array.isArray(list) ? [...list] : [];
   transactionsInitialized = true;
   return localTransactions;
 };
 
-// 로컬스토리지에 저장
-const saveTransactions = () => {
-  try {
-    localStorage.setItem(CACHE_KEYS_TRANSACTIONS, JSON.stringify(localTransactions));
-  } catch (e) {
-    console.warn('Failed to save transactions to localStorage:', e);
-  }
+/** 서버에서 거래내역 확인 (정산 화면 진입 전에 미리 불러 두기용) */
+export const loadBankTransactionsFromServer = async (): Promise<BankTransaction[]> => {
+  const list = await loadOrgStore(BANK_TX_SPEC);
+  localTransactions = Array.isArray(list) ? [...list] : [];
+  transactionsInitialized = true;
+  return localTransactions;
 };
+
+// 서버에 같은 변경을 적용해 저장 (뒤에서 실행)
+const saveTransactions = (mutate: (list: BankTransaction[]) => BankTransaction[]) => {
+  mutateOrgStore(BANK_TX_SPEC, list => mutate(Array.isArray(list) ? list : [])).then(res => {
+    if (res.ok) {
+      localTransactions = [...res.value];
+    } else {
+      reportOrgStoreError(`은행 거래내역을 서버에 저장하지 못했습니다. ${res.error} (화면을 새로 열면 서버에 저장된 내용으로 돌아갑니다)`);
+      const list = peekOrgStore(BANK_TX_SPEC);
+      localTransactions = Array.isArray(list) ? [...list] : [];
+    }
+  });
+};
+
+const isSameTransaction = (a: BankTransaction, b: BankTransaction) =>
+  a.datetime === b.datetime && a.amount === b.amount && a.counterparty === b.counterparty;
 
 // 카카오뱅크 엑셀 파싱 (유연한 헤더 감지)
 const parseKakaoBank = (data: any[][], fileName: string): BankTransaction[] => {
@@ -2800,7 +2814,12 @@ export const fetchBankTransactions = (year?: number, bank?: BankType): BankTrans
 
 // 거래내역 저장 (업로드 시 사용)
 export const saveBankTransactions = (transactions: BankTransaction[]): { added: number; skipped: number } => {
+  if (!canWriteOrgStore()) {
+    reportOrgStoreError('은행 거래내역은 회사 관리자만 저장할 수 있습니다.');
+    return { added: 0, skipped: 0 };
+  }
   loadTransactions();
+  const toAdd: BankTransaction[] = [];
 
   let added = 0;
   let skipped = 0;
@@ -2817,12 +2836,18 @@ export const saveBankTransactions = (transactions: BankTransaction[]): { added: 
       skipped++;
     } else {
       localTransactions.push(tx);
+      toAdd.push(tx);
       added++;
     }
   }
 
   if (added > 0) {
-    saveTransactions();
+    // 서버 최신 목록에도 같은 중복 기준으로 추가
+    saveTransactions(list => {
+      const next = [...list];
+      toAdd.forEach(tx => { if (!next.some(ex => isSameTransaction(ex, tx))) next.push(tx); });
+      return next;
+    });
   }
 
   return { added, skipped };
@@ -2830,26 +2855,34 @@ export const saveBankTransactions = (transactions: BankTransaction[]): { added: 
 
 // 거래내역 업데이트 (카테고리 변경 등)
 export const updateBankTransaction = (id: string, updates: Partial<BankTransaction>): BankTransaction | null => {
+  if (!canWriteOrgStore()) {
+    reportOrgStoreError('은행 거래내역은 회사 관리자만 고칠 수 있습니다.');
+    return null;
+  }
   loadTransactions();
 
   const index = localTransactions.findIndex(tx => tx.id === id);
   if (index === -1) return null;
 
   localTransactions[index] = { ...localTransactions[index], ...updates };
-  saveTransactions();
+  saveTransactions(list => list.map(tx => (tx.id === id ? { ...tx, ...updates, id } : tx)));
 
   return localTransactions[index];
 };
 
 // 거래내역 삭제
 export const deleteBankTransaction = (id: string): boolean => {
+  if (!canWriteOrgStore()) {
+    reportOrgStoreError('은행 거래내역은 회사 관리자만 지울 수 있습니다.');
+    return false;
+  }
   loadTransactions();
 
   const index = localTransactions.findIndex(tx => tx.id === id);
   if (index === -1) return false;
 
   localTransactions.splice(index, 1);
-  saveTransactions();
+  saveTransactions(list => list.filter(tx => tx.id !== id));
 
   return true;
 };
@@ -3313,26 +3346,43 @@ const CACHE_KEYS_TAX_REMINDERS = 'leadmaster_tax_reminders';
 let localTaxReminders: TaxReminder[] = [];
 let taxRemindersInitialized = false;
 
+// [2026-11-13 KIRO] 세무 알림은 회사별 서버(settings 'taxReminders')가 원본. 은행 거래내역과 같은 방식.
+const TAX_REMINDERS_SPEC: StoreKeySpec<TaxReminder[]> = {
+  key: 'taxReminders',
+  empty: () => [],
+  legacy: () => readLegacyJson<TaxReminder[]>(CACHE_KEYS_TAX_REMINDERS),
+  legacyKeys: [CACHE_KEYS_TAX_REMINDERS],
+};
+
 const loadTaxReminders = (): TaxReminder[] => {
-  if (taxRemindersInitialized) return localTaxReminders;
-  try {
-    const stored = localStorage.getItem(CACHE_KEYS_TAX_REMINDERS);
-    if (stored) {
-      localTaxReminders = JSON.parse(stored);
-    }
-  } catch (e) {
-    console.warn('Failed to load tax reminders from localStorage:', e);
-  }
+  const list = peekOrgStore(TAX_REMINDERS_SPEC);
+  localTaxReminders = Array.isArray(list) ? list.map(r => ({ ...r })) : [];
   taxRemindersInitialized = true;
   return localTaxReminders;
 };
 
-const saveTaxReminders = () => {
-  try {
-    localStorage.setItem(CACHE_KEYS_TAX_REMINDERS, JSON.stringify(localTaxReminders));
-  } catch (e) {
-    console.warn('Failed to save tax reminders to localStorage:', e);
-  }
+/** 서버에서 세무 알림 확인 */
+export const loadTaxRemindersFromServer = async (): Promise<TaxReminder[]> => {
+  const list = await loadOrgStore(TAX_REMINDERS_SPEC);
+  localTaxReminders = Array.isArray(list) ? list.map(r => ({ ...r })) : [];
+  taxRemindersInitialized = true;
+  return localTaxReminders;
+};
+
+/** 세무 알림 값이 서버에서 바뀌면 알림 (화면 갱신용). 해제 함수를 돌려준다. */
+export const subscribeTaxReminders = (cb: () => void) => subscribeOrgStore(TAX_REMINDERS_SPEC, () => cb());
+
+const saveTaxReminders = (mutate: (list: TaxReminder[]) => TaxReminder[]) => {
+  mutateOrgStore(TAX_REMINDERS_SPEC, list => mutate(Array.isArray(list) ? list : [])).then(res => {
+    if (!res.ok) reportOrgStoreError(`세무 알림을 서버에 저장하지 못했습니다. ${res.error}`);
+    loadTaxReminders();
+  });
+};
+
+const canWriteTaxReminders = (): boolean => {
+  if (canWriteOrgStore()) return true;
+  reportOrgStoreError('세무 알림은 회사 관리자만 저장할 수 있습니다.');
+  return false;
 };
 
 // 세무 알림 조회
@@ -3343,6 +3393,7 @@ export const fetchTaxReminders = (): TaxReminder[] => {
 
 // 세무 알림 생성
 export const createTaxReminder = (data: Omit<TaxReminder, 'id' | 'createdAt'>): TaxReminder => {
+  if (!canWriteTaxReminders()) throw new Error('세무 알림은 회사 관리자만 저장할 수 있습니다.');
   loadTaxReminders();
 
   const newReminder: TaxReminder = {
@@ -3352,33 +3403,36 @@ export const createTaxReminder = (data: Omit<TaxReminder, 'id' | 'createdAt'>): 
   };
 
   localTaxReminders.push(newReminder);
-  saveTaxReminders();
+  saveTaxReminders(list => [...list.filter(r => r.id !== newReminder.id), newReminder]);
 
   return newReminder;
 };
 
 // 세무 알림 완료 토글
 export const toggleTaxReminderComplete = (id: string): TaxReminder | null => {
+  if (!canWriteTaxReminders()) return null;
   loadTaxReminders();
 
   const idx = localTaxReminders.findIndex(r => r.id === id);
   if (idx === -1) return null;
 
-  localTaxReminders[idx].isCompleted = !localTaxReminders[idx].isCompleted;
-  saveTaxReminders();
+  const nextCompleted = !localTaxReminders[idx].isCompleted;
+  localTaxReminders[idx].isCompleted = nextCompleted;
+  saveTaxReminders(list => list.map(r => (r.id === id ? { ...r, isCompleted: nextCompleted } : r)));
 
   return localTaxReminders[idx];
 };
 
 // 세무 알림 삭제
 export const deleteTaxReminder = (id: string): boolean => {
+  if (!canWriteTaxReminders()) return false;
   loadTaxReminders();
 
   const idx = localTaxReminders.findIndex(r => r.id === id);
   if (idx === -1) return false;
 
   localTaxReminders.splice(idx, 1);
-  saveTaxReminders();
+  saveTaxReminders(list => list.filter(r => r.id !== id));
 
   return true;
 };
@@ -3411,6 +3465,8 @@ export const getTodayTaxAlerts = (): { reminder: TaxReminder; daysLeft: number }
 // =====================================================
 export const uploadFileToDrive = async (base64Data: string, filename: string, mimeType: string): Promise<{ status: string; url: string; id: string; viewUrl: string }> => {
   if (!GOOGLE_SCRIPT_URL) throw new Error("Google Script URL is not configured");
+  // [2026-11-13 KIRO] 본사 Apps Script 드라이브는 본사 전용 (고객사 파일이 본사 드라이브로 가지 않게)
+  if (!isHqSession()) throw new Error('이 업로드 기능은 본사 전용입니다');
 
   const payload = {
     target: 'upload',

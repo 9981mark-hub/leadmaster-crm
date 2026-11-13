@@ -518,50 +518,40 @@ export async function completeAutoDialCall(params: CompleteCallParams): Promise<
     })
     .eq('id', queueItemId);
 
-  // 2. CRM 케이스 상태 업데이트 & 메모 추가
+  // 2. CRM 리드 상태 변경 & 상담 메모 추가
+  // [KIRO 2026-11-13] cases 의 키는 case_id(글자)이고 notes/total_call_duration/last_contact_date 칸은 없다.
+  //   예전 코드는 .eq('id') + 없는 칸이라 매번 실패(오류는 삼킴) → 통화 결과가 리드에 반영되지 않았다.
+  //   메모는 special_memo 배열 맨 앞(다른 화면과 같은 순서), 상태가 바뀌면 status_logs 에도 남긴다.
+  //   통화 기록 자체는 앱이 communication_logs 에 올리므로 여기서 따로 남기지 않는다(call_histories 표 없음).
   try {
-    const { data: currentCase } = await supabase
+    const { data: currentCase, error: readErr } = await supabase
       .from('cases')
-      .select('notes, total_call_duration')
-      .eq('id', caseId)
+      .select('status, special_memo, status_logs')
+      .eq('case_id', caseId)
       .maybeSingle();
+    if (readErr) throw readErr;
+    if (!currentCase) throw new Error('리드를 찾을 수 없습니다: ' + caseId);
 
-    const oldNotes = currentCase?.notes || '';
-    const dateStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-    const appendNote = `\n[오토콜 ${dateStr} - ${result === 'connected' ? '통화완료' : '부재'}] ${resultMemo || ''}`.trim();
-    const updatedNotes = oldNotes ? `${oldNotes}\n${appendNote}` : appendNote;
-
-    const newDuration = (currentCase?.total_call_duration || 0) + durationSeconds;
-
-    await supabase
-      .from('cases')
-      .update({
-        status: caseStatusToSet,
-        notes: updatedNotes,
-        total_call_duration: newDuration,
-        last_contact_date: nowIso,
-        updated_at: nowIso,
-      })
-      .eq('id', caseId);
-
-    // 3. call_histories 레코드 추가
-    try {
-      await supabase.from('call_histories').insert({
-        case_id: caseId,
-        agent_id: agentId,
-        call_type: 'outbound_autodial',
-        duration: durationSeconds,
-        result: result === 'connected' ? 'connected' : 'missed',
-        notes: resultMemo || '',
-        created_at: nowIso,
-      });
-    } catch {
-      // ignore
+    const timeStr = new Date().toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' });
+    const content = `[오토콜 ${timeStr} - ${result === 'connected' ? '통화완료' : '부재'}] ${resultMemo || ''}`.trim();
+    const memos = Array.isArray(currentCase.special_memo) ? currentCase.special_memo : [];
+    const patch: Record<string, unknown> = {
+      special_memo: [{ id: `memo_${Date.now()}`, createdAt: nowIso, content }, ...memos],
+      updated_at: nowIso,
+    };
+    if (caseStatusToSet && caseStatusToSet !== currentCase.status) {
+      const logs = Array.isArray(currentCase.status_logs) ? currentCase.status_logs : [];
+      patch.status = caseStatusToSet;
+      patch.status_logs = [...logs, {
+        logId: `log_${Date.now()}`, caseId, changedAt: nowIso, changedBy: agentId || '오토콜',
+        fromStatus: currentCase.status, toStatus: caseStatusToSet, memo: '오토콜 결과',
+      }];
     }
+    const { error: updErr } = await supabase.from('cases').update(patch).eq('case_id', caseId);
+    if (updErr) throw updErr;
   } catch (caseErr) {
     console.error('[AutoDialV4] Error updating case after call:', caseErr);
   }
-
   // 4. 상담원 할당 카운트 증가
   try {
     const { data: alloc } = await supabase

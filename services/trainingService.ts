@@ -4,6 +4,8 @@
 // ============================================
 import { callAi } from './aiProxy';
 import { SpeechVoiceOptions } from './speechService';
+import { StoreKeySpec, peekOrgStore, loadOrgStore, mutateOrgStore, readLegacyJson, canWriteOrgStore } from './orgStore';
+import { loadCachedOrg, isAdminRole } from './org';
 
 export interface TrainingPersona {
   id: string;
@@ -85,6 +87,8 @@ export interface TrainingSessionRecord {
   consultationResult: string;
   agentMemo: string;
   agentName?: string;
+  /** 훈련한 사람 (auth user id) — 회사 서버 기록에서 사람별로 나눌 때 씀 */
+  userId?: string;
   fullTranscript?: TrainingMessage[];
   adminFeedback?: AdminFeedback;
 }
@@ -156,23 +160,30 @@ export const DEFAULT_TRAINING_CONFIG: CompanyTrainingConfig = PRESETS_CONFIG.leg
 
 const CONFIG_STORAGE_KEY = 'lm_company_training_config';
 
-// 관리자 훈련 설정 로드
-export const getCompanyTrainingConfig = (): CompanyTrainingConfig => {
-  try {
-    const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
-    return raw ? { ...DEFAULT_TRAINING_CONFIG, ...JSON.parse(raw) } : DEFAULT_TRAINING_CONFIG;
-  } catch {
-    return DEFAULT_TRAINING_CONFIG;
-  }
+// [2026-11-13 KIRO] 회사 훈련 설정은 회사별 서버(settings 'trainingConfig')가 원본. 저장은 관리자만.
+export const TRAINING_CONFIG_SPEC: StoreKeySpec<Partial<CompanyTrainingConfig>> = {
+  key: 'trainingConfig',
+  empty: () => ({}),
+  legacy: () => readLegacyJson<Partial<CompanyTrainingConfig>>(CONFIG_STORAGE_KEY),
+  legacyKeys: [CONFIG_STORAGE_KEY],
 };
 
-// 관리자 훈련 설정 저장
-export const saveCompanyTrainingConfig = (config: CompanyTrainingConfig): void => {
-  try {
-    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
-  } catch (e) {
-    console.error('Failed to save company training config:', e);
-  }
+// 관리자 훈련 설정 로드 (메모리/브라우저 사본 즉시, 서버 확인은 뒤에서)
+export const getCompanyTrainingConfig = (): CompanyTrainingConfig => {
+  const v = peekOrgStore(TRAINING_CONFIG_SPEC);
+  return v && typeof v === 'object' ? { ...DEFAULT_TRAINING_CONFIG, ...v } : DEFAULT_TRAINING_CONFIG;
+};
+
+/** 서버에서 훈련 설정 확인 */
+export const loadCompanyTrainingConfig = async (): Promise<CompanyTrainingConfig> => {
+  const v = await loadOrgStore(TRAINING_CONFIG_SPEC);
+  return v && typeof v === 'object' ? { ...DEFAULT_TRAINING_CONFIG, ...v } : DEFAULT_TRAINING_CONFIG;
+};
+
+// 관리자 훈련 설정 저장. 실패하면 한국어 오류 문구를 돌려준다(성공 = null).
+export const saveCompanyTrainingConfig = async (config: CompanyTrainingConfig): Promise<string | null> => {
+  const res = await mutateOrgStore(TRAINING_CONFIG_SPEC, () => ({ ...config }));
+  return res.ok ? null : res.error;
 };
 
 // 템플릿 변수 동적 치환 함수
@@ -720,47 +731,135 @@ export const generateRandomCustomerPersona = (): TrainingPersona => {
   };
 };
 
+// ============================================
+// 훈련 기록 — [2026-11-13 KIRO]
+// 서버: settings 'trainingSessions' (회사별, 최근 200건, 대화 전문은 최근 30건만, 각 기록에 userId)
+// 이 브라우저: lm_training_sessions = 아직 서버에 못 올린 내 기록 (최근 50건)
+//   settings 쓰기는 회사 관리자만 가능(RLS)이라, 상담원 기록은 지금은 이 브라우저에만 남는다.
+//   (상담원 기록까지 서버에 두려면 본인 기록만 쓸 수 있는 전용 표/함수가 필요 — 별도 DB 작업)
+// 화면에는 서버 기록 + 이 브라우저 기록을 합쳐서 보여 준다. 상담원은 서버 기록 중 본인 것만.
+// ============================================
 const LOCAL_STORAGE_KEY = 'lm_training_sessions';
+const SERVER_SESSION_CAP = 200;
+const SERVER_TRANSCRIPT_CAP = 30;
+const LOCAL_SESSION_CAP = 50;
 
-// 훈련 이력 로컬스토리지 로드
-export const loadTrainingHistory = (): TrainingSessionRecord[] => {
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+const byDateDesc = (a: TrainingSessionRecord, b: TrainingSessionRecord) =>
+  String(b.date || '').localeCompare(String(a.date || ''));
+
+const compactSessions = (list: TrainingSessionRecord[]): TrainingSessionRecord[] =>
+  (Array.isArray(list) ? [...list] : [])
+    .sort(byDateDesc)
+    .slice(0, SERVER_SESSION_CAP)
+    .map((s, i) => {
+      if (i < SERVER_TRANSCRIPT_CAP || !s.fullTranscript) return s;
+      const { fullTranscript: _drop, ...rest } = s;
+      return rest;
+    });
+
+const readLocalSessions = (): TrainingSessionRecord[] => {
+  const v = readLegacyJson<TrainingSessionRecord[]>(LOCAL_STORAGE_KEY);
+  return Array.isArray(v) ? v : [];
 };
 
-// 훈련 결과 저장
-export const saveTrainingSession = (record: TrainingSessionRecord): void => {
+const writeLocalSessions = (list: TrainingSessionRecord[]) => {
   try {
-    const history = loadTrainingHistory();
-    history.unshift(record);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(history.slice(0, 50)));
+    if (list.length === 0) localStorage.removeItem(LOCAL_STORAGE_KEY);
+    else localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...list].sort(byDateDesc).slice(0, LOCAL_SESSION_CAP)));
   } catch (e) {
-    console.error('Failed to save training session:', e);
+    console.error('Failed to save training session locally:', e);
   }
 };
 
-// 관리자(팀장) 피드백 및 등급 저장
-export const updateAdminFeedback = (
+export const TRAINING_SESSIONS_SPEC: StoreKeySpec<TrainingSessionRecord[]> = {
+  key: 'trainingSessions',
+  empty: () => [],
+  // 관리자 로그인 때 이 브라우저 기록을 1회 올린다 (상담원은 올릴 수 없어 그대로 둔다)
+  legacy: () => {
+    const list = readLocalSessions();
+    if (list.length === 0) return undefined;
+    const me = loadCachedOrg()?.userId;
+    return list.map(s => (s.userId || !me ? s : { ...s, userId: me }));
+  },
+  legacyKeys: [LOCAL_STORAGE_KEY],
+  compact: compactSessions,
+};
+
+const mergeSessions = (server: TrainingSessionRecord[], local: TrainingSessionRecord[]): TrainingSessionRecord[] => {
+  const org = loadCachedOrg();
+  const admin = isAdminRole(org?.role);
+  const visibleServer = admin ? server : server.filter(s => !s.userId || s.userId === org?.userId);
+  const seen = new Set<string>();
+  const out: TrainingSessionRecord[] = [];
+  [...local, ...visibleServer].forEach(s => {
+    if (!s || seen.has(s.sessionId)) return;
+    seen.add(s.sessionId);
+    out.push(s);
+  });
+  return out.sort(byDateDesc);
+};
+
+// 훈련 이력 (즉시: 메모리/브라우저 사본, 서버 확인은 뒤에서)
+export const loadTrainingHistory = (): TrainingSessionRecord[] => {
+  const server = peekOrgStore(TRAINING_SESSIONS_SPEC);
+  // 서버 값을 아직 못 받았으면 peek가 이 브라우저 기록(legacy)을 돌려주므로 local과 합쳐도 중복은 제거된다
+  return mergeSessions(Array.isArray(server) ? server : [], readLocalSessions());
+};
+
+/** 서버에서 훈련 이력 확인 후 합친 목록 */
+export const loadTrainingHistoryFromServer = async (): Promise<TrainingSessionRecord[]> => {
+  const server = await loadOrgStore(TRAINING_SESSIONS_SPEC);
+  return mergeSessions(Array.isArray(server) ? server : [], readLocalSessions());
+};
+
+/**
+ * 훈련 결과 저장. 관리자는 회사 서버에, 상담원(또는 서버 저장 실패)은 이 브라우저에 남긴다.
+ * @returns 'server' | 'local'
+ */
+export const saveTrainingSession = async (record: TrainingSessionRecord): Promise<'server' | 'local'> => {
+  const me = loadCachedOrg()?.userId;
+  const rec: TrainingSessionRecord = { ...record, userId: record.userId || me };
+  if (canWriteOrgStore()) {
+    const res = await mutateOrgStore(TRAINING_SESSIONS_SPEC, list => [rec, ...list.filter(s => s.sessionId !== rec.sessionId)]);
+    if (res.ok) return 'server';
+    console.warn('[Training] server save failed, keeping locally:', res.error);
+  }
+  writeLocalSessions([rec, ...readLocalSessions().filter(s => s.sessionId !== rec.sessionId)]);
+  return 'local';
+};
+
+// 관리자(팀장) 피드백 및 등급 저장 (서버 기록이면 서버, 이 브라우저 기록이면 브라우저)
+export const updateAdminFeedback = async (
   sessionId: string,
   feedback: AdminFeedback
-): boolean => {
-  try {
-    const history = loadTrainingHistory();
-    const idx = history.findIndex(h => h.sessionId === sessionId);
-    if (idx !== -1) {
-      history[idx].adminFeedback = feedback;
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(history));
-      return true;
-    }
-    return false;
-  } catch (e) {
-    console.error('Failed to update admin feedback:', e);
-    return false;
+): Promise<{ ok: boolean; error?: string }> => {
+  const local = readLocalSessions();
+  const li = local.findIndex(h => h.sessionId === sessionId);
+  if (li !== -1) {
+    local[li] = { ...local[li], adminFeedback: feedback };
+    writeLocalSessions(local);
+    return { ok: true };
   }
+  const hit = { found: false };
+  const res = await mutateOrgStore(TRAINING_SESSIONS_SPEC, list => list.map(s => {
+    if (s.sessionId !== sessionId) return s;
+    hit.found = true;
+    return { ...s, adminFeedback: feedback };
+  }));
+  if (!res.ok) return { ok: false, error: res.error };
+  return hit.found ? { ok: true } : { ok: false, error: '해당 훈련 기록을 찾지 못했습니다.' };
+};
+
+/**
+ * 훈련 기록 초기화: 이 브라우저 기록은 지우고, 관리자면 서버 기록 중 본인 것만 지운다.
+ * (다른 상담원 기록은 지우지 않는다)
+ */
+export const clearMyTrainingHistory = async (): Promise<{ ok: boolean; error?: string }> => {
+  writeLocalSessions([]);
+  if (!canWriteOrgStore()) return { ok: true };
+  const me = loadCachedOrg()?.userId;
+  const res = await mutateOrgStore(TRAINING_SESSIONS_SPEC, list => list.filter(s => s.userId && s.userId !== me));
+  return res.ok ? { ok: true } : { ok: false, error: res.error };
 };
 
 // 가상 고객 AI 응답 생성 (초고속 티키타카: 최근 6턴 압축 + 1~2문장 초단문 즉답)

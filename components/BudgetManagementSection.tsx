@@ -1,76 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { fetchExpenses, EXPENSE_CATEGORIES } from '../services/api';
 import { ExpenseCategory } from '../types';
-
-interface Budget {
-    id: string;
-    category: ExpenseCategory;
-    monthlyLimit: number;
-    year: number;
-    month: number;
-}
+import { useOrgStore, mutateOrgStore } from '../services/orgStore';
+import { BUDGETS_SPEC, Budget } from '../services/orgData';
 
 interface BudgetManagementSectionProps {
     year: number;
     month: number;
 }
 
-const BUDGET_KEY = 'lm_budgets';
-
 const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year, month }) => {
-    const [budgets, setBudgets] = useState<Budget[]>([]);
+    // [2026-11-13 KIRO] 예산은 회사별 서버(settings 'budgets')가 원본
+    const { value: allBudgets } = useOrgStore(BUDGETS_SPEC);
+    const budgets: Budget[] = (Array.isArray(allBudgets) ? allBudgets : []).filter(b => b.year === year && b.month === month);
     const [spending, setSpending] = useState<Record<ExpenseCategory, number>>({} as any);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [editBudgets, setEditBudgets] = useState<Record<ExpenseCategory, number>>({} as any);
 
-    // 예산 로드
+    // 편집칸을 저장된 예산으로 채우기
     const loadBudgets = () => {
-        try {
-            const stored = localStorage.getItem(BUDGET_KEY);
-            if (stored) {
-                const all: Budget[] = JSON.parse(stored);
-                const current = all.filter(b => b.year === year && b.month === month);
-                setBudgets(current);
-
-                const edit: Record<ExpenseCategory, number> = {} as any;
-                current.forEach(b => {
-                    edit[b.category] = b.monthlyLimit;
-                });
-                setEditBudgets(edit);
-            }
-        } catch (e) {
-            console.error('Failed to load budgets:', e);
-        }
+        const edit: Record<ExpenseCategory, number> = {} as any;
+        budgets.forEach(b => {
+            edit[b.category] = b.monthlyLimit;
+        });
+        setEditBudgets(edit);
     };
 
-    // 예산 저장
-    const saveBudgets = () => {
-        try {
-            const stored = localStorage.getItem(BUDGET_KEY);
-            let all: Budget[] = stored ? JSON.parse(stored) : [];
-
-            // 현재 년/월의 기존 예산 제거
-            all = all.filter(b => !(b.year === year && b.month === month));
-
-            // 새 예산 추가
-            (Object.entries(editBudgets) as [ExpenseCategory, number][]).forEach(([cat, limit]) => {
-                if (limit > 0) {
-                    all.push({
-                        id: `${year}-${month}-${cat}`,
-                        category: cat,
-                        monthlyLimit: limit,
-                        year,
-                        month
-                    });
-                }
-            });
-
-            localStorage.setItem(BUDGET_KEY, JSON.stringify(all));
-            loadBudgets();
-            setIsEditMode(false);
-        } catch (e) {
-            console.error('Failed to save budgets:', e);
+    // 예산 저장 (서버 최신값에서 이 달만 바꾼다)
+    const saveBudgets = async () => {
+        if (saving) return;
+        const monthBudgets: Budget[] = [];
+        (Object.entries(editBudgets) as [ExpenseCategory, number][]).forEach(([cat, limit]) => {
+            if (limit > 0) {
+                monthBudgets.push({
+                    id: `${year}-${month}-${cat}`,
+                    category: cat,
+                    monthlyLimit: limit,
+                    year,
+                    month
+                });
+            }
+        });
+        setSaving(true);
+        const res = await mutateOrgStore(BUDGETS_SPEC, list => [
+            ...(Array.isArray(list) ? list : []).filter(b => !(b.year === year && b.month === month)),
+            ...monthBudgets,
+        ]);
+        setSaving(false);
+        if (!res.ok) {
+            alert(`예산을 저장하지 못했습니다. ${res.error}`);
+            return;
         }
+        setIsEditMode(false);
     };
 
     // 지출 현황 로드
@@ -92,9 +74,14 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
     };
 
     useEffect(() => {
-        loadBudgets();
         loadSpending();
     }, [year, month]);
+
+    // 서버 값이 오거나 달이 바뀌면 편집칸 다시 채우기 (편집 중에는 그대로)
+    useEffect(() => {
+        if (!isEditMode) loadBudgets();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allBudgets, year, month]);
 
     // 예산 사용률 계산
     const getUsagePercent = (category: ExpenseCategory) => {

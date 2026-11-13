@@ -91,23 +91,142 @@ const need = () => {
 // 근태 RPC & API
 // ============================================
 
-/** 내 오늘 근태 상태 전환 (출근, 이석, 식사, 퇴근) */
+export interface MyAttendanceRecord {
+  currentStatus: AttendanceStatus;
+  clockInAt?: string;
+  clockOutAt?: string;
+  workDate?: string;
+}
+
+const attendanceErrorMessage = (err: any): string => {
+  const msg = String(err?.message || err || '');
+  if (/Could not find the function|function .* does not exist|PGRST202/i.test(msg) || err?.code === 'PGRST202') {
+    return '근태 기능이 아직 서버에 준비되지 않았습니다. 관리자에게 문의해 주세요.';
+  }
+  if (/인증 정보|테넌트|JWT|not authenticated/i.test(msg)) {
+    return '로그인 정보가 확인되지 않았습니다. 다시 로그인해 주세요.';
+  }
+  if (/Failed to fetch|NetworkError|network/i.test(msg)) {
+    return '서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.';
+  }
+  return `근태 기록에 실패했습니다: ${msg || '알 수 없는 오류'}`;
+};
+
+/**
+ * 내 오늘 근태 상태 전환 (출근, 이석, 식사, 퇴근)
+ * [2026-11-13 KIRO] 서버 기록이 실패하면 예외(한국어 문구)를 던진다.
+ * 예전에는 실패해도 브라우저에만 저장하고 성공처럼 돌려줘서 "출근 처리되었습니다"가 떴다.
+ */
 export const recordMyAttendanceStatus = async (
   status: AttendanceStatus,
   notes?: string
-): Promise<any> => {
+): Promise<MyAttendanceRecord> => {
+  let data: any;
   try {
-    const { data, error } = await need().rpc('record_agent_attendance_status', {
+    const res = await need().rpc('record_agent_attendance_status', {
       p_status: status,
       p_notes: notes || null
     });
-    if (error) throw error;
-    return data;
+    if (res.error) throw res.error;
+    data = res.data;
   } catch (err) {
-    console.warn('[HR] record_agent_attendance_status fallback:', err);
-    // 로컬 스토리지에 임시 저장 (오프라인 지원)
-    localStorage.setItem('lm_my_attendance_status', status);
-    return { current_status: status };
+    console.warn('[HR] record_agent_attendance_status failed:', err);
+    throw new Error(attendanceErrorMessage(err));
+  }
+  return {
+    currentStatus: ((data?.current_status as AttendanceStatus) || status),
+    clockInAt: data?.clock_in_at || undefined,
+    clockOutAt: data?.clock_out_at || undefined,
+    workDate: data?.work_date || undefined,
+  };
+};
+
+/** 내 오늘 근태 (서버 전광판에서 내 줄). 확인 못 하면 null */
+export const fetchMyTodayAttendance = async (): Promise<MyAttendanceRecord | null> => {
+  const me = loadCachedOrg()?.userId;
+  if (!me || !supabase) return null;
+  try {
+    const { data, error } = await supabase.rpc('get_today_attendance_board');
+    if (error) throw error;
+    const row = (data || []).find((r: any) => r.user_id === me);
+    if (!row) return { currentStatus: 'off' };
+    return {
+      currentStatus: (row.current_status || 'off') as AttendanceStatus,
+      clockInAt: row.clock_in_at || undefined,
+      clockOutAt: row.clock_out_at || undefined,
+      workDate: row.work_date || undefined,
+    };
+  } catch (err) {
+    console.warn('[HR] fetchMyTodayAttendance failed:', err);
+    return null;
+  }
+};
+
+/**
+ * 월별 출근 일수 (agent_attendance_logs에서 clock_in_at이 있는 날 수). 'YYYY-MM'
+ * 확인 못 하면 null (화면에서는 "-")
+ */
+export const fetchMonthlyAttendanceDays = async (month: string): Promise<Record<string, number> | null> => {
+  const org = loadCachedOrg();
+  if (!org?.orgId || !supabase || !/^\d{4}-\d{2}$/.test(month)) return null;
+  const [y, m] = month.split('-').map(Number);
+  const start = `${month}-01`;
+  const next = m === 12 ? `${y + 1}-01-01` : `${y}-${String(m + 1).padStart(2, '0')}-01`;
+  try {
+    const { data, error } = await supabase
+      .from('agent_attendance_logs')
+      .select('user_id, work_date, clock_in_at')
+      .eq('org_id', org.orgId)
+      .gte('work_date', start)
+      .lt('work_date', next)
+      .not('clock_in_at', 'is', null);
+    if (error) throw error;
+    const days: Record<string, Set<string>> = {};
+    (data || []).forEach((r: any) => {
+      if (!days[r.user_id]) days[r.user_id] = new Set();
+      days[r.user_id].add(String(r.work_date));
+    });
+    const out: Record<string, number> = {};
+    Object.entries(days).forEach(([uid, set]) => { out[uid] = set.size; });
+    return out;
+  } catch (err) {
+    console.warn('[HR] fetchMonthlyAttendanceDays failed:', err);
+    return null;
+  }
+};
+
+export interface MonthlyCallStats {
+  totalCalls: number;
+  totalDurationSeconds: number;
+}
+
+/**
+ * 월별 상담원 발신 통화 수·통화 시간 (기존 RPC get_agent_performance_kpi = communication_logs CALL_OUT 집계).
+ * 확인 못 하면 null (화면에서는 "-")
+ */
+export const fetchMonthlyCallStats = async (month: string): Promise<Record<string, MonthlyCallStats> | null> => {
+  if (!supabase || !/^\d{4}-\d{2}$/.test(month)) return null;
+  const [y, m] = month.split('-').map(Number);
+  const start = new Date(y, m - 1, 1, 0, 0, 0);
+  const endOfMonth = new Date(y, m, 1, 0, 0, 0);
+  const end = endOfMonth.getTime() > Date.now() ? new Date() : new Date(endOfMonth.getTime() - 1);
+  try {
+    const { data, error } = await supabase.rpc('get_agent_performance_kpi', {
+      p_start_date: start.toISOString(),
+      p_end_date: end.toISOString(),
+    });
+    if (error) throw error;
+    const out: Record<string, MonthlyCallStats> = {};
+    (data || []).forEach((r: any) => {
+      out[r.user_id] = {
+        totalCalls: Number(r.total_calls || 0),
+        totalDurationSeconds: Number(r.total_duration_seconds || 0),
+      };
+    });
+    return out;
+  } catch (err) {
+    console.warn('[HR] fetchMonthlyCallStats failed:', err);
+    return null;
   }
 };
 
@@ -130,8 +249,9 @@ export const fetchTodayAttendanceBoard = async (): Promise<AttendanceItem[]> => 
       isLate: Boolean(row.is_late)
     }));
   } catch (err) {
-    console.warn('[HR] get_today_attendance_board fallback:', err);
-    return [];
+    // [2026-11-13 KIRO] 실패를 빈 목록(= 전원 퇴근)으로 보이지 않게 예외로 올린다
+    console.warn('[HR] get_today_attendance_board failed:', err);
+    throw new Error(attendanceErrorMessage(err));
   }
 };
 

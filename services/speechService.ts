@@ -14,7 +14,8 @@ export interface SpeechVoiceOptions {
 }
 
 class SpeechService {
-  private googleApiKey = 'AIzaSyDScHNsOhn_TqnZfcxoCt7uC-KtbAHVPNI';
+  // [2026-11-13 KIRO] 구글 API 키를 코드에서 제거 (고음질 음성은 서버 함수 google-tts 경유)
+  private neuralEnabled = true;
   private synth: SpeechSynthesis | null = null;
   private recognition: any = null;
   private isListening = false;
@@ -129,7 +130,7 @@ class SpeechService {
     this.stopListening();
 
     // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 성우 엔진
-    if (this.googleApiKey) {
+    if (this.neuralEnabled) {
       try {
         const voiceName = await this.speakGoogleCloud(text, options);
         this.lastEngineUsed = 'neural';
@@ -208,33 +209,19 @@ class SpeechService {
     const calculatedSemitones = (basePitch - 1.0) * 16.0 + pitchOffsetSemitones;
     const pitchSemitones = Math.max(-12.0, Math.min(10.0, calculatedSemitones));
 
-    const apiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('lm_google_tts_key')) || this.googleApiKey;
-    const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        input: { text: cleanText },
-        voice: {
-          languageCode: 'ko-KR',
-          name: voiceName,
-          ssmlGender,
-        },
-        audioConfig: {
-          audioEncoding: 'MP3',
-          speakingRate,
-          pitch: pitchSemitones,
-        },
-      }),
+    // [2026-11-13 KIRO] 서버 함수 경유 (로그인 사용자만, 키는 서버 비밀값 GOOGLE_TTS_API_KEY)
+    const { supabase } = await import('./supabase');
+    if (!supabase) throw new Error('서버 연결 없음');
+    const { data, error } = await supabase.functions.invoke('google-tts', {
+      body: { text: cleanText, voiceName, ssmlGender, speakingRate, pitch: pitchSemitones },
     });
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => '');
-      throw new Error(`Google Cloud TTS API Error (${res.status}): ${errText}`);
+    if (error || !data?.ok) {
+      let code = data?.code;
+      try { const b = await (error as any)?.context?.json?.(); code = code || b?.code; } catch { /* ignore */ }
+      // 서버에 키가 아직 없으면 이번 세션은 브라우저 음성만 쓴다 (매번 실패 요청을 보내지 않게)
+      if (code === 'not_configured') this.neuralEnabled = false;
+      throw new Error(`google-tts 실패: ${data?.error || error?.message || 'unknown'}`);
     }
-
-    const data = await res.json();
     if (!data.audioContent) {
       throw new Error('No audioContent returned');
     }

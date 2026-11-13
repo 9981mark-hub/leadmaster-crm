@@ -852,7 +852,7 @@ export default function CaseList() {
                 statuses={statuses}
                 secondaryStatuses={secondaryStatusesList}
                 tertiaryStatuses={tertiaryStatusesMap}
-                onOpenImportModal={() => setIsImportModalOpen(true)}
+                onOpenImportModal={isAdmin ? () => setIsImportModalOpen(true) : undefined}
                 onOpenStatusVisibilityModal={() => setIsVisibilityModalOpen(true)}
                 onResetPage={() => setCurrentPage(1)}
             />
@@ -989,7 +989,7 @@ export default function CaseList() {
             />
 
             <ImportModal
-                isOpen={isImportModalOpen}
+                isOpen={isAdmin && isImportModalOpen}
                 onClose={() => setIsImportModalOpen(false)}
                 onSuccess={() => { refetchCases(); setCurrentPage(1); }}
                 partners={partners}

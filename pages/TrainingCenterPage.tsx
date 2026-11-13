@@ -6,7 +6,10 @@ import {
   TrainingReport,
   TrainingSessionRecord,
   loadTrainingHistory,
+  loadTrainingHistoryFromServer,
   saveTrainingSession,
+  clearMyTrainingHistory,
+  loadCompanyTrainingConfig,
   generateAiCustomerReply,
   evaluateTrainingCall,
   generateRandomCustomerPersona,
@@ -168,9 +171,13 @@ export default function TrainingCenterPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load training history on mount
+  // Load training history on mount (브라우저 사본 먼저, 서버 확인 후 교체)
   useEffect(() => {
+    let alive = true;
     setHistory(loadTrainingHistory());
+    loadTrainingHistoryFromServer().then(list => { if (alive) setHistory(list); }).catch(() => undefined);
+    loadCompanyTrainingConfig().then(cfg => { if (alive) setTrainingConfig(cfg); }).catch(() => undefined);
+    return () => { alive = false; };
   }, []);
 
   // Scroll to bottom on new message
@@ -714,7 +721,7 @@ export default function TrainingCenterPage() {
         fullTranscript: messages,
       };
 
-      saveTrainingSession(sessionRecord);
+      await saveTrainingSession(sessionRecord);
       setHistory(loadTrainingHistory());
 
       setCurrentReport(report);
@@ -789,10 +796,12 @@ export default function TrainingCenterPage() {
           {history.length > 0 && (
             <button
               onClick={() => {
-                if (confirm('훈련 기록을 모두 초기화하시겠습니까?')) {
-                  localStorage.removeItem('lm_training_sessions');
-                  setHistory([]);
-                  showToast('훈련 기록이 초기화되었습니다.', 'info');
+                if (confirm('내 훈련 기록을 모두 초기화하시겠습니까? (다른 상담원 기록은 그대로 둡니다)')) {
+                  clearMyTrainingHistory().then(res => {
+                    setHistory(loadTrainingHistory());
+                    if (res.ok) showToast('훈련 기록이 초기화되었습니다.', 'info');
+                    else showToast(`서버 기록을 지우지 못했습니다. ${res.error || ''}`, 'error');
+                  });
                 }
               }}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"

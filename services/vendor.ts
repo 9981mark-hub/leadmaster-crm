@@ -21,62 +21,8 @@ const need = () => {
   return supabase;
 };
 
-// 기본 샘플 거래처 (CPL 방식 및 대량 패키지 3,000건/50만원 등 현실적 모델 포함)
-export const DEFAULT_VENDORS: LeadVendor[] = [
-  { 
-    id: 'v-meta-1', 
-    name: '메타(인스타/페이스북) 랜딩 1팀', 
-    pricingType: 'cpl',
-    defaultUnitCost: 28000, 
-    leadType: '개인회생', 
-    asPolicy: '결번/타지역 5일 이내 100% 무상 교환', 
-    contactPerson: '김팀장 010-1234-5678', 
-    isActive: true 
-  },
-  { 
-    id: 'v-bulk-1', 
-    name: '대량 TM DB 공급센터 (3,000건/50만원)', 
-    pricingType: 'package',
-    packageLeads: 3000,
-    packagePrice: 500000,
-    defaultUnitCost: 167, 
-    leadType: '신용회복/대출', 
-    asPolicy: '중복 번호 사전 필터링 완료 공급, 결번 10% 추가보너스 지급', 
-    contactPerson: '최부장 010-9876-5432', 
-    isActive: true 
-  },
-  { 
-    id: 'v-naver-1', 
-    name: '네이버 파워링크 검색광고', 
-    pricingType: 'cpl',
-    defaultUnitCost: 35000, 
-    leadType: '개인회생', 
-    asPolicy: '결번 신청 시 익월 광고비 차감', 
-    contactPerson: '네이버 공식대행사', 
-    isActive: true 
-  },
-  { 
-    id: 'v-daangn-1', 
-    name: '당근마켓 지역 광고', 
-    pricingType: 'cpl',
-    defaultUnitCost: 18000, 
-    leadType: '신용회복', 
-    asPolicy: '단순변심 제외, 중복 100% 차감', 
-    contactPerson: '박매니저', 
-    isActive: true 
-  },
-  { 
-    id: 'v-referral-1', 
-    name: '제휴 법무사/지인 소개', 
-    pricingType: 'fixed',
-    defaultUnitCost: 0, 
-    packagePrice: 0,
-    leadType: '개인회생', 
-    asPolicy: '수수료 별도 정산', 
-    contactPerson: '사내 제휴팀', 
-    isActive: true 
-  },
-];
+// [KIRO 2026-11-13] 가짜 샘플 거래처 제거: 고객사 화면에 실제 없는 업체·연락처가 보이면 안 됨. DB가 비었거나 실패하면 빈 목록.
+export const DEFAULT_VENDORS: LeadVendor[] = [];
 
 /** DB 거래처 목록 조회 */
 export const fetchLeadVendors = async (): Promise<LeadVendor[]> => {

@@ -2,7 +2,7 @@
  * components/settlement/SettlementPolicyModal.tsx
  * 회사별 정산 정책 & 수수료 분배 룰 & 이중 정산 주기 설정 모달
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X, Settings2, Sliders, Calendar, Clock,
   CheckCircle2, DollarSign, Percent, ShieldCheck, RefreshCw
@@ -10,15 +10,19 @@ import {
 import { useToast } from '../../contexts/ToastContext';
 import {
   SettlementPolicy,
+  SettlementPolicySource,
+  normalizePolicy,
   saveSettlementPolicy
 } from '../../services/settlementMasterService';
 
 interface SettlementPolicyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
-  orgId: string;
+  onSuccess: (saved: SettlementPolicy) => void;
+  orgId?: string;
   initialPolicy: SettlementPolicy;
+  policySource?: SettlementPolicySource;
+  policyMessage?: string;
 }
 
 export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
@@ -27,24 +31,44 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
   onSuccess,
   orgId,
   initialPolicy,
+  policySource = 'saved',
+  policyMessage,
 }) => {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [policy, setPolicy] = useState<SettlementPolicy>({ ...initialPolicy });
+  const tableMissing = policySource === 'table_missing';
+
+  // 열 때마다 지금 불러온 정책으로 다시 채운다 (처음 렌더 때 기본값으로 굳지 않게)
+  useEffect(() => {
+    if (isOpen) setPolicy({ ...initialPolicy });
+  }, [isOpen, initialPolicy]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // 지급 주기를 바꾸면 그 주기에 맞는 날짜로 (월: 1~31일, 주: 요일 0~6)
+  const setCycle = (cycle: SettlementPolicy['agentPayoutCycle']) => setPolicy(p => {
+    let day = p.agentPayoutDay;
+    if (cycle === 'weekly_fixed' && ![1, 3, 5].includes(day)) day = 5;
+    if (cycle === 'monthly_fixed' && ![10, 15, 20, 25, 31].includes(day)) day = 10;
+    return { ...p, agentPayoutCycle: cycle, agentPayoutDay: day };
+  });
+
+  const handleSubmit = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
+    if (tableMissing) {
+      showToast(policyMessage || '서버 업데이트 필요: 정산 정책을 아직 저장할 수 없습니다.', 'error');
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await saveSettlementPolicy(policy, orgId);
-      showToast('정산 및 수수료 분배 정책이 성공적으로 저장되었습니다.', 'success');
-      onSuccess();
+      const saved = await saveSettlementPolicy(normalizePolicy(policy), orgId || undefined);
+      showToast('정산 정책을 저장했습니다.', 'success');
+      onSuccess(saved);
       onClose();
     } catch (err: any) {
       console.error('[SettlementPolicyModal] Save error:', err);
-      showToast('정책 저장에 실패했습니다.', 'error');
+      showToast(err?.message || '정책 저장에 실패했습니다.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,6 +105,13 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
 
         {/* 본문 폼 */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+          {policySource !== 'saved' && (
+            <div className={`rounded-2xl border px-4 py-3 text-xs leading-relaxed ${tableMissing ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-300' : 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300'}`}>
+              <span className="font-bold">{tableMissing ? '서버 업데이트 필요' : '기본값(저장 안 됨)'}</span>
+              {' — '}
+              {policyMessage || '아직 저장한 정산 정책이 없어 기본값으로 계산하고 있습니다. 저장하면 이 회사 정책으로 바뀝니다.'}
+            </div>
+          )}
           {/* 1. 수수료 분배 모델 선택 */}
           <div className="space-y-3">
             <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -284,7 +315,7 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                     type="radio"
                     name="agentPayoutCycle"
                     checked={policy.agentPayoutCycle === 'monthly_fixed'}
-                    onChange={() => setPolicy(p => ({ ...p, agentPayoutCycle: 'monthly_fixed' }))}
+                    onChange={() => setCycle('monthly_fixed')}
                     className="text-indigo-600 focus:ring-indigo-500"
                   />
                 </div>
@@ -318,7 +349,7 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                     type="radio"
                     name="agentPayoutCycle"
                     checked={policy.agentPayoutCycle === 'weekly_fixed'}
-                    onChange={() => setPolicy(p => ({ ...p, agentPayoutCycle: 'weekly_fixed' }))}
+                    onChange={() => setCycle('weekly_fixed')}
                     className="text-indigo-600 focus:ring-indigo-500"
                   />
                 </div>
@@ -350,7 +381,7 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                     type="radio"
                     name="agentPayoutCycle"
                     checked={policy.agentPayoutCycle === 'after_partner_deposit'}
-                    onChange={() => setPolicy(p => ({ ...p, agentPayoutCycle: 'after_partner_deposit' }))}
+                    onChange={() => setCycle('after_partner_deposit')}
                     className="text-indigo-600 focus:ring-indigo-500"
                   />
                 </div>
@@ -386,7 +417,7 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || tableMissing}
               className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-500/20 flex items-center gap-2 disabled:opacity-50 transition-all"
             >
               {isSubmitting ? (

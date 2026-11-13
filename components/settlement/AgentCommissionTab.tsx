@@ -1,17 +1,25 @@
 import React, { useState, useMemo } from 'react';
-import { AgentSettlementRowItem, SettlementPolicy } from '../../services/settlementMasterService';
+import { AgentSettlementRowItem, AgentProblemCase, SettlementPolicy, policyLabel as policyLabelOf, payoutScheduleLabel as payoutScheduleLabelOf } from '../../services/settlementMasterService';
 import { Users, DollarSign, Calendar, TrendingUp, Settings, Download, Search, ChevronRight, X, Award, ShieldCheck } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface AgentCommissionTabProps {
   agentRows: AgentSettlementRowItem[];
+  problemCases?: AgentProblemCase[];
   policy: SettlementPolicy;
+  policyIsDefault?: boolean;
+  policyMessage?: string;
+  periodLabel?: string;
   onOpenPolicyModal?: () => void;
 }
 
 export default function AgentCommissionTab({
   agentRows = [],
+  problemCases = [],
   policy,
+  policyIsDefault = false,
+  policyMessage,
+  periodLabel,
   onOpenPolicyModal,
 }: AgentCommissionTabProps) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,25 +46,10 @@ export default function AgentCommissionTab({
   const nextPayoutDate = safeRows[0]?.nextPayoutDate || '-';
   const payoutDDay = safeRows[0]?.payoutDDay ?? 0;
 
-  let payoutScheduleLabel = '매월 10일 정산';
-  if (policy.agentPayoutCycle === 'weekly_fixed') {
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
-    payoutScheduleLabel = `매주 ${days[policy.agentPayoutDay] || '금'}요일 정산`;
-  } else if (policy.agentPayoutCycle === 'after_partner_deposit') {
-    payoutScheduleLabel = `거래처 입금 후 ${policy.payoutDelayDays}일 이내`;
-  } else {
-    payoutScheduleLabel = `매월 ${policy.agentPayoutDay}일 정산`;
-  }
+  const payoutScheduleLabel = payoutScheduleLabelOf(policy);
 
   // 정책 요약 라벨
-  let policyLabel = '';
-  if (policy.splitModel === 'ratio_split') {
-    policyLabel = `비율 분배 (회사 ${policy.companyShareRatio}% : 상담원 ${policy.agentShareRatio}%)`;
-  } else if (policy.splitModel === 'margin_deduction') {
-    policyLabel = `회사 고정 마진 차감 (₩${(policy.companyFixedMargin / 10000).toLocaleString()}만 공제)`;
-  } else {
-    policyLabel = `상담원 고정 수당 (₩${(policy.agentFixedIncentive / 10000).toLocaleString()}만 지급)`;
-  }
+  const policyLabel = policyLabelOf(policy);
 
   // 3. 필터 및 정렬
   const filteredAndSortedRows = useMemo(() => {
@@ -74,7 +67,7 @@ export default function AgentCommissionTab({
     }
 
     return list;
-  }, [agentRows, searchTerm, sortBy]);
+  }, [safeRows, searchTerm, sortBy]);
 
   // 엑셀 내보내기
   const handleExportExcel = () => {
@@ -86,6 +79,7 @@ export default function AgentCommissionTab({
       '회사 몫(원)': r.companyShareWon,
       '실지급 수당(원)': r.agentShareWon,
       '지급 예정일': r.nextPayoutDate,
+      '지급 메모': r.payoutNote || '',
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -188,6 +182,38 @@ export default function AgentCommissionTab({
           )}
         </div>
       </div>
+
+      {/* 기간·정책 상태 안내 */}
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        {periodLabel && (
+          <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+            기간: {periodLabel} (거래처 수수료 지급 사유 발생일 기준, 부가세 제외)
+          </span>
+        )}
+        {policyIsDefault && (
+          <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/40" title={policyMessage}>
+            분배 정책 기본값(저장 안 됨){policyMessage ? ` · ${policyMessage}` : ''}
+          </span>
+        )}
+      </div>
+
+      {problemCases.length > 0 && (
+        <div className="bg-amber-950/40 border border-amber-700/50 rounded-xl p-4 text-xs text-amber-200">
+          <div className="font-bold mb-2">
+            ⚠ 수당 계산에서 뺀 리드 {problemCases.length}건 — 거래처 수당 규칙·수임료를 확인해 주세요
+          </div>
+          <ul className="space-y-1 max-h-40 overflow-y-auto">
+            {problemCases.slice(0, 50).map(p => (
+              <li key={p.caseId} className="flex flex-wrap gap-2">
+                <span className="font-semibold text-white">{p.customerName || p.caseId}</span>
+                <span className="text-amber-300/80">담당 {p.agentName}</span>
+                <span className="text-amber-400">{p.problem}</span>
+              </li>
+            ))}
+          </ul>
+          {problemCases.length > 50 && <div className="mt-1 text-amber-300/70">외 {problemCases.length - 50}건</div>}
+        </div>
+      )}
 
       {/* 2. 검색 및 컨트롤 바 */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
@@ -302,6 +328,7 @@ export default function AgentCommissionTab({
                       <span className="px-2 py-1 bg-slate-800 text-slate-300 rounded font-medium">
                         {row.nextPayoutDate}
                       </span>
+                      {row.payoutNote && <span className="block mt-1 text-[10px] text-slate-500">{row.payoutNote}</span>}
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <button
@@ -362,7 +389,7 @@ export default function AgentCommissionTab({
                 <div className="divide-y divide-slate-800/80 border border-slate-800 rounded-xl overflow-hidden">
                   <div className="grid grid-cols-5 gap-2 px-4 py-2.5 bg-slate-950 text-xs font-semibold text-slate-400">
                     <span>고객명</span>
-                    <span>수임 일자</span>
+                    <span>계약일 / 수수료 발생일</span>
                     <span className="text-right">수임료</span>
                     <span className="text-right">거래처 수수료</span>
                     <span className="text-right text-emerald-400 font-bold">상담원 수당</span>
@@ -373,7 +400,10 @@ export default function AgentCommissionTab({
                       className="grid grid-cols-5 gap-2 px-4 py-3 text-xs text-slate-300 hover:bg-slate-800/40 items-center"
                     >
                       <span className="font-medium text-white">{c.customerName || '고객'}</span>
-                      <span className="text-slate-400">{c.contractDate || '-'}</span>
+                      <span className="text-slate-400">
+                        {c.contractDate || '-'}
+                        {c.earnedAt && <span className="block text-[10px] text-slate-500">발생 {c.earnedAt}</span>}
+                      </span>
                       <span className="text-right text-slate-300">
                         ₩{c.contractFeeWon ? c.contractFeeWon.toLocaleString() : '0'}
                       </span>

@@ -2,6 +2,7 @@
 -- Migration: 025_retention_policy_options
 -- 작성: 2026-11-06
 -- 선행: 004, 014, 015
+-- 여러 번 실행해도 된다. [2026-11-13 KIRO] 보관 기간 180~730 제한, 정리 함수 실행 권한 회수
 -- 목적: 데이터 보존 기간(6개월 / 1년 / 2년) 다원화 및 자동 정리 거버넌스
 --   1) org_recording_settings.retention_days (180, 365, 730일) 연동
 --   2) organizations 테이블에 access_log_retention_days 컬럼 추가 (기본 365일, 180~730일)
@@ -17,6 +18,20 @@ ALTER TABLE public.organizations
   ADD COLUMN IF NOT EXISTS access_log_retention_days INT NOT NULL DEFAULT 365;
 
 COMMENT ON COLUMN public.organizations.access_log_retention_days IS '개인정보 접근 기록 보관 기간(일): 180(6개월), 365(1년), 730(2년)';
+
+-- [2026-11-13 KIRO] 회사 관리자는 organizations 행을 고칠 수 있다(005 lm_organizations_admin_update)
+-- → 보관 기간을 1일로 바꿔 접근 기록을 지우지 못하게 180~730일로 제한
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                 WHERE conrelid = 'public.organizations'::regclass
+                   AND conname = 'organizations_access_log_retention_days_range') THEN
+    ALTER TABLE public.organizations
+      ADD CONSTRAINT organizations_access_log_retention_days_range
+      CHECK (access_log_retention_days BETWEEN 180 AND 730);
+  END IF;
+END
+$$;
 
 -- ---------------------------------------------
 -- 2. 회사별 설정에 맞춘 접근 감사 로그 자동 정리 함수
@@ -40,6 +55,10 @@ BEGIN
     AND created_at < now() - interval '365 days';
 END;
 $$;
+
+-- [2026-11-13 KIRO] 정리 함수는 pg_cron(DB 소유자)만 부른다. 로그인·비로그인 사용자 실행 금지
+REVOKE ALL ON FUNCTION public.cleanup_access_logs_by_policy() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.cleanup_access_logs_by_policy() TO service_role;
 
 -- ---------------------------------------------
 -- 3. pg_cron 예약 작업 갱신

@@ -135,23 +135,8 @@ export const updateBatchCost = async (
     p_vendor_name: vendorName || null
   });
 
-  if (error) {
-    // 2. RPC 없을 시 직접 UPDATE 폴백
-    console.warn('[BatchQuality] update_batch_cost RPC fallback to direct update:', error.message);
-    const updates: any = {
-      unit_cost: unitCost,
-      total_cost: totalCost > 0 ? totalCost : (unitCost > 0 ? unitCost : 0),
-    };
-    if (vendorName) {
-      updates.vendor_name = vendorName;
-      updates.source = vendorName;
-    }
-    const { error: directErr } = await sb
-      .from('lead_import_batches')
-      .update(updates)
-      .eq('id', batchId);
-    if (directErr) throw directErr;
-  }
+  // [KIRO 2026-11-13] 028_vendor 운영 적용 완료 → 직접 UPDATE 대체 경로 제거 (권한 오류를 덮고 단가만 총액으로 넣던 문제)
+  if (error) throw error;
 };
 
 // 거래처(공급사) 단위 종합 집계 계산

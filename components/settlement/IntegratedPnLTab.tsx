@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { IntegratedPnLSummary, SettlementPolicy } from '../../services/settlementMasterService';
+import { IntegratedPnLSummary, SettlementPolicy, policyLabel } from '../../services/settlementMasterService';
 import {
   TrendingUp,
   DollarSign,
@@ -23,6 +23,7 @@ interface IntegratedPnLTabProps {
   policy: SettlementPolicy;
   year: number;
   month: number | 'all';
+  policyIsDefault?: boolean;
 }
 
 export default function IntegratedPnLTab({
@@ -30,12 +31,15 @@ export default function IntegratedPnLTab({
   policy,
   year,
   month,
+  policyIsDefault = false,
 }: IntegratedPnLTabProps) {
   const s: IntegratedPnLSummary = useMemo(() => {
     return summary || {
       year,
       month,
       totalRevenueWon: 0,
+      totalVatWon: 0,
+      totalBilledWon: 0,
       collectedRevenueWon: 0,
       outstandingRevenueWon: 0,
       totalCompanyMarginWon: 0,
@@ -75,9 +79,11 @@ export default function IntegratedPnLTab({
   // 엑셀 내보내기
   const handleExportExcel = () => {
     const exportData = [
-      { '항목': '총 수수료 매출 (청구 기준)', '금액(원)': s.totalRevenueWon },
-      { '항목': '실제 통장 입금액 (수납 기준)', '금액(원)': s.collectedRevenueWon },
-      { '항목': '거래처 미수금 잔액', '금액(원)': s.outstandingRevenueWon },
+      { '항목': '총 수수료 매출 (공급가, 부가세 제외)', '금액(원)': s.totalRevenueWon },
+      { '항목': '매출 부가세 (별도, 매출 아님)', '금액(원)': s.totalVatWon },
+      { '항목': '청구액 합계 (공급가 + 부가세)', '금액(원)': s.totalBilledWon },
+      { '항목': '기간 내 실제 입금액 (통장, 부가세 포함)', '금액(원)': s.collectedRevenueWon },
+      { '항목': '기간 발생분 미수금 (부가세 포함)', '금액(원)': s.outstandingRevenueWon },
       { '항목': '(-) DB 구매 원가', '금액(원)': s.totalDbCostWon },
       { '항목': '(-) 상담원 수당 지출', '금액(원)': s.totalAgentCommissionWon },
       { '항목': '(-) 일반 운영비 및 고정비', '금액(원)': s.totalFixedCostWon },
@@ -107,14 +113,14 @@ export default function IntegratedPnLTab({
               총 수수료 매출
             </span>
             <span className="text-xs bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded-full font-medium">
-              청구액 기준
+              공급가 기준
             </span>
           </div>
           <div className="text-2xl font-black text-white tracking-tight">
             ₩{(s.totalRevenueWon || 0).toLocaleString()}
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
-            <span>실제 입금: ₩{(s.collectedRevenueWon || 0).toLocaleString()}</span>
+            <span>입금: ₩{(s.collectedRevenueWon || 0).toLocaleString()}{(s.totalVatWon || 0) > 0 ? ` · 부가세 ₩${(s.totalVatWon || 0).toLocaleString()} 별도` : ''}</span>
             <span className="text-amber-400">미수: ₩{(s.outstandingRevenueWon || 0).toLocaleString()}</span>
           </div>
         </div>
@@ -216,7 +222,7 @@ export default function IntegratedPnLTab({
               </span>
               <div>
                 <div className="font-bold text-white font-sans">총 수수료 매출 (Gross Revenue)</div>
-                <div className="text-xs text-slate-400 font-sans">거래처 계약 수수료 총액 (입금확인 ₩{(s.collectedRevenueWon || 0).toLocaleString()} + 미수금 ₩{(s.outstandingRevenueWon || 0).toLocaleString()})</div>
+                <div className="text-xs text-slate-400 font-sans">이 기간에 지급 사유가 생긴 거래처 수수료 공급가 (부가세 ₩{(s.totalVatWon || 0).toLocaleString()} 별도 · 청구액 ₩{(s.totalBilledWon || 0).toLocaleString()} · 이 기간 입금 ₩{(s.collectedRevenueWon || 0).toLocaleString()} · 미수 ₩{(s.outstandingRevenueWon || 0).toLocaleString()})</div>
               </div>
             </div>
             <div className="text-base font-black text-sky-400">
@@ -249,7 +255,7 @@ export default function IntegratedPnLTab({
               <div>
                 <div className="font-bold text-slate-200 font-sans">(-) 상담원 실지급 수당 (Sales Commission)</div>
                 <div className="text-xs text-slate-400 font-sans">
-                  회사 분배 정책({policy.splitModel === 'ratio_split' ? `비율 ${policy.companyShareRatio}:${policy.agentShareRatio}` : '공제 룰'}) 적용 후 지급액
+                  {policyLabel(policy)} 적용 후 지급액{policyIsDefault ? ' · 기본값(저장 안 됨)' : ''}
                 </div>
               </div>
             </div>

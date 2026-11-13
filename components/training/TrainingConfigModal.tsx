@@ -91,8 +91,13 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
   };
 
   // 설정 저장
-  const handleSave = () => {
-    saveCompanyTrainingConfig(config);
+  const handleSave = async () => {
+    // 회사 서버에 저장 (관리자만). 실패하면 닫지 않고 안내.
+    const error = await saveCompanyTrainingConfig(config);
+    if (error) {
+      alert(`훈련 설정을 저장하지 못했습니다. ${error}`);
+      return;
+    }
     setIsSaved(true);
     onSaved(config);
     setTimeout(() => {

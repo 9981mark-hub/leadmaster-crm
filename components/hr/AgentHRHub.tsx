@@ -8,15 +8,15 @@ import {
 import { 
     AttendanceItem, AgentPayrollProfile, AgentPayrollCalculation,
     fetchTodayAttendanceBoard, fetchAllPayrollProfiles, saveAgentPayrollProfile,
-    computeAgentPayroll, DEFAULT_PAYROLL_PROFILE
+    computeAgentPayroll, DEFAULT_PAYROLL_PROFILE,
+    fetchMonthlyAttendanceDays, fetchMonthlyCallStats, MonthlyCallStats
 } from '../../services/hr';
 import { Case } from '../../types';
 import { TeamMember } from '../../services/team';
 import { AgentPayrollModal } from './AgentPayrollModal';
 import { AgentPayslipModal } from './AgentPayslipModal';
 import { useToast } from '../../contexts/ToastContext';
-import * as XLSX from 'xlsx';
-import { sanitizeRowData } from '../../utils/xlsxExport';
+import { exportToExcel } from '../../utils/xlsxExport';
 
 interface AgentHRHubProps {
     members: TeamMember[];
@@ -33,6 +33,9 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
     const [loading, setLoading] = useState(true);
     const [attendanceList, setAttendanceList] = useState<AttendanceItem[]>([]);
     const [payrollProfiles, setPayrollProfiles] = useState<Record<string, AgentPayrollProfile>>({});
+    // [2026-11-13 KIRO] 실제 값만: 월 출근일(agent_attendance_logs), 월 통화(communication_logs 집계 RPC). 못 받으면 null → "-"
+    const [attendanceDaysMap, setAttendanceDaysMap] = useState<Record<string, number> | null>(null);
+    const [callStatsMap, setCallStatsMap] = useState<Record<string, MonthlyCallStats> | null>(null);
     
     // 필터
     const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -56,9 +59,9 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
             ]);
             setAttendanceList(att);
             setPayrollProfiles(profiles);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to load HR data:', err);
-            showToast('근태 및 급여 데이터를 불러오는데 실패했습니다.', 'error');
+            showToast(err?.message || '근태 및 급여 데이터를 불러오는데 실패했습니다.', 'error');
         } finally {
             setLoading(false);
         }
@@ -67,6 +70,16 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
     useEffect(() => {
         loadHRData();
     }, []);
+
+    // 선택한 달의 실제 출근일·통화 기록
+    useEffect(() => {
+        let alive = true;
+        setAttendanceDaysMap(null);
+        setCallStatsMap(null);
+        fetchMonthlyAttendanceDays(selectedMonth).then(m => { if (alive) setAttendanceDaysMap(m); });
+        fetchMonthlyCallStats(selectedMonth).then(m => { if (alive) setCallStatsMap(m); });
+        return () => { alive = false; };
+    }, [selectedMonth]);
 
     // 상담원별 급여 및 실적 계산 매트릭스 생성
     const agentCalculations = useMemo(() => {
@@ -89,27 +102,28 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                     userId: m.userId
                 };
 
-                // 임시 출근 일수 (오늘 출근했으면 20일 추정치 or 1일)
-                const attendanceDays = todayAtt?.clockInAt ? 21 : 19;
+                // 실제 출근 일수 (근태 기록에서 출근 시각이 있는 날). 못 받았으면 모름(null)
+                const attendanceDays: number | null = attendanceDaysMap ? (attendanceDaysMap[m.userId] || 0) : null;
 
-                // 통화 활동 추정치 (콜 이력 연동)
-                const callSec = agentCases.length * 280;
-                const calls = agentCases.length * 3;
+                // 실제 발신 통화 (communication_logs 집계). 못 받았으면 모름(null)
+                const callStats: MonthlyCallStats | null = callStatsMap ? (callStatsMap[m.userId] || { totalCalls: 0, totalDurationSeconds: 0 }) : null;
 
                 const calc = computeAgentPayroll(
                     m.userId,
                     m.displayName,
                     profile,
                     agentCases,
-                    attendanceDays,
-                    callSec,
-                    calls
+                    attendanceDays ?? 0, // 모르면 일비 0으로 계산 (화면·엑셀에는 "-")
+                    callStats?.totalDurationSeconds ?? 0,
+                    callStats?.totalCalls ?? 0
                 );
 
                 return {
                     member: m,
                     todayAtt,
-                    calc
+                    calc,
+                    attendanceKnown: attendanceDays !== null,
+                    callsKnown: callStats !== null,
                 };
             })
             .filter(item => {
@@ -118,7 +132,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                 return st === statusFilter;
             })
             .sort((a, b) => b.calc.netPay - a.calc.netPay);
-    }, [members, cases, attendanceList, payrollProfiles, selectedMonth, statusFilter]);
+    }, [members, cases, attendanceList, payrollProfiles, selectedMonth, statusFilter, attendanceDaysMap, callStatsMap]);
 
     // 전체 KPI 합계
     const summaryKPI = useMemo(() => {
@@ -165,13 +179,25 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
 
     // 전직원 급여대장 엑셀 다운로드
     const handleDownloadPayrollRegister = () => {
-        const rows = agentCalculations.map((item, idx) => sanitizeRowData({
+        const attendanceKnown = attendanceDaysMap !== null;
+        const callsKnown = callStatsMap !== null;
+        // 출근일을 모르면 일비가 0으로 계산되므로, 일비가 있는 사람이 있으면 만들지 않는다
+        if (!attendanceKnown && agentCalculations.some(item => (item.calc.profile.dailyAllowance || 0) > 0)) {
+            showToast('출근 기록을 불러오지 못해 일비가 정확하지 않습니다. 잠시 뒤 다시 시도해 주세요.', 'error');
+            return;
+        }
+        const rows = agentCalculations.map((item, idx) => ({
             '순번': idx + 1,
             '상담원명': item.member.displayName,
             '이메일': item.member.email,
             '직책': item.member.role,
             '급여유형': item.calc.profile.salaryType === 'pure_incentive' ? '순수인센' : item.calc.profile.salaryType === 'base_plus_incentive' ? '기본+인센' : '구간제',
-            '출근일수': item.calc.attendanceDays,
+            // 실제 기록을 받은 경우에만 칸을 넣는다
+            ...(attendanceKnown ? { '출근일수': item.calc.attendanceDays } : {}),
+            ...(callsKnown ? {
+                '발신통화(건)': item.calc.totalCalls,
+                '통화시간(분)': Math.round(item.calc.totalCallDurationSeconds / 60),
+            } : {}),
             '수임계약(건)': item.calc.contractCount,
             '수임매출(원)': item.calc.totalFeeRevenue,
             '기본급(원)': item.calc.basePay,
@@ -185,10 +211,9 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
             '예금주': item.calc.profile.accountHolder || item.member.displayName
         }));
 
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, '급여대장');
-        XLSX.writeFile(wb, `[급여대장]_${selectedMonth}_전직원.xlsx`);
+        // 공통 내보내기(관리자 확인·수식 소독·접근 기록)를 지난다
+        const ok = exportToExcel(`[급여대장]_${selectedMonth}_전직원`, rows, '급여대장');
+        if (!ok) showToast('엑셀 내보내기는 회사 관리자만 할 수 있습니다.', 'error');
     };
 
     return (
@@ -419,7 +444,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                                             </span>
                                         </td>
                                         <td className="py-3.5 px-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                            {item.calc.attendanceDays}일
+                                            {item.attendanceKnown ? `${item.calc.attendanceDays}일` : '-'}
                                         </td>
                                         <td className="py-3.5 px-3 text-right font-bold text-indigo-600 dark:text-indigo-400">
                                             {item.calc.contractCount}건

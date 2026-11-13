@@ -1,6 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, ShieldCheck, ShieldAlert, AlertCircle, HelpCircle, Settings } from 'lucide-react';
-import { Case, SettlementBatch, Partner } from '../types';
+import { Case, SettlementBatch, Partner, ExpenseItem } from '../types';
+import { fetchAllExpenses } from '../services/api';
+import { useOrgStore } from '../services/orgStore';
+import { WITHHOLDING_SPEC } from '../services/orgData';
 import BusinessProfileModal from './BusinessProfileModal';
 
 interface TaxRiskDashboardProps {
@@ -15,21 +18,22 @@ export default function TaxRiskDashboardSection({ cases, batches, partners }: Ta
     // 1. 매출 누락 리스크: 정산(batch)은 되었으나 수임료(contractFee)가 0이거나 미입력된 케이스 (추정)
     const missingFeeCases = cases.filter(c => ['계약 완료', '1차 입금완료', '2차 입금완료'].includes(c.status) && (!c.contractFee || c.contractFee === 0));
 
-    // 2. 프리랜서 원천세 누락 의심: 이건 기존 localStorage에서 가져올 수 있으나 간소화하여 표시
-    let withholdingRecords: any[] = [];
-    try {
-        const raw = localStorage.getItem('leadmaster_withholding_records');
-        if (raw) withholdingRecords = JSON.parse(raw);
-    } catch {}
+    // 2. 프리랜서 원천세 누락 의심: 회사별 서버 원천세 기록(settings 'withholdingRecords')
+    const { value: withholding } = useOrgStore(WITHHOLDING_SPEC);
+    const withholdingRecords = Array.isArray(withholding?.records) ? withholding.records : [];
     
     const overdueWithholding = withholdingRecords.filter(r => !r.isFilingDone && r.filingMonth < new Date().toISOString().slice(0, 7));
 
-    // 3. 증빙 없는 지출 의심: localStorage의 leadmaster_expenses 확인 (공제/불공제 여부)
-    let expenses: any[] = [];
-    try {
-        const raw = localStorage.getItem('leadmaster_expenses');
-        if (raw) expenses = JSON.parse(raw);
-    } catch {}
+    // 3. 증빙 없는 지출 의심: 실제 지출 목록(settings 'expenses', 금액 단위 만원)
+    // (예전에는 없는 키 leadmaster_expenses를 읽어서 항상 0건이었다)
+    const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+    useEffect(() => {
+        let alive = true;
+        fetchAllExpenses()
+            .then(list => { if (alive) setExpenses(list); })
+            .catch(err => console.warn('[TaxRisk] expenses load failed:', err));
+        return () => { alive = false; };
+    }, []);
     
     // 사업용이면서 증빙이 불확실한 항목 (단순 추정 로직)
     const riskyExpenses = expenses.filter(e => e.category === '기타' && e.amount > 5); // 5만원 이상 기타 지출

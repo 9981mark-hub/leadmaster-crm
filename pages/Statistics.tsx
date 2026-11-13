@@ -14,6 +14,8 @@ import {
 } from 'recharts';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useOrgStore, mutateOrgStore } from '../services/orgStore';
+import { AD_METRICS_SPEC } from '../services/orgData';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
 
@@ -110,13 +112,18 @@ export default function Statistics() {
     const [tableSortBy, setTableSortBy] = useState<'period' | 'leads' | 'contracts' | 'rate' | 'fee'>('period');
     const [tableSortDir, setTableSortDir] = useState<'asc' | 'desc'>('desc');
 
-    // Target Contract Goal State (localStorage linked)
-    const [targetContracts, setTargetContracts] = useState<number>(() => {
-        const saved = localStorage.getItem('lm_target_contracts');
-        return saved ? Number(saved) : 10; // Default: 10 cases
-    });
+    // [2026-11-13 KIRO] 목표 계약·광고비는 회사별 서버(settings 'adMetrics')가 원본
+    const { value: adMetrics } = useOrgStore(AD_METRICS_SPEC);
+    const [targetContracts, setTargetContracts] = useState<number>(() => adMetrics.targetContracts || 10); // Default: 10 cases
     const [isEditingTarget, setIsEditingTarget] = useState(false);
     const [targetInput, setTargetInput] = useState(targetContracts.toString());
+    useEffect(() => {
+        if (adMetrics.targetContracts && adMetrics.targetContracts > 0) {
+            setTargetContracts(adMetrics.targetContracts);
+            if (!isEditingTarget) setTargetInput(String(adMetrics.targetContracts));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [adMetrics.targetContracts]);
 
     // Pagination for Drop-off Customer Feedbacks
     const [dropOffPage, setDropOffPage] = useState(1);
@@ -340,13 +347,18 @@ export default function Statistics() {
         }).length;
     }, [cases]);
 
-    const handleSaveTarget = () => {
+    const handleSaveTarget = async () => {
         const val = parseInt(targetInput, 10);
-        if (!isNaN(val) && val > 0) {
-            setTargetContracts(val);
-            localStorage.setItem('lm_target_contracts', val.toString());
-        }
         setIsEditingTarget(false);
+        if (isNaN(val) || val <= 0) return;
+        const prev = targetContracts;
+        setTargetContracts(val);
+        const res = await mutateOrgStore(AD_METRICS_SPEC, cur => ({ ...cur, targetContracts: val }));
+        if (!res.ok) {
+            setTargetContracts(prev);
+            setTargetInput(String(prev));
+            showToast(`목표를 저장하지 못했습니다. ${res.error}`, 'error');
+        }
     };
 
     // ============ Monthly/Weekly Trend Data ============
@@ -641,12 +653,10 @@ export default function Statistics() {
 
     // ============ Ad Spend & ROI Data ============
     const [adSpendMonth, setAdSpendMonth] = useState(format(new Date(), 'yyyy-MM'));
-    const [adSpendData, setAdSpendData] = useState<Record<string, Record<string, number>>>(() => {
-        try {
-            const saved = localStorage.getItem('lm_ad_spend');
-            return saved ? JSON.parse(saved) : {};
-        } catch { return {}; }
-    });
+    const [adSpendData, setAdSpendData] = useState<Record<string, Record<string, number>>>(() => adMetrics.adSpend || {});
+    useEffect(() => {
+        setAdSpendData(adMetrics.adSpend || {});
+    }, [adMetrics.adSpend]);
     const [adSpendEditing, setAdSpendEditing] = useState<Record<string, string>>({});
     const [showAdSpendInput, setShowAdSpendInput] = useState(false);
     const [roiData, setRoiData] = useState<{ name: string; 리드: number; 계약: number; 수임료: number; 수수료: number; 광고비: number; CPA: number; CPC: number; ROAS: number }[]>([]);
@@ -662,9 +672,17 @@ export default function Statistics() {
             if (num > 0) monthData[path] = num;
         });
         const updated = { ...adSpendData, [adSpendMonth]: monthData };
+        const prev = adSpendData;
         setAdSpendData(updated);
-        localStorage.setItem('lm_ad_spend', JSON.stringify(updated));
         setShowAdSpendInput(false);
+        // 서버 최신값에서 이 달만 바꿔 저장 (다른 달은 서버 값 유지)
+        const month = adSpendMonth;
+        mutateOrgStore(AD_METRICS_SPEC, cur => ({ ...cur, adSpend: { ...(cur.adSpend || {}), [month]: monthData } })).then(res => {
+            if (!res.ok) {
+                setAdSpendData(prev);
+                showToast(`광고비를 저장하지 못했습니다. ${res.error}`, 'error');
+            }
+        });
     };
 
     useEffect(() => {
