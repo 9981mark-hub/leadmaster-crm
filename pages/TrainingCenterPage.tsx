@@ -66,6 +66,8 @@ import {
   FileText,
   Settings,
   Lock,
+  Eye,
+  EyeOff,
   RefreshCw,
   X,
 } from 'lucide-react';
@@ -90,6 +92,8 @@ export default function TrainingCenterPage() {
   const [history, setHistory] = useState<TrainingSessionRecord[]>([]);
   const [selectedThemeId, setSelectedThemeId] = useState<string>('all');
   const [showGroundTruth, setShowGroundTruth] = useState<boolean>(false);
+  const [isBlindMode, setIsBlindMode] = useState<boolean>(true); // 기본값: 실전 블라인드 모드 ON (정답 가림)
+  const [showCheatSheet, setShowCheatSheet] = useState<boolean>(false); // 신입용 비상 정답 엿보기 토글
 
   // Call state: 'idle' | 'calling' | 'connected' | 'evaluating' | 'ended'
   const [callState, setCallState] = useState<'idle' | 'calling' | 'connected' | 'evaluating' | 'ended'>('idle');
@@ -802,7 +806,9 @@ export default function TrainingCenterPage() {
     const newPersona = generateRandomCustomerPersona(targetTheme);
     setSelectedPersona(newPersona);
     setMessages([]);
-    showToast(`🎲 실전 고객 [${newPersona.customerName}] (${newPersona.age}세, ${newPersona.badge}) 생성 완료!`, 'success');
+    setShowCheatSheet(false);
+    setShowGroundTruth(false);
+    showToast(`🎲 실전 고객 [${newPersona.customerName}] (${newPersona.age}세) 생성 완료!`, 'success');
   };
 
   // Category Clinic Persona Picker
@@ -814,6 +820,8 @@ export default function TrainingCenterPage() {
     const newPersona = generateCustomPersonaByCategory(catId);
     setSelectedPersona(newPersona);
     setMessages([]);
+    setShowCheatSheet(false);
+    setShowGroundTruth(false);
     showToast(`🎯 취약점 모듈 [${newPersona.badge}] 고객 생성 완료!`, 'info');
   };
 
@@ -1123,6 +1131,42 @@ export default function TrainingCenterPage() {
                   </div>
                 </div>
 
+                {/* 모의 상담 모드 토글 (실전 블라인드 vs 학습 가이드) */}
+                <div className="flex items-center justify-between p-2 rounded-xl bg-gray-100/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 text-xs">
+                  <span className="font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                    모의 통화 모드:
+                  </span>
+                  <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsBlindMode(true);
+                        setShowCheatSheet(false);
+                      }}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
+                        isBlindMode
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      <Lock className="w-3 h-3" />
+                      실전 블라인드
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsBlindMode(false)}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
+                        !isBlindMode
+                          ? 'bg-purple-600 text-white shadow-xs'
+                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      학습 가이드
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => handleGenerateRandom()}
@@ -1133,90 +1177,185 @@ export default function TrainingCenterPage() {
                 </button>
 
                 {/* 현재 생성된 고객 상세 카드 */}
-                <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-blue-950 dark:text-blue-100 text-sm">
-                      {selectedPersona.customerName} ({selectedPersona.age}세, {selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'})
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-600 text-white font-bold">
-                      {selectedPersona.badge}
-                    </span>
-                  </div>
+                {(() => {
+                  const isRevealed = !isBlindMode || callState === 'ended' || showCheatSheet;
 
-                  <div className="grid grid-cols-1 gap-1 text-[11px] text-gray-700 dark:text-gray-200">
-                    <div>💼 <strong>직업/소득:</strong> {selectedPersona.job} ({selectedPersona.salary})</div>
-                    <div>💳 <strong>채무 현황:</strong> {selectedPersona.debtSummary}</div>
-                    <div>🏠 <strong>주거/재산:</strong> {selectedPersona.housing}</div>
-                    <div className="text-gray-600 dark:text-gray-300 pt-1 border-t border-blue-200/50 dark:border-blue-800/50">
-                      📖 <strong>배경 사연:</strong> {selectedPersona.scenarioDescription}
-                    </div>
-                  </div>
-
-                  {/* 🎯 1차 추천 법률 제도 후킹 멘트 (분쟁위험 0% + 고객 신뢰/호기심 극대화) */}
-                  {selectedPersona.groundTruth?.recommendedLegalHook && (
-                    <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-emerald-50/90 to-teal-50/90 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-300 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-200">
-                      <div className="font-extrabold flex items-center justify-between text-emerald-800 dark:text-emerald-300 mb-1">
-                        <span className="flex items-center gap-1">
-                          🎯 <strong>1차 추천 법률 후킹</strong>
+                  return (
+                    <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-blue-950 dark:text-blue-100 text-sm">
+                          {selectedPersona.customerName} ({selectedPersona.age}세, {selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'})
                         </span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-200/70 dark:bg-emerald-900/80 font-bold text-emerald-900 dark:text-emerald-100">
-                          분쟁 위험 0% 실무준칙
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold text-white ${isRevealed ? 'bg-blue-600' : 'bg-emerald-600 animate-pulse'}`}>
+                          {isRevealed ? selectedPersona.badge : '🎯 실전 접수 인입'}
                         </span>
                       </div>
-                      <div className="font-medium text-[11px] leading-relaxed text-emerald-950 dark:text-emerald-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-emerald-200/60 dark:border-emerald-900/60">
-                        {selectedPersona.groundTruth.recommendedLegalHook}
-                      </div>
-                    </div>
-                  )}
 
-                  {/* 결론 요구 고객 대응용 1차 가심사 가이드 (필요 시에만 펼침) */}
-                  {selectedPersona.groundTruth && (
-                    <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-800/60">
-                      <button
-                        type="button"
-                        onClick={() => setShowGroundTruth(!showGroundTruth)}
-                        className="w-full flex items-center justify-between text-[11px] font-bold text-indigo-700 dark:text-indigo-300 hover:underline"
-                      >
-                        <span className="flex items-center gap-1">
-                          💡 결론 요구 고객 대응용 가심사 가이드
-                        </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 font-semibold">
-                          {showGroundTruth ? '▲ 접기' : '▼ 필요시 열기'}
-                        </span>
-                      </button>
+                      {/* 1. 실전 블라인드 모드 (통화 전/중 - 정답 가림) */}
+                      {!isRevealed ? (
+                        <div className="space-y-2">
+                          <div className="p-2.5 rounded-lg bg-white/80 dark:bg-gray-900/80 border border-blue-200/70 dark:border-blue-900/70 text-[11px] space-y-1">
+                            <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
+                              <span>📋 <strong>접수 경로:</strong> 온라인 무료 진단 신청 인입</span>
+                              <span className="font-mono text-[10px]">{selectedPersona.phone}</span>
+                            </div>
+                            <div className="text-gray-700 dark:text-gray-200">
+                              💬 <strong>접수 메모:</strong> "채무 조정 및 개인회생/파산 가능 여부 확인 요청 (빠른 통화 원함)"
+                            </div>
+                          </div>
 
-                      {showGroundTruth && (
-                        <div className="mt-2 p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-900 text-[11px] space-y-1.5">
-                          <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-[10px] text-amber-800 dark:text-amber-200 leading-tight">
-                            ⚠️ <strong>1차 상담 주의:</strong> 확정 금액을 단정하면 2차 상담 시 민원이 발생합니다. "단순 가계산 범위"로만 완충하고 수석 사무장 정밀 상담으로 인계하세요.
+                          <div className="p-3 rounded-xl bg-white/70 dark:bg-gray-900/60 border border-dashed border-indigo-300 dark:border-indigo-800 space-y-2 text-[11px]">
+                            <div className="text-[10px] font-extrabold text-indigo-700 dark:text-indigo-300 flex items-center justify-between">
+                              <span className="flex items-center gap-1">
+                                <Lock className="w-3 h-3" />
+                                실전 문진 대상 (통화로 직접 파악 필요)
+                              </span>
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 font-bold">
+                                정답 가림
+                              </span>
+                            </div>
+
+                            <div className="space-y-1 text-gray-600 dark:text-gray-300">
+                              <div className="flex items-center justify-between p-1.5 rounded bg-gray-50/70 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                                <span>💼 <strong>직업 및 소득:</strong></span>
+                                <span className="text-indigo-600 dark:text-indigo-400 font-bold">❓ 질문하여 파악 필요</span>
+                              </div>
+                              <div className="flex items-center justify-between p-1.5 rounded bg-gray-50/70 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                                <span>💳 <strong>채무 현황 및 사연:</strong></span>
+                                <span className="text-indigo-600 dark:text-indigo-400 font-bold">❓ 질문하여 파악 필요</span>
+                              </div>
+                              <div className="flex items-center justify-between p-1.5 rounded bg-gray-50/70 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                                <span>🏠 <strong>주거 및 재산:</strong></span>
+                                <span className="text-indigo-600 dark:text-indigo-400 font-bold">❓ 질문하여 파악 필요</span>
+                              </div>
+                              <div className="flex items-center justify-between p-1.5 rounded bg-gray-50/70 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                                <span>⚖️ <strong>회생 vs 파산 적격:</strong></span>
+                                <span className="text-indigo-600 dark:text-indigo-400 font-bold">❓ 문진 후 스스로 판단</span>
+                              </div>
+                            </div>
+
+                            <div className="pt-1.5 border-t border-indigo-100 dark:border-indigo-950 flex items-center justify-between text-[10px]">
+                              <span className="text-gray-400">💡 통화 종료 시 실제 정답이 전격 공개됩니다</span>
+                              <button
+                                type="button"
+                                onClick={() => setShowCheatSheet(true)}
+                                className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5 font-bold"
+                              >
+                                <Eye className="w-3 h-3" />
+                                정답 엿보기
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-gray-900 dark:text-white">신청 적격 판정:</span>
-                            <span className="px-1.5 py-0.5 rounded font-black text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200">
-                              {selectedPersona.groundTruth.suitability}
-                            </span>
+
+                          <div className="text-[10px] text-blue-700 dark:text-blue-300 pt-0.5 font-semibold">
+                            🎯 <strong>훈련 목표:</strong> 7대 필수 문진을 완료하여 적격 여부(회생 vs 파산)를 진단하고 수석 사무장 상담으로 인계하기
                           </div>
-                          <div className="text-gray-600 dark:text-gray-300 text-[10px]">
-                            {selectedPersona.groundTruth.suitabilityReason}
+                        </div>
+                      ) : (
+                        /* 2. 정답 공개 모드 (통화 종료 후 or 학습 가이드 모드 or 엿보기) */
+                        <div className="space-y-2">
+                          {callState === 'ended' && (
+                            <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-[11px] flex items-center justify-between shadow-xs">
+                              <span className="flex items-center gap-1">
+                                🎉 실제 고객 숨겨진 정답 (Ground Truth) 전격 공개!
+                              </span>
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/20 font-normal">
+                                문진 대조 채점
+                              </span>
+                            </div>
+                          )}
+
+                          {showCheatSheet && callState !== 'ended' && (
+                            <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-[10px] text-amber-800 dark:text-amber-200 flex items-center justify-between">
+                              <span>👁️ <strong>정답 엿보기 활성화 중</strong> (신입 가이드 모드)</span>
+                              <button
+                                type="button"
+                                onClick={() => setShowCheatSheet(false)}
+                                className="text-amber-900 dark:text-amber-100 font-bold hover:underline flex items-center gap-0.5"
+                              >
+                                <EyeOff className="w-3 h-3" /> 다시 가리기
+                              </button>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 gap-1 text-[11px] text-gray-700 dark:text-gray-200">
+                            <div>💼 <strong>직업/소득:</strong> {selectedPersona.job} ({selectedPersona.salary})</div>
+                            <div>💳 <strong>채무 현황:</strong> {selectedPersona.debtSummary}</div>
+                            <div>🏠 <strong>주거/재산:</strong> {selectedPersona.housing}</div>
+                            <div className="text-gray-600 dark:text-gray-300 pt-1 border-t border-blue-200/50 dark:border-blue-800/50">
+                              📖 <strong>배경 사연:</strong> {selectedPersona.scenarioDescription}
+                            </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-1 pt-1 text-[10px]">
-                            <div>• 인정 생계비: <strong>{selectedPersona.groundTruth.recognizedLivingCost.toLocaleString()}원</strong></div>
-                            <div>• 예상 월 변제: <strong>{selectedPersona.groundTruth.expectedMonthlyPayment.toLocaleString()}원</strong></div>
-                            <div>• 변제 기간: <strong>{selectedPersona.groundTruth.expectedRepaymentPeriod}개월</strong></div>
-                            <div>• 예상 탕감률: <strong>약 {selectedPersona.groundTruth.estimatedForgivenessRate}%</strong></div>
-                          </div>
-                          <div className="text-[10px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
-                            🏛️ {selectedPersona.groundTruth.courtRuleNote}
+
+                          {/* 🎯 1차 추천 법률 제도 후킹 멘트 */}
+                          {selectedPersona.groundTruth?.recommendedLegalHook && (
+                            <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-emerald-50/90 to-teal-50/90 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-300 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-200">
+                              <div className="font-extrabold flex items-center justify-between text-emerald-800 dark:text-emerald-300 mb-1">
+                                <span className="flex items-center gap-1">
+                                  🎯 <strong>1차 추천 법률 후킹</strong>
+                                </span>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-200/70 dark:bg-emerald-900/80 font-bold text-emerald-900 dark:text-emerald-100">
+                                  분쟁 위험 0% 실무준칙
+                                </span>
+                              </div>
+                              <div className="font-medium text-[11px] leading-relaxed text-emerald-950 dark:text-emerald-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-emerald-200/60 dark:border-emerald-900/60">
+                                {selectedPersona.groundTruth.recommendedLegalHook}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 결론 요구 고객 대응용 1차 가심사 가이드 (필요 시에만 펼침) */}
+                          {selectedPersona.groundTruth && (
+                            <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-800/60">
+                              <button
+                                type="button"
+                                onClick={() => setShowGroundTruth(!showGroundTruth)}
+                                className="w-full flex items-center justify-between text-[11px] font-bold text-indigo-700 dark:text-indigo-300 hover:underline"
+                              >
+                                <span className="flex items-center gap-1">
+                                  💡 결론 요구 고객 대응용 가심사 가이드
+                                </span>
+                                <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 font-semibold">
+                                  {showGroundTruth ? '▲ 접기' : '▼ 필요시 열기'}
+                                </span>
+                              </button>
+
+                              {showGroundTruth && (
+                                <div className="mt-2 p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-900 text-[11px] space-y-1.5">
+                                  <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-[10px] text-amber-800 dark:text-amber-200 leading-tight">
+                                    ⚠️ <strong>1차 상담 주의:</strong> 확정 금액을 단정하면 2차 상담 시 민원이 발생합니다. "단순 가계산 범위"로만 완충하고 수석 사무장 정밀 상담으로 인계하세요.
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-gray-900 dark:text-white">신청 적격 판정:</span>
+                                    <span className="px-1.5 py-0.5 rounded font-black text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200">
+                                      {selectedPersona.groundTruth.suitability}
+                                    </span>
+                                  </div>
+                                  <div className="text-gray-600 dark:text-gray-300 text-[10px]">
+                                    {selectedPersona.groundTruth.suitabilityReason}
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-1 pt-1 text-[10px]">
+                                    <div>• 인정 생계비: <strong>{selectedPersona.groundTruth.recognizedLivingCost.toLocaleString()}원</strong></div>
+                                    <div>• 예상 월 변제: <strong>{selectedPersona.groundTruth.expectedMonthlyPayment.toLocaleString()}원</strong></div>
+                                    <div>• 변제 기간: <strong>{selectedPersona.groundTruth.expectedRepaymentPeriod}개월</strong></div>
+                                    <div>• 예상 탕감률: <strong>약 {selectedPersona.groundTruth.estimatedForgivenessRate}%</strong></div>
+                                  </div>
+                                  <div className="text-[10px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
+                                    🏛️ {selectedPersona.groundTruth.courtRuleNote}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="text-[10px] text-blue-700 dark:text-blue-300 pt-1 font-semibold">
+                            🎯 <strong>훈련 목표:</strong> {selectedPersona.trainingGoal}
                           </div>
                         </div>
                       )}
                     </div>
-                  )}
-
-                  <div className="text-[10px] text-blue-700 dark:text-blue-300 pt-1 font-semibold">
-                    🎯 <strong>훈련 목표:</strong> {selectedPersona.trainingGoal}
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             )}
 
@@ -1386,7 +1525,7 @@ export default function TrainingCenterPage() {
                       {selectedPersona.phone}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-medium">
-                      {selectedPersona.badge}
+                      {(!isBlindMode || callState === 'ended' || showCheatSheet) ? selectedPersona.badge : '🎯 실전 인입 (블라인드)'}
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
