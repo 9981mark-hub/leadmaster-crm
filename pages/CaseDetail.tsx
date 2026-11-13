@@ -686,7 +686,7 @@ export default function CaseDetail() {
     );
 
     return (
-        <div className="pb-20">
+        <div className="pb-20 animate-page-in">
             <div className="w-full max-w-5xl xl:max-w-[1920px] mx-auto space-y-4">
 
                 <CaseDetailHeader

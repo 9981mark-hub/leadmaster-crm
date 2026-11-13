@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Building2, Plus, RefreshCw, Ban, RotateCcw, Copy,
-  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles
+  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -10,6 +10,7 @@ import {
   computeBillingSummary, generateOrgInvoiceMarkdown, PRICE_PER_AGENT_MONTH
 } from '../services/platform';
 import { HQ_ORG_ID } from '../services/org';
+import { useCountUp } from '../utils/useCountUp';
 
 const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('ko-KR') : '-');
 
@@ -38,6 +39,12 @@ export default function PlatformPage() {
   useEffect(() => { reload(); }, [reload]);
 
   const billingSummary = useMemo(() => computeBillingSummary(orgs), [orgs]);
+
+  // 성과 지표 카운트업
+  const animatedActiveOrgs = useCountUp(billingSummary.activeOrgs);
+  const animatedTotalSeats = useCountUp(billingSummary.totalSeats);
+  const animatedRevenue = useCountUp(billingSummary.totalMonthlyRevenue);
+  const animatedNetMargin = useCountUp(billingSummary.netMargin);
 
   if (!isPlatformAdmin) {
     return <div className="p-6 text-gray-500">플랫폼 관리자만 볼 수 있는 화면입니다.</div>;
@@ -92,21 +99,26 @@ export default function PlatformPage() {
   const copy = (text: string) => navigator.clipboard.writeText(text).then(() => showToast('복사했습니다.', 'success'));
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="max-w-7xl mx-auto space-y-6 pb-12 animate-page-in">
       {/* Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
-            <Building2 className="text-blue-600 dark:text-blue-400" size={26} />
-            플랫폼 과금 및 회사 관제 센터
+            <div className="p-2 bg-blue-50 dark:bg-blue-950/50 rounded-xl border border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400">
+              <Building2 size={24} />
+            </div>
+            <span>플랫폼 과금 및 회사 관제 센터</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              HOST HQ
+            </span>
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
             고객사별 활성 상담원 과금(₩48,000/인) 현황, 서버 원가 마진율 및 테넌트 라이프사이클을 총괄합니다.
           </p>
         </div>
         <button
           onClick={reload}
-          className="px-3.5 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          className="px-3.5 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-xs"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> 새로고침
         </button>
@@ -114,92 +126,92 @@ export default function PlatformPage() {
 
       {/* 4대 핵심 재무 & 인프라 KPI 카드 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-sm">
+        {/* KPI 1: 유료 고객사 */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-blue-500/30 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">유료 고객사</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">유료 고객사</span>
             <div className="p-2 bg-blue-50 dark:bg-blue-950/40 rounded-xl text-blue-600 dark:text-blue-400">
               <Building2 size={18} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-gray-900 dark:text-white">
-              {billingSummary.activeOrgs}
+            <span className="text-3xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
+              {animatedActiveOrgs}
             </span>
-            <span className="text-xs text-gray-400">/ 총 {billingSummary.totalOrgs}개사</span>
+            <span className="text-xs text-gray-400 font-mono tabular-nums">/ 총 {billingSummary.totalOrgs}개사</span>
           </div>
           <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
             <CheckCircle2 size={13} /> {billingSummary.activeOrgs > 0 ? '정상 서비스 가동 중' : '첫 고객사 유치 대기'}
           </div>
         </div>
 
-        {/* KPI 2 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-sm">
+        {/* KPI 2: 과금 상담원 */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-indigo-500/30 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">과금 상담원 (합계)</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">과금 상담원 (합계)</span>
             <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl text-indigo-600 dark:text-indigo-400">
               <Users size={18} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-gray-900 dark:text-white">
-              {billingSummary.totalSeats}
+            <span className="text-3xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
+              {animatedTotalSeats}
             </span>
             <span className="text-xs text-gray-400">석 (활성 계정)</span>
           </div>
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
             좌석당 단가: <span className="font-semibold text-gray-800 dark:text-gray-200">₩48,000 / 월</span>
           </div>
         </div>
 
-        {/* KPI 3 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-sm">
+        {/* KPI 3: 당월 총 예상 매출 */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-emerald-500/30 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">당월 총 예상 매출</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">당월 총 예상 매출</span>
             <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-emerald-600 dark:text-emerald-400">
               <DollarSign size={18} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-              ₩{billingSummary.totalMonthlyRevenue.toLocaleString()}
+            <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+              ₩{animatedRevenue.toLocaleString()}
             </span>
           </div>
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
             VAT 별도 공급가액 기준
           </div>
         </div>
 
-        {/* KPI 4 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-sm">
+        {/* KPI 4: 인프라 원가 & 순마진 */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-amber-500/30 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">인프라 원가 & 순마진</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">인프라 원가 & 순마진</span>
             <div className="p-2 bg-amber-50 dark:bg-amber-950/40 rounded-xl text-amber-600 dark:text-amber-400">
               <TrendingUp size={18} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-xl font-black text-gray-900 dark:text-white">
-              ₩{billingSummary.netMargin.toLocaleString()}
+            <span className="text-2xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
+              ₩{animatedNetMargin.toLocaleString()}
             </span>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
               ({billingSummary.marginPercent}%)
             </span>
           </div>
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-mono">
             <Server size={12} /> Pro 인프라 비용: ₩{billingSummary.estimatedInfraCost.toLocaleString()}/월
           </div>
         </div>
       </div>
 
       {/* 새 고객 회사 등록 폼 (TM 표준 프리셋 원클릭 지원) */}
-      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 p-5 space-y-4 shadow-sm">
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 p-5 space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Plus size={18} className="text-blue-600 dark:text-blue-400" /> 신규 고객 회사 등록 (테넌트 생성)
           </h2>
-          <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
-            <Sparkles size={14} /> TM 사무실 실무 프리셋 자동 주입 지원
+          <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-900/40">
+            <Sparkles size={13} /> TM 사무실 실무 프리셋 자동 주입 지원
           </span>
         </div>
 
@@ -225,7 +237,7 @@ export default function PlatformPage() {
           </button>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-gray-100 dark:border-gray-750">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
           <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
             <input
               type="checkbox"
@@ -259,19 +271,22 @@ export default function PlatformPage() {
       </section>
 
       {/* 고객 회사 목록 및 실시간 과금 테이블 */}
-      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 overflow-hidden shadow-sm">
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 overflow-hidden shadow-xs">
         <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 flex items-center justify-between">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm">
-            고객사 테넌트 목록 및 월간 청구 현황 ({orgs.length}개사)
+          <h3 className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+            <span>고객사 테넌트 목록 및 월간 청구 현황</span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+              {orgs.length}
+            </span>
           </h3>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             * 청구서 복사 버튼으로 정산용 공식 마크다운 서식을 바로 추출할 수 있습니다.
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-left border-b border-gray-100 dark:border-gray-700">
+            <thead className="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-left border-b border-gray-100 dark:border-gray-700 text-xs">
               <tr>
                 <th className="p-3.5">회사명</th>
                 <th className="p-3.5">상태</th>
@@ -292,20 +307,22 @@ export default function PlatformPage() {
                 return (
                   <tr key={o.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-750/30 transition-colors">
                     <td className="p-3.5 font-medium text-gray-900 dark:text-white">
-                      {o.name}
-                      {isHq && (
-                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded">
-                          본사(면제)
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{o.name}</span>
+                        {isHq && (
+                          <span className="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded">
+                            본사(면제)
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-3.5">
                       {o.status === 'active' ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50 dark:border-emerald-800/40">
                           <CheckCircle2 size={12} /> 정상 가동
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md border border-red-200/50 dark:border-red-800/40">
                           <Ban size={12} /> 사용 중지
                         </span>
                       )}
@@ -326,19 +343,19 @@ export default function PlatformPage() {
                         '-'
                       )}
                     </td>
-                    <td className="p-3.5 text-right font-mono text-gray-900 dark:text-gray-100">
+                    <td className="p-3.5 text-right font-mono tabular-nums text-gray-900 dark:text-gray-100">
                       <span className="font-bold text-blue-600 dark:text-blue-400">{o.activeMembers}</span> / {o.members}명
                     </td>
-                    <td className="p-3.5 text-right font-mono font-bold">
+                    <td className="p-3.5 text-right font-mono tabular-nums font-bold">
                       {isHq ? (
-                        <span className="text-gray-400 text-xs">본사 운영</span>
+                        <span className="text-gray-400 text-xs font-normal">본사 운영</span>
                       ) : (
                         <span className="text-gray-900 dark:text-white">
                           ₩{monthlyBill.toLocaleString()}
                         </span>
                       )}
                     </td>
-                    <td className="p-3.5 text-right font-mono text-gray-700 dark:text-gray-300">
+                    <td className="p-3.5 text-right font-mono tabular-nums text-gray-700 dark:text-gray-300">
                       {o.cases.toLocaleString()}건
                     </td>
                     <td className="p-3.5 text-xs">
@@ -350,7 +367,7 @@ export default function PlatformPage() {
                         <span className="text-gray-400">미등록</span>
                       )}
                     </td>
-                    <td className="p-3.5 text-xs text-gray-500 font-mono">
+                    <td className="p-3.5 text-xs text-gray-500 font-mono tabular-nums">
                       {fmtDate(o.createdAt)}
                     </td>
                     <td className="p-3.5 text-right">
@@ -358,7 +375,7 @@ export default function PlatformPage() {
                         {!isHq && (
                           <button
                             onClick={() => copyInvoice(o)}
-                            className="px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1 transition-colors"
+                            className="px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1 transition-colors shadow-xs"
                             title="공식 청구서 마크다운 복사"
                           >
                             <FileText size={12} /> 청구서 복사
@@ -368,7 +385,7 @@ export default function PlatformPage() {
                           <button
                             onClick={() => toggleStatus(o)}
                             disabled={busy}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center gap-1 transition-colors ${
+                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center gap-1 transition-colors shadow-xs ${
                               o.status === 'active'
                                 ? 'text-red-600 border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950/30'
                                 : 'text-emerald-700 border-emerald-200 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
