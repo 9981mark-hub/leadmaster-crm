@@ -129,6 +129,19 @@ class SpeechService {
     // 모바일 오디오 덕킹(볼륨 꺼짐) 방지를 위해 발화 중에는 마이크 수신 정지
     this.stopListening();
 
+    // 0순위: 안드로이드 네이티브 앱 환경인 경우 스마트폰 순정 TextToSpeech 엔진 최우선 사용!
+    // (별도 유료 API 키 없어도 삼성/구글 한국어 고음질 음성으로 100% 무결점 즉시 발화)
+    if (typeof window !== 'undefined' && (window as any).AndroidBridge?.isNativeTtsAvailable?.()) {
+      try {
+        const voiceName = await this.speakNativeAndroid(text, options);
+        this.lastEngineUsed = 'browser';
+        this.lastVoiceName = voiceName;
+        return { engine: 'browser', voiceName };
+      } catch (err) {
+        console.warn('Native Android TTS failed, falling back:', err);
+      }
+    }
+
     // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 성우 엔진
     if (this.neuralEnabled) {
       try {
@@ -146,6 +159,62 @@ class SpeechService {
     const voiceName = await this.speakBrowser(text, options);
     this.lastVoiceName = voiceName;
     return { engine: 'browser', voiceName };
+  }
+
+  // 안드로이드 네이티브 순정 TTS 발화 (삼성/구글 한국어 엔진)
+  public async speakNativeAndroid(text: string, options: SpeechVoiceOptions = {}): Promise<string> {
+    const cleanText = text
+      .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+      .replace(/[\.\.\.~"']/g, ' ')
+      .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+      .replace(/,\s*,/g, ',')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) return 'Empty';
+
+    const emotion = options.emotion || this.detectEmotion(cleanText);
+    let rate = options.rate ?? 1.15;
+    if (emotion === 'angry') rate = Math.min(1.4, rate * 1.15);
+    else if (emotion === 'annoyed') rate = Math.min(1.35, rate * 1.08);
+
+    let pitch = options.pitch ?? 1.0;
+    if (emotion === 'angry') pitch = Math.min(1.3, pitch + 0.2);
+    else if (emotion === 'annoyed') pitch = Math.min(1.2, pitch + 0.1);
+
+    const utteranceId = 'tts_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      const finish = () => {
+        if (!resolved) {
+          resolved = true;
+          delete (window as any).__onNativeTtsDone;
+          resolve('안드로이드 순정 음성');
+        }
+      };
+
+      // 8초 안전 타임아웃 가드 (절대 발화에 갇히지 않음)
+      const timer = setTimeout(finish, 8000);
+
+      (window as any).__onNativeTtsDone = (id: string) => {
+        if (id === utteranceId) {
+          clearTimeout(timer);
+          finish();
+        }
+      };
+
+      try {
+        const ok = (window as any).AndroidBridge.speakNative(cleanText, pitch, rate, utteranceId);
+        if (!ok) {
+          clearTimeout(timer);
+          finish();
+        }
+      } catch (e) {
+        clearTimeout(timer);
+        finish();
+      }
+    });
   }
 
   // 문장 감정 분석 (화남/분노/짜증/의심/불안/차분)
@@ -334,19 +403,48 @@ class SpeechService {
     const playedVoiceName = chosenVoice?.name || '기본 음성';
 
     return new Promise((resolve) => {
-      utterance.onend = () => resolve(playedVoiceName);
-      utterance.onerror = (e) => {
-        console.warn('SpeechSynthesis error:', e);
-        resolve(playedVoiceName);
+      let resolved = false;
+      const finish = () => {
+        if (!resolved) {
+          resolved = true;
+          resolve(playedVoiceName);
+        }
       };
 
-      this.synth!.speak(utterance);
+      // 6초 안전 타임아웃 (크롬 Web Speech stuck 버그 방지)
+      const timer = setTimeout(finish, 6000);
+
+      utterance.onend = () => {
+        clearTimeout(timer);
+        finish();
+      };
+      utterance.onerror = (e) => {
+        console.warn('SpeechSynthesis error:', e);
+        clearTimeout(timer);
+        finish();
+      };
+
+      try {
+        this.synth!.cancel();
+        setTimeout(() => {
+          if (!resolved) this.synth!.speak(utterance);
+        }, 30);
+      } catch (_) {
+        clearTimeout(timer);
+        finish();
+      }
     });
   }
 
   // 발화 및 신호음 즉시 중단
   public stopSpeaking(): void {
     this.stopRingbackTone();
+
+    if (typeof window !== 'undefined' && (window as any).AndroidBridge?.stopNativeTts) {
+      try {
+        (window as any).AndroidBridge.stopNativeTts();
+      } catch (_) {}
+    }
 
     if (this.currentAudio) {
       try {
