@@ -1178,8 +1178,8 @@ export default function TrainingCenterPage() {
                             {selectedPersona.groundTruth.suitabilityReason}
                           </div>
                           <div className="grid grid-cols-2 gap-1 pt-1 text-[10px]">
-                            <div>• 인정 생계비: <strong>{Math.round(selectedPersona.groundTruth.recognizedLivingCost / 10000)}만 원</strong></div>
-                            <div>• 예상 월 변제: <strong>{Math.round(selectedPersona.groundTruth.expectedMonthlyPayment / 10000)}만 원</strong></div>
+                            <div>• 인정 생계비: <strong>{selectedPersona.groundTruth.recognizedLivingCost.toLocaleString()}원</strong></div>
+                            <div>• 예상 월 변제: <strong>{selectedPersona.groundTruth.expectedMonthlyPayment.toLocaleString()}원</strong></div>
                             <div>• 변제 기간: <strong>{selectedPersona.groundTruth.expectedRepaymentPeriod}개월</strong></div>
                             <div>• 예상 탕감률: <strong>약 {selectedPersona.groundTruth.estimatedForgivenessRate}%</strong></div>
                           </div>

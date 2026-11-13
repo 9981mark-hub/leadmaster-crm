@@ -4,14 +4,32 @@
 import { TrainingPersona, ParalegalHandoffCard } from './trainingService';
 import { SpeechVoiceOptions } from './speechService';
 
-// 2026년 기준 가구원수별 인정 최저생계비 (기준 중위소득 60%)
-export const LIVING_COST_2026 = {
-  1: 1400000, // 1인 가구: 약 140만 원
-  2: 2330000, // 2인 가구: 약 233만 원
-  3: 2990000, // 3인 가구: 약 299만 원
-  4: 3620000, // 4인 가구: 약 362만 원
-  5: 4200000, // 5인 가구: 약 420만 원
+// ============================================
+// 보건복지부 공식 고시 개인회생 법정 최저생계비 (기준 중위소득의 60%)
+// 법원 개인회생 실무에서는 1원 단위까지 법정 고시 금액을 정확하게 적용합니다.
+// ============================================
+
+// 2025년 보건복지부 확정 고시 기준 (현재 법원 실무 기준)
+export const LIVING_COST_2025 = {
+  1: 1435208, // 1인 가구: 1,435,208원 (기준 중위소득 2,392,013원의 60%)
+  2: 2359595, // 2인 가구: 2,359,595원 (기준 중위소득 3,932,658원의 60%)
+  3: 3015212, // 3인 가구: 3,015,212원 (기준 중위소득 5,025,353원의 60%)
+  4: 3658664, // 4인 가구: 3,658,664원 (기준 중위소득 6,097,773원의 60%)
+  5: 4264915, // 5인 가구: 4,264,915원 (기준 중위소득 7,108,192원의 60%)
+  6: 4838883, // 6인 가구: 4,838,883원 (기준 중위소득 8,064,805원의 60%)
 };
+
+// 2026년 개인회생 기준 중위소득 60%
+export const LIVING_COST_2026 = {
+  1: 1538543, // 1인 가구: 1,538,543원 (약 154만 원)
+  2: 2519575, // 2인 가구: 2,519,575원 (약 252만 원)
+  3: 3215422, // 3인 가구: 3,215,422원 (약 322만 원)
+  4: 3896843, // 4인 가구: 3,896,843원 (약 390만 원)
+  5: 4545000, // 5인 가구: 4,545,000원 (약 455만 원)
+};
+
+// 실무 기본 적용: 2025년 공식 확정 고시 기준 (개인회생 변제계획안 표준)
+export const DEFAULT_LIVING_COST = LIVING_COST_2025;
 
 // 법률 정답지 인터페이스 (Ground Truth)
 export interface GroundTruthLegalDiagnosis {
@@ -336,8 +354,8 @@ export const calculateLegalDiagnosis = (
   court: CourtSeed,
   debtCause: string
 ): GroundTruthLegalDiagnosis => {
-  // 1. 인정 법정 생계비 산정 (2026년 기준 중위소득 60%)
-  const recognizedLivingCost = LIVING_COST_2026[Math.min(dependentsCount, 5) as keyof typeof LIVING_COST_2026] || 1400000;
+  // 1. 인정 법정 최저생계비 산정 (보건복지부 공식 고시 기준 중위소득 60%)
+  const recognizedLivingCost = DEFAULT_LIVING_COST[Math.min(dependentsCount, 6) as keyof typeof DEFAULT_LIVING_COST] || 1435208;
 
   // 2. 가용소득 (월 변제금) 산출
   let monthlyPayment = Math.max(0, monthlyIncome - recognizedLivingCost);
