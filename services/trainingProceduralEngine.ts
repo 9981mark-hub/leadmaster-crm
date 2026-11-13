@@ -246,30 +246,52 @@ const REAL_HOUSINGS: HousingSeed[] = [
   { housingText: '중고 1톤 화물차 1대 (시세 1,200만 / 캐피탈 저당 잔여 1,000만)', equityValue: 2000000, isExemptDeposit: false },
 ];
 
-// 4. 관할 법원 풀
+// 4. 관할 법원 풀 (2026년 대전·대구·광주 회생법원 신설 개원 전격 반영)
 interface CourtSeed {
   region: string;
   courtName: string;
-  isSpecialized: boolean; // 서울, 수원, 부산 등 전문 회생법원 여부
+  isSpecialized: boolean; // 2026 전국 6대 전문 회생법원(서울·수원·부산·대전·대구·광주) 여부
   stayOrderDays: string;
   commencementMonths: string;
   cryptoRule: 'exclude' | 'include'; // exclude = 주식/코인 손실금 청산가치 제외(유리), include = 반영(불리)
 }
 
 const REAL_COURTS: CourtSeed[] = [
+  // 1) 서울회생법원
   { region: '서울 강서구 화곡동', courtName: '서울회생법원', isSpecialized: true, stayOrderDays: '3~5일', commencementMonths: '3~4개월', cryptoRule: 'exclude' },
   { region: '서울 은평구 응암동', courtName: '서울회생법원', isSpecialized: true, stayOrderDays: '3~5일', commencementMonths: '3~4개월', cryptoRule: 'exclude' },
   { region: '서울 송파구 잠실동', courtName: '서울회생법원', isSpecialized: true, stayOrderDays: '3~5일', commencementMonths: '3~4개월', cryptoRule: 'exclude' },
+
+  // 2) 수원회생법원
   { region: '경기 수원시 팔달구', courtName: '수원회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
   { region: '경기 의왕시 / 안양시', courtName: '수원회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
   { region: '경기 화성시 / 동탄', courtName: '수원회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+
+  // 3) 부산회생법원
   { region: '부산 해운대구 / 기장역', courtName: '부산회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+  { region: '울산 남구 / 삼산동', courtName: '부산회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+
+  // 4) 대전회생법원 (2026년 신설 개원: 대전, 세종, 충남 전역)
+  { region: '대전 서구 둔산동 / 유성구', courtName: '대전회생법원', isSpecialized: true, stayOrderDays: '3~7일', commencementMonths: '3~5개월', cryptoRule: 'exclude' },
+  { region: '충남 천안시 / 아산시', courtName: '대전회생법원', isSpecialized: true, stayOrderDays: '3~7일', commencementMonths: '3~5개월', cryptoRule: 'exclude' },
+  { region: '충남 예산군 / 당진시', courtName: '대전회생법원', isSpecialized: true, stayOrderDays: '3~7일', commencementMonths: '3~5개월', cryptoRule: 'exclude' },
+
+  // 5) 대구회생법원 (2026년 신설 개원: 대구, 경북 전역)
+  { region: '대구 수성구 / 범어동', courtName: '대구회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+  { region: '대구 달서구 / 달성군', courtName: '대구회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+  { region: '경북 구미시 / 포항시', courtName: '대구회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+
+  // 6) 광주회생법원 (2026년 신설 개원: 광주, 전남 전역)
+  { region: '광주 서구 치평동 / 상무지구', courtName: '광주회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+  { region: '광주 북구 / 광산구', courtName: '광주회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+  { region: '전남 순천시 / 여수시', courtName: '광주회생법원', isSpecialized: true, stayOrderDays: '4~7일', commencementMonths: '4~5개월', cryptoRule: 'exclude' },
+
+  // 7) 일반 지방법원 본원 도산부 (전문 회생법원 미설치 지역)
   { region: '인천 부평구 / 계양구', courtName: '인천지방법원', isSpecialized: false, stayOrderDays: '7~14일', commencementMonths: '6~8개월', cryptoRule: 'include' },
   { region: '경기 고양시 일산동구', courtName: '의정부지방법원', isSpecialized: false, stayOrderDays: '7~14일', commencementMonths: '6~9개월', cryptoRule: 'include' },
-  { region: '충남 천안시 / 아산시', courtName: '대전지방법원 천안지원', isSpecialized: false, stayOrderDays: '7~10일', commencementMonths: '6~8개월', cryptoRule: 'include' },
-  { region: '전북 군산시 / 전주시', courtName: '전주지방법원', isSpecialized: false, stayOrderDays: '7~14일', commencementMonths: '7~10개월', cryptoRule: 'include' },
-  { region: '대구 수성구 / 달서구', courtName: '대구지방법원', isSpecialized: false, stayOrderDays: '7~14일', commencementMonths: '7~10개월', cryptoRule: 'include' },
-  { region: '광주 광산구 / 북구', courtName: '광주지방법원', isSpecialized: false, stayOrderDays: '7~12일', commencementMonths: '7~11개월', cryptoRule: 'include' },
+  { region: '전북 전주시 덕진구 / 군산시', courtName: '전주지방법원', isSpecialized: false, stayOrderDays: '7~14일', commencementMonths: '7~10개월', cryptoRule: 'include' },
+  { region: '충북 청주시 상당구 / 충주시', courtName: '청주지방법원', isSpecialized: false, stayOrderDays: '7~12일', commencementMonths: '6~9개월', cryptoRule: 'include' },
+  { region: '경남 창원시 성산구 / 김해시', courtName: '창원지방법원', isSpecialized: false, stayOrderDays: '7~14일', commencementMonths: '7~10개월', cryptoRule: 'include' },
 ];
 
 // 5. 통화 당시 현실적 물리 환경 풀
@@ -414,9 +436,9 @@ export const calculateLegalDiagnosis = (
   // 5. 관할 법원 실무 특성 노트
   let courtRuleNote = `${court.courtName} 관할 (금지명령 ${court.stayOrderDays}, 개시결정 ${court.commencementMonths}). `;
   if (court.isSpecialized) {
-    courtRuleNote += '전문 회생법원으로 진행 속도가 빠르며, 주식/코인 투자 손실금의 청산가치 미반영(준칙 408호) 등 채무자 탕감률에 매우 우호적임.';
+    courtRuleNote += '2026년 전국 6대 전문 회생법원(서울·수원·부산·대전·대구·광주) 관할로, 전담 재판부의 신속한 개시 및 주식/코인 투자 손실금 청산가치 제외(준칙 408호) 등 채무자 탕감률에 매우 우호적임.';
   } else {
-    courtRuleNote += '지방 일반법원으로 최근 1년 채무 및 주식/코인 손실금의 청산가치 가산 요구 등 심리가 상대적으로 보수적임.';
+    courtRuleNote += '일반 지방법원 본원 관할로 최근 1년 채무 및 투자 손실금의 청산가치 가산 요구 등 심리가 상대적으로 보수적임.';
   }
 
   return {
