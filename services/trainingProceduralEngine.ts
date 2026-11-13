@@ -54,7 +54,10 @@ export interface InfinitePersonaTheme {
 }
 
 export const INFINITE_THEMES: InfinitePersonaTheme[] = [
-  { id: 'all', name: '전체 실전 무작위', badge: '🎲 전체 무작위', desc: '487건의 실전 접수 DB에서 무작위 추출 및 조합' },
+  { id: 'all', name: '전체 실전 무작위', badge: '🎲 전체 무작위', desc: '487건 실전 접수 및 소액(1200만)·초고액·재산초과 등 전 범위 무작위' },
+  { id: 'small_debt', name: '소액채무 1200만선 (회생비추천)', badge: '💡 소액채무', desc: '채무 1,200만 원. 법원 수임료 부담 커서 회생 비추천, 신복위 워크아웃 솔직 권고 훈련' },
+  { id: 'high_debt', name: '초고액 채무 (10억+ 일반회생)', badge: '🏛️ 초고액·일반회생', desc: '무담보 10억 초과 연쇄 부도. 개인회생 불가, 법원 전문재판부 일반회생 전담 배정' },
+  { id: 'asset_rich', name: '재산초과 (기각위험/지급불능미달)', badge: '🚫 재산초과·기각위험', desc: '자가 아파트 잉여가치가 채무보다 큼. 법원 회생 기각 위험 및 자산대환 안내' },
   { id: 'stock_crypto', name: '주식/코인 빚투 청년', badge: '🪙 코인·주식', desc: '2030 토스/신용대출 레버리지 청산, 서울/수원 회생법원 준칙 준수' },
   { id: 'business_tax', name: '자영업/사업자 세금체납', badge: '🏭 사업자·세금', desc: '식자재/어음/부가세 체납, 매출 필요경비 공제 및 별제권' },
   { id: 'charter_fraud', name: '전세사기/LH임대', badge: '🏠 전세사기·LH', desc: '깡통전세 보증금 미반환, LH 전세임대 질권설정 및 소액보증금' },
@@ -119,7 +122,7 @@ const REAL_JOBS: JobSeed[] = [
 
 // 2. 실전 채무 구성 및 사연 풀 (487건 텔레그램 실제 접수 내용 100% 반영)
 interface DebtSeed {
-  causeType: 'crypto' | 'business' | 'fraud' | 'living' | 'medical' | 'workout_shift' | 'gambling';
+  causeType: 'crypto' | 'business' | 'fraud' | 'living' | 'medical' | 'workout_shift' | 'gambling' | 'small_debt' | 'high_debt' | 'asset_rich' | 'recent_debt' | 'tax_heavy';
   originTitle: string;
   totalDebt: number; // 총 채무액 (원)
   debtSummary: string;
@@ -128,6 +131,85 @@ interface DebtSeed {
 }
 
 const REAL_DEBTS: DebtSeed[] = [
+  // 소액 채무 (회생 비추천 / 신복위 워크아웃 솔직 권고 케이스)
+  {
+    causeType: 'small_debt',
+    originTitle: '사회초년생 소액 카드론 및 비상금 대출 (1,200만 원)',
+    totalDebt: 12000000,
+    debtSummary: '카카오 비상금 300만, 신한카드 리볼빙/카드론 900만 (총 1,200만 원)',
+    storyDetail: '첫 직장 퇴사 후 구직 기간 동안 생활비로 썼는데 월 이자가 20만 원씩 나와 연체 3일 차임. 급한 마음에 회생을 알아봄.',
+    specialNote: '회생 수임료(약 150~200만) 부담으로 배보다 배꼽이 큼. 신복위 프리워크아웃(신청비 5만 원, 이자 감면 분할)을 안내하는 것이 양심적 정답.',
+  },
+  {
+    causeType: 'small_debt',
+    originTitle: '주부 쿠팡/배민 소액결제 및 캐피탈 (1,400만 원)',
+    totalDebt: 14000000,
+    debtSummary: '휴대폰 소액결제 400만, 현대캐피탈 소액대출 1,000만 (총 1,400만 원)',
+    storyDetail: '가족 모르게 생활비로 소액결제를 돌려막다가 1,400만 원까지 불어남. 신복위 신속채무조정을 먼저 권유해야 함.',
+    specialNote: '소액 채무로 법원 회생 실익 없음. 신복위 채무조정 권고 대상.',
+  },
+
+  // 초고액 채무 (무담보 10억 초과 / 일반회생 대상)
+  {
+    causeType: 'high_debt',
+    originTitle: '제조업 하청 연쇄 부도 및 연대보증 (12억 5,000만 원)',
+    totalDebt: 1250000000,
+    debtSummary: '기술보증기금 5억, 신한은행 4억, 거래처 외상대금 3억 5,000만 (총 12억 5,000만 원)',
+    storyDetail: '원청 부도로 연쇄 부도가 나면서 무담보 채무가 12억을 돌파함. 급여 압류 및 채권자 가압류 위기.',
+    specialNote: '무담보 채무 10억 초과로 개인회생 불가! 법원 일반회생(도산 전담부) 또는 법인회생 상담 배정이 필수.',
+  },
+
+  // 재산 초과 (청산가치 초과 / 기각 위험 케이스)
+  {
+    causeType: 'asset_rich',
+    originTitle: '자가 아파트 잉여가치 초과 (채무 5,500만 원 vs 아파트 지분 1억 2,000만 원)',
+    totalDebt: 55000000,
+    debtSummary: '신용대출 3,500만, 카드론 2,000만 (총 5,500만 원)',
+    storyDetail: '보유 아파트(시세 5억, 담보 3.8억, 잉여 1.2억)가 있으나 일시적 사업 자금난으로 신용대출이 연체됨.',
+    specialNote: '재산(1억 2천)이 채무(5,500만)보다 많아 회생/파산 모두 기각됨! 자산 매각이나 저금리 담보대환 안내 필요.',
+  },
+
+  // 최근 대출 90% 이상 (사기죄/기각 의심 집중 소명 케이스)
+  {
+    causeType: 'recent_debt',
+    originTitle: '최근 2개월 내 집중 대출 및 코인 탕진 (사기죄/기각 위험)',
+    totalDebt: 50000000,
+    debtSummary: '1금융 신용 2,500만, 저축은행 2,000만, 카드론 500만 (모두 최근 60일 내 대출, 총 5,000만 원)',
+    storyDetail: '2달 전 대출받아 해외선물로 날리고 첫 달 이자만 내고 바로 연체됨. 금융사에서 사기 대출 고소 경고 문자를 받음.',
+    specialNote: '최근 채무 비중 90% 이상으로 법원 기각 및 사기파산 의심 압박 심각. 금융거래 내역 정밀 소명 전략 필수.',
+  },
+
+  // 불법 도박/사설 토토 (파산 불가 / 회생 고변제율 케이스)
+  {
+    causeType: 'gambling',
+    originTitle: '불법 온라인 카지노 및 사설 토토 채무 (6,800만 원)',
+    totalDebt: 68000000,
+    debtSummary: '대부업 3,800만, 2금융 신용 3,000만 (총 6,800만 원)',
+    storyDetail: '온라인 바카라에 빠져 고금리 대부업체를 썼음. 개인파산 면책불허가 대상.',
+    specialNote: '도박 빚은 파산 면책 불가(채무자회생법 제564조). 개인회생만 가능하며 원금 변제율 80~100% 압박 대비 필요.',
+  },
+
+  // 세금 체납 압도적 비중 (우선변제 18개월 압박)
+  {
+    causeType: 'tax_heavy',
+    originTitle: '자영업 부가가치세 및 종합소득세 대량 체납 (4,200만 원)',
+    totalDebt: 62000000,
+    debtSummary: '국세청 부가세 3,000만, 종소세 1,200만, 일반 은행 2,000만 (총 6,200만 원)',
+    storyDetail: '식당 운영 중 세금을 안 내서 홈택스 전자세금계산서 발급 제한 및 통장 압류 들어옴.',
+    specialNote: '조세채권은 탕감 불가 및 18개월 내 우선변제 필수 규정. 통장 압류 해제 및 분할 납부 플랜 수립.',
+  },
+
+  // 외국인 근로자 케이스
+  {
+    causeType: 'living',
+    originTitle: 'F-4 재외동포 근로자 생활비 카드 대출 (3,500만 원)',
+    totalDebt: 35000000,
+    debtSummary: '국내 카드론 2,000만, 2금융 신용 1,500만 (총 3,500만 원)',
+    storyDetail: '한국 제조공장에서 4년째 성실히 일하고 있으나 외국인도 개인회생이 되는지 몰라 불안해함.',
+    specialNote: '외국인 등록증 및 거소지가 있으면 내국인과 100% 동일하게 개인회생 혜택 적용 가능함을 안내.',
+  },
+
+  // 기존 실전 채무 풀
   {
     causeType: 'crypto',
     originTitle: '주식 및 비트코인 선물 레버리지 청산',
@@ -243,6 +325,7 @@ const REAL_HOUSINGS: HousingSeed[] = [
   { housingText: '무상거주 (친구/지인 명의 빌라 동거, 본인 재산 전무)', equityValue: 0, isExemptDeposit: true },
   { housingText: '배우자 명의 빌라 (시세 3억 원 / 전세보증금 1억 9천 세안고 매매, 본인 재산 없음)', equityValue: 55000000, isExemptDeposit: false }, // 배우자 재산 50% 반영 시 청산가치 약 5,500만
   { housingText: '자가 아파트 (KB시세 4억 2천 / 1순위 은행 주택담보대출 3억 2천, 잉여가치 1억)', equityValue: 100000000, isExemptDeposit: false },
+  { housingText: '자가 아파트 (시세 5억 원 / 은행 담보대출 3억 8천, 본인 잉여가치 1억 2,000만 원)', equityValue: 120000000, isExemptDeposit: false }, // 재산 초과 케이스용
   { housingText: '고시원 거주 (보증금 없음, 월세 45만 원, 주민등록 최근 재등록)', equityValue: 0, isExemptDeposit: true },
   { housingText: '중고 1톤 화물차 1대 (시세 1,200만 / 캐피탈 저당 잔여 1,000만)', equityValue: 2000000, isExemptDeposit: false },
 ];
@@ -392,7 +475,15 @@ export const calculateLegalDiagnosis = (
   if (totalDebt > 1000000000) {
     // 무담보 채무 10억 초과 시 일반회생
     suitability = '일반회생';
-    suitabilityReason = '무담보 채무가 10억 원을 초과하여 개인회생 대상이 아니며, 법원 일반회생(전문직/고액채무) 대상입니다.';
+    suitabilityReason = `무담보 채무가 10억 원을 초과(${Math.round(totalDebt / 100000000)}억 원대)하여 법률상 개인회생 신청 대상이 아니며, 법원 전문재판부 일반회생(고액도산) 대상입니다.`;
+  } else if (totalAssets >= totalDebt && totalAssets > 30000000) {
+    // 재산이 채무보다 많은 경우 (청산가치 초과 / 지급불능 미충족)
+    suitability = '신복위/워크아웃';
+    suitabilityReason = `보유 재산(청산가치 약 ${Math.round(totalAssets / 10000)}만 원)이 총 채무(${Math.round(totalDebt / 10000)}만 원)보다 많아, 법률상 [지급불능] 요건을 갖추지 못해 법원 회생/파산 모두 기각됩니다. 재산 매각 또는 1금융권 저금리 담보대환이 필요합니다.`;
+  } else if (totalDebt < 15000000) {
+    // 채무 1,500만 원 미만 (소액 채무: 1,200만 원 등)
+    suitability = '신복위/워크아웃';
+    suitabilityReason = `총 채무액이 ${Math.round(totalDebt / 10000)}만 원으로 소액입니다. 법원 개인회생 진행 시 수임료/송달료 등 비용 부담(약 150~250만 원)이 총 채무의 15% 이상을 차지하여 실익이 전혀 없습니다. 신청비 5만 원으로 원금 분할 상환이 가능한 신용회복위원회의 프리워크아웃 또는 신속채무조정이 최적의 정답입니다.`;
   } else if (isUnemployed || monthlyIncome <= recognizedLivingCost) {
     // 소득이 없거나 최저생계비 미만인 경우
     if (totalAssets > totalDebt) {
@@ -402,9 +493,6 @@ export const calculateLegalDiagnosis = (
       suitability = '개인파산';
       suitabilityReason = `월 소득(${Math.round(monthlyIncome / 10000)}만 원)이 법정 최저생계비(${Math.round(recognizedLivingCost / 10000)}만 원)에 미달하거나 근로 능력이 결여되어, 파산선고 및 면책 신청이 가장 유리합니다.`;
     }
-  } else if (totalDebt < 15000000) {
-    suitability = '신복위/워크아웃';
-    suitabilityReason = '총 채무액이 1,500만 원 미만의 소액으로 법원 개인회생 수임료 대비 실익이 낮아, 신용회복위원회 프리워크아웃이 권장됩니다.';
   } else {
     suitability = '개인회생';
     suitabilityReason = `계속적·반복적 소득이 최저생계비를 초과(${Math.round(monthlyPayment / 10000)}만 원 가용소득 발생)하여 개인회생 신청 최적격입니다.`;
@@ -446,7 +534,19 @@ export const calculateLegalDiagnosis = (
 
   // 6. 1차 TM 상담원 추천 법률 후킹 멘트 (분쟁 위험 0% + 고객 신뢰/호기심 유발)
   let recommendedLegalHook = '';
-  if (suitability === '개인파산') {
+  if (totalDebt < 15000000) {
+    recommendedLegalHook = '💡 [소액채무 솔직 안내 후킹]: "고객님, 총 채무가 약 1,200~1,400만 원 선이시면 법원 회생을 하실 경우 수임료 등 비용이 너무 커서 배보다 배꼽이 더 큽니다! 저희 법률사무소의 이익보다 고객님의 실익을 먼저 생각해서 솔직히 말씀드리자면, 신용회복위원회 프리워크아웃(신청비 5만 원)을 먼저 신청하시는 것이 비용도 크게 아끼고 가장 현명하십니다!"';
+  } else if (totalAssets >= totalDebt && totalAssets > 30000000) {
+    recommendedLegalHook = '💡 [자산초과 기각안내 후킹]: "고객님, 법률상 보유 재산이 빚보다 많으시면 법원에서 회생 기각 결정이 납니다. 소중한 재산을 지키시려면 무리하게 회생을 넣기보다 1금융권 저금리 담보대출로 고금리 채무를 대환하거나 분할 상환 방식을 찾으셔야 합니다!"';
+  } else if (totalDebt > 1000000000) {
+    recommendedLegalHook = '💡 [초고액 일반회생 전문 후킹]: "무담보 채무가 10억 원을 초과하는 고액 채무는 일반 개인회생이 아닌 법원 [일반회생] 전담부로 가셔야 하므로, 고액 전문 도산 사무장님과의 정밀 심층 배정이 필수입니다!"';
+  } else if (debtCause === 'recent_debt') {
+    recommendedLegalHook = '💡 [최근 채무 소명 대비 후킹]: "최근 1~2개월 내 대출 비중이 높으시면 법원에서 사기 대출 의심과 엄격한 소명 요구가 나오지만, 저희 사무실의 금융 거래내역 정밀 소명 노하우로 기각 없이 안전하게 인가받을 수 있도록 방어해 드립니다!"';
+  } else if (debtCause === 'gambling') {
+    recommendedLegalHook = '💡 [도박채무 회생 준칙 후킹]: "도박이나 사설 토토 채무는 법률상 개인파산은 100% 면책 불허가로 기각되지만, 개인회생은 성실 변제 계획안을 제출하면 법원 인가를 받아 독촉을 끊어낼 수 있습니다!"';
+  } else if (debtCause === 'tax_heavy') {
+    recommendedLegalHook = '💡 [세금 우선변제 18개월 후킹]: "세금 체납은 탕감 대상은 아니지만, 회생을 통해 최대 18개월간 무이자 분할 납부로 유예받고 홈택스 발급 제한과 통장 압류를 즉시 해제할 수 있습니다!"';
+  } else if (suitability === '개인파산') {
     recommendedLegalHook = '💡 [파산 면책 후킹]: "고객님처럼 소득이 없으시거나 건강상 근로가 어려우신 경우, 매달 갚아나가는 회생보다 빚을 100% 일시에 면책받는 개인파산이 법적으로 훨씬 적합하십니다!"';
   } else if (housingText.includes('배우자') || (court.isSpecialized && housingText.includes('빌라'))) {
     recommendedLegalHook = `💡 [배우자 재산 미반영 후킹]: "회생법원은 실무준칙상 배우자 명의의 재산을 신청인의 재산으로 보지 않기 때문에 회생 인가 확률과 탕감률이 훨씬 높아집니다!"`;
@@ -484,14 +584,23 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
   // 1. 테마에 따른 필터링
   let candidateDebts = REAL_DEBTS;
   let candidateJobs = REAL_JOBS;
+  let candidateHousings = REAL_HOUSINGS;
   let candidateContexts = PHYSICAL_CONTEXTS;
   let candidateTraits = PSYCHOLOGICAL_TRAITS;
 
-  if (themeId === 'stock_crypto') {
+  if (themeId === 'small_debt') {
+    candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'small_debt');
+  } else if (themeId === 'high_debt') {
+    candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'high_debt');
+    candidateJobs = REAL_JOBS.filter(j => j.category === 'business');
+  } else if (themeId === 'asset_rich') {
+    candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'asset_rich');
+    candidateHousings = REAL_HOUSINGS.filter(h => h.equityValue >= 100000000);
+  } else if (themeId === 'stock_crypto') {
     candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'crypto');
     candidateJobs = REAL_JOBS.filter(j => j.category === 'office' || j.category === 'freelancer');
   } else if (themeId === 'business_tax') {
-    candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'business');
+    candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'business' || d.causeType === 'tax_heavy');
     candidateJobs = REAL_JOBS.filter(j => j.category === 'business');
   } else if (themeId === 'charter_fraud') {
     candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'fraud');
@@ -508,7 +617,7 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
   // 2. 무작위 선택
   const debt = candidateDebts[Math.floor(Math.random() * candidateDebts.length)];
   const job = candidateJobs[Math.floor(Math.random() * candidateJobs.length)];
-  const housing = REAL_HOUSINGS[Math.floor(Math.random() * REAL_HOUSINGS.length)];
+  const housing = candidateHousings[Math.floor(Math.random() * candidateHousings.length)];
   const court = REAL_COURTS[Math.floor(Math.random() * REAL_COURTS.length)];
   const context = candidateContexts[Math.floor(Math.random() * candidateContexts.length)];
   const trait = candidateTraits[Math.floor(Math.random() * candidateTraits.length)];
