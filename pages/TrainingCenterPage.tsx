@@ -142,6 +142,8 @@ export default function TrainingCenterPage() {
   const lastSentTextRef = useRef<string>('');
   const lastSentTimeRef = useRef<number>(0);
   const messagesRef = useRef<TrainingMessage[]>([]);
+  const customerSpeakingStartTimeRef = useRef<number>(0);
+  const isCustomerSpeakingRef = useRef<boolean>(false);
 
   useEffect(() => {
     callStateRef.current = callState;
@@ -398,6 +400,8 @@ export default function TrainingCenterPage() {
       // 고객이 말하는 도중에는 마이크를 켜지 않아 안드로이드가 스피커 볼륨을 줄이지 않고 100% 크게 들림!
       if (isTtsEnabled) {
         setIsCustomerSpeaking(true);
+        isCustomerSpeakingRef.current = true;
+        customerSpeakingStartTimeRef.current = Date.now();
         try {
           await speechService.speak(firstMsg.text, {
             ...selectedPersona.speechOptions,
@@ -407,6 +411,7 @@ export default function TrainingCenterPage() {
           });
         } finally {
           setIsCustomerSpeaking(false);
+          isCustomerSpeakingRef.current = false;
         }
       }
 
@@ -477,9 +482,48 @@ export default function TrainingCenterPage() {
         const clean = transcript.trim();
         if (!clean) return;
 
-        // 1. 실시간 말 끼어들기(Barge-in):
-        // 고객이 말하는 도중(TTS 재생 중)이라도 상담원이 말을 시작하면 고객 음성을 즉시 정지!
-        speechService.stopSpeaking();
+        // 1. 실시간 말 끼어들기 및 동시 발화(Overlapping Speech) 지능형 중재:
+        const isBackchannel = /^(네|예|아|음|어|네네|아네|예예|글쎄요|그렇죠)[.?~]?$/.test(clean);
+
+        if (isCustomerSpeakingRef.current) {
+          // A) 단순 맞장구/추임새인 경우: 고객 음성을 끊지 않고 계속 말하게 둠! (실제 사람 통화 리얼리티)
+          if (isBackchannel) {
+            setInterimText(clean);
+            interimTextRef.current = clean;
+            return;
+          }
+
+          // B) 실질적인 동시 발화 / 끼어들기 발생 시:
+          const elapsedFromCustomerStart = Date.now() - customerSpeakingStartTimeRef.current;
+          const isGentleCustomer = selectedPersona.difficulty === '초급' || selectedPersona.customerName.includes('순한');
+
+          if (elapsedFromCustomerStart < 1200) {
+            // 발화 시작 직후(1.2초 이내) 겹쳤을 때:
+            if (isGentleCustomer) {
+              // 온순형 고객: 고객이 말을 멈추고 상담원에게 즉시 양보!
+              speechService.stopSpeaking();
+              isCustomerSpeakingRef.current = false;
+              setIsCustomerSpeaking(false);
+            } else {
+              // 급하거나 화난 고객: 고객이 밀어붙이며 자기 말을 계속함!
+              // 단, 상담원이 6글자 이상 길게 말하며 치고 들어오면 고객이 멈춤
+              if (clean.length >= 6) {
+                speechService.stopSpeaking();
+                isCustomerSpeakingRef.current = false;
+                setIsCustomerSpeaking(false);
+              } else {
+                setInterimText(clean);
+                interimTextRef.current = clean;
+                return;
+              }
+            }
+          } else {
+            // 고객 말이 이미 1.2초 이상 진행된 후 상담원이 말하면 고객 중단
+            speechService.stopSpeaking();
+            isCustomerSpeakingRef.current = false;
+            setIsCustomerSpeaking(false);
+          }
+        }
 
         // 2. 실시간 발화 자막 업데이트 (상담원이 말하는 중임을 시각적으로 확인)
         setInterimText(clean);
@@ -493,16 +537,16 @@ export default function TrainingCenterPage() {
         // 한국어 완성형 문장 종결 어미 패턴 (~요, ~까, ~죠, ~니다, ~세요, ~신가요, ?, . 등)
         const isSentenceEnd = /[?!\.]$|([요죠까나니세][\s]*[?]?$)|(입니다|있습니다|맞나요|되실까요|되세요|하세요|드렸습니다|드려요|계신가요|가능하세요|맞으시죠|있을까요|인가요|시죠|고요|데요|거예요|할게요)$/.test(clean);
 
-        // 실제 사람 간의 전화 통화 반응 속도(300ms~600ms)에 맞춘 초고속 자연스러운 턴테이킹:
-        // 1) 브라우저 문장 인식 확정(isFinal) + 문장 종결 어미 감지 시: 380ms (초고속 즉답)
-        // 2) 실시간 인식(interim) 상태에서 종결 어미 감지 시: 500ms
-        // 3) 종결 어미 없으나 문장 확정(isFinal)된 경우: 680ms
-        // 4) 문장 중간의 자연스러운 숨 고름(쉼표): 950ms (말이 중간에 끊기지 않고 완전한 문장으로 결합되도록 보장)
-        let delayMs = 950;
+        // 실제 사람 간의 전화 통화 반응 속도(180ms~350ms)에 맞춘 초고속 자연스러운 턴테이킹:
+        // 1) 브라우저 문장 인식 확정(isFinal) + 문장 종결 어미 감지 시: 180ms (초고속 즉답)
+        // 2) 실시간 인식(interim) 상태에서 종결 어미 감지 시: 280ms
+        // 3) 종결 어미 없으나 문장 확정(isFinal)된 경우: 350ms
+        // 4) 문장 중간의 자연스러운 숨 고름(쉼표): 550ms (기존 950ms에서 대폭 단축하여 정적 해소)
+        let delayMs = 550;
         if (isSentenceEnd) {
-          delayMs = isFinal ? 380 : 500;
+          delayMs = isFinal ? 180 : 280;
         } else if (isFinal) {
-          delayMs = 680;
+          delayMs = 350;
         }
 
         silenceTimerRef.current = setTimeout(() => {
@@ -654,6 +698,8 @@ export default function TrainingCenterPage() {
 
       if (isTtsEnabled && myTurnId === turnIdRef.current) {
         setIsCustomerSpeaking(true);
+        isCustomerSpeakingRef.current = true;
+        customerSpeakingStartTimeRef.current = Date.now();
         try {
           (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
         } catch (_) {}
@@ -666,6 +712,7 @@ export default function TrainingCenterPage() {
           });
         } finally {
           setIsCustomerSpeaking(false);
+          isCustomerSpeakingRef.current = false;
         }
       }
     } catch (e) {
