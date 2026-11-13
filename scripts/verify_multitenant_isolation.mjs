@@ -4,7 +4,7 @@
 // - PGlite(메모리 Postgres)에서 실제 DB 접속 없이 돈다. 운영·스테이징에 연결하지 않는다.
 // - 마이그레이션은 운영 적용 순서 그대로 읽는다:
 //     운영에 이미 있는 것: 001~018, 023, 024, 026, 027_agent_ui_mode
-//     다음에 적용할 것(supabase/migrations/apply_order_019_034.txt): 019, 020, 021, 022, 025, 027_platform_notices_multitenant,
+//     다음에 적용할 것(supabase/migrations/apply_order_019_035.txt): 019, 020, 021, 022, 025, 027_platform_notices_multitenant,
 //       028_agent_security_profiles, 028_vendor_lead_quality_roi, 029, 030, 031, 032, 033
 // - 019~033 은 실패하면 FAIL. 테스트 데이터를 넣은 뒤 019~033 을 한 번 더 실행해 재실행 오류가 없는지도 본다.
 // - 결과를 파일로도 남기려면: VERIFY_OUT=<파일 경로> node scripts/verify_multitenant_isolation.mjs
@@ -130,8 +130,8 @@ const BASE_FILES = [
   '027_agent_ui_mode.sql',
 ];
 
-// 다음 운영 적용분 (apply_order_019_034.txt 와 같아야 한다)
-const ORDER_FILE = path.join(MIG_DIR, 'apply_order_019_034.txt');
+// 다음 운영 적용분 (apply_order_019_035.txt 와 같아야 한다)
+const ORDER_FILE = path.join(MIG_DIR, 'apply_order_019_035.txt');
 const NEW_FILES = readFileSync(ORDER_FILE, 'utf8')
   .split(/\r?\n/).map(s => s.replace(/#.*$/, '').trim()).filter(s => s.endsWith('.sql'));
 
@@ -153,7 +153,7 @@ for (const mf of BASE_FILES) {
   if (err) logErr(`[WARN] (운영에 이미 있는 파일) ${mf}: ${err}`);
   else log(`[MIGRATION] Loaded: ${mf}`);
 }
-assertOk(NEW_FILES.length === 14, `적용 순서 파일에 14개 파일 (034 포함) (${NEW_FILES.length}개)`);
+assertOk(NEW_FILES.length === 15, `적용 순서 파일에 15개 파일 (034·035 포함) (${NEW_FILES.length}개)`);
 for (const mf of NEW_FILES) {
   const err = await runFile(mf);
   assertOk(!err, `1차 실행: ${mf}${err ? ' → ' + err : ''}`);
@@ -593,6 +593,40 @@ log('\n--- 14. 전체 점검: 열린 정책·RLS 꺼진 회사 표·anon 실행 
   assertOk(anonTables.rows.length === 0, `새 표 anon SELECT 권한 없음 (${anonTables.rows.map(r => r.relname).join(', ')})`);
 }
 
+{
+  log('\n--- 긴급 파기(035) ---');
+  const confirmB = 'TM 베타 법률 / 모든 데이터를 영구 파기합니다';
+  const aBefore = (await db.query(`SELECT count(*)::int n FROM public.cases WHERE org_id = '${ORG_A}'`)).rows[0].n;
+  const bBefore = (await db.query(`SELECT count(*)::int n FROM public.cases WHERE org_id = '${ORG_B}'`)).rows[0].n;
+  const agentSum = await queryAsUser(...B_AGENT, `SELECT public.get_emergency_purge_summary() AS s`);
+  assertOk(!!agentSum.error, `상담원은 파기 요약 조회 불가 (${(agentSum.error || '').slice(0, 40)})`);
+  const ownerSum = await queryAsUser(...B_ADMIN, `SELECT public.get_emergency_purge_summary() AS s`);
+  assertOk(!ownerSum.error && Number(ownerSum.rows[0]?.s?.cases_count) === bBefore, `대표 파기 요약 정상 (리드 ${ownerSum.rows[0]?.s?.cases_count} / ${bBefore}) ${ownerSum.error || ''}`);
+  const agentPurge = await mutateAsUser(...B_AGENT, `SELECT public.emergency_purge_company_data('${confirmB}') AS r`);
+  assertOk(!!agentPurge.error, `상담원은 파기 실행 불가`);
+  const wrongText = await mutateAsUser(...B_ADMIN, `SELECT public.emergency_purge_company_data('틀린 문구') AS r`);
+  assertOk(!!wrongText.error && /확인 문구/.test(wrongText.error), `확인 문구가 다르면 거부`);
+  const anonPurge = await mutateAsUser(...ANON, `SELECT public.emergency_purge_company_data('${confirmB}') AS r`);
+  assertOk(!!anonPurge.error, `anon 파기 실행 불가`);
+  const ok = await mutateAsUser(...B_ADMIN, `SELECT public.emergency_purge_company_data('${confirmB}', '검사') AS r`);
+  assertOk(!ok.error && ok.rows[0]?.r?.ok === true, `B 대표 파기 실행 성공 ${ok.error || ''}`);
+  const bAfter = (await db.query(`SELECT count(*)::int n FROM public.cases WHERE org_id = '${ORG_B}'`)).rows[0].n;
+  const aAfter = (await db.query(`SELECT count(*)::int n FROM public.cases WHERE org_id = '${ORG_A}'`)).rows[0].n;
+  assertOk(bAfter === 0, `B 리드 0건 (${bAfter})`);
+  assertOk(aAfter === aBefore && aAfter > 0, `A 리드는 그대로 (${aAfter}/${aBefore})`);
+  const leftB = [];
+  for (const t of ['communication_logs', 'call_recordings', 'auto_dial_queue', 'auto_dial_campaigns', 'org_dnc_numbers', 'pending_calls', 'case_deliveries']) {
+    const ex = (await db.query(`SELECT to_regclass('public.${t}') IS NOT NULL AS ok`)).rows[0].ok;
+    if (!ex) continue;
+    const n = (await db.query(`SELECT count(*)::int n FROM public.${t} WHERE org_id = '${ORG_B}'`)).rows[0].n;
+    if (n) leftB.push(`${t}=${n}`);
+  }
+  assertOk(leftB.length === 0, `B 리드 관련 표 모두 비움 (${leftB.join(', ')})`);
+  const audit = (await db.query(`SELECT purged_cases_count, purged_detail FROM public.org_purge_audit_logs WHERE org_id = '${ORG_B}'`)).rows;
+  assertOk(audit.length === 1 && audit[0].purged_cases_count === bBefore, `파기 감사 기록 1건 (리드 ${audit[0]?.purged_cases_count})`);
+  const members = (await db.query(`SELECT count(*)::int n FROM public.org_members WHERE org_id = '${ORG_B}'`)).rows[0].n;
+  assertOk(members > 0, `B 회사·멤버는 남음 (${members})`);
+}
 log('\n===============================================================');
 let code = 0;
 if (failures === 0) {

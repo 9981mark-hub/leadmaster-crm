@@ -77,7 +77,7 @@ export default function LoginPage() {
                 <div className="relative z-20 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-700 text-white px-4 py-2.5 flex items-center justify-between text-xs shadow-md border-b border-white/10">
                     <div className="flex items-center gap-2 font-medium">
                         <Smartphone size={16} className="text-blue-200 animate-pulse" />
-                        <span>리드마스터 모바일 앱 (v1.8.0)으로 최적화된 통화 업무를 시작하세요</span>
+                        <span>리드마스터 모바일 앱 (v1.8.2)으로 최적화된 통화 업무를 시작하세요</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <a
@@ -343,7 +343,7 @@ export default function LoginPage() {
                         <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                             <span className="flex items-center gap-1.5 text-slate-300">
                                 <Smartphone size={14} className="text-blue-400" />
-                                <span>모바일 앱 (v1.8.0)</span>
+                                <span>모바일 앱 (v1.8.2)</span>
                             </span>
                             <div className="flex items-center gap-2.5">
                                 <a 

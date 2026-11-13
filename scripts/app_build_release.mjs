@@ -17,7 +17,7 @@ import path from 'node:path';
 const APP_DIR = process.env.LM_APP_DIR || 'D:\\안드로이드 스튜디오 작업\\Projects\\LeadMasterApp';
 const JAVA_HOME = process.env.LM_JAVA_HOME || 'D:\\안드로이드 스튜디오 작업\\jdk17'; // Gradle 8.13은 JDK 17 필요
 const OUT_DIR = process.env.LM_APK_OUT_DIR || 'D:\\LeadMaster_APK';
-const EXPECTED_FINGERPRINT = '7ee0d49ada13f6301fc5ca284a71f9ae44b343ba4e37ce5be6816cf3bb7e0359'; // 정식 인증서 SHA-256 (공개 정보)
+const EXPECTED_FINGERPRINT = 'bf6eb8fe6590335171077e7b353a45587ad30b4233e38c2382c5f106d4bd9284'; // 정식 인증서 SHA-256 (공개 정보). 2026-11-13 새 키 (이전 7ee0d49a… 폐기)
 
 function fail(msg) {
   console.error(`실패: ${msg}`);
