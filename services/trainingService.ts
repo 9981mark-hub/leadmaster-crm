@@ -902,9 +902,11 @@ ${persona.groundTruth ? `
 - 법정 인정 생계비: ${Math.round(persona.groundTruth.recognizedLivingCost / 10000)}만 원
 - 예상 월 변제금: 약 ${Math.round(persona.groundTruth.expectedMonthlyPayment / 10000)}만 원 (${persona.groundTruth.expectedRepaymentPeriod}개월 납입, 총 ${Math.round(persona.groundTruth.totalRepaymentAmount / 10000)}만 원, 원금 탕감률 약 ${persona.groundTruth.estimatedForgivenessRate}%)
 - 관할 법원 실무: ${persona.groundTruth.courtRuleNote}
+- 1차 추천 법률 후킹: ${persona.groundTruth.recommendedLegalHook || '없음'}
 * 1차 상담원 평가 지침 (법률회사 분쟁 방지 실무 원칙):
   1) 섣부른 확정 단정 감점: 상담원이 1차 통화에서 고객에게 "무조건 월 OO만 원이다", "OO% 탕감 보장된다"며 섣불리 금액을 확약한 경우, 2차 상담 시 민원/분쟁 유발 위험으로 간주하여 complianceScore를 감점하고 weaknesses에 경고하세요.
   2) 조건부 완충 브릿지 가점: 고객이 성격 급하게 결론을 강요할 때만 대략적인 가계산 범위를 조심스럽게 언급하고, "정확한 1원 단위 금액은 수석 사무장님이 서류 검토 후 확정 브리핑해 드린다"며 2차 전문 상담으로 자연스럽게 인계를 성사시켰는지 평가하세요.
+  3) 법률 제도적 강점 후킹 가점: "회생법원은 배우자 재산을 보지 않습니다", "코인/주식 손실금은 청산가치에서 제외됩니다", "3~7일 내 금지명령으로 독촉/압류가 즉시 차단됩니다" 등 고객 조건에 맞는 법률 제도적 강점을 활용하여 고객의 신뢰와 호기심(후킹)을 이끌어냈다면 objectionScore에 가점(+10점)을 부여하고 strengths에 칭찬하세요!
 ` : ''}
 
 [사무장 인계 7대 필수 문진 항목 채점 기준]

@@ -1152,6 +1152,23 @@ export default function TrainingCenterPage() {
                     </div>
                   </div>
 
+                  {/* 🎯 1차 추천 법률 제도 후킹 멘트 (분쟁위험 0% + 고객 신뢰/호기심 극대화) */}
+                  {selectedPersona.groundTruth?.recommendedLegalHook && (
+                    <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-emerald-50/90 to-teal-50/90 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-300 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-200">
+                      <div className="font-extrabold flex items-center justify-between text-emerald-800 dark:text-emerald-300 mb-1">
+                        <span className="flex items-center gap-1">
+                          🎯 <strong>1차 추천 법률 후킹</strong>
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-200/70 dark:bg-emerald-900/80 font-bold text-emerald-900 dark:text-emerald-100">
+                          분쟁 위험 0% 실무준칙
+                        </span>
+                      </div>
+                      <div className="font-medium text-[11px] leading-relaxed text-emerald-950 dark:text-emerald-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-emerald-200/60 dark:border-emerald-900/60">
+                        {selectedPersona.groundTruth.recommendedLegalHook}
+                      </div>
+                    </div>
+                  )}
+
                   {/* 결론 요구 고객 대응용 1차 가심사 가이드 (필요 시에만 펼침) */}
                   {selectedPersona.groundTruth && (
                     <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-800/60">

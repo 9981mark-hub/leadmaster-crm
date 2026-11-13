@@ -43,6 +43,7 @@ export interface GroundTruthLegalDiagnosis {
   courtStayOrderDays: string;       // 금지명령 예상 소요일 (예: 3~7일)
   courtCommencementMonths: string;  // 개시결정 예상 소요기간 (예: 3~5개월)
   courtRuleNote: string;            // 관할 법원 실무준칙 특징
+  recommendedLegalHook: string;     // 1차 TM 상담원 추천 법률 후킹 멘트 (분쟁 위험 0% + 고객 호기심/신뢰 유발)
 }
 
 export interface InfinitePersonaTheme {
@@ -374,7 +375,9 @@ export const calculateLegalDiagnosis = (
   totalAssets: number,
   isUnemployed: boolean,
   court: CourtSeed,
-  debtCause: string
+  debtCause: string,
+  housingText: string = '',
+  age: number = 35
 ): GroundTruthLegalDiagnosis => {
   // 1. 인정 법정 최저생계비 산정 (보건복지부 공식 고시 기준 중위소득 60%)
   const recognizedLivingCost = DEFAULT_LIVING_COST[Math.min(dependentsCount, 6) as keyof typeof DEFAULT_LIVING_COST] || 1435208;
@@ -441,6 +444,22 @@ export const calculateLegalDiagnosis = (
     courtRuleNote += '일반 지방법원 본원 관할로 최근 1년 채무 및 투자 손실금의 청산가치 가산 요구 등 심리가 상대적으로 보수적임.';
   }
 
+  // 6. 1차 TM 상담원 추천 법률 후킹 멘트 (분쟁 위험 0% + 고객 신뢰/호기심 유발)
+  let recommendedLegalHook = '';
+  if (suitability === '개인파산') {
+    recommendedLegalHook = '💡 [파산 면책 후킹]: "고객님처럼 소득이 없으시거나 건강상 근로가 어려우신 경우, 매달 갚아나가는 회생보다 빚을 100% 일시에 면책받는 개인파산이 법적으로 훨씬 적합하십니다!"';
+  } else if (housingText.includes('배우자') || (court.isSpecialized && housingText.includes('빌라'))) {
+    recommendedLegalHook = `💡 [배우자 재산 미반영 후킹]: "회생법원은 실무준칙상 배우자 명의의 재산을 신청인의 재산으로 보지 않기 때문에 회생 인가 확률과 탕감률이 훨씬 높아집니다!"`;
+  } else if (debtCause === 'crypto' || debtCause.includes('코인')) {
+    recommendedLegalHook = `💡 [코인·주식 준칙 후킹]: "${court.isSpecialized ? court.courtName : '회생법원'} 준칙 제408호에 따라 코인·주식으로 잃으신 손실금은 재산에 잡히지 않아 전액 탕감 대상으로 인정받으실 수 있습니다!"`;
+  } else if (age <= 30) {
+    recommendedLegalHook = '💡 [청년 단축 특례 후킹]: "고객님은 만 30세 이하 청년 특례 대상이실 수 있어, 36개월 대신 24개월 안팎으로 변제기간을 줄여 조기 졸업하실 수 있습니다!"';
+  } else if (debtCause === 'business') {
+    recommendedLegalHook = '💡 [사업자 체납 포함 후킹]: "개인회생은 은행 빚뿐만 아니라 사업자 부가가치세 체납과 4대보험 미납금까지 변제계획안에 함께 묶어 안전하게 분할 처리할 수 있습니다!"';
+  } else {
+    recommendedLegalHook = `💡 [신속 금지명령 후킹]: "접수 즉시 ${court.stayOrderDays} 안에 법원 금지명령이 나오므로, 빚 독촉 전화나 통장 압류부터 합법적으로 완벽히 막아드릴 수 있습니다!"`;
+  }
+
   return {
     suitability,
     suitabilityReason,
@@ -452,6 +471,7 @@ export const calculateLegalDiagnosis = (
     courtStayOrderDays: court.stayOrderDays,
     courtCommencementMonths: court.commencementMonths,
     courtRuleNote,
+    recommendedLegalHook,
   };
 };
 
@@ -524,7 +544,9 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     housing.equityValue,
     job.category === 'unemployed',
     court,
-    debt.causeType
+    debt.causeType,
+    housing.housingText,
+    age
   );
 
   // 음성 및 성우 세팅
