@@ -1499,16 +1499,22 @@ export default function TrainingCenterPage() {
               </div>
             )}
 
-            {/* Google Cloud Studio Voice Settings Box */}
+            {/* 실전 음성 엔진 및 수화기 필터 설정 박스 */}
             <div className="p-3.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 space-y-2 text-xs shadow-xs">
               <div className="flex items-center justify-between font-bold text-gray-800 dark:text-gray-200">
                 <span className="flex items-center gap-1.5">
                   <Volume2 className="w-3.5 h-3.5 text-blue-500" />
-                  스튜디오 음성 & 수화기 필터
+                  실전 고객 성대 & 통화 음질
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold">
-                  Google Neural2
-                </span>
+                {colabUrl ? (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold flex items-center gap-1">
+                    🎙️ CosyVoice 2 복제 음성
+                  </span>
+                ) : (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold flex items-center gap-1">
+                    ✨ 100인 실전 뉴럴 (0원 무제한)
+                  </span>
+                )}
               </div>
 
               {/* Telephone Filter Toggle */}
