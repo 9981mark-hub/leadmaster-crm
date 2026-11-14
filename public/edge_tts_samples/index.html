@@ -23,6 +23,14 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       border: 1px solid #334155;
     }
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     .badge {
       display: inline-block;
       padding: 6px 14px;
@@ -31,8 +39,25 @@
       font-size: 13px;
       font-weight: 700;
       border-radius: 9999px;
-      margin-bottom: 14px;
       border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+    .switch-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: #0f172a;
+      color: #c084fc;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 8px;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      transition: all 0.2s;
+    }
+    .switch-link:hover {
+      background: #1e1b4b;
+      color: #e9d5ff;
     }
     h1 {
       font-size: 22px;
@@ -127,7 +152,12 @@
 </head>
 <body>
   <div class="container">
-    <span class="badge">🎙️ 24kHz 초고음질 신경망 (0원 무제한)</span>
+    <div class="nav-bar">
+      <span class="badge">🎙️ 24kHz 초고음질 신경망 (0원 무제한)</span>
+      <a href="/cosyvoice_samples/index.html" class="switch-link">
+        <span>🎙️</span> 2안 CosyVoice 2 복제 음성 보기 ↗
+      </a>
+    </div>
     <h1>MS Edge-TTS 클라우드 직결 테스트 음성</h1>
     <p class="sub">
       아래 파란색 <strong>[ ▶ 목소리 바로 듣기 ]</strong> 큰 버튼을 누르시거나,<br>
