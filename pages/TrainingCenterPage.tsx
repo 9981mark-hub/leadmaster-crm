@@ -1609,7 +1609,11 @@ export default function TrainingCenterPage() {
                     pitch: calcPitch,
                     emotion: sampleEmotion,
                   });
-                  showToast(`🔊 [${result.voiceName}] ${selectedPersona.customerName} 성우 발화 테스트 완료!`, 'success');
+                  if (result.engine === 'neural') {
+                    showToast(`✨ [${result.voiceName}] ${selectedPersona.customerName} 24kHz 초고음질 성우 발화 완료!`, 'success');
+                  } else {
+                    showToast(`⚠️ [${result.voiceName} (브라우저 임시 백업)] ${selectedPersona.customerName} 발화 완료 (새로고침 시 1안 초고음질 성우 적용)`, 'warning');
+                  }
                 }}
                 className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-500/20"
               >
