@@ -444,12 +444,13 @@ export default function TrainingCenterPage() {
         customerSpeakingStartTimeRef.current = Date.now();
         lastCustomerSpeakingTextRef.current = firstMsg.text;
         try {
-          await speechService.speak(firstMsg.text, {
+          const res = await speechService.speak(firstMsg.text, {
             ...selectedPersona.speechOptions,
             rate: selectedPersona.speechOptions?.rate ?? 1.0,
             pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
             emotion: firstEmotion,
           });
+          console.log(`[AI 가상고객 첫마디 발화 완료] 엔진: ${res.engine}, 성우: ${res.voiceName}`);
         } finally {
           setIsCustomerSpeaking(false);
           isCustomerSpeakingRef.current = false;
@@ -766,12 +767,13 @@ export default function TrainingCenterPage() {
           (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
         } catch (_) {}
         try {
-          await speechService.speak(cleanCustomerText, {
+          const res = await speechService.speak(cleanCustomerText, {
             ...selectedPersona.speechOptions,
             rate: selectedPersona.speechOptions?.rate ?? 1.0,
             pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
             emotion: parsedEmotion,
           });
+          console.log(`[AI 가상고객 답변 발화 완료] 엔진: ${res.engine}, 성우: ${res.voiceName}`);
         } finally {
           setIsCustomerSpeaking(false);
           isCustomerSpeakingRef.current = false;

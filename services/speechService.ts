@@ -265,9 +265,13 @@ class SpeechService {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-    const apiUrl = '/api/edge-tts';
+    // Vercel 공식 도메인 외(GitHub Pages, 모바일 앱, 로컬 등)에서도 100% 동작하도록 절대 엔드포인트 보장
+    const apiUrl = (typeof window !== 'undefined' && window.location.origin.includes('leadmastercrm.vercel.app'))
+      ? '/api/edge-tts'
+      : 'https://leadmastercrm.vercel.app/api/edge-tts';
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -291,25 +295,31 @@ class SpeechService {
 
     return new Promise((resolve) => {
       let resolved = false;
-      const audio = this.unlockedAudio || new Audio();
-      this.unlockedAudio = audio;
-      audio.src = audioUrl;
+      const audio = new Audio(audioUrl);
       audio.volume = 1.0;
       this.currentAudio = audio;
+
+      const voiceDisplayName = voice.includes('InJoon')
+        ? '인준 성우 (중장년 남성)'
+        : voice.includes('SunHi')
+        ? '선희 성우 (차분 여성)'
+        : '현수 성우 (청년 남성)';
+
+      let safetyTimer: any = null;
 
       const finish = () => {
         if (!resolved) {
           resolved = true;
+          if (safetyTimer) clearTimeout(safetyTimer);
           this.currentAudio = null;
           URL.revokeObjectURL(audioUrl);
-          const voiceDisplayName = voice.includes('InJoon')
-            ? '인준 성우 (중장년 남성)'
-            : voice.includes('SunHi')
-            ? '선희 성우 (차분 여성)'
-            : '현수 성우 (청년 남성)';
           resolve(voiceDisplayName);
         }
       };
+
+      // 안전 타임아웃 (글자 수 비례 + 6초 여유)
+      const expectedSec = Math.max(5, cleanText.length / 6) + 6;
+      safetyTimer = setTimeout(finish, expectedSec * 1000);
 
       audio.onended = finish;
       audio.onerror = (e) => {
