@@ -22,6 +22,7 @@ import {
   INFINITE_THEMES,
 } from '../services/trainingService';
 import { speechService } from '../services/speechService';
+import { CHARACTER_VOICE_60, CharacterVoiceProfile, getCharacterVoice60ById } from '../services/characterVoice60';
 import { TrainingReportModal } from '../components/training/TrainingReportModal';
 import { TrainingConfigModal } from '../components/training/TrainingConfigModal';
 import {
@@ -147,6 +148,70 @@ export default function TrainingCenterPage() {
       setColabTestStatus('error');
       setColabTestMsg(`연결 실패: ${err.message || '서버 응답 없음'}. Colab에서 터널이 실행 중인지 확인하세요.`);
     }
+  };
+
+  // 1안 MS Edge-TTS 60인 실전 자연 음성 풀 (분신술) 모달 및 필터 상태
+  const [showVoice60Modal, setShowVoice60Modal] = useState(false);
+  const [voice60Filter, setVoice60Filter] = useState<'all' | '60s_70s' | '50s' | '40s' | '20s_30s' | 'female'>('all');
+  const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
+
+  const handlePreviewVoice60 = async (char: CharacterVoiceProfile) => {
+    if (previewingVoiceId === char.id) {
+      speechService.stopSpeaking();
+      setPreviewingVoiceId(null);
+      return;
+    }
+    setPreviewingVoiceId(char.id);
+    try {
+      const result = await speechService.speak(char.sampleIntro, {
+        neuralVoice: char.baseVoice,
+        neuralPitch: char.pitch,
+        neuralRate: char.rate,
+        rate: char.rateMultiplier,
+        gender: char.gender,
+        characterVoiceId: char.id,
+        characterVoiceName: char.name,
+      });
+      if (result.engine === 'neural') {
+        showToast(`✨ [${result.voiceName}] ${char.name} (${char.age}세) 1초 미리듣기 완료!`, 'success');
+      } else {
+        showToast(`⚠️ [${result.voiceName} (브라우저 임시 백업)] 발화 완료`, 'warning');
+      }
+    } catch (err: any) {
+      showToast(`음성 재생 실패: ${err.message || '네트워크 오류'}`, 'error');
+    } finally {
+      setPreviewingVoiceId(null);
+    }
+  };
+
+  const handleSelectVoice60 = (char: CharacterVoiceProfile) => {
+    setSelectedPersona(prev => {
+      let newInitial = prev.initialMessage;
+      // 자연스러운 첫마디 호흡 반영
+      if (char.disfluencyPrefix && !newInitial.startsWith(char.disfluencyPrefix)) {
+        newInitial = `${char.disfluencyPrefix}${newInitial.replace(/^(어\.\.\.|하아\.\.\.|흠!\s*|네,\s*여보세요|여보세요\?|여보세요\.\.\.)\s*/, '')}`;
+      }
+      return {
+        ...prev,
+        customerName: char.name,
+        age: char.age,
+        gender: char.gender,
+        speechOptions: {
+          ...prev.speechOptions,
+          gender: char.gender,
+          neuralVoice: char.baseVoice,
+          neuralPitch: char.pitch,
+          neuralRate: char.rate,
+          rate: char.rateMultiplier,
+          pitch: char.gender === 'female' ? 1.0 : char.age >= 60 ? 0.75 : 0.85,
+          characterVoiceId: char.id,
+          characterVoiceName: char.name,
+        },
+        initialMessage: newInitial || char.sampleIntro,
+      };
+    });
+    setShowVoice60Modal(false);
+    showToast(`🎭 [${char.id} ${char.name} (${char.age}세, ${char.job})] 목소리가 가상 고객에게 적용되었습니다!`, 'success');
   };
 
   // Live Paralegal Checklist state during call
@@ -1278,15 +1343,26 @@ export default function TrainingCenterPage() {
                       </div>
 
                       {/* 1안 Edge-TTS 24kHz 초고음질 성대 매칭 정보 */}
-                      <div className="flex items-center gap-1.5 text-[10.5px] text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-1 rounded-md border border-indigo-200 dark:border-indigo-800/60 font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                        🎙️ <strong>1안 실전 성우:</strong> {
-                          selectedPersona.speechOptions.gender === 'female'
-                            ? '선희 성우 (24kHz 초고음질 여성)'
-                            : selectedPersona.age < 40
-                            ? '현수 성우 (24kHz 청년 남성)'
-                            : '인준 성우 (24kHz 중장년 남성)'
-                        } (호흡 {selectedPersona.speechOptions.rate?.toFixed(2) || '1.00'}x, 톤 {selectedPersona.speechOptions.neuralPitch || '표준'})
+                      <div className="flex items-center justify-between text-[10.5px] text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-1.5 rounded-md border border-indigo-200 dark:border-indigo-800/60 font-medium">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse shrink-0" />
+                          <span className="truncate">
+                            🎙️ <strong>{selectedPersona.speechOptions.characterVoiceId ? `[${selectedPersona.speechOptions.characterVoiceId} ${selectedPersona.speechOptions.characterVoiceName || ''}]` : '1안 실전'}</strong> {
+                              selectedPersona.speechOptions.gender === 'female'
+                                ? '선희 성우'
+                                : selectedPersona.age < 40
+                                ? '현수 성우'
+                                : '인준 성우'
+                            } ({selectedPersona.speechOptions.rate?.toFixed(2) || '1.00'}x, {selectedPersona.speechOptions.neuralPitch || '표준'})
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowVoice60Modal(true)}
+                          className="ml-2 px-1.5 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-[9.5px] font-bold shrink-0 transition-all shadow-2xs"
+                        >
+                          🎭 목소리 변경
+                        </button>
                       </div>
 
                       {/* 1. 실전 블라인드 모드 (통화 전/중 - 정답 가림) */}
@@ -1596,6 +1672,23 @@ export default function TrainingCenterPage() {
                 </span>
               </div>
 
+              {/* 60인 실전 자연 음성 분신술 퀵 셀렉터 버튼 */}
+              <div className="pt-1.5 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  type="button"
+                  onClick={() => setShowVoice60Modal(true)}
+                  className="w-full py-2 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-between transition-all"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                    🎭 60인 실전 자연 음성 선택 (분신술)
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-600 text-white font-semibold">
+                    {selectedPersona.speechOptions.characterVoiceId ? `${selectedPersona.speechOptions.characterVoiceId} 적용중` : '60명 풀 열기'}
+                  </span>
+                </button>
+              </div>
+
               {/* Voice Preview Button */}
               <button
                 type="button"
@@ -1618,7 +1711,7 @@ export default function TrainingCenterPage() {
                 className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-500/20"
               >
                 <Volume2 className="w-3.5 h-3.5" />
-                🔊 {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '선희 성우' : selectedPersona.age < 40 ? '현수 성우' : '인준 성우'}) 1초 미리듣기
+                🔊 {selectedPersona.speechOptions.characterVoiceId ? `[${selectedPersona.speechOptions.characterVoiceId}] ` : ''}{selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '선희 성우' : selectedPersona.age < 40 ? '현수 성우' : '인준 성우'}) 1초 미리듣기
               </button>
             </div>
           </div>
@@ -2428,6 +2521,189 @@ export default function TrainingCenterPage() {
                 </div>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* 🎭 1안 MS Edge-TTS 60인 실전 자연 음성 풀 (분신술) 퀵 셀렉터 모달 */}
+      {showVoice60Modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-indigo-50/70 via-purple-50/50 to-blue-50/70 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-blue-950/40 flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-indigo-600 text-white">
+                    <Sparkles className="w-4 h-4" />
+                  </span>
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    🎭 1안 Edge-TTS 60인 실전 자연 음성 분신술 풀
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/40">
+                      0원 무제한 · 24kHz 초고음질
+                    </span>
+                  </h3>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  자연 성대 골든 레인지(피치 -18Hz~+14Hz, 속도 0.80x~1.18x)를 엄격 준수하여 기계음 왜곡 없이 실제 사람 성대 두께와 호흡, 사투리 억양을 살린 60인의 실전 고객 보이스입니다.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  speechService.stopSpeaking();
+                  setPreviewingVoiceId(null);
+                  setShowVoice60Modal(false);
+                }}
+                className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Filter Tabs Bar */}
+            <div className="px-4 py-2.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-850 flex items-center gap-1.5 overflow-x-auto text-xs shrink-0">
+              {[
+                { id: 'all', label: '전체 (60명)' },
+                { id: '60s_70s', label: '남성 60~70대 고령 (7명)' },
+                { id: '50s', label: '남성 50대 가장 (12명)' },
+                { id: '40s', label: '남성 40대 자영업/직장 (12명)' },
+                { id: '20s_30s', label: '남성 20~30대 청년 (7명)' },
+                { id: 'female', label: '여성 20~60대 전군 (22명)' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setVoice60Filter(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-lg font-bold text-xs whitespace-nowrap transition-all ${
+                    voice60Filter === tab.id
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200/70 dark:border-gray-700'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Scrollable Voice Cards Grid */}
+            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(() => {
+                const list = CHARACTER_VOICE_60.filter(char => {
+                  if (voice60Filter === 'all') return true;
+                  if (voice60Filter === 'female') return char.gender === 'female';
+                  return char.gender === 'male' && char.ageGroup === voice60Filter;
+                });
+
+                return list.map(char => {
+                  const isCurrent = selectedPersona.speechOptions.characterVoiceId === char.id;
+                  const isPlaying = previewingVoiceId === char.id;
+
+                  const baseVoiceBadge = char.baseVoice.includes('InJoon')
+                    ? { label: '인준 성우 (중장년 남성)', color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800' }
+                    : char.baseVoice.includes('SunHi')
+                    ? { label: '선희 성우 (차분 여성)', color: 'bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 border-pink-200 dark:border-pink-800' }
+                    : { label: '현수 성우 (청년 남성)', color: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800' };
+
+                  return (
+                    <div
+                      key={char.id}
+                      className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
+                        isCurrent
+                          ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/30 ring-2 ring-indigo-500/50 shadow-sm'
+                          : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/90 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-xs'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        {/* Header: ID, Name, Age, Base Voice */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-xs font-black px-1.5 py-0.5 rounded bg-indigo-600 text-white">
+                              {char.id}
+                            </span>
+                            <span className="font-bold text-sm text-gray-900 dark:text-white">
+                              {char.name}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              ({char.age}세, {char.gender === 'female' ? '여' : '남'})
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${baseVoiceBadge.color}`}>
+                            {char.baseVoice.includes('InJoon') ? '인준' : char.baseVoice.includes('SunHi') ? '선희' : '현수'}
+                          </span>
+                        </div>
+
+                        {/* Trait & Occupation */}
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300">
+                          <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-[10px]">
+                            {char.traitTag}
+                          </span>
+                          <span className="text-gray-400">·</span>
+                          <span className="truncate">{char.job}</span>
+                        </div>
+
+                        {/* Acoustic Specs (Pitch, Rate) */}
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-gray-500 dark:text-gray-400">
+                          <span>피치: <strong className="text-indigo-600 dark:text-indigo-400">{char.pitch}</strong></span>
+                          <span>속도: <strong className="text-indigo-600 dark:text-indigo-400">{char.rateMultiplier.toFixed(2)}x</strong> ({char.rate})</span>
+                        </div>
+
+                        {/* Sample Intro Quote */}
+                        <div className="p-2 rounded-lg bg-gray-50 dark:bg-gray-900/70 border border-gray-100 dark:border-gray-800 text-[11px] text-gray-700 dark:text-gray-300 italic leading-snug line-clamp-2">
+                          "{char.sampleIntro}"
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="pt-3 mt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handlePreviewVoice60(char)}
+                          className={`flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-all ${
+                            isPlaying
+                              ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 animate-pulse border border-indigo-300'
+                              : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-650 text-gray-700 dark:text-gray-200'
+                          }`}
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                          {isPlaying ? '재생 중...' : '1초 미리듣기'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSelectVoice60(char)}
+                          className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                            isCurrent
+                              ? 'bg-emerald-600 text-white cursor-default'
+                              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs'
+                          }`}
+                        >
+                          {isCurrent ? '적용됨' : '선택'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-850 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+              <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                60인 전원 MS Edge-TTS 24kHz 초고음질 신경망 클라우드 직결 (0원 무제한 · 0.3초 초고속)
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  speechService.stopSpeaking();
+                  setPreviewingVoiceId(null);
+                  setShowVoice60Modal(false);
+                }}
+                className="w-full sm:w-auto px-4 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}

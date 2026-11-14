@@ -3,7 +3,7 @@
 // ============================================
 import { TrainingPersona, ParalegalHandoffCard } from './trainingService';
 import { SpeechVoiceOptions } from './speechService';
-import { getMatchedSeniorVoice, SENIOR_VOICE_POOL_100 } from './seniorVoicePool100';
+import { getMatchedCharacterVoice60, CHARACTER_VOICE_60, CharacterVoiceProfile } from './characterVoice60';
 
 // ============================================
 // 보건복지부 공식 고시 개인회생 법정 최저생계비 (기준 중위소득의 60%)
@@ -970,32 +970,16 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_credit_02') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[1];
   }
 
-  // 40대~70대 실전 중장년 100인 보이스 팩에서 최적 성대/어조 자동 매칭
-  const seniorVoice = getMatchedSeniorVoice(age, isFemale ? 'female' : 'male', behaviorType);
-  const voiceId = seniorVoice.id;
-  const voiceRatePercent = parseFloat((seniorVoice.rate || '0%').replace('%', ''));
-  const calculatedRate = Math.round((1.0 + voiceRatePercent / 100) * 100) / 100;
+  // 1안 MS Edge-TTS 60인 실전 자연 음성 분신술 엔진에서 최적 성대/호흡 자동 매칭
+  const charVoice = getMatchedCharacterVoice60(age, isFemale ? 'female' : 'male', behaviorType);
+  const voiceId = charVoice.id;
+  const calculatedRate = charVoice.rateMultiplier;
 
-  // 1안. MS Edge-TTS 클라우드 직결 성우 세팅 (24kHz 초고음질 신경망)
-  // 여성: ko-KR-SunHiNeural (선희 성우 - 차분한 일상형부터 의심/주부 톤까지 완벽)
-  // 남성 청년(20~30대): ko-KR-HyunsuMultilingualNeural (현수 성우)
-  // 남성 중장년(40~70대): ko-KR-InJoonNeural (인준 성우 - 중후하고 묵직한 실전 남성 톤)
-  let neuralVoice = isFemale
-    ? 'ko-KR-SunHiNeural'
-    : age < 40
-    ? 'ko-KR-HyunsuMultilingualNeural'
-    : 'ko-KR-InJoonNeural';
-  let neuralPitch = isFemale ? '+0Hz' : '-5Hz';
-  let neuralRate = seniorVoice.rate || '+0%';
-  let pitch = isFemale ? 1.0 : 0.85;
-
-  if (age >= 60 && !isFemale) {
-    neuralPitch = '-15Hz'; // 60~70대 어르신 굵고 낮은 톤
-    pitch = 0.75;
-  } else if (trait.attitudeTag === 'angry' || trait.attitudeTag === 'annoyed' || behaviorType === 'cold_skeptic') {
-    neuralPitch = isFemale ? '+20Hz' : '+15Hz'; // 의심/분노 시 성대 긴장으로 피치 상승
-    pitch = isFemale ? 1.10 : 0.90;
-  }
+  // 1안. MS Edge-TTS 클라우드 직결 성우 세팅 (24kHz 초고음질 신경망, 자연 성대 골든 레인지)
+  const neuralVoice = charVoice.baseVoice;
+  const neuralPitch = charVoice.pitch;
+  const neuralRate = charVoice.rate;
+  const pitch = isFemale ? 1.0 : (age >= 60 ? 0.75 : 0.85);
 
   // 행동 아키타입별 발화 지침 생성
   let behaviorInstruction = '';
@@ -1038,6 +1022,13 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
 - 상담원의 질문에 간결하고 솔직하게 1~2문장으로 답변한다.
 - 채무 금액과 소득을 묻는 대로 비교적 정확하고 빠르게 알려준다.`;
     initialOpening = context.initialOpeningText;
+  }
+
+  // 60인 실전 캐릭터 고유 호흡 추임새(disfluency) 자연 주입
+  if (charVoice.disfluencyPrefix && !initialOpening.startsWith(charVoice.disfluencyPrefix)) {
+    if (!initialOpening.includes('...') && !initialOpening.startsWith('어') && !initialOpening.startsWith('흠') && !initialOpening.startsWith('하아') && !initialOpening.startsWith('흑')) {
+      initialOpening = `${charVoice.disfluencyPrefix}${initialOpening}`;
+    }
   }
 
   // 페르소나 프롬프트 합성
@@ -1091,9 +1082,11 @@ ${behaviorInstruction}
       rate: calculatedRate,
       gender: isFemale ? 'female' : 'male',
       neuralVoice,
-      neuralRate: seniorVoice.rate,
-      neuralPitch: seniorVoice.pitch,
+      neuralRate,
+      neuralPitch,
       voiceId,
+      characterVoiceId: charVoice.id,
+      characterVoiceName: charVoice.name,
     },
     personaPrompt,
     initialMessage: initialOpening,

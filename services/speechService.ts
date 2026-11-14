@@ -12,6 +12,8 @@ export interface SpeechVoiceOptions {
   neuralPitch?: string;
   emotion?: 'angry' | 'annoyed' | 'anxious' | 'calm';
   voiceId?: string; // CosyVoice 2 10인 보이스 식별자 (p01_20s_male ~ p10_70s_female_elder)
+  characterVoiceId?: string; // 60인 실전 자연 음성 ID (C01 ~ C60)
+  characterVoiceName?: string; // 60인 캐릭터 이름 (e.g. 김태봉, 박만석)
 }
 
 class SpeechService {
@@ -306,11 +308,15 @@ class SpeechService {
       audio.volume = 1.0;
       this.currentAudio = audio;
 
-      const voiceDisplayName = voice.includes('InJoon')
+      const baseVoiceName = voice.includes('InJoon')
         ? '인준 성우 (중장년 남성)'
         : voice.includes('SunHi')
         ? '선희 성우 (차분 여성)'
         : '현수 성우 (청년 남성)';
+
+      const voiceDisplayName = options.characterVoiceId
+        ? `${options.characterVoiceId} ${options.characterVoiceName || ''} · ${baseVoiceName}`.replace(/\s+/g, ' ')
+        : baseVoiceName;
 
       let safetyTimer: any = null;
 
