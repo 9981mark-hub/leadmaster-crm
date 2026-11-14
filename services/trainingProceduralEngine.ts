@@ -1047,6 +1047,30 @@ ${behaviorInstruction}
    - bottom_liner라면 결론과 감면 금액을 재촉하라.
    - 단, 감정 태그([화남], [짜증], [불안], [차분])는 반드시 매 발화 맨 첫머리에 명시하라.`;
 
+  // 10인 실전 복제 보이스 ID 자동 매핑 (20대~70대 비율 매칭)
+  let voiceId = 'p06_50s_male_story';
+  if (age < 30) {
+    voiceId = isFemale ? 'p02_30s_female' : 'p01_20s_male';
+  } else if (age < 40) {
+    voiceId = isFemale ? 'p02_30s_female' : 'p03_40s_male_rush';
+  } else if (age < 50) {
+    if (isFemale) {
+      voiceId = 'p04_40s_female_skeptic';
+    } else {
+      voiceId = behaviorType === 'bottom_liner' ? 'p03_40s_male_rush' : 'p05_40s_male_inquirer';
+    }
+  } else if (age < 60) {
+    if (isFemale) {
+      voiceId = 'p08_50s_female_anxious';
+    } else {
+      voiceId = behaviorType === 'storyteller' ? 'p06_50s_male_story' : 'p07_50s_male_heavy';
+    }
+  } else if (age < 70) {
+    voiceId = isFemale ? 'p10_70s_female_elder' : 'p09_60s_male_elder';
+  } else {
+    voiceId = isFemale ? 'p10_70s_female_elder' : 'p09_60s_male_elder';
+  }
+
   return {
     id: `inf_${timestamp}_${Math.floor(Math.random() * 1000)}`,
     level: groundTruth.suitability === '개인파산' ? 4 : trait.attitudeTag === 'angry' || behaviorType === 'cold_skeptic' ? 4 : 3,
@@ -1070,6 +1094,7 @@ ${behaviorInstruction}
       neuralVoice,
       neuralRate,
       neuralPitch,
+      voiceId,
     },
     personaPrompt,
     initialMessage: initialOpening,

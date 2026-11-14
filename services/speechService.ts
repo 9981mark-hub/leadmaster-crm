@@ -11,6 +11,7 @@ export interface SpeechVoiceOptions {
   neuralRate?: string;
   neuralPitch?: string;
   emotion?: 'angry' | 'annoyed' | 'anxious' | 'calm';
+  voiceId?: string; // CosyVoice 2 10인 보이스 식별자 (p01_20s_male ~ p10_70s_female_elder)
 }
 
 class SpeechService {
@@ -123,11 +124,117 @@ class SpeechService {
     } catch (_) {}
   }
 
+  // 구글 Colab CosyVoice 2 복제 음성 서버 URL 관리
+  public getColabServerUrl(): string {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('cosyvoice_colab_url') || '';
+  }
+
+  public setColabServerUrl(url: string): void {
+    if (typeof window === 'undefined') return;
+    const cleanUrl = url.trim().replace(/\/+$/, '');
+    if (cleanUrl) {
+      localStorage.setItem('cosyvoice_colab_url', cleanUrl);
+    } else {
+      localStorage.removeItem('cosyvoice_colab_url');
+    }
+  }
+
+  // 구글 Colab CosyVoice 2 복제 음성 API 호출 및 재생
+  public async speakCosyVoice(text: string, colabUrl: string, options: SpeechVoiceOptions = {}): Promise<string> {
+    const cleanText = text
+      .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+      .replace(/[\.\.\.~"']/g, ' ')
+      .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+      .replace(/,\s*,/g, ',')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) return 'Empty';
+
+    // voiceId가 없으면 연령/성별에 따라 기본값 매핑
+    let voiceId = options.voiceId;
+    if (!voiceId) {
+      if (options.gender === 'female') {
+        voiceId = 'p04_40s_female_skeptic';
+      } else {
+        voiceId = 'p06_50s_male_story';
+      }
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12초 타임아웃 가드
+
+    const response = await fetch(`${colabUrl}/tts/clone`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        voice_id: voiceId,
+        text: cleanText,
+        emotion: options.emotion,
+        speed: options.rate ? options.rate : 1.0,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`CosyVoice HTTP error: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const audioUrl = URL.createObjectURL(blob);
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      const audio = new Audio(audioUrl);
+      this.currentAudio = audio;
+
+      const finish = () => {
+        if (!resolved) {
+          resolved = true;
+          this.currentAudio = null;
+          URL.revokeObjectURL(audioUrl);
+          resolve(`CosyVoice 2 (${voiceId})`);
+        }
+      };
+
+      audio.onended = finish;
+      audio.onerror = (e) => {
+        console.warn('CosyVoice audio play error:', e);
+        finish();
+      };
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((e) => {
+          console.warn('CosyVoice audio play catch:', e);
+          finish();
+        });
+      }
+    });
+  }
+
   // 통합 발화 메서드 (항상 가장 고품질의 자연스러운 음성을 최우선 선택)
   public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<{ engine: 'neural' | 'browser'; voiceName: string }> {
     this.stopSpeaking();
     // 모바일 오디오 덕킹(볼륨 꺼짐) 방지를 위해 발화 중에는 마이크 수신 정지
     this.stopListening();
+
+    // 0순위: Google Colab에 구동된 CosyVoice 2 실시간 복제 음성 서버 (실제 통화 10인 녹취 복제)
+    const colabUrl = this.getColabServerUrl();
+    if (colabUrl) {
+      try {
+        const voiceName = await this.speakCosyVoice(text, colabUrl, options);
+        this.lastEngineUsed = 'neural';
+        this.lastVoiceName = voiceName;
+        return { engine: 'neural', voiceName };
+      } catch (err) {
+        console.warn('CosyVoice Colab server failed, falling back:', err);
+      }
+    }
 
     // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 전문 성우 엔진 (실제 사람과 유사한 최고음질)
     if (this.neuralEnabled) {

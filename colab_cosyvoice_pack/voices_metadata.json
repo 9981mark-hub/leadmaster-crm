@@ -1,0 +1,82 @@
+[
+  {
+    "voice_id": "p01_20s_male",
+    "name": "김도현 (26세 남성, 20대 5%)",
+    "age_group": "20s",
+    "gender": "male",
+    "prompt_text": "여보세요? 어디서 전화 주신 건가요? 제가 뭐 신청한 적은 없는데요... 제 번호 어떻게 아셨어요?",
+    "ref_file": "p01_20s_male.wav"
+  },
+  {
+    "voice_id": "p02_30s_female",
+    "name": "이지은 (34세 여성, 30대 15%)",
+    "age_group": "30s",
+    "gender": "female",
+    "prompt_text": "네 여보세요. 저 지금 근무 중이라 길게 통화는 못 하는데요, 대출 상담인가요 아니면 이자 감면인가요?",
+    "ref_file": "p02_30s_female.wav"
+  },
+  {
+    "voice_id": "p03_40s_male_rush",
+    "name": "박성철 (43세 남성, 40대 30% - 결론재촉)",
+    "age_group": "40s",
+    "gender": "male",
+    "prompt_text": "아 네, 바쁜데 용건만 간단히 말씀해 주세요. 그래서 월 이자 얼마까지 줄어드는데요?",
+    "ref_file": "p03_40s_male_rush.wav"
+  },
+  {
+    "voice_id": "p04_40s_female_skeptic",
+    "name": "정미경 (47세 여성, 40대 30% - 의심경계)",
+    "age_group": "40s",
+    "gender": "female",
+    "prompt_text": "잠깐만요! 내 번호는 어떻게 알고 전화한 거예요? 나 이런 거 동의한 적 없는데, 불법 스팸 아니에요?",
+    "ref_file": "p04_40s_female_skeptic.wav"
+  },
+  {
+    "voice_id": "p05_40s_male_inquirer",
+    "name": "최진호 (45세 남성, 40대 30% - 꼼꼼질문)",
+    "age_group": "40s",
+    "gender": "male",
+    "prompt_text": "그럼 이거 신청하면 신용카드 바로 정지됩니까? 회사나 가족들한테 연락 가는 건 아니죠?",
+    "ref_file": "p05_40s_male_inquirer.wav"
+  },
+  {
+    "voice_id": "p06_50s_male_story",
+    "name": "한상국 (52세 남성, 50대 30% - 신세한탄)",
+    "age_group": "50s",
+    "gender": "male",
+    "prompt_text": "휴... 내가 식당 하다가 코로나 때 빚이 눈덩이처럼 불어나서요. 지인들 돈까지 빌려 돌려막다가 이젠 한계예요...",
+    "ref_file": "p06_50s_male_story.wav"
+  },
+  {
+    "voice_id": "p07_50s_male_heavy",
+    "name": "윤태식 (55세 남성, 50대 30% - 법인대표)",
+    "age_group": "50s",
+    "gender": "male",
+    "prompt_text": "네 말씀하세요. 법무법인이라고 하셨는데, 법인 연대보증 채무도 개인회생 탕감 대상에 포함이 됩니까?",
+    "ref_file": "p07_50s_male_heavy.wav"
+  },
+  {
+    "voice_id": "p08_50s_female_anxious",
+    "name": "조영숙 (53세 여성, 50대 30% - 시름불안)",
+    "age_group": "50s",
+    "gender": "female",
+    "prompt_text": "네... 남편 병간호하느라 빚이 좀 많은데, 법원에 가면 집안 세간살이에 압류 딱지 붙는 건 아닌지 너무 무서워요...",
+    "ref_file": "p08_50s_female_anxious.wav"
+  },
+  {
+    "voice_id": "p09_60s_male_elder",
+    "name": "오동현 (64세 남성, 60대 15% - 노년경비)",
+    "age_group": "60s",
+    "gender": "male",
+    "prompt_text": "여보시오? 내 귀가 어두워서 잘 안 들려요. 크게 말해 줘요! 매일 독촉 전화가 와서 살 수가 없는데 도와주는 거요?",
+    "ref_file": "p09_60s_male_elder.wav"
+  },
+  {
+    "voice_id": "p10_70s_female_elder",
+    "name": "강순자 (72세 여성, 70대 5% - 독거파산)",
+    "age_group": "70s",
+    "gender": "female",
+    "prompt_text": "여보세요... 내가 나이도 많고 기초연금으로 겨우 사는데... 죽기 전에 이 빚 좀 털어낼 수 있을런지요...",
+    "ref_file": "p10_70s_female_elder.wav"
+  }
+]

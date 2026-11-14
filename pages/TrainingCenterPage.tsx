@@ -71,6 +71,8 @@ import {
   RefreshCw,
   X,
   Lightbulb,
+  Server,
+  Radio,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -118,6 +120,38 @@ export default function TrainingCenterPage() {
   const [ageTone, setAgeTone] = useState<'young' | 'middle' | 'senior' | 'elder'>('middle');
   const [isAiReplying, setIsAiReplying] = useState(false);
   const [isCustomerSpeaking, setIsCustomerSpeaking] = useState(false);
+
+  // CosyVoice Colab 서버 연동 상태
+  const [colabUrl, setColabUrl] = useState<string>(speechService.getColabServerUrl());
+  const [showCosyVoiceModal, setShowCosyVoiceModal] = useState(false);
+  const [colabInputUrl, setColabInputUrl] = useState(colabUrl);
+  const [colabTestStatus, setColabTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [colabTestMsg, setColabTestMsg] = useState('');
+
+  const testAndSaveColab = async (urlToTest: string) => {
+    const clean = urlToTest.trim().replace(/\/+$/, '');
+    if (!clean) {
+      speechService.setColabServerUrl('');
+      setColabUrl('');
+      setColabTestStatus('idle');
+      setColabTestMsg('Colab 서버 연동이 해제되었습니다. 기본 고음질 뉴럴 엔진을 사용합니다.');
+      return;
+    }
+    setColabTestStatus('testing');
+    setColabTestMsg('서버 응답 확인 중...');
+    try {
+      const res = await fetch(`${clean}/health`, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      speechService.setColabServerUrl(clean);
+      setColabUrl(clean);
+      setColabTestStatus('success');
+      setColabTestMsg(`연결 성공! GPU: ${data.gpu || 'OK'} (${data.available_voices?.length || 10}명 보이스 준비됨)`);
+    } catch (err: any) {
+      setColabTestStatus('error');
+      setColabTestMsg(`연결 실패: ${err.message || '서버 응답 없음'}. Colab에서 터널이 실행 중인지 확인하세요.`);
+    }
+  };
 
   // Live Paralegal Checklist state during call
   const [liveChecklist, setLiveChecklist] = useState({
@@ -854,6 +888,26 @@ export default function TrainingCenterPage() {
               {history.length}회 완주
             </span>
           </div>
+          {/* CosyVoice Colab 연동 버튼 */}
+          <button
+            onClick={() => {
+              setColabInputUrl(colabUrl);
+              setColabTestStatus('idle');
+              setColabTestMsg('');
+              setShowCosyVoiceModal(true);
+            }}
+            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all border shadow-sm ${
+              colabUrl
+                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400/50 hover:bg-emerald-500/35'
+                : 'bg-white/10 text-slate-200 border-white/20 hover:bg-white/20'
+            }`}
+            title="Google Colab에 띄운 CosyVoice 2 복제 음성 서버와 실시간 연동"
+          >
+            <span className={`w-2.5 h-2.5 rounded-full ${colabUrl ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
+            <Server className="w-3.5 h-3.5" />
+            <span>{colabUrl ? 'CosyVoice 2 연결됨' : '복제 음성 연동'}</span>
+          </button>
+
           {history.length > 0 && (
             <button
               onClick={() => {
