@@ -1063,6 +1063,10 @@ ${behaviorInstruction}
   const seniorVoice = getMatchedSeniorVoice(age, isFemale ? 'female' : 'male', behaviorType);
   const voiceId = seniorVoice.id;
 
+  // 100인 실전 성대의 고유 rate 퍼센티지(예: "-15%", "+4%")를 실제 실수 배속으로 정밀 변환
+  const voiceRatePercent = parseFloat((seniorVoice.rate || '0%').replace('%', ''));
+  const calculatedRate = Math.round((1.0 + voiceRatePercent / 100) * 100) / 100;
+
   return {
     id: `inf_${timestamp}_${Math.floor(Math.random() * 1000)}`,
     level: groundTruth.suitability === '개인파산' ? 4 : trait.attitudeTag === 'angry' || behaviorType === 'cold_skeptic' ? 4 : 3,
@@ -1081,11 +1085,11 @@ ${behaviorInstruction}
     trainingGoal: `7대 문진을 완료하여 [${groundTruth.suitability}] 적격 여부 및 예상 월 변제금(${Math.round(groundTruth.expectedMonthlyPayment / 10000)}만 원)을 정확히 도출하기`,
     speechOptions: {
       pitch,
-      rate: 1.05,
+      rate: calculatedRate,
       gender: isFemale ? 'female' : 'male',
       neuralVoice,
-      neuralRate,
-      neuralPitch,
+      neuralRate: seniorVoice.rate,
+      neuralPitch: seniorVoice.pitch,
       voiceId,
     },
     personaPrompt,

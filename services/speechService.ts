@@ -490,16 +490,17 @@ class SpeechService {
     // 감정 분석 (옵션 지정 우선 + 문장 키워드/문장부호 정밀 판별)
     const emotion = options.emotion || this.detectEmotion(cleanText);
 
-    // 자연스러운 사람 발화 속도 (감정이 격앙될 때 쏘아붙이듯 약간 가속)
-    let baseRate = options.rate ?? 1.20;
+    // 자연스러운 사람 발화 속도 (고객 프로필 고유 속도 100% 반영, 감정에 따라 미세 뉘앙스 가미)
+    let baseRate = options.rate ?? 1.00;
     if (emotion === 'angry') {
-      baseRate = Math.min(1.45, baseRate * 1.15);
+      baseRate = Math.min(1.25, baseRate * 1.04);
     } else if (emotion === 'annoyed') {
-      baseRate = Math.min(1.40, baseRate * 1.08);
+      baseRate = Math.min(1.20, baseRate * 1.02);
     } else if (emotion === 'anxious') {
-      baseRate = Math.min(1.35, baseRate * 1.05);
+      baseRate = Math.min(1.18, baseRate * 1.01);
     }
-    utterance.rate = Math.max(0.95, Math.min(1.45, baseRate));
+    // 60~70대 어르신의 느린 어조(0.75~0.85)부터 성격 급한 고객(1.10~1.20)까지 실제 사람 호흡 온전히 보장
+    utterance.rate = Math.max(0.75, Math.min(1.25, baseRate));
 
     // 피치 (0.50 ~ 1.4: 화가 나거나 의심할 때는 성대가 긴장하여 목소리 톤이 확 올라감!)
     let basePitch = options.pitch ?? 0.80;

@@ -113,10 +113,6 @@ export default function TrainingCenterPage() {
   const [showMicPermissionModal, setShowMicPermissionModal] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [isPhoneFilterEnabled, setIsPhoneFilterEnabled] = useState(true);
-  const [speedMultiplier, setSpeedMultiplier] = useState<number>(() => {
-    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('lm_training_speed') : null;
-    return saved ? parseFloat(saved) : 1.20;
-  });
   const [ageTone, setAgeTone] = useState<'young' | 'middle' | 'senior' | 'elder'>('middle');
   const [isAiReplying, setIsAiReplying] = useState(false);
   const [isCustomerSpeaking, setIsCustomerSpeaking] = useState(false);
@@ -447,7 +443,7 @@ export default function TrainingCenterPage() {
         try {
           await speechService.speak(firstMsg.text, {
             ...selectedPersona.speechOptions,
-            rate: speedMultiplier,
+            rate: selectedPersona.speechOptions?.rate ?? 1.0,
             pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
             emotion: firstEmotion,
           });
@@ -497,7 +493,7 @@ export default function TrainingCenterPage() {
     try {
       await speechService.speak(text, {
         ...selectedPersona.speechOptions,
-        rate: speedMultiplier,
+        rate: selectedPersona.speechOptions?.rate ?? 1.0,
         pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
         emotion: emotion || speechService.detectEmotion(text),
       });
@@ -751,7 +747,7 @@ export default function TrainingCenterPage() {
         try {
           await speechService.speak(cleanCustomerText, {
             ...selectedPersona.speechOptions,
-            rate: speedMultiplier,
+            rate: selectedPersona.speechOptions?.rate ?? 1.0,
             pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
             emotion: parsedEmotion,
           });
@@ -1552,35 +1548,22 @@ export default function TrainingCenterPage() {
                 </button>
               </div>
 
-              {/* Speed Multiplier */}
+              {/* 고객 성향별 자동 말속도 안내 */}
               <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
-                <span className="font-medium text-[11px]">말소리 속도</span>
-                <div className="flex items-center gap-1">
-                  {[
-                    { label: '느긋함 (1.05x)', val: 1.05 },
-                    { label: '실전 (+15% 기본) 1.20x', val: 1.20 },
-                    { label: '빠른 통화 (1.30x)', val: 1.30 },
-                    { label: '초고속 (1.40x)', val: 1.40 },
-                  ].map(opt => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => {
-                        setSpeedMultiplier(opt.val);
-                        try {
-                          localStorage.setItem('lm_training_speed', String(opt.val));
-                        } catch (_) {}
-                      }}
-                      className={`px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition-colors ${
-                        speedMultiplier === opt.val
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+                <div className="flex flex-col">
+                  <span className="font-medium text-[11px] flex items-center gap-1">
+                    ⏱️ 고객 말속도 (성향 맞춤 자동)
+                  </span>
+                  <span className="text-[9px] text-gray-400">
+                    고객의 나이·성향에 따라 실전 호흡이 자동 결정됩니다
+                  </span>
                 </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                  {(selectedPersona.speechOptions?.rate ?? 1.0).toFixed(2)}x {
+                    (selectedPersona.speechOptions?.rate ?? 1.0) < 0.95 ? '(느긋/묵직)' :
+                    (selectedPersona.speechOptions?.rate ?? 1.0) > 1.05 ? '(급함/재촉)' : '(표준 호흡)'
+                  }
+                </span>
               </div>
 
               {/* Voice Preview Button */}
@@ -1592,7 +1575,7 @@ export default function TrainingCenterPage() {
                   const calcPitch = getCalculatedPitch(selectedPersona.speechOptions.pitch);
                   const result = await speechService.speak(sampleText, {
                     ...selectedPersona.speechOptions,
-                    rate: speedMultiplier,
+                    rate: selectedPersona.speechOptions?.rate ?? 1.0,
                     pitch: calcPitch,
                     emotion: sampleEmotion,
                   });
