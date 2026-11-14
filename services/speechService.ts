@@ -236,19 +236,17 @@ class SpeechService {
       }
     }
 
-    // 1순위: Google Cloud Text-to-Speech 공식 Neural2/WaveNet 전문 성우 엔진 (실제 사람과 유사한 최고음질)
-    if (this.neuralEnabled) {
-      try {
-        const voiceName = await this.speakGoogleCloud(text, options);
-        this.lastEngineUsed = 'neural';
-        this.lastVoiceName = voiceName;
-        return { engine: 'neural', voiceName };
-      } catch (err) {
-        console.warn('Google Cloud TTS failed, falling back to local engine:', err);
-      }
+    // 1순위: 100인 실전 중장년 고유 뉴럴 음성 엔진 (Edge Natural / Chrome 신경망, 0원 무료 영구 가동)
+    try {
+      this.lastEngineUsed = 'browser';
+      const voiceName = await this.speakBrowser(text, options);
+      this.lastVoiceName = voiceName;
+      return { engine: 'browser', voiceName };
+    } catch (err) {
+      console.warn('100인 중장년 뉴럴 엔진 실패, 폴백 시도:', err);
     }
 
-    // 2순위 (폴백): 구글 클라우드 실패 시 안드로이드 스마트폰 순정 TTS 우선 사용
+    // 2순위 (모바일 폴백): 안드로이드 스마트폰 순정 TTS
     if (typeof window !== 'undefined' && (window as any).AndroidBridge?.isNativeTtsAvailable?.()) {
       try {
         const voiceName = await this.speakNativeAndroid(text, options);
@@ -260,11 +258,19 @@ class SpeechService {
       }
     }
 
-    // 3순위 (폴백): PC 브라우저 로컬 Web Speech 엔진
-    this.lastEngineUsed = 'browser';
-    const voiceName = await this.speakBrowser(text, options);
-    this.lastVoiceName = voiceName;
-    return { engine: 'browser', voiceName };
+    // 3순위 (비상 서브 백업): Google Cloud Text-to-Speech (필요 시에만 사용)
+    if (this.neuralEnabled) {
+      try {
+        const voiceName = await this.speakGoogleCloud(text, options);
+        this.lastEngineUsed = 'neural';
+        this.lastVoiceName = voiceName;
+        return { engine: 'neural', voiceName };
+      } catch (err) {
+        console.warn('Google Cloud TTS fallback failed:', err);
+      }
+    }
+
+    return { engine: 'browser', voiceName: '기본 음성' };
   }
 
   // 안드로이드 네이티브 순정 TTS 발화 (삼성/구글 한국어 엔진)
