@@ -229,11 +229,14 @@ class SpeechService {
 
     if (!cleanText) return 'Empty';
 
-    // 성우 보이스 선택 (인준 / 선희 / 현수)
+    // 성우 보이스 선택 (인준 / 선희 / 현수 - 구글 Wavenet/Neural2 등 레거시 성우명은 자동 매핑)
+    const VALID_EDGE_VOICES = ['ko-KR-InJoonNeural', 'ko-KR-SunHiNeural', 'ko-KR-HyunsuMultilingualNeural'];
     let voice = options.neuralVoice;
-    if (!voice || !voice.startsWith('ko-KR-')) {
-      if (options.gender === 'female') {
+    if (!voice || !VALID_EDGE_VOICES.includes(voice)) {
+      if (options.gender === 'female' || (typeof voice === 'string' && (voice.includes('SunHi') || voice.includes('Neural2-A') || voice.includes('Wavenet-A') || voice.includes('Wavenet-B')))) {
         voice = 'ko-KR-SunHiNeural';
+      } else if (typeof voice === 'string' && voice.includes('Hyunsu')) {
+        voice = 'ko-KR-HyunsuMultilingualNeural';
       } else {
         voice = 'ko-KR-InJoonNeural';
       }
@@ -267,10 +270,14 @@ class SpeechService {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-    // Vercel 공식 도메인 외(GitHub Pages, 모바일 앱, 로컬 등)에서도 100% 동작하도록 절대 엔드포인트 보장
-    const apiUrl = (typeof window !== 'undefined' && window.location.origin.includes('leadmastercrm.vercel.app'))
-      ? '/api/edge-tts'
-      : 'https://leadmastercrm.vercel.app/api/edge-tts';
+    // Vercel / lmaster.xyz 등 동일 오리진에서는 상대경로 /api/edge-tts 직결 (가장 빠르고 CORS 없음)
+    // GitHub Pages, 모바일 앱 웹뷰 등 외부 환경에서는 공식 프로덕션 엔드포인트로 직결
+    let apiUrl = '/api/edge-tts';
+    if (typeof window !== 'undefined') {
+      const origin = window.location.origin;
+      const isSameHost = origin.includes('vercel.app') || origin.includes('lmaster.xyz') || origin.includes('localhost:3000');
+      apiUrl = isSameHost ? '/api/edge-tts' : 'https://www.lmaster.xyz/api/edge-tts';
+    }
 
     const response = await fetch(apiUrl, {
       method: 'POST',

@@ -65,11 +65,14 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return;
     }
 
-    // 보이스 선택 (지정된 voice 없거나 호환 안 될 경우 gender 기반 자동 배정)
+    // 보이스 선택 (MS Edge-TTS 지원 성우만 허용하며, 구글 Wavenet/Neural2 등 레거시 성우명은 자동 매핑)
+    const VALID_EDGE_VOICES = ['ko-KR-InJoonNeural', 'ko-KR-SunHiNeural', 'ko-KR-HyunsuMultilingualNeural'];
     let selectedVoice = voice;
-    if (!selectedVoice || !selectedVoice.startsWith('ko-KR-')) {
-      if (gender === 'female') {
+    if (!selectedVoice || !VALID_EDGE_VOICES.includes(selectedVoice)) {
+      if (gender === 'female' || (typeof selectedVoice === 'string' && (selectedVoice.includes('SunHi') || selectedVoice.includes('Neural2-A') || selectedVoice.includes('Wavenet-A') || selectedVoice.includes('Wavenet-B')))) {
         selectedVoice = 'ko-KR-SunHiNeural';
+      } else if (typeof selectedVoice === 'string' && selectedVoice.includes('Hyunsu')) {
+        selectedVoice = 'ko-KR-HyunsuMultilingualNeural';
       } else {
         selectedVoice = 'ko-KR-InJoonNeural';
       }
