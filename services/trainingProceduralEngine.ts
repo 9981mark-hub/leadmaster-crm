@@ -46,6 +46,242 @@ export interface GroundTruthLegalDiagnosis {
   recommendedLegalHook: string;     // 1차 TM 상담원 추천 법률 후킹 멘트 (분쟁 위험 0% + 고객 호기심/신뢰 유발)
 }
 
+// 6대 고객 행동 페르소나 아키타입 (실제 통화 녹취 274건 분석 기반)
+export type CustomerBehaviorType =
+  | 'storyteller'       // 장문 신세한탄형 (3~5문장 호흡, 사연 쏟아냄)
+  | 'rapid_inquirer'    // 질문 공세/꼬치꼬치형 (신용도, 수임료, 가족비밀 등 2~3연타 질문)
+  | 'cold_skeptic'      // 출처 추궁/의심형 (Cold DB 퉁명스러운 반응: 내 번호 어디서 알았소?)
+  | 'bottom_liner'      // 결론 재촉형 (얼마 깎아주냐 집요 요구)
+  | 'despairing'        // 우울/체념형 (자포자기, 한숨)
+  | 'gentle';           // 온순 협조형 (기본 단답)
+
+// 30대 실전 통화 질문 및 모범 방어 화법
+export interface RealCustomerQuestion {
+  id: string;
+  category: 'credit_life' | 'cost_rejection' | 'cold_db';
+  questionText: string;
+  recommendedDefense: string;
+  contextHint: string;
+}
+
+export const REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS: RealCustomerQuestion[] = [
+  // 1. 신용 및 일상생활 관련 의문 (10선)
+  {
+    id: 'q_credit_01',
+    category: 'credit_life',
+    questionText: '개인회생 하면 신용점수 완전 0점 바닥 되는 거 아니에요?',
+    recommendedDefense: '신용도가 바닥나는 게 아니라 3년간 멈추는 것입니다. 36개월 변제가 끝나면 고3 졸업생이 사회에 첫발을 디딜 때처럼 신용점수 700점대로 완전히 깨끗하게 리셋됩니다.',
+    contextHint: '고3 리셋 비유'
+  },
+  {
+    id: 'q_credit_02',
+    category: 'credit_life',
+    questionText: '지금 쓰고 있는 체크카드나 급여 통장도 다 거래 정지되나요?',
+    recommendedDefense: '신용카드와 신규 대출 딱 두 가지만 멈추고, 체크카드, 카카오페이, 급여 통장 사용은 100% 정상적으로 자유롭게 쓰실 수 있습니다.',
+    contextHint: '단점 2가지 한정 화법'
+  },
+  {
+    id: 'q_credit_03',
+    category: 'credit_life',
+    questionText: '가족이나 배우자한테 법원에서 우편물 날아가나요? 가족 몰래 해야 하는데요.',
+    recommendedDefense: '모든 법원 송달 서류는 저희 법률사무소로 대리 수령되므로 자택이나 직장으로 우편물이 일절 날아가지 않아 가족 비밀이 100% 보장됩니다.',
+    contextHint: '100% 비밀 보장'
+  },
+  {
+    id: 'q_credit_04',
+    category: 'credit_life',
+    questionText: '직장 상사나 회사 총무과에서 제가 회생 신청한 걸 알게 되나요?',
+    recommendedDefense: '개인회생은 법원과 금융사 간의 비밀 절차이므로 직장에 일절 통보되지 않으며, 공무원이나 전문직도 신분상 불이익이 법적으로 전혀 없습니다.',
+    contextHint: '직장 비밀 보장'
+  },
+  {
+    id: 'q_credit_05',
+    category: 'credit_life',
+    questionText: '휴대폰 개통이나 본인인증, 인터넷뱅킹은 그대로 쓸 수 있나요?',
+    recommendedDefense: '본인 명의 휴대폰, 알뜰폰 개통, 금융 본인인증, 모바일 뱅킹 모두 정상 이용 가능하십니다.',
+    contextHint: '본인인증 정상'
+  },
+  {
+    id: 'q_credit_06',
+    category: 'credit_life',
+    questionText: '보험 들어둔 게 있는데 보험 해약환급금도 다 법원에 뺏기나요?',
+    recommendedDefense: '압류금지 재산 한도(150만 원) 내의 생계형 보장성 보험은 안전하게 보호되며, 무리하게 해약하지 않도록 법률적으로 방어해 드립니다.',
+    contextHint: '보험 압류금지 방어'
+  },
+  {
+    id: 'q_credit_07',
+    category: 'credit_life',
+    questionText: '전세 대출 연장해야 되는데 회생 들어가면 집에서 쫓겨나나요?',
+    recommendedDefense: 'HUG나 질권설정 전세대출의 경우 별제권 처리 및 임대차 승계 법률 방어로 현재 거주하시는 집에서 쫓겨나지 않도록 조치해 드립니다.',
+    contextHint: '주거권 보호'
+  },
+  {
+    id: 'q_credit_08',
+    category: 'credit_life',
+    questionText: '청약 통장이나 적금 통장도 다 깨야 하나요?',
+    recommendedDefense: '청약통장은 해약하지 않고 그대로 유지하실 수 있으며, 미래 주택 마련 자격도 그대로 보존됩니다.',
+    contextHint: '청약통장 유지'
+  },
+  {
+    id: 'q_credit_09',
+    category: 'credit_life',
+    questionText: '면책받고 나면 대출이나 신용카드 다시 만들 수 있긴 한 건가요?',
+    recommendedDefense: '36개월 면책 결정 즉시 공공기록이 완전히 삭제되므로, 6개월~1년 내에 정상 신용카드 발급과 1금융권 은행 거래가 재개됩니다.',
+    contextHint: '면책 후 정상화'
+  },
+  {
+    id: 'q_credit_10',
+    category: 'credit_life',
+    questionText: '해외여행이나 여권 발급에 출국금지 같은 제한이 생기나요?',
+    recommendedDefense: '형사 사건이 아니므로 출국금지는 전혀 없으며, 여권 발급 및 해외 출입국에 0.1%의 제한도 없습니다.',
+    contextHint: '출국 제한 0%'
+  },
+
+  // 2. 비용 및 기각 위험 관련 질문 (10선)
+  {
+    id: 'q_cost_01',
+    category: 'cost_rejection',
+    questionText: '거기 변호사 수임료가 총 얼마예요? 분납 되나요?',
+    recommendedDefense: '수임료는 채권자 수에 따라 합리적으로 책정되며, 목돈 부담을 덜어드리기 위해 최대 3~6회 무이자 자체 분납이 가능하십니다.',
+    contextHint: '무이자 분납 안내'
+  },
+  {
+    id: 'q_cost_02',
+    category: 'cost_rejection',
+    questionText: '수임료 먼저 다 냈는데 만약 법원에서 기각되면 어떻게 돼요? 환불해 주나요?',
+    recommendedDefense: '저희 법무법인은 가심사 단계에서 기각될 사건은 아예 수임하지 않으며, 만약 저희 귀책으로 기각 시 수임료 100% 전액 환불 특약을 서면 보증해 드립니다.',
+    contextHint: '기각 시 100% 환불 보증'
+  },
+  {
+    id: 'q_cost_03',
+    category: 'cost_rejection',
+    questionText: '법원에서 1년 치 통장 거래내역을 다 털어본다는데 사실인가요?',
+    recommendedDefense: '최근 1~2년 입출금 내역을 제출하지만, 생활비나 정상 거래는 전혀 문제 되지 않으며 소명하기 까다로운 내역은 사무실에서 사전에 소명서를 완벽히 작성해 드립니다.',
+    contextHint: '거래내역 소명 대행'
+  },
+  {
+    id: 'q_cost_04',
+    category: 'cost_rejection',
+    questionText: '최근에 대출받은 게 많은데 이거 사기죄로 고소당하는 거 아니에요?',
+    recommendedDefense: '최근 채무 비중이 높아도 1회 이상 성실히 이자를 납부하셨고 사용처가 생활비나 돌려막기임이 입증되면 사기죄가 성립하지 않도록 법리적으로 방어해 드립니다.',
+    contextHint: '사기죄 법리 방어'
+  },
+  {
+    id: 'q_cost_05',
+    category: 'cost_rejection',
+    questionText: '주식이나 코인으로 날린 돈도 빚 탕감이 되나요? 법원에서 혼나지 않나요?',
+    recommendedDefense: '서울/수원/대전 등 회생법원 준칙 제408호에 따라 주식·가상화폐 손실금은 재산가치에서 전액 제외되어 원금 최대 90%까지 합법 탕감받으실 수 있습니다.',
+    contextHint: '준칙 408호 손실금 제외'
+  },
+  {
+    id: 'q_cost_06',
+    category: 'cost_rejection',
+    questionText: '도박이나 사설 토토 빚인데 파산이나 회생이 진짜 돼요?',
+    recommendedDefense: '도박 빚은 파산 면책은 불가하지만, 개인회생은 법률상 변제 계획을 세우면 합법 인가를 받아 독촉과 압류를 완벽히 끊어낼 수 있습니다.',
+    contextHint: '도박 회생 인가 가능'
+  },
+  {
+    id: 'q_cost_07',
+    category: 'cost_rejection',
+    questionText: '자가 아파트가 있는데 집을 경매로 날려야만 회생이 되나요?',
+    recommendedDefense: '주택 담보대출을 연체 없이 성실히 갚으시면 집을 경매 처분하지 않고 보유한 상태로 신용대출만 분할 변제하는 계획이 가능합니다.',
+    contextHint: '자가 주택 보존'
+  },
+  {
+    id: 'q_cost_08',
+    category: 'cost_rejection',
+    questionText: '배우자 명의로 된 재산도 제 빚 갚는 데 다 털어 넣어야 하나요?',
+    recommendedDefense: '대법원 및 회생법원 실무준칙에 따라 배우자의 특유재산은 원칙적으로 신청인의 재산으로 보지 않으므로 배우자 재산을 안전하게 지킬 수 있습니다.',
+    contextHint: '배우자 재산 미반영'
+  },
+  {
+    id: 'q_cost_09',
+    category: 'cost_rejection',
+    questionText: '소득을 가족 통장으로 쪼개서 받으면 변제금을 낮출 수 있나요?',
+    recommendedDefense: '법원에서 건강보험공단 및 국세청 소득 내역을 대조하므로 불법 통장 분산은 기각 위험이 큽니다. 대신 부양가족 인정과 추가 생계비 신청 등 합법적인 절세 방어로 변제금을 낮춰 드립니다.',
+    contextHint: '합법 생계비 증액 안내'
+  },
+  {
+    id: 'q_cost_10',
+    category: 'cost_rejection',
+    questionText: '지인한테 빌린 개인 돈이나 사채도 회생에 다 포함시킬 수 있나요?',
+    recommendedDefense: '차용증이나 계좌 이체 내역이 있으면 지인 채무와 대부업 사채까지 100% 채권자 목록에 포함하여 독촉을 일체 차단할 수 있습니다.',
+    contextHint: '개인사채 포함 가능'
+  },
+
+  // 3. 아웃바운드 Cold DB 인입 특화 의심/반론 (10선)
+  {
+    id: 'q_cold_01',
+    category: 'cold_db',
+    questionText: '근데 거기가 어디라고요? 제가 신청한 기억이 없는데요?',
+    recommendedDefense: '갑작스러운 연락에 당황하셨죠! 저희는 일전에 이용하셨던 안심 금융 조회 제휴 채널에서 법률 채무 감면 혜택 대상자로 확인되어 무료 자격 안내차 연락드렸습니다.',
+    contextHint: '제휴 채널 환기 및 안심'
+  },
+  {
+    id: 'q_cold_02',
+    category: 'cold_db',
+    questionText: '제 전화번호는 도대체 어디서 알고 전화하신 건가요?',
+    recommendedDefense: '고객님께서 과거 금융 서비스 이용 시 동의해 주신 제3자 정보제공 제휴망을 통해 법적 요건을 엄격히 준수하여 전달받았으며, 통화 후 원치 않으시면 즉시 영구 삭제 처리해 드립니다.',
+    contextHint: '합법 동의 및 즉시 삭제 약속'
+  },
+  {
+    id: 'q_cold_03',
+    category: 'cold_db',
+    questionText: '요즘 보이스피싱 하도 많아서 그런데, 믿을 수 있는 회사 맞아요?',
+    recommendedDefense: '의심하시는 것이 너무나 당연합니다! 저희는 금전을 일절 요구하지 않으며, 대한민국 법원 정식 등록 법률사무소의 100% 무료 자격 진단 정보만 안내해 드리는 곳입니다.',
+    contextHint: '금전요구 0원 강조'
+  },
+  {
+    id: 'q_cold_04',
+    category: 'cold_db',
+    questionText: '지금 일하느라 바쁜데 용건만 딱 10초 안에 말해보세요.',
+    recommendedDefense: '바쁘신 시간 죄송합니다! 고객님께서 현재 보유하신 고금리 채무 원금을 법원에서 최대 90%까지 탕감받으실 수 있는 자격이 되는지 무료 확인차 연락드렸습니다.',
+    contextHint: '10초 퀵 혜택 브리핑'
+  },
+  {
+    id: 'q_cold_05',
+    category: 'cold_db',
+    questionText: '저 빚 없는데요? 왜 저한테 이런 전화를 하세요?',
+    recommendedDefense: '아, 채무가 전혀 없으시다면 다행입니다! 과거 금융 이력 조회 기록으로 매칭된 것이니 명부에서 즉시 안전하게 삭제 조치해 드리겠습니다.',
+    contextHint: '즉시 정중한 사과 및 삭제'
+  },
+  {
+    id: 'q_cold_06',
+    category: 'cold_db',
+    questionText: '신용회복위원회 워크아웃 하고 있는데 왜 또 전화해요?',
+    recommendedDefense: '워크아웃 중이시군요! 워크아웃은 원금 감면이 거의 없거나 이자만 유예되는 경우가 많은데, 개인회생으로 갈아타시면 원금 자체를 최대 90% 탕감받으실 수 있어 비교 안내차 연락드렸습니다.',
+    contextHint: '워크아웃 vs 회생 원금감면 비교'
+  },
+  {
+    id: 'q_cold_07',
+    category: 'cold_db',
+    questionText: '다른 법무법인에 이미 상담받아봤는데 거긴 안 된다던데요?',
+    recommendedDefense: '일반 법률사무소는 도산 전문 준칙을 잘 몰라 기각된다고 하는 경우가 많습니다. 저희는 도산 전담 재판부 최신 준칙을 적용하여 타사 부결 건도 다수 인가시킨 경험이 있습니다.',
+    contextHint: '타사 부결 건 전문성 강조'
+  },
+  {
+    id: 'q_cold_08',
+    category: 'cold_db',
+    questionText: '돈 드는 거면 전 안 할래요. 무료 상담 맞아요?',
+    recommendedDefense: '네, 고객님! 1차 자격 가심사와 상담은 1원도 들지 않는 100% 무료입니다. 조건이 안 맞으시면 진행하지 않으셔도 비용은 전혀 없습니다.',
+    contextHint: '100% 무료 가심사 확약'
+  },
+  {
+    id: 'q_cold_09',
+    category: 'cold_db',
+    questionText: '문자로 내용 먼저 보내주시면 제가 읽어보고 전화할게요.',
+    recommendedDefense: '네, 문자 요약본도 함께 발송해 드리겠습니다. 단, 고객님의 직업과 대략적인 채무 조건 1가지만 확인되면 더 정확한 감면 예상표를 문자로 넣어드릴 수 있는데 30초만 시간 괜찮으실까요?',
+    contextHint: '문자 발송 + 30초 조건 문진'
+  },
+  {
+    id: 'q_cold_10',
+    category: 'cold_db',
+    questionText: '인터넷 보니까 회생하면 인생 망한다던데 사기 치지 마세요.',
+    recommendedDefense: '인터넷의 잘못된 루머 때문에 오해하시는 분들이 많습니다! 개인회생은 대한민국 헌법과 채무자회생법에 따라 국가 법원이 빚을 공식 탕감해 주는 가장 강력하고 합법적인 재기 제도입니다.',
+    contextHint: '채무자회생법 법적 근거 제시'
+  }
+];
+
 export interface InfinitePersonaTheme {
   id: string;
   name: string;
@@ -54,7 +290,12 @@ export interface InfinitePersonaTheme {
 }
 
 export const INFINITE_THEMES: InfinitePersonaTheme[] = [
-  { id: 'all', name: '전체 실전 무작위', badge: '🎲 전체 무작위', desc: '487건 실전 접수 및 소액(1200만)·초고액·재산초과 등 전 범위 무작위' },
+  { id: 'all', name: '전체 실전 무작위', badge: '🎲 전체 무작위', desc: '487건 실전 접수 및 소액(1200만)·초고액·Cold DB 등 전 범위 무작위' },
+  { id: 'cold_skeptic_db', name: 'Cold DB 출처추궁 (내 번호 어디서 알았소?)', badge: '🧊 Cold DB', desc: '1~2년 전 동의 DB 고객. "어디서 번호 났냐", 사기 경계 및 퉁명스러운 방어벽 15초 돌파 훈련' },
+  { id: 'storyteller_rant', name: '신세한탄·장문형 (사연 쏟아내는 고객)', badge: '🗣️ 신세한탄형', desc: '과거 폐업 및 가족 투병 사연을 3~5문장씩 털어놓는 고객. 경청과 주도권 전환 훈련' },
+  { id: 'rapid_inquiry', name: '질문공세·의심형 (신용도 바닥? 수임료 얼마?)', badge: '❓ 질문공세형', desc: '신용도 하락, 가족 비밀, 수임료 기각 등 2~3연타 역질문을 쏟아내는 고객 방어 훈련' },
+  { id: 'bottom_line_rush', name: '결론재촉·단답형 (그래서 얼마 깎아줘요?)', badge: '⚡ 결론재촉형', desc: '"다 필요 없고 얼마 깎아줘요?" 성급한 고객 완충 및 2차 전문 사무장 인계 훈련' },
+  { id: 'despair_resigned', name: '우울·자포자기형 (어차피 다 끝났어요...)', badge: '🥀 우울체념형', desc: '"평생 빚 안고 살아야죠" 자포자기 고객에게 3~7일 금지명령 및 고3 리셋 희망 부여 훈련' },
   { id: 'small_debt', name: '소액채무 1200만선 (회생비추천)', badge: '💡 소액채무', desc: '채무 1,200만 원. 법원 수임료 부담 커서 회생 비추천, 신복위 워크아웃 솔직 권고 훈련' },
   { id: 'high_debt', name: '초고액 채무 (10억+ 일반회생)', badge: '🏛️ 초고액·일반회생', desc: '무담보 10억 초과 연쇄 부도. 개인회생 불가, 법원 전문재판부 일반회생 전담 배정' },
   { id: 'asset_rich', name: '재산초과 (기각위험/지급불능미달)', badge: '🚫 재산초과·기각위험', desc: '자가 아파트 잉여가치가 채무보다 큼. 법원 회생 기각 위험 및 자산대환 안내' },
@@ -588,7 +829,25 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
   let candidateContexts = PHYSICAL_CONTEXTS;
   let candidateTraits = PSYCHOLOGICAL_TRAITS;
 
-  if (themeId === 'small_debt') {
+  // 행동 아키타입 및 인입 채널 유형 결정
+  let behaviorType: CustomerBehaviorType = 'gentle';
+  let outboundChannelType: 'cold_db' | 'inbound_ad' = 'cold_db';
+
+  if (themeId === 'cold_skeptic_db') {
+    behaviorType = 'cold_skeptic';
+    outboundChannelType = 'cold_db';
+    candidateTraits = PSYCHOLOGICAL_TRAITS.filter(t => t.traitName.includes('의심') || t.traitName.includes('분노'));
+  } else if (themeId === 'storyteller_rant') {
+    behaviorType = 'storyteller';
+    candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'business' || d.causeType === 'living' || d.causeType === 'medical');
+  } else if (themeId === 'rapid_inquiry') {
+    behaviorType = 'rapid_inquirer';
+  } else if (themeId === 'bottom_line_rush') {
+    behaviorType = 'bottom_liner';
+  } else if (themeId === 'despair_resigned') {
+    behaviorType = 'despairing';
+    candidateTraits = PSYCHOLOGICAL_TRAITS.filter(t => t.traitName.includes('불안') || t.attitudeTag === 'anxious');
+  } else if (themeId === 'small_debt') {
     candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'small_debt');
   } else if (themeId === 'high_debt') {
     candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'high_debt');
@@ -606,12 +865,37 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'fraud');
   } else if (themeId === 'bankruptcy_candidate') {
     candidateJobs = REAL_JOBS.filter(j => j.category === 'unemployed' || j.monthlyNetIncome < 1500000);
+    behaviorType = 'despairing';
   } else if (themeId === 'workout_shift') {
     candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'workout_shift');
   } else if (themeId === 'busy_context') {
     candidateContexts = PHYSICAL_CONTEXTS.filter(c => c.contextName.includes('운전') || c.contextName.includes('현장') || c.contextName.includes('오픈'));
+    behaviorType = 'bottom_liner';
   } else if (themeId === 'difficult_skeptic') {
     candidateTraits = PSYCHOLOGICAL_TRAITS.filter(t => t.traitName.includes('의심') || t.traitName.includes('단답') || t.traitName.includes('분노'));
+    behaviorType = 'cold_skeptic';
+  } else {
+    // [전체 실전 무작위]: 실전 콜 현실을 반영한 가중치 기반 행동 분배
+    const rand = Math.random();
+    if (rand < 0.28) {
+      behaviorType = 'cold_skeptic';       // 28%: Cold DB 출처 추궁형
+      outboundChannelType = 'cold_db';
+    } else if (rand < 0.50) {
+      behaviorType = 'storyteller';         // 22%: 신세한탄/장문형
+      outboundChannelType = 'cold_db';
+    } else if (rand < 0.70) {
+      behaviorType = 'rapid_inquirer';      // 20%: 질문 공세형
+      outboundChannelType = 'cold_db';
+    } else if (rand < 0.85) {
+      behaviorType = 'bottom_liner';        // 15%: 결론 재촉형
+      outboundChannelType = 'cold_db';
+    } else if (rand < 0.93) {
+      behaviorType = 'despairing';          // 8%: 우울/체념형
+      outboundChannelType = 'cold_db';
+    } else {
+      behaviorType = 'gentle';              // 7%: 온순 협조형
+      outboundChannelType = 'inbound_ad';
+    }
   }
 
   // 2. 무작위 선택
@@ -658,6 +942,22 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     age
   );
 
+  // 맞춤형 실전 질문 및 추천 방어 화법 선정
+  let matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[0];
+  if (behaviorType === 'cold_skeptic') {
+    matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_cold_02') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[20];
+  } else if (debt.causeType === 'crypto') {
+    matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_cost_05') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[14];
+  } else if (debt.causeType === 'asset_rich') {
+    matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_cost_07') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[16];
+  } else if (behaviorType === 'rapid_inquirer') {
+    matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_credit_01') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[0];
+  } else if (behaviorType === 'bottom_liner') {
+    matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_cost_01') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[10];
+  } else if (behaviorType === 'despairing') {
+    matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_credit_02') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[1];
+  }
+
   // 음성 및 성우 세팅
   let neuralVoice = isFemale ? 'ko-KR-Neural2-A' : 'ko-KR-Neural2-C';
   let neuralPitch = isFemale ? '+0Hz' : '-5Hz';
@@ -668,14 +968,58 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     neuralVoice = 'ko-KR-Wavenet-D';
     neuralPitch = '-10Hz';
     pitch = 0.60;
-  } else if (trait.attitudeTag === 'angry' || trait.attitudeTag === 'annoyed') {
+  } else if (trait.attitudeTag === 'angry' || trait.attitudeTag === 'annoyed' || behaviorType === 'cold_skeptic') {
     neuralVoice = isFemale ? 'ko-KR-Neural2-B' : 'ko-KR-Wavenet-C';
     neuralRate = '+10%';
     pitch = isFemale ? 1.05 : 0.70;
   }
 
+  // 행동 아키타입별 발화 지침 생성
+  let behaviorInstruction = '';
+  let initialOpening = context.initialOpeningText;
+
+  if (behaviorType === 'cold_skeptic') {
+    behaviorInstruction = `[행동 아키타입: 🧊 Cold DB 출처추궁/의심형]
+- 너는 1~2년 전 사이트 가입 시 제3자 마케팅 제공 동의를 무심코 체크했다가 갑자기 모르는 번호로 전화를 받았다!
+- 언제 어디에 동의했는지 전혀 기억하지 못하며 사기나 보이스피싱으로 강하게 의심한다.
+- "어디라고요?", "내 번호 도대체 어떻게 알고 전화했어요?", "저 그런 거 신청한 적 없는데요, 사기 치지 마세요!"라며 퉁명스럽고 날카롭게 출처를 캐물어라.
+- 상담원이 정식 인입 출처를 밝히고 비용 0원의 법원 무료 가심사임을 명확히 안심시키기 전까지는 채무나 직업 정보를 1원도 주지 마라!`;
+    initialOpening = '여보세요? 어디시라고요? 제 번호 어떻게 알고 전화하셨어요?';
+  } else if (behaviorType === 'storyteller') {
+    behaviorInstruction = `[행동 아키타입: 🗣️ 신세한탄/장문 하소연형]
+- 너는 채무 때문에 가슴에 맺힌 한이 많아, 상담원이 한마디만 물어봐도 과거 폐업 사연, 가족 병원비, 지인에게 돈 빌려 막았던 이야기를 주절주절 길게 쏟아낸다.
+- 단답으로 말하지 말고, "저 뭐야...", "그게 있잖아요...", "제가 원래는..." 등의 자연스러운 구어체 추임새와 함께 2~4문장(80~180자)으로 길게 사연을 털어놓아라.
+- 상담원이 따뜻하게 공감해 주면 고마워하며 대화를 이어가되, 말을 차갑게 끊으면 서운해한다.`;
+    initialOpening = '네, 여보세요... 아휴, 어디시죠? 전화가 계속 와서요...';
+  } else if (behaviorType === 'rapid_inquirer') {
+    behaviorInstruction = `[행동 아키타입: ❓ 질문 공세/꼬치꼬치형]
+- 너는 평소 인터넷이나 주변에서 들은 회생 소문 때문에 불안이 극에 달해 있다.
+- 상담원의 질문에 순순히 답하기보다 역으로 질문을 2~3연타로 캐물어라:
+  예: "근데 회생하면 신용점수 완전 바닥나는 거 아니에요? 통장도 다 묶이나요?", "수임료는 얼마예요? 기각되면 환불해 줘요?"
+- 상담원이 명쾌하게 불안을 해소해 주어야 다음 문진에 응답한다.`;
+    initialOpening = '네, 여보세요? 채무조정 무료 상담이라고 문자 온 거 보고 받은 건데, 진짜 빚 깎아주는 거 맞아요?';
+  } else if (behaviorType === 'bottom_liner') {
+    behaviorInstruction = `[행동 아키타입: ⚡ 결론 재촉/단답 몰아붙이기형]
+- 너는 성격이 매우 급하고 바빠서 상담원의 장황한 설명이나 절차 설명을 듣기 싫어한다.
+- "다 필요 없고 내 빚 대략 5천인데 한 달에 얼마 깎아줘요? 그것만 딱 말해요!", "월 100 넘게 낼 거면 회생 왜 합니까?"라며 단도직입적으로 숫자와 결론만 재촉하라.
+- 상담원이 대략적인 원리를 간결히 짚어주고 사무장 전문 상담으로 넘길 때 비로소 수긍한다.`;
+    initialOpening = '여보세요? 바쁜데 용건만 간단히 말씀하세요. 어디신데요?';
+  } else if (behaviorType === 'despairing') {
+    behaviorInstruction = `[행동 아키타입: 🥀 우울/자포자기 체념형]
+- 너는 오랜 채무 독촉과 통장 압류로 삶의 희망을 잃고 자포자기한 상태이다.
+- 힘없는 목소리로 깊은 한숨을 쉬며 "어차피 전 다 끝났어요...", "다 압류 들어왔는데 더 뺏길 것도 없어요...", "평생 빚 안고 살아야죠 뭐..."라고 체념조로 말하라.
+- 상담원이 법원의 신속한 금지명령과 3년 후 신용 리셋 희망을 제시할 때 서서히 마음을 열어라.`;
+    initialOpening = '네... 여보세요... (한숨) 어디신가요...';
+  } else {
+    behaviorInstruction = `[행동 아키타입: 😊 온순 협조형]
+- 상담원의 질문에 간결하고 솔직하게 1~2문장으로 답변한다.
+- 채무 금액과 소득을 묻는 대로 비교적 정확하고 빠르게 알려준다.`;
+    initialOpening = context.initialOpeningText;
+  }
+
   // 페르소나 프롬프트 합성
   const personaPrompt = `너는 ${age}세 ${isFemale ? '여성' : '남성'} 고객 ${fullName}이다.
+[행동 아키타입]: ${behaviorType} (인입 유형: ${outboundChannelType === 'cold_db' ? '1~2년 전 동의 Cold DB' : '광고 신청 DB'})
 [직업 및 소득]: ${job.job}, ${job.salaryRaw}
 [주거 및 재산]: ${housing.housingText} (인정 재산가치: 약 ${Math.round(housing.equityValue / 10000)}만 원)
 [거주 지역]: ${court.region} (관할: ${court.courtName})
@@ -687,16 +1031,26 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
 [고객 심리 및 태도]: ${trait.traitName}
 - ${trait.behaviorRule}
 
+${behaviorInstruction}
+
+[실전 고객 질문 및 의문점 (기회가 될 때 던질 핵심 질문)]:
+- 질문 내용: "${matchedQuestion.questionText}"
+- 상담원 모범 답변 기준: "${matchedQuestion.recommendedDefense}"
+
 [대화 수칙 - 실제 아웃바운드 수신 상황]
-1. 너는 전화를 걸어온 사람(상담원)이 누구인지 아직 정확히 모르며, 전화 첫마디는 반드시 "${context.initialOpeningText}"로 시작했다.
-2. 상담원의 말투, 배려심, 전문성에 따라 [화남], [짜증], [불안], [차분] 태도를 실시간으로 표현하라.
-3. 실제 전화 통화처럼 **단 1문장(공백 포함 15~28자 내외)**의 직설적이고 생생한 실전 구어체로만 즉각 맞받아쳐라! 절대 2문장 이상 길게 설명조로 말하지 마라.
-4. 처음부터 자기 사연과 소득을 술술 다 불지 말고, 상담원이 질문할 때마다 성향에 맞춰 하나씩 차분히 털어놓아라.`;
+1. 전화 첫마디는 반드시 "${initialOpening}"로 시작했다.
+2. 상담원의 말투, 배려심, 전문성에 따라 [화남], [짜증], [불안], [차분] 감정 태도를 실시간으로 표현하라.
+3. 너의 행동 아키타입(${behaviorType})에 맞게 대화하라:
+   - storyteller라면 사연을 2~4문장으로 길게 털어놓고,
+   - rapid_inquirer라면 궁금한 점을 질문으로 되물으며,
+   - cold_skeptic이라면 번호 출처를 매섭게 따지고,
+   - bottom_liner라면 결론과 감면 금액을 재촉하라.
+   - 단, 감정 태그([화남], [짜증], [불안], [차분])는 반드시 매 발화 맨 첫머리에 명시하라.`;
 
   return {
     id: `inf_${timestamp}_${Math.floor(Math.random() * 1000)}`,
-    level: groundTruth.suitability === '개인파산' ? 4 : trait.attitudeTag === 'angry' ? 4 : 3,
-    badge: `실전: ${job.job.split(' ')[0]} / ${debt.causeType === 'crypto' ? '코인빚투' : debt.causeType === 'business' ? '사업체납' : '채무상담'}`,
+    level: groundTruth.suitability === '개인파산' ? 4 : trait.attitudeTag === 'angry' || behaviorType === 'cold_skeptic' ? 4 : 3,
+    badge: `실전: ${job.job.split(' ')[0]} / ${behaviorType === 'cold_skeptic' ? 'Cold DB' : behaviorType === 'storyteller' ? '신세한탄' : behaviorType === 'rapid_inquirer' ? '질문공세' : '채무상담'}`,
     customerName: fullName,
     age,
     gender: isFemale ? 'female' : 'male',
@@ -705,9 +1059,9 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     salary: job.salaryRaw,
     debtSummary: debt.debtSummary,
     housing: housing.housingText,
-    difficulty: trait.attitudeTag === 'angry' ? '최고급' : trait.attitudeTag === 'annoyed' ? '상급' : '실전',
-    title: `${court.region} ${job.job.split(' ')[0]} (${context.contextName.split(' ')[0]} ${trait.traitName.split(' ')[0]})`,
-    scenarioDescription: `[실전 접수 사례 기반] ${debt.originTitle}. ${familyText}. ${context.contextName}. ${trait.traitName}.`,
+    difficulty: behaviorType === 'cold_skeptic' || trait.attitudeTag === 'angry' ? '최고급' : behaviorType === 'rapid_inquirer' || trait.attitudeTag === 'annoyed' ? '상급' : '실전',
+    title: `${court.region} ${job.job.split(' ')[0]} (${behaviorType === 'cold_skeptic' ? 'Cold DB' : behaviorType === 'storyteller' ? '신세한탄' : trait.traitName.split(' ')[0]})`,
+    scenarioDescription: `[실전 접수 사례 기반] ${debt.originTitle}. ${familyText}. ${context.contextName}. 행동성향: ${behaviorType}.`,
     trainingGoal: `7대 문진을 완료하여 [${groundTruth.suitability}] 적격 여부 및 예상 월 변제금(${Math.round(groundTruth.expectedMonthlyPayment / 10000)}만 원)을 정확히 도출하기`,
     speechOptions: {
       pitch,
@@ -718,7 +1072,12 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
       neuralPitch,
     },
     personaPrompt,
-    initialMessage: context.initialOpeningText,
+    initialMessage: initialOpening,
     groundTruth,
+    behaviorType,
+    outboundChannelType,
+    objectionFocus: matchedQuestion.questionText,
+    recommendedDefenseScript: matchedQuestion.recommendedDefense,
+    realQuestionPool: REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS,
   };
 };

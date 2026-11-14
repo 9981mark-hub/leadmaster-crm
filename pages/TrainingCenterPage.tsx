@@ -70,6 +70,7 @@ import {
   EyeOff,
   RefreshCw,
   X,
+  Lightbulb,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -1196,11 +1197,11 @@ export default function TrainingCenterPage() {
                         <div className="space-y-2">
                           <div className="p-2.5 rounded-lg bg-white/80 dark:bg-gray-900/80 border border-blue-200/70 dark:border-blue-900/70 text-[11px] space-y-1">
                             <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                              <span>📋 <strong>접수 경로:</strong> 온라인 무료 진단 신청 인입</span>
+                              <span>📋 <strong>접수 경로:</strong> {selectedPersona.outboundChannelType === 'cold_db' ? '📞 1~2년 전 금융정보 동의 (Cold DB)' : '온라인 무료 진단 신청 인입'}</span>
                               <span className="font-mono text-[10px]">{selectedPersona.phone}</span>
                             </div>
                             <div className="text-gray-700 dark:text-gray-200">
-                              💬 <strong>접수 메모:</strong> "채무 조정 및 개인회생/파산 가능 여부 확인 요청 (빠른 통화 원함)"
+                              💬 <strong>접수 메모:</strong> {selectedPersona.outboundChannelType === 'cold_db' ? '"과거 마케팅 동의 고객 (갑작스러운 수신에 당황/출처의심 가능성 높음)"' : '"채무 조정 및 개인회생/파산 가능 여부 확인 요청 (빠른 통화 원함)"'}
                             </div>
                           </div>
 
@@ -1300,6 +1301,29 @@ export default function TrainingCenterPage() {
                               </div>
                               <div className="font-medium text-[11px] leading-relaxed text-emerald-950 dark:text-emerald-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-emerald-200/60 dark:border-emerald-900/60">
                                 {selectedPersona.groundTruth.recommendedLegalHook}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 실전 녹취 기반 추천 방어 화법 배너 */}
+                          {selectedPersona.recommendedDefenseScript && (
+                            <div className="p-2.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-[11px] space-y-1">
+                              <div className="flex items-center justify-between text-amber-800 dark:text-amber-200 font-extrabold text-[10px]">
+                                <span className="flex items-center gap-1">
+                                  <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+                                  🛡️ 실전 통화 검증 방어 화법 (녹취 274건 분석)
+                                </span>
+                                <span className="px-1.5 py-0.2 rounded bg-amber-200/80 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold">
+                                  {selectedPersona.behaviorType === 'cold_skeptic' ? '출처추궁 돌파' : selectedPersona.behaviorType === 'storyteller' ? '공감 후 전환' : selectedPersona.behaviorType === 'rapid_inquirer' ? '역질문 방어' : '완충 브릿지'}
+                                </span>
+                              </div>
+                              {selectedPersona.objectionFocus && (
+                                <div className="text-[10px] text-gray-600 dark:text-gray-300">
+                                  • 고객 핵심 질문/의문: <strong>"{selectedPersona.objectionFocus}"</strong>
+                                </div>
+                              )}
+                              <div className="font-medium text-[11px] leading-relaxed text-amber-950 dark:text-amber-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-amber-200/60 dark:border-amber-900/60">
+                                💬 "{selectedPersona.recommendedDefenseScript}"
                               </div>
                             </div>
                           )}
@@ -1623,6 +1647,28 @@ export default function TrainingCenterPage() {
                     <p className="text-[11px] text-blue-950 dark:text-blue-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
                       💬 "{interpolateOpeningScript(trainingConfig.standardOpening, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName)}"
                     </p>
+                  </div>
+                )}
+
+                {/* 💡 실시간 녹취 기반 스마트 방어 코칭 힌트 배너 */}
+                {callState === 'connected' && selectedPersona.recommendedDefenseScript && (
+                  <div className="px-3.5 py-2 bg-gradient-to-r from-amber-50/95 via-orange-50/90 to-yellow-50/95 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-yellow-950/40 border-b border-amber-200 dark:border-amber-800/60 flex items-start justify-between gap-2 text-xs">
+                    <div className="flex items-start gap-2 flex-1">
+                      <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="flex-1 space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-amber-900 dark:text-amber-200 text-[11px]">
+                            💡 실전 추천 방어 화법 (녹취 검증)
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-200/80 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold">
+                            {selectedPersona.behaviorType === 'cold_skeptic' ? '출처추궁 돌파' : selectedPersona.behaviorType === 'storyteller' ? '공감 후 전환' : selectedPersona.behaviorType === 'rapid_inquirer' ? '질문 방어' : '완충 브릿지'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-amber-950 dark:text-amber-100 font-medium leading-relaxed">
+                          💬 "{selectedPersona.recommendedDefenseScript}"
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
 

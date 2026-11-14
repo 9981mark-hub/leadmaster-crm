@@ -281,6 +281,51 @@ export const TrainingReportModal: React.FC<Props> = ({
             </div>
           </div>
 
+          {/* 🎧 실전 통화 녹취 분석 기반 3대 특화 역량 평가 */}
+          {(report.coldDbOpeningScore !== undefined || report.objectionDefenseScore !== undefined || report.pacingControlScore !== undefined) && (
+            <div className="p-4 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-200/70 dark:border-indigo-900/50 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  실전 콜(Cold DB) 3대 핵심 역량 진단
+                </span>
+                <span className="text-[10px] text-indigo-500 font-medium">녹취 274건 비교 분석</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-indigo-100 dark:border-indigo-900 text-xs">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">🧊 Cold DB 출처 돌파</span>
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">{report.coldDbOpeningScore || 70}점</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${report.coldDbOpeningScore || 70}%` }} />
+                  </div>
+                  <p className="mt-1 text-[9px] text-gray-400">15초 내 의심·적대감 불식 및 안심</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-indigo-100 dark:border-indigo-900 text-xs">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">❓ 질문/반론 방어력</span>
+                    <span className="font-bold text-purple-600 dark:text-purple-400">{report.objectionDefenseScore || 70}점</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="h-full bg-purple-500 rounded-full" style={{ width: `${report.objectionDefenseScore || 70}%` }} />
+                  </div>
+                  <p className="mt-1 text-[9px] text-gray-400">신용도/수임료/가족비밀 안심 방어</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-indigo-100 dark:border-indigo-900 text-xs">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">⏱️ 신세한탄 완급 조절</span>
+                    <span className="font-bold text-teal-600 dark:text-teal-400">{report.pacingControlScore || 70}점</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="h-full bg-teal-500 rounded-full" style={{ width: `${report.pacingControlScore || 70}%` }} />
+                  </div>
+                  <p className="mt-1 text-[9px] text-gray-400">경청 공감 후 30초 내 주도권 전환</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Strengths & Weaknesses */}
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40">

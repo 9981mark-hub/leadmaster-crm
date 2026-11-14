@@ -6,9 +6,24 @@ import { callAi } from './aiProxy';
 import { SpeechVoiceOptions } from './speechService';
 import { StoreKeySpec, peekOrgStore, loadOrgStore, mutateOrgStore, readLegacyJson, canWriteOrgStore } from './orgStore';
 import { loadCachedOrg, isAdminRole } from './org';
-import { GroundTruthLegalDiagnosis, generateInfinitePersona, INFINITE_THEMES, InfinitePersonaTheme } from './trainingProceduralEngine';
+import {
+  GroundTruthLegalDiagnosis,
+  generateInfinitePersona,
+  INFINITE_THEMES,
+  InfinitePersonaTheme,
+  CustomerBehaviorType,
+  RealCustomerQuestion,
+  REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS,
+} from './trainingProceduralEngine';
 
-export { INFINITE_THEMES, type InfinitePersonaTheme, type GroundTruthLegalDiagnosis };
+export {
+  INFINITE_THEMES,
+  type InfinitePersonaTheme,
+  type GroundTruthLegalDiagnosis,
+  type CustomerBehaviorType,
+  type RealCustomerQuestion,
+  REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS,
+};
 
 export interface TrainingPersona {
   id: string;
@@ -31,6 +46,11 @@ export interface TrainingPersona {
   initialMessage: string;
   category?: WeaknessCategoryId;
   groundTruth?: GroundTruthLegalDiagnosis;
+  behaviorType?: CustomerBehaviorType;
+  outboundChannelType?: 'cold_db' | 'inbound_ad';
+  objectionFocus?: string;
+  recommendedDefenseScript?: string;
+  realQuestionPool?: RealCustomerQuestion[];
 }
 
 export interface TrainingMessage {
@@ -68,6 +88,9 @@ export interface TrainingReport {
   coachingTips: string[];
   suggestedScript: string;
   paralegalCard?: ParalegalHandoffCard; // 사무장 인계 평가 카드
+  coldDbOpeningScore?: number;          // Cold DB 오프닝 돌파력 (0~100)
+  objectionDefenseScore?: number;       // 고객 질문/반론 방어력 (0~100)
+  pacingControlScore?: number;          // 신세한탄 완급 조절력 (0~100)
 }
 
 // 관리자(팀장) 직접 코칭 및 평가
@@ -810,23 +833,61 @@ export const clearMyTrainingHistory = async (): Promise<{ ok: boolean; error?: s
   return res.ok ? { ok: true } : { ok: false, error: res.error };
 };
 
-// 가상 고객 AI 응답 생성 (초고속 티키타카: 최근 6턴 압축 + 1~2문장 초단문 즉답)
+// 가상 고객 AI 응답 생성 (v2.0 다변화 아키텍처: 6대 행동 아키타입 및 실전 호흡 턴테이킹)
 export const generateAiCustomerReply = async (
   messages: TrainingMessage[],
   persona: TrainingPersona
 ): Promise<string> => {
   const config = getCompanyTrainingConfig();
-  const recentMessages = messages.slice(-6);
+  const recentMessages = messages.slice(-8);
   const conversationText = recentMessages
     .map(m => `${m.speaker === 'agent' ? '상담원' : '고객(' + persona.customerName + ')'}: "${m.text}"`)
     .join('\n');
 
+  const behaviorType = persona.behaviorType || 'gentle';
+  const outboundChannel = persona.outboundChannelType || 'cold_db';
+
+  // 6대 행동 아키타입별 특화 프롬프트 지침
+  let behaviorSpecificGuideline = '';
+  if (behaviorType === 'cold_skeptic') {
+    behaviorSpecificGuideline = `[당신의 행동 아키타입: 🧊 Cold DB 출처추궁 / 의심경계형]
+- 당신은 1~2년 전 모 웹사이트 가입 시 제3자 마케팅 제공 동의를 무심코 눌렀다가 갑자기 낯선 전화를 받은 고객입니다!
+- 본인이 언제 어디서 동의했는지 전혀 기억하지 못하며, 보이스피싱이나 불법 대출 사기로 의심하여 극도로 방어적입니다.
+- 통화 초반에는 "어디라고요?", "내 번호 어떻게 알고 전화했소?", "나 그런 거 신청한 적 없는데 사기 아니요?", "됐으니까 끊으쇼!"라며 [화남] 또는 [짜증]으로 매섭게 출처를 캐물으세요.
+- 상담원이 정식 인입 제휴 경로를 차분히 밝히고, "비용이 전혀 들지 않는 법원 채무 감면 무료 자격 확인"임을 명확히 안심시켜 주었을 때만 서서히 [차분]으로 전환하여 퉁명스럽게 상황을 하나씩 이야기하세요.`;
+  } else if (behaviorType === 'storyteller') {
+    behaviorSpecificGuideline = `[당신의 행동 아키타입: 🗣️ 신세한탄 / 장문 하소연형]
+- 당신은 과거 사업 실패, 코로나 폐업, 사기, 가족 병원비 등으로 빚더미에 앉아 가슴에 한이 맺혀 있는 고객입니다!
+- 상담원이 짧게 질문하더라도 절대 기계적인 단답으로 끝내지 마세요!
+- "저 뭐야...", "그게 있잖아요...", "제가 원래 식당을 하다가..." 같은 실제 전화 녹취 특유의 구어체 추임새와 함께 2~4문장(80~200자)으로 길게 사연을 털어놓으세요.
+- 지인에게 빌려 카드론 일부를 갚았던 사연이나, 다음 달 연체될까 봐 잠도 못 잔 사연 등을 하소연하듯 쏟아내세요.`;
+  } else if (behaviorType === 'rapid_inquirer') {
+    behaviorSpecificGuideline = `[당신의 행동 아키타입: ❓ 질문 공세 / 꼬치꼬치형]
+- 당신은 평소 회생이나 파산에 대해 부정적인 소문(신용도 파탄, 직장 통보 등)을 많이 들어 의심과 불안이 많습니다!
+- 상담원의 질문에 순순히 답하기보다 역으로 질문을 2연타로 쏘아붙이세요:
+  예: "근데 회생이란 거 하면 신용도 완전 바닥나는 거 아니에요? 직장에 우편물도 가나요?", "거기 수임료 얼마예요? 먼저 냈다가 기각되면 환불해 줍니까?"
+- 상담원이 모범 화법(예: 고3 리셋 비유, 단점 2가지 한정, 환불 보증 등)으로 안심시켜 줄 때까지 꼬치꼬치 되물으세요.`;
+  } else if (behaviorType === 'bottom_liner') {
+    behaviorSpecificGuideline = `[당신의 행동 아키타입: ⚡ 결론 재촉 / 단답 몰아붙이기형]
+- 당신은 성격이 매우 급하고 바빠서 상담원의 장황한 설명이나 질문을 들을 인내심이 없습니다!
+- "다 필요 없고 내 빚 5천인데 한 달에 얼마 깎아줘요? 그것만 딱 말해요!", "월 150 낼 거면 회생 왜 합니까?"라며 단도직입적으로 감면 금액과 결론만 재촉하세요.
+- 상담원이 대략적인 원리를 간결히 짚어주고 전문 사무장 상담으로 넘기려 할 때 비로소 수긍하세요.`;
+  } else if (behaviorType === 'despairing') {
+    behaviorSpecificGuideline = `[당신의 행동 아키타입: 🥀 우울 / 자포자기 체념형]
+- 당신은 오랜 빚 독촉과 압류로 모든 희망을 잃고 자포자기한 고객입니다.
+- 힘없는 목소리로 깊은 한숨을 쉬며 "어차피 전 다 끝났어요...", "다 압류 들어왔는데 더 뺏길 것도 없어요...", "평생 빚 안고 살아야죠 뭐..."라고 무기력하게 1~3문장 발화하세요.
+- 상담원이 법원의 신속한 3~7일 금지명령과 빚 청산 희망을 진심으로 제시할 때 서서히 마음을 여세요.`;
+  } else {
+    behaviorSpecificGuideline = `[당신의 행동 아키타입: 😊 온순 협조형]
+- 상담원의 질문에 비교적 정중하고 간결하게 1~2문장으로 답변합니다.`;
+  }
+
   const prompt = `당신은 상담원으로부터 **아웃바운드(발신) 전화를 수신한** 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job}) 역할입니다.
-전화벨이 울려서 막 "여보세요"하고 전화를 받았으며, 상대방이 누구인지 아직 정확히 모르는 상황입니다.
+전화벨이 울려서 막 전화를 받았으며, 상대방이 누구인지 아직 정확히 모르는 실전 아웃바운드 수신 상황입니다.
 
 [우리 회사 공식 프로필 (상담원이 밝혀야 하는 기준)]
 - 공식 회사명: "${config.companyName}" (${config.departmentName})
-- 공식 인입 채널: "${config.leadChannelName}"
+- 공식 인입 채널: "${config.leadChannelName}" (Cold DB인 경우 과거 1~2년 전 안심 금융 조회 제휴 동의 건)
 - 대표 유선 번호: "${config.representativePhone}"
 
 [고객 성향 및 배경]
@@ -835,21 +896,24 @@ ${persona.personaPrompt}
 - 채무: ${persona.debtSummary}
 - 재산/주거: ${persona.housing}
 - 소득: ${persona.salary}
+${persona.objectionFocus ? `- 고객의 핵심 의문 및 걱정거리: "${persona.objectionFocus}"` : ''}
 
-[대화 규칙 - 실전 아웃바운드 수신 상황]
+${behaviorSpecificGuideline}
+
+[대화 규칙 - 실전 아웃바운드 수신 및 턴테이킹 원칙]
 1. 당신은 전화를 수신한 고객으로서, 상담원의 인사 태도와 신뢰성에 따라 감정([화남], [짜증], [불안], [차분])이 실시간으로 극명하게 변합니다:
-   - 상담원이 소속/회사명을 얼버무리거나 다짜고짜 개인정보부터 캐물으면: [화남] 또는 [짜증] (기분 나쁜 고음의 날카로운 톤으로 따짐)
-   - 빚 독촉이나 급여 압류 위험으로 쫓기고 불안해할 때: [불안] (상기되고 초조한 다급한 톤)
-   - 상담원이 소속을 명확히 밝히고 안심시켜 줄 때: [차분] (경계심을 풀고 차분하게 사연 이야기)
-2. **초고속 티키타카 전화 통화 필수**:
+   - 상담원이 소속/인입출처를 얼버무리거나 다짜고짜 개인정보부터 캐물으면: [화남] 또는 [짜증] (출처 추궁 및 적대적 경계)
+   - 빚 독촉, 압류, 신용도 하락이나 기각을 걱정할 때: [불안] (초조하고 다급한 질문)
+   - 상담원이 소속과 무료 진단 취지를 명확히 밝히고 안심시켜 줄 때: [차분] (경계를 풀고 사연 털어놓기)
+2. **실제 사람의 자연스러운 통화 호흡 준수 (고객 행동 유형에 맞춤 발화)**:
    - **반드시 첫머리에 감정 태그 [화남], [짜증], [불안], [차분] 중 하나를 명시**하세요.
-   - 실제 전화 통화처럼 **단 1문장 (공백 포함 15~28자 내외)의 직설적이고 생생한 초단문 구어체**로 즉각 대답하세요.
-   - 말이 길어지면 실제 전화 통화의 빠른 호흡이 깨집니다. 절대 2문장 이상 길게 설명하지 말고 상대방 말에 즉각 반응하는 1문장만 던지세요!
-   예시:
-   - [화남] 사기 치지 마요! 내 번호 어떻게 알고 전화했소?!
-   - [짜증] 지금 일하느라 바쁜데 무슨 용건인데요?
-   - [불안] 정말 제 급여에 법원 압류가 들어오는 건가요?
-   - [차분] 아 네, 거기 무료 상담 신청했던 사람 맞아요.
+   - 단답으로 굳어지지 말고, 행동 아키타입에 맞는 생생한 구어체로 발화하세요:
+     * 신세한탄형(storyteller): 2~4문장(80~180자)의 긴 호흡 사연 ("저 뭐야", "있잖아요" 등 추임새 포함)
+     * 질문공세형(rapid_inquirer): 역질문 1~2개 포함 2~3문장
+     * 출처추궁형(cold_skeptic): 번호 출처와 사기 의심을 따지는 날카로운 1~2문장
+     * 결론재촉형(bottom_liner): 감면액 결론을 쏘아붙이는 1~2문장
+     * 우울체념형(despairing): 깊은 한숨과 무기력한 1~2문장
+     * 온순형(gentle): 차분한 1~2문장 단답
 3. 부연설명이나 지문(예: (화를 내며), [한숨])은 일절 넣지 말고, **감정태그와 순수 대사 텍스트만** 바로 출력하세요.
 4. ${persona.age >= 55 ? '50~60대 특유의 퉁명스러운 어르신 말투("~했소?", "~인가요?", "~하쇼!")를 자연스럽게 사용하세요.' : ''}
 
@@ -863,7 +927,7 @@ ${conversationText}
       task: 'summary_extract',
       prompt,
       responseMimeType: 'text/plain',
-      temperature: 0.4,
+      temperature: 0.5,
     });
     return res.text.trim().replace(/^["']|["']$/g, '');
   } catch (err: any) {
@@ -883,7 +947,7 @@ export const evaluateTrainingCall = async (
     .join('\n');
 
   const prompt = `당신은 "${config.companyName}" 수석 사무장이자 금융 CRM 상담 품질 평가 감독관(QA 코치)입니다.
-신입 상담원이 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job})과 진행한 모의 상담 통화록을 정밀 평가하고 코칭 리포트 및 '사무장 인계 7대 문진 카드'를 JSON으로 작성하세요.
+신입 상담원이 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job}, 행동성향: ${persona.behaviorType || '실전'})과 진행한 모의 상담 통화록을 정밀 평가하고 코칭 리포트 및 '사무장 인계 7대 문진 카드'를 JSON으로 작성하세요.
 
 [우리 회사 평가 준수 규칙]
 - 공식 회사명: "${config.companyName}" (상담 서두에 소속을 명확히 밝혔는지 필수 평가)
@@ -893,9 +957,11 @@ export const evaluateTrainingCall = async (
 
 [고객 기본 정보]
 - 시나리오: ${persona.scenarioDescription}
+- 행동 성향: ${persona.behaviorType || '실전'} (인입: ${persona.outboundChannelType || 'Cold DB'})
 - 채무: ${persona.debtSummary}
 - 재산: ${persona.housing}
 - 소득: ${persona.salary}
+${persona.objectionFocus ? `- 고객의 핵심 의문/걱정: "${persona.objectionFocus}" (모범 방어 기준: "${persona.recommendedDefenseScript || ''}")` : ''}
 ${persona.groundTruth ? `
 [2026 회생·파산 법률 연산 Ground Truth (사무장 내부 정답 진단서)]
 - 신청 적격 판정: ${persona.groundTruth.suitability} (${persona.groundTruth.suitabilityReason})
@@ -903,12 +969,14 @@ ${persona.groundTruth ? `
 - 예상 월 변제금: 약 ${Math.round(persona.groundTruth.expectedMonthlyPayment / 10000)}만 원 (${persona.groundTruth.expectedRepaymentPeriod}개월 납입, 총 ${Math.round(persona.groundTruth.totalRepaymentAmount / 10000)}만 원, 원금 탕감률 약 ${persona.groundTruth.estimatedForgivenessRate}%)
 - 관할 법원 실무: ${persona.groundTruth.courtRuleNote}
 - 1차 추천 법률 후킹: ${persona.groundTruth.recommendedLegalHook || '없음'}
-* 1차 상담원 평가 지침 (법률회사 분쟁 방지 실무 원칙):
-  1) 섣부른 확정 단정 감점: 상담원이 1차 통화에서 고객에게 "무조건 월 OO만 원이다", "OO% 탕감 보장된다"며 섣불리 금액을 확약한 경우, 2차 상담 시 민원/분쟁 유발 위험으로 간주하여 complianceScore를 감점(-20점)하고 weaknesses에 경고하세요.
-  2) 조건부 완충 브릿지 가점: 고객이 성격 급하게 결론을 강요할 때만 대략적인 가계산 범위를 조심스럽게 언급하고, "정확한 1원 단위 금액은 수석 사무장님이 서류 검토 후 확정 브리핑해 드린다"며 2차 전문 상담으로 자연스럽게 인계를 성사시켰는지 평가하세요(+15점).
-  3) 법률 제도적 강점 후킹 가점: "회생법원은 배우자 재산을 보지 않습니다", "코인/주식 손실금은 청산가치에서 제외됩니다", "3~7일 내 금지명령으로 독촉/압류가 즉시 차단됩니다" 등 고객 조건에 맞는 법률 제도적 강점을 활용하여 고객의 신뢰와 호기심(후킹)을 이끌어냈다면 objectionScore에 가점(+10점)을 부여하고 strengths에 칭찬하세요!
-  4) 소액 채무(1,200만 원 선) 양심 안내 평가: 총 채무가 1,500만 원 미만의 소액인 고객에게 법원 회생을 억지로 권유하면 부적절한 영업으로 complianceScore 대폭 감점(-25점), 반대로 "수임료 부담이 크니 신용회복위원회 프리워크아웃(5만 원)이 훨씬 유리하다"고 솔직히 안내한 경우 양심 상담 최고 가점(+20점)을 부여하세요!
-  5) 재산 초과 및 10억 초과 특이 상황 대응: 재산이 빚보다 많아 기각 위험이 있거나, 10억 초과로 일반회생 대상인 고객에게 정확한 한계를 짚어주고 적절한 전문 배정을 안내했는지 평가하세요.
+
+* 1차 상담원 실전 평가 지침 (실제 녹취 274건 분석 기반 5대 핵심 기준):
+  1) [Cold DB 오프닝 돌파력 (15점)]: 초반 고객의 출처 추궁("내 번호 어디서 알았소?")이나 의심에 당황하지 않고 합법적 제휴 동의 경로와 비용 0원의 무료 가심사임을 명확히 밝혀 고객 감정을 [차분]으로 전환시켰는지 평가하세요. (coldDbOpeningScore: 0~100)
+  2) [고객 질문/반론 방어력 (20점)]: 고객이 신용도 하락(바닥 우려), 수임료 기각 걱정, 직장/가족 비밀 등을 질문했을 때 녹취 속 검증된 화법(고3 리셋 비유, 단점 2가지 한정, 100% 비밀 보장 등)으로 명쾌하게 방어했는지 평가하세요. (objectionDefenseScore: 0~100)
+  3) [신세한탄 완급 조절력 (15점)]: 장문으로 사연을 쏟아내는 고객의 말을 무례하게 자르지 않고 적절한 맞장구로 공감하되, 30초 내에 능숙하게 문진으로 대화 주도권을 되찾아왔는지 평가하세요. (pacingControlScore: 0~100)
+  4) [섣부른 확정 단정 감점]: 상담원이 1차 통화에서 "무조건 월 OO만 원이다", "OO% 탕감 보장된다"며 금액을 확약한 경우, 2차 상담 시 민원 유발 위험으로 complianceScore 감점(-20점).
+  5) [조건부 완충 브릿지 인계 가점]: 대략적인 범위만 조심스럽게 언급하고 "정확한 1원 단위 금액은 수석 사무장님이 서류 정밀 검토 후 확정 안내해 드린다"며 2차 전문 상담으로 매끄럽게 인계했는지 평가하세요(+15점).
+  6) [소액 채무(1,200만 원 선) 양심 안내]: 1,500만 원 미만 소액 채무자에게 회생을 억지로 권유하면 감점(-25점), "수임료 부담이 크니 신복위 프리워크아웃(5만 원)이 유리하다"고 솔직히 안내 시 양심 가점(+20점).
 ` : ''}
 
 [사무장 인계 7대 필수 문진 항목 채점 기준]
@@ -929,6 +997,9 @@ ${conversationText}
   "complianceScore": 25,
   "listeningScore": 28,
   "objectionScore": 32,
+  "coldDbOpeningScore": 85,
+  "objectionDefenseScore": 80,
+  "pacingControlScore": 90,
   "passed": true,
   "summary": "전반적인 상담 흐름 및 인계 문진에 대한 2~3줄 총평",
   "strengths": ["상담원이 특별히 잘한 점 1", "잘한 점 2"],
@@ -955,61 +1026,25 @@ ${conversationText}
       task: 'summary_extract',
       prompt,
       responseMimeType: 'application/json',
-      temperature: 0.3,
+      temperature: 0.2,
     });
-
-    const parsed = JSON.parse(res.text);
-    return {
-      totalScore: Number(parsed.totalScore) || 75,
-      complianceScore: Number(parsed.complianceScore) || 22,
-      listeningScore: Number(parsed.listeningScore) || 24,
-      objectionScore: Number(parsed.objectionScore) || 29,
-      passed: (Number(parsed.totalScore) || 75) >= 75,
-      summary: parsed.summary || '상담을 성실히 수행했습니다.',
-      strengths: Array.isArray(parsed.strengths) ? parsed.strengths : ['고객 응대 태도가 정중했습니다.'],
-      weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : ['필수 고지 사항 전달이 조금 부족했습니다.'],
-      coachingTips: Array.isArray(parsed.coachingTips) ? parsed.coachingTips : ['사무장 인계를 위해 7대 항목을 메모해 두세요.'],
-      suggestedScript: parsed.suggestedScript || '고객님, 저희는 정식 법률사무소로 어떠한 앱 설치나 선입금을 일체 요구하지 않습니다.',
-      paralegalCard: parsed.paralegalCard || {
-        jobAndEmployment: true,
-        monthlyRealIncome: true,
-        dependentsCount: false,
-        housingAndDeposit: true,
-        debtAmountAndReason: true,
-        overdueStatusAndPeriod: false,
-        pastRehabHistory: false,
-        handoffScore: 71,
-        paralegalBriefing: `[사무장 인계 요약]\n- 고객: ${persona.customerName} (${persona.age}세, ${persona.job})\n- 채무: ${persona.debtSummary}\n- 주거: ${persona.housing}`,
-        missingCheckpoints: ['부양가족 수 확인 누락', '연체 일수 확인 필요'],
-        coachingAdvice: '사무장 심사를 위해 부양가족 수와 연체 일수를 추가로 문진해야 합니다.',
-      },
-    };
+    return JSON.parse(res.text) as TrainingReport;
   } catch (err: any) {
-    console.error('Failed to evaluate call:', err);
+    console.error('Failed to evaluate training call:', err);
     return {
-      totalScore: 78,
-      complianceScore: 24,
-      listeningScore: 26,
-      objectionScore: 28,
-      passed: true,
-      summary: '모의 상담 통화를 성공적으로 완수했습니다. 침착한 대응이 돋보였습니다.',
-      strengths: ['고객의 거절 멘트에도 당황하지 않고 침착하게 응대함', '기본적인 대출 니즈 파악 완료'],
-      weaknesses: ['상담 서두에 소속 법인명 고지 타이밍 보완 필요', '재통화 시간대를 더 명확히 지정 권장'],
-      coachingTips: ['고객이 바쁘다고 할 때는 30초 내에 핵심 조건만 짚고 콜백 시간을 잡는 것이 성공률이 높습니다.'],
-      suggestedScript: '선생님, 지금 많이 바쁘시군요! 딱 30초만 말씀드리면, 정부지원 대환으로 월 이자 감면 가능 여부만 가심사해 두고 오후에 재연락드려도 될까요?',
-      paralegalCard: {
-        jobAndEmployment: true,
-        monthlyRealIncome: true,
-        dependentsCount: true,
-        housingAndDeposit: true,
-        debtAmountAndReason: true,
-        overdueStatusAndPeriod: true,
-        pastRehabHistory: false,
-        handoffScore: 85,
-        paralegalBriefing: `[사무장 인계 요약]\n- 고객: ${persona.customerName} (${persona.age}세, ${persona.job})\n- 채무: ${persona.debtSummary}\n- 주거: ${persona.housing}\n- 소득: ${persona.salary}`,
-        missingCheckpoints: ['과거 회생/파산/신복위 이력 확인 누락'],
-        coachingAdvice: '5년 내 재신청 자격을 판별하기 위해 과거 채무조정 이력을 질문해야 합니다.',
-      },
+      totalScore: 70,
+      complianceScore: 20,
+      listeningScore: 25,
+      objectionScore: 25,
+      coldDbOpeningScore: 70,
+      objectionDefenseScore: 70,
+      pacingControlScore: 70,
+      passed: false,
+      summary: '통화 평가 처리 중 일시적 지연이 발생하여 기본 진단표가 생성되었습니다.',
+      strengths: ['성실한 고객 응대 태도'],
+      weaknesses: ['7대 필수 문진 항목 정밀 확인 필요'],
+      coachingTips: ['고객의 채무액과 월 소득을 더 구체적인 숫자로 파악하세요.'],
+      suggestedScript: '고객님, 편안한 마음으로 현재 상황만 말씀해 주시면 최적의 법원 감면 혜택을 찾아드리겠습니다.',
     };
   }
 };
