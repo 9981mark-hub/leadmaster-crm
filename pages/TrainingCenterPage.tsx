@@ -1365,6 +1365,16 @@ export default function TrainingCenterPage() {
                         </button>
                       </div>
 
+                      {/* 고객 고유 현실 말버릇/말투 뉘앙스 */}
+                      {selectedPersona.speechHabitName && (
+                        <div className="flex items-center gap-1.5 text-[10.5px] text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-800 font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-500 shrink-0" />
+                          <span className="truncate">
+                            🗣️ <strong>말투 특징:</strong> {selectedPersona.speechHabitName} {selectedPersona.speechHabitDesc ? `("${selectedPersona.speechHabitDesc}")` : ''}
+                          </span>
+                        </div>
+                      )}
+
                       {/* 1. 실전 블라인드 모드 (통화 전/중 - 정답 가림) */}
                       {!isRevealed ? (
                         <div className="space-y-2">

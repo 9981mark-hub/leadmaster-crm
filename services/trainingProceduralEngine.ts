@@ -690,6 +690,102 @@ const PSYCHOLOGICAL_TRAITS: PsychologicalSeed[] = [
   },
 ];
 
+// 7. 실전 다양한 사람들의 자연스러운 말버릇 & 표현 뉘앙스 풀 (Speech Habit Seed)
+export interface SpeechHabitSeed {
+  id: string;
+  name: string;
+  desc: string;
+  openingSample: string;
+  ruleInstruction: string;
+}
+
+export const REALISTIC_SPEECH_HABITS: SpeechHabitSeed[] = [
+  {
+    id: 'habit_cautious_humble',
+    name: '조심스런 확인형',
+    desc: '제가 잘 몰라서 그러는데...',
+    openingSample: '아 네... 저기, 제가 이런 걸 잘 몰라서 그러는데요...',
+    ruleInstruction: '너는 금융이나 법을 잘 몰라 주눅 들어 있다. "아 네... 혹시 제가 잘 몰라서 그러는데요", "그게 그렇게 되는 건가요...?"라며 조심스럽게 되묻고 말끝을 부드럽게 흐려라.',
+  },
+  {
+    id: 'habit_blunt_short',
+    name: '무뚝뚝 단답형',
+    desc: '네. 아닌데요. 그래서요.',
+    openingSample: '네. 여보세요. 어디신데요.',
+    ruleInstruction: '너는 화난 건 아니지만 본래 말수가 적고 군더더기 말을 싫어한다. "네", "아닌데요", "맞아요", "그래서요?"처럼 10자 이내 단답형으로 툭툭 끊어 대답하라.',
+  },
+  {
+    id: 'habit_sigh_lament',
+    name: '한숨·추임새형',
+    desc: '아휴... 에휴... 참 살다 보니...',
+    openingSample: '네, 여보세요... 아휴... 전화가 계속 와서요...',
+    ruleInstruction: '너는 삶이 지쳐 말문 시작할 때마다 깊은 한숨("하아...", "아휴...", "에휴 참...")과 신세한탄 추임새가 자연스럽게 섞여 나온다.',
+  },
+  {
+    id: 'habit_agree_seeking',
+    name: '맞장구 유도형',
+    desc: '그렇죠? 맞잖아요? 상식적으로...',
+    openingSample: '네 여보세요? 채무 상담 맞죠? 그렇죠?',
+    ruleInstruction: '너는 상담원에게 본인의 억울함이나 주장을 납득시키려 한다. 말끝마다 "그렇죠?", "맞잖아요?", "그게 상식 아닌가요?"라며 상담원의 맞장구와 동의를 지속적으로 유도하라.',
+  },
+  {
+    id: 'habit_plain_life_words',
+    name: '쉬운 생활단어형',
+    desc: '대환 ➔ 갈아타기, 채무 ➔ 빚',
+    openingSample: '여보세요? 대출 빚 갈아타는 거 상담해 준다면서요?',
+    ruleInstruction: '너는 어려운 금융/법률 한자어를 쓰지 않는다. "대환" 대신 "갈아타기", "채무" 대신 "빌린 돈/빚", "감면" 대신 "원금 깎아주는 거"처럼 순수 일상생활 단어로만 표현하라.',
+  },
+  {
+    id: 'habit_internet_rumor',
+    name: '주워들은 정보형',
+    desc: '인터넷 유튜브 보니까 그러던데...',
+    openingSample: '여보세요? 유튜브에서 빚 탕감된다고 영상 봐서요.',
+    ruleInstruction: '너는 유튜브나 인터넷 카페에서 주워들은 단편적인 법률 지식을 아는 척 섞는다. "인터넷 보니까 금지명령 신청하면 전화 안 온다던데요?", "요즘 법 바뀌어서 코인 빚도 다 탕감해 준다던데 맞죠?"라며 어설프게 아는 체를 하라.',
+  },
+  {
+    id: 'habit_polite_elder',
+    name: '공손하고 깍듯한 어르신형',
+    desc: '선생님 고생 많으십니다. 늙은이라서...',
+    openingSample: '아이고 여보세요? 바쁘신데 전화 주셔서 고맙습니다.',
+    ruleInstruction: '너는 나이가 많지만 상담원에게 하대하지 않고 깍듯하게 존댓말을 쓴다. "아이고 선생님, 고생 많으십니다", "제가 늙어서 귀가 어두워 천천히 말씀해 주세요"라며 점잖고 예의 바르게 대하라.',
+  },
+  {
+    id: 'habit_calm_sharp',
+    name: '차분한 직설형',
+    desc: '목소리는 나긋나긋, 핵심만 콕콕',
+    openingSample: '네 여보세요. 말씀하세요, 듣고 있습니다.',
+    ruleInstruction: '너는 목소리 톤은 매우 차분하고 상냥하지만, 상담원의 페이스에 휘말리지 않는다. "네 말씀은 잘 알겠고요, 그래서 제가 매달 최종 얼마를 갚아야 합니까?"라며 본인이 알고 싶은 핵심 숫자만 침착하게 파고들어라.',
+  },
+  {
+    id: 'habit_repeating_story',
+    name: '주절주절 설명형',
+    desc: '그러니까 제 말은요, 제가 지난달에...',
+    openingSample: '아 네 여보세요! 거 어디시죠? 제가 사연이 좀 길어서요...',
+    ruleInstruction: '너는 묻지 않은 일상 사연까지 차근차근 풀어서 말한다. "그러니까 제 말은요, 제가 원래는 작년까지 가게를 하다가요~" 하며 대화의 주도권을 쥐고 길게 이야기를 풀어나가라.',
+  },
+  {
+    id: 'habit_suspicious_verify',
+    name: '의심 많은 신중형',
+    desc: '거기 법원 지정인가요? 진짜 무료예요?',
+    openingSample: '여보세요? 거기가 정확히 어디죠? 법률사무소 맞아요?',
+    ruleInstruction: '너는 쉽게 믿지 않고 돌다리를 두드린다. "거기가 정식 법무법인 맞나요?", "진짜 나중에 돈 달라는 거 아니죠?", "제 번호는 전산에서 삭제해 주는 건가요?"라며 신중하게 검증하려 하라.',
+  },
+  {
+    id: 'habit_impatient_rush',
+    name: '성격 급한 재촉형',
+    desc: '아 예예 알겠고요, 결론이 뭔데요?',
+    openingSample: '여보세요? 바쁜데 용건만 간단히요. 어디신데요?',
+    ruleInstruction: '너는 성격이 급해 상담원 말이 10초만 길어져도 중간에 "아 예예 알겠고요", "그래서 결론이 뭐냐고요"라며 말을 자르고 다음으로 넘어가려 하라.',
+  },
+  {
+    id: 'habit_family_worry',
+    name: '가족 비밀 전전긍긍형',
+    desc: '근데 진짜 집이나 와이프한테 연락 안 가죠?',
+    openingSample: '여보세요? 혹시 집으로 우편물 날아가는 건 아니죠?',
+    ruleInstruction: '너는 채무 해결보다 가족 비밀 유지가 최우선이다. 2~3마디 나눌 때마다 "근데 진짜 집이나 남편(배우자)한테는 절대 통보 안 가는 거 100% 확실하죠?"라며 가족 걱정을 끊임없이 되물어라.',
+  },
+];
+
 // ============================================
 // 2026 회생·파산 법률 자동 계산 알고리즘 (Ground Truth)
 // ============================================
@@ -1031,6 +1127,9 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     }
   }
 
+  // 현실 다양한 사람들의 자연스러운 말버릇/표현 뉘앙스 12종 중 무작위 선택
+  const speechHabit = REALISTIC_SPEECH_HABITS[Math.floor(Math.random() * REALISTIC_SPEECH_HABITS.length)];
+
   // 페르소나 프롬프트 합성
   const personaPrompt = `너는 ${age}세 ${isFemale ? '여성' : '남성'} 고객 ${fullName}이다.
 [행동 아키타입]: ${behaviorType} (인입 유형: ${outboundChannelType === 'cold_db' ? '1~2년 전 동의 Cold DB' : '광고 신청 DB'})
@@ -1044,6 +1143,8 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
 - ${context.promptGuideline}
 [고객 심리 및 태도]: ${trait.traitName}
 - ${trait.behaviorRule}
+[고객 고유 말버릇 & 표현 뉘앙스]: ${speechHabit.name} ("${speechHabit.desc}")
+- ${speechHabit.ruleInstruction}
 
 ${behaviorInstruction}
 
@@ -1096,5 +1197,7 @@ ${behaviorInstruction}
     objectionFocus: matchedQuestion.questionText,
     recommendedDefenseScript: matchedQuestion.recommendedDefense,
     realQuestionPool: REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS,
+    speechHabitName: speechHabit.name,
+    speechHabitDesc: speechHabit.desc,
   };
 };

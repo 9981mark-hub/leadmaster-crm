@@ -51,6 +51,8 @@ export interface TrainingPersona {
   objectionFocus?: string;
   recommendedDefenseScript?: string;
   realQuestionPool?: RealCustomerQuestion[];
+  speechHabitName?: string;
+  speechHabitDesc?: string;
 }
 
 export interface TrainingMessage {
