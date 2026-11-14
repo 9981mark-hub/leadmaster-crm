@@ -840,6 +840,10 @@ export default function TrainingCenterPage() {
     if (themeId) setSelectedThemeId(themeId);
     const newPersona = generateRandomCustomerPersona(targetTheme);
     setSelectedPersona(newPersona);
+    if (newPersona.age >= 65) setAgeTone('elder');
+    else if (newPersona.age >= 50) setAgeTone('senior');
+    else if (newPersona.age >= 40) setAgeTone('middle');
+    else setAgeTone('young');
     setMessages([]);
     setShowCheatSheet(false);
     setShowGroundTruth(false);
@@ -854,6 +858,10 @@ export default function TrainingCenterPage() {
     }
     const newPersona = generateCustomPersonaByCategory(catId);
     setSelectedPersona(newPersona);
+    if (newPersona.age >= 65) setAgeTone('elder');
+    else if (newPersona.age >= 50) setAgeTone('senior');
+    else if (newPersona.age >= 40) setAgeTone('middle');
+    else setAgeTone('young');
     setMessages([]);
     setShowCheatSheet(false);
     setShowGroundTruth(false);
@@ -1244,6 +1252,12 @@ export default function TrainingCenterPage() {
                         <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold text-white ${isRevealed ? 'bg-blue-600' : 'bg-emerald-600 animate-pulse'}`}>
                           {isRevealed ? selectedPersona.badge : '🎯 실전 접수 인입'}
                         </span>
+                      </div>
+
+                      {/* 100인 중장년 보이스 팩 성대 매칭 정보 */}
+                      <div className="flex items-center gap-1.5 text-[10.5px] text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-1 rounded-md border border-indigo-200 dark:border-indigo-800/60 font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                        🎙️ <strong>100인 실전 성대:</strong> {selectedPersona.speechOptions.voiceId || '중장년 성대'} ({selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'}, 톤 {selectedPersona.speechOptions.neuralPitch || '중저음'})
                       </div>
 
                       {/* 1. 실전 블라인드 모드 (통화 전/중 - 정답 가림) */}
