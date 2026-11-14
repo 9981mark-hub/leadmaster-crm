@@ -3,6 +3,7 @@
 // ============================================
 import { TrainingPersona, ParalegalHandoffCard } from './trainingService';
 import { SpeechVoiceOptions } from './speechService';
+import { getMatchedSeniorVoice, SENIOR_VOICE_POOL_100 } from './seniorVoicePool100';
 
 // ============================================
 // 보건복지부 공식 고시 개인회생 법정 최저생계비 (기준 중위소득의 60%)
@@ -908,7 +909,18 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
 
   // 성별 및 나이 결정
   const isFemale = job.genderPreference === 'female' ? true : job.genderPreference === 'male' ? false : Math.random() > 0.5;
-  const age = job.category === 'unemployed' ? 55 + Math.floor(Math.random() * 12) : 26 + Math.floor(Math.random() * 32); // 26~58세
+  // 실제 1차 채무상담 인입 현실 반영: 40대 이상 중장년/노년층 중심 배분 (40대 35%, 50대 40%, 60대 20%, 70대 5%)
+  const ageRoll = Math.random() * 100;
+  let age: number;
+  if (ageRoll < 35) {
+    age = 40 + Math.floor(Math.random() * 10); // 40~49세 (35%)
+  } else if (ageRoll < 75) {
+    age = 50 + Math.floor(Math.random() * 10); // 50~59세 (40%)
+  } else if (ageRoll < 95) {
+    age = 60 + Math.floor(Math.random() * 10); // 60~69세 (20%)
+  } else {
+    age = 70 + Math.floor(Math.random() * 8);  // 70~77세 (5%)
+  }
 
   const surname = SURNAMES[Math.floor(Math.random() * SURNAMES.length)];
   const firstName = isFemale
@@ -1047,29 +1059,9 @@ ${behaviorInstruction}
    - bottom_liner라면 결론과 감면 금액을 재촉하라.
    - 단, 감정 태그([화남], [짜증], [불안], [차분])는 반드시 매 발화 맨 첫머리에 명시하라.`;
 
-  // 10인 실전 복제 보이스 ID 자동 매핑 (20대~70대 비율 매칭)
-  let voiceId = 'p06_50s_male_story';
-  if (age < 30) {
-    voiceId = isFemale ? 'p02_30s_female' : 'p01_20s_male';
-  } else if (age < 40) {
-    voiceId = isFemale ? 'p02_30s_female' : 'p03_40s_male_rush';
-  } else if (age < 50) {
-    if (isFemale) {
-      voiceId = 'p04_40s_female_skeptic';
-    } else {
-      voiceId = behaviorType === 'bottom_liner' ? 'p03_40s_male_rush' : 'p05_40s_male_inquirer';
-    }
-  } else if (age < 60) {
-    if (isFemale) {
-      voiceId = 'p08_50s_female_anxious';
-    } else {
-      voiceId = behaviorType === 'storyteller' ? 'p06_50s_male_story' : 'p07_50s_male_heavy';
-    }
-  } else if (age < 70) {
-    voiceId = isFemale ? 'p10_70s_female_elder' : 'p09_60s_male_elder';
-  } else {
-    voiceId = isFemale ? 'p10_70s_female_elder' : 'p09_60s_male_elder';
-  }
+  // 40대~70대 실전 중장년 100인 보이스 팩에서 최적 성대/어조 자동 매칭
+  const seniorVoice = getMatchedSeniorVoice(age, isFemale ? 'female' : 'male', behaviorType);
+  const voiceId = seniorVoice.id;
 
   return {
     id: `inf_${timestamp}_${Math.floor(Math.random() * 1000)}`,
