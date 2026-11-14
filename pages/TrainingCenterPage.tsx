@@ -1275,10 +1275,16 @@ export default function TrainingCenterPage() {
                         </span>
                       </div>
 
-                      {/* 100인 중장년 보이스 팩 성대 매칭 정보 */}
+                      {/* 1안 Edge-TTS 24kHz 초고음질 성대 매칭 정보 */}
                       <div className="flex items-center gap-1.5 text-[10.5px] text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-1 rounded-md border border-indigo-200 dark:border-indigo-800/60 font-medium">
                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                        🎙️ <strong>100인 실전 성대:</strong> {selectedPersona.speechOptions.voiceId || '중장년 성대'} ({selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'}, 톤 {selectedPersona.speechOptions.neuralPitch || '중저음'})
+                        🎙️ <strong>1안 실전 성우:</strong> {
+                          selectedPersona.speechOptions.gender === 'female'
+                            ? '선희 성우 (24kHz 초고음질 여성)'
+                            : selectedPersona.age < 40
+                            ? '현수 성우 (24kHz 청년 남성)'
+                            : '인준 성우 (24kHz 중장년 남성)'
+                        } (호흡 {selectedPersona.speechOptions.rate?.toFixed(2) || '1.00'}x, 톤 {selectedPersona.speechOptions.neuralPitch || '표준'})
                       </div>
 
                       {/* 1. 실전 블라인드 모드 (통화 전/중 - 정답 가림) */}
@@ -1526,11 +1532,11 @@ export default function TrainingCenterPage() {
                 </span>
                 {colabUrl ? (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold flex items-center gap-1">
-                    🎙️ CosyVoice 2 복제 음성
+                    🎙️ 2안 CosyVoice 2 복제 음성
                   </span>
                 ) : (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold flex items-center gap-1">
-                    ✨ 100인 실전 뉴럴 (0원 무제한)
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold flex items-center gap-1 border border-blue-300/40">
+                    ✨ 1안 Edge-TTS 24kHz 초고음질 (0원 무제한)
                   </span>
                 )}
               </div>
@@ -1606,7 +1612,7 @@ export default function TrainingCenterPage() {
                 className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-500/20"
               >
                 <Volume2 className="w-3.5 h-3.5" />
-                🔊 {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'} 성우) 1초 미리듣기
+                🔊 {selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '선희 성우' : selectedPersona.age < 40 ? '현수 성우' : '인준 성우'}) 1초 미리듣기
               </button>
             </div>
           </div>

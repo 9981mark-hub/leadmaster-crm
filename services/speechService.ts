@@ -217,13 +217,123 @@ class SpeechService {
     });
   }
 
+  // 1안. MS Edge-TTS 클라우드 직결 (24kHz 초고음질 신경망, 0원 무제한, 크롬/엣지/모바일 전 기기 동일)
+  public async speakEdgeTTS(text: string, options: SpeechVoiceOptions = {}): Promise<string> {
+    const cleanText = text
+      .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+      .replace(/[\.\.\.~"']/g, ' ')
+      .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+      .replace(/,\s*,/g, ',')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) return 'Empty';
+
+    // 성우 보이스 선택 (인준 / 선희 / 현수)
+    let voice = options.neuralVoice;
+    if (!voice || !voice.startsWith('ko-KR-')) {
+      if (options.gender === 'female') {
+        voice = 'ko-KR-SunHiNeural';
+      } else {
+        voice = 'ko-KR-InJoonNeural';
+      }
+    }
+
+    // 감정 분석
+    const emotion = options.emotion || this.detectEmotion(cleanText);
+
+    // 속도 계산
+    let rateStr = '+0%';
+    if (options.neuralRate) {
+      rateStr = options.neuralRate;
+    } else if (options.rate !== undefined) {
+      let r = options.rate;
+      if (emotion === 'angry') r = Math.min(1.25, r * 1.05);
+      else if (emotion === 'annoyed') r = Math.min(1.20, r * 1.03);
+      const pct = Math.round((r - 1.0) * 100);
+      rateStr = `${pct >= 0 ? '+' : ''}${pct}%`;
+    }
+
+    // 피치 계산
+    let pitchStr = '+0Hz';
+    if (options.neuralPitch) {
+      pitchStr = options.neuralPitch;
+    } else if (emotion === 'angry') {
+      pitchStr = '+30Hz';
+    } else if (emotion === 'annoyed') {
+      pitchStr = '+15Hz';
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const apiUrl = '/api/edge-tts';
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: cleanText,
+        voice,
+        rate: rateStr,
+        pitch: pitchStr,
+        gender: options.gender || 'male',
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Edge-TTS API HTTP error: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const audioUrl = URL.createObjectURL(blob);
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      const audio = this.unlockedAudio || new Audio();
+      this.unlockedAudio = audio;
+      audio.src = audioUrl;
+      audio.volume = 1.0;
+      this.currentAudio = audio;
+
+      const finish = () => {
+        if (!resolved) {
+          resolved = true;
+          this.currentAudio = null;
+          URL.revokeObjectURL(audioUrl);
+          const voiceDisplayName = voice.includes('InJoon')
+            ? '인준 성우 (중장년 남성)'
+            : voice.includes('SunHi')
+            ? '선희 성우 (차분 여성)'
+            : '현수 성우 (청년 남성)';
+          resolve(voiceDisplayName);
+        }
+      };
+
+      audio.onended = finish;
+      audio.onerror = (e) => {
+        console.warn('Edge-TTS playback error:', e);
+        finish();
+      };
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((e) => {
+          console.warn('Edge-TTS audio play catch:', e);
+          finish();
+        });
+      }
+    });
+  }
+
   // 통합 발화 메서드 (항상 가장 고품질의 자연스러운 음성을 최우선 선택)
   public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<{ engine: 'neural' | 'browser'; voiceName: string }> {
     this.stopSpeaking();
     // 모바일 오디오 덕킹(볼륨 꺼짐) 방지를 위해 발화 중에는 마이크 수신 정지
     this.stopListening();
 
-    // 0순위: Google Colab에 구동된 CosyVoice 2 실시간 복제 음성 서버 (실제 통화 10인 녹취 복제)
+    // 0순위: Google Colab에 구동된 CosyVoice 2 실시간 복제 음성 서버 (선택적 구동 시)
     const colabUrl = this.getColabServerUrl();
     if (colabUrl) {
       try {
@@ -236,17 +346,27 @@ class SpeechService {
       }
     }
 
-    // 1순위: 100인 실전 중장년 고유 뉴럴 음성 엔진 (Edge Natural / Chrome 신경망, 0원 무료 영구 가동)
+    // 1순위: 1안 MS Edge-TTS 클라우드 직결 (24kHz 초고음질 신경망, 0원 무제한, 크롬/엣지/모바일 전 브라우저 동일)
+    try {
+      const voiceName = await this.speakEdgeTTS(text, options);
+      this.lastEngineUsed = 'neural';
+      this.lastVoiceName = voiceName;
+      return { engine: 'neural', voiceName };
+    } catch (err) {
+      console.warn('1안 Edge-TTS 클라우드 직결 실패, 브라우저 폴백 시도:', err);
+    }
+
+    // 2순위 (오프라인 폴백): 브라우저 내장 Web Speech API
     try {
       this.lastEngineUsed = 'browser';
       const voiceName = await this.speakBrowser(text, options);
       this.lastVoiceName = voiceName;
       return { engine: 'browser', voiceName };
     } catch (err) {
-      console.warn('100인 중장년 뉴럴 엔진 실패, 폴백 시도:', err);
+      console.warn('브라우저 Web Speech 엔진 실패, 폴백 시도:', err);
     }
 
-    // 2순위 (모바일 폴백): 안드로이드 스마트폰 순정 TTS
+    // 3순위 (모바일 폴백): 안드로이드 스마트폰 순정 TTS
     if (typeof window !== 'undefined' && (window as any).AndroidBridge?.isNativeTtsAvailable?.()) {
       try {
         const voiceName = await this.speakNativeAndroid(text, options);
@@ -258,7 +378,7 @@ class SpeechService {
       }
     }
 
-    // 3순위 (비상 서브 백업): Google Cloud Text-to-Speech (필요 시에만 사용)
+    // 4순위 (비상 서브 백업): Google Cloud Text-to-Speech
     if (this.neuralEnabled) {
       try {
         const voiceName = await this.speakGoogleCloud(text, options);

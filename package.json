@@ -30,6 +30,7 @@
     "jwt-decode": "^4.0.0",
     "korean-lunar-calendar": "^0.3.6",
     "lucide-react": "^0.562.0",
+    "msedge-tts": "^2.1.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.11.0",

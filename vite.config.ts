@@ -11,7 +11,27 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        name: 'edge-tts-dev-middleware',
+        configureServer(server) {
+          server.middlewares.use('/api/edge-tts', async (req, res) => {
+            try {
+              const handlerModule = await server.ssrLoadModule('./api/edge-tts.ts');
+              const handler = handlerModule.default || handlerModule;
+              await handler(req, res);
+            } catch (err) {
+              console.error('Local Edge-TTS dev server error:', err);
+              if (!res.headersSent) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: String(err) }));
+              }
+            }
+          });
+        },
+      },
+    ],
     // AI 키는 번들에 넣지 않는다 (AI 호출은 Supabase Edge Function ai-proxy가 서버 비밀값으로 한다)
     build: {
       rollupOptions: {

@@ -970,20 +970,31 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     matchedQuestion = REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS.find(q => q.id === 'q_credit_02') || REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS[1];
   }
 
-  // 음성 및 성우 세팅
-  let neuralVoice = isFemale ? 'ko-KR-Neural2-A' : 'ko-KR-Neural2-C';
-  let neuralPitch = isFemale ? '+0Hz' : '-5Hz';
-  let neuralRate = '+5%';
-  let pitch = isFemale ? 1.0 : 0.75;
+  // 40대~70대 실전 중장년 100인 보이스 팩에서 최적 성대/어조 자동 매칭
+  const seniorVoice = getMatchedSeniorVoice(age, isFemale ? 'female' : 'male', behaviorType);
+  const voiceId = seniorVoice.id;
+  const voiceRatePercent = parseFloat((seniorVoice.rate || '0%').replace('%', ''));
+  const calculatedRate = Math.round((1.0 + voiceRatePercent / 100) * 100) / 100;
 
-  if (age >= 55 && !isFemale) {
-    neuralVoice = 'ko-KR-Wavenet-D';
-    neuralPitch = '-10Hz';
-    pitch = 0.60;
+  // 1안. MS Edge-TTS 클라우드 직결 성우 세팅 (24kHz 초고음질 신경망)
+  // 여성: ko-KR-SunHiNeural (선희 성우 - 차분한 일상형부터 의심/주부 톤까지 완벽)
+  // 남성 청년(20~30대): ko-KR-HyunsuMultilingualNeural (현수 성우)
+  // 남성 중장년(40~70대): ko-KR-InJoonNeural (인준 성우 - 중후하고 묵직한 실전 남성 톤)
+  let neuralVoice = isFemale
+    ? 'ko-KR-SunHiNeural'
+    : age < 40
+    ? 'ko-KR-HyunsuMultilingualNeural'
+    : 'ko-KR-InJoonNeural';
+  let neuralPitch = isFemale ? '+0Hz' : '-5Hz';
+  let neuralRate = seniorVoice.rate || '+0%';
+  let pitch = isFemale ? 1.0 : 0.85;
+
+  if (age >= 60 && !isFemale) {
+    neuralPitch = '-15Hz'; // 60~70대 어르신 굵고 낮은 톤
+    pitch = 0.75;
   } else if (trait.attitudeTag === 'angry' || trait.attitudeTag === 'annoyed' || behaviorType === 'cold_skeptic') {
-    neuralVoice = isFemale ? 'ko-KR-Neural2-B' : 'ko-KR-Wavenet-C';
-    neuralRate = '+10%';
-    pitch = isFemale ? 1.05 : 0.70;
+    neuralPitch = isFemale ? '+20Hz' : '+15Hz'; // 의심/분노 시 성대 긴장으로 피치 상승
+    pitch = isFemale ? 1.10 : 0.90;
   }
 
   // 행동 아키타입별 발화 지침 생성
@@ -1058,14 +1069,6 @@ ${behaviorInstruction}
    - cold_skeptic이라면 번호 출처를 매섭게 따지고,
    - bottom_liner라면 결론과 감면 금액을 재촉하라.
    - 단, 감정 태그([화남], [짜증], [불안], [차분])는 반드시 매 발화 맨 첫머리에 명시하라.`;
-
-  // 40대~70대 실전 중장년 100인 보이스 팩에서 최적 성대/어조 자동 매칭
-  const seniorVoice = getMatchedSeniorVoice(age, isFemale ? 'female' : 'male', behaviorType);
-  const voiceId = seniorVoice.id;
-
-  // 100인 실전 성대의 고유 rate 퍼센티지(예: "-15%", "+4%")를 실제 실수 배속으로 정밀 변환
-  const voiceRatePercent = parseFloat((seniorVoice.rate || '0%').replace('%', ''));
-  const calculatedRate = Math.round((1.0 + voiceRatePercent / 100) * 100) / 100;
 
   return {
     id: `inf_${timestamp}_${Math.floor(Math.random() * 1000)}`,
