@@ -182,6 +182,8 @@ export default function TrainingCenterPage() {
   const messagesRef = useRef<TrainingMessage[]>([]);
   const customerSpeakingStartTimeRef = useRef<number>(0);
   const isCustomerSpeakingRef = useRef<boolean>(false);
+  const lastCustomerSpeakingTextRef = useRef<string>(''); // 스피커 소리 마이크 유입(에코) 방어용 직전 고객 대사
+  const customerEchoGuardUntilRef = useRef<number>(0); // 고객 발화 종료 후 스피커 잔향 방어 가드 타임
 
   useEffect(() => {
     callStateRef.current = callState;
@@ -440,6 +442,7 @@ export default function TrainingCenterPage() {
         setIsCustomerSpeaking(true);
         isCustomerSpeakingRef.current = true;
         customerSpeakingStartTimeRef.current = Date.now();
+        lastCustomerSpeakingTextRef.current = firstMsg.text;
         try {
           await speechService.speak(firstMsg.text, {
             ...selectedPersona.speechOptions,
@@ -450,6 +453,7 @@ export default function TrainingCenterPage() {
         } finally {
           setIsCustomerSpeaking(false);
           isCustomerSpeakingRef.current = false;
+          customerEchoGuardUntilRef.current = Date.now() + 800; // 스피커 잔향 마이크 유입 방어 가드
         }
       }
 
@@ -489,6 +493,8 @@ export default function TrainingCenterPage() {
   const handleReplayCustomerMessage = async (text: string, emotion?: 'angry' | 'annoyed' | 'anxious' | 'calm') => {
     if (isCustomerSpeaking) return;
     setIsCustomerSpeaking(true);
+    isCustomerSpeakingRef.current = true;
+    lastCustomerSpeakingTextRef.current = text;
     speechService.stopListening();
     try {
       await speechService.speak(text, {
@@ -499,6 +505,8 @@ export default function TrainingCenterPage() {
       });
     } finally {
       setIsCustomerSpeaking(false);
+      isCustomerSpeakingRef.current = false;
+      customerEchoGuardUntilRef.current = Date.now() + 800;
       // 다시 듣기가 끝난 후 통화 연결 중이면 마이크 자동 복원!
       if (callStateRef.current === 'connected') {
         startCallMicrophone();
@@ -520,6 +528,38 @@ export default function TrainingCenterPage() {
         const clean = transcript.trim();
         if (!clean) return;
 
+        // 🚨 0. 스피커 소리 마이크 유입(Acoustic Feedback / Echo) 원천 차단:
+        // A) 인식된 텍스트가 방금 재생된 고객 대사의 일부분이거나 중복 키워드인 경우:
+        //    (스피커에서 나온 소리가 마이크로 재유입되어 상담원이 말한 것으로 둔갑하는 에코 현상 100% 방지)
+        const now = Date.now();
+        const lastCustText = lastCustomerSpeakingTextRef.current;
+        if (lastCustText) {
+          const cleanRec = clean.replace(/[\s\.,\?!~]/g, '');
+          const cleanCust = lastCustText.replace(/[\s\.,\?!~]/g, '');
+          // 인식된 텍스트가 직전 고객 대사에 포함되어 있는 경우 (4글자 이상 부분 문자열)
+          if (cleanRec.length >= 4 && cleanCust.includes(cleanRec)) {
+            console.log('스피커 에코 유입 감지 및 차단 (고객 대사 일치):', clean);
+            return;
+          }
+          // 2단어 이상 키워드 대조
+          const recWords = clean.split(/\s+/).filter(w => w.length >= 2);
+          if (recWords.length >= 2) {
+            let matched = 0;
+            for (const rw of recWords) {
+              if (cleanCust.includes(rw)) matched++;
+            }
+            if (matched >= 2 && (matched / recWords.length) >= 0.6) {
+              console.log('스피커 에코 유입 감지 및 차단 (키워드 60% 이상 중복):', clean);
+              return;
+            }
+          }
+        }
+
+        // B) 고객 발화 종료 직후 0.8초 동안은 스피커 잔향 방어를 위해 무시
+        if (now < customerEchoGuardUntilRef.current) {
+          return;
+        }
+
         // 1. 실시간 말 끼어들기 및 동시 발화(Overlapping Speech) 지능형 중재:
         const isBackchannel = /^(네|예|아|음|어|네네|아네|예예|글쎄요|그렇죠)[.?~]?$/.test(clean);
 
@@ -531,35 +571,15 @@ export default function TrainingCenterPage() {
             return;
           }
 
-          // B) 실질적인 동시 발화 / 끼어들기 발생 시:
-          const elapsedFromCustomerStart = Date.now() - customerSpeakingStartTimeRef.current;
-          const isGentleCustomer = selectedPersona.difficulty === '초급' || selectedPersona.customerName.includes('순한');
-
-          if (elapsedFromCustomerStart < 1200) {
-            // 발화 시작 직후(1.2초 이내) 겹쳤을 때:
-            if (isGentleCustomer) {
-              // 온순형 고객: 고객이 말을 멈추고 상담원에게 즉시 양보!
-              speechService.stopSpeaking();
-              isCustomerSpeakingRef.current = false;
-              setIsCustomerSpeaking(false);
-            } else {
-              // 급하거나 화난 고객: 고객이 밀어붙이며 자기 말을 계속함!
-              // 단, 상담원이 6글자 이상 길게 말하며 치고 들어오면 고객이 멈춤
-              if (clean.length >= 6) {
-                speechService.stopSpeaking();
-                isCustomerSpeakingRef.current = false;
-                setIsCustomerSpeaking(false);
-              } else {
-                setInterimText(clean);
-                interimTextRef.current = clean;
-                return;
-              }
-            }
-          } else {
-            // 고객 말이 이미 1.2초 이상 진행된 후 상담원이 말하면 고객 중단
+          // B) 고객 발화 도중의 실질적인 끼어들기:
+          // 스피커 잡음이 아닌, 상담원이 6글자 이상 명확한 새 문장을 발화했을 때만 고객 중단!
+          const elapsedFromCustomerStart = now - customerSpeakingStartTimeRef.current;
+          if (clean.length >= 6 && elapsedFromCustomerStart > 600) {
             speechService.stopSpeaking();
             isCustomerSpeakingRef.current = false;
             setIsCustomerSpeaking(false);
+          } else {
+            return;
           }
         }
 
@@ -741,6 +761,7 @@ export default function TrainingCenterPage() {
         setIsCustomerSpeaking(true);
         isCustomerSpeakingRef.current = true;
         customerSpeakingStartTimeRef.current = Date.now();
+        lastCustomerSpeakingTextRef.current = cleanCustomerText;
         try {
           (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
         } catch (_) {}
@@ -754,6 +775,7 @@ export default function TrainingCenterPage() {
         } finally {
           setIsCustomerSpeaking(false);
           isCustomerSpeakingRef.current = false;
+          customerEchoGuardUntilRef.current = Date.now() + 800; // 스피커 잔향 마이크 유입 방어 가드
         }
       }
     } catch (e) {

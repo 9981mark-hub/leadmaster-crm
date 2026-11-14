@@ -517,23 +517,38 @@ class SpeechService {
 
     return new Promise((resolve) => {
       let resolved = false;
+      let resumeInterval: any = null;
+      let timer: any = null;
+
       const finish = () => {
         if (!resolved) {
           resolved = true;
+          if (resumeInterval) clearInterval(resumeInterval);
+          if (timer) clearTimeout(timer);
           resolve(playedVoiceName);
         }
       };
 
-      // 6초 안전 타임아웃 (크롬 Web Speech stuck 버그 방지)
-      const timer = setTimeout(finish, 6000);
+      // 🚨 글자 수 및 발화 속도에 비례한 동적 안전 타임아웃:
+      // 기존의 6초 하드코딩은 긴 대사(150~200자)가 6초 만에 premature finish되어 마이크가 조기 오픈되고
+      // 스피커에서 흘러나오는 고객 목소리가 마이크로 재유입(에코)되는 치명적 버그의 원인이었음!
+      const charsPerSec = Math.max(5, utterance.rate * 8); // 초당 약 8자
+      const expectedDurationMs = Math.ceil((cleanText.length / charsPerSec) * 1000) + 8000;
+      timer = setTimeout(finish, Math.max(12000, expectedDurationMs));
+
+      // 크롬 브라우저 15초 장문 음성 멈춤 버그 방지 (주기적 resume)
+      resumeInterval = setInterval(() => {
+        if (this.synth?.speaking && !this.synth?.paused) {
+          this.synth.pause();
+          this.synth.resume();
+        }
+      }, 4000);
 
       utterance.onend = () => {
-        clearTimeout(timer);
         finish();
       };
       utterance.onerror = (e) => {
         console.warn('SpeechSynthesis error:', e);
-        clearTimeout(timer);
         finish();
       };
 
@@ -541,9 +556,8 @@ class SpeechService {
         this.synth!.cancel();
         setTimeout(() => {
           if (!resolved) this.synth!.speak(utterance);
-        }, 30);
+        }, 40);
       } catch (_) {
-        clearTimeout(timer);
         finish();
       }
     });
