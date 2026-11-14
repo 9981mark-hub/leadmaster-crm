@@ -876,25 +876,25 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
     candidateTraits = PSYCHOLOGICAL_TRAITS.filter(t => t.traitName.includes('의심') || t.traitName.includes('단답') || t.traitName.includes('분노'));
     behaviorType = 'cold_skeptic';
   } else {
-    // [전체 실전 무작위]: 실전 콜 현실을 반영한 가중치 기반 행동 분배
+    // [전체 실전 무작위]: 실전 Cold DB 아웃바운드 현실 반영 (순진형 10% 이하 엄격 제한)
     const rand = Math.random();
-    if (rand < 0.28) {
-      behaviorType = 'cold_skeptic';       // 28%: Cold DB 출처 추궁형
-      outboundChannelType = 'cold_db';
-    } else if (rand < 0.50) {
-      behaviorType = 'storyteller';         // 22%: 신세한탄/장문형
+    if (rand < 0.45) {
+      behaviorType = 'cold_skeptic';       // 45%: Cold DB 출처 추궁 / 보이스피싱 의심형
       outboundChannelType = 'cold_db';
     } else if (rand < 0.70) {
-      behaviorType = 'rapid_inquirer';      // 20%: 질문 공세형
+      behaviorType = 'rapid_inquirer';      // 25%: 제도 불신 / 꼬치꼬치 역질문형 (수임료, 직장 통보 의심)
       outboundChannelType = 'cold_db';
-    } else if (rand < 0.85) {
-      behaviorType = 'bottom_liner';        // 15%: 결론 재촉형
+    } else if (rand < 0.90) {
+      behaviorType = 'despairing';          // 20%: 피로 / 자포자기 체념형 (어차피 안 된다며 회피)
       outboundChannelType = 'cold_db';
-    } else if (rand < 0.93) {
-      behaviorType = 'despairing';          // 8%: 우울/체념형
+    } else if (rand < 0.95) {
+      behaviorType = 'bottom_liner';        // 5%: 결론 재촉형 (감면액만 집요 재촉)
+      outboundChannelType = 'cold_db';
+    } else if (rand < 0.98) {
+      behaviorType = 'storyteller';         // 3%: 신세한탄형 (충분한 공감 후 사연 전개)
       outboundChannelType = 'cold_db';
     } else {
-      behaviorType = 'gentle';              // 7%: 온순 협조형
+      behaviorType = 'gentle';              // 2%: 온순 협조형 (실전 10% 이내의 극소수 순진 고객)
       outboundChannelType = 'inbound_ad';
     }
   }
