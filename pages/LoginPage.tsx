@@ -59,12 +59,6 @@ export default function LoginPage() {
                         <Sparkles size={11} /> Enterprise Cloud v4.5
                     </span>
                 </div>
-
-                <div className="flex items-center gap-4 text-xs text-slate-400">
-                    <a href="./privacy.html" className="text-slate-300 hover:text-white transition-colors">개인정보처리방침</a>
-                    <span className="text-slate-700">•</span>
-                    <a href="./terms.html" className="text-slate-300 hover:text-white transition-colors">이용약관</a>
-                </div>
             </header>
 
             {/* 🎯 본문: 2열 B2B SaaS 쇼케이스 & 로그인 포털 레이아웃 */}
