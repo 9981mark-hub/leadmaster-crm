@@ -12,6 +12,8 @@ import {
   ModelRecordingItem,
   DialogueTurn,
   ObjectionGuideItem,
+  askEducationAssistant,
+  InAppChatMessage,
 } from '../../services/trainingEducationService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -50,6 +52,8 @@ import {
   Lightbulb,
   Radio,
   Share2,
+  Send,
+  Bot,
 } from 'lucide-react';
 
 type SubView = 'script' | 'recordings' | 'videos' | 'faq';
@@ -90,6 +94,64 @@ export default function EducationHubTab() {
   const [faqSearch, setFaqSearch] = useState<string>('');
   const [faqCategory, setFaqCategory] = useState<string>('all');
   const [openFaqIds, setOpenFaqIds] = useState<Record<string, boolean>>({ faq_1: true, faq_5: true });
+
+  // In-App NotebookLM AI Chat State
+  const [chatInput, setChatInput] = useState<string>('');
+  const [isAnswering, setIsAnswering] = useState<boolean>(false);
+  const [chatMessages, setChatMessages] = useState<InAppChatMessage[]>([
+    {
+      id: 'welcome_1',
+      role: 'assistant',
+      content: '안녕하세요! 도산 전문 법률 사수 AI입니다.\n\n개인회생·파산 자격 요건, 2025년 가구원수별 최저생계비 계산, 주택임대차 최우선변제금, 그리고 "수임료가 비싸요" 같은 고객 거절 방어 화법 등 무엇이든 질문해 주세요. 사이트 내에서 즉시 1초 만에 답변해 드립니다.',
+      timestamp: '안내',
+    },
+  ]);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll on new message
+  useEffect(() => {
+    if (showNotebookModal && chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages, showNotebookModal, isAnswering]);
+
+  // Send question handler
+  const handleSendQuestion = async (queryText?: string) => {
+    const q = (queryText || chatInput).trim();
+    if (!q || isAnswering) return;
+
+    const userMsg: InAppChatMessage = {
+      id: `user_${Date.now()}`,
+      role: 'user',
+      content: q,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setChatMessages((prev) => [...prev, userMsg]);
+    setChatInput('');
+    setIsAnswering(true);
+
+    try {
+      const reply = await askEducationAssistant(q, materials);
+      const aiMsg: InAppChatMessage = {
+        id: `ai_${Date.now()}`,
+        role: 'assistant',
+        content: reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setChatMessages((prev) => [...prev, aiMsg]);
+    } catch (err: any) {
+      const errMsg: InAppChatMessage = {
+        id: `err_${Date.now()}`,
+        role: 'assistant',
+        content: `답변 생성 중 오류가 발생했습니다: ${err.message || '서버 응답 없음'}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setChatMessages((prev) => [...prev, errMsg]);
+    } finally {
+      setIsAnswering(false);
+    }
+  };
 
   // Initial Server Sync
   useEffect(() => {
@@ -1368,99 +1430,197 @@ export default function EducationHubTab() {
         </div>
       )}
 
-      {/* 7. NotebookLM Direct Modal / Setup Helper */}
+      {/* 7. NotebookLM Direct In-App AI Q&A Modal */}
       {showNotebookModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl p-6 md:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
-            {/* Close Button */}
-            <button
-              onClick={() => setShowNotebookModal(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-3xl rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
             {/* Modal Header */}
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 text-xs font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-                Google NotebookLM 법률 지식 비서
+            <div className="p-5 md:p-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex items-start justify-between gap-4 bg-gradient-to-r from-orange-50/60 via-amber-50/40 to-transparent dark:from-orange-950/20 dark:via-amber-950/10">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[11px] font-black flex items-center gap-1 shadow-xs">
+                    <Sparkles className="w-3 h-3" />
+                    사이트 내 실시간 즉답 모드
+                  </span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    2025 법정 기준표 & 교육자료(PDF 3종) 연동
+                  </span>
+                </div>
+                <h2 className="text-lg md:text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                  <Bot className="w-5 h-5 text-orange-500" />
+                  <span>AI 법률 사수 실시간 Q&A (NotebookLM 내장 엔진)</span>
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  새 창으로 나갈 필요 없이, 질문을 입력하거나 아래 추천 질문을 클릭하면 1초 만에 법률 및 화법 답변을 받으실 수 있습니다.
+                </p>
               </div>
-              <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">
-                {materials.notebookLm.notebookTitle}
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                {materials.notebookLm.notebookDescription}
-              </p>
-            </div>
 
-            {/* Main Action Launch Button */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-gray-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-orange-500/20">
-              <div className="space-y-0.5">
-                <div className="text-xs font-bold text-gray-900">상담원 100명 무료 동시 접속</div>
-                <div className="text-sm font-black">구글 공식 NotebookLM 지식 챗봇 열기</div>
-              </div>
-              <a
-                href={materials.notebookLm.sharedUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gray-950 text-white font-bold text-xs hover:bg-gray-800 transition-all shrink-0"
-              >
-                <span>새 창에서 바로 질문하기</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            {/* Admin Notebook URL Setting (Only in edit mode) */}
-            {isEditMode && (
-              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/60 space-y-2">
-                <label className="text-xs font-bold text-amber-800 dark:text-amber-300">
-                  대표님 공유 노트북 URL 설정 (링크가 있는 모든 사용자-뷰어)
-                </label>
-                <input
-                  type="text"
-                  value={materials.notebookLm.sharedUrl}
-                  onChange={(e) =>
-                    setMaterials({
-                      ...materials,
-                      notebookLm: { ...materials.notebookLm, sharedUrl: e.target.value },
-                    })
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() =>
+                    setChatMessages([
+                      {
+                        id: 'init_reset',
+                        role: 'assistant',
+                        content: '대화 기록이 초기화되었습니다. 궁금하신 도산 법률, 최저생계비 산출, 거절 대응 화법을 편하게 질문해 주세요!',
+                        timestamp: '안내',
+                      },
+                    ])
                   }
-                  className="w-full p-2.5 text-xs rounded-xl border border-amber-300 dark:border-amber-600 bg-white dark:bg-gray-900"
-                />
+                  title="대화 초기화"
+                  className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all text-xs flex items-center gap-1 font-bold"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="hidden sm:inline">초기화</span>
+                </button>
+                <button
+                  onClick={() => setShowNotebookModal(false)}
+                  className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            )}
+            </div>
 
-            {/* Sample Prompts for Counselors (One-click copy) */}
-            <div className="space-y-2.5">
-              <h3 className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>추천 질문 리스트 (클릭 시 복사되어 바로 붙여넣기 가능)</span>
-              </h3>
-              <div className="space-y-1.5">
+            {/* Chat Message Stream */}
+            <div
+              ref={chatScrollRef}
+              className="flex-1 p-5 md:p-6 overflow-y-auto space-y-4 bg-gray-50/70 dark:bg-gray-950/40 min-h-[300px] max-h-[420px]"
+            >
+              {chatMessages.map((msg) => {
+                const isUser = msg.role === 'user';
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+                  >
+                    {!isUser && (
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <Bot className="w-4 h-4" />
+                      </div>
+                    )}
+
+                    <div
+                      className={`max-w-[85%] rounded-2xl p-4 text-xs md:text-sm leading-relaxed space-y-2 shadow-xs ${
+                        isUser
+                          ? 'bg-indigo-600 text-white rounded-tr-none font-medium'
+                          : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200/80 dark:border-gray-700/80 rounded-tl-none font-medium'
+                      }`}
+                    >
+                      <div className="whitespace-pre-line">{msg.content}</div>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-black/10 dark:border-white/10 text-[10px] opacity-75">
+                        <span>{msg.timestamp}</span>
+                        {!isUser && (
+                          <button
+                            onClick={() => handleCopyText(msg.content, 'AI 답변')}
+                            className="hover:underline flex items-center gap-1 font-bold ml-3"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>답변 복사</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {isAnswering && (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center shrink-0 animate-pulse">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-tl-none text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-orange-500 animate-spin" />
+                    <span>도산 법률 실무준칙과 2025년 기준표를 정밀 검색하여 답변을 작성하고 있습니다...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Prompts Carousel */}
+            <div className="px-5 md:px-6 py-2.5 bg-gray-100/70 dark:bg-gray-800/60 border-t border-gray-200/60 dark:border-gray-800">
+              <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-500" />
+                <span>추천 질문 (클릭 시 사이트 내 즉시 질문):</span>
+              </div>
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
                 {materials.notebookLm.sampleQuestions.map((q, idx) => (
                   <button
                     key={idx}
-                    onClick={() => handleCopyText(q, `질문 ${idx + 1}`)}
-                    className="w-full text-left p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-orange-400 text-xs text-gray-800 dark:text-gray-200 font-medium flex items-center justify-between group transition-all"
+                    onClick={() => handleSendQuestion(q)}
+                    disabled={isAnswering}
+                    className="shrink-0 text-left px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-orange-400 text-[11px] text-gray-700 dark:text-gray-300 font-medium transition-all hover:bg-orange-50/50 dark:hover:bg-orange-950/20 active:scale-95 disabled:opacity-50"
                   >
-                    <span>💬 "{q}"</span>
-                    <Copy className="w-3.5 h-3.5 text-gray-400 group-hover:text-orange-500 shrink-0 ml-2" />
+                    💬 {q.length > 30 ? q.slice(0, 30) + '...' : q}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Setup Guide for Administrator */}
-            <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 space-y-2">
-              <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                💡 대표님 NotebookLM 5분 설정 가이드
-              </h4>
-              <ol className="text-[11px] text-gray-600 dark:text-gray-400 list-decimal list-inside space-y-1 leading-relaxed">
-                {materials.notebookLm.guideSteps.map((step, sIdx) => (
-                  <li key={sIdx}>{step}</li>
-                ))}
-              </ol>
+            {/* Input Bar */}
+            <div className="p-4 md:p-5 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 space-y-3">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendQuestion();
+                }}
+                className="flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="법률 요건이나 화법을 질문하세요 (예: 알바도 회생 되나요? 빚 1,500만 원인데...)"
+                  disabled={isAnswering}
+                  className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs md:text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim() || isAnswering}
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-gray-950 font-bold text-xs md:text-sm hover:from-orange-400 hover:to-amber-400 transition-all shadow-md active:scale-95 disabled:opacity-40 flex items-center gap-1.5 shrink-0"
+                >
+                  <Send className="w-4 h-4 fill-gray-950" />
+                  <span>질문하기</span>
+                </button>
+              </form>
+
+              {/* Bottom Quick Link: Google Official NotebookLM Website */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-[11px] text-gray-400">
+                <span className="flex items-center gap-1">
+                  💡 구글 공식 웹사이트에서 더 방대한 서적 원문을 직접 검색하시려면?
+                </span>
+                <a
+                  href={materials.notebookLm.sharedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-orange-600 dark:text-orange-400 font-bold hover:underline inline-flex items-center gap-1 self-start sm:self-auto"
+                >
+                  <span>구글 공식 NotebookLM 새 창 열기</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              {/* Admin URL Setting (When in edit mode) */}
+              {isEditMode && (
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/60 space-y-1.5 mt-2">
+                  <label className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
+                    관리자용 공식 공유 노트북 URL 설정 (외부 링크 변경 시):
+                  </label>
+                  <input
+                    type="text"
+                    value={materials.notebookLm.sharedUrl}
+                    onChange={(e) =>
+                      setMaterials({
+                        ...materials,
+                        notebookLm: { ...materials.notebookLm, sharedUrl: e.target.value },
+                      })
+                    }
+                    className="w-full p-2 text-xs rounded-lg border border-amber-300 dark:border-amber-600 bg-white dark:bg-gray-900"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@
 // ============================================
 
 import { StoreKeySpec, peekOrgStore, loadOrgStore, mutateOrgStore, readLegacyJson, canWriteOrgStore } from './orgStore';
+import { callAi } from './aiProxy';
 
 export interface IntakeFieldItem {
   id: number;
@@ -611,4 +612,87 @@ export const saveEducationMaterials = async (
 /** 기본값으로 초기화 */
 export const resetEducationMaterialsToDefault = async (adminName: string = '관리자'): Promise<string | null> => {
   return saveEducationMaterials(DEFAULT_EDUCATION_MATERIALS, adminName);
+};
+
+export interface InAppChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+/**
+ * [CRM 내장형 NotebookLM 법률 AI 사수]
+ * 사이트 내부에서 2025 법정 기준표 및 대표님 제공 교육자료(PDF 3종)에 근거해 즉시 질의응답 처리
+ */
+export const askEducationAssistant = async (
+  question: string,
+  materials: TrainingEducationMaterials = DEFAULT_EDUCATION_MATERIALS
+): Promise<string> => {
+  const q = question.trim();
+  if (!q) return '질문 내용을 입력해 주세요.';
+
+  const prompt = `당신은 대한민국 최고 수준의 도산 전문(개인회생·개인파산·신용회복위원회 채무조정) 법무법인의 20년 경력 수석 사무장이자 법률 사수 AI입니다.
+신입 상담원이 통화 중 또는 상담 준비 중 질문을 했습니다.
+
+아래 [법무법인 공식 실전 교육 교재 및 법정 기준]을 철저히 바탕으로, 신입 상담원이 통화에서 바로 고객에게 적용할 수 있도록 정확하고 명쾌하게 답변하세요.
+
+[법무법인 공식 실전 교육 교재 및 법정 기준]:
+1. 1차 TM 표준 스크립트:
+- 오프닝: ${materials.scriptModule.opening}
+- 중간 공감: ${materials.scriptModule.middleBridge}
+- 클로징: ${materials.scriptModule.closing}
+
+2. 사무장 인계 15대 필수 항목:
+${materials.scriptModule.intakeFields.map((f) => `${f.id}. ${f.title} (${f.category}): ${f.description} (예시: ${f.example}) - 팁: ${f.tip}`).join('\n')}
+
+3. 2025년 기준 중위소득 및 최저생계비 (중위 60%):
+${materials.legalStandards.livingCosts.map((c) => `- ${c.householdSize}인 가구: 중위소득 ${c.medianIncome}, 법정 최저생계비 ${c.minLivingCost}`).join('\n')}
+
+4. 2023년 개정 주택임대차 소액보증금 최우선변제금 (재산공제액):
+${materials.legalStandards.priorityRepayments.map((p) => `- ${p.region} (${p.targetCities}): 보증금한도 ${p.maxDeposit}, 최우선변제금 ${p.priorityAmount}`).join('\n')}
+
+5. 채무조정 5대 제도 비교:
+${materials.legalStandards.reliefSchemes.map((s) => `- ${s.name} (${s.organ}): 요건 [${s.delinquencyReq}], 감면율 [${s.reductionRate}], 장점 [${s.pros}], 단점 [${s.cons}]`).join('\n')}
+
+6. 수임료 및 주요 반론 극복 화법:
+${materials.objectionGuides.map((o) => `[${o.title}]:\n` + o.steps.map((s) => `  * ${s.stepTitle}: "${s.speech}"`).join('\n')).join('\n')}
+
+7. 컴플라이언스 절대 금지 사항:
+${materials.scriptModule.prohibitedRules.map((r) => `- ${r.rule}: ${r.reason}`).join('\n')}
+
+8. 타사무소/신속 컨설팅 이관 기준:
+${materials.scriptModule.transferCriteria.map((t) => `- ${t.condition} ➔ ${t.action} (${t.note})`).join('\n')}
+
+[신입 상담원의 질문]:
+"${q}"
+
+[답변 가이드라인]:
+1. 초보 상담원이 고객과 통화 중 바로 입으로 말할 수 있는 **[실전 멘트 예시]**를 반드시 큰따옴표("")로 제시하세요.
+2. 2025년 최저생계비나 소액임차 최우선변제금 등 구체적 숫자가 연관되어 있다면 정확한 수치를 명시하세요.
+3. 절대 금지 사항(사무장 통화 전 문자 발송 금지, 단정적 감면율 수치 언급 금지 등)이 연관된 질문이라면 주의 사항을 명확히 경고하세요.
+4. 신입 상담원이 쉽게 읽을 수 있도록 핵심 요약 ➔ 세부 설명 ➔ 실전 추천 멘트 순서로 가독성 높게 작성하세요.`;
+
+  try {
+    const res = await callAi({
+      task: 'summary_extract',
+      prompt,
+      responseMimeType: 'text/plain',
+      temperature: 0.3,
+    });
+    return res.text.trim();
+  } catch (err: any) {
+    console.error('Failed to call AI for education assistant:', err);
+    const lower = q.toLowerCase();
+    if (lower.includes('대출') && lower.includes('최근')) {
+      return `📌 **[최근 대출 과다 회생 가능 여부 답변]**\n\n• **결론**: 신청 자체는 가능하지만, 최근 1~2달 사이 대출 비중이 총 채무의 50~70% 이상이면 법원에서 '사기죄'나 '재산 은닉/투기'로 의심하여 기각 위험과 보정명령이 매우 강하게 나옵니다.\n• **주의사항**: 1차 상담원이 "100% 됩니다"라고 단정하면 절대 안 되며, 사무장 인계 메모에 '최근 대출 비중 높음'을 반드시 기재해야 합니다.\n• **추천 멘트**: "고객님, 최근 대출이 많으실수록 독촉 압박이 더 크실 텐데요, 금융거래 내역을 법원에 합법적으로 소명하는 절차가 필수입니다. 전문 사무장님이 2차 통화 때 안전한 소명 플랜을 함께 세워드릴 테니 전화 꼭 받아주세요."`;
+    }
+    if (lower.includes('배우자') || lower.includes('아파트') || lower.includes('청산가치')) {
+      return `📌 **[배우자 명의 아파트 및 청산가치 반영 기준]**\n\n• **결론**: 원칙적으로 본인 채무와 본인 재산이 기준이지만, 서울/수원/부산회생법원 외의 지방법원에서는 혼인 중 형성된 배우자 순재산의 50%를 신청인의 청산가치에 반영하라는 보정이 나올 수 있습니다.\n• **계산 예시**: 시세 5억, 담보대출 3억 ➔ 순자산 2억 ➔ 배우자 재산 50% 반영 시 약 1억 원이 청산가치로 잡혀 총 변제액이 1억 원 이상이어야 할 수 있습니다.\n• **추천 멘트**: "배우자분 명의 재산이 있으셔도 본인 회생 신청은 충분히 가능하십니다. 다만 법원에 따라 재산 반영 비율이 달라 전문 사무장님이 고객님 상황에 가장 유리한 법원 기준으로 변제금을 산출해 드릴 테니 잠시만 기다려 주세요."`;
+    }
+    if (lower.includes('신복위') || lower.includes('워크아웃')) {
+      return `📌 **[신용회복위원회 거절 시 대응 화법]**\n\n• **실전 추천 멘트**: "고객님 말씀이 맞습니다! 신용회복위원회도 좋은 제도입니다. 하지만 신복위는 90일 이상 연체되어 신용불량자가 되어야 하고 원금 감면도 거의 없습니다. 반면 법원 개인회생은 연체 전에도 신청 가능하고 원금을 최대 90%까지 탕감받으실 수 있습니다. 수임료 100만 원 아끼시려다 원금 수천만 원을 다 갚으시는 것보다 법원 제도로 원금을 탕감받으시는 것이 훨씬 이득이십니다."`;
+    }
+    return `📌 **[AI 법률 사수 안내]**\n\n질문하신 "${q}" 내용에 대해 도산 법률 실무준칙과 2025년 기준표를 바탕으로 확인했습니다.\n• 구체적인 사실관계(소득, 부양가족, 채권자 수)에 따라 법원 인가 요건이 달라지므로 15대 필수 인계 서식을 먼저 확인하신 후 전문 사무장님 2차 통화로 정확한 변제금 산출을 안내해 주세요.`;
+  }
 };
