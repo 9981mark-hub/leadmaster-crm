@@ -13,12 +13,18 @@ import {
     Calculator,
     CheckCircle2,
     Lock,
-    EyeOff
+    EyeOff,
+    Building2,
+    ArrowRight
 } from 'lucide-react';
+import CustomAlertModal from '../components/common/CustomAlertModal';
+import CompanySignupModal from '../components/CompanySignupModal';
 
 export default function LoginPage() {
-    const { loginWithGoogle } = useAuth();
+    const { loginWithGoogle, authNotice, closeAuthNotice, openAuthNotice } = useAuth();
     const [showGuide, setShowGuide] = useState(false);
+    const [showSignupModal, setShowSignupModal] = useState(false);
+    const [signupInitialEmail, setSignupInitialEmail] = useState('');
 
     const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
 
@@ -179,7 +185,11 @@ export default function LoginPage() {
                                         }}
                                         onError={() => {
                                             console.log('Login Failed');
-                                            alert('구글 로그인 창이 닫혔거나 차단되었습니다. 브라우저 팝업 설정을 확인해주세요.');
+                                            openAuthNotice({
+                                                title: '구글 로그인 안내',
+                                                message: '구글 로그인 창이 닫혔거나 차단되었습니다. 브라우저 팝업 설정을 확인해주세요.',
+                                                type: 'warning',
+                                            });
                                         }}
                                         shape="pill"
                                         size="large"
@@ -192,6 +202,22 @@ export default function LoginPage() {
                             <p className="text-[11px] text-center text-slate-400 leading-relaxed">
                                 사내 워크스페이스에 등록된 전용 구글 계정으로 원클릭 로그인됩니다.
                             </p>
+
+                            {/* 🏢 신규 TM 회사 도입 / 가입 신청 창구 버튼 */}
+                            <div className="pt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSignupInitialEmail('');
+                                        setShowSignupModal(true);
+                                    }}
+                                    className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-blue-900/30 via-indigo-900/25 to-blue-900/30 border border-blue-500/30 hover:border-blue-400/60 text-blue-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer group shadow-sm"
+                                >
+                                    <Building2 size={14} className="text-blue-400 group-hover:scale-110 transition-transform" />
+                                    <span>신규 TM 회사 가입 신청 / 도입 문의</span>
+                                    <ArrowRight size={12} className="opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* 모바일 APK 전용 안내 바 */}
@@ -303,6 +329,30 @@ export default function LoginPage() {
                     </div>
                 </div>
             )}
+
+            {/* 🛡️ 톤앤매너 통일 커스텀 알림/경고 팝업 (미초대 계정, 구글 로그인 오류 등) */}
+            {authNotice && authNotice.isOpen && (
+                <CustomAlertModal
+                    isOpen={authNotice.isOpen}
+                    onClose={closeAuthNotice}
+                    title={authNotice.title}
+                    message={authNotice.message}
+                    type={authNotice.type}
+                    email={authNotice.email}
+                    onApplyClick={() => {
+                        setSignupInitialEmail(authNotice.email || '');
+                        closeAuthNotice();
+                        setShowSignupModal(true);
+                    }}
+                />
+            )}
+
+            {/* 🏢 신규 TM 회사 도입 / 가입 신청 모달 */}
+            <CompanySignupModal
+                isOpen={showSignupModal}
+                onClose={() => setShowSignupModal(false)}
+                initialEmail={signupInitialEmail}
+            />
 
         </div>
     );

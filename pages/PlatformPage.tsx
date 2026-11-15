@@ -9,6 +9,9 @@ import {
   PlatformOrg, createOrganization, fetchOrganizations, setOrganizationStatus,
   computeBillingSummary, generateOrgInvoiceMarkdown, PRICE_PER_AGENT_MONTH
 } from '../services/platform';
+import {
+  fetchOrgApplications, approveOrgApplication, rejectOrgApplication, OrgApplication
+} from '../services/orgApplicationService';
 import { HQ_ORG_ID } from '../services/org';
 import { useCountUp } from '../utils/useCountUp';
 
@@ -19,6 +22,7 @@ export default function PlatformPage() {
   const { org, isPlatformAdmin } = useAuth();
   const { showToast } = useToast();
   const [orgs, setOrgs] = useState<PlatformOrg[]>([]);
+  const [applications, setApplications] = useState<OrgApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState('');
@@ -28,7 +32,12 @@ export default function PlatformPage() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      setOrgs(await fetchOrganizations());
+      const [fetchedOrgs, fetchedApps] = await Promise.all([
+        fetchOrganizations(),
+        fetchOrgApplications(),
+      ]);
+      setOrgs(fetchedOrgs);
+      setApplications(fetchedApps);
     } catch (e: any) {
       showToast(`회사 목록을 불러오지 못했습니다: ${e.message}`, 'error');
     } finally {
@@ -64,6 +73,34 @@ export default function PlatformPage() {
       await reload();
     } catch (e: any) {
       showToast(e.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleApproveApp = async (app: OrgApplication) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await approveOrgApplication(app);
+      showToast(`'${app.companyName}' 회사를 개설하고 ${app.ownerEmail} 대표 초대를 완료했습니다.`, 'success');
+      await reload();
+    } catch (e: any) {
+      showToast(`승인 처리 실패: ${e.message}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRejectApp = async (id: string) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await rejectOrgApplication(id);
+      showToast('가입 신청을 반려 처리했습니다.', 'info');
+      await reload();
+    } catch (e: any) {
+      showToast(`반려 처리 실패: ${e.message}`, 'error');
     } finally {
       setBusy(false);
     }
@@ -203,6 +240,105 @@ export default function PlatformPage() {
           </div>
         </div>
       </div>
+
+      {/* 🏢 1. 신규 TM 회사 가입 신청 대기열 (옵션 A 실시간 승인 체계) */}
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 p-5 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Building2 size={18} className="text-indigo-600 dark:text-indigo-400" /> 
+              신규 TM 회사 가입 신청 대기열
+            </h2>
+            {applications.filter(a => a.status === 'pending').length > 0 ? (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                대기 {applications.filter(a => a.status === 'pending').length}건
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                대기 0건
+              </span>
+            )}
+          </div>
+          <button
+            onClick={reload}
+            disabled={loading}
+            className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1 cursor-pointer"
+          >
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침
+          </button>
+        </div>
+
+        {applications.length === 0 ? (
+          <div className="p-8 text-center text-xs text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+            접수된 가입 신청이 없습니다. 로그인 페이지에서 [TM 회사 가입 신청]이 접수되면 여기에 실시간 표시됩니다.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {applications.map(app => (
+              <div 
+                key={app.id}
+                className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  app.status === 'pending'
+                    ? 'bg-amber-500/5 border-amber-500/30 dark:bg-amber-950/20 shadow-xs'
+                    : app.status === 'approved'
+                    ? 'bg-emerald-500/5 border-emerald-500/20 dark:bg-emerald-950/15 opacity-85'
+                    : 'bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800 opacity-60'
+                }`}
+              >
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm text-gray-900 dark:text-white">{app.companyName}</span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">({app.ownerName} 대표)</span>
+                    <span className="text-xs font-mono text-blue-600 dark:text-blue-400">{app.ownerEmail}</span>
+                    <span className="text-xs text-gray-400">| {app.phone}</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                      상담원 {app.agentCountTier === '1-5' ? '1~5명' : app.agentCountTier === '6-20' ? '6~20명' : '21명 이상'}
+                    </span>
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                      app.status === 'pending'
+                        ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
+                        : app.status === 'approved'
+                        ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400'
+                    }`}>
+                      {app.status === 'pending' ? '승인 대기중' : app.status === 'approved' ? '승인 완료' : '반려됨'}
+                    </span>
+                  </div>
+                  {app.memo && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/5 p-2 rounded-lg">
+                      문의/메모: {app.memo}
+                    </div>
+                  )}
+                  <div className="text-[11px] text-gray-400">
+                    신청일: {new Date(app.createdAt).toLocaleString('ko-KR')}
+                    {app.approvedAt && ` • 승인일: ${new Date(app.approvedAt).toLocaleString('ko-KR')}`}
+                  </div>
+                </div>
+
+                {app.status === 'pending' && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleApproveApp(app)}
+                      disabled={busy}
+                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>1클릭 승인 & 개설</span>
+                    </button>
+                    <button
+                      onClick={() => handleRejectApp(app.id)}
+                      disabled={busy}
+                      className="px-3 py-2 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium text-xs transition-colors cursor-pointer"
+                    >
+                      반려
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* 새 고객 회사 등록 폼 (TM 표준 프리셋 원클릭 지원) */}
       <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 p-5 space-y-4 shadow-xs">

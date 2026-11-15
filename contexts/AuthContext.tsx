@@ -18,6 +18,14 @@ interface UserProfile {
   picture?: string;
 }
 
+export interface AuthNotice {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: 'uninvited' | 'error' | 'warning' | 'info';
+  email?: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   user: UserProfile | null;
@@ -28,6 +36,9 @@ interface AuthContextType {
   /** 플랫폼 총괄 최고관리자(HOST) 여부. 고객사 대표/관리자가 아닌 플랫폼 운영자("나") 전용 */
   isPlatformAdmin: boolean;
   allowedEmails: string[];
+  authNotice: AuthNotice | null;
+  closeAuthNotice: () => void;
+  openAuthNotice: (notice: Omit<AuthNotice, 'isOpen'>) => void;
   loginWithGoogle: (credential: string) => void;
   sendEmailOtp: (email: string) => Promise<void>;
   verifyEmailOtp: (email: string, code: string) => Promise<void>;
@@ -77,6 +88,13 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   // allowedEmails는 콜백 안에서 최신값을 읽기 위해 ref로도 보관
   const allowedEmailsRef = useRef<string[]>([]);
   allowedEmailsRef.current = allowedEmails;
+
+  // 톤앤매너 통일 커스텀 알림/경고 팝업 상태 (미초대 계정, 로그인 실패 등)
+  const [authNotice, setAuthNotice] = useState<AuthNotice | null>(null);
+  const closeAuthNotice = useCallback(() => setAuthNotice(null), []);
+  const openAuthNotice = useCallback((notice: Omit<AuthNotice, 'isOpen'>) => {
+    setAuthNotice({ ...notice, isOpen: true });
+  }, []);
 
   useEffect(() => {
     // 초기 로드: 로컬 캐시 또는 API에서 가져오기
@@ -141,7 +159,13 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
         if (error) {
           console.error("Supabase Auth Failed:", error);
-          alert(`로그인에 실패했습니다.\n사유: ${error.message}\n(서버 설정 문제일 수 있습니다)`);
+          setAuthNotice({
+            isOpen: true,
+            title: '로그인 실패',
+            message: `로그인 처리에 실패했습니다.\n사유: ${error.message}\n(서버 일시적 오류일 수 있습니다)`,
+            type: 'error',
+            email,
+          });
           return;
         }
       }
@@ -162,9 +186,15 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         if (!allowedByList) {
           // scope local: 이 브라우저만 로그아웃 (기본값 global은 폰 앱 세션까지 끊는다)
           if (supabase) await supabase.auth.signOut({ scope: 'local' });
-          alert(orgChecked
-            ? '초대받지 않은 계정입니다.\n회사 관리자에게 이 구글 계정으로 초대를 요청하세요.'
-            : '접근 권한을 확인하지 못했습니다.\n잠시 후 다시 시도해주세요.');
+          setAuthNotice({
+            isOpen: true,
+            title: orgChecked ? '초대받지 않은 계정입니다' : '접근 권한 확인 실패',
+            message: orgChecked
+              ? '접속하신 구글 계정으로 등록된 회사가 없습니다.\n\n신규 도입을 원하시는 대표님이시라면 가입 신청서를 작성해 주시면 10분 내로 승인 및 전용 워크스페이스를 개설해 드립니다.\n(기존 회사 상담원/관리자이신 경우 소속 회사 관리자에게 초대를 요청하세요)'
+              : '접근 권한을 확인하지 못했습니다.\n잠시 후 다시 시도해주세요.',
+            type: orgChecked ? 'uninvited' : 'error',
+            email,
+          });
           return;
         }
       } else {
@@ -187,7 +217,12 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
     } catch (error) {
       console.error('Login Failed', error);
-      alert('로그인 처리 중 오류가 발생했습니다.');
+      setAuthNotice({
+        isOpen: true,
+        title: '로그인 오류',
+        message: '로그인 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        type: 'error',
+      });
     }
   }, [navigate, setOrg]);
 
@@ -358,7 +393,12 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         const targetUserId = payload.payload?.userId;
         if (targetUserId && targetUserId === org.userId) {
           console.warn('[Security] Active session was revoked by administrator.');
-          alert('관리자에 의해 계정 세션이 강제 종료되었습니다.\n다시 로그인해 주세요.');
+          setAuthNotice({
+            isOpen: true,
+            title: '세션 강제 종료',
+            message: '관리자에 의해 계정 세션이 강제 종료되었습니다.\n보안을 위해 다시 로그인해 주세요.',
+            type: 'warning',
+          });
           logout();
         }
       })
@@ -384,8 +424,9 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
   const value = useMemo(() => ({
     isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails,
+    authNotice, closeAuthNotice, openAuthNotice,
     loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail,
-  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail]);
+  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, authNotice, closeAuthNotice, openAuthNotice, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail]);
 
   return (
     <AuthContext.Provider value={value}>
