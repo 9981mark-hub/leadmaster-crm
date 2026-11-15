@@ -90,7 +90,27 @@ export const TrainingReportModal: React.FC<Props> = ({
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-emerald-500 border-emerald-500';
     if (score >= 70) return 'text-blue-500 border-blue-500';
-    return 'text-amber-500 border-amber-500';
+    if (score >= 40) return 'text-amber-500 border-amber-500';
+    return 'text-rose-500 border-rose-500';
+  };
+
+  const getGradeInfo = (grade?: 'S' | 'A' | 'B' | 'C' | 'D' | 'F', score: number = 0) => {
+    const finalGrade = grade || (score >= 90 ? 'S' : score >= 75 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : score >= 16 ? 'D' : 'F');
+    switch (finalGrade) {
+      case 'S':
+        return { label: '🏆 [S등급] 최우수 모범 상담', bg: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300' };
+      case 'A':
+        return { label: '✅ [A등급] 실전 인계 성공', bg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-300' };
+      case 'B':
+        return { label: '⚡ [B등급] 부분 인계 가능', bg: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-300' };
+      case 'C':
+        return { label: '⚠️ [C등급] 주도권 상실 (문진 부족)', bg: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-300' };
+      case 'D':
+        return { label: '🚫 [D등급] 거절 장벽 탈락', bg: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300 border-orange-300' };
+      case 'F':
+      default:
+        return { label: '❌ [F등급] 상담 미진행 (조기 종료)', bg: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border-rose-300' };
+    }
   };
 
   const paralegalCard = report.paralegalCard;
@@ -146,15 +166,17 @@ export const TrainingReportModal: React.FC<Props> = ({
                 </div>
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold border ${getGradeInfo(report.grade, report.totalScore).bg}`}>
+                    {getGradeInfo(report.grade, report.totalScore).label}
+                  </span>
                   <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
                     report.passed
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                   }`}>
-                    {report.passed ? '🎉 실무 기준 통과' : '💡 추가 보완 권장'}
+                    {report.passed ? '🎉 실무 통과' : '통과 기준: 75점'}
                   </span>
-                  <span className="text-xs text-gray-400">통과 기준: 75점</span>
                 </div>
                 <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
                   {report.summary}

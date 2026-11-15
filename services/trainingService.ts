@@ -80,6 +80,7 @@ export interface ParalegalHandoffCard {
 
 export interface TrainingReport {
   totalScore: number;       // 0~100
+  grade?: 'S' | 'A' | 'B' | 'C' | 'D' | 'F'; // 실전 6단계 평가 등급
   complianceScore: number;  // 0~30 (소속/정보동의/불법수수료 금지)
   listeningScore: number;   // 0~30 (경청 및 니즈 파악)
   objectionScore: number;   // 0~40 (반론 극복 및 리마인더 약속)
@@ -1056,6 +1057,62 @@ export const evaluateTrainingCall = async (
   persona: TrainingPersona
 ): Promise<TrainingReport> => {
   const config = getCompanyTrainingConfig();
+
+  // 🚨 [F등급 컷오프: 조기 종료 / 상담 미진행 케이스 엄격 분기]
+  // 상담원 발화가 1턴 이하이거나 총 글자 수가 20자 미만인 경우 (예: "여보세요", "안녕하세요"만 하고 통화 종료):
+  // 불필요한 AI 호출 없이 5~10점대 칼같은 탈락 판정 리포트 즉시 반환!
+  const agentMessages = messages.filter(m => m.speaker === 'agent');
+  const agentTotalChars = agentMessages.reduce((sum, m) => sum + m.text.trim().length, 0);
+  const agentTurnCount = agentMessages.length;
+
+  if (agentTurnCount <= 1 || agentTotalChars < 20) {
+    return {
+      totalScore: agentTurnCount === 0 ? 0 : 8,
+      grade: 'F',
+      complianceScore: 3,
+      listeningScore: 5,
+      objectionScore: 0,
+      coldDbOpeningScore: 10,
+      objectionDefenseScore: 0,
+      pacingControlScore: 0,
+      passed: false,
+      summary: `통화가 연결된 후 실질적인 상담 및 소속 고지가 이루어지지 않고 즉시 종료되었습니다. (상담원 발화 ${agentTurnCount}회, 7대 문진 0건 달성)`,
+      strengths: agentTurnCount > 0 ? ['통화 연결 후 첫 응대 시도'] : [],
+      weaknesses: [
+        '상담 서두에 법무법인 소속 및 인입 목적 미고지 (컴플라이언스 미이행)',
+        '고객과의 실질적인 대화 및 7대 필수 문진 진행 불가',
+        '조기 통화 종료로 인한 고객 니즈 파악 실패',
+      ],
+      coachingTips: [
+        '전화를 걸었을 때는 반드시 소속("' + config.companyName + '")과 인입 목적을 당당히 밝히고 시작하세요.',
+        '고객이 "여보세요?"라고 받으면 당황하지 말고 오프닝 10초 스크립트로 주도권을 잡으세요.',
+        '고객의 의심이 나오기 전에 "100% 무료 법원 가심사"임을 먼저 밝혀 방어벽을 낮추세요.',
+      ],
+      suggestedScript: `안녕하세요 고객님! ${config.companyName} 상담팀입니다. 며칠 전 신청하신 법원 채무 감면 안심 진단 건으로 연락드렸습니다.`,
+      paralegalCard: {
+        jobAndEmployment: false,
+        monthlyRealIncome: false,
+        dependentsCount: false,
+        housingAndDeposit: false,
+        debtAmountAndReason: false,
+        overdueStatusAndPeriod: false,
+        pastRehabHistory: false,
+        handoffScore: 0,
+        paralegalBriefing: '[상담 미진행]\n- 상담 조기 종료로 고객 기본 인적사항 및 채무 내역 파악 불가 (사무장 인계 불가)',
+        missingCheckpoints: [
+          '1. 직업 및 재직형태 미확인',
+          '2. 월 실수령액 미확인',
+          '3. 부양가족 수 미확인',
+          '4. 주거/보증금 미확인',
+          '5. 총 채무액 미확인',
+          '6. 연체 여부 미확인',
+          '7. 과거 회생/신복위 이력 미확인',
+        ],
+        coachingAdvice: '통화 시작 10초 내에 고객을 안심시키고 첫 번째 질문(직업/재직형태)으로 진입하는 오프닝 훈련이 필수적입니다.',
+      },
+    };
+  }
+
   const conversationText = messages
     .map(m => `${m.speaker === 'agent' ? '상담원' : '고객'}: ${m.text}`)
     .join('\n');
@@ -1142,7 +1199,46 @@ ${conversationText}
       responseMimeType: 'application/json',
       temperature: 0.2,
     });
-    return JSON.parse(res.text) as TrainingReport;
+    const report = JSON.parse(res.text) as TrainingReport;
+
+    // 🚨 [문진 달성률 기반 점수 상한제 (Cap System)]
+    // 초보자가 말을 많이 했어도 7대 문진을 놓치면 점수 거품을 칼같이 차단!
+    const card = report.paralegalCard;
+    const checkCount = card ? [
+      card.jobAndEmployment,
+      card.monthlyRealIncome,
+      card.dependentsCount,
+      card.housingAndDeposit,
+      card.debtAmountAndReason,
+      card.overdueStatusAndPeriod,
+      card.pastRehabHistory,
+    ].filter(Boolean).length : 0;
+
+    if (checkCount === 0) {
+      report.totalScore = Math.min(25, report.totalScore); // 문진 0개: 최대 25점 (D등급 이하)
+    } else if (checkCount <= 2) {
+      report.totalScore = Math.min(55, report.totalScore); // 문진 1~2개: 최대 55점 (C등급 이하)
+    } else if (checkCount <= 4) {
+      report.totalScore = Math.min(74, report.totalScore); // 문진 3~4개: 최대 74점 (B등급 이하)
+    }
+
+    // 실전 6단계 평가 등급 부여
+    if (report.totalScore >= 90 && checkCount >= 6) {
+      report.grade = 'S';
+    } else if (report.totalScore >= 75 && checkCount >= 5) {
+      report.grade = 'A';
+    } else if (report.totalScore >= 60) {
+      report.grade = 'B';
+    } else if (report.totalScore >= 40) {
+      report.grade = 'C';
+    } else if (report.totalScore >= 16) {
+      report.grade = 'D';
+    } else {
+      report.grade = 'F';
+    }
+
+    report.passed = report.totalScore >= 75 && checkCount >= 5;
+    return report;
   } catch (err: any) {
     console.error('Failed to evaluate training call:', err);
     return {
