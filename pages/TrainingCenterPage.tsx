@@ -11,6 +11,7 @@ import {
   clearMyTrainingHistory,
   loadCompanyTrainingConfig,
   generateAiCustomerReply,
+  getPersonaOpeningReply,
   evaluateTrainingCall,
   generateRandomCustomerPersona,
   generateCustomPersonaByCategory,
@@ -523,6 +524,17 @@ export default function TrainingCenterPage() {
         }
       }
 
+      // ⚡ 다음 턴(상담원 첫마디 후) 고객 대답 오디오 백그라운드 사전 캐싱 (체감 0초 티키타카)
+      try {
+        const nextOpening = getPersonaOpeningReply(selectedPersona);
+        speechService.preloadEdgeTTS(nextOpening.text, {
+          ...selectedPersona.speechOptions,
+          rate: selectedPersona.speechOptions?.rate ?? 1.0,
+          pitch: getCalculatedPitch(selectedPersona.speechOptions?.pitch ?? 0.8),
+          emotion: nextOpening.emotion,
+        });
+      } catch (_) {}
+
       // 고객 발화가 끝난 후, 또는 TTS 비활성 시 마이크 청취 즉시 개시!
       if (callStateRef.current === 'connected') {
         startCallMicrophone();
@@ -667,13 +679,19 @@ export default function TrainingCenterPage() {
         // 2) 실시간 인식(interim) 상태에서 종결 어미 감지 시: 800ms (뒤이어 덧붙이는 말을 대기)
         // 3) 종결 어미가 없는 일반 중간 어절: 950ms (숨 고름 및 문장 이어 말하기 완벽 보장)
         // 4) 4글자 미만의 짧은 어절("네", "아니요", "저기요" 등): 1100ms (뒤따르는 본론 문장 대기)
-        let delayMs = 950;
+        // 🚨 실전 초고속 통화 호흡 및 티키타카 침묵 타이머 (체감 딜레이 대폭 단축):
+        // 1) 완성형 종결 어미 + 문장 확정(isFinal): 280ms (말을 끝마치는 순간 0.28초 만에 턴 전환!)
+        // 2) 실시간 인식(interim) 상태에서 종결 어미 감지 시: 400ms (어미 감지 시 대기 대폭 축소)
+        // 3) 문장 확정(isFinal) 일반 문장: 450ms
+        // 4) 4글자 미만의 짧은 어절("네", "아니요" 등): 600ms (뒤따르는 본론 문장 대기)
+        // 5) 종결 어미가 없는 일반 중간 어절: 650ms (숨 고름 보장)
+        let delayMs = 650;
         if (clean.length < 5) {
-          delayMs = 1100;
+          delayMs = 600;
         } else if (isSentenceEnd) {
-          delayMs = isFinal ? 650 : 800;
+          delayMs = isFinal ? 280 : 400;
         } else if (isFinal) {
-          delayMs = 850;
+          delayMs = 450;
         }
 
         silenceTimerRef.current = setTimeout(() => {

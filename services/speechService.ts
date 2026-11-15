@@ -37,6 +37,7 @@ class SpeechService {
   private cachedVoices: SpeechSynthesisVoice[] = [];
   private ringOscillators: { osc1: OscillatorNode; osc2: OscillatorNode; gain: GainNode; ctx: AudioContext } | null = null;
   private ringTimeoutId: any = null;
+  private ttsAudioCache = new Map<string, string>();
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -219,6 +220,84 @@ class SpeechService {
     });
   }
 
+  // 백그라운드 오디오 사전 캐싱 (0ms 즉시 재생용)
+  public async preloadEdgeTTS(text: string, options: SpeechVoiceOptions = {}): Promise<void> {
+    const cleanText = text
+      .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+      .replace(/[\.\.\.~"']/g, ' ')
+      .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+      .replace(/,\s*,/g, ',')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!cleanText) return;
+
+    const VALID_EDGE_VOICES = ['ko-KR-InJoonNeural', 'ko-KR-SunHiNeural', 'ko-KR-HyunsuMultilingualNeural'];
+    let voice = options.neuralVoice;
+    if (!voice || !VALID_EDGE_VOICES.includes(voice)) {
+      if (options.gender === 'female' || (typeof voice === 'string' && (voice.includes('SunHi') || voice.includes('Neural2-A') || voice.includes('Wavenet-A') || voice.includes('Wavenet-B')))) {
+        voice = 'ko-KR-SunHiNeural';
+      } else if (typeof voice === 'string' && voice.includes('Hyunsu')) {
+        voice = 'ko-KR-HyunsuMultilingualNeural';
+      } else {
+        voice = 'ko-KR-InJoonNeural';
+      }
+    }
+
+    const emotion = options.emotion || this.detectEmotion(cleanText);
+    let rateStr = '+0%';
+    if (options.neuralRate) rateStr = options.neuralRate;
+    else if (options.rate !== undefined) {
+      let r = options.rate;
+      if (emotion === 'angry') r = Math.min(1.25, r * 1.05);
+      else if (emotion === 'annoyed') r = Math.min(1.20, r * 1.03);
+      const pct = Math.round((r - 1.0) * 100);
+      rateStr = `${pct >= 0 ? '+' : ''}${pct}%`;
+    }
+
+    let pitchStr = '+0Hz';
+    if (options.neuralPitch) pitchStr = options.neuralPitch;
+    else if (emotion === 'angry') pitchStr = '+30Hz';
+    else if (emotion === 'annoyed') pitchStr = '+15Hz';
+
+    const cacheKey = `${voice}_${rateStr}_${pitchStr}_${cleanText}`;
+    if (this.ttsAudioCache.has(cacheKey)) return;
+
+    let apiUrl = '/api/edge-tts';
+    if (typeof window !== 'undefined') {
+      const origin = window.location.origin;
+      const isSameHost = origin.includes('vercel.app') || origin.includes('lmaster.xyz') || origin.includes('localhost:3000');
+      apiUrl = isSameHost ? '/api/edge-tts' : 'https://www.lmaster.xyz/api/edge-tts';
+    }
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanText,
+          voice,
+          rate: rateStr,
+          pitch: pitchStr,
+          gender: options.gender || 'male',
+        }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        // 캐시 크기 관리 (50개 초과 시 가장 오래된 것 삭제)
+        if (this.ttsAudioCache.size > 50) {
+          const firstKey = this.ttsAudioCache.keys().next().value;
+          if (firstKey) {
+            URL.revokeObjectURL(this.ttsAudioCache.get(firstKey)!);
+            this.ttsAudioCache.delete(firstKey);
+          }
+        }
+        this.ttsAudioCache.set(cacheKey, url);
+        console.log('[Edge-TTS 오디오 사전 캐싱 완료]:', cleanText);
+      }
+    } catch (_) {}
+  }
+
   // 1안. MS Edge-TTS 클라우드 직결 (24kHz 초고음질 신경망, 0원 무제한, 크롬/엣지/모바일 전 기기 동일)
   public async speakEdgeTTS(text: string, options: SpeechVoiceOptions = {}): Promise<string> {
     const cleanText = text
@@ -269,38 +348,53 @@ class SpeechService {
       pitchStr = '+15Hz';
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const cacheKey = `${voice}_${rateStr}_${pitchStr}_${cleanText}`;
+    let audioUrl = this.ttsAudioCache.get(cacheKey);
 
-    // Vercel / lmaster.xyz 등 동일 오리진에서는 상대경로 /api/edge-tts 직결 (가장 빠르고 CORS 없음)
-    // GitHub Pages, 모바일 앱 웹뷰 등 외부 환경에서는 공식 프로덕션 엔드포인트로 직결
-    let apiUrl = '/api/edge-tts';
-    if (typeof window !== 'undefined') {
-      const origin = window.location.origin;
-      const isSameHost = origin.includes('vercel.app') || origin.includes('lmaster.xyz') || origin.includes('localhost:3000');
-      apiUrl = isSameHost ? '/api/edge-tts' : 'https://www.lmaster.xyz/api/edge-tts';
+    if (!audioUrl) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      // Vercel / lmaster.xyz 등 동일 오리진에서는 상대경로 /api/edge-tts 직결 (가장 빠르고 CORS 없음)
+      // GitHub Pages, 모바일 앱 웹뷰 등 외부 환경에서는 공식 프로덕션 엔드포인트로 직결
+      let apiUrl = '/api/edge-tts';
+      if (typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        const isSameHost = origin.includes('vercel.app') || origin.includes('lmaster.xyz') || origin.includes('localhost:3000');
+        apiUrl = isSameHost ? '/api/edge-tts' : 'https://www.lmaster.xyz/api/edge-tts';
+      }
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanText,
+          voice,
+          rate: rateStr,
+          pitch: pitchStr,
+          gender: options.gender || 'male',
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Edge-TTS API HTTP error: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      audioUrl = URL.createObjectURL(blob);
+      if (this.ttsAudioCache.size > 50) {
+        const firstKey = this.ttsAudioCache.keys().next().value;
+        if (firstKey) {
+          URL.revokeObjectURL(this.ttsAudioCache.get(firstKey)!);
+          this.ttsAudioCache.delete(firstKey);
+        }
+      }
+      this.ttsAudioCache.set(cacheKey, audioUrl);
+    } else {
+      console.log('[Edge-TTS 캐시 적중 0ms 즉시 재생]:', cleanText);
     }
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: cleanText,
-        voice,
-        rate: rateStr,
-        pitch: pitchStr,
-        gender: options.gender || 'male',
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`Edge-TTS API HTTP error: ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    const audioUrl = URL.createObjectURL(blob);
 
     return new Promise((resolve) => {
       let resolved = false;

@@ -855,6 +855,29 @@ export const clearMyTrainingHistory = async (): Promise<{ ok: boolean; error?: s
   return res.ok ? { ok: true } : { ok: false, error: res.error };
 };
 
+// ⚡ 실전 오프닝 1턴 고속 응답 헬퍼 (프리로드 및 체감 0초 티키타카용)
+export const getPersonaOpeningReply = (persona: TrainingPersona): { emotion: 'angry' | 'annoyed' | 'anxious' | 'calm'; text: string } => {
+  const behaviorType = persona.behaviorType || (persona.level === 1 ? 'gentle' : persona.level === 2 ? 'bottom_liner' : 'cold_skeptic');
+  
+  if (behaviorType === 'gentle') {
+    return { emotion: 'calm', text: '네, 여보세요? 어디서 연락 주셨나요?' };
+  } else if (behaviorType === 'bottom_liner') {
+    return { emotion: 'annoyed', text: '여보세요? 바쁜데 어디시죠?' };
+  } else if (behaviorType === 'despairing') {
+    return { emotion: 'anxious', text: '네... 여보세요... 어디신가요...' };
+  } else if (behaviorType === 'rapid_inquirer') {
+    return { emotion: 'annoyed', text: '네, 여보세요? 진짜 빚 깎아주는 거 맞아요?' };
+  } else if (behaviorType === 'storyteller') {
+    return { emotion: 'calm', text: '네, 여보세요... 아휴, 어디시죠?' };
+  } else {
+    // cold_skeptic
+    if (persona.age >= 55) {
+      return { emotion: 'annoyed', text: '여보세요? 어디쇼?' };
+    }
+    return { emotion: 'annoyed', text: '여보세요? 누구시죠?' };
+  }
+};
+
 // 가상 고객 AI 응답 생성 (v4.0 실전 Cold DB 4단계 방어 심리벽 & 단계적 정보 해금 아키텍처)
 export const generateAiCustomerReply = async (
   messages: TrainingMessage[],
@@ -872,6 +895,20 @@ export const generateAiCustomerReply = async (
 
   // 상담원의 발화 턴 수 계산 (통화 진행 단계 판별용)
   const agentTurnCount = messages.filter(m => m.speaker === 'agent').length;
+
+  // ⚡ [체감 0초 티키타카] 1턴 오프닝 Fast Path:
+  // 상담원의 첫마디가 인사/본인확인("안녕하세요", "여보세요", 고객 이름, "통화 되시나요" 등)인 경우
+  // 외부 LLM 네트워크(1.5초)를 기다리지 않고, 0ms 즉시 고유 오프닝 단답을 반환하여 즉각 음성 출력!
+  const isSimpleGreeting = agentTurnCount === 1 && (
+    /^(안녕|여보|네|예|반갑|혹시|고객님|선생님|사장님|통화|말씀|어디)/.test(lastAgentText.trim()) ||
+    lastAgentText.trim().length <= 15
+  );
+  if (isSimpleGreeting) {
+    const opening = getPersonaOpeningReply(persona);
+    const tag = opening.emotion === 'angry' ? '[화남]' : opening.emotion === 'annoyed' ? '[짜증]' : opening.emotion === 'anxious' ? '[불안]' : '[차분]';
+    console.log('[1턴 고속 응답 Fast Path 적중 0ms]:', opening.text);
+    return `${tag} ${opening.text}`;
+  }
 
   const behaviorType = persona.behaviorType || (persona.level === 1 ? 'gentle' : persona.level === 2 ? 'bottom_liner' : 'cold_skeptic');
   const outboundChannel = persona.outboundChannelType || 'cold_db';
