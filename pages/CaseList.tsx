@@ -852,6 +852,7 @@ export default function CaseList() {
                 statuses={statuses}
                 secondaryStatuses={secondaryStatusesList}
                 tertiaryStatuses={tertiaryStatusesMap}
+                canImport={isAdmin}
                 onOpenImportModal={isAdmin ? () => setIsImportModalOpen(true) : undefined}
                 onOpenStatusVisibilityModal={() => setIsVisibilityModalOpen(true)}
                 onResetPage={() => setCurrentPage(1)}
@@ -988,13 +989,16 @@ export default function CaseList() {
                 onToggleStatus={toggleHiddenStatus}
             />
 
-            <ImportModal
-                isOpen={isAdmin && isImportModalOpen}
-                onClose={() => setIsImportModalOpen(false)}
-                onSuccess={() => { refetchCases(); setCurrentPage(1); }}
-                partners={partners}
-                inboundPaths={inboundPaths}
-            />
+            {/* 관리자 전용 대량 인입/업로드 모달 (상담원 비노출 & 렌더링 원천 차단) */}
+            {isAdmin && (
+                <ImportModal
+                    isOpen={isImportModalOpen}
+                    onClose={() => setIsImportModalOpen(false)}
+                    onSuccess={() => { refetchCases(); setCurrentPage(1); }}
+                    partners={partners}
+                    inboundPaths={inboundPaths}
+                />
+            )}
 
             <QuickNewCaseModal
                 isOpen={isNewCaseModalOpen}

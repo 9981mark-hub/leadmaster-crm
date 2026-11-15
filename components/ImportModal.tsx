@@ -7,6 +7,7 @@ import { VendorManageModal } from './team/VendorManageModal';
 import { batchCreateCases, fetchPartners, fetchInboundPaths, createCase, fetchCases } from '../services/api';
 import { Partner, Case } from '../types';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ASSET_TYPES, JOB_TYPES, CASE_TYPES, formatPhone } from '../constants';
 import { fileToBase64, checkIsDuplicate } from '../utils';
 import { callAi, checkAiFileSize, AiProxyError } from '../services/aiProxy';
@@ -36,9 +37,13 @@ interface SheetRow {
 }
 
 export default function ImportModal({ isOpen, onClose, onSuccess, partners, inboundPaths }: ImportModalProps) {
+    const { isAdmin } = useAuth();
     const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<ImportTab>('excel');
     const [isLoading, setIsLoading] = useState(false);
+
+    // [보안 가드] 관리자가 아니면 대량 등록 모달을 절대 렌더링하지 않음 (상담원 원천 차단)
+    if (!isAdmin || !isOpen) return null;
 
     // [Added] Load all cases for global duplicate check
     const [existingCases, setExistingCases] = useState<Case[]>([]);

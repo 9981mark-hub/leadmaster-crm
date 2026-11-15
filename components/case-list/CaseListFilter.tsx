@@ -33,7 +33,9 @@ interface CaseListFilterProps {
     statuses: CaseStatus[];
     secondaryStatuses: string[];
     tertiaryStatuses: Record<string, string[]>;
-    onOpenImportModal?: () => void; // [KIRO 2026-11-13] 관리자만 전달 (없으면 업로드 버튼 숨김)
+    onOpenImportModal?: () => void; // 관리자 전용 대량 등록 모달 열기
+    /** 대량 업로드 권한 여부 (관리자만 true). false이면 업로드 버튼 자체를 완전히 은닉 */
+    canImport?: boolean;
     onOpenStatusVisibilityModal: () => void;
     onResetPage: () => void;
 }
@@ -53,7 +55,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     showStarredOnly, setShowStarredOnly,
     partners, inboundPaths, statuses,
     secondaryStatuses, tertiaryStatuses,
-    onOpenImportModal, onOpenStatusVisibilityModal, onResetPage
+    onOpenImportModal, canImport = false, onOpenStatusVisibilityModal, onResetPage
 }) => {
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = React.useState(false);
 
@@ -96,14 +98,15 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 >
                     <Star size={18} fill={showStarredOnly ? 'currentColor' : 'none'} />
                 </button>
-                {/* Cloud Upload Button (Mobile Only) */}
-                {onOpenImportModal && <button
+                {/* Cloud Upload Button (Mobile Only) - 관리자 전용 대량 등록 (상담원 완전 은닉) */}
+                {canImport && onOpenImportModal && <button
                     type="button"
                     onClick={(e) => {
                         e.preventDefault();
                         onOpenImportModal?.();
                     }}
                     className="xl:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
+                    title="케이스 대량/일괄 등록 (관리자 전용)"
                 >
                     <Upload size={18} />
                 </button>}
@@ -277,13 +280,15 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             </select>
                         </div>
 
-                        {onOpenImportModal && <button
+                        {/* 케이스 대량/일괄 등록 (관리자 전용, 상담원 완전 은닉) */}
+                        {canImport && onOpenImportModal && <button
                             type="button"
                             onClick={(e) => {
                                 e.preventDefault();
                                 onOpenImportModal();
                             }}
                             className="hidden xl:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
+                            title="케이스 대량/일괄 등록 (관리자 전용)"
                         >
                             <Upload size={18} />
                         </button>}
