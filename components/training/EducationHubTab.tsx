@@ -58,6 +58,130 @@ import {
 
 type SubView = 'script' | 'recordings' | 'videos' | 'faq';
 
+/**
+ * [가독성 특화 AI 답변 렌더러]
+ * 마크다운 ** 별표 기호를 100% 제거하고,
+ * [📌 핵심 결론], [🎯 고객 통화 실전 멘트], [⚠️ 실무 주의 팁]을 시각적 전용 카드로 분리 표현
+ */
+const FormattedAiAnswer: React.FC<{
+  content: string;
+  onCopyText: (text: string, label: string) => void;
+}> = ({ content, onCopyText }) => {
+  // 1. ** 별표 및 마크다운 기호 100% 필터링
+  const clean = content.replace(/\*\*/g, '').replace(/###\s*/g, '').trim();
+
+  // 2. 구조화 블록 정규식 파싱
+  const conclusionMatch = clean.match(
+    /(?:(?:📌\s*)?(?:\[\s*(?:결론|핵심\s*요약)\s*\]|(?:결론|핵심\s*요약)\s*[:：]|\b1\.\s*(?:결론|핵심\s*요약)\s*[:：]?))\s*([\s\S]*?)(?=(?:🎯\s*)?(?:\[\s*(?:실전\s*멘트|추천\s*멘트|실전멘트)\s*\]|(?:실전|추천)\s*멘트\s*[:：]|\b2\.\s*(?:실전|추천)\s*멘트\s*[:：]?)|(?:⚠️\s*)?(?:\[\s*(?:참고|주의사항|주의)\s*\]|(?:참고|주의사항|주의)\s*[:：]|\b3\.\s*(?:참고|주의사항|주의)\s*[:：]?)|$)/i
+  );
+  const scriptMatch = clean.match(
+    /(?:(?:🎯\s*)?(?:\[\s*(?:실전\s*멘트|추천\s*멘트|실전멘트)\s*\]|(?:실전|추천)\s*멘트\s*[:：]|\b2\.\s*(?:실전|추천)\s*멘트\s*[:：]?))\s*([\s\S]*?)(?=(?:⚠️\s*)?(?:\[\s*(?:참고|주의사항|주의)\s*\]|(?:참고|주의사항|주의)\s*[:：]|\b3\.\s*(?:참고|주의사항|주의)\s*[:：]?)|$)/i
+  );
+  const noteMatch = clean.match(
+    /(?:(?:⚠️\s*)?(?:\[\s*(?:참고|주의사항|주의)\s*\]|(?:참고|주의사항|주의)\s*[:：]|\b3\.\s*(?:참고|주의사항|주의)\s*[:：]?))\s*([\s\S]*?)$/i
+  );
+
+  let conclusion = conclusionMatch ? conclusionMatch[1].trim() : null;
+  let script = scriptMatch ? scriptMatch[1].trim() : null;
+  let note = noteMatch ? noteMatch[1].trim() : null;
+
+  // 3. 보조 파서: 이모지 기반 분할
+  if (!conclusion && !script && !note && (clean.includes('📌') || clean.includes('🎯') || clean.includes('⚠️'))) {
+    const lines = clean.split('\n');
+    let currentSection: 'conclusion' | 'script' | 'note' | null = null;
+    const parts = { conclusion: [] as string[], script: [] as string[], note: [] as string[] };
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('📌')) {
+        currentSection = 'conclusion';
+        parts.conclusion.push(trimmed.replace(/^📌\s*(?:결론\s*[:：]?|\[결론\])?\s*/, ''));
+      } else if (trimmed.startsWith('🎯')) {
+        currentSection = 'script';
+        parts.script.push(trimmed.replace(/^🎯\s*(?:실전\s*멘트\s*[:：]?|\[실전\s*멘트\])?\s*/, ''));
+      } else if (trimmed.startsWith('⚠️')) {
+        currentSection = 'note';
+        parts.note.push(trimmed.replace(/^⚠️\s*(?:참고\s*[:：]?|주의\s*[:：]?|\[참고\])?\s*/, ''));
+      } else if (currentSection && trimmed) {
+        parts[currentSection].push(trimmed);
+      }
+    }
+
+    if (parts.conclusion.length > 0) conclusion = parts.conclusion.join('\n').trim();
+    if (parts.script.length > 0) script = parts.script.join('\n').trim();
+    if (parts.note.length > 0) note = parts.note.join('\n').trim();
+  }
+
+  const isStructured = Boolean(conclusion || script || note);
+
+  if (!isStructured) {
+    return (
+      <div className="text-xs md:text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line font-medium">
+        {clean}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 pt-0.5">
+      {/* 1. 핵심 결론 카드 */}
+      {conclusion && (
+        <div className="bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/90 dark:border-indigo-800/60 rounded-xl p-3.5 shadow-xs">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-600 text-white shadow-xs">
+              <span>📌</span>
+              <span>핵심 결론</span>
+            </span>
+          </div>
+          <p className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-line pl-0.5">
+            {conclusion}
+          </p>
+        </div>
+      )}
+
+      {/* 2. 고객 통화 실전 멘트 카드 */}
+      {script && (
+        <div className="bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-800/60 border-l-4 border-l-emerald-500 rounded-r-xl rounded-l-md p-3.5 shadow-xs">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-xs">
+              <span>🎯</span>
+              <span>고객 통화 실전 멘트</span>
+            </span>
+            <button
+              onClick={() => onCopyText(script.replace(/^["'“”]|["'“”]$/g, '').trim(), '실전 멘트')}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 bg-white dark:bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/60 transition-colors shadow-xs"
+              title="실전 멘트만 복사"
+            >
+              <Copy className="w-3 h-3" />
+              <span>멘트만 복사</span>
+            </button>
+          </div>
+          <div className="bg-white/95 dark:bg-gray-900/80 rounded-lg p-3 border border-emerald-100 dark:border-emerald-900/50">
+            <p className="text-xs md:text-sm font-medium text-emerald-950 dark:text-emerald-100 leading-relaxed font-sans">
+              {script}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 3. 실무 주의 & 인계 팁 카드 */}
+      {note && (
+        <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 rounded-xl p-3 shadow-xs">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-600 text-white shadow-xs">
+              <span>⚠️</span>
+              <span>실무 주의 &amp; 인계 팁</span>
+            </span>
+          </div>
+          <p className="text-xs md:text-sm font-medium text-amber-950 dark:text-amber-200 leading-relaxed pl-0.5">
+            {note}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function EducationHubTab() {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -102,7 +226,7 @@ export default function EducationHubTab() {
     {
       id: 'welcome_1',
       role: 'assistant',
-      content: '안녕하세요! 도산 전문 법률 사수 AI입니다.\n\n개인회생·파산 자격 요건, 2025년 가구원수별 최저생계비 계산, 주택임대차 최우선변제금, 그리고 "수임료가 비싸요" 같은 고객 거절 방어 화법 등 무엇이든 질문해 주세요. 사이트 내에서 즉시 1초 만에 답변해 드립니다.',
+      content: '안녕하세요! 도산 전문 법률 사수 AI입니다.\n\n개인회생·파산 자격 요건, 2025/2026년 가구원수별 최저생계비 계산, 주택임대차 최우선변제금, 그리고 "수임료가 비싸요" 같은 고객 거절 방어 화법 등 무엇이든 질문해 주세요. 사이트 내에서 즉시 1초 만에 답변해 드립니다.',
       timestamp: '안내',
     },
   ]);
@@ -1509,23 +1633,30 @@ export default function EducationHubTab() {
                     )}
 
                     <div
-                      className={`max-w-[85%] rounded-2xl p-4 text-xs md:text-sm leading-relaxed space-y-2 shadow-xs ${
+                      className={`max-w-[88%] md:max-w-[85%] rounded-2xl p-4 text-xs md:text-sm leading-relaxed space-y-2.5 shadow-xs ${
                         isUser
                           ? 'bg-indigo-600 text-white rounded-tr-none font-medium'
-                          : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200/80 dark:border-gray-700/80 rounded-tl-none font-medium'
+                          : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200/90 dark:border-gray-700/80 rounded-tl-none font-medium shadow-sm'
                       }`}
                     >
-                      <div className="whitespace-pre-line">{msg.content}</div>
+                      {isUser ? (
+                        <div className="whitespace-pre-line font-medium">{msg.content}</div>
+                      ) : (
+                        <FormattedAiAnswer
+                          content={msg.content}
+                          onCopyText={handleCopyText}
+                        />
+                      )}
 
-                      <div className="flex items-center justify-between pt-1 border-t border-black/10 dark:border-white/10 text-[10px] opacity-75">
+                      <div className="flex items-center justify-between pt-1.5 border-t border-black/10 dark:border-white/10 text-[10px] opacity-75">
                         <span>{msg.timestamp}</span>
                         {!isUser && (
                           <button
-                            onClick={() => handleCopyText(msg.content, 'AI 답변')}
-                            className="hover:underline flex items-center gap-1 font-bold ml-3"
+                            onClick={() => handleCopyText(msg.content.replace(/\*\*/g, ''), 'AI 전체 답변')}
+                            className="hover:underline flex items-center gap-1 font-bold ml-3 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                           >
                             <Copy className="w-3 h-3" />
-                            <span>답변 복사</span>
+                            <span>전체 답변 복사</span>
                           </button>
                         )}
                       </div>
@@ -1541,7 +1672,7 @@ export default function EducationHubTab() {
                   </div>
                   <div className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-tl-none text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5 text-orange-500 animate-spin" />
-                    <span>도산 법률 실무준칙과 2025년 기준표를 정밀 검색하여 답변을 작성하고 있습니다...</span>
+                    <span>2025/2026년 법정 기준표와 실무준칙을 정밀 검색하여 최적의 답변을 작성하고 있습니다...</span>
                   </div>
                 </div>
               )}
