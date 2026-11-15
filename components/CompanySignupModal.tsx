@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, X, CheckCircle2, User, Phone, Mail, Users, MessageSquare, ArrowRight } from 'lucide-react';
+import { Building2, X, CheckCircle2, Phone, Mail, Users, MessageSquare, ArrowRight, AlertCircle } from 'lucide-react';
 import { submitOrgApplication, OrgApplicationInput } from '../services/orgApplicationService';
 
 interface CompanySignupModalProps {
@@ -16,7 +16,6 @@ export default function CompanySignupModal({
   onSuccess,
 }: CompanySignupModalProps) {
   const [companyName, setCompanyName] = useState('');
-  const [ownerName, setOwnerName] = useState('');
   const [ownerEmail, setOwnerEmail] = useState(initialEmail);
   const [phone, setPhone] = useState('');
   const [agentCountTier, setAgentCountTier] = useState<'1-5' | '6-20' | '21+'>('1-5');
@@ -39,16 +38,12 @@ export default function CompanySignupModal({
       setErrorMsg('회사명(또는 상호)을 입력해주세요.');
       return;
     }
-    if (!ownerName.trim()) {
-      setErrorMsg('대표자명을 입력해주세요.');
-      return;
-    }
     if (!ownerEmail.trim()) {
-      setErrorMsg('구글 로그인용 이메일을 입력해주세요.');
+      setErrorMsg('로그인에 사용할 구글 이메일을 입력해주세요.');
       return;
     }
     if (!phone.trim()) {
-      setErrorMsg('대표자 연락처(휴대폰 번호)를 입력해주세요.');
+      setErrorMsg('연락처(휴대폰 번호)를 입력해주세요.');
       return;
     }
 
@@ -56,7 +51,6 @@ export default function CompanySignupModal({
     try {
       const input: OrgApplicationInput = {
         companyName,
-        ownerName,
         ownerEmail,
         phone,
         agentCountTier,
@@ -98,7 +92,7 @@ export default function CompanySignupModal({
                 가입 신청이 성공적으로 접수되었습니다
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-sm mx-auto">
-                <span className="text-blue-400 font-semibold">{companyName}</span> ({ownerName} 대표님)의 전용 워크스페이스 개설 신청이 접수되었습니다.
+                <span className="text-blue-400 font-semibold">{companyName}</span>의 전용 워크스페이스 개설 신청이 접수되었습니다.
               </p>
             </div>
             <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-left text-xs text-slate-400 space-y-1.5">
@@ -169,62 +163,54 @@ export default function CompanySignupModal({
                 <input
                   type="text"
                   required
-                  placeholder="예: 법무법인 에이스, 대박TM"
                   value={companyName}
                   onChange={e => setCompanyName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-slate-600 outline-none text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white outline-none text-xs sm:text-sm"
                 />
               </div>
 
-              {/* 대표자명 & 연락처 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <User size={13} className="text-blue-400" />
-                    <span>대표자명 (필수)</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="예: 진성호 대표"
-                    value={ownerName}
-                    onChange={e => setOwnerName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-slate-600 outline-none text-xs sm:text-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Phone size={13} className="text-blue-400" />
-                    <span>연락처 (필수)</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="010-XXXX-XXXX"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-slate-600 outline-none text-xs sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* 로그인 예정 구글 이메일 */}
+              {/* 연락처 */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Mail size={13} className="text-blue-400" />
-                  <span>로그인에 사용할 구글 이메일 (필수)</span>
+                  <Phone size={13} className="text-blue-400" />
+                  <span>연락처 (필수)</span>
                 </label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white outline-none text-xs sm:text-sm"
+                />
+              </div>
+
+              {/* 로그인 예정 구글 이메일 (구글 계정만 가입 가능 강조) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Mail size={13} className="text-blue-400" />
+                    <span>로그인에 사용할 구글 이메일 (필수)</span>
+                  </label>
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">
+                    <AlertCircle size={10} />
+                    <span>구글 계정만 가입 가능</span>
+                  </span>
+                </div>
                 <input
                   type="email"
                   required
-                  placeholder="name@gmail.com"
                   value={ownerEmail}
                   onChange={e => setOwnerEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-slate-600 outline-none text-xs sm:text-sm font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white outline-none text-xs sm:text-sm font-mono"
                 />
-                <p className="text-[11px] text-slate-500">
-                  승인 완료 시 이 구글 계정에 회사 대표(Owner) 권한이 자동으로 부여됩니다.
-                </p>
+                <div className="space-y-0.5 pt-0.5">
+                  <p className="text-[11px] text-amber-400/90 font-medium">
+                    * 리드마스터는 Google 간편 로그인 시스템을 사용하므로, 반드시 구글 계정(@gmail.com 또는 구글 워크스페이스)을 입력하셔야 합니다.
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    승인 완료 시 이 구글 계정에 회사 대표(Owner) 권한이 자동으로 부여됩니다.
+                  </p>
+                </div>
               </div>
 
               {/* 상담원 인원 규모 */}
@@ -259,10 +245,9 @@ export default function CompanySignupModal({
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="예: 3일 내 신규 콜센터 오픈 예정입니다."
                   value={memo}
                   onChange={e => setMemo(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-slate-600 outline-none text-xs resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white outline-none text-xs resize-none"
                 />
               </div>
 

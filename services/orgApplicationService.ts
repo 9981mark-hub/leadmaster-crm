@@ -7,7 +7,7 @@ import { createOrganization } from './platform';
 
 export interface OrgApplicationInput {
   companyName: string;
-  ownerName: string;
+  ownerName?: string;
   ownerEmail: string;
   phone: string;
   agentCountTier?: '1-5' | '6-20' | '21+';
@@ -50,14 +50,13 @@ const saveLocalApplications = (list: OrgApplication[]) => {
 /** 신규 가입 신청서 제출 (비로그인 방문자 or 미초대 사용자) */
 export const submitOrgApplication = async (input: OrgApplicationInput): Promise<OrgApplication> => {
   const companyName = input.companyName.trim();
-  const ownerName = input.ownerName.trim();
+  const ownerName = (input.ownerName || '').trim() || `${companyName} 대표`;
   const ownerEmail = input.ownerEmail.trim().toLowerCase();
   const phone = input.phone.trim();
   const agentCountTier = input.agentCountTier || '1-5';
   const memo = input.memo?.trim() || '';
 
-  if (!companyName) throw new Error('회사명을 입력해주세요.');
-  if (!ownerName) throw new Error('대표자명을 입력해주세요.');
+  if (!companyName) throw new Error('회사명(또는 상호)을 입력해주세요.');
   if (!ownerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
     throw new Error('올바른 구글 이메일 형식을 입력해주세요.');
   }
