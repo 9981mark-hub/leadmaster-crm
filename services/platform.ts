@@ -103,7 +103,7 @@ export const generateApprovalEmailContent = (
 ■ 로그인 주소: ${loginUrl}
 ■ 로그인 방법: [Google로 계속하기] 원클릭 로그인
 ■ 무료 체험 기간: 승인일로부터 7일간 (전체 기능 무제한 이용)
-■ 고객지원 및 문의: beanhull@gmail.com
+■ 고객지원 및 문의: support@lmaster.xyz
 
 감사합니다.
 리드마스터 플랫폼 운영팀 드림`;
@@ -176,7 +176,7 @@ export const generateOrgInvoiceMarkdown = (org: PlatformOrg, billingMonth?: stri
 | 구분 | 공급자 (서비스 제공자) | 공급받는 자 (고객사) |
 | :--- | :--- | :--- |
 | **상호 / 회사명** | 리드마스터 (대표: 진성호) | **${org.name}** |
-| **담당자 이메일** | beanhull@gmail.com | ${org.ownerInviteEmail || '등록 계정'} |
+| **담당자 이메일** | support@lmaster.xyz | ${org.ownerInviteEmail || '등록 계정'} |
 | **서비스 명칭** | LeadMaster Cloud CRM SaaS | 기업 전용 엔터프라이즈 테넌트 |
 
 ---
@@ -198,7 +198,7 @@ export const generateOrgInvoiceMarkdown = (org: PlatformOrg, billingMonth?: stri
 ### 3. 입금 계좌 및 결제 안내
 - **결제 방식**: 계좌이체 (세금계산서 청구/영수 발행)
 - **입금 기한**: 익월 10일까지
-- **문의 및 지원**: 플랫폼 관리국 (beanbull@gmail.com)
+- **문의 및 지원**: 플랫폼 관리국 (support@lmaster.xyz)
 
 *본 청구서는 리드마스터 클라우드 시스템에 기록된 실제 활성 상담원 계정 수에 근거하여 자동 발행되었습니다.*
 `;

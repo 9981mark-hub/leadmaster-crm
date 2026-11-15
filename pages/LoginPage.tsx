@@ -265,7 +265,7 @@ export default function LoginPage() {
                     <div className="flex items-center gap-4 text-slate-400 text-xs">
                         <a href="./privacy.html" className="text-blue-400 hover:underline">개인정보처리방침</a>
                         <a href="./terms.html" className="hover:text-slate-200 hover:underline">이용약관</a>
-                        <span>고객지원: beanhull@gmail.com</span>
+                        <span>고객지원: <a href="mailto:support@lmaster.xyz" className="text-slate-300 hover:underline">support@lmaster.xyz</a></span>
                     </div>
                 </div>
             </footer>
