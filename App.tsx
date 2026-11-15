@@ -366,7 +366,7 @@ export default function App() {
                       </div>
                     }>
                       <Routes>
-                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/login" element={<ErrorBoundary><LoginPage /></ErrorBoundary>} />
                         <Route path="/*" element={<ProtectedRoutes />} />
                       </Routes>
                       <ReminderNotificationContainer />

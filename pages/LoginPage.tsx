@@ -11,7 +11,8 @@ import {
     Cpu,
     Coins,
     Building2,
-    CheckCircle2
+    CheckCircle2,
+    Lock
 } from 'lucide-react';
 
 export default function LoginPage() {
