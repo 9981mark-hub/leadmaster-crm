@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   X, Shield, CheckCircle2, AlertTriangle, Calculator,
   PhoneCall, GraduationCap, Smartphone, Lock, Users,
-  Calendar, Sparkles, Save
+  Calendar, Sparkles, Save, DollarSign
 } from 'lucide-react';
 import {
   PlatformOrg, OrgFeaturePermissions, DEFAULT_ORG_FEATURE_PERMISSIONS,
-  updateOrgFeaturePermissions
+  updateOrgFeaturePermissions, calculateOrgMonthlyBill, PricingModelType
 } from '../../services/platform';
 
 interface TenantPermissionModalProps {
@@ -288,10 +288,10 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
               </div>
             </div>
 
-            {/* 무료 체험 기간 */}
+            {/* 무료 체험 기간 (7일 기준) */}
             <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">무료 체험 잔여 기간</label>
+                <label className="text-xs font-semibold text-slate-300">무료 체험 잔여 기간 (7일 기준)</label>
                 {trialDaysLeft !== null ? (
                   <span className="text-[11px] font-bold text-amber-400">
                     {trialDaysLeft > 0 ? `${trialDaysLeft}일 남음` : '만료됨'}
@@ -310,13 +310,135 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleExtendTrial(14)}
-                  className="flex-1 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+                  onClick={() => setPerms(prev => ({ ...prev, trialExpiresAt: undefined }))}
+                  className="flex-1 py-1 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-400 hover:bg-emerald-900/50 text-xs font-semibold cursor-pointer"
                 >
-                  +14일 연장
+                  정기 구독 전환
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* 💰 3. 고객사별 요금제 모델 및 단가 조정 */}
+        <div className="pt-2 border-t border-slate-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <DollarSign size={13} className="text-emerald-400" />
+              <span>요금제 모델 및 맞춤 단가 설정</span>
+            </h4>
+            <span className="text-[11px] font-mono text-emerald-400 font-bold">
+              현재 적용: ₩{calculateOrgMonthlyBill(Math.max(1, org.activeMembers), perms).unitPrice.toLocaleString()}/석 
+              (월 ₩{calculateOrgMonthlyBill(Math.max(1, org.activeMembers), perms).totalPrice.toLocaleString()})
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {/* 요금제 모델 라디오 */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <label 
+                onClick={() => setPerms(prev => ({ ...prev, pricingModel: 'volume_tier' }))}
+                className={`p-2.5 rounded-xl border text-xs cursor-pointer flex flex-col justify-between transition-all ${
+                  (perms.pricingModel || 'volume_tier') === 'volume_tier'
+                    ? 'bg-blue-600/15 border-blue-500 text-white font-bold'
+                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span>볼륨 자동 티어</span>
+                  <input
+                    type="radio"
+                    name="pricingModel"
+                    checked={(perms.pricingModel || 'volume_tier') === 'volume_tier'}
+                    onChange={() => {}}
+                    className="sr-only"
+                  />
+                </div>
+                <p className="text-[10px] font-normal text-slate-400 mt-1">
+                  1~5인 ₩58,000 ~ 101인+ ₩38,000 자동 할인
+                </p>
+              </label>
+
+              <label 
+                onClick={() => setPerms(prev => ({ ...prev, pricingModel: 'custom_seat' }))}
+                className={`p-2.5 rounded-xl border text-xs cursor-pointer flex flex-col justify-between transition-all ${
+                  perms.pricingModel === 'custom_seat'
+                    ? 'bg-blue-600/15 border-blue-500 text-white font-bold'
+                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span>맞춤 단가 직접 입력</span>
+                  <input
+                    type="radio"
+                    name="pricingModel"
+                    checked={perms.pricingModel === 'custom_seat'}
+                    onChange={() => {}}
+                    className="sr-only"
+                  />
+                </div>
+                <p className="text-[10px] font-normal text-slate-400 mt-1">
+                  좌석당 협의된 금액을 원 단위로 지정
+                </p>
+              </label>
+
+              <label 
+                onClick={() => setPerms(prev => ({ ...prev, pricingModel: 'flat_fee' }))}
+                className={`p-2.5 rounded-xl border text-xs cursor-pointer flex flex-col justify-between transition-all ${
+                  perms.pricingModel === 'flat_fee'
+                    ? 'bg-blue-600/15 border-blue-500 text-white font-bold'
+                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span>월 고정 정액제 (Flat)</span>
+                  <input
+                    type="radio"
+                    name="pricingModel"
+                    checked={perms.pricingModel === 'flat_fee'}
+                    onChange={() => {}}
+                    className="sr-only"
+                  />
+                </div>
+                <p className="text-[10px] font-normal text-slate-400 mt-1">
+                  인원 무관 월 고정 금액 청구 (대형 센터)
+                </p>
+              </label>
+            </div>
+
+            {/* 맞춤 단가 입력란 */}
+            {perms.pricingModel === 'custom_seat' && (
+              <div className="p-3 bg-slate-950/60 rounded-xl border border-blue-500/30 flex items-center justify-between gap-3 animate-in fade-in">
+                <span className="text-xs text-slate-300 font-semibold">좌석당 월 단가(원):</span>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    step="1000"
+                    value={perms.customUnitPrice || 45000}
+                    onChange={e => setPerms(prev => ({ ...prev, customUnitPrice: Number(e.target.value) }))}
+                    className="w-32 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-xs text-right outline-none focus:border-blue-500"
+                  />
+                  <span className="text-xs text-slate-400">원 / 석</span>
+                </div>
+              </div>
+            )}
+
+            {/* 월 정액제 입력란 */}
+            {perms.pricingModel === 'flat_fee' && (
+              <div className="p-3 bg-slate-950/60 rounded-xl border border-blue-500/30 flex items-center justify-between gap-3 animate-in fade-in">
+                <span className="text-xs text-slate-300 font-semibold">월 고정 청구액(원):</span>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    step="100000"
+                    value={perms.flatMonthlyFee || 3000000}
+                    onChange={e => setPerms(prev => ({ ...prev, flatMonthlyFee: Number(e.target.value) }))}
+                    className="w-36 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-xs text-right outline-none focus:border-blue-500"
+                  />
+                  <span className="text-xs text-slate-400">원 / 월</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

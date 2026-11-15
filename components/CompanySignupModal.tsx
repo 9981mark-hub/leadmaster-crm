@@ -134,7 +134,7 @@ export default function CompanySignupModal({
                     리드마스터 TM 회사 가입 신청
                   </h3>
                   <p className="text-xs text-slate-400">
-                    TM 대표 전용 워크스페이스 개설 및 14일 무료 체험
+                    TM 대표 전용 워크스페이스 개설 및 7일 무료 체험
                   </p>
                 </div>
               </div>

@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Building2, Plus, RefreshCw, Ban, RotateCcw, Copy,
-  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles, ShieldCheck, Settings, Shield
+  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles, ShieldCheck, Settings, Shield, Mail
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import {
   PlatformOrg, createOrganization, fetchOrganizations, setOrganizationStatus,
   computeBillingSummary, generateOrgInvoiceMarkdown, PRICE_PER_AGENT_MONTH,
-  OrgFeaturePermissions, fetchAllOrgPermissions
+  OrgFeaturePermissions, fetchAllOrgPermissions, calculateOrgMonthlyBill, generateApprovalEmailContent
 } from '../services/platform';
 import {
   fetchOrgApplications, approveOrgApplication, rejectOrgApplication, OrgApplication
@@ -87,6 +87,16 @@ export default function PlatformPage() {
     }
   };
 
+  const handleSendApprovalEmail = (companyName: string, ownerEmail: string) => {
+    const { subject, body } = generateApprovalEmailContent(companyName, ownerEmail);
+    const mailtoUrl = `mailto:${encodeURIComponent(ownerEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
+
+    navigator.clipboard.writeText(`[제목] ${subject}\n\n${body}`).then(() => {
+      showToast(`'${companyName}' 대표(${ownerEmail}) 승인 안내문이 클립보드에 복사되었고 메일 작성창을 열었습니다.`, 'success');
+    });
+  };
+
   const handleApproveApp = async (app: OrgApplication) => {
     if (busy) return;
     setBusy(true);
@@ -94,6 +104,9 @@ export default function PlatformPage() {
       await approveOrgApplication(app);
       showToast(`'${app.companyName}' 회사를 개설하고 ${app.ownerEmail} 대표 초대를 완료했습니다.`, 'success');
       await reload();
+
+      // 승인 직후 안내 이메일 발송 창 자동 연결
+      handleSendApprovalEmail(app.companyName, app.ownerEmail);
     } catch (e: any) {
       showToast(`승인 처리 실패: ${e.message}`, 'error');
     } finally {
@@ -343,6 +356,19 @@ export default function PlatformPage() {
                     </button>
                   </div>
                 )}
+
+                {app.status === 'approved' && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleSendApprovalEmail(app.companyName, app.ownerEmail)}
+                      className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-100 font-medium text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                      title="대표자 이메일로 7일 무료체험 승인 안내 메일 재발송"
+                    >
+                      <Mail size={13} />
+                      <span>승인 안내 발송</span>
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -447,7 +473,8 @@ export default function PlatformPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {orgs.map(o => {
                 const isHq = o.id === HQ_ORG_ID || o.slug === 'hq';
-                const monthlyBill = isHq ? 0 : o.activeMembers * PRICE_PER_AGENT_MONTH;
+                const bill = calculateOrgMonthlyBill(Math.max(1, o.activeMembers), permissionsMap[o.id]);
+                const monthlyBill = isHq ? 0 : bill.totalPrice;
 
                 return (
                   <tr key={o.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-750/30 transition-colors">
@@ -521,9 +548,14 @@ export default function PlatformPage() {
                       {isHq ? (
                         <span className="text-gray-400 text-xs font-normal">본사 운영</span>
                       ) : (
-                        <span className="text-gray-900 dark:text-white">
-                          ₩{monthlyBill.toLocaleString()}
-                        </span>
+                        <div>
+                          <span className="text-gray-900 dark:text-white">
+                            ₩{monthlyBill.toLocaleString()}
+                          </span>
+                          <div className="text-[10px] text-gray-400 font-normal">
+                            (₩{bill.unitPrice.toLocaleString()}/석 • {bill.tierName})
+                          </div>
+                        </div>
                       )}
                     </td>
                     <td className="p-3.5 text-right font-mono tabular-nums text-gray-700 dark:text-gray-300">
@@ -543,6 +575,15 @@ export default function PlatformPage() {
                     </td>
                     <td className="p-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {!isHq && o.ownerInviteEmail && (
+                          <button
+                            onClick={() => handleSendApprovalEmail(o.name, o.ownerInviteEmail!)}
+                            className="px-2.5 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
+                            title="대표자 이메일로 7일 무료체험 승인 안내 메일 발송 및 클립보드 복사"
+                          >
+                            <Mail size={12} /> 승인 메일
+                          </button>
+                        )}
                         {!isHq && (
                           <button
                             onClick={() => setSelectedOrgForPerm(o)}

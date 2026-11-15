@@ -19,6 +19,8 @@ export interface PlatformOrg {
 }
 
 /** 테넌트별 5대 세부 기능 권한 및 라이선스 */
+export type PricingModelType = 'volume_tier' | 'custom_seat' | 'flat_fee';
+
 export interface OrgFeaturePermissions {
   /** 1. 광고비 & 정산 센터 권한 (DB 단가, 광고비 지출 집계, 상담원 급여/수당 계산, 주간 청구서) */
   settlementEnabled: boolean;
@@ -34,6 +36,12 @@ export interface OrgFeaturePermissions {
   trialExpiresAt?: string;
   /** 7. 상담원 좌석 수 한도 (0 = 무제한, 기본값 20) */
   maxSeats: number;
+  /** 8. 요금제 모델 (volume_tier | custom_seat | flat_fee) */
+  pricingModel?: PricingModelType;
+  /** 9. 좌석당 맞춤 단가 (원/석/월) */
+  customUnitPrice?: number;
+  /** 10. 월 고정 정액 금액 (원/월) */
+  flatMonthlyFee?: number;
 }
 
 export const DEFAULT_ORG_FEATURE_PERMISSIONS: OrgFeaturePermissions = {
@@ -43,6 +51,64 @@ export const DEFAULT_ORG_FEATURE_PERMISSIONS: OrgFeaturePermissions = {
   telegramHubEnabled: true,
   enforceSecurity: false,
   maxSeats: 20,
+  pricingModel: 'volume_tier',
+};
+
+/** 스타터 ₩58,000 ~ 메가 센터 ₩38,000 기준 고객사별 월 이용료 및 단가 자동 계산 */
+export const calculateOrgMonthlyBill = (
+  activeSeats: number,
+  permissions?: OrgFeaturePermissions
+): { unitPrice: number; totalPrice: number; tierName: string } => {
+  // 1. 월 고정 정액제
+  if (permissions?.pricingModel === 'flat_fee' && permissions?.flatMonthlyFee) {
+    return {
+      unitPrice: Math.round(permissions.flatMonthlyFee / Math.max(1, activeSeats)),
+      totalPrice: permissions.flatMonthlyFee,
+      tierName: '월 고정 정액제',
+    };
+  }
+
+  // 2. 호스트 맞춤 단가
+  if (permissions?.pricingModel === 'custom_seat' && permissions?.customUnitPrice) {
+    return {
+      unitPrice: permissions.customUnitPrice,
+      totalPrice: activeSeats * permissions.customUnitPrice,
+      tierName: '호스트 맞춤 단가',
+    };
+  }
+
+  // 3. 스타터 ₩58,000 ~ 메가센터 ₩38,000 볼륨 자동 티어링
+  if (activeSeats >= 101) return { unitPrice: 38000, totalPrice: activeSeats * 38000, tierName: '메가 센터 (101인+)' };
+  if (activeSeats >= 51)  return { unitPrice: 42000, totalPrice: activeSeats * 42000, tierName: '엔터프라이즈 (51~100인)' };
+  if (activeSeats >= 21)  return { unitPrice: 46000, totalPrice: activeSeats * 46000, tierName: '프로 (21~50인)' };
+  if (activeSeats >= 6)   return { unitPrice: 52000, totalPrice: activeSeats * 52000, tierName: '비즈니스 (6~20인)' };
+  return { unitPrice: 58000, totalPrice: activeSeats * 58000, tierName: '스타터 (1~5인)' };
+};
+
+/** 승인 완료 안내 이메일 내용 생성기 (7일 무료 체험) */
+export const generateApprovalEmailContent = (
+  companyName: string,
+  ownerEmail: string,
+  loginUrl: string = 'https://lmaster.xyz/login'
+): { subject: string; body: string } => {
+  const subject = `[리드마스터 CRM] '${companyName}' 워크스페이스 승인 완료 및 7일 무료 체험 안내`;
+  const body = `안녕하세요, ${companyName} 대표님!
+
+리드마스터 CRM 가입 신청이 성공적으로 승인되었습니다.
+
+대표님 전용 엔터프라이즈 워크스페이스 개설이 완료되었으며, 오늘부터 7일간 전체 기능을 자유롭게 이용하실 수 있는 무료 체험이 시작되었습니다.
+
+신청하신 구글 계정(${ownerEmail})으로 아래 주소에서 로그인하시면 즉시 시작하실 수 있습니다.
+
+■ 로그인 주소: ${loginUrl}
+■ 로그인 방법: [Google로 계속하기] 원클릭 로그인
+■ 무료 체험 기간: 승인일로부터 7일간 (전체 기능 무제한 이용)
+■ 고객지원 및 문의: beanhull@gmail.com
+
+감사합니다.
+리드마스터 플랫폼 운영팀 드림`;
+
+  return { subject, body };
 };
 
 export const PRICE_PER_AGENT_MONTH = 48000;
@@ -63,7 +129,11 @@ export const computeBillingSummary = (orgs: PlatformOrg[]): PlatformBillingSumma
   // 본사(hq / 00000000-0000-0000-0000-000000000001) 제외 외부 고객사만 과금 산출
   const clientOrgs = orgs.filter(o => o.slug !== 'hq' && o.id !== '00000000-0000-0000-0000-000000000001');
   const totalSeats = clientOrgs.reduce((acc, o) => acc + (o.status === 'active' ? o.activeMembers : 0), 0);
-  const totalMonthlyRevenue = totalSeats * PRICE_PER_AGENT_MONTH;
+  const totalMonthlyRevenue = clientOrgs.reduce((acc, o) => {
+    if (o.status !== 'active') return acc;
+    const bill = calculateOrgMonthlyBill(Math.max(1, o.activeMembers), o.permissions);
+    return acc + bill.totalPrice;
+  }, 0);
   const estimatedInfraCost = totalSeats > 0 ? 66500 : 0;
   const netMargin = Math.max(0, totalMonthlyRevenue - estimatedInfraCost);
   const marginPercent = totalMonthlyRevenue > 0 ? Math.round((netMargin / totalMonthlyRevenue) * 100) : 0;
@@ -87,7 +157,8 @@ export const generateOrgInvoiceMarkdown = (org: PlatformOrg, billingMonth?: stri
   const now = new Date();
   const ym = billingMonth || `${now.getFullYear()}년 ${String(now.getMonth() + 1).padStart(2, '0')}월`;
   const seats = Math.max(1, org.activeMembers);
-  const supplyPrice = seats * PRICE_PER_AGENT_MONTH;
+  const bill = calculateOrgMonthlyBill(seats, org.permissions);
+  const supplyPrice = bill.totalPrice;
   const vat = Math.floor(supplyPrice * 0.1);
   const totalPrice = supplyPrice + vat;
   const issueDate = now.toISOString().slice(0, 10);
@@ -104,18 +175,18 @@ export const generateOrgInvoiceMarkdown = (org: PlatformOrg, billingMonth?: stri
 
 | 구분 | 공급자 (서비스 제공자) | 공급받는 자 (고객사) |
 | :--- | :--- | :--- |
-| **상호 / 회사명** | 리드마스터 (대표: 진성훈) | **${org.name}** |
-| **담당자 이메일** | beanbull@gmail.com | ${org.ownerInviteEmail || '등록 계정'} |
+| **상호 / 회사명** | 리드마스터 (대표: 진성호) | **${org.name}** |
+| **담당자 이메일** | beanhull@gmail.com | ${org.ownerInviteEmail || '등록 계정'} |
 | **서비스 명칭** | LeadMaster Cloud CRM SaaS | 기업 전용 엔터프라이즈 테넌트 |
 
 ---
 
 ### 2. 당월 이용 내역 및 청구 금액 산출 내역
 
-| 서비스 항목 | 과금 기준 | 수량 (활성 좌석) | 단가 | 공급가액 |
+| 서비스 항목 | 과금 기준 | 수량 (활성 좌석) | 적용 단가 | 공급가액 |
 | :--- | :--- | :---: | :---: | :---: |
-| **LeadMaster CRM 정기 라이선스** | 활성 상담원 계정 수 | **${seats} 석** | ₩48,000 | ₩${supplyPrice.toLocaleString()} |
-| **안드로이드 자동콜 연동 패키지** | 무제한 통화/녹음 연동 | 포함 | ₩0 | ₩0 |
+| **LeadMaster CRM 라이선스 (${bill.tierName})** | 활성 상담원 계정 수 | **${seats} 석** | ₩${bill.unitPrice.toLocaleString()} | ₩${supplyPrice.toLocaleString()} |
+| **안드로이드 스마트 자동콜 연동** | 무제한 통화/녹음 연동 | 포함 | ₩0 | ₩0 |
 | **AI 통화 요약 & 텔레그램 허브** | 표준 제공량 포함 | 포함 | ₩0 | ₩0 |
 
 - **공급가액**: **₩${supplyPrice.toLocaleString()}**
@@ -180,6 +251,16 @@ export const createOrganization = async (
     } catch (presetErr) {
       console.warn('[Platform] 프리셋 초기화 경고:', presetErr);
     }
+  }
+
+  // 7일(일주일) 무료 체험 만료일 자동 세팅 (현재 시각 + 7일)
+  try {
+    const trialExpireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    await updateOrgFeaturePermissions(newOrgId, {
+      trialExpiresAt: trialExpireDate,
+    });
+  } catch (trialErr) {
+    console.warn('[Platform] 7일 무료체험 세팅 경고:', trialErr);
   }
 
   return newOrgId;
