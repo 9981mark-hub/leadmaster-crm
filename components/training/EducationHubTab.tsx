@@ -653,32 +653,40 @@ export default function EducationHubTab() {
               </div>
             </div>
 
-            {/* Table 1: 2025 최저생계비 */}
+            {/* Table 1: 2026 최신 확정 최저생계비 및 2025 비교 */}
             <div className="space-y-3">
-              <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
-                <Users className="w-4 h-4 text-indigo-500" />
-                <span>1. 2025년 가구원수별 기준 중위소득 및 최저생계비 (중위 60%)</span>
-              </h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
+                  <Users className="w-4 h-4 text-indigo-500" />
+                  <span>1. 2026년 최신 공식 확정 가구원수별 기준 중위소득 및 법정 최저생계비 (중위 60%)</span>
+                </h3>
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 self-start sm:self-auto border border-emerald-200 dark:border-emerald-800">
+                  ✨ 2026년 정부 공식 고시 기준
+                </span>
+              </div>
+
               <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-gray-50 dark:bg-gray-900/80 text-gray-600 dark:text-gray-400 font-bold border-b border-gray-200 dark:border-gray-700">
                     <tr>
-                      <th className="p-3">가구원수</th>
-                      <th className="p-3">2025 기준 중위소득</th>
-                      <th className="p-3">법정 최저생계비 (중위 60%)</th>
-                      <th className="p-3">실무 상담 포인트</th>
+                      <th className="p-3 whitespace-nowrap">가구원수</th>
+                      <th className="p-3 whitespace-nowrap text-indigo-600 dark:text-indigo-400">2026 기준 중위소득 (100%)</th>
+                      <th className="p-3 whitespace-nowrap text-emerald-600 dark:text-emerald-400">2026 최저생계비 (60%) [확정]</th>
+                      <th className="p-3 whitespace-nowrap text-gray-400">2025 최저생계비 (전년)</th>
+                      <th className="p-3">실무 상담 포인트 및 변제금 절감 효과</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-gray-800 dark:text-gray-200 font-medium">
                     {materials.legalStandards.livingCosts.map((item) => (
                       <tr key={item.householdSize} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20">
-                        <td className="p-3 font-bold text-indigo-600 dark:text-indigo-400">{item.householdSize}인 가구</td>
-                        <td className="p-3">{item.medianIncome}</td>
-                        <td className="p-3 font-bold text-emerald-600 dark:text-emerald-400">{item.minLivingCost}</td>
-                        <td className="p-3 text-gray-500 dark:text-gray-400">
-                          {item.householdSize === 1
-                            ? '월 소득 150만 원 이상이어야 변제 수행 가능'
-                            : `배우자 및 자녀 부양 시 생계비 인정되어 변제금 대폭 경감`}
+                        <td className="p-3 font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{item.householdSize}인 가구</td>
+                        <td className="p-3 font-semibold whitespace-nowrap">{item.medianIncome2026 || item.medianIncome}</td>
+                        <td className="p-3 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap bg-emerald-50/50 dark:bg-emerald-950/20">{item.minLivingCost2026 || item.minLivingCost}</td>
+                        <td className="p-3 text-gray-400 whitespace-nowrap line-through">{item.minLivingCost2025 || '2025년 기준'}</td>
+                        <td className="p-3 text-gray-600 dark:text-gray-400 text-[11px] leading-relaxed">
+                          {item.advice || (item.householdSize === 1
+                            ? '월 소득 155만 원 이상 권장 (생계비 인상으로 변제금 부담 경감)'
+                            : `부양가족 생계비 인정되어 월 납입 변제금 대폭 축소`)}
                         </td>
                       </tr>
                     ))}

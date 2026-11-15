@@ -40,8 +40,13 @@ export interface EducationScriptModule {
 
 export interface LivingCostItem {
   householdSize: number;
-  medianIncome: string; // 2025 기준 중위소득
-  minLivingCost: string; // 2025 최저생계비 (중위 60%)
+  medianIncome: string; // 2026 기준 중위소득 (기존 호환)
+  minLivingCost: string; // 2026 기준 법정 최저생계비 (기존 호환)
+  medianIncome2026: string;
+  minLivingCost2026: string;
+  medianIncome2025: string;
+  minLivingCost2025: string;
+  advice: string;
 }
 
 export interface PriorityRepaymentItem {
@@ -191,12 +196,66 @@ export const DEFAULT_EDUCATION_MATERIALS: TrainingEducationMaterials = {
   legalStandards: {
     year: '2025~2026년 기준',
     livingCosts: [
-      { householdSize: 1, medianIncome: '2,391,613원', minLivingCost: '1,434,968원 (월 소득 150만 권장)' },
-      { householdSize: 2, medianIncome: '3,932,828원', minLivingCost: '2,359,697원' },
-      { householdSize: 3, medianIncome: '5,025,353원', minLivingCost: '3,015,212원' },
-      { householdSize: 4, medianIncome: '6,097,773원', minLivingCost: '3,658,664원' },
-      { householdSize: 5, medianIncome: '7,108,170원', minLivingCost: '4,264,902원' },
-      { householdSize: 6, medianIncome: '8,064,845원', minLivingCost: '4,838,907원' },
+      {
+        householdSize: 1,
+        medianIncome: '2,564,238원',
+        minLivingCost: '1,538,543원',
+        medianIncome2026: '2,564,238원',
+        minLivingCost2026: '1,538,543원',
+        medianIncome2025: '2,391,613원',
+        minLivingCost2025: '1,434,968원',
+        advice: '전년 대비 +103,575원 인상 (월 실수령 155만 원 이상 권장)',
+      },
+      {
+        householdSize: 2,
+        medianIncome: '4,199,292원',
+        minLivingCost: '2,519,575원',
+        medianIncome2026: '4,199,292원',
+        minLivingCost2026: '2,519,575원',
+        medianIncome2025: '3,932,828원',
+        minLivingCost2025: '2,359,697원',
+        advice: '전년 대비 +159,878원 인상 (2인 생계비 251만 원 공제로 변제금 경감)',
+      },
+      {
+        householdSize: 3,
+        medianIncome: '5,359,036원',
+        minLivingCost: '3,215,422원',
+        medianIncome2026: '5,359,036원',
+        minLivingCost2026: '3,215,422원',
+        medianIncome2025: '5,025,353원',
+        minLivingCost2025: '3,015,212원',
+        advice: '전년 대비 +200,210원 인상 (3인 생계비 321만 원 보장)',
+      },
+      {
+        householdSize: 4,
+        medianIncome: '6,494,738원',
+        minLivingCost: '3,896,843원',
+        medianIncome2026: '6,494,738원',
+        minLivingCost2026: '3,896,843원',
+        medianIncome2025: '6,097,773원',
+        minLivingCost2025: '3,658,664원',
+        advice: '전년 대비 +238,179원 인상 (4인 가구 생계비 약 390만 원 보장)',
+      },
+      {
+        householdSize: 5,
+        medianIncome: '7,556,719원',
+        minLivingCost: '4,534,031원',
+        medianIncome2026: '7,556,719원',
+        minLivingCost2026: '4,534,031원',
+        medianIncome2025: '7,108,170원',
+        minLivingCost2025: '4,264,902원',
+        advice: '전년 대비 +269,129원 인상 (5인 가구 생계비 약 453만 원 보장)',
+      },
+      {
+        householdSize: 6,
+        medianIncome: '8,574,383원',
+        minLivingCost: '5,144,630원',
+        medianIncome2026: '8,574,383원',
+        minLivingCost2026: '5,144,630원',
+        medianIncome2025: '8,064,845원',
+        minLivingCost2025: '4,838,907원',
+        advice: '전년 대비 +305,723원 인상 (6인 가구 생계비 약 514만 원 보장)',
+      },
     ],
     priorityRepayments: [
       { region: '서울특별시', targetCities: '서울 전역', maxDeposit: '1억 6,500만 원 이하', priorityAmount: '5,500만 원 (재산에서 공제)' },
@@ -646,8 +705,24 @@ export const askEducationAssistant = async (
 2. 사무장 인계 15대 필수 항목:
 ${materials.scriptModule.intakeFields.map((f) => `${f.id}. ${f.title} (${f.category}): ${f.description} (예시: ${f.example}) - 팁: ${f.tip}`).join('\n')}
 
-3. 2025년 기준 중위소득 및 최저생계비 (중위 60%):
-${materials.legalStandards.livingCosts.map((c) => `- ${c.householdSize}인 가구: 중위소득 ${c.medianIncome}, 법정 최저생계비 ${c.minLivingCost}`).join('\n')}
+3. 2026년 최신 공식 확정 기준 중위소득 및 법정 최저생계비 (중위 60%):
+🚨 [매우 중요]: 2026년 기준 중위소득 및 개인회생 최저생계비는 보건복지부 및 법원에 의해 이미 공식 확정 발표되어 시행 중입니다!
+절대로 "2026년 기준은 아직 발표되지 않았다"고 잘못 말하지 마세요.
+2026년 생계비나 중위소득 질문 시 아래 2026년 공식 확정 수치를 최우선으로 정확하게 답변하세요.
+
+[2026년 공식 확정 기준 (100% 중위소득 / 60% 법정 최저생계비)]:
+- 1인 가구: 중위소득 2,564,238원 / 최저생계비(60%) 1,538,543원
+- 2인 가구: 중위소득 4,199,292원 / 최저생계비(60%) 2,519,575원
+- 3인 가구: 중위소득 5,359,036원 / 최저생계비(60%) 3,215,422원
+- 4인 가구: 중위소득 6,494,738원 / 최저생계비(60%) 3,896,843원
+- 5인 가구: 중위소득 7,556,719원 / 최저생계비(60%) 4,534,031원
+- 6인 가구: 중위소득 8,574,383원 / 최저생계비(60%) 5,144,630원
+
+[2025년 전년 기준 (비교 참고)]:
+- 1인 가구: 2,391,613원 / 1,434,968원
+- 2인 가구: 3,932,828원 / 2,359,697원
+- 3인 가구: 5,025,353원 / 3,015,212원
+- 4인 가구: 6,097,773원 / 3,658,664원
 
 4. 2023년 개정 주택임대차 소액보증금 최우선변제금 (재산공제액):
 ${materials.legalStandards.priorityRepayments.map((p) => `- ${p.region} (${p.targetCities}): 보증금한도 ${p.maxDeposit}, 최우선변제금 ${p.priorityAmount}`).join('\n')}
@@ -684,6 +759,25 @@ ${materials.scriptModule.transferCriteria.map((t) => `- ${t.condition} ➔ ${t.a
   } catch (err: any) {
     console.error('Failed to call AI for education assistant:', err);
     const lower = q.toLowerCase();
+    if (lower.includes('생계비') || lower.includes('중위소득')) {
+      let size = 1;
+      if (lower.includes('2인') || lower.includes('이인')) size = 2;
+      else if (lower.includes('3인') || lower.includes('삼인')) size = 3;
+      else if (lower.includes('4인') || lower.includes('사인')) size = 4;
+      else if (lower.includes('5인') || lower.includes('오인')) size = 5;
+      else if (lower.includes('6인') || lower.includes('육인')) size = 6;
+
+      const data: Record<number, { median: string; cost: string; prevCost: string; diff: string }> = {
+        1: { median: '2,564,238원', cost: '1,538,543원', prevCost: '1,434,968원', diff: '10만 3,575원' },
+        2: { median: '4,199,292원', cost: '2,519,575원', prevCost: '2,359,697원', diff: '15만 9,878원' },
+        3: { median: '5,359,036원', cost: '3,215,422원', prevCost: '3,015,212원', diff: '20만 210원' },
+        4: { median: '6,494,738원', cost: '3,896,843원', prevCost: '3,658,664원', diff: '23만 8,179원' },
+        5: { median: '7,556,719원', cost: '4,534,031원', prevCost: '4,264,902원', diff: '26만 9,129원' },
+        6: { median: '8,574,383원', cost: '5,144,630원', prevCost: '4,838,907원', diff: '30만 5,723원' },
+      };
+      const d = data[size];
+      return `### 1. 핵심 요약: 2026년 ${size}인 가구 법정 최저생계비 공식 확정 기준\n\n• **2026년 기준 중위소득 (100%)**: **${d.median}**\n• **2026년 개인회생 법정 최저생계비 (중위 60%)**: **${d.cost}**\n• **2025년 대비 인상액**: **+${d.diff}** (2025년: ${d.prevCost})\n\n### 2. 세부 설명 (실무 상담 포인트)\n보건복지부 및 법원 실무준칙에 따라 **2026년도 기준 중위소득 및 최저생계비는 이미 공식 확정 고시**되어 있습니다.\n생계비 인정액이 전년 대비 대폭 인상됨에 따라, 채무자의 월 실수령액에서 공제되는 생계비가 커져 **매달 법원에 납부해야 하는 '월 변제금'이 약 ${d.diff}만큼 줄어드는 큰 혜택**이 발생합니다.\n\n### 3. 실전 추천 멘트\n"고객님, 2026년 최신 공식 확정 기준 ${size}인 가구 법정 최저생계비는 **월 ${d.cost}**입니다. 고객님 월 실수령 소득에서 이 생계비를 먼저 법적으로 보장해 드리고 남은 차액만 변제금으로 산정되기 때문에 매월 부담이 크게 줄어듭니다. 전문 사무장님이 2차 통화 때 1원 단위까지 정밀 산출해 드리겠습니다."`;
+    }
     if (lower.includes('대출') && lower.includes('최근')) {
       return `📌 **[최근 대출 과다 회생 가능 여부 답변]**\n\n• **결론**: 신청 자체는 가능하지만, 최근 1~2달 사이 대출 비중이 총 채무의 50~70% 이상이면 법원에서 '사기죄'나 '재산 은닉/투기'로 의심하여 기각 위험과 보정명령이 매우 강하게 나옵니다.\n• **주의사항**: 1차 상담원이 "100% 됩니다"라고 단정하면 절대 안 되며, 사무장 인계 메모에 '최근 대출 비중 높음'을 반드시 기재해야 합니다.\n• **추천 멘트**: "고객님, 최근 대출이 많으실수록 독촉 압박이 더 크실 텐데요, 금융거래 내역을 법원에 합법적으로 소명하는 절차가 필수입니다. 전문 사무장님이 2차 통화 때 안전한 소명 플랜을 함께 세워드릴 테니 전화 꼭 받아주세요."`;
     }
