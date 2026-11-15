@@ -26,8 +26,10 @@ import { speechService } from '../services/speechService';
 import { CHARACTER_VOICE_60, CharacterVoiceProfile, getCharacterVoice60ById } from '../services/characterVoice60';
 import { TrainingReportModal } from '../components/training/TrainingReportModal';
 import { TrainingConfigModal } from '../components/training/TrainingConfigModal';
+import EducationHubTab from '../components/training/EducationHubTab';
 import {
   GraduationCap,
+  BookOpen,
   PhoneCall,
   PhoneOff,
   Mic,
@@ -79,7 +81,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 
-type TabMode = 'random' | 'clinic' | 'standard' | 'admin';
+type TabMode = 'random' | 'clinic' | 'standard' | 'education' | 'admin';
 
 export default function TrainingCenterPage() {
   const { user } = useAuth();
@@ -1084,6 +1086,18 @@ export default function TrainingCenterPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('education')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            activeTab === 'education'
+              ? 'bg-white dark:bg-gray-900 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-indigo-500/30'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 text-indigo-500" />
+          📚 실전 교육자료 & 모범 녹취 허브
+        </button>
+
+        <button
           onClick={() => setActiveTab('admin')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ml-auto ${
             activeTab === 'admin'
@@ -1206,6 +1220,8 @@ export default function TrainingCenterPage() {
             </div>
           )}
         </div>
+      ) : activeTab === 'education' ? (
+        <EducationHubTab />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Left Column (4 Cols): Scenario Pickers */}
