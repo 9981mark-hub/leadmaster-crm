@@ -1,19 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Building2, Plus, RefreshCw, Ban, RotateCcw, Copy,
-  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles, ShieldCheck
+  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles, ShieldCheck, Settings, Shield
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import {
   PlatformOrg, createOrganization, fetchOrganizations, setOrganizationStatus,
-  computeBillingSummary, generateOrgInvoiceMarkdown, PRICE_PER_AGENT_MONTH
+  computeBillingSummary, generateOrgInvoiceMarkdown, PRICE_PER_AGENT_MONTH,
+  OrgFeaturePermissions, fetchAllOrgPermissions
 } from '../services/platform';
 import {
   fetchOrgApplications, approveOrgApplication, rejectOrgApplication, OrgApplication
 } from '../services/orgApplicationService';
 import { HQ_ORG_ID } from '../services/org';
 import { useCountUp } from '../utils/useCountUp';
+import { TenantPermissionModal } from '../components/platform/TenantPermissionModal';
 
 const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('ko-KR') : '-');
 
@@ -23,6 +25,8 @@ export default function PlatformPage() {
   const { showToast } = useToast();
   const [orgs, setOrgs] = useState<PlatformOrg[]>([]);
   const [applications, setApplications] = useState<OrgApplication[]>([]);
+  const [permissionsMap, setPermissionsMap] = useState<Record<string, OrgFeaturePermissions>>({});
+  const [selectedOrgForPerm, setSelectedOrgForPerm] = useState<PlatformOrg | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState('');
@@ -38,6 +42,11 @@ export default function PlatformPage() {
       ]);
       setOrgs(fetchedOrgs);
       setApplications(fetchedApps);
+
+      // 테넌트 권한 일괄 로드
+      const orgIds = fetchedOrgs.map(o => o.id);
+      const perms = await fetchAllOrgPermissions(orgIds);
+      setPermissionsMap(perms);
     } catch (e: any) {
       showToast(`회사 목록을 불러오지 못했습니다: ${e.message}`, 'error');
     } finally {
@@ -451,6 +460,32 @@ export default function PlatformPage() {
                           </span>
                         )}
                       </div>
+                      {/* 권한 요약 칩 표시 */}
+                      {!isHq && permissionsMap[o.id] && (
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                            permissionsMap[o.id].settlementEnabled
+                              ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
+                          }`}>
+                            광고비·정산 {permissionsMap[o.id].settlementEnabled ? 'ON' : 'OFF'}
+                          </span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                            permissionsMap[o.id].autoDialEnabled
+                              ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
+                          }`}>
+                            오토콜 {permissionsMap[o.id].autoDialEnabled ? 'ON' : 'OFF'}
+                          </span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                            permissionsMap[o.id].aiTrainingEnabled
+                              ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
+                          }`}>
+                            AI교육 {permissionsMap[o.id].aiTrainingEnabled ? 'ON' : 'OFF'}
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="p-3.5">
                       {o.status === 'active' ? (
@@ -510,6 +545,15 @@ export default function PlatformPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         {!isHq && (
                           <button
+                            onClick={() => setSelectedOrgForPerm(o)}
+                            className="px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
+                            title="광고비/정산 등 5대 기능 권한 및 라이선스 설정"
+                          >
+                            <Settings size={12} /> 권한 설정
+                          </button>
+                        )}
+                        {!isHq && (
+                          <button
                             onClick={() => copyInvoice(o)}
                             className="px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1 transition-colors shadow-xs"
                             title="공식 청구서 마크다운 복사"
@@ -550,6 +594,23 @@ export default function PlatformPage() {
           </table>
         </div>
       </section>
+
+      {/* ⚙️ 테넌트별 5대 기능 권한 설정 모달 (광고비·정산 등) */}
+      {selectedOrgForPerm && (
+        <TenantPermissionModal
+          isOpen={!!selectedOrgForPerm}
+          onClose={() => setSelectedOrgForPerm(null)}
+          org={selectedOrgForPerm}
+          currentPermissions={permissionsMap[selectedOrgForPerm.id]}
+          onSaved={(orgId, updated) => {
+            setPermissionsMap(prev => ({
+              ...prev,
+              [orgId]: updated,
+            }));
+            showToast(`'${selectedOrgForPerm.name}' 기능 권한이 성공적으로 저장되었습니다.`, 'success');
+          }}
+        />
+      )}
     </div>
   );
 }

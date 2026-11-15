@@ -15,7 +15,35 @@ export interface PlatformOrg {
   ownerInviteEmail?: string;
   ownerInviteAccepted: boolean;
   hasTelegramBot: boolean;
+  permissions?: OrgFeaturePermissions;
 }
+
+/** 테넌트별 5대 세부 기능 권한 및 라이선스 */
+export interface OrgFeaturePermissions {
+  /** 1. 광고비 & 정산 센터 권한 (DB 단가, 광고비 지출 집계, 상담원 급여/수당 계산, 주간 청구서) */
+  settlementEnabled: boolean;
+  /** 2. 스마트 오토콜 발신 권한 (안드로이드 폰 연동 1초 1콜 자동 다이얼러) */
+  autoDialEnabled: boolean;
+  /** 3. AI 음성 가상 고객 트레이닝 센터 권한 (1만2천명 가상 고객 실전 전화 훈련) */
+  aiTrainingEnabled: boolean;
+  /** 4. 사내 텔레그램 리드 전송 봇 연동 권한 */
+  telegramHubEnabled: boolean;
+  /** 5. 보안 프로필 강제 모드 (화면 캡처 차단 FLAG_SECURE, 번호 마스킹 필수화) */
+  enforceSecurity: boolean;
+  /** 6. 무료 체험 만료일 (ISO 문자열) */
+  trialExpiresAt?: string;
+  /** 7. 상담원 좌석 수 한도 (0 = 무제한, 기본값 20) */
+  maxSeats: number;
+}
+
+export const DEFAULT_ORG_FEATURE_PERMISSIONS: OrgFeaturePermissions = {
+  settlementEnabled: true,
+  autoDialEnabled: true,
+  aiTrainingEnabled: true,
+  telegramHubEnabled: true,
+  enforceSecurity: false,
+  maxSeats: 20,
+};
 
 export const PRICE_PER_AGENT_MONTH = 48000;
 
@@ -202,4 +230,125 @@ export const initializeOrgPresets = async (orgId: string, orgName: string): Prom
 export const setOrganizationStatus = async (orgId: string, status: 'active' | 'suspended'): Promise<void> => {
   const { error } = await need().rpc('set_organization_status', { p_org_id: orgId, p_status: status });
   if (error) fail(error);
+};
+
+// ============================================
+// 테넌트 기능 권한 (Feature Permissions) 제어 함수
+// ============================================
+
+const PERM_STORAGE_KEY_PREFIX = 'lm_org_permissions_';
+
+/** 특정 테넌트의 기능 권한 조회 (DB + 로컬 캐시 결합) */
+export const getOrgFeaturePermissions = async (orgId: string): Promise<OrgFeaturePermissions> => {
+  const localKey = `${PERM_STORAGE_KEY_PREFIX}${orgId}`;
+  let cached: Partial<OrgFeaturePermissions> = {};
+  try {
+    const raw = localStorage.getItem(localKey);
+    if (raw) cached = JSON.parse(raw);
+  } catch {}
+
+  try {
+    const client = need();
+    const { data } = await client
+      .from('settings')
+      .select('value')
+      .eq('org_id', orgId)
+      .eq('key', 'feature_permissions')
+      .maybeSingle();
+
+    if (data?.value) {
+      const merged: OrgFeaturePermissions = {
+        ...DEFAULT_ORG_FEATURE_PERMISSIONS,
+        ...cached,
+        ...data.value,
+      };
+      localStorage.setItem(localKey, JSON.stringify(merged));
+      return merged;
+    }
+  } catch (e) {
+    console.warn('[Platform] 권한 DB 조회 실패, 로컬 폴백 사용:', e);
+  }
+
+  return {
+    ...DEFAULT_ORG_FEATURE_PERMISSIONS,
+    ...cached,
+  };
+};
+
+/** 특정 테넌트의 기능 권한 업데이트 (DB + 로컬 저장 동기화) */
+export const updateOrgFeaturePermissions = async (
+  orgId: string,
+  updates: Partial<OrgFeaturePermissions>
+): Promise<OrgFeaturePermissions> => {
+  const current = await getOrgFeaturePermissions(orgId);
+  const updated: OrgFeaturePermissions = {
+    ...current,
+    ...updates,
+  };
+
+  const localKey = `${PERM_STORAGE_KEY_PREFIX}${orgId}`;
+  localStorage.setItem(localKey, JSON.stringify(updated));
+
+  try {
+    const client = need();
+    await client
+      .from('settings')
+      .upsert({
+        org_id: orgId,
+        key: 'feature_permissions',
+        value: updated,
+      });
+  } catch (e) {
+    console.warn('[Platform] 권한 DB 저장 경고 (로컬 반영 완료):', e);
+  }
+
+  return updated;
+};
+
+/** 모든 테넌트의 기능 권한 일괄 조회 */
+export const fetchAllOrgPermissions = async (orgIds: string[]): Promise<Record<string, OrgFeaturePermissions>> => {
+  const result: Record<string, OrgFeaturePermissions> = {};
+  if (orgIds.length === 0) return result;
+
+  // 1. 로컬 캐시 우선 채우기
+  orgIds.forEach(id => {
+    try {
+      const raw = localStorage.getItem(`${PERM_STORAGE_KEY_PREFIX}${id}`);
+      if (raw) result[id] = { ...DEFAULT_ORG_FEATURE_PERMISSIONS, ...JSON.parse(raw) };
+    } catch {}
+  });
+
+  // 2. DB 일괄 조회
+  try {
+    const client = need();
+    const { data } = await client
+      .from('settings')
+      .select('org_id, value')
+      .in('org_id', orgIds)
+      .eq('key', 'feature_permissions');
+
+    if (data) {
+      data.forEach((row: any) => {
+        if (row.org_id && row.value) {
+          result[row.org_id] = {
+            ...DEFAULT_ORG_FEATURE_PERMISSIONS,
+            ...result[row.org_id],
+            ...row.value,
+          };
+          localStorage.setItem(`${PERM_STORAGE_KEY_PREFIX}${row.org_id}`, JSON.stringify(result[row.org_id]));
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('[Platform] 전체 권한 DB 조회 실패:', e);
+  }
+
+  // 3. 미설정 테넌트는 기본값 부여
+  orgIds.forEach(id => {
+    if (!result[id]) {
+      result[id] = { ...DEFAULT_ORG_FEATURE_PERMISSIONS };
+    }
+  });
+
+  return result;
 };

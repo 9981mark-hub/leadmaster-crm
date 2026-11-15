@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Building2, Search, Bell, Moon, Sun, User, LogOut, 
   ChevronDown, ExternalLink, Shield, CheckCircle2, 
-  Menu, Sparkles, MessageSquare, AlertCircle, ArrowRight
+  Menu, Sparkles, MessageSquare, AlertCircle, ArrowRight, Crown, LayoutDashboard
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -248,6 +248,31 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           >
             {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-600" />}
           </button>
+
+          {/* 👑 플랫폼 호스트 전용 슈퍼 어드민 원클릭 토글 버튼 */}
+          {isPlatformAdmin && (
+            <button
+              onClick={() => navigate(currentPath === '/platform' ? '/' : '/platform')}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                currentPath === '/platform'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20'
+                  : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-purple-500/25 animate-pulse'
+              }`}
+              title={currentPath === '/platform' ? '상담 업무 대시보드로 복귀' : '플랫폼 호스트 총괄 어드민으로 이동'}
+            >
+              {currentPath === '/platform' ? (
+                <>
+                  <LayoutDashboard size={14} />
+                  <span className="hidden sm:inline">상담 업무 화면</span>
+                </>
+              ) : (
+                <>
+                  <Crown size={14} className="text-amber-300" />
+                  <span>HOST 관리국</span>
+                </>
+              )}
+            </button>
+          )}
 
           {/* User Profile Dropdown Button */}
           <div className="relative" ref={profileRef}>

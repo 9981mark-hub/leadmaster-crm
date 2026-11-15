@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Zap, Calendar, PhoneCall, 
   Calculator, UserCog, Smartphone, Megaphone, GraduationCap, 
-  Building2, Settings, User, ChevronsLeft, ChevronsRight, Shield
+  Building2, Settings, User, ChevronsLeft, ChevronsRight, Shield, Crown
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'admin',
       label: '시스템 관리',
       items: [
-        { to: '/platform', icon: Building2, label: '회사 관리 (Host)', platformAdminOnly: true },
+        { to: '/platform', icon: Crown, label: '👑 플랫폼 총괄 어드민', platformAdminOnly: true },
         { to: '/settings', icon: Settings, label: '시스템 설정', adminOnly: true },
         { to: '/mypage', icon: User, label: '마이페이지' },
       ],
@@ -164,6 +164,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {roleLabel}
               </span>
             </div>
+
+            {/* 👑 플랫폼 호스트 전용 총괄 배너 */}
+            {isPlatformAdmin && (
+              <Link
+                to="/platform"
+                className={`p-2 rounded-xl flex items-center justify-between transition-all text-xs ${
+                  path === '/platform'
+                    ? 'bg-purple-600 text-white font-bold shadow-xs'
+                    : 'bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-500/30 text-purple-300 hover:text-white hover:border-purple-400/60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Crown size={14} className="text-amber-400 shrink-0" />
+                  <span className="font-semibold">플랫폼 총괄 어드민</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-200 border border-purple-500/30 font-bold shrink-0">
+                  HOST
+                </span>
+              </Link>
+            )}
           </div>
         )}
       </div>

@@ -9,8 +9,19 @@ import {
   resetInitState
 } from '../services/api';
 import { supabase } from '../services/supabase';
-import { OrgInfo, resolveOrg, loadCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole } from '../services/org';
+import { OrgInfo, resolveOrg, loadCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole, HQ_ORG_ID } from '../services/org';
 import { syncAppSession, clearAppSession, syncAppSecurityProfile } from '../services/appBridge';
+
+/** 플랫폼 총괄 최고관리자(HOST) 이메일 풀 */
+export const PLATFORM_HOST_EMAILS = [
+  'beanhull@gmail.com',
+  '9981mark@gmail.com',
+];
+
+export const isHostEmail = (email?: string | null): boolean => {
+  if (!email) return false;
+  return PLATFORM_HOST_EMAILS.includes(email.trim().toLowerCase());
+};
 
 interface UserProfile {
   email: string;
@@ -180,6 +191,23 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
         console.warn('[Auth] Org check failed, falling back to allowed email list:', e);
       }
 
+      // 👑 플랫폼 호스트 프리패스: 소속 org가 없거나 미초대 상태라도 HQ 본사 마스터 권한 자동 부여
+      if (isHostEmail(email)) {
+        if (!orgInfo) {
+          orgInfo = {
+            userId: decoded.sub || 'host-user',
+            orgId: HQ_ORG_ID,
+            orgName: '리드마스터 HQ 관리국',
+            role: 'owner',
+            displayName: name || '플랫폼 호스트',
+            isPlatformAdmin: true,
+            uiMode: 'standard',
+          };
+        } else {
+          orgInfo.isPlatformAdmin = true;
+        }
+      }
+
       if (!orgInfo) {
         // 회사 확인이 안 되면(네트워크 오류 등) 기존 허용 이메일 목록으로 판단 (본사 사용자 잠김 방지)
         const allowedByList = !orgChecked && allowedEmailsRef.current.includes(email);
@@ -213,7 +241,11 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
       setIsAuthenticated(true);
       setUser(userProfile);
-      navigate('/');
+      if (isHostEmail(email)) {
+        navigate('/platform');
+      } else {
+        navigate('/');
+      }
 
     } catch (error) {
       console.error('Login Failed', error);
@@ -264,9 +296,26 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       console.warn('[Auth] Org check failed:', e);
     }
 
+    // 👑 플랫폼 호스트 프리패스
+    if (isHostEmail(userEmail)) {
+      if (!orgInfo) {
+        orgInfo = {
+          userId: authUser.id,
+          orgId: HQ_ORG_ID,
+          orgName: '리드마스터 HQ 관리국',
+          role: 'owner',
+          displayName: name || '플랫폼 호스트',
+          isPlatformAdmin: true,
+          uiMode: 'standard',
+        };
+      } else {
+        orgInfo.isPlatformAdmin = true;
+      }
+    }
+
     if (!orgInfo) {
       const allowedByList = !orgChecked && allowedEmailsRef.current.includes(userEmail);
-      if (!allowedByList && userEmail !== '9981mark@gmail.com') {
+      if (!allowedByList && !isHostEmail(userEmail)) {
         if (supabase) await supabase.auth.signOut({ scope: 'local' });
         throw new Error(orgChecked
           ? '초대받지 않은 계정입니다.\n회사 관리자에게 초대를 요청하세요.'
@@ -285,7 +334,11 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
     setIsAuthenticated(true);
     setUser(userProfile);
-    navigate('/');
+    if (isHostEmail(userEmail)) {
+      navigate('/platform');
+    } else {
+      navigate('/');
+    }
   }, [navigate, setOrg]);
 
   // [Session Recovery] - Non-destructive with Supabase refreshSession
@@ -410,16 +463,16 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   }, [org, isAuthenticated, logout]);
 
   // [권한 보안 강화] 관리자(owner·admin)만 관리자 권한 부여.
-  // 시스템 호스트(9981mark@gmail.com)는 항상 관리자이며, 소속/역할이 확인되지 않은 일반 계정은 기본적으로 false (비관리자)
+  // 시스템 호스트(beanhull@gmail.com, 9981mark@gmail.com)는 항상 관리자이며, 소속/역할이 확인되지 않은 일반 계정은 기본적으로 false (비관리자)
   const isAdmin = useMemo(() => {
-    if (user?.email === '9981mark@gmail.com') return true;
+    if (isHostEmail(user?.email)) return true;
     if (org) return isAdminRole(org.role);
     return false;
   }, [user?.email, org]);
 
   // [플랫폼 총괄 최고관리자] 플랫폼 HOST/슈퍼관리자 (고객사 대표·관리자가 아닌 플랫폼 마스터 "나")
   const isPlatformAdmin = useMemo(() => {
-    return user?.email === '9981mark@gmail.com' || !!org?.isPlatformAdmin;
+    return isHostEmail(user?.email) || !!org?.isPlatformAdmin;
   }, [user?.email, org?.isPlatformAdmin]);
 
   const value = useMemo(() => ({
