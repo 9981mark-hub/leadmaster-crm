@@ -80,11 +80,16 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
 
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData.session?.user?.id;
+  const userEmail = sessionData.session?.user?.email;
   if (!userId) throw new Error('no supabase session');
 
   // 초대 수락 (없으면 0건, 실패해도 다음 단계 진행)
-  const { error: inviteError } = await supabase.rpc('accept_my_invites');
-  if (inviteError) console.warn('[Org] accept_my_invites failed:', inviteError.message);
+  const { data: acceptedCount, error: inviteError } = await supabase.rpc('accept_my_invites');
+  if (inviteError) {
+    console.warn('[Org] accept_my_invites failed:', inviteError.message);
+  } else {
+    console.log('[Org] accept_my_invites result:', { acceptedCount, userEmail });
+  }
 
   const { data: orgId, error: orgError } = await supabase.rpc('current_org_id');
   if (orgError) throw orgError;

@@ -360,13 +360,16 @@ export default function PlatformPage() {
 
                 {app.status === 'approved' && (
                   <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg">
+                      승인 완료
+                    </span>
                     <button
                       onClick={() => handleSendApprovalEmail(app.companyName, app.ownerEmail)}
-                      className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-100 font-medium text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 font-medium text-xs transition-all flex items-center gap-1 cursor-pointer"
                       title="대표자 이메일로 7일 무료체험 승인 안내 메일 재발송"
                     >
-                      <Mail size={13} />
-                      <span>승인 안내 발송</span>
+                      <Mail size={12} />
+                      <span>재발송</span>
                     </button>
                   </div>
                 )}
@@ -588,13 +591,23 @@ export default function PlatformPage() {
                     <td className="p-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {!isHq && o.ownerInviteEmail && (
-                          <button
-                            onClick={() => handleSendApprovalEmail(o.name, o.ownerInviteEmail!)}
-                            className="px-2.5 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
-                            title="대표자 이메일로 7일 무료체험 승인 안내 메일 발송 및 클립보드 복사"
-                          >
-                            <Mail size={12} /> 승인 메일
-                          </button>
+                          o.ownerInviteAccepted ? (
+                            <button
+                              onClick={() => handleSendApprovalEmail(o.name, o.ownerInviteEmail!)}
+                              className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
+                              title="이미 가입 완료된 테넌트입니다. 필요 시 접속 주소 및 안내 메일을 재발송합니다."
+                            >
+                              <Mail size={12} /> 재안내
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleSendApprovalEmail(o.name, o.ownerInviteEmail!)}
+                              className="px-2.5 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
+                              title="대표자 이메일로 7일 무료체험 승인 안내 메일 발송 및 클립보드 복사"
+                            >
+                              <Mail size={12} /> 승인 메일
+                            </button>
+                          )
                         )}
                         {!isHq && (
                           <button
