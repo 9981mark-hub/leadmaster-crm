@@ -154,7 +154,7 @@ export const sendBrevoEmail = async (params: SendEmailParams): Promise<SendEmail
   };
 };
 
-/** 승인 안내 전문 엔터프라이즈급 고품격 HTML 이메일 템플릿 생성기 (Stripe / Linear / Vercel 스타일의 높은 가독성과 신뢰성) */
+/** 승인 안내 하이엔드 미니멀 HTML 이메일 템플릿 (Resend / Linear / Notion 벤치마킹) */
 export const generateApprovalHtmlEmail = (params: {
   companyName: string;
   ownerEmail: string;
@@ -164,373 +164,283 @@ export const generateApprovalHtmlEmail = (params: {
   const now = new Date();
   const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const trialEndDateStr = `${trialEnd.getFullYear()}년 ${trialEnd.getMonth() + 1}월 ${trialEnd.getDate()}일`;
+  const todayStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
 
   return `
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>리드마스터 CRM 가입 승인 및 워크스페이스 개설 안내</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>워크스페이스 개설 완료</title>
   <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
   <style type="text/css">
-    body, table, td, a, span, p { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', Arial, sans-serif !important; letter-spacing: -0.5px !important; }
+    body, table, td, p, a, span { font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif !important; }
   </style>
   <![endif]-->
   <style type="text/css">
-    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap');
-
-    body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; background-color: #f1f5f9; }
+    body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-    img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    img { border: 0; outline: none; -ms-interpolation-mode: bicubic; }
     a { text-decoration: none; }
-
-    /* Universal Modern Sans-Serif Font Stack with Micro-Typography */
-    body, p, h1, h2, h3, div, span, td, a {
-      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'NanumSquareNeo', 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', sans-serif !important;
-      letter-spacing: -0.025em;
-      word-break: keep-all;
-      word-wrap: break-word;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-    }
-
-    .brand-logo-text {
-      font-family: 'Plus Jakarta Sans', 'Pretendard Variable', Pretendard, -apple-system, sans-serif !important;
-      letter-spacing: -0.035em !important;
-    }
-
-    .code-font {
-      font-family: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, Monaco, 'Courier New', monospace !important;
-      letter-spacing: -0.01em !important;
-    }
-
-    @media only screen and (max-width: 620px) {
-      .email-container { width: 100% !important; margin: auto !important; }
-      .header-padding { padding: 28px 20px 20px 20px !important; }
-      .body-padding { padding: 24px 18px !important; }
-      .footer-padding { padding: 24px 18px !important; }
-      .mobile-stack { display: block !important; width: 100% !important; box-sizing: border-box !important; }
-      .mobile-stack-gutter { margin-bottom: 12px !important; }
-      .btn-table { width: 100% !important; }
+    @media only screen and (max-width: 600px) {
+      .wrap { width: 100% !important; min-width: 100% !important; }
+      .pad { padding-left: 24px !important; padding-right: 24px !important; }
+      .pad-sm { padding-left: 20px !important; padding-right: 20px !important; }
+      .stack { display: block !important; width: 100% !important; }
+      .hide-mobile { display: none !important; }
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'NanumSquareNeo', 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased; line-height: 1.6; letter-spacing: -0.025em; word-break: keep-all;">
+<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased;">
 
-  <!-- Outer Full Width Wrapper -->
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 40px 10px;">
-    <tr>
-      <td align="center">
-        
-        <!-- Main Card Container -->
-        <table role="presentation" class="email-container" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08); text-align: left;" cellspacing="0" cellpadding="0" border="0">
-          
-          <!-- Top Accent Gradient Line -->
-          <tr>
-            <td height="5" style="background: linear-gradient(90deg, #2563eb 0%, #4f46e5 50%, #10b981 100%);"></td>
-          </tr>
+<!-- Preheader (Gmail snippet) -->
+<div style="display: none; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #f8f9fa;">
+  ${params.companyName} 전용 워크스페이스가 개설되었습니다. 7일 무료 체험이 시작됩니다.
+  &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+</div>
 
-          <!-- Header Section -->
-          <tr>
-            <td class="header-padding" style="padding: 36px 36px 24px 36px; background-color: #ffffff; border-bottom: 1px solid #f1f5f9;">
-              <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td align="left" style="vertical-align: middle;">
-                    <!-- Brand Logo -->
-                    <table cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="vertical-align: middle;">
-                          <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 8px; text-align: center; line-height: 32px; color: #ffffff; font-weight: 900; font-size: 15px; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3); font-family: 'Plus Jakarta Sans', sans-serif;">
-                            LM
-                          </div>
-                        </td>
-                        <td style="padding-left: 10px; vertical-align: middle;">
-                          <span class="brand-logo-text" style="font-size: 20px; font-weight: 900; letter-spacing: -0.04em; color: #0f172a; font-family: 'Plus Jakarta Sans', 'Pretendard Variable', Pretendard, sans-serif;">
-                            LEAD<span style="color: #2563eb;">MASTER</span>
-                          </span>
-                        </td>
-                        <td style="padding-left: 8px; vertical-align: middle;">
-                          <span style="display: inline-block; padding: 2px 8px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; border-radius: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; font-family: 'Plus Jakarta Sans', sans-serif;">
-                            CRM
-                          </span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td align="right" style="vertical-align: middle;">
-                    <!-- Trust Status Badge -->
-                    <span style="display: inline-block; padding: 5px 12px; background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 9999px; font-size: 12px; font-weight: 700; letter-spacing: -0.02em; font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;">
-                      ✓ 공식 승인 완료
-                    </span>
-                  </td>
-                </tr>
-              </table>
+<!-- Full-width wrapper -->
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8f9fa;">
+  <tr>
+    <td align="center" style="padding: 48px 16px;">
 
-              <!-- Main Greeting Headline -->
-              <div style="margin-top: 26px;">
-                <h1 style="margin: 0 0 10px 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; font-size: 23px; font-weight: 800; color: #0f172a; letter-spacing: -0.035em; line-height: 1.38; word-break: keep-all;">
-                  <span style="color: #2563eb;">${params.companyName}</span> 대표님,<br>
-                  전용 워크스페이스가 개설되었습니다.
-                </h1>
-                <p style="margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif; font-size: 14.5px; color: #475569; line-height: 1.65; letter-spacing: -0.02em; word-break: keep-all;">
-                  리드마스터 엔터프라이즈 클라우드 서비스 가입 신청이 호스트 승인 완료되었습니다.<br>
-                  오늘부터 <strong style="color: #059669; font-weight: 700;">7일간 전체 기능을 무제한으로 무료 체험</strong>하실 수 있습니다.
-                </p>
-              </div>
+      <!-- ======================== CARD ======================== -->
+      <table role="presentation" class="wrap" width="520" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden;">
 
-            </td>
-          </tr>
+        <!-- ─── Top accent bar ─── -->
+        <tr>
+          <td style="height: 3px; background: linear-gradient(90deg, #2563eb, #6366f1);"></td>
+        </tr>
 
-          <!-- Main Body Content -->
-          <tr>
-            <td class="body-padding" style="padding: 32px 36px;">
-
-              <!-- Workspace Detail Card (Stripe-Style Clean Spec Table) -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 28px;">
-                <tr>
-                  <td style="padding: 12px 20px; background-color: #f1f5f9; border-bottom: 1px solid #e2e8f0;">
-                    <span style="font-size: 12px; font-weight: 800; color: #334155; letter-spacing: -0.01em; text-transform: uppercase; font-family: 'Pretendard Variable', Pretendard, sans-serif;">
-                      📋 워크스페이스 개설 명세
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 16px 20px;">
-                    <table width="100%" cellspacing="0" cellpadding="8" border="0" style="font-size: 13.5px;">
-                      <tr>
-                        <td width="32%" style="color: #64748b; font-weight: 600; letter-spacing: -0.02em;">고객사 상호</td>
-                        <td style="color: #0f172a; font-weight: 800; font-size: 14px; letter-spacing: -0.02em;">${params.companyName}</td>
-                      </tr>
-                      <tr>
-                        <td style="color: #64748b; font-weight: 600; letter-spacing: -0.02em;">관리자 구글 계정</td>
-                        <td class="code-font" style="color: #2563eb; font-weight: 700; font-family: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace; font-size: 13.5px; letter-spacing: -0.01em;">${params.ownerEmail}</td>
-                      </tr>
-                      <tr>
-                        <td style="color: #64748b; font-weight: 600; letter-spacing: -0.02em;">부여 권한 등급</td>
-                        <td style="color: #1e293b; font-weight: 600; letter-spacing: -0.02em;">총괄 대표 관리자 (Workspace Owner)</td>
-                      </tr>
-                      <tr>
-                        <td style="color: #64748b; font-weight: 600; letter-spacing: -0.02em;">무료 체험 혜택</td>
-                        <td style="color: #059669; font-weight: 700; letter-spacing: -0.02em;">
-                          승인일로부터 7일간 무제한 이용 (~${trialEndDateStr})
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="color: #64748b; font-weight: 600; letter-spacing: -0.02em;">데이터 보안 상태</td>
-                        <td style="color: #334155; font-weight: 600; letter-spacing: -0.02em;">
-                          🔒 독립 테넌트 RLS 암호화 격리 보호 가동
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- 4 Core Enterprise Capabilities (2x2 Clean Cards) -->
-              <div style="margin-bottom: 30px;">
-                <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; font-family: 'Pretendard Variable', Pretendard, sans-serif;">
-                  ⚡ 즉시 이용 가능한 4대 핵심 가동 엔진
-                </p>
-                <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                  <tr>
-                    <!-- Card 1 -->
-                    <td class="mobile-stack mobile-stack-gutter" width="48%" style="vertical-align: top; padding-right: 2%;">
-                      <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
-                        <tr>
-                          <td>
-                            <span style="font-size: 13px; font-weight: 800; color: #1d4ed8; display: block; margin-bottom: 4px; letter-spacing: -0.025em;">
-                              📞 스마트 자동콜 연동
-                            </span>
-                            <span style="font-size: 12px; color: #64748b; line-height: 1.55; display: block; letter-spacing: -0.015em; word-break: keep-all;">
-                              안드로이드 스마트폰 1초 1콜 고속 발신 및 통화 녹음 자동 동기화
-                            </span>
-                          </td>
-                        </tr>
-                      </table>
+        <!-- ─── Logo row ─── -->
+        <tr>
+          <td class="pad" style="padding: 32px 40px 0 40px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="vertical-align: middle;">
+                  <table cellspacing="0" cellpadding="0" border="0"><tr>
+                    <td style="vertical-align: middle;">
+                      <div style="width: 28px; height: 28px; background: #2563eb; border-radius: 7px; text-align: center; line-height: 28px; color: #fff; font-weight: 800; font-size: 13px; letter-spacing: -0.5px;">LM</div>
                     </td>
-                    <!-- Card 2 -->
-                    <td class="mobile-stack" width="48%" style="vertical-align: top; padding-left: 2%;">
-                      <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
-                        <tr>
-                          <td>
-                            <span style="font-size: 13px; font-weight: 800; color: #059669; display: block; margin-bottom: 4px; letter-spacing: -0.025em;">
-                              💰 광고비 & 실시간 정산
-                            </span>
-                            <span style="font-size: 12px; color: #64748b; line-height: 1.55; display: block; letter-spacing: -0.015em; word-break: keep-all;">
-                              DB 단가, 광고비 지출 집계, 상담원 급여·수당 및 청구서 자동 산출
-                            </span>
-                          </td>
-                        </tr>
-                      </table>
+                    <td style="padding-left: 8px; vertical-align: middle;">
+                      <span style="font-size: 16px; font-weight: 800; color: #111827; letter-spacing: -0.5px;">LeadMaster</span>
                     </td>
-                  </tr>
-                  <tr><td height="10" colspan="2"></td></tr>
-                  <tr>
-                    <!-- Card 3 -->
-                    <td class="mobile-stack mobile-stack-gutter" width="48%" style="vertical-align: top; padding-right: 2%;">
-                      <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
-                        <tr>
-                          <td>
-                            <span style="font-size: 13px; font-weight: 800; color: #6d28d9; display: block; margin-bottom: 4px; letter-spacing: -0.025em;">
-                              🤖 AI 통화 요약 & 텔레그램
-                            </span>
-                            <span style="font-size: 12px; color: #64748b; line-height: 1.55; display: block; letter-spacing: -0.015em; word-break: keep-all;">
-                              녹취 파일 자동 텍스트 변환, AI 핵심 요약 및 실시간 텔레그램 허브
-                            </span>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                    <!-- Card 4 -->
-                    <td class="mobile-stack" width="48%" style="vertical-align: top; padding-left: 2%;">
-                      <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
-                        <tr>
-                          <td>
-                            <span style="font-size: 13px; font-weight: 800; color: #b45309; display: block; margin-bottom: 4px; letter-spacing: -0.025em;">
-                              🎯 AI 가상고객 훈련센터
-                            </span>
-                            <span style="font-size: 12px; color: #64748b; line-height: 1.55; display: block; letter-spacing: -0.015em; word-break: keep-all;">
-                              1만 1천 명 가상 고객 데이터 기반 신입 상담원 실전 모의 훈련
-                            </span>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-              </div>
+                  </tr></table>
+                </td>
+                <td align="right" style="vertical-align: middle;">
+                  <span style="font-size: 11px; color: #6b7280; letter-spacing: -0.2px;">${todayStr}</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
 
-              <!-- 3-Step Quick Start Guide (Linear Style) -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 32px;">
-                <tr>
-                  <td>
-                    <p style="margin: 0 0 12px 0; font-size: 12px; font-weight: 800; color: #2563eb; letter-spacing: -0.01em; text-transform: uppercase; font-family: 'Pretendard Variable', Pretendard, sans-serif;">
-                      🚀 3단계 원클릭 시작 가이드
-                    </p>
-                    <table width="100%" cellspacing="0" cellpadding="6" border="0" style="font-size: 13.5px; color: #334155;">
-                      <tr>
-                        <td width="26" style="vertical-align: top; padding-top: 6px;">
-                          <div style="width: 20px; height: 20px; background-color: #2563eb; color: #ffffff; border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">
-                            1
-                          </div>
-                        </td>
-                        <td style="line-height: 1.6; letter-spacing: -0.02em; word-break: keep-all;">
-                          하단의 파란색 <strong>[리드마스터 CRM 입장하기]</strong> 버튼을 클릭합니다.
-                        </td>
-                      </tr>
-                      <tr>
-                        <td width="26" style="vertical-align: top; padding-top: 6px;">
-                          <div style="width: 20px; height: 20px; background-color: #2563eb; color: #ffffff; border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">
-                            2
-                          </div>
-                        </td>
-                        <td style="line-height: 1.6; letter-spacing: -0.02em; word-break: keep-all;">
-                          로그인 화면에서 <strong>[Google로 계속하기]</strong>를 클릭하고, 신청하신 구글 계정(<strong class="code-font" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #2563eb;">${params.ownerEmail}</strong>)으로 원클릭 로그인합니다. (별도의 비밀번호 없이 즉시 접속)
-                        </td>
-                      </tr>
-                      <tr>
-                        <td width="26" style="vertical-align: top; padding-top: 6px;">
-                          <div style="width: 20px; height: 20px; background-color: #2563eb; color: #ffffff; border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">
-                            3
-                          </div>
-                        </td>
-                        <td style="line-height: 1.6; letter-spacing: -0.02em; word-break: keep-all;">
-                          상단 메뉴의 <strong>[팀원 관리]</strong>에서 상담원 계정을 초대하고, 스마트 콜과 실시간 정산 업무를 가동합니다.
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+        <!-- ─── Divider ─── -->
+        <tr>
+          <td class="pad" style="padding: 20px 40px 0 40px;">
+            <div style="height: 1px; background-color: #f3f4f6;"></div>
+          </td>
+        </tr>
 
-              <!-- Bulletproof High-Impact CTA Button (Vercel/Stripe Cross-Client Standard) -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 30px;">
-                <tr>
-                  <td align="center">
-                    <table role="presentation" class="btn-table" cellspacing="0" cellpadding="0" border="0" style="width: 86%; max-width: 420px;">
-                      <tr>
-                        <td align="center" bgcolor="#2563eb" style="border-radius: 10px; box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.35);">
-                          <a href="${loginUrl}" target="_blank" style="display: block; padding: 17px 28px; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; text-decoration: none; border-radius: 10px; border: 1px solid #2563eb; letter-spacing: -0.025em; text-align: center;">
-                            리드마스터 CRM 워크스페이스 입장하기 →
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding-top: 12px;">
-                    <span style="font-size: 12px; color: #64748b; letter-spacing: -0.01em;">
-                      직접 접속 링크: <a href="${loginUrl}" target="_blank" class="code-font" style="color: #2563eb; text-decoration: underline; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px;">${loginUrl}</a>
-                    </span>
-                  </td>
-                </tr>
-              </table>
+        <!-- ─── Hero text ─── -->
+        <tr>
+          <td class="pad" style="padding: 28px 40px 0 40px;">
+            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.6px; line-height: 1.36; word-break: keep-all;">
+              워크스페이스가 준비되었습니다
+            </h1>
+            <p style="margin: 0; font-size: 15px; color: #4b5563; line-height: 1.7; letter-spacing: -0.3px; word-break: keep-all;">
+              ${params.companyName} 대표님, 가입 신청이 승인되었습니다.<br>
+              오늘부터 <span style="color: #2563eb; font-weight: 600;">7일간 모든 기능을 무료로 체험</span>하실 수 있습니다.
+            </p>
+          </td>
+        </tr>
 
-              <!-- Trust & Security Commitment Callout -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981; border-radius: 8px; padding: 14px 16px; margin-bottom: 22px;">
-                <tr>
-                  <td>
-                    <p style="margin: 0; font-size: 12.5px; color: #166534; line-height: 1.6; letter-spacing: -0.02em; word-break: keep-all;">
-                      🛡️ <strong>엔터프라이즈 데이터 보호 보증:</strong> 리드마스터 CRM은 모든 고객사의 고객 DB와 상담 녹취 데이터를 상호 완전 분리된 테넌트 암호화 공간(Row Level Security)에서 안전하게 보관하며, 외부 유출이나 타사 공유가 원천 차단됩니다.
-                    </p>
-                  </td>
-                </tr>
-              </table>
+        <!-- ─── Info card ─── -->
+        <tr>
+          <td class="pad" style="padding: 24px 40px 0 40px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;">
+              <tr>
+                <td style="padding: 20px 24px;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size: 14px; color: #374151;">
+                    <!-- Row 1 -->
+                    <tr>
+                      <td style="padding: 6px 0; color: #9ca3af; font-size: 13px; width: 110px; vertical-align: top; letter-spacing: -0.2px;">회사명</td>
+                      <td style="padding: 6px 0; font-weight: 700; color: #111827; letter-spacing: -0.3px;">${params.companyName}</td>
+                    </tr>
+                    <!-- Row 2 -->
+                    <tr>
+                      <td style="padding: 6px 0; color: #9ca3af; font-size: 13px; vertical-align: top; letter-spacing: -0.2px;">계정</td>
+                      <td style="padding: 6px 0; font-weight: 600; color: #2563eb; font-family: 'SF Mono', Consolas, 'Courier New', monospace; font-size: 13px; letter-spacing: -0.2px;">${params.ownerEmail}</td>
+                    </tr>
+                    <!-- Row 3 -->
+                    <tr>
+                      <td style="padding: 6px 0; color: #9ca3af; font-size: 13px; vertical-align: top; letter-spacing: -0.2px;">권한</td>
+                      <td style="padding: 6px 0; color: #374151; letter-spacing: -0.3px;">총괄 대표 관리자</td>
+                    </tr>
+                    <!-- Row 4 -->
+                    <tr>
+                      <td style="padding: 6px 0; color: #9ca3af; font-size: 13px; vertical-align: top; letter-spacing: -0.2px;">체험 기간</td>
+                      <td style="padding: 6px 0; color: #374151; letter-spacing: -0.3px;">~${trialEndDateStr}까지 (7일)</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
 
-              <!-- Dedicated Support Box -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px 18px;">
-                <tr>
-                  <td>
-                    <p style="margin: 0 0 4px 0; font-size: 12.5px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">
-                      💬 기술 지원 및 전담 헬프데스크
-                    </p>
-                    <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.55; letter-spacing: -0.015em; word-break: keep-all;">
-                      안드로이드 스마트폰 연동 가이드, TM 수당 정산 세팅 등 지원이 필요하신 경우 언제든 <a href="mailto:support@lmaster.xyz" class="code-font" style="color: #2563eb; font-weight: 700; text-decoration: underline; font-family: 'JetBrains Mono', Consolas, monospace;">support@lmaster.xyz</a> 로 문의해주시면 신속히 답변해 드립니다. (고객지원 운영: 평일 09:00 ~ 18:00)
-                    </p>
-                  </td>
-                </tr>
-              </table>
+        <!-- ─── CTA Button ─── -->
+        <tr>
+          <td class="pad" style="padding: 28px 40px 0 40px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td align="center">
+                  <!--[if mso]>
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${loginUrl}" style="height:48px;v-text-anchor:middle;width:100%;" arcsize="17%" stroke="f" fillcolor="#2563eb">
+                    <w:anchorlock/>
+                    <center style="font-size:15px;font-weight:700;color:#ffffff;font-family:sans-serif;">워크스페이스 시작하기</center>
+                  </v:roundrect>
+                  <![endif]-->
+                  <!--[if !mso]><!-->
+                  <a href="${loginUrl}" target="_blank" style="display: block; width: 100%; padding: 14px 0; background-color: #2563eb; color: #ffffff; font-size: 15px; font-weight: 700; text-align: center; text-decoration: none; border-radius: 8px; letter-spacing: -0.3px; box-sizing: border-box;">
+                    워크스페이스 시작하기
+                  </a>
+                  <!--<![endif]-->
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
 
-            </td>
-          </tr>
+        <!-- ─── Fallback link ─── -->
+        <tr>
+          <td class="pad" style="padding: 12px 40px 0 40px; text-align: center;">
+            <p style="margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.5; letter-spacing: -0.2px;">
+              버튼이 작동하지 않으면 아래 링크를 복사하세요
+            </p>
+            <p style="margin: 4px 0 0 0; font-size: 12px; word-break: break-all;">
+              <a href="${loginUrl}" target="_blank" style="color: #6b7280; font-family: 'SF Mono', Consolas, monospace; font-size: 11px; text-decoration: underline;">${loginUrl}</a>
+            </p>
+          </td>
+        </tr>
 
-          <!-- Official Legal Footer -->
-          <tr>
-            <td class="footer-padding" style="padding: 28px 36px 34px 36px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-              <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 800; color: #475569; letter-spacing: -0.02em;">
-                리드마스터 플랫폼 총괄 운영국 (LeadMaster Enterprise Cloud System)
-              </p>
-              <p style="margin: 0 0 8px 0; font-size: 11.5px; color: #64748b; line-height: 1.5; letter-spacing: -0.015em;">
-                공식 도메인: <a href="https://www.lmaster.xyz" target="_blank" style="color: #64748b; text-decoration: none;">www.lmaster.xyz</a> &nbsp;|&nbsp; 고객지원 문의: <a href="mailto:support@lmaster.xyz" class="code-font" style="color: #2563eb; text-decoration: none; font-weight: 600; font-family: 'JetBrains Mono', monospace;">support@lmaster.xyz</a>
-              </p>
-              <p style="margin: 0; font-size: 10.5px; color: #94a3b8; line-height: 1.55; letter-spacing: -0.015em; word-break: keep-all;">
-                본 메일은 전자상거래 등에서의 소비자보호에 관한 법률 및 정보통신망 이용촉진 및 정보보호 등에 관한 법률에 의거하여 서비스 가입 신청 고객님께 발송되는 공식 업무용 승인 안내문입니다.
-              </p>
-            </td>
-          </tr>
+        <!-- ─── Divider ─── -->
+        <tr>
+          <td class="pad" style="padding: 28px 40px 0 40px;">
+            <div style="height: 1px; background-color: #f3f4f6;"></div>
+          </td>
+        </tr>
 
-        </table>
+        <!-- ─── Steps ─── -->
+        <tr>
+          <td class="pad" style="padding: 24px 40px 0 40px;">
+            <p style="margin: 0 0 16px 0; font-size: 13px; font-weight: 700; color: #111827; letter-spacing: -0.3px;">시작하기</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <!-- Step 1 -->
+              <tr>
+                <td width="28" style="vertical-align: top; padding-top: 2px;">
+                  <div style="width: 20px; height: 20px; background-color: #eff6ff; border: 1px solid #dbeafe; border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; font-weight: 700; color: #2563eb;">1</div>
+                </td>
+                <td style="padding: 0 0 14px 0; font-size: 14px; color: #4b5563; line-height: 1.6; letter-spacing: -0.3px; word-break: keep-all;">
+                  위 버튼을 클릭해 로그인 페이지로 이동합니다.
+                </td>
+              </tr>
+              <!-- Step 2 -->
+              <tr>
+                <td width="28" style="vertical-align: top; padding-top: 2px;">
+                  <div style="width: 20px; height: 20px; background-color: #eff6ff; border: 1px solid #dbeafe; border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; font-weight: 700; color: #2563eb;">2</div>
+                </td>
+                <td style="padding: 0 0 14px 0; font-size: 14px; color: #4b5563; line-height: 1.6; letter-spacing: -0.3px; word-break: keep-all;">
+                  <span style="font-weight: 600; color: #111827;">Google로 계속하기</span>를 눌러 <span style="font-family: 'SF Mono', Consolas, monospace; font-size: 13px; color: #2563eb; font-weight: 600;">${params.ownerEmail}</span> 계정으로 로그인합니다.
+                </td>
+              </tr>
+              <!-- Step 3 -->
+              <tr>
+                <td width="28" style="vertical-align: top; padding-top: 2px;">
+                  <div style="width: 20px; height: 20px; background-color: #eff6ff; border: 1px solid #dbeafe; border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; font-weight: 700; color: #2563eb;">3</div>
+                </td>
+                <td style="padding: 0 0 0 0; font-size: 14px; color: #4b5563; line-height: 1.6; letter-spacing: -0.3px; word-break: keep-all;">
+                  <span style="font-weight: 600; color: #111827;">팀원 관리</span>에서 상담원을 초대하고 업무를 시작합니다.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
 
-        <!-- Outside Subtext -->
-        <table role="presentation" width="100%" style="max-width: 600px; text-align: center; margin-top: 16px;" cellspacing="0" cellpadding="0" border="0">
-          <tr>
-            <td style="font-size: 11px; color: #94a3b8;">
-              © 2026 LeadMaster CRM. All rights reserved.
-            </td>
-          </tr>
-        </table>
+        <!-- ─── Features (compact list) ─── -->
+        <tr>
+          <td class="pad" style="padding: 24px 40px 0 40px;">
+            <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; color: #111827; letter-spacing: -0.3px;">포함된 기능</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size: 13px; color: #6b7280; line-height: 1.6; letter-spacing: -0.2px;">
+              <tr>
+                <td style="padding: 4px 0; vertical-align: top; width: 22px; color: #2563eb;">&#x2022;</td>
+                <td style="padding: 4px 0; word-break: keep-all;">스마트 자동콜 &mdash; 안드로이드 1초 1콜 발신 · 녹음 동기화</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; vertical-align: top; color: #2563eb;">&#x2022;</td>
+                <td style="padding: 4px 0; word-break: keep-all;">광고비 · 정산 &mdash; DB 단가 집계 · 급여 · 청구서 자동 산출</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; vertical-align: top; color: #2563eb;">&#x2022;</td>
+                <td style="padding: 4px 0; word-break: keep-all;">AI 통화 요약 &mdash; 녹취 텍스트 변환 · 텔레그램 실시간 허브</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; vertical-align: top; color: #2563eb;">&#x2022;</td>
+                <td style="padding: 4px 0; word-break: keep-all;">AI 가상고객 &mdash; 11,000명 데이터 기반 신입 상담원 모의 훈련</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
 
-      </td>
-    </tr>
-  </table>
+        <!-- ─── Bottom padding ─── -->
+        <tr>
+          <td style="padding: 32px 0 0 0;"></td>
+        </tr>
+
+        <!-- ─── Footer ─── -->
+        <tr>
+          <td class="pad" style="padding: 20px 40px 28px 40px; background-color: #f9fafb; border-top: 1px solid #f3f4f6;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="font-size: 12px; color: #9ca3af; line-height: 1.6; letter-spacing: -0.2px; word-break: keep-all;">
+                  <p style="margin: 0 0 6px 0;">
+                    도움이 필요하시면 <a href="mailto:support@lmaster.xyz" style="color: #6b7280; text-decoration: underline;">support@lmaster.xyz</a>로 문의해 주세요.
+                  </p>
+                  <p style="margin: 0; font-size: 11px; color: #d1d5db;">
+                    본 메일은 서비스 가입 신청에 따라 발송되는 업무용 안내 메일입니다.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+      <!-- =================== END CARD =================== -->
+
+      <!-- Copyright outside card -->
+      <table role="presentation" width="520" class="wrap" cellspacing="0" cellpadding="0" border="0" style="text-align: center;">
+        <tr>
+          <td style="padding: 20px 0; font-size: 11px; color: #d1d5db; letter-spacing: -0.2px;">
+            &copy; ${now.getFullYear()} LeadMaster CRM &middot; <a href="https://www.lmaster.xyz" style="color: #d1d5db; text-decoration: none;">lmaster.xyz</a>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
 
 </body>
 </html>
