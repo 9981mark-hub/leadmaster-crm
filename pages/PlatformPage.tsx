@@ -89,11 +89,12 @@ export default function PlatformPage() {
 
   const handleSendApprovalEmail = (companyName: string, ownerEmail: string) => {
     const { subject, body } = generateApprovalEmailContent(companyName, ownerEmail);
-    const mailtoUrl = `mailto:${encodeURIComponent(ownerEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl, '_blank');
+    // Gmail 웹 작성창 직접 호출 (대표님이 방금 연동하신 Gmail 환경에서 support@lmaster.xyz 발신자로 즉시 발송 가능)
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ownerEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank');
 
     navigator.clipboard.writeText(`[제목] ${subject}\n\n${body}`).then(() => {
-      showToast(`'${companyName}' 대표(${ownerEmail}) 승인 안내문이 클립보드에 복사되었고 메일 작성창을 열었습니다.`, 'success');
+      showToast(`'${companyName}' 대표(${ownerEmail}) 승인 안내문이 클립보드에 복사되었고 Gmail 작성창이 열렸습니다.`, 'success');
     });
   };
 
