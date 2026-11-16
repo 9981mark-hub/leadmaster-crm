@@ -2,10 +2,24 @@
 // 팀 관리 (멤버·초대·리드 배정) — DB 함수: 007_team_management.sql, 028_agent_security_profiles.sql
 // ============================================
 import { supabase } from './supabase';
-import { OrgRole, MemberSecurityProfile, DEFAULT_AGENT_SECURITY_PROFILE } from './org';
+import {
+  OrgRole,
+  MemberSecurityProfile,
+  DEFAULT_AGENT_SECURITY_PROFILE,
+  AdminPermissions,
+  DEFAULT_TIER1_PERMISSIONS,
+  OWNER_FULL_PERMISSIONS,
+} from './org';
 
-export type { MemberSecurityProfile } from './org';
-export { DEFAULT_AGENT_SECURITY_PROFILE, TRUSTED_TEAM_LEAD_SECURITY_PROFILE } from './org';
+export type { MemberSecurityProfile, AdminPermissions, AdminTier } from './org';
+export {
+  DEFAULT_AGENT_SECURITY_PROFILE,
+  TRUSTED_TEAM_LEAD_SECURITY_PROFILE,
+  DEFAULT_TIER1_PERMISSIONS,
+  DEFAULT_TIER2_PERMISSIONS,
+  DEFAULT_TIER3_PERMISSIONS,
+  OWNER_FULL_PERMISSIONS,
+} from './org';
 
 export interface TeamMember {
   userId: string;
@@ -18,6 +32,7 @@ export interface TeamMember {
   assignedCases: number;
   uiMode: 'standard' | 'lite_only';
   securityProfile: MemberSecurityProfile;
+  adminPermissions?: AdminPermissions;
   sessionRevokedAt?: string;
 }
 
@@ -55,8 +70,20 @@ export const fetchTeamMembers = async (): Promise<TeamMember[]> => {
     assignedCases: Number(r.assigned_cases || 0),
     uiMode: (r.ui_mode as 'standard' | 'lite_only') || 'standard',
     securityProfile: (r.security_profile as MemberSecurityProfile) || DEFAULT_AGENT_SECURITY_PROFILE,
+    adminPermissions: r.role === 'owner' ? OWNER_FULL_PERMISSIONS : ((r.admin_permissions as AdminPermissions) || DEFAULT_TIER1_PERMISSIONS),
     sessionRevokedAt: r.session_revoked_at || undefined,
   }));
+};
+
+export const updateAdminPermissions = async (
+  userId: string,
+  permissions: AdminPermissions
+): Promise<void> => {
+  const { error } = await need().rpc('update_admin_permissions', {
+    p_user_id: userId,
+    p_admin_permissions: permissions,
+  });
+  if (error) fail(error);
 };
 
 export const updateTeamMember = async (

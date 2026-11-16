@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
-  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap, Shield
+  FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap, Shield,
+  Lock, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchCases, applyLocalAssignment, refreshLocalAssignments } from '../services/api';
-import { ROLE_LABEL, OrgRole } from '../services/org';
+import { ROLE_LABEL, OrgRole, DEFAULT_TIER1_PERMISSIONS, OWNER_FULL_PERMISSIONS } from '../services/org';
 import {
   TeamMember, TeamInvite, fetchTeamMembers, updateTeamMember, fetchPendingInvites,
   createInvite, cancelInvite, assignCases, revokeMemberSession, MemberSecurityProfile
@@ -27,6 +28,7 @@ import TeamCallAuditPanel from '../components/team/TeamCallAuditPanel';
 import LifecyclePolicyPanel from '../components/team/LifecyclePolicyPanel';
 import BulkInviteModal from '../components/team/BulkInviteModal';
 import MemberSecurityModal from '../components/team/MemberSecurityModal';
+import AdminPermissionModal from '../components/team/AdminPermissionModal';
 import { AgentHRHub } from '../components/hr/AgentHRHub';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
@@ -50,10 +52,33 @@ const maskPhone = (p?: string) => {
   return d.length >= 8 ? `${d.slice(0, 3)}-****-${d.slice(-4)}` : (p || '');
 };
 
+const TeamLockedView: React.FC<{ title: string; desc: string }> = ({ title, desc }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center border border-slate-200 dark:border-gray-700 shadow-sm max-w-lg mx-auto my-12 animate-scale-in">
+    <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
+      <Lock size={26} />
+    </div>
+    <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">
+      {title}
+    </h3>
+    <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+      {desc}<br />
+      작업 권한이 필요한 경우 대표이사에게 <strong>[관리자 권한 승급(Tier 2/3)]</strong>을 요청하세요.
+    </p>
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs font-semibold">
+      🔒 권한 제한 (상위 티어 승인 필요)
+    </span>
+  </div>
+);
+
 export default function TeamPage() {
   const { org } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
+
+  const isOwner = org?.role === 'owner';
+  const myTeamPerms = isOwner
+    ? OWNER_FULL_PERMISSIONS.team
+    : (org?.adminPermissions?.team || DEFAULT_TIER1_PERMISSIONS.team);
 
   // 상단 탭 상태
   const [activeTab, setActiveTab] = useState<TeamTab>('hr');
@@ -81,6 +106,7 @@ export default function TeamPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [showBulkInvite, setShowBulkInvite] = useState(false);
   const [securityTargetMember, setSecurityTargetMember] = useState<TeamMember | null>(null);
+  const [permissionTargetMember, setPermissionTargetMember] = useState<TeamMember | null>(null);
   const [logs, setLogs] = useState<AssignmentLog[]>([]);
   const [panelKey, setPanelKey] = useState(0);
 
@@ -315,6 +341,7 @@ export default function TeamPage() {
           }`}
         >
           <Award size={16} /> 팀원 성과 · 인센티브
+          {!isOwner && !myTeamPerms.canViewPerformance && <Lock size={12} className="text-amber-500 shrink-0" />}
         </button>
 
         <button
@@ -353,6 +380,7 @@ export default function TeamPage() {
           }`}
         >
           <SlidersHorizontal size={16} /> 배분 규칙 · 로테이션
+          {!isOwner && !myTeamPerms.canModifyRules && <Lock size={12} className="text-amber-500 shrink-0" />}
         </button>
 
         <button
@@ -364,6 +392,7 @@ export default function TeamPage() {
           }`}
         >
           <Archive size={16} /> DB 수명주기 · 보관
+          {!isOwner && !myTeamPerms.canModifyRules && <Lock size={12} className="text-amber-500 shrink-0" />}
         </button>
 
         <button
@@ -407,7 +436,14 @@ export default function TeamPage() {
 
       {/* 탭 1: 팀원 성과 & 인센티브 */}
       {activeTab === 'performance' && (
-        <AgentPerformancePanel />
+        !isOwner && !myTeamPerms.canViewPerformance ? (
+          <TeamLockedView
+            title="팀원 성과 & 인센티브 보드 잠김"
+            desc="상담원별 수당 산출 및 성과 지표는 Tier 2(수석 팀장) 이상 또는 대표이사 승인이 필요합니다."
+          />
+        ) : (
+          <AgentPerformancePanel />
+        )
       )}
 
       {/* 탭: 콜 활동 · AI 요약 및 대화록 모니터링 */}
@@ -418,16 +454,25 @@ export default function TeamPage() {
       {/* 탭 2: 대용량 리드 배정 (스마트 일괄 배분 + 세부 수동 배정 테이블) */}
       {activeTab === 'bulk_assign' && (
         <div className="space-y-6">
-          <BulkDistributionSection
-            unassignedCount={unassignedCount}
-            members={members}
-            importBatches={importBatches}
-            inboundPaths={inboundPaths}
-            onDistributed={() => {
-              queryClient.invalidateQueries({ queryKey: ['cases'] });
-              reload();
-            }}
-          />
+          {!isOwner && !myTeamPerms.canBulkDistribute ? (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lock size={16} className="shrink-0 text-amber-600" />
+                <span>스마트 대량 배분(균등/가중치 자동 배분)은 Tier 2(수석 팀장) 이상 권한이 필요합니다. Tier 1 플로어 팀장은 아래 [정밀 개별/필터 배정]을 사용하실 수 있습니다.</span>
+              </div>
+            </div>
+          ) : (
+            <BulkDistributionSection
+              unassignedCount={unassignedCount}
+              members={members}
+              importBatches={importBatches}
+              inboundPaths={inboundPaths}
+              onDistributed={() => {
+                queryClient.invalidateQueries({ queryKey: ['cases'] });
+                reload();
+              }}
+            />
+          )}
 
           {/* 세부 선택 배정 (소규모/개별 지정) */}
           <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -656,27 +701,41 @@ export default function TeamPage() {
 
       {/* 탭 3: 리드 배분 규칙 */}
       {activeTab === 'rules' && (
-        <div key={panelKey}>
-          <DistributionPanel
-            orgId={org.orgId}
-            statuses={statusList as string[]}
+        !isOwner && !myTeamPerms.canModifyRules ? (
+          <TeamLockedView
+            title="배분 규칙 & 로테이션 설정 잠김"
+            desc="라운드로빈 분배 쿼터 및 우선순위 규칙 수정은 Tier 3(총괄 실장) 또는 대표이사 전용입니다."
+          />
+        ) : (
+          <div key={panelKey}>
+            <DistributionPanel
+              orgId={org.orgId}
+              statuses={statusList as string[]}
+              onChanged={() => {
+                queryClient.invalidateQueries({ queryKey: ['cases'] });
+                reload();
+              }}
+            />
+          </div>
+        )
+      )}
+
+      {/* 탭: DB 수명주기 & 보관 관리 */}
+      {activeTab === 'lifecycle' && (
+        !isOwner && !myTeamPerms.canModifyRules ? (
+          <TeamLockedView
+            title="DB 수명주기 & 보관 정책 잠김"
+            desc="부재 자동 회수 시간 및 장기 미컨택 리드 정리 규칙은 Tier 3(총괄 실장) 또는 대표이사 전용입니다."
+          />
+        ) : (
+          <LifecyclePolicyPanel
+            cases={cases}
             onChanged={() => {
               queryClient.invalidateQueries({ queryKey: ['cases'] });
               reload();
             }}
           />
-        </div>
-      )}
-
-      {/* 탭: DB 수명주기 & 보관 관리 */}
-      {activeTab === 'lifecycle' && (
-        <LifecyclePolicyPanel
-          cases={cases}
-          onChanged={() => {
-            queryClient.invalidateQueries({ queryKey: ['cases'] });
-            reload();
-          }}
-        />
+        )
       )}
 
       {/* 탭 4: 회차별 DB 품질 분석 */}
@@ -719,7 +778,7 @@ export default function TeamPage() {
                       <span className="text-gray-500 dark:text-gray-400">담당 <span className="font-semibold text-gray-700 dark:text-gray-200">{m.assignedCases.toLocaleString()}</span>건</span>
                       <span className="text-gray-500 dark:text-gray-400">로그인 {fmtDate(m.lastSignInAt)}</span>
                     </div>
-                    {canEditRole(m) && (m.status === 'active' ? (
+                    {canEditRole(m) && (isOwner || myTeamPerms.canDisableMembers) && (m.status === 'active' ? (
                       <button
                         disabled={busy}
                         onClick={() => handleMemberChange(m, { status: 'disabled' },
@@ -738,7 +797,7 @@ export default function TeamPage() {
                       </button>
                     ))}
                   </div>
-                  {canEditRole(m) && (
+                  {canEditRole(m) && (isOwner || myTeamPerms.canManageSecurity) && (
                     <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700/50">
                       <button
                         type="button"
@@ -751,6 +810,18 @@ export default function TeamPage() {
                             ? '🌟 팀장급 해제'
                             : '🛡️ 보안 적용'
                         })</span>
+                      </button>
+                    </div>
+                  )}
+                  {isOwner && m.role === 'admin' && (
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700/50">
+                      <button
+                        type="button"
+                        onClick={() => setPermissionTargetMember(m)}
+                        className="inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
+                      >
+                        <ShieldCheck size={13} />
+                        <span>관리자 권한 설정 (Tier {m.adminPermissions?.tier || 1})</span>
                       </button>
                     </div>
                   )}
@@ -785,20 +856,33 @@ export default function TeamPage() {
                       </td>
                       <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{m.email}</td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
-                        {canEditRole(m) ? (
-                          <select
-                            value={m.role}
-                            disabled={busy}
-                            onChange={e => handleMemberChange(m, { role: e.target.value as OrgRole })}
-                            className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
-                          >
-                            <option value="agent">상담원</option>
-                            <option value="admin">관리자</option>
-                            {org.role === 'owner' && <option value="owner">대표</option>}
-                          </select>
-                        ) : (
-                          <span className="text-gray-700 dark:text-gray-200 whitespace-nowrap">{ROLE_LABEL[m.role]}</span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {canEditRole(m) && m.role !== 'owner' ? (
+                            <select
+                              value={m.role}
+                              disabled={busy}
+                              onChange={e => handleMemberChange(m, { role: e.target.value as OrgRole })}
+                              className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
+                            >
+                              <option value="agent">상담원</option>
+                              <option value="admin">관리자</option>
+                              {org.role === 'owner' && <option value="owner">대표</option>}
+                            </select>
+                          ) : (
+                            <span className="text-gray-700 dark:text-gray-200 whitespace-nowrap">{ROLE_LABEL[m.role]}</span>
+                          )}
+                          {isOwner && m.role === 'admin' && (
+                            <button
+                              type="button"
+                              onClick={() => setPermissionTargetMember(m)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 transition-colors shrink-0 cursor-pointer"
+                              title="중간 관리자 권한 및 오픈 스코프 설정"
+                            >
+                              <ShieldCheck size={12} />
+                              <span>Tier {m.adminPermissions?.tier || 1} 설정</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
                         {m.role === 'agent' && canEditRole(m) ? (
@@ -826,7 +910,7 @@ export default function TeamPage() {
                         )}
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
-                        {canEditRole(m) ? (
+                        {canEditRole(m) && (isOwner || myTeamPerms.canManageSecurity) ? (
                           <button
                             type="button"
                             onClick={() => setSecurityTargetMember(m)}
@@ -846,30 +930,34 @@ export default function TeamPage() {
                             </span>
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-400 whitespace-nowrap">자율 권한</span>
+                          <span className="text-xs text-gray-400 whitespace-nowrap">보안 권한 제한</span>
                         )}
                       </td>
                       <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{m.assignedCases.toLocaleString()}건</td>
                       <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{fmtDate(m.lastSignInAt)}</td>
                       <td className="px-5 py-2.5 text-right whitespace-nowrap">
-                        {canEditRole(m) && (m.status === 'active' ? (
-                          <button
-                            disabled={busy}
-                            onClick={() => handleMemberChange(m, { status: 'disabled' },
-                              `${m.displayName}님을 사용 중지할까요?\n바로 로그인과 데이터 접근이 막힙니다. 담당 리드 ${m.assignedCases}건은 그대로 남으니 다른 상담원에게 다시 배정하세요.`)}
-                            className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline disabled:opacity-50 whitespace-nowrap shrink-0"
-                          >
-                            <Ban size={14} className="shrink-0" /> 사용 중지
-                          </button>
+                        {canEditRole(m) && (isOwner || myTeamPerms.canDisableMembers) ? (
+                          m.status === 'active' ? (
+                            <button
+                              disabled={busy}
+                              onClick={() => handleMemberChange(m, { status: 'disabled' },
+                                `${m.displayName}님을 사용 중지할까요?\n바로 로그인과 데이터 접근이 막힙니다. 담당 리드 ${m.assignedCases}건은 그대로 남으니 다른 상담원에게 다시 배정하세요.`)}
+                              className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline disabled:opacity-50 whitespace-nowrap shrink-0"
+                            >
+                              <Ban size={14} className="shrink-0" /> 사용 중지
+                            </button>
+                          ) : (
+                            <button
+                              disabled={busy}
+                              onClick={() => handleMemberChange(m, { status: 'active' })}
+                              className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline disabled:opacity-50 whitespace-nowrap shrink-0"
+                            >
+                              <RotateCcw size={14} className="shrink-0" /> 다시 사용
+                            </button>
+                          )
                         ) : (
-                          <button
-                            disabled={busy}
-                            onClick={() => handleMemberChange(m, { status: 'active' })}
-                            className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline disabled:opacity-50 whitespace-nowrap shrink-0"
-                          >
-                            <RotateCcw size={14} className="shrink-0" /> 다시 사용
-                          </button>
-                        ))}
+                          <span className="text-xs text-gray-400 whitespace-nowrap">권한 제한</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -886,47 +974,58 @@ export default function TeamPage() {
                 <div className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200">
                   <UserPlus size={16} /> 새 멤버 초대
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowBulkInvite(true)}
-                  className="px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 dark:border-blue-800 shadow-sm"
-                >
-                  <Users size={14} /> 상담원 대량 초대 (10~50명)
-                </button>
+                {(isOwner || myTeamPerms.canInviteMembers) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkInvite(true)}
+                    className="px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 dark:border-blue-800 shadow-sm"
+                  >
+                    <Users size={14} /> 상담원 대량 초대 (10~50명)
+                  </button>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                <input
-                  value={inviteEmail}
-                  onChange={e => setInviteEmail(e.target.value)}
-                  placeholder="구글 계정 이메일"
-                  className="flex-1 min-w-[220px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
-                />
-                <input
-                  value={inviteName}
-                  onChange={e => setInviteName(e.target.value)}
-                  placeholder="표시 이름 (선택)"
-                  className="w-40 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
-                />
-                <select
-                  value={inviteRole}
-                  onChange={e => setInviteRole(e.target.value as OrgRole)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="agent">상담원</option>
-                  <option value="admin">관리자</option>
-                  {org.role === 'owner' && <option value="owner">대표</option>}
-                </select>
-                <button
-                  onClick={handleInvite}
-                  disabled={busy || !inviteEmail.trim()}
-                  className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  초대 만들기
-                </button>
-              </div>
-              <p className="text-xs text-gray-500">
-                초대받은 사람이 이 사이트에서 <b>같은 구글 계정</b>으로 로그인하면 자동으로 팀에 들어옵니다. 초대는 14일 동안 유효합니다.
-              </p>
+              {!isOwner && !myTeamPerms.canInviteMembers ? (
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 font-medium">
+                  <Lock size={14} className="shrink-0" />
+                  <span>새 멤버 초대 권한은 Tier 2(수석 팀장) 이상 또는 대표이사에게만 부여되어 있습니다.</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <input
+                      value={inviteEmail}
+                      onChange={e => setInviteEmail(e.target.value)}
+                      placeholder="구글 계정 이메일"
+                      className="flex-1 min-w-[220px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
+                    />
+                    <input
+                      value={inviteName}
+                      onChange={e => setInviteName(e.target.value)}
+                      placeholder="표시 이름 (선택)"
+                      className="w-40 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
+                    />
+                    <select
+                      value={inviteRole}
+                      onChange={e => setInviteRole(e.target.value as OrgRole)}
+                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="agent">상담원</option>
+                      {isOwner && <option value="admin">관리자</option>}
+                      {isOwner && <option value="owner">대표</option>}
+                    </select>
+                    <button
+                      onClick={handleInvite}
+                      disabled={busy || !inviteEmail.trim()}
+                      className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      초대 만들기
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    초대받은 사람이 이 사이트에서 <b>같은 구글 계정</b>으로 로그인하면 자동으로 팀에 들어옵니다. 초대는 14일 동안 유효합니다.
+                  </p>
+                </>
+              )}
               {invites.length > 0 && (
                 <div className="space-y-1">
                   <div className="text-xs font-semibold text-gray-500">수락 대기 {invites.length}건</div>
@@ -997,6 +1096,17 @@ export default function TeamPage() {
         onClose={() => setSecurityTargetMember(null)}
         onSave={handleSaveSecurityProfile}
         onRevokeSession={handleRevokeSession}
+      />
+
+      {/* 중간 관리자 권한 및 오픈 스코프 설정 모달 (대표 전용) */}
+      <AdminPermissionModal
+        member={permissionTargetMember}
+        isOpen={permissionTargetMember !== null}
+        onClose={() => setPermissionTargetMember(null)}
+        onSuccess={() => {
+          reload();
+          queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
+        }}
       />
     </div>
   );

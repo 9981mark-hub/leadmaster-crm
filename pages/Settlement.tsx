@@ -5,7 +5,7 @@ import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch,
 import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, TossAdsRecord, TossAdsWeeklySummary } from '../types';
 import { calculateCommission, calculateNextSettlement, calculatePayableCommission } from '../utils';
 import { BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
-import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download, Settings, DollarSign, TrendingUp, Users, Database } from 'lucide-react';
+import { CheckCircle, Building, Wallet, Search, Calendar, FileText, CreditCard, AlertTriangle, ChevronLeft, ChevronRight, Copy, Check, Clock, RefreshCw, Plus, Trash2, Download, Settings, DollarSign, TrendingUp, Users, Database, Lock } from 'lucide-react';
 import Modal from '../components/Modal';
 import SettlementCalendar from '../components/SettlementCalendar';
 import ReceiptOcrSection from '../components/ReceiptOcrSection';
@@ -41,6 +41,7 @@ import { fetchBatchQualityStats, BatchQualityMetric } from '../services/batchQua
 import { fetchTeamMembers, TeamMember } from '../services/team';
 import { useAuth } from '../contexts/AuthContext';
 import { todayKST, CANCELLED_STATUSES, addDays as addDaysKST, dueDateFor, computeCaseCommission, invoiceSplitOf, vatModeOf, roundWonPrecision } from '../utils/settlement';
+import { DEFAULT_TIER1_PERMISSIONS, OWNER_FULL_PERMISSIONS } from '../services/org';
 
 type TabType =
     | 'overview'
@@ -54,8 +55,29 @@ type TabType =
     | 'report'
     | 'expenses';
 
+// 직급별 비허용 지표 잠금 뷰 컴포넌트
+const SettlementLockedView: React.FC<{ title: string; desc: string }> = ({ title, desc }) => (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center border border-slate-200 dark:border-gray-700 shadow-sm max-w-lg mx-auto my-12 animate-scale-in">
+        <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
+            <Lock size={26} />
+        </div>
+        <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">
+            {title}
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+            {desc}<br />
+            해당 정보는 회사의 민감한 영업 비밀로 보호되고 있습니다.<br />
+            열람 권한이 필요한 경우 대표이사에게 <strong>[정산 권한 오픈]</strong>을 요청하세요.
+        </p>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs font-semibold">
+            🔒 접근 제한 (대표이사 전용 기밀)
+        </span>
+    </div>
+);
+
 export default function Settlement() {
     const { showToast } = useToast();
+    const { org } = useAuth();
     const [cases, setCases] = useState<Case[]>([]);
     const [partners, setPartners] = useState<Partner[]>([]);
     const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
@@ -63,8 +85,13 @@ export default function Settlement() {
     const [month, setMonth] = useState<number | 'all'>('all');
     const [loading, setLoading] = useState(true);
 
+    // 대표 vs 중간 관리자 정산 열람 권한 판별
+    const isOwner = org?.role === 'owner';
+    const settlementPerms = isOwner
+        ? OWNER_FULL_PERMISSIONS.settlement
+        : (org?.adminPermissions?.settlement || DEFAULT_TIER1_PERMISSIONS.settlement);
+
     // 차세대 정산 마스터 State (v4.5)
-    const { org } = useAuth();
     const [settlementPolicy, setSettlementPolicy] = useState<SettlementPolicy>(DEFAULT_SETTLEMENT_POLICY);
     // 정책 출처: saved 가 아니면 화면에 "기본값(저장 안 됨)" 표시
     const [policySource, setPolicySource] = useState<SettlementPolicySource>('no_org');
@@ -76,8 +103,21 @@ export default function Settlement() {
     const [batchQualityList, setBatchQualityList] = useState<BatchQualityMetric[]>([]);
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
-    // Weekly Settlement Center State
-    const [activeTab, setActiveTab] = useState<TabType>('overview');
+    // Weekly Settlement Center State (관리자는 overview 권한 없으면 receivables 기본 선택)
+    const [activeTab, setActiveTab] = useState<TabType>(() => {
+        if (!isOwner && !settlementPerms.allowPartnerSettlement) {
+            return settlementPerms.allowReceivables ? 'receivables' : (settlementPerms.allowAgentCommission ? 'agent_commission' : 'receivables');
+        }
+        return 'overview';
+    });
+
+    useEffect(() => {
+        if (!isOwner && activeTab === 'overview' && !settlementPerms.allowPartnerSettlement) {
+            if (settlementPerms.allowReceivables) {
+                setActiveTab('receivables');
+            }
+        }
+    }, [isOwner, settlementPerms, activeTab]);
     const [selectedWeekStart, setSelectedWeekStart] = useState<Date>(() => getWeekMonday(new Date()));
     const [batches, setBatches] = useState<SettlementBatch[]>([]);
     const [loadingBatches, setLoadingBatches] = useState(false);
@@ -4278,6 +4318,7 @@ export default function Settlement() {
                 >
                     <Building className="w-4 h-4" />
                     🏢 거래처별 정산 관제
+                    {!isOwner && !settlementPerms.allowPartnerSettlement && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('agent_commission')}
@@ -4288,6 +4329,7 @@ export default function Settlement() {
                 >
                     <Users className="w-4 h-4" />
                     👥 상담원 수당 대장
+                    {!isOwner && !settlementPerms.allowAgentCommission && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('db_cost')}
@@ -4298,6 +4340,7 @@ export default function Settlement() {
                 >
                     <Database className="w-4 h-4" />
                     📦 DB 구매비용 대장
+                    {!isOwner && !settlementPerms.allowDbCost && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('integrated_pnl')}
@@ -4308,15 +4351,17 @@ export default function Settlement() {
                 >
                     <TrendingUp className="w-4 h-4" />
                     📊 종합 손익 & 현금흐름
+                    {!isOwner && !settlementPerms.allowIntegratedPnL && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('receivables')}
-                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'receivables'
+                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'receivables'
                         ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     받을 돈
+                    {!isOwner && !settlementPerms.allowReceivables && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
                 {!isAll && (
                     <>
@@ -4354,21 +4399,23 @@ export default function Settlement() {
                 )}
                 <button
                     onClick={() => setActiveTab('report')}
-                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'report'
+                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'report'
                         ? 'border-purple-600 text-purple-600 bg-purple-50'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     📊 리포트
+                    {!isOwner && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('expenses')}
-                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'expenses'
+                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'expenses'
                         ? 'border-red-600 text-red-600 bg-red-50'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     💳 지출
+                    {!isOwner && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
             </div>
 
@@ -4399,47 +4446,98 @@ export default function Settlement() {
 
             {/* Tab Content */}
             {activeTab === 'overview' && (
-                <PartnerSettlementOverviewTab
-                    partnerCards={partnerSettlementCards}
-                    partners={partners}
-                    cases={safeCases}
-                    collections={collections}
-                    onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
-                />
+                !isOwner && !settlementPerms.allowPartnerSettlement ? (
+                    <SettlementLockedView
+                        title="거래처별 정산 관제 잠김"
+                        desc="제휴 법무법인의 건당 정산 수수료율 및 공식 청구서 데이터는 보호되고 있습니다."
+                    />
+                ) : (
+                    <PartnerSettlementOverviewTab
+                        partnerCards={partnerSettlementCards}
+                        partners={partners}
+                        cases={safeCases}
+                        collections={collections}
+                        onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
+                    />
+                )
             )}
             {activeTab === 'agent_commission' && (
-                <AgentCommissionTab
-                    agentRows={agentSettlementRows}
-                    problemCases={agentSettlement.problems}
-                    policy={settlementPolicy}
-                    policyIsDefault={policySource !== 'saved'}
-                    policyMessage={policyMessage}
-                    periodLabel={month === 'all' ? `${year}년 전체` : `${year}년 ${month}월`}
-                    onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
-                />
+                !isOwner && !settlementPerms.allowAgentCommission ? (
+                    <SettlementLockedView
+                        title="상담원 수당 대장 잠김"
+                        desc="상담원별 수당 산출 대장은 개인 급여 정보 보호를 위해 제한되어 있습니다."
+                    />
+                ) : (
+                    <AgentCommissionTab
+                        agentRows={agentSettlementRows}
+                        problemCases={agentSettlement.problems}
+                        policy={settlementPolicy}
+                        policyIsDefault={policySource !== 'saved'}
+                        policyMessage={policyMessage}
+                        periodLabel={month === 'all' ? `${year}년 전체` : `${year}년 ${month}월`}
+                        onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
+                    />
+                )
             )}
             {activeTab === 'db_cost' && (
-                <DbCostSettlementTab
-                    batchQualityList={batchQualityList}
-                    onRefresh={reloadMasterSettlementData}
-                    totalRevenueWon={integratedPnLSummary.totalRevenueWon}
-                />
+                !isOwner && !settlementPerms.allowDbCost ? (
+                    <SettlementLockedView
+                        title="DB 구매비용 대장 잠김"
+                        desc="외부 광고 대행사와의 DB 구입 단가 및 거래 원가는 최고 경영 기밀입니다."
+                    />
+                ) : (
+                    <DbCostSettlementTab
+                        batchQualityList={batchQualityList}
+                        onRefresh={reloadMasterSettlementData}
+                        totalRevenueWon={integratedPnLSummary.totalRevenueWon}
+                    />
+                )
             )}
             {activeTab === 'integrated_pnl' && (
-                <IntegratedPnLTab
-                    summary={integratedPnLSummary}
-                    policy={settlementPolicy}
-                    year={year}
-                    month={month}
-                    policyIsDefault={policySource !== 'saved'}
-                />
+                !isOwner && !settlementPerms.allowIntegratedPnL ? (
+                    <SettlementLockedView
+                        title="종합 손익 & 현금흐름 잠김"
+                        desc="회사의 전사 순영업이익, 임대료, 서버비 등 종합 손익 지표는 대표이사 전용입니다."
+                    />
+                ) : (
+                    <IntegratedPnLTab
+                        summary={integratedPnLSummary}
+                        policy={settlementPolicy}
+                        year={year}
+                        month={month}
+                        policyIsDefault={policySource !== 'saved'}
+                    />
+                )
             )}
-            {activeTab === 'receivables' && <ReceivablesTab cases={safeCases} partners={partners} />}
+            {activeTab === 'receivables' && (
+                !isOwner && !settlementPerms.allowReceivables ? (
+                    <SettlementLockedView
+                        title="미수금 현황 잠김"
+                        desc="미수금 및 분납 잔금 현황에 대한 열람 권한이 없습니다."
+                    />
+                ) : (
+                    <ReceivablesTab cases={safeCases} partners={partners} />
+                )
+            )}
             {activeTab === 'monday' && !isAll && renderMondayTab()}
             {activeTab === 'tuesday' && !isAll && renderTuesdayTab()}
             {activeTab === 'wednesday' && !isAll && renderWednesdayTab()}
-            {activeTab === 'report' && renderReportTab()}
-            {activeTab === 'expenses' && renderExpensesTab()}
+            {activeTab === 'report' && (
+                !isOwner ? (
+                    <SettlementLockedView
+                        title="세무 리포트 잠김"
+                        desc="세무 신고 자료 및 분석 리포트는 대표이사 전용 메뉴입니다."
+                    />
+                ) : renderReportTab()
+            )}
+            {activeTab === 'expenses' && (
+                !isOwner ? (
+                    <SettlementLockedView
+                        title="지출 관리 잠김"
+                        desc="회사 고정비 및 운영 지출 내역은 대표이사 전용 메뉴입니다."
+                    />
+                ) : renderExpensesTab()
+            )}
             {isAll && activeTab !== 'report' && activeTab !== 'expenses' && activeTab !== 'receivables' && activeTab !== 'overview' && activeTab !== 'agent_commission' && activeTab !== 'db_cost' && activeTab !== 'integrated_pnl' && (
                 <div className="bg-gray-50 dark:bg-gray-800/60 p-8 rounded-xl text-center border border-gray-200 dark:border-gray-700">
                     <p className="text-gray-500">주간 정산 기능은 특정 거래처를 선택해야 사용할 수 있습니다.</p>

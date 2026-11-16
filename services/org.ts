@@ -7,6 +7,102 @@ import { supabase } from './supabase';
 
 export type OrgRole = 'owner' | 'admin' | 'agent';
 
+export type AdminTier = 1 | 2 | 3;
+
+export interface TeamAdminPermissions {
+  canInviteMembers: boolean;       // 신규 상담원 초대 권한 (Tier 2+)
+  canDisableMembers: boolean;      // 상담원 계정 정지/비활성화 (Tier 3+)
+  canModifySecurity: boolean;      // 상담원 보안 프로필(마스킹 등) 수정 (Tier 3+)
+  canModifyRules: boolean;         // 리드 분배 룰 및 수명주기 정책 수정 (Tier 3+)
+  canViewPerformance: boolean;     // 상담원 인센티브/성과 보드 열람 (Tier 2+)
+}
+
+export interface SettlementAdminPermissions {
+  allowReceivables: boolean;       // 미수금 및 분납 잔금 현황 열람 (기본 true)
+  allowAgentCommission: boolean;   // 소속 팀원 인센티브/수당 상세 검토 권한 (기본 false)
+  allowPartnerSettlement: boolean; // 제휴 법무법인 정산 수수료율 및 청구서 복사 (기본 false)
+  allowDbCost: boolean;            // DB 구입 원가 및 대행사별 지출 단가 열람 (기본 false)
+  allowIntegratedPnL: boolean;     // 전사 통합 경영 손익 (순영업이익/고정비) 열람 (기본 false)
+}
+
+export interface AdminPermissions {
+  tier: AdminTier;
+  team: TeamAdminPermissions;
+  settlement: SettlementAdminPermissions;
+}
+
+export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
+  tier: 1,
+  team: {
+    canInviteMembers: false,
+    canDisableMembers: false,
+    canModifySecurity: false,
+    canModifyRules: false,
+    canViewPerformance: false,
+  },
+  settlement: {
+    allowReceivables: true,
+    allowAgentCommission: false,
+    allowPartnerSettlement: false,
+    allowDbCost: false,
+    allowIntegratedPnL: false,
+  },
+};
+
+export const DEFAULT_TIER2_PERMISSIONS: AdminPermissions = {
+  tier: 2,
+  team: {
+    canInviteMembers: true,
+    canDisableMembers: false,
+    canModifySecurity: false,
+    canModifyRules: false,
+    canViewPerformance: true,
+  },
+  settlement: {
+    allowReceivables: true,
+    allowAgentCommission: true,
+    allowPartnerSettlement: false,
+    allowDbCost: false,
+    allowIntegratedPnL: false,
+  },
+};
+
+export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
+  tier: 3,
+  team: {
+    canInviteMembers: true,
+    canDisableMembers: true,
+    canModifySecurity: true,
+    canModifyRules: true,
+    canViewPerformance: true,
+  },
+  settlement: {
+    allowReceivables: true,
+    allowAgentCommission: true,
+    allowPartnerSettlement: true,
+    allowDbCost: true,
+    allowIntegratedPnL: false,
+  },
+};
+
+export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
+  tier: 3,
+  team: {
+    canInviteMembers: true,
+    canDisableMembers: true,
+    canModifySecurity: true,
+    canModifyRules: true,
+    canViewPerformance: true,
+  },
+  settlement: {
+    allowReceivables: true,
+    allowAgentCommission: true,
+    allowPartnerSettlement: true,
+    allowDbCost: true,
+    allowIntegratedPnL: true,
+  },
+};
+
 export interface MemberSecurityProfile {
   watermark: boolean;         // 1. 화면 보안 워터마크
   appCaptureBlock: boolean;   // 2. 안드로이드 앱 캡처 차단 (FLAG_SECURE)
@@ -39,6 +135,7 @@ export interface OrgInfo {
   isPlatformAdmin: boolean;
   uiMode?: 'standard' | 'lite_only';
   securityProfile?: MemberSecurityProfile;
+  adminPermissions?: AdminPermissions;
   sessionRevokedAt?: string;
 }
 
@@ -101,7 +198,7 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
   const [{ data: role }, { data: org }, { data: member }, { data: profile }] = await Promise.all([
     supabase.rpc('current_org_role'),
     supabase.from('organizations').select('id, name').eq('id', orgId).maybeSingle(),
-    supabase.from('org_members').select('display_name, ui_mode, security_profile, session_revoked_at').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
+    supabase.from('org_members').select('display_name, ui_mode, security_profile, session_revoked_at, admin_permissions').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
     supabase.from('user_profiles').select('is_platform_admin').eq('user_id', userId).maybeSingle(),
   ]);
 
@@ -115,15 +212,25 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
       }
     : (isAdminRole(role as OrgRole) ? TRUSTED_TEAM_LEAD_SECURITY_PROFILE : DEFAULT_AGENT_SECURITY_PROFILE);
 
+  // 대표는 무조건 전권 허용, 관리자는 저장된 권한 또는 Tier 1 기본값
+  const currentRole = (role as OrgRole) || 'agent';
+  let permissions: AdminPermissions | undefined = undefined;
+  if (currentRole === 'owner') {
+    permissions = OWNER_FULL_PERMISSIONS;
+  } else if (currentRole === 'admin') {
+    permissions = (member as any)?.admin_permissions || DEFAULT_TIER1_PERMISSIONS;
+  }
+
   const info: OrgInfo = {
     userId,
     orgId: String(orgId),
     orgName: org?.name || '',
-    role: (role as OrgRole) || 'agent',
+    role: currentRole,
     displayName: member?.display_name || undefined,
     isPlatformAdmin: !!profile?.is_platform_admin,
     uiMode: (member?.ui_mode as 'standard' | 'lite_only') || 'standard',
     securityProfile: secProfile,
+    adminPermissions: permissions,
     sessionRevokedAt: member?.session_revoked_at || undefined,
   };
   saveCachedOrg(info);
