@@ -16,6 +16,7 @@ import {
 import { HQ_ORG_ID } from '../services/org';
 import { useCountUp } from '../utils/useCountUp';
 import { TenantPermissionModal } from '../components/platform/TenantPermissionModal';
+import { ApprovalEmailModal } from '../components/platform/ApprovalEmailModal';
 
 const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('ko-KR') : '-');
 
@@ -27,6 +28,12 @@ export default function PlatformPage() {
   const [applications, setApplications] = useState<OrgApplication[]>([]);
   const [permissionsMap, setPermissionsMap] = useState<Record<string, OrgFeaturePermissions>>({});
   const [selectedOrgForPerm, setSelectedOrgForPerm] = useState<PlatformOrg | null>(null);
+
+  // 이메일 검토 및 자동 발송 모달 상태
+  const [emailModalApp, setEmailModalApp] = useState<OrgApplication | null>(null);
+  const [emailModalDirect, setEmailModalDirect] = useState<{ name: string; ownerEmail: string } | null>(null);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState('');
@@ -87,32 +94,25 @@ export default function PlatformPage() {
     }
   };
 
-  const handleSendApprovalEmail = (companyName: string, ownerEmail: string) => {
-    const { subject, body } = generateApprovalEmailContent(companyName, ownerEmail);
-    // Gmail 웹 작성창 직접 호출 (대표님이 방금 연동하신 Gmail 환경에서 support@lmaster.xyz 발신자로 즉시 발송 가능)
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ownerEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(gmailUrl, '_blank');
+  const openApprovalModalForApp = (app: OrgApplication) => {
+    setEmailModalApp(app);
+    setEmailModalDirect(null);
+    setIsEmailModalOpen(true);
+  };
 
-    navigator.clipboard.writeText(`[제목] ${subject}\n\n${body}`).then(() => {
-      showToast(`'${companyName}' 대표(${ownerEmail}) 승인 안내문이 클립보드에 복사되었고 Gmail 작성창이 열렸습니다.`, 'success');
-    });
+  const openApprovalModalForCompany = (companyName: string, email: string) => {
+    setEmailModalApp(null);
+    setEmailModalDirect({ name: companyName, ownerEmail: email });
+    setIsEmailModalOpen(true);
+  };
+
+  const handleSendApprovalEmail = (companyName: string, ownerEmail: string) => {
+    openApprovalModalForCompany(companyName, ownerEmail);
   };
 
   const handleApproveApp = async (app: OrgApplication) => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      await approveOrgApplication(app);
-      showToast(`'${app.companyName}' 회사를 개설하고 ${app.ownerEmail} 대표 초대를 완료했습니다.`, 'success');
-      await reload();
-
-      // 승인 직후 안내 이메일 발송 창 자동 연결
-      handleSendApprovalEmail(app.companyName, app.ownerEmail);
-    } catch (e: any) {
-      showToast(`승인 처리 실패: ${e.message}`, 'error');
-    } finally {
-      setBusy(false);
-    }
+    // 승인 전 확인 및 자동 발송 모달 호출
+    openApprovalModalForApp(app);
   };
 
   const handleRejectApp = async (id: string) => {
@@ -653,6 +653,21 @@ export default function PlatformPage() {
           }}
         />
       )}
+
+      {/* 📩 신규 가입 승인 검토 및 이메일 자동 발송 모달 */}
+      <ApprovalEmailModal
+        isOpen={isEmailModalOpen}
+        onClose={() => {
+          setIsEmailModalOpen(false);
+          setEmailModalApp(null);
+          setEmailModalDirect(null);
+        }}
+        application={emailModalApp}
+        directCompany={emailModalDirect}
+        onSuccess={() => {
+          reload();
+        }}
+      />
     </div>
   );
 }
