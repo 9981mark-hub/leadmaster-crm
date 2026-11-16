@@ -88,8 +88,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { OnboardingPipelineTab } from '../components/training/OnboardingPipelineTab';
+import { completeOnboardingStep } from '../services/trainingOnboardingService';
 
-type TabMode = 'random' | 'clinic' | 'standard' | 'education' | 'admin';
+type TabMode = 'onboarding' | 'random' | 'clinic' | 'standard' | 'education' | 'admin';
 
 export default function TrainingCenterPage() {
   const { isAdmin, isPlatformAdmin, org, user } = useAuth();
@@ -108,8 +110,31 @@ export default function TrainingCenterPage() {
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
   const [searchAgentName, setSearchAgentName] = useState<string>('');
 
-  // Mode Selection: 'random' | 'clinic' | 'standard' | 'admin'
-  const [activeTab, setActiveTab] = useState<TabMode>('clinic');
+  // Mode Selection: 'onboarding' | 'random' | 'clinic' | 'standard' | 'education' | 'admin'
+  const [activeTab, setActiveTab] = useState<TabMode>('onboarding');
+  const [educationSubView, setEducationSubView] = useState<'script' | 'recordings' | 'videos' | 'faq' | 'exam' | undefined>(undefined);
+
+  // 온보딩 퀘스트 바로가기 네비게이션 핸들러
+  const handleOnboardingNavigate = (
+    targetTab: 'clinic' | 'random' | 'regular' | 'materials' | 'coaching',
+    subView?: string
+  ) => {
+    if (targetTab === 'clinic') {
+      setActiveTab('clinic');
+    } else if (targetTab === 'random') {
+      setActiveTab('random');
+      handleGenerateRandom();
+    } else if (targetTab === 'regular') {
+      setActiveTab('standard');
+    } else if (targetTab === 'materials') {
+      if (subView) {
+        setEducationSubView(subView as any);
+      }
+      setActiveTab('education');
+    } else if (targetTab === 'coaching') {
+      setActiveTab('admin');
+    }
+  };
 
   // Selected persona & history
   const [selectedPersona, setSelectedPersona] = useState<TrainingPersona>(() =>
@@ -981,6 +1006,20 @@ export default function TrainingCenterPage() {
       await saveTrainingSession(sessionRecord);
       setHistory(loadTrainingHistory());
 
+      // 신입 온보딩 파이프라인 자동 완료 연동
+      try {
+        const currentUId = user?.email || user?.id || 'new_agent_01';
+        if (activeTab === 'standard') {
+          completeOnboardingStep(currentUId, 'step_7_basic_courses', report.totalScore);
+        } else if (activeTab === 'clinic') {
+          completeOnboardingStep(currentUId, 'step_8_vulnerable_targets', report.totalScore);
+        } else if (activeTab === 'random') {
+          completeOnboardingStep(currentUId, 'step_9_random_simulation', report.totalScore);
+        }
+      } catch (onboardingErr) {
+        console.error('Failed to sync onboarding step:', onboardingErr);
+      }
+
       setCurrentReport(report);
       setCurrentSessionRecord(sessionRecord);
       setCallState('ended');
@@ -1103,6 +1142,21 @@ export default function TrainingCenterPage() {
 
       {/* Mode Navigation Tabs */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('onboarding')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            activeTab === 'onboarding'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
+              : 'text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>🌱 신입 온보딩 패스트트랙</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/10 dark:bg-white/20 font-black">
+            3일 완성
+          </span>
+        </button>
+
         <button
           onClick={() => setActiveTab('clinic')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
@@ -1481,7 +1535,9 @@ export default function TrainingCenterPage() {
           </div>
         )
       ) : activeTab === 'education' ? (
-        <EducationHubTab />
+        <EducationHubTab initialSubView={educationSubView} />
+      ) : activeTab === 'onboarding' ? (
+        <OnboardingPipelineTab onNavigateTab={handleOnboardingNavigate} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Left Column (4 Cols): Scenario Pickers */}

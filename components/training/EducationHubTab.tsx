@@ -184,7 +184,11 @@ const FormattedAiAnswer: React.FC<{
   );
 };
 
-export default function EducationHubTab() {
+interface EducationHubTabProps {
+  initialSubView?: SubView;
+}
+
+export default function EducationHubTab({ initialSubView }: EducationHubTabProps = {}) {
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -193,7 +197,13 @@ export default function EducationHubTab() {
   // Core Data State
   const [materials, setMaterials] = useState<TrainingEducationMaterials>(() => getEducationMaterials());
   const [loading, setLoading] = useState<boolean>(false);
-  const [activeSubView, setActiveSubView] = useState<SubView>('script');
+  const [activeSubView, setActiveSubView] = useState<SubView>(initialSubView || 'script');
+
+  useEffect(() => {
+    if (initialSubView) {
+      setActiveSubView(initialSubView);
+    }
+  }, [initialSubView]);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
