@@ -14,12 +14,15 @@ import {
   Eye,
   SlidersHorizontal,
   Trash2,
+  Bell,
+  Send,
 } from 'lucide-react';
 import {
   TeamMember,
   AdminPermissions,
   AdminTier,
   TelegramAdminPermissions,
+  NoticeAdminPermissions,
   DEFAULT_TIER1_PERMISSIONS,
   DEFAULT_TIER2_PERMISSIONS,
   DEFAULT_TIER3_PERMISSIONS,
@@ -53,6 +56,9 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
   const [telegramPerms, setTelegramPerms] = useState<TelegramAdminPermissions>(
     initialPerms.telegram || DEFAULT_TIER1_PERMISSIONS.telegram
   );
+  const [noticePerms, setNoticePerms] = useState<NoticeAdminPermissions>(
+    initialPerms.notice || DEFAULT_TIER1_PERMISSIONS.notice
+  );
   const [teamName, setTeamName] = useState<string>(member?.teamName || '1팀');
 
   // member 변경 시 폼 상태 동기화
@@ -63,6 +69,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
       setTeamPerms({ ...p.team });
       setSettlementPerms({ ...p.settlement });
       setTelegramPerms({ ...(p.telegram || DEFAULT_TIER1_PERMISSIONS.telegram) });
+      setNoticePerms({ ...(p.notice || DEFAULT_TIER1_PERMISSIONS.notice) });
       setTeamName(member.teamName || '1팀');
     }
   }, [member]);
@@ -76,14 +83,17 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
       setTeamPerms({ ...DEFAULT_TIER1_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER1_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER1_PERMISSIONS.telegram });
+      setNoticePerms({ ...DEFAULT_TIER1_PERMISSIONS.notice });
     } else if (newTier === 2) {
       setTeamPerms({ ...DEFAULT_TIER2_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER2_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER2_PERMISSIONS.telegram });
+      setNoticePerms({ ...DEFAULT_TIER2_PERMISSIONS.notice });
     } else if (newTier === 3) {
       setTeamPerms({ ...DEFAULT_TIER3_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER3_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER3_PERMISSIONS.telegram });
+      setNoticePerms({ ...DEFAULT_TIER3_PERMISSIONS.notice });
     }
   };
 
@@ -95,6 +105,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
         team: teamPerms,
         settlement: settlementPerms,
         telegram: telegramPerms,
+        notice: noticePerms,
       };
 
       await Promise.all([
@@ -587,6 +598,144 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-gray-400">
                         보관 주기가 지난 텔레그램 수집 원본 로그를 영구 삭제할 수 있습니다.
+                      </div>
+                    </div>
+                  </label>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* 5. 사내 공지 및 업무 지시 위임 스위치 */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 p-4 rounded-xl border border-slate-200/80 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Bell size={16} className="text-amber-500" />
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  5. 사내 공지사항 & 업무 지시 권한 위임
+                </h4>
+              </div>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-gray-400">
+                대상: {teamName}
+              </span>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-amber-400">
+                <input
+                  type="checkbox"
+                  checked={noticePerms.allowAccess}
+                  onChange={(e) =>
+                    setNoticePerms({ ...noticePerms, allowAccess: e.target.checked })
+                  }
+                  className="mt-0.5 rounded text-amber-600 focus:ring-amber-500"
+                />
+                <div className="flex-1">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                    <span>공지사항 & 업무 지시 관리 권한</span>
+                    <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">
+                      {noticePerms.allowAccess ? '허용' : '차단'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                    좌측 메뉴의 '사내 공지사항' 관리 기능(공지 작성, 업무 지시 하달, 수신 통계 열람)을 허용합니다.
+                  </div>
+                </div>
+              </label>
+
+              {noticePerms.allowAccess && (
+                <>
+                  <div className="p-2.5 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 space-y-2">
+                    <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <SlidersHorizontal size={14} className="text-amber-600" />
+                      <span>공지 작성 및 업무 지시 대상 범위 (Scope)</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNoticePerms({ ...noticePerms, noticeScope: 'team', directiveScope: 'team' })}
+                        className={`p-2 rounded-lg border text-left transition-all ${
+                          noticePerms.noticeScope === 'team' && noticePerms.directiveScope === 'team'
+                            ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-500 text-amber-700 dark:text-amber-300 font-bold'
+                            : 'border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300'
+                        }`}
+                      >
+                        <div className="text-xs">👥 담당 팀 한정 (추천)</div>
+                        <div className="text-[10px] opacity-80 mt-0.5">{teamName} 팀 공지 작성 및 소속 팀원에게만 업무 지시 하달</div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNoticePerms({ ...noticePerms, noticeScope: 'all', directiveScope: 'all' })}
+                        className={`p-2 rounded-lg border text-left transition-all ${
+                          noticePerms.noticeScope === 'all' && noticePerms.directiveScope === 'all'
+                            ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-300 font-bold'
+                            : 'border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300'
+                        }`}
+                      >
+                        <div className="text-xs">🌐 전사 전체 허용 (총괄)</div>
+                        <div className="text-[10px] opacity-80 mt-0.5">전사 공지사항 작성 및 모든 팀 상담원에게 지시 하달</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-amber-400">
+                      <input
+                        type="checkbox"
+                        checked={noticePerms.canCreateNotice}
+                        onChange={(e) =>
+                          setNoticePerms({ ...noticePerms, canCreateNotice: e.target.checked })
+                        }
+                        className="mt-0.5 rounded text-amber-600 focus:ring-amber-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">
+                          새 공지사항 등록 권한
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          새로운 공지 글을 게시할 수 있습니다.
+                        </div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-amber-400">
+                      <input
+                        type="checkbox"
+                        checked={noticePerms.canIssueDirective}
+                        onChange={(e) =>
+                          setNoticePerms({ ...noticePerms, canIssueDirective: e.target.checked })
+                        }
+                        className="mt-0.5 rounded text-amber-600 focus:ring-amber-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">
+                          업무 지시 하달 권한
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          상담원에게 조치 요구 업무 지시를 내릴 수 있습니다.
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-amber-400">
+                    <input
+                      type="checkbox"
+                      checked={noticePerms.canDeleteNotice}
+                      onChange={(e) =>
+                        setNoticePerms({ ...noticePerms, canDeleteNotice: e.target.checked })
+                      }
+                      className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                        <span>공지사항 삭제 권한</span>
+                        <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                          {noticePerms.canDeleteNotice ? '삭제 가능' : '삭제 차단'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        게시된 공지사항을 삭제할 수 있습니다 (대표/총괄 권장).
                       </div>
                     </div>
                   </label>

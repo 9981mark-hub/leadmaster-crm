@@ -11,6 +11,7 @@ export interface Notice {
   display_mode: 'banner' | 'feed' | 'modal';
   target_type: 'all' | 'team' | 'user';
   target_ids?: string[];
+  target_team_name?: string | null; // 소속 팀 지정 공지 ('1팀', '2팀' 등, NULL이면 전사 공지)
   is_pinned: boolean;
   starts_at: string;
   ends_at?: string | null;
@@ -32,6 +33,7 @@ export interface Directive {
   created_by_name?: string;
   assigned_to: string;
   assigned_to_name?: string;
+  assigned_team_name?: string | null; // 담당 상담원 소속 팀명
   case_id?: string | null;
   case_name?: string | null;
   title: string;
@@ -129,6 +131,7 @@ export async function createNotice(payload: {
   display_mode?: 'banner' | 'feed' | 'modal';
   target_type?: 'all' | 'team' | 'user';
   target_ids?: string[];
+  target_team_name?: string | null;
   is_pinned?: boolean;
   ends_at?: string | null;
   // 플랫폼 공지 전용 파라미터
@@ -148,6 +151,7 @@ export async function createNotice(payload: {
       created_by: user.id,
       notice_type: payload.notice_type || 'general',
       display_mode: payload.display_mode || 'banner',
+      target_team_name: payload.target_team_name || null,
       is_platform_notice: !!payload.is_platform_notice,
       platform_target_role: payload.platform_target_role || 'all',
       target_org_ids: payload.target_org_ids || [],
@@ -209,6 +213,7 @@ export async function fetchDirectives(): Promise<Directive[]> {
 // 7. 업무 지시사항 등록 (관리자)
 export async function createDirective(payload: {
   assigned_to: string;
+  assigned_team_name?: string | null;
   title: string;
   description?: string;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
@@ -224,6 +229,7 @@ export async function createDirective(payload: {
     .insert([{
       ...payload,
       created_by: user.id,
+      assigned_team_name: payload.assigned_team_name || null,
       priority: payload.priority || 'normal',
       status: 'pending'
     }])
@@ -257,8 +263,8 @@ export async function updateDirectiveStatus(
 
 // 9. 특정 공지의 수신/미수신 멤버 조회 (관리자용 통계)
 export async function fetchNoticeReadStats(noticeId: string): Promise<{
-  readMembers: { userId: string; displayName: string; readAt: string }[];
-  unreadMembers: { userId: string; displayName: string }[];
+  readMembers: { userId: string; displayName: string; teamName: string; readAt: string }[];
+  unreadMembers: { userId: string; displayName: string; teamName: string }[];
 }> {
   const sb = need();
   const { data: members, error: mErr } = await sb.rpc('list_org_members');
@@ -277,16 +283,19 @@ export async function fetchNoticeReadStats(noticeId: string): Promise<{
   const unreadMembers: any[] = [];
 
   (members || []).forEach((m: any) => {
+    const teamName = m.team_name || '1팀';
     if (readMap.has(m.user_id)) {
       readMembers.push({
         userId: m.user_id,
         displayName: m.display_name || m.email,
+        teamName,
         readAt: readMap.get(m.user_id)
       });
     } else {
       unreadMembers.push({
         userId: m.user_id,
-        displayName: m.display_name || m.email
+        displayName: m.display_name || m.email,
+        teamName
       });
     }
   });

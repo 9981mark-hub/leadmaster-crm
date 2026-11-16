@@ -33,11 +33,21 @@ export interface TelegramAdminPermissions {
   canPurgeHistory: boolean;    // 보관 주기 지난 히스토리 영구 삭제 권한 위임
 }
 
+export interface NoticeAdminPermissions {
+  allowAccess: boolean;         // 공지/업무지시 페이지 접근 허용
+  noticeScope: 'all' | 'team';  // 공지 작성 대상 범위: 'all'(전사) vs 'team'(소속 팀만)
+  directiveScope: 'all' | 'team'; // 업무 지시 하달 범위: 'all'(전사) vs 'team'(소속 팀원만)
+  canCreateNotice: boolean;     // 공지사항 작성 권한
+  canIssueDirective: boolean;   // 업무 지시 하달 권한
+  canDeleteNotice: boolean;     // 공지사항 삭제 권한
+}
+
 export interface AdminPermissions {
   tier: AdminTier;
   team: TeamAdminPermissions;
   settlement: SettlementAdminPermissions;
   telegram: TelegramAdminPermissions;
+  notice: NoticeAdminPermissions;
 }
 
 export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
@@ -62,6 +72,14 @@ export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
     canManageRules: false,
     canBulkApprove: false,
     canPurgeHistory: false,
+  },
+  notice: {
+    allowAccess: true,
+    noticeScope: 'team',
+    directiveScope: 'team',
+    canCreateNotice: true,
+    canIssueDirective: true,
+    canDeleteNotice: false,
   },
 };
 
@@ -88,6 +106,14 @@ export const DEFAULT_TIER2_PERMISSIONS: AdminPermissions = {
     canBulkApprove: true,
     canPurgeHistory: false,
   },
+  notice: {
+    allowAccess: true,
+    noticeScope: 'team',
+    directiveScope: 'team',
+    canCreateNotice: true,
+    canIssueDirective: true,
+    canDeleteNotice: false,
+  },
 };
 
 export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
@@ -113,6 +139,14 @@ export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
     canBulkApprove: true,
     canPurgeHistory: false,
   },
+  notice: {
+    allowAccess: true,
+    noticeScope: 'all',
+    directiveScope: 'all',
+    canCreateNotice: true,
+    canIssueDirective: true,
+    canDeleteNotice: true,
+  },
 };
 
 export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
@@ -137,6 +171,14 @@ export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
     canManageRules: true,
     canBulkApprove: true,
     canPurgeHistory: true,
+  },
+  notice: {
+    allowAccess: true,
+    noticeScope: 'all',
+    directiveScope: 'all',
+    canCreateNotice: true,
+    canIssueDirective: true,
+    canDeleteNotice: true,
   },
 };
 
