@@ -310,14 +310,14 @@ export default function PlatformPage() {
               >
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm text-gray-900 dark:text-white">{app.companyName}</span>
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">({app.ownerName} 대표)</span>
-                    <span className="text-xs font-mono text-blue-600 dark:text-blue-400">{app.ownerEmail}</span>
-                    <span className="text-xs text-gray-400">| {app.phone}</span>
-                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    <span className="font-bold text-sm text-gray-900 dark:text-white whitespace-nowrap">{app.companyName}</span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">({app.ownerName} 대표)</span>
+                    <span className="text-xs font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap">{app.ownerEmail}</span>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">| {app.phone}</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap">
                       상담원 {app.agentCountTier === '1-5' ? '1~5명' : app.agentCountTier === '6-20' ? '6~20명' : '21명 이상'}
                     </span>
-                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
                       app.status === 'pending'
                         ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
                         : app.status === 'approved'
@@ -454,24 +454,25 @@ export default function PlatformPage() {
               {orgs.length}
             </span>
           </h3>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            * 청구서 복사 버튼으로 정산용 공식 마크다운 서식을 바로 추출할 수 있습니다.
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 inline-flex items-center gap-1.5 shadow-2xs">
+            <FileText size={12} className="text-blue-500 dark:text-blue-400 shrink-0" />
+            청구서 복사 버튼으로 정산용 공식 마크다운 서식을 바로 추출할 수 있습니다.
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-left border-b border-gray-100 dark:border-gray-700 text-xs">
+          <table className="w-full text-sm min-w-[1150px]">
+            <thead className="bg-gray-50/90 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 text-left border-b border-gray-200/80 dark:border-gray-700 text-xs select-none">
               <tr>
-                <th className="p-3.5">회사명</th>
-                <th className="p-3.5">상태</th>
-                <th className="p-3.5">대표 계정 (초대)</th>
-                <th className="p-3.5 text-right">활성 / 전체 멤버</th>
-                <th className="p-3.5 text-right">당월 청구 예정액</th>
-                <th className="p-3.5 text-right">보유 리드</th>
-                <th className="p-3.5">텔레그램 봇</th>
-                <th className="p-3.5">등록일</th>
-                <th className="p-3.5 text-right">액션</th>
+                <th className="p-3.5 whitespace-nowrap min-w-[180px]">회사명</th>
+                <th className="p-3.5 whitespace-nowrap min-w-[105px]">상태</th>
+                <th className="p-3.5 whitespace-nowrap min-w-[180px]">대표 계정 (초대)</th>
+                <th className="p-3.5 text-right whitespace-nowrap min-w-[115px]">활성 / 전체 멤버</th>
+                <th className="p-3.5 text-right whitespace-nowrap min-w-[130px]">당월 청구 예정액</th>
+                <th className="p-3.5 text-right whitespace-nowrap min-w-[95px]">보유 리드</th>
+                <th className="p-3.5 whitespace-nowrap min-w-[100px]">텔레그램 봇</th>
+                <th className="p-3.5 whitespace-nowrap min-w-[110px]">등록일</th>
+                <th className="p-3.5 text-right whitespace-nowrap min-w-[280px]">액션</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -482,7 +483,7 @@ export default function PlatformPage() {
 
                 return (
                   <tr key={o.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-750/30 transition-colors">
-                    <td className="p-3.5 font-medium text-gray-900 dark:text-white">
+                    <td className="p-3.5 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span className="font-bold">{o.name}</span>
                         {isHq && (
@@ -518,129 +519,129 @@ export default function PlatformPage() {
                         </div>
                       )}
                     </td>
-                    <td className="p-3.5">
+                    <td className="p-3.5 whitespace-nowrap">
                       {o.status === 'active' ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50 dark:border-emerald-800/40">
-                          <CheckCircle2 size={12} /> 정상 가동
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200/60 dark:border-emerald-800/40 whitespace-nowrap">
+                          <CheckCircle2 size={12} className="shrink-0" /> 정상 가동
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md border border-red-200/50 dark:border-red-800/40">
-                          <Ban size={12} /> 사용 중지
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2.5 py-1 rounded-md border border-red-200/60 dark:border-red-800/40 whitespace-nowrap">
+                          <Ban size={12} className="shrink-0" /> 사용 중지
                         </span>
                       )}
                     </td>
-                    <td className="p-3.5 text-xs text-gray-600 dark:text-gray-300">
+                    <td className="p-3.5 text-xs text-gray-600 dark:text-gray-300 whitespace-nowrap">
                       {o.ownerInviteEmail ? (
-                        <div className="flex flex-col gap-1 min-w-[190px]">
+                        <div className="flex flex-col gap-1">
                           <div 
-                            className="font-mono text-xs text-gray-900 dark:text-gray-100 select-all truncate max-w-[240px]" 
+                            className="font-mono text-xs text-gray-900 dark:text-gray-100 select-all truncate max-w-[240px] whitespace-nowrap" 
                             title={o.ownerInviteEmail}
                           >
                             {o.ownerInviteEmail}
                           </div>
-                          <div className="flex items-center gap-1.5 text-[11px]">
+                          <div className="flex items-center gap-1.5 text-[11px] whitespace-nowrap">
                             {o.ownerInviteAccepted ? (
-                              <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                                 가입 완료
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                              <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
                                 초대 수락 대기
                               </span>
                             )}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-gray-400 whitespace-nowrap">-</span>
                       )}
                     </td>
-                    <td className="p-3.5 text-right font-mono tabular-nums text-gray-900 dark:text-gray-100">
+                    <td className="p-3.5 text-right font-mono tabular-nums text-gray-900 dark:text-gray-100 whitespace-nowrap">
                       <span className="font-bold text-blue-600 dark:text-blue-400">{o.activeMembers}</span> / {o.members}명
                     </td>
-                    <td className="p-3.5 text-right font-mono tabular-nums font-bold">
+                    <td className="p-3.5 text-right font-mono tabular-nums font-bold whitespace-nowrap">
                       {isHq ? (
-                        <span className="text-gray-400 text-xs font-normal">본사 운영</span>
+                        <span className="text-gray-400 text-xs font-normal whitespace-nowrap">본사 운영</span>
                       ) : (
-                        <div>
+                        <div className="whitespace-nowrap">
                           <span className="text-gray-900 dark:text-white">
                             ₩{monthlyBill.toLocaleString()}
                           </span>
-                          <div className="text-[10px] text-gray-400 font-normal">
+                          <div className="text-[10px] text-gray-400 font-normal whitespace-nowrap">
                             (₩{bill.unitPrice.toLocaleString()}/석 • {bill.tierName})
                           </div>
                         </div>
                       )}
                     </td>
-                    <td className="p-3.5 text-right font-mono tabular-nums text-gray-700 dark:text-gray-300">
+                    <td className="p-3.5 text-right font-mono tabular-nums text-gray-700 dark:text-gray-300 whitespace-nowrap">
                       {o.cases.toLocaleString()}건
                     </td>
-                    <td className="p-3.5 text-xs">
+                    <td className="p-3.5 text-xs whitespace-nowrap">
                       {isHq ? (
-                        <span className="text-blue-600 font-medium">본사 봇</span>
+                        <span className="text-blue-600 font-medium whitespace-nowrap">본사 봇</span>
                       ) : o.hasTelegramBot ? (
-                        <span className="text-emerald-600 font-medium">연동 완료</span>
+                        <span className="text-emerald-600 font-medium whitespace-nowrap">연동 완료</span>
                       ) : (
-                        <span className="text-gray-400">미등록</span>
+                        <span className="text-gray-400 whitespace-nowrap">미등록</span>
                       )}
                     </td>
-                    <td className="p-3.5 text-xs text-gray-500 font-mono tabular-nums">
+                    <td className="p-3.5 text-xs text-gray-500 font-mono tabular-nums whitespace-nowrap">
                       {fmtDate(o.createdAt)}
                     </td>
-                    <td className="p-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="p-3.5 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                         {!isHq && o.ownerInviteEmail && (
                           o.ownerInviteAccepted ? (
                             <button
                               onClick={() => handleSendApprovalEmail(o.name, o.ownerInviteEmail!)}
-                              className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
+                              className="px-2.5 py-1 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer whitespace-nowrap shrink-0"
                               title="이미 가입 완료된 테넌트입니다. 필요 시 접속 주소 및 안내 메일을 재발송합니다."
                             >
-                              <Mail size={12} /> 재안내
+                              <Mail size={12} className="shrink-0" /> 재안내
                             </button>
                           ) : (
                             <button
                               onClick={() => handleSendApprovalEmail(o.name, o.ownerInviteEmail!)}
-                              className="px-2.5 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
+                              className="px-2.5 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer whitespace-nowrap shrink-0"
                               title="대표자 이메일로 7일 무료체험 승인 안내 메일 발송 및 클립보드 복사"
                             >
-                              <Mail size={12} /> 승인 메일
+                              <Mail size={12} className="shrink-0" /> 승인 메일
                             </button>
                           )
                         )}
                         {!isHq && (
                           <button
                             onClick={() => setSelectedOrgForPerm(o)}
-                            className="px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-lg flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
+                            className="px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-lg inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer whitespace-nowrap shrink-0"
                             title="광고비/정산 등 5대 기능 권한 및 라이선스 설정"
                           >
-                            <Settings size={12} /> 권한 설정
+                            <Settings size={12} className="shrink-0" /> 권한 설정
                           </button>
                         )}
                         {!isHq && (
                           <button
                             onClick={() => copyInvoice(o)}
-                            className="px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1 transition-colors shadow-xs"
+                            className="px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer whitespace-nowrap shrink-0"
                             title="공식 청구서 마크다운 복사"
                           >
-                            <FileText size={12} /> 청구서 복사
+                            <FileText size={12} className="shrink-0" /> 청구서 복사
                           </button>
                         )}
                         {!isHq && (
                           <button
                             onClick={() => toggleStatus(o)}
                             disabled={busy}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center gap-1 transition-colors shadow-xs ${
+                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold border inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer whitespace-nowrap shrink-0 ${
                               o.status === 'active'
-                                ? 'text-red-600 border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950/30'
-                                : 'text-emerald-700 border-emerald-200 dark:border-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                                ? 'text-red-600 dark:text-red-400 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/50'
+                                : 'text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
                             }`}
                           >
                             {o.status === 'active' ? (
-                              <><Ban size={12} /> 중지</>
+                              <><Ban size={12} className="shrink-0" /> 중지</>
                             ) : (
-                              <><RotateCcw size={12} /> 재개</>
+                              <><RotateCcw size={12} className="shrink-0" /> 재개</>
                             )}
                           </button>
                         )}

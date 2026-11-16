@@ -575,16 +575,16 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <input type="checkbox" aria-label="이 쪽 모두 선택" checked={allOnPage} onChange={() => onToggleSelectAll?.(pageIds, !allOnPage)} />
                                 </th>
                             )}
-                            <th className={`px-2 ${headerPadding} w-[3%] text-center`}><Star size={14} className="inline text-gray-400" /></th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[14%]`}>유형/경로/거래처</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[11%]`}>고객명</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[12%]`}>연락처</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%]`}>상태</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%]`}>등록일</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%]`}>최종상담일</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} ${viewMode === 'active' ? 'w-[30%]' : 'w-[20%]'}`}>리마인더</th>
+                            <th className={`px-2 ${headerPadding} w-[3%] text-center whitespace-nowrap`}><Star size={14} className="inline text-gray-400" /></th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[14%] whitespace-nowrap`}>유형/경로/거래처</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[11%] whitespace-nowrap`}>고객명</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[12%] whitespace-nowrap`}>연락처</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%] whitespace-nowrap`}>상태</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%] whitespace-nowrap`}>등록일</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%] whitespace-nowrap`}>최종상담일</th>
+                            <th className={`px-3 md:px-4 ${headerPadding} ${viewMode === 'active' ? 'w-[30%]' : 'w-[20%]'} whitespace-nowrap`}>리마인더</th>
                             {viewMode !== 'active' && (
-                                <th className={`px-3 md:px-4 ${headerPadding} w-[10%] text-center`}>
+                                <th className={`px-3 md:px-4 ${headerPadding} w-[10%] text-center whitespace-nowrap`}>
                                     {viewMode === 'archived' ? '보관·삭제' : '휴지통 관리'}
                                 </th>
                             )}

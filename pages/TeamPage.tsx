@@ -763,28 +763,28 @@ export default function TeamPage() {
 
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs">
+              <table className="w-full text-sm min-w-[920px]">
+                <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs select-none">
                   <tr>
-                    <th className="text-left px-5 py-2">이름</th>
-                    <th className="text-left px-3 py-2">이메일</th>
-                    <th className="text-left px-3 py-2">역할</th>
-                    <th className="text-left px-3 py-2">업무 모드</th>
-                    <th className="text-left px-3 py-2">보안 통제</th>
-                    <th className="text-right px-3 py-2">담당 리드</th>
-                    <th className="text-left px-3 py-2">최근 로그인</th>
-                    <th className="text-right px-5 py-2">관리</th>
+                    <th className="text-left px-5 py-2.5 whitespace-nowrap min-w-[140px]">이름</th>
+                    <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[180px]">이메일</th>
+                    <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[100px]">역할</th>
+                    <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[150px]">업무 모드</th>
+                    <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[140px]">보안 통제</th>
+                    <th className="text-right px-3 py-2.5 whitespace-nowrap min-w-[90px]">담당 리드</th>
+                    <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[120px]">최근 로그인</th>
+                    <th className="text-right px-5 py-2.5 whitespace-nowrap min-w-[120px]">관리</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {members.map(m => (
                     <tr key={m.userId} className={m.status === 'disabled' ? 'opacity-50' : ''}>
-                      <td className="px-5 py-2.5 font-medium text-gray-800 dark:text-gray-100">
-                        {m.displayName}{m.userId === org.userId && <span className="ml-1 text-xs text-blue-500">(나)</span>}
-                        {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500">사용 중지</span>}
+                      <td className="px-5 py-2.5 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">
+                        {m.displayName}{m.userId === org.userId && <span className="ml-1 text-xs text-blue-500 font-bold">(나)</span>}
+                        {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500 font-semibold whitespace-nowrap">사용 중지</span>}
                       </td>
-                      <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400">{m.email}</td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{m.email}</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap">
                         {canEditRole(m) ? (
                           <select
                             value={m.role}
@@ -797,10 +797,10 @@ export default function TeamPage() {
                             {org.role === 'owner' && <option value="owner">대표</option>}
                           </select>
                         ) : (
-                          <span className="text-gray-700 dark:text-gray-200">{ROLE_LABEL[m.role]}</span>
+                          <span className="text-gray-700 dark:text-gray-200 whitespace-nowrap">{ROLE_LABEL[m.role]}</span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-3 py-2.5 whitespace-nowrap">
                         {m.role === 'agent' && canEditRole(m) ? (
                           <select
                             value={m.uiMode || 'standard'}
@@ -816,7 +816,7 @@ export default function TeamPage() {
                             <option value="lite_only">⚡ 간편콜 전용 (신입)</option>
                           </select>
                         ) : (
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
                             m.uiMode === 'lite_only'
                               ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300'
                               : 'text-gray-500 dark:text-gray-400'
@@ -825,19 +825,19 @@ export default function TeamPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-3 py-2.5 whitespace-nowrap">
                         {canEditRole(m) ? (
                           <button
                             type="button"
                             onClick={() => setSecurityTargetMember(m)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:shadow-xs cursor-pointer bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:shadow-xs cursor-pointer bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 whitespace-nowrap shrink-0"
                           >
                             <Shield size={13} className={
                               !m.securityProfile?.watermark && !m.securityProfile?.appCaptureBlock && !m.securityProfile?.masking && !m.securityProfile?.anomalyAlert
-                                ? 'text-amber-500'
-                                : 'text-blue-500'
+                                ? 'text-amber-500 shrink-0'
+                                : 'text-blue-500 shrink-0'
                             } />
-                            <span>
+                            <span className="whitespace-nowrap">
                               {!m.securityProfile?.watermark && !m.securityProfile?.appCaptureBlock && !m.securityProfile?.masking && !m.securityProfile?.anomalyAlert
                                 ? '🌟 팀장급 (해제)'
                                 : m.securityProfile?.watermark && m.securityProfile?.appCaptureBlock && m.securityProfile?.masking && m.securityProfile?.anomalyAlert
@@ -846,28 +846,28 @@ export default function TeamPage() {
                             </span>
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-400">자율 권한</span>
+                          <span className="text-xs text-gray-400 whitespace-nowrap">자율 권한</span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 text-right tabular-nums">{m.assignedCases.toLocaleString()}</td>
-                      <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400">{fmtDate(m.lastSignInAt)}</td>
-                      <td className="px-5 py-2.5 text-right">
+                      <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{m.assignedCases.toLocaleString()}건</td>
+                      <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{fmtDate(m.lastSignInAt)}</td>
+                      <td className="px-5 py-2.5 text-right whitespace-nowrap">
                         {canEditRole(m) && (m.status === 'active' ? (
                           <button
                             disabled={busy}
                             onClick={() => handleMemberChange(m, { status: 'disabled' },
                               `${m.displayName}님을 사용 중지할까요?\n바로 로그인과 데이터 접근이 막힙니다. 담당 리드 ${m.assignedCases}건은 그대로 남으니 다른 상담원에게 다시 배정하세요.`)}
-                            className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline disabled:opacity-50 whitespace-nowrap shrink-0"
                           >
-                            <Ban size={14} /> 사용 중지
+                            <Ban size={14} className="shrink-0" /> 사용 중지
                           </button>
                         ) : (
                           <button
                             disabled={busy}
                             onClick={() => handleMemberChange(m, { status: 'active' })}
-                            className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline disabled:opacity-50 whitespace-nowrap shrink-0"
                           >
-                            <RotateCcw size={14} /> 다시 사용
+                            <RotateCcw size={14} className="shrink-0" /> 다시 사용
                           </button>
                         ))}
                       </td>
