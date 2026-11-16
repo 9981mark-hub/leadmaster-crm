@@ -425,11 +425,12 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     // scope local: 이 기기만 로그아웃. 기본값(global)은 같은 계정의 폰 앱 세션까지 폐기해서
     // 앱이 전화·문자 요청을 조용히 못 받게 된다 (2026-11-01 문자 미발송 원인)
     if (supabase) await supabase.auth.signOut({ scope: 'local' });
-    resetInitState(); // [SYNC FIX] 재로그인 시 데이터 재초기화를 위해 모듈 상태 리셋
+    resetInitState(); // [SYNC FIX] 재로그인 시 데이터 재초기화 및 로컬/세션 캐시 완전 소각
     localStorage.removeItem('authToken');
     localStorage.removeItem('userProfile');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('leadmaster_persistent_auth');
+    try { sessionStorage.clear(); } catch {}
     clearOrgCache();
     setOrg(null);
     setIsAuthenticated(false);

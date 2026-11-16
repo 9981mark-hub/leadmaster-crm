@@ -492,12 +492,52 @@ const setupRealtimeSubscription = () => {
   );
 };
 
-// [SYNC FIX] 로그아웃 시 모듈 상태 리셋 (재로그인 시 정상 초기화를 위해)
-export const resetInitState = () => {
+// [멀티테넌트 보안 및 동기화 완전 소각]
+// 로그아웃 시 또는 사용자/테넌트 전환 시 이전 회사의 모든 민감 데이터(케이스, 파트너, 지출 등)를
+// 메모리, sessionStorage, localStorage에서 완전히 소각합니다.
+export const clearAllLocalDataCache = () => {
+  // 1. 메모리 상태 완전 초기화
+  localCases = [];
+  localPartners = [];
+  localLogs = [];
+  localInboundPaths = [];
+  localStatuses = [];
+  localSecondaryStatuses = [];
+  localTertiaryStatuses = {};
+  localExpenses = [];
+  expensesInitialized = false;
   isInitialized = false;
   syncStatus = 'ok';
   lastSyncAt = null;
-  console.log('[Sync] Module state reset for re-login');
+
+  // 2. sessionStorage (고객 케이스 민감정보) 완전 소각
+  try {
+    sessionStorage.removeItem(CACHE_KEYS.CASES);
+    sessionStorage.clear();
+  } catch (e) {
+    console.warn('[Cache] sessionStorage clear error:', e);
+  }
+
+  // 3. localStorage 내 멀티테넌트 데이터 캐시 소각
+  try {
+    Object.values(CACHE_KEYS).forEach(key => {
+      try { localStorage.removeItem(key); } catch {}
+    });
+    localStorage.removeItem('lm_last_backup_date');
+    localStorage.removeItem('lm_cache_owner');
+    localStorage.removeItem('managerName');
+  } catch (e) {
+    console.warn('[Cache] localStorage clear error:', e);
+  }
+
+  console.log('[Security] All local data caches (memory, sessionStorage, localStorage) completely purged.');
+  notifyListeners();
+};
+
+// [SYNC FIX] 로그아웃 시 모듈 상태 리셋 (재로그인 시 정상 초기화를 위해)
+export const resetInitState = () => {
+  clearAllLocalDataCache();
+  console.log('[Sync] Module state reset and cache purged for re-login');
 };
 
 // [SYNC FIX] 강제 전체 동기화 (스마트 머지 우회, 서버 데이터로 완전 교체)
@@ -556,16 +596,10 @@ export const refreshData = async () => {
     const supabaseCases = await fetchCasesFromSupabase();
     console.log(`[Sync] Force refresh: ${supabaseCases.length} cases from server`);
 
-    if (supabaseCases.length === 0) {
-      console.warn('[Sync] Server returned 0 cases - RLS issue? Aborting force sync to protect local data.');
-      syncStatus = 'fetch_failed';
-      notifyListeners();
-      return;
-    }
-
-    // 3. 스마트 머지 우회 - 서버 데이터로 완전 교체
-    const serverCases = supabaseCases.map(processIncomingCase).filter((c): c is Case => c !== null);
+    // [멀티테넌트 정상 처리] 신규 테넌트는 0건이 정상이므로, 0건이어도 정상 교체
+    const serverCases = (supabaseCases || []).map(processIncomingCase).filter((c): c is Case => c !== null);
     localCases = serverCases;
+    saveToStorage();
 
     // 4. Settings도 갱신
     try {
@@ -959,7 +993,7 @@ const performBackgroundFetch = async () => {
       localCases = newLocalCases;
 
       syncInboundPaths(localCases);
-    } else if (localCases.length === 0) {
+    } else if (localCases.length === 0 && !isSupabaseEnabled()) {
       localCases = [...MOCK_CASES];
     }
 

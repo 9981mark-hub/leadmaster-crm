@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subscribe, fetchCases } from '../services/api';
 import { Case } from '../types';
@@ -7,35 +7,30 @@ import { Sparkles, X, ArrowRight, BellRing } from 'lucide-react';
 const NewCasePopup: React.FC = () => {
     const [newCases, setNewCases] = useState<Case[]>([]);
     const [visible, setVisible] = useState(false);
-    const [lastCount, setLastCount] = useState(0);
+    const lastCountRef = useRef(0);
     const navigate = useNavigate();
 
-    const checkForNewCases = async () => {
+    const checkForNewCases = useCallback(async () => {
         const cases = await fetchCases();
         const myName = localStorage.getItem('managerName');
-        // [Fix] Exclude cases created/managed by self (Manual Entry) so popup doesn't annoy user
+        // Exclude cases created/managed by self (Manual Entry) so popup doesn't annoy user
         const currentNewCases = cases.filter(c => c.isNew && c.managerName !== myName);
         const count = currentNewCases.length;
 
         setNewCases(currentNewCases);
 
-        // Logic: Show if we have new cases and (it's the first check OR count increased OR it's just > 0 and we haven't dismissed it yet?)
-        // Simple logic for now: If count > 0 and we haven't manually dismissed (managed by visible state), we show it.
-        // However, if we refresh, we want it to show.
-        // If we navigate, we want it to stay (global).
-        // If user dismisses, we hide it until count CHANGES (e.g. gets more).
-
         if (count > 0) {
-            // If count changed (new one arrived) or first load
-            if (count !== lastCount) {
+            // Count changed (new ones arrived) or first load with actual items
+            if (count !== lastCountRef.current) {
                 setVisible(true);
             }
         } else {
+            // No new cases → hide immediately
             setVisible(false);
         }
 
-        setLastCount(count);
-    };
+        lastCountRef.current = count;
+    }, []);
 
     useEffect(() => {
         // Initial check
@@ -47,7 +42,7 @@ const NewCasePopup: React.FC = () => {
         });
 
         return () => unsubscribe();
-    }, [lastCount]); // Depend on lastCount to detect changes properly
+    }, [checkForNewCases]);
 
     if (!visible || newCases.length === 0) return null;
 

@@ -156,7 +156,16 @@ export const ensureCacheOwner = (info: OrgInfo): boolean => {
     if (key && isDataCacheKey(key)) toRemove.push(key);
   }
   toRemove.forEach(k => localStorage.removeItem(k));
+
+  // [SECURITY FIX] 탭 세션 스토리지에 보관된 고객 케이스 민감정보 완전 소각
+  try {
+    sessionStorage.removeItem('lm_cases');
+    sessionStorage.clear();
+  } catch (e) {
+    console.warn('[Org] sessionStorage clear failed:', e);
+  }
+
   localStorage.setItem(CACHE_OWNER_KEY, owner);
-  console.log(`[Org] Cache owner changed → cleared ${toRemove.length} local cache keys`);
+  console.log(`[Org] Cache owner changed → cleared ${toRemove.length} local cache keys and purged sessionStorage`);
   return true;
 };
