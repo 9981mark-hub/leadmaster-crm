@@ -58,7 +58,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
     {
       label: '연동 & 소통',
       items: [
-        ...(isAdmin ? [{ to: '/telegram', icon: Smartphone, label: 'TG 연동 센터', badge: pendingTgCount }] : []),
+        { to: '/telegram', icon: Smartphone, label: 'TG 연동 센터', badge: pendingTgCount },
         { to: '/notices', icon: Megaphone, label: '사내 공지사항' },
         { to: '/training', icon: GraduationCap, label: 'AI 트레이닝' },
       ],

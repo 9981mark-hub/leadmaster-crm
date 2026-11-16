@@ -25,10 +25,19 @@ export interface SettlementAdminPermissions {
   allowIntegratedPnL: boolean;     // 전사 통합 경영 손익 (순영업이익/고정비) 열람 (기본 false)
 }
 
+export interface TelegramAdminPermissions {
+  allowAccess: boolean;        // 텔레그램 연동 관제 센터 접근 허용
+  viewScope: 'all' | 'team';   // 'all' (전사) | 'team' (담당 팀만)
+  canManageRules: boolean;     // 자동화 룰(AI 파싱 및 상태 변경) 설정 권한 위임
+  canBulkApprove: boolean;     // AI 추천 대량 일괄 승인 권한 위임
+  canPurgeHistory: boolean;    // 보관 주기 지난 히스토리 영구 삭제 권한 위임
+}
+
 export interface AdminPermissions {
   tier: AdminTier;
   team: TeamAdminPermissions;
   settlement: SettlementAdminPermissions;
+  telegram: TelegramAdminPermissions;
 }
 
 export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
@@ -46,6 +55,13 @@ export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
     allowPartnerSettlement: false,
     allowDbCost: false,
     allowIntegratedPnL: false,
+  },
+  telegram: {
+    allowAccess: true,
+    viewScope: 'team',
+    canManageRules: false,
+    canBulkApprove: false,
+    canPurgeHistory: false,
   },
 };
 
@@ -65,6 +81,13 @@ export const DEFAULT_TIER2_PERMISSIONS: AdminPermissions = {
     allowDbCost: false,
     allowIntegratedPnL: false,
   },
+  telegram: {
+    allowAccess: true,
+    viewScope: 'team',
+    canManageRules: false,
+    canBulkApprove: true,
+    canPurgeHistory: false,
+  },
 };
 
 export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
@@ -83,6 +106,13 @@ export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
     allowDbCost: true,
     allowIntegratedPnL: false,
   },
+  telegram: {
+    allowAccess: true,
+    viewScope: 'all',
+    canManageRules: true,
+    canBulkApprove: true,
+    canPurgeHistory: false,
+  },
 };
 
 export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
@@ -100,6 +130,13 @@ export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
     allowPartnerSettlement: true,
     allowDbCost: true,
     allowIntegratedPnL: true,
+  },
+  telegram: {
+    allowAccess: true,
+    viewScope: 'all',
+    canManageRules: true,
+    canBulkApprove: true,
+    canPurgeHistory: true,
   },
 };
 
@@ -137,6 +174,7 @@ export interface OrgInfo {
   securityProfile?: MemberSecurityProfile;
   adminPermissions?: AdminPermissions;
   sessionRevokedAt?: string;
+  teamName?: string;
 }
 
 export const HQ_ORG_ID = '00000000-0000-0000-0000-000000000001';
@@ -198,7 +236,7 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
   const [{ data: role }, { data: org }, { data: member }, { data: profile }] = await Promise.all([
     supabase.rpc('current_org_role'),
     supabase.from('organizations').select('id, name').eq('id', orgId).maybeSingle(),
-    supabase.from('org_members').select('display_name, ui_mode, security_profile, session_revoked_at, admin_permissions').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
+    supabase.from('org_members').select('display_name, ui_mode, security_profile, session_revoked_at, admin_permissions, team_name').eq('org_id', orgId).eq('user_id', userId).maybeSingle(),
     supabase.from('user_profiles').select('is_platform_admin').eq('user_id', userId).maybeSingle(),
   ]);
 
@@ -218,7 +256,13 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
   if (currentRole === 'owner') {
     permissions = OWNER_FULL_PERMISSIONS;
   } else if (currentRole === 'admin') {
-    permissions = (member as any)?.admin_permissions || DEFAULT_TIER1_PERMISSIONS;
+    const raw = (member as any)?.admin_permissions || DEFAULT_TIER1_PERMISSIONS;
+    permissions = {
+      ...raw,
+      team: { ...DEFAULT_TIER1_PERMISSIONS.team, ...(raw.team || {}) },
+      settlement: { ...DEFAULT_TIER1_PERMISSIONS.settlement, ...(raw.settlement || {}) },
+      telegram: { ...DEFAULT_TIER1_PERMISSIONS.telegram, ...(raw.telegram || {}) },
+    };
   }
 
   const info: OrgInfo = {
@@ -232,6 +276,7 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
     securityProfile: secProfile,
     adminPermissions: permissions,
     sessionRevokedAt: member?.session_revoked_at || undefined,
+    teamName: (member as any)?.team_name || '1팀',
   };
   saveCachedOrg(info);
   return info;

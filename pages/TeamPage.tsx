@@ -11,7 +11,7 @@ import { useToast } from '../contexts/ToastContext';
 import { fetchCases, applyLocalAssignment, refreshLocalAssignments } from '../services/api';
 import { ROLE_LABEL, OrgRole, DEFAULT_TIER1_PERMISSIONS, OWNER_FULL_PERMISSIONS } from '../services/org';
 import {
-  TeamMember, TeamInvite, fetchTeamMembers, updateTeamMember, fetchPendingInvites,
+  TeamMember, TeamInvite, fetchTeamMembers, updateTeamMember, updateMemberTeam, fetchPendingInvites,
   createInvite, cancelInvite, assignCases, revokeMemberSession, MemberSecurityProfile
 } from '../services/team';
 import { Case } from '../types';
@@ -768,9 +768,14 @@ export default function TeamPage() {
                       {m.userId === org.userId && <span className="ml-1 text-xs text-blue-500">(나)</span>}
                       {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500">사용 중지</span>}
                     </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                      {ROLE_LABEL[m.role]}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
+                        {m.teamName || '1팀'}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                        {ROLE_LABEL[m.role]}
+                      </span>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{m.email}</p>
                   <div className="flex items-center justify-between text-xs">
@@ -838,6 +843,7 @@ export default function TeamPage() {
                 <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs select-none">
                   <tr>
                     <th className="text-left px-5 py-2.5 whitespace-nowrap min-w-[140px]">이름</th>
+                    <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[90px]">소속 팀</th>
                     <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[180px]">이메일</th>
                     <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[100px]">역할</th>
                     <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[150px]">업무 모드</th>
@@ -853,6 +859,33 @@ export default function TeamPage() {
                       <td className="px-5 py-2.5 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">
                         {m.displayName}{m.userId === org.userId && <span className="ml-1 text-xs text-blue-500 font-bold">(나)</span>}
                         {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500 font-semibold whitespace-nowrap">사용 중지</span>}
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap">
+                        {canEditRole(m) && (isOwner || myTeamPerms.canModifyRules) ? (
+                          <select
+                            value={m.teamName || '1팀'}
+                            disabled={busy}
+                            onChange={async (e) => {
+                              try {
+                                await updateMemberTeam(m.userId, e.target.value);
+                                showToast(`${m.displayName}님의 소속 팀이 '${e.target.value}'(으)로 변경되었습니다.`, 'success');
+                                reload();
+                              } catch (err: any) {
+                                showToast(`팀 변경 실패: ${err.message}`, 'error');
+                              }
+                            }}
+                            className="text-xs font-bold border border-indigo-200 dark:border-indigo-800 rounded px-2 py-1 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 cursor-pointer"
+                          >
+                            <option value="1팀">1팀</option>
+                            <option value="2팀">2팀</option>
+                            <option value="3팀">3팀</option>
+                            <option value="본부">본부</option>
+                          </select>
+                        ) : (
+                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                            {m.teamName || '1팀'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{m.email}</td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
@@ -962,7 +995,7 @@ export default function TeamPage() {
                     </tr>
                   ))}
                   {!loading && members.length === 0 && (
-                    <tr><td colSpan={8} className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
+                    <tr><td colSpan={9} className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
                   )}
                 </tbody>
               </table>

@@ -7,11 +7,14 @@ import {
   MemberSecurityProfile,
   DEFAULT_AGENT_SECURITY_PROFILE,
   AdminPermissions,
+  TelegramAdminPermissions,
   DEFAULT_TIER1_PERMISSIONS,
+  DEFAULT_TIER2_PERMISSIONS,
+  DEFAULT_TIER3_PERMISSIONS,
   OWNER_FULL_PERMISSIONS,
 } from './org';
 
-export type { MemberSecurityProfile, AdminPermissions, AdminTier } from './org';
+export type { MemberSecurityProfile, AdminPermissions, AdminTier, TelegramAdminPermissions } from './org';
 export {
   DEFAULT_AGENT_SECURITY_PROFILE,
   TRUSTED_TEAM_LEAD_SECURITY_PROFILE,
@@ -34,6 +37,7 @@ export interface TeamMember {
   securityProfile: MemberSecurityProfile;
   adminPermissions?: AdminPermissions;
   sessionRevokedAt?: string;
+  teamName?: string;
 }
 
 export interface TeamInvite {
@@ -70,9 +74,26 @@ export const fetchTeamMembers = async (): Promise<TeamMember[]> => {
     assignedCases: Number(r.assigned_cases || 0),
     uiMode: (r.ui_mode as 'standard' | 'lite_only') || 'standard',
     securityProfile: (r.security_profile as MemberSecurityProfile) || DEFAULT_AGENT_SECURITY_PROFILE,
-    adminPermissions: r.role === 'owner' ? OWNER_FULL_PERMISSIONS : ((r.admin_permissions as AdminPermissions) || DEFAULT_TIER1_PERMISSIONS),
+    adminPermissions: r.role === 'owner' 
+      ? OWNER_FULL_PERMISSIONS 
+      : {
+          ...((r.admin_permissions as AdminPermissions) || DEFAULT_TIER1_PERMISSIONS),
+          telegram: (r.admin_permissions as any)?.telegram || DEFAULT_TIER1_PERMISSIONS.telegram,
+        },
     sessionRevokedAt: r.session_revoked_at || undefined,
+    teamName: r.team_name || '1팀',
   }));
+};
+
+export const updateMemberTeam = async (
+  userId: string,
+  teamName: string
+): Promise<void> => {
+  const { error } = await need().rpc('update_member_team', {
+    p_user_id: userId,
+    p_team_name: teamName,
+  });
+  if (error) fail(error);
 };
 
 export const updateAdminPermissions = async (

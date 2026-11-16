@@ -302,7 +302,7 @@ const ProtectedRoutes = () => {
           <Route path="/new" element={<StandardRoute><QuickNewCase /></StandardRoute>} />
           <Route path="/new/full" element={<StandardRoute><NewCase /></StandardRoute>} />
           <Route path="/case/:caseId" element={<StandardRoute><CaseDetail /></StandardRoute>} />
-          <Route path="/telegram" element={<AdminOnly><TelegramSync /></AdminOnly>} />
+          <Route path="/telegram" element={<TelegramSync />} />
           <Route path="/auto-dial" element={<PlatformAdminOnly><AutoDial /></PlatformAdminOnly>} />
           <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
           <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />

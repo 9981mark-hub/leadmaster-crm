@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { 
     Smartphone, CheckCircle, Clock, AlertTriangle, MessageSquare, ChevronRight, ChevronLeft, 
     Check, X, History, Trash2, Calendar, Sparkles, Zap, Shield, Settings2, Building2, User, 
-    Search, CheckSquare, Square, RefreshCw, PhoneCall, DollarSign, MapPin, AlertCircle, RotateCcw
+    Search, CheckSquare, Square, RefreshCw, PhoneCall, DollarSign, MapPin, AlertCircle, RotateCcw,
+    Lock, ShieldCheck, Users
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TelegramFeedback, Case, Partner, CaseStatus } from '../types';
@@ -21,6 +22,11 @@ import {
 import { fetchCases, fetchPartners } from '../services/api';
 import { fetchTeamMembers, TeamMember } from '../services/team';
 import { 
+    TelegramAdminPermissions,
+    DEFAULT_TIER1_PERMISSIONS,
+    OWNER_FULL_PERMISSIONS
+} from '../services/org';
+import { 
     fetchTelegramCompanyRules, 
     TelegramCompanyRules, 
     PRESET_SMART_DEFAULT 
@@ -34,6 +40,24 @@ import { format, parseISO, startOfDay, endOfDay, startOfMonth, endOfMonth, isTod
 import { ko } from 'date-fns/locale';
 import { supabase } from '../services/supabase';
 import { DEFAULT_STATUS_LIST } from '../constants';
+
+const TelegramLockedView: React.FC = () => (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center border border-slate-200 dark:border-gray-700 shadow-sm max-w-lg mx-auto my-12 animate-scale-in">
+        <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
+            <Lock size={26} />
+        </div>
+        <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">
+            텔레그램 연동 관제 센터 접근 권한 잠김
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+            대표이사(Owner)가 텔레그램 연동 관제 센터 접근 권한을 아직 위임하지 않았습니다.<br />
+            현장 피드백 관제 권한이 필요하신 경우 대표이사에게 <strong>[관리자 권한 위임]</strong>을 요청하세요.
+        </p>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs font-semibold">
+            🔒 권한 위임 대기
+        </span>
+    </div>
+);
 
 const ManualLinker = ({ onLink, prefillName }: { onLink: (caseId: string) => void; prefillName?: string }) => {
     const [searchQuery, setSearchQuery] = useState(prefillName || '');
@@ -127,6 +151,7 @@ export default function TelegramSync() {
 
     // Multi-tenant & Role Filters
     const [selectedPartnerId, setSelectedPartnerId] = useState<string>('all');
+    const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
     const [selectedAgentId, setSelectedAgentId] = useState<string>('all');
     const [selectedTypeFilter, setSelectedTypeFilter] = useState<FeedbackTypeFilter>('all');
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -146,6 +171,21 @@ export default function TelegramSync() {
     const ITEMS_PER_PAGE = 15;
     const [historyPage, setHistoryPage] = useState(1);
 
+    // Role and permission resolution
+    const isOwner = org?.role === 'owner';
+    const isPlatformAdmin = org?.isPlatformAdmin ?? false;
+    const isOrgAdmin = org?.role === 'admin';
+    const isAgent = org?.role === 'agent';
+
+    const tgPerms: TelegramAdminPermissions = isOwner
+        ? OWNER_FULL_PERMISSIONS.telegram
+        : (org?.adminPermissions?.telegram || DEFAULT_TIER1_PERMISSIONS.telegram);
+
+    const myTeam = org?.teamName || '1팀';
+    const canViewAll = isOwner || isPlatformAdmin || (isOrgAdmin && tgPerms.viewScope === 'all');
+    const isTeamScope = isOrgAdmin && tgPerms.viewScope === 'team';
+    const isAccessDenied = isOrgAdmin && !tgPerms.allowAccess;
+
     // Fast O(1) Maps
     const caseMap = useMemo(() => {
         const m = new Map<string, Case>();
@@ -163,6 +203,25 @@ export default function TelegramSync() {
         const m = new Map<string, TeamMember>();
         teamMembers.forEach(t => m.set(t.userId, t));
         return m;
+    }, [teamMembers]);
+
+    // Team Helpers
+    const myTeamMembers = useMemo(() => {
+        return teamMembers.filter(m => (m.teamName || '1팀') === myTeam);
+    }, [teamMembers, myTeam]);
+
+    const myTeamMemberIds = useMemo(() => {
+        return new Set(myTeamMembers.map(m => m.userId));
+    }, [myTeamMembers]);
+
+    const myTeamMemberNames = useMemo(() => {
+        return new Set(myTeamMembers.map(m => m.displayName.toLowerCase()));
+    }, [myTeamMembers]);
+
+    const allTeams = useMemo(() => {
+        const set = new Set<string>();
+        teamMembers.forEach(m => set.add(m.teamName || '1팀'));
+        return Array.from(set).sort();
     }, [teamMembers]);
 
     // Pre-parse insights for each feedback for instant rendering
@@ -242,27 +301,64 @@ export default function TelegramSync() {
         return undefined;
     }, [caseMap, cases]);
 
+    const isCaseInMyTeam = useCallback((c: Case | undefined) => {
+        if (!c) return false;
+        if (c.assignedUserId && myTeamMemberIds.has(c.assignedUserId)) return true;
+        if (c.managerName && myTeamMemberNames.has(c.managerName.toLowerCase())) return true;
+        if ((c as any).assignedTo && myTeamMemberNames.has(String((c as any).assignedTo).toLowerCase())) return true;
+        if ((c as any).created_by && myTeamMemberIds.has((c as any).created_by)) return true;
+        return false;
+    }, [myTeamMemberIds, myTeamMemberNames]);
+
+    const isCaseForMe = useCallback((c: Case | undefined) => {
+        if (!c) return false;
+        const currentUserId = user?.id || '';
+        const currentEmail = (user?.email || '').toLowerCase();
+        const currentName = (user?.name || org?.displayName || '').toLowerCase();
+        if (c.assignedUserId && c.assignedUserId === currentUserId) return true;
+        if (c.managerName) {
+            const a = c.managerName.toLowerCase();
+            if (a === currentName || a === currentEmail) return true;
+        }
+        if ((c as any).assignedTo) {
+            const a = String((c as any).assignedTo).toLowerCase();
+            if (a === currentName || a === currentEmail) return true;
+        }
+        if ((c as any).created_by && ((c as any).created_by === currentUserId || (c as any).created_by === currentEmail)) return true;
+        return false;
+    }, [user, org]);
+
     // 1. Role-based filtering:
-    // If not admin, only show feedbacks belonging to agent's assigned/created cases!
+    // - Owner / ViewAll: 전사 전체 열람
+    // - Team Scope: 담당 팀(myTeam) 소속 리드만 열람
+    // - Agent: 본인 리드만 열람
     const roleFilteredPending = useMemo(() => {
-        if (isAdmin) return pendingFeedbacks;
-        const currentUserId = user?.email || '';
+        if (canViewAll) return pendingFeedbacks;
+        if (isTeamScope) {
+            return pendingFeedbacks.filter(f => {
+                const c = getCaseForFeedback(f);
+                return isCaseInMyTeam(c);
+            });
+        }
         return pendingFeedbacks.filter(f => {
             const c = getCaseForFeedback(f);
-            if (!c) return false;
-            return c.assignedTo === currentUserId || c.assignedTo === user?.name || (c as any).created_by === currentUserId;
+            return isCaseForMe(c);
         });
-    }, [isAdmin, pendingFeedbacks, user, getCaseForFeedback]);
+    }, [canViewAll, isTeamScope, pendingFeedbacks, getCaseForFeedback, isCaseInMyTeam, isCaseForMe]);
 
     const roleFilteredHistory = useMemo(() => {
-        if (isAdmin) return historyFeedbacks;
-        const currentUserId = user?.email || '';
+        if (canViewAll) return historyFeedbacks;
+        if (isTeamScope) {
+            return historyFeedbacks.filter(f => {
+                const c = getCaseForFeedback(f);
+                return isCaseInMyTeam(c);
+            });
+        }
         return historyFeedbacks.filter(f => {
             const c = getCaseForFeedback(f);
-            if (!c) return false;
-            return c.assignedTo === currentUserId || c.assignedTo === user?.name || (c as any).created_by === currentUserId;
+            return isCaseForMe(c);
         });
-    }, [isAdmin, historyFeedbacks, user, getCaseForFeedback]);
+    }, [canViewAll, isTeamScope, historyFeedbacks, getCaseForFeedback, isCaseInMyTeam, isCaseForMe]);
 
     // 2. Multi-Filter & Search processing
     const filterFeedbackList = useCallback((list: TelegramFeedback[]) => {
@@ -273,7 +369,6 @@ export default function TelegramSync() {
             // Partner Filter
             if (selectedPartnerId !== 'all') {
                 if (c?.partnerId !== selectedPartnerId) {
-                    // Check if chatTitle matches partner telegramChat
                     const pt = partnerMap.get(selectedPartnerId);
                     if (!pt || (pt.telegramChatId && f.chatId !== pt.telegramChatId)) {
                         return false;
@@ -281,9 +376,18 @@ export default function TelegramSync() {
                 }
             }
 
-            // Agent Filter (Admin only)
-            if (isAdmin && selectedAgentId !== 'all') {
-                if (!c || c.assignedTo !== selectedAgentId) {
+            // Team Filter (canViewAll only)
+            if (canViewAll && selectedTeamFilter !== 'all') {
+                const targetMember = c?.assignedUserId ? teamMap.get(c.assignedUserId) : undefined;
+                const teamOfCase = targetMember?.teamName || '1팀';
+                if (teamOfCase !== selectedTeamFilter) {
+                    return false;
+                }
+            }
+
+            // Agent Filter
+            if (selectedAgentId !== 'all') {
+                if (!c || (c.assignedUserId !== selectedAgentId && c.assignedTo !== selectedAgentId)) {
                     return false;
                 }
             }
@@ -317,25 +421,29 @@ export default function TelegramSync() {
 
             return true;
         });
-    }, [getCaseForFeedback, feedbackInsightsMap, selectedPartnerId, partnerMap, isAdmin, selectedAgentId, selectedTypeFilter, searchQuery]);
+    }, [getCaseForFeedback, feedbackInsightsMap, selectedPartnerId, partnerMap, canViewAll, selectedTeamFilter, teamMap, selectedAgentId, selectedTypeFilter, searchQuery]);
 
     const filteredPending = useMemo(() => filterFeedbackList(roleFilteredPending), [filterFeedbackList, roleFilteredPending]);
     const filteredHistory = useMemo(() => filterFeedbackList(roleFilteredHistory), [filterFeedbackList, roleFilteredHistory]);
 
     // KPI Metrics
     const todayFeedbacksCount = useMemo(() => {
-        return [...pendingFeedbacks, ...historyFeedbacks].filter(f => isToday(parseISO(f.createdAt))).length;
-    }, [pendingFeedbacks, historyFeedbacks]);
+        return [...roleFilteredPending, ...roleFilteredHistory].filter(f => isToday(parseISO(f.createdAt))).length;
+    }, [roleFilteredPending, roleFilteredHistory]);
 
     const autoAppliedCount = useMemo(() => {
-        return historyFeedbacks.filter(f => f.isApplied && f.isConfirmed && (f.appliedBy === 'auto' || f.applyMode === 'auto')).length;
-    }, [historyFeedbacks]);
+        return roleFilteredHistory.filter(f => f.isApplied && f.isConfirmed && (f.appliedBy === 'auto' || f.applyMode === 'auto')).length;
+    }, [roleFilteredHistory]);
 
     const autoAppliedRate = useMemo(() => {
-        const total = historyFeedbacks.length;
+        const total = roleFilteredHistory.length;
         if (total === 0) return 0;
         return Math.round((autoAppliedCount / total) * 100);
-    }, [autoAppliedCount, historyFeedbacks]);
+    }, [autoAppliedCount, roleFilteredHistory]);
+
+    const calendarAddedCount = useMemo(() => {
+        return roleFilteredHistory.filter(f => f.isConfirmed && f.isApplied).length;
+    }, [roleFilteredHistory]);
 
     const careNeededCount = useMemo(() => {
         return roleFilteredPending.filter(f => {
@@ -607,12 +715,12 @@ export default function TelegramSync() {
                 }`}
             >
                 <div className="flex items-start gap-3.5">
-                    {/* Checkbox for bulk action */}
-                    {!isHistory && (
+                    {/* Checkbox for bulk action (대표 또는 대량 일괄 승인 권한자만) */}
+                    {!isHistory && (isOwner || tgPerms.canBulkApprove) && (
                         <button
                             type="button"
                             onClick={() => toggleSelect(f.id)}
-                            className="mt-1 text-gray-400 hover:text-purple-600 transition shrink-0"
+                            className="mt-1 text-gray-400 hover:text-purple-600 transition shrink-0 cursor-pointer"
                         >
                             {isSelected ? (
                                 <CheckSquare size={19} className="text-purple-600" />
@@ -740,12 +848,18 @@ export default function TelegramSync() {
 
                         {/* 4. Unmatched Linker */}
                         {!isHistory && !f.matchedCaseId && (
-                            <div className="pt-1">
-                                <ManualLinker 
-                                    onLink={(caseId) => handleConfirm(f, caseId)} 
-                                    prefillName={f.customerName || ins?.customerName} 
-                                />
-                            </div>
+                            !isAgent ? (
+                                <div className="pt-1">
+                                    <ManualLinker 
+                                        onLink={(caseId) => handleConfirm(f, caseId)} 
+                                        prefillName={f.customerName || ins?.customerName} 
+                                    />
+                                </div>
+                            ) : (
+                                <div className="pt-1 text-xs text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200 dark:border-amber-800">
+                                    ⚠️ 고객 매칭 대기: 고객 정보가 아직 CRM에 연결되지 않았습니다. 관리자에게 고객 매칭을 요청하세요.
+                                </div>
+                            )
                         )}
                     </div>
 
@@ -790,6 +904,27 @@ export default function TelegramSync() {
         );
     };
 
+    if (isAccessDenied) {
+        return (
+            <div className="max-w-7xl mx-auto space-y-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 shrink-0">
+                        <Smartphone size={24} />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+                            텔레그램 연동 관제 센터
+                        </h1>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            법률사무소 현장 피드백 실시간 파싱 · 1:N 채널 라우팅 · 캘린더/정산 자동 연동
+                        </p>
+                    </div>
+                </div>
+                <TelegramLockedView />
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-7xl mx-auto space-y-6">
             
@@ -802,42 +937,73 @@ export default function TelegramSync() {
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
                             텔레그램 연동 관제 센터
-                            {!isAdmin && (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                                    상담원 모드
+                            {isOwner ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                    👑 대표 전사 관제
+                                </span>
+                            ) : canViewAll ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800 flex items-center gap-1">
+                                    🎖️ 총괄 실장 관제
+                                </span>
+                            ) : isTeamScope ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
+                                    👔 {myTeam} 플로어 관제
+                                </span>
+                            ) : (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                                    🎧 내 리드 알림 모드
                                 </span>
                             )}
                         </h1>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            법률사무소 현장 피드백 실시간 파싱 · 1:N 채널 라우팅 · 캘린더/정산 자동 연동
+                            {isAgent 
+                                ? '법률사무소에서 보내온 내 담당 고객의 출장/내방 일정 및 현장 피드백 실시간 확인'
+                                : isTeamScope
+                                    ? `${myTeam} 소속 상담원들의 리드 피드백 실시간 파싱 · 재케어 알림 코칭 · 캘린더 자동 연동`
+                                    : '법률사무소 현장 피드백 실시간 파싱 · 1:N 채널 라우팅 · 캘린더/정산 자동 연동'
+                            }
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                    {/* Bot Live Indicator */}
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs">
-                        <span className={`w-2 h-2 rounded-full ${botStatus?.webhookConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                        <span className="font-semibold text-gray-700 dark:text-gray-300">
-                            {botStatus?.webhookConnected ? (botStatus.botUsername ? `@${botStatus.botUsername}` : '봇 정상 수신') : '웹훅 미연결'}
-                        </span>
-                    </div>
+                    {/* Bot Live Indicator (관리자 및 대표만) */}
+                    {(canViewAll || isTeamScope) && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs">
+                            <span className={`w-2 h-2 rounded-full ${botStatus?.webhookConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">
+                                {botStatus?.webhookConnected ? (botStatus.botUsername ? `@${botStatus.botUsername}` : '봇 정상 수신') : '웹훅 미연결'}
+                            </span>
+                        </div>
+                    )}
 
-                    {/* Rule Modal Trigger (Admin Only) */}
-                    {isAdmin && (
+                    {/* Rule Modal Trigger (대표 또는 룰 위임받은 관리자) */}
+                    {(isOwner || tgPerms.canManageRules) && (
                         <button
                             onClick={() => setIsRuleModalOpen(true)}
-                            className="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition flex items-center gap-1.5 shadow-2xs"
+                            className="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
                         >
                             <Settings2 size={15} className="text-purple-600" />
                             <span>자동화 룰 설정</span>
                         </button>
                     )}
 
+                    {/* 대표 전용: 관리자 권한 위임 바로가기 안내 링크 */}
+                    {isOwner && (
+                        <Link
+                            to="/team"
+                            className="px-3 py-2 rounded-xl text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1.5 shadow-2xs"
+                            title="팀 관리에서 중간 관리자에게 텔레그램 관제 권한을 양도/위임할 수 있습니다."
+                        >
+                            <ShieldCheck size={14} />
+                            <span>관제 권한 위임 관리</span>
+                        </Link>
+                    )}
+
                     <button
                         onClick={loadData}
                         disabled={isLoading}
-                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
                         title="새로고침"
                     >
                         <RefreshCw size={17} className={isLoading ? 'animate-spin' : ''} />
@@ -849,7 +1015,9 @@ export default function TelegramSync() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">오늘 수신 피드백</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            {isAgent ? '내 고객 오늘 피드백' : isTeamScope ? `${myTeam} 오늘 피드백` : '오늘 전사 피드백'}
+                        </span>
                         <MessageSquare size={17} className="text-blue-500" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
@@ -860,18 +1028,31 @@ export default function TelegramSync() {
 
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">오토파일럿 자동 반영</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            {isAgent ? '캘린더 연동 완료' : isTeamScope ? `${myTeam} 오토 반영률` : '오토파일럿 자동 반영'}
+                        </span>
                         <Zap size={17} className="text-purple-500" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{autoAppliedRate}%</span>
-                        <span className="text-xs text-gray-400 font-medium">{autoAppliedCount}건 처리</span>
+                        {isAgent ? (
+                            <>
+                                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{calendarAddedCount}</span>
+                                <span className="text-xs text-gray-400 font-medium">건 완료</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{autoAppliedRate}%</span>
+                                <span className="text-xs text-gray-400 font-medium">{autoAppliedCount}건 처리</span>
+                            </>
+                        )}
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">승인 대기</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            {isAgent ? '내 승인 대기' : isTeamScope ? `${myTeam} 승인 대기` : '전사 승인 대기'}
+                        </span>
                         <Clock size={17} className="text-amber-500" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
@@ -882,7 +1063,9 @@ export default function TelegramSync() {
 
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">1차 TM 재케어 요망</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            {isAgent ? '내 고객 긴급 재케어' : isTeamScope ? `${myTeam} 긴급 재케어 요망` : '1차 TM 재케어 요망'}
+                        </span>
                         <AlertTriangle size={17} className={careNeededCount > 0 ? "text-rose-500 animate-pulse" : "text-gray-300"} />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
@@ -894,12 +1077,65 @@ export default function TelegramSync() {
                 </div>
             </div>
 
+            {/* 전사 총괄 뷰: 팀별 텔레그램 관제 현황 미니 바 */}
+            {canViewAll && allTeams.length > 1 && (
+                <div className="bg-slate-50 dark:bg-gray-800/60 p-3 rounded-2xl border border-slate-200/80 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-gray-300">
+                        <Users size={15} className="text-indigo-600" />
+                        <span>팀별 실시간 관제 현황:</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {allTeams.map(tName => {
+                            const teamMems = teamMembers.filter(m => (m.teamName || '1팀') === tName);
+                            const tIds = new Set(teamMems.map(m => m.userId));
+                            const tNames = new Set(teamMems.map(m => m.displayName.toLowerCase()));
+                            const tPending = pendingFeedbacks.filter(f => {
+                                const c = getCaseForFeedback(f);
+                                if (!c) return false;
+                                return (c.assignedUserId && tIds.has(c.assignedUserId)) || (c.assignedTo && tNames.has(c.assignedTo.toLowerCase()));
+                            }).length;
+
+                            return (
+                                <button
+                                    key={tName}
+                                    type="button"
+                                    onClick={() => setSelectedTeamFilter(prev => prev === tName ? 'all' : tName)}
+                                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer ${
+                                        selectedTeamFilter === tName
+                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                                            : 'bg-white dark:bg-gray-700 text-slate-700 dark:text-gray-200 border-slate-200 dark:border-gray-600 hover:border-indigo-400'
+                                    }`}
+                                >
+                                    <span>{tName}</span>
+                                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                                        tPending > 0
+                                            ? (selectedTeamFilter === tName ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800 font-bold')
+                                            : (selectedTeamFilter === tName ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500')
+                                    }`}>
+                                        대기 {tPending}건
+                                    </span>
+                                </button>
+                            );
+                        })}
+                        {selectedTeamFilter !== 'all' && (
+                            <button
+                                type="button"
+                                onClick={() => setSelectedTeamFilter('all')}
+                                className="text-[11px] font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white underline ml-1 cursor-pointer"
+                            >
+                                필터 해제
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Agent Role Mode Notice Banner */}
-            {!isAdmin && (
-                <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-3 rounded-xl flex items-center justify-between text-xs text-blue-800 dark:text-blue-300">
+            {isAgent && (
+                <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
                     <div className="flex items-center gap-2">
-                        <User size={15} className="text-blue-600" />
-                        <span><b>상담원 전용 모드:</b> 본인이 접수하거나 배정받은 고객 리드의 피드백만 표시됩니다.</span>
+                        <User size={15} className="text-emerald-600" />
+                        <span><b>상담원 전용 모드:</b> 본인이 등록했거나 배정받은 고객 리드의 실시간 현장 피드백만 표시됩니다.</span>
                     </div>
                     {careNeededCount > 0 && (
                         <span className="px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 animate-pulse">
@@ -945,8 +1181,8 @@ export default function TelegramSync() {
             <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 space-y-3">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2.5">
-                        {/* 1. Partner Filter (Admin only) */}
-                        {isAdmin && (
+                        {/* 1. Partner Filter (Admin / Manager only) */}
+                        {!isAgent && (
                             <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1 rounded-xl border border-gray-200 dark:border-gray-600 text-xs">
                                 <Building2 size={14} className="text-gray-500 ml-1.5" />
                                 <select
@@ -962,8 +1198,38 @@ export default function TelegramSync() {
                             </div>
                         )}
 
-                        {/* 2. Agent Filter (Admin only) */}
-                        {isAdmin && teamMembers.length > 0 && (
+                        {/* 2. Team Filter */}
+                        {canViewAll ? (
+                            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1 rounded-xl border border-gray-200 dark:border-gray-600 text-xs">
+                                <Users size={14} className="text-indigo-600 ml-1.5" />
+                                <select
+                                    value={selectedTeamFilter}
+                                    onChange={(e) => {
+                                        setSelectedTeamFilter(e.target.value);
+                                        setSelectedAgentId('all');
+                                    }}
+                                    className="bg-transparent border-none text-xs font-bold text-gray-800 dark:text-gray-200 outline-none pr-3"
+                                >
+                                    <option value="all">전체 팀 ({allTeams.length}개 팀)</option>
+                                    {allTeams.map(tName => (
+                                        <option key={tName} value={tName}>{tName}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        ) : isTeamScope ? (
+                            <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800 text-xs text-blue-700 dark:text-blue-300 font-bold">
+                                <Users size={14} />
+                                <span>{myTeam} 고정</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 font-bold">
+                                <User size={14} />
+                                <span>내 담당 리드</span>
+                            </div>
+                        )}
+
+                        {/* 3. Agent Filter */}
+                        {!isAgent && (
                             <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1 rounded-xl border border-gray-200 dark:border-gray-600 text-xs">
                                 <User size={14} className="text-gray-500 ml-1.5" />
                                 <select
@@ -971,20 +1237,22 @@ export default function TelegramSync() {
                                     onChange={(e) => setSelectedAgentId(e.target.value)}
                                     className="bg-transparent border-none text-xs font-bold text-gray-800 dark:text-gray-200 outline-none pr-3"
                                 >
-                                    <option value="all">전체 담당 상담원</option>
-                                    {teamMembers.map(t => (
-                                        <option key={t.userId} value={t.userId}>{t.displayName || t.name}</option>
+                                    <option value="all">
+                                        {isTeamScope ? `${myTeam} 전체 상담원` : '전체 담당 상담원'}
+                                    </option>
+                                    {(isTeamScope ? myTeamMembers : (selectedTeamFilter !== 'all' ? teamMembers.filter(m => (m.teamName || '1팀') === selectedTeamFilter) : teamMembers)).map(t => (
+                                        <option key={t.userId} value={t.userId}>{t.displayName || t.email}</option>
                                     ))}
                                 </select>
                             </div>
                         )}
 
-                        {/* 3. Search Query Input */}
+                        {/* 4. Search Query Input */}
                         <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-600 text-xs min-w-[200px]">
                             <Search size={14} className="text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="고객명, 번호, 본문 검색..."
+                                placeholder={isAgent ? "내 고객명, 번호, 메모 검색..." : "고객명, 번호, 본문 검색..."}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="bg-transparent border-none outline-none text-xs text-gray-800 dark:text-white placeholder-gray-400 w-full"
@@ -1033,51 +1301,62 @@ export default function TelegramSync() {
             {activeTab === 'pending' && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 overflow-hidden">
                     
-                    {/* Bulk Action Toolbar */}
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-700/80 bg-gray-50/70 dark:bg-gray-800/80 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={toggleSelectAll}
-                                className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:text-purple-600 transition"
-                            >
-                                {selectedIds.size > 0 && selectedIds.size === filteredPending.length ? (
-                                    <CheckSquare size={17} className="text-purple-600" />
-                                ) : (
-                                    <Square size={17} />
-                                )}
-                                <span>전체 선택 ({selectedIds.size}/{filteredPending.length})</span>
-                            </button>
+                    {/* Bulk Action Toolbar (대표 또는 일괄 승인 권한 위임받은 관리자) */}
+                    {(isOwner || tgPerms.canBulkApprove) ? (
+                        <div className="p-4 border-b border-gray-100 dark:border-gray-700/80 bg-gray-50/70 dark:bg-gray-800/80 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={toggleSelectAll}
+                                    className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:text-purple-600 transition cursor-pointer"
+                                >
+                                    {selectedIds.size > 0 && selectedIds.size === filteredPending.length ? (
+                                        <CheckSquare size={17} className="text-purple-600" />
+                                    ) : (
+                                        <Square size={17} />
+                                    )}
+                                    <span>전체 선택 ({selectedIds.size}/{filteredPending.length})</span>
+                                </button>
 
-                            {selectedIds.size > 0 && (
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={handleBulkConfirmSelected}
-                                        disabled={isActionBusy}
-                                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs disabled:opacity-50"
-                                    >
-                                        <Check size={13} /> 선택 승인 ({selectedIds.size}건)
-                                    </button>
-                                    <button
-                                        onClick={handleBulkDismissSelected}
-                                        disabled={isActionBusy}
-                                        className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 rounded-lg text-xs font-medium transition flex items-center gap-1 disabled:opacity-50"
-                                    >
-                                        <X size={13} /> 선택 무시
-                                    </button>
-                                </div>
+                                {selectedIds.size > 0 && (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleBulkConfirmSelected}
+                                            disabled={isActionBusy}
+                                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs disabled:opacity-50 cursor-pointer"
+                                        >
+                                            <Check size={13} /> 선택 승인 ({selectedIds.size}건)
+                                        </button>
+                                        <button
+                                            onClick={handleBulkDismissSelected}
+                                            disabled={isActionBusy}
+                                            className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 rounded-lg text-xs font-medium transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                                        >
+                                            <X size={13} /> 선택 무시
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* One-click Confirm All Matched (Auto-Pilot) */}
+                            <button
+                                onClick={handleConfirmAllMatched}
+                                disabled={isActionBusy || filteredPending.filter(f => f.matchedCaseId).length === 0}
+                                className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs disabled:opacity-40 cursor-pointer"
+                            >
+                                <Zap size={14} className="text-amber-300" />
+                                <span>AI 추천대로 전체 일괄 저장·승인</span>
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="p-3.5 border-b border-gray-100 dark:border-gray-700/80 bg-gray-50/70 dark:bg-gray-800/80 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            <span>승인 대기 피드백: <b>{filteredPending.length}</b>건</span>
+                            {isAgent && (
+                                <span className="text-emerald-700 dark:text-emerald-300">
+                                    각 카드의 <strong>[일정 즉시 저장]</strong> 버튼으로 내 캘린더에 바로 연동할 수 있습니다.
+                                </span>
                             )}
                         </div>
-
-                        {/* One-click Confirm All Matched (Auto-Pilot) */}
-                        <button
-                            onClick={handleConfirmAllMatched}
-                            disabled={isActionBusy || filteredPending.filter(f => f.matchedCaseId).length === 0}
-                            className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs disabled:opacity-40"
-                        >
-                            <Zap size={14} className="text-amber-300" />
-                            <span>AI 추천대로 전체 일괄 저장·승인</span>
-                        </button>
-                    </div>
+                    )}
 
                     {/* Pending List Contents */}
                     {isLoading ? (
@@ -1102,8 +1381,8 @@ export default function TelegramSync() {
             {/* Tab 2: History Tab */}
             {activeTab === 'history' && (
                 <div className="space-y-4">
-                    {/* Delete Actions Panel (Admin only) */}
-                    {isAdmin && (
+                    {/* Delete Actions Panel (대표 또는 과거 삭제 권한 위임자만) */}
+                    {(isOwner || tgPerms.canPurgeHistory) && (
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                             <div>
                                 <h3 className="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">

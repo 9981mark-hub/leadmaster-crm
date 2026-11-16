@@ -73,7 +73,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           to: '/telegram', 
           icon: Smartphone, 
           label: 'TG 연동 센터', 
-          adminOnly: true,
           badge: pendingTgCount > 0 ? pendingTgCount : undefined 
         },
         { to: '/notices', icon: Megaphone, label: '사내 공지사항' },

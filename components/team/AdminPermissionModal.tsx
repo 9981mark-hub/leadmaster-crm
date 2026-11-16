@@ -10,15 +10,21 @@ import {
   Lock,
   Layers,
   Sparkles,
+  Smartphone,
+  Eye,
+  SlidersHorizontal,
+  Trash2,
 } from 'lucide-react';
 import {
   TeamMember,
   AdminPermissions,
   AdminTier,
+  TelegramAdminPermissions,
   DEFAULT_TIER1_PERMISSIONS,
   DEFAULT_TIER2_PERMISSIONS,
   DEFAULT_TIER3_PERMISSIONS,
   updateAdminPermissions,
+  updateMemberTeam,
 } from '../../services/team';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -44,6 +50,10 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
   const [tier, setTier] = useState<AdminTier>(initialPerms.tier || 1);
   const [teamPerms, setTeamPerms] = useState(initialPerms.team);
   const [settlementPerms, setSettlementPerms] = useState(initialPerms.settlement);
+  const [telegramPerms, setTelegramPerms] = useState<TelegramAdminPermissions>(
+    initialPerms.telegram || DEFAULT_TIER1_PERMISSIONS.telegram
+  );
+  const [teamName, setTeamName] = useState<string>(member?.teamName || '1팀');
 
   // member 변경 시 폼 상태 동기화
   React.useEffect(() => {
@@ -52,6 +62,8 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
       setTier(p.tier || 1);
       setTeamPerms({ ...p.team });
       setSettlementPerms({ ...p.settlement });
+      setTelegramPerms({ ...(p.telegram || DEFAULT_TIER1_PERMISSIONS.telegram) });
+      setTeamName(member.teamName || '1팀');
     }
   }, [member]);
 
@@ -63,12 +75,15 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
     if (newTier === 1) {
       setTeamPerms({ ...DEFAULT_TIER1_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER1_PERMISSIONS.settlement });
+      setTelegramPerms({ ...DEFAULT_TIER1_PERMISSIONS.telegram });
     } else if (newTier === 2) {
       setTeamPerms({ ...DEFAULT_TIER2_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER2_PERMISSIONS.settlement });
+      setTelegramPerms({ ...DEFAULT_TIER2_PERMISSIONS.telegram });
     } else if (newTier === 3) {
       setTeamPerms({ ...DEFAULT_TIER3_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER3_PERMISSIONS.settlement });
+      setTelegramPerms({ ...DEFAULT_TIER3_PERMISSIONS.telegram });
     }
   };
 
@@ -79,10 +94,15 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
         tier,
         team: teamPerms,
         settlement: settlementPerms,
+        telegram: telegramPerms,
       };
 
-      await updateAdminPermissions(member.userId, newPermissions);
-      showToast('중간 관리자 권한이 성공적으로 저장되었습니다.', 'success');
+      await Promise.all([
+        updateAdminPermissions(member.userId, newPermissions),
+        updateMemberTeam(member.userId, teamName),
+      ]);
+
+      showToast('중간 관리자 권한 및 팀 설정이 성공적으로 저장되었습니다.', 'success');
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -429,6 +449,149 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   </div>
                 </div>
               </label>
+            </div>
+          </div>
+
+          {/* 4. 텔레그램 연동 관제 센터 위임 스위치 */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 p-4 rounded-xl border border-slate-200/80 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Smartphone size={16} className="text-blue-500" />
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  4. 텔레그램 연동 관제 센터 위임 스위치 (실시간 현장 피드백)
+                </h4>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-gray-400">소속 관리 팀:</span>
+                <input
+                  type="text"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  placeholder="예: 1팀, 2팀"
+                  className="w-24 px-2 py-0.5 text-xs font-bold border border-slate-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-slate-800 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-blue-400">
+                <input
+                  type="checkbox"
+                  checked={telegramPerms.allowAccess}
+                  onChange={(e) =>
+                    setTelegramPerms({ ...telegramPerms, allowAccess: e.target.checked })
+                  }
+                  className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                    <span>텔레그램 연동 관제 센터 접근 권한</span>
+                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
+                      {telegramPerms.allowAccess ? '허용' : '차단'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                    좌측 메뉴의 'TG 연동 센터' 진입 및 실시간 현장 피드백 관제를 허용합니다.
+                  </div>
+                </div>
+              </label>
+
+              {telegramPerms.allowAccess && (
+                <>
+                  <div className="p-2.5 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 space-y-2">
+                    <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Eye size={14} className="text-indigo-600" />
+                      <span>피드백 및 성과 조회 범위 (Scope)</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setTelegramPerms({ ...telegramPerms, viewScope: 'team' })}
+                        className={`p-2 rounded-lg border text-left transition-all ${
+                          telegramPerms.viewScope === 'team'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 text-blue-700 dark:text-blue-300 font-bold'
+                            : 'border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300'
+                        }`}
+                      >
+                        <div className="text-xs">👥 담당 팀만 조회 (추천)</div>
+                        <div className="text-[10px] opacity-80 mt-0.5">{teamName} 소속 팀원 리드의 피드백만 열람</div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTelegramPerms({ ...telegramPerms, viewScope: 'all' })}
+                        className={`p-2 rounded-lg border text-left transition-all ${
+                          telegramPerms.viewScope === 'all'
+                            ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-300 font-bold'
+                            : 'border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300'
+                        }`}
+                      >
+                        <div className="text-xs">🌐 전사 전체 조회 (총괄)</div>
+                        <div className="text-[10px] opacity-80 mt-0.5">모든 팀과 법률사무소의 피드백 전면 열람</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-blue-400">
+                    <input
+                      type="checkbox"
+                      checked={telegramPerms.canBulkApprove}
+                      onChange={(e) =>
+                        setTelegramPerms({ ...telegramPerms, canBulkApprove: e.target.checked })
+                      }
+                      className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-slate-800 dark:text-slate-200">
+                        AI 추천 대량 일괄 승인 권한 위임
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        선택 승인 및 'AI 추천대로 전체 일괄 저장·승인' 일괄 처리 허용
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-blue-400">
+                    <input
+                      type="checkbox"
+                      checked={telegramPerms.canManageRules}
+                      onChange={(e) =>
+                        setTelegramPerms({ ...telegramPerms, canManageRules: e.target.checked })
+                      }
+                      className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-slate-800 dark:text-slate-200">
+                        자동화 룰 (AI 상태 변경 및 부재 카운트) 설정 권한 위임
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        법률사무소 키워드 파싱 규칙 및 오토파일럿 상태 변경 규칙 수정 허용
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-rose-400">
+                    <input
+                      type="checkbox"
+                      checked={telegramPerms.canPurgeHistory}
+                      onChange={(e) =>
+                        setTelegramPerms({ ...telegramPerms, canPurgeHistory: e.target.checked })
+                      }
+                      className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span>과거 히스토리 데이터 영구 삭제 권한 위임</span>
+                        <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-bold">
+                          고위험
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        보관 주기가 지난 텔레그램 수집 원본 로그를 영구 삭제할 수 있습니다.
+                      </div>
+                    </div>
+                  </label>
+                </>
+              )}
             </div>
           </div>
         </div>
