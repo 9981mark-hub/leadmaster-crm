@@ -52,7 +52,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
       label: '정산 & 경영',
       items: [
         { to: '/settlement', icon: Calculator, label: '정산·손익 센터' },
-        { to: '/team', icon: UserCog, label: '팀 관리 (DB원가)' },
+        { to: '/team', icon: UserCog, label: '팀 관리' },
       ],
     }] : []),
     {

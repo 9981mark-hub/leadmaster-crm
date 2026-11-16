@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: '정산 / 경영',
       items: [
         { to: '/settlement', icon: Calculator, label: '정산·손익 센터', adminOnly: true },
-        { to: '/team', icon: UserCog, label: '팀 관리 (DB원가)', adminOnly: true },
+        { to: '/team', icon: UserCog, label: '팀 관리', adminOnly: true },
       ],
     },
     {
