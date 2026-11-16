@@ -1037,9 +1037,6 @@ export default function TrainingCenterPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold tracking-tight">신입 상담원 AI 트레이닝 & 사무장 인계 문진 센터</h1>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 font-medium">
-                v3.56 무규칙 페르소나
-              </span>
             </div>
             <p className="text-xs text-blue-100/80 mt-1">
               무제한 실전 고객 생성 · 6대 취약 유형별 타깃 훈련 · 사무장 인계 7대 문진 채점 · 관리자 코칭 허브
@@ -1509,9 +1506,6 @@ export default function TrainingCenterPage() {
                           <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                             {cat.badge} {cat.title}
                           </span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-mono">
-                            {cat.recommendedVoice}
-                          </span>
                         </div>
                         <p className="text-[11px] text-gray-600 dark:text-gray-300 font-medium mb-1">
                           {cat.subtitle}
@@ -1905,13 +1899,9 @@ export default function TrainingCenterPage() {
                   <Volume2 className="w-3.5 h-3.5 text-blue-500" />
                   실전 고객 성대 & 통화 음질
                 </span>
-                {colabUrl ? (
+                {colabUrl && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold flex items-center gap-1">
                     🎙️ 2안 CosyVoice 2 복제 음성
-                  </span>
-                ) : (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold flex items-center gap-1 border border-blue-300/40">
-                    ✨ 1안 Edge-TTS 24kHz 초고음질 (0원 무제한)
                   </span>
                 )}
               </div>
