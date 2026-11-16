@@ -54,9 +54,11 @@ import {
   Share2,
   Send,
   Bot,
+  GraduationCap,
 } from 'lucide-react';
+import { ExamSection } from './ExamSection';
 
-type SubView = 'script' | 'recordings' | 'videos' | 'faq';
+type SubView = 'script' | 'recordings' | 'videos' | 'faq' | 'exam';
 
 /**
  * [가독성 특화 AI 답변 렌더러]
@@ -567,6 +569,21 @@ export default function EducationHubTab() {
           <span>❓ 다빈도 FAQ 셀프 검색 센터</span>
           <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
             {materials.faqs.length}건
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubView('exam')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all shrink-0 ${
+            activeSubView === 'exam'
+              ? 'bg-white dark:bg-gray-900 text-amber-600 dark:text-amber-400 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>🎓 상담역량 평가시험</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
+            초·중·고급 300제
           </span>
         </button>
       </div>
@@ -1764,6 +1781,9 @@ export default function EducationHubTab() {
           </div>
         </div>
       )}
+
+      {/* 5. Sub-view 5: Evaluation Exam System (초·중·고급 300제 4지선다형) */}
+      {activeSubView === 'exam' && <ExamSection />}
     </div>
   );
 }
