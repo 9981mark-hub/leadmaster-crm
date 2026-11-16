@@ -290,7 +290,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
                   </div>
                 </div>
 
-                <div className="rounded-xl overflow-hidden border border-slate-800 shadow-inner bg-[#070c18]">
+                <div className="rounded-xl overflow-hidden border border-slate-700 shadow-inner bg-[#f1f5f9]">
                   <iframe
                     title="Email HTML Preview"
                     srcDoc={generateApprovalHtmlEmail({
@@ -298,7 +298,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
                       ownerEmail,
                       loginUrl: 'https://www.lmaster.xyz/login',
                     })}
-                    className="w-full h-80 border-0 bg-[#070c18]"
+                    className="w-full h-96 border-0 bg-[#f1f5f9]"
                   />
                 </div>
               </div>
