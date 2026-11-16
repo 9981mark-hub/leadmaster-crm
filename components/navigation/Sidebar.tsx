@@ -38,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
   const path = location.pathname;
   const { theme } = useTheme();
-  const { org, isAdmin, isPlatformAdmin } = useAuth();
+  const { org, isAdmin, isPlatformAdmin, user } = useAuth();
 
   const isLiteOnly = !isAdmin && org?.uiMode === 'lite_only';
   const roleLabel = org?.role ? ROLE_LABEL[org.role] : '상담원';
@@ -194,6 +194,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const visibleItems = group.items.filter(item => {
             if (item.platformAdminOnly && !isPlatformAdmin) return false;
             if (item.adminOnly && !isAdmin) return false;
+            // 시스템 설정(/settings): 대표/플랫폼관리자 또는 권한 위임 관리자만 노출
+            if (item.to === '/settings') {
+              const isOwner = org?.role === 'owner' || user?.email === (org as any)?.ownerEmail;
+              if (!isOwner && !isPlatformAdmin && !org?.adminPermissions?.settings?.allowAccess) {
+                return false;
+              }
+            }
             if (isLiteOnly) {
               const allowedInLite = ['/lite', '/training', '/notices', '/schedule', '/mypage'];
               return allowedInLite.includes(item.to);

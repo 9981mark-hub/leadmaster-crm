@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { SettingsCard } from '../SettingsCard';
 import { SettingsRow } from '../SettingsRow';
 import { CaseStatus, MissedCallIntervalTier } from '../../../types';
-import { User, PhoneCall, ListFilter, Mail, Plus, Trash2, Save, ArrowRight, Layers, Tag, Check } from 'lucide-react';
+import { User, PhoneCall, ListFilter, Mail, Plus, Trash2, Save, ArrowRight, Layers, Tag, Check, Lock } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 
 interface OperationsSettingsTabProps {
+    canEdit?: boolean;
     // 1. 담당자 및 부재 기준 상태
     managerName: string;
     setManagerName: (name: string) => void;
@@ -99,12 +100,14 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
     newEmailRecipient,
     setNewEmailRecipient,
     onSaveEmailSettings,
-    emailSettingsLoading
+    emailSettingsLoading,
+    canEdit = true,
 }) => {
     const { showToast } = useToast();
 
     // 이메일 수신자 추가/제거
     const handleAddEmail = () => {
+        if (!canEdit) return;
         if (!newEmailRecipient.trim()) return;
         if (!newEmailRecipient.includes('@')) {
             showToast('올바른 이메일 형식이 아닙니다.', 'error');
@@ -119,11 +122,29 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
     };
 
     const handleRemoveEmail = (email: string) => {
+        if (!canEdit) return;
         setEmailNotificationRecipients(emailNotificationRecipients.filter(e => e !== email));
     };
 
     return (
         <div className="space-y-6">
+            {/* 읽기 전용 뷰어 안내 배너 */}
+            {!canEdit && (
+                <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+                        <Lock size={16} />
+                    </div>
+                    <div>
+                        <div className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                            안전 열람 뷰어 모드 (읽기 전용)
+                        </div>
+                        <div className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                            회사의 공통 상담 상태 체계 및 부재콜 리마인더 기준을 열람하고 있습니다. 수정 및 삭제 권한은 대표 및 총괄 관리자에게 있습니다.
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* 1. 기본 담당자 설정 */}
             <SettingsCard
                 title="기본 업무 정보"
@@ -134,23 +155,27 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                     <div className="flex items-center gap-3 max-w-md">
                         <input
                             type="text"
-                            className="flex-1 p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                            disabled={!canEdit}
+                            className="flex-1 p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none disabled:opacity-60"
                             value={managerName}
                             onChange={e => setManagerName(e.target.value)}
                         />
-                        <button
-                            type="button"
-                            onClick={onSaveManagerName}
-                            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0"
-                        >
-                            저장
-                        </button>
+                        {canEdit && (
+                            <button
+                                type="button"
+                                onClick={onSaveManagerName}
+                                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0"
+                            >
+                                저장
+                            </button>
+                        )}
                     </div>
                 </SettingsRow>
 
                 <SettingsRow label="부재 콜 기준 상태" description="케이스가 이 상태일 때만 '부재 확인' 버튼 및 재통화 타이머가 동작합니다.">
                     <select
-                        className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                        disabled={!canEdit}
+                        className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none disabled:opacity-60"
                         value={missedCallStatus}
                         onChange={e => {
                             setMissedCallStatus(e.target.value);
@@ -171,24 +196,26 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                 description="고객 등록 후 경과 일수에 따라 재통화 권장 주기(시간)를 단계별로 자동 계산합니다."
                 icon={<PhoneCall size={18} />}
                 headerAction={
-                    <button
-                        type="button"
-                        onClick={() => {
-                            const last = missedCallIntervalTiers[missedCallIntervalTiers.length - 1];
-                            const nextDays = last ? (last.maxDays || last.minDays + 30) : 0;
-                            setMissedCallIntervalTiers([
-                                ...missedCallIntervalTiers.map((t, i) =>
-                                    i === missedCallIntervalTiers.length - 1 && t.maxDays === 0
-                                        ? { ...t, maxDays: nextDays, label: `${t.minDays}~${nextDays}일` }
-                                        : t
-                                ),
-                                { minDays: nextDays, maxDays: 0, interval: 24, label: `${nextDays}일 이상` }
-                            ]);
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 rounded-xl transition-colors"
-                    >
-                        <Plus size={14} /> 구간 추가
-                    </button>
+                    canEdit ? (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const last = missedCallIntervalTiers[missedCallIntervalTiers.length - 1];
+                                const nextDays = last ? (last.maxDays || last.minDays + 30) : 0;
+                                setMissedCallIntervalTiers([
+                                    ...missedCallIntervalTiers.map((t, i) =>
+                                        i === missedCallIntervalTiers.length - 1 && t.maxDays === 0
+                                            ? { ...t, maxDays: nextDays, label: `${t.minDays}~${nextDays}일` }
+                                            : t
+                                    ),
+                                    { minDays: nextDays, maxDays: 0, interval: 24, label: `${nextDays}일 이상` }
+                                ]);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 rounded-xl transition-colors"
+                        >
+                            <Plus size={14} /> 구간 추가
+                        </button>
+                    ) : undefined
                 }
             >
                 <div className="space-y-3">
@@ -209,7 +236,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                     {idx + 1}단계
                                 </span>
                                 <div className="sm:hidden">
-                                    {missedCallIntervalTiers.length > 1 && (
+                                    {canEdit && missedCallIntervalTiers.length > 1 && (
                                         <button
                                             type="button"
                                             onClick={() => setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx))}
@@ -225,7 +252,8 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                 <span className="text-xs text-gray-500">등록 후</span>
                                 <input
                                     type="number"
-                                    className="w-14 p-1.5 text-center text-xs font-bold bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
+                                    disabled={!canEdit}
+                                    className="w-14 p-1.5 text-center text-xs font-bold bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none disabled:opacity-60"
                                     value={tier.minDays}
                                     onChange={e => {
                                         const next = [...missedCallIntervalTiers];
@@ -239,7 +267,8 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                 ) : (
                                     <input
                                         type="number"
-                                        className="w-14 p-1.5 text-center text-xs font-bold bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
+                                        disabled={!canEdit}
+                                        className="w-14 p-1.5 text-center text-xs font-bold bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none disabled:opacity-60"
                                         value={tier.maxDays}
                                         onChange={e => {
                                             const next = [...missedCallIntervalTiers];
@@ -255,7 +284,8 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                 <ArrowRight size={14} className="text-gray-300 hidden sm:block" />
                                 <input
                                     type="number"
-                                    className="w-16 p-1.5 text-center text-sm font-bold text-blue-600 bg-blue-50/50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg outline-none"
+                                    disabled={!canEdit}
+                                    className="w-16 p-1.5 text-center text-sm font-bold text-blue-600 bg-blue-50/50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg outline-none disabled:opacity-60"
                                     value={tier.interval}
                                     onChange={e => {
                                         const next = [...missedCallIntervalTiers];
@@ -267,7 +297,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                             </div>
 
                             <div className="col-span-1 hidden sm:flex justify-end">
-                                {missedCallIntervalTiers.length > 1 && (
+                                {canEdit && missedCallIntervalTiers.length > 1 && (
                                     <button
                                         type="button"
                                         onClick={() => setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx))}
@@ -296,33 +326,37 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-gray-750 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-medium"
                             >
                                 {path}
-                                <button
-                                    type="button"
-                                    onClick={() => onDeletePath(path)}
-                                    className="hover:text-rose-500 text-gray-400 transition-colors"
-                                >
-                                    <Trash2 size={13} />
-                                </button>
+                                {canEdit && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onDeletePath(path)}
+                                        className="hover:text-rose-500 text-gray-400 transition-colors"
+                                    >
+                                        <Trash2 size={13} />
+                                    </button>
+                                )}
                             </span>
                         ))}
                     </div>
-                    <div className="flex gap-2 max-w-sm">
-                        <input
-                            type="text"
-                            placeholder="새 유입 경로 입력"
-                            className="flex-1 p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
-                            value={newPath}
-                            onChange={e => setNewPath(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddPath(); } }}
-                        />
-                        <button
-                            type="button"
-                            onClick={onAddPath}
-                            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors shrink-0"
-                        >
-                            추가
-                        </button>
-                    </div>
+                    {canEdit && (
+                        <div className="flex gap-2 max-w-sm">
+                            <input
+                                type="text"
+                                placeholder="새 유입 경로 입력"
+                                className="flex-1 p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                value={newPath}
+                                onChange={e => setNewPath(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddPath(); } }}
+                            />
+                            <button
+                                type="button"
+                                onClick={onAddPath}
+                                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors shrink-0"
+                            >
+                                추가
+                            </button>
+                        </div>
+                    )}
                 </div>
             </SettingsCard>
 
@@ -346,33 +380,37 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                     className="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200/60 dark:border-gray-700 text-xs font-semibold"
                                 >
                                     <span>{s}</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => onDeleteStatus(s)}
-                                        className="text-gray-400 hover:text-rose-500"
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
+                                    {canEdit && (
+                                        <button
+                                            type="button"
+                                            onClick={() => onDeleteStatus(s)}
+                                            className="text-gray-400 hover:text-rose-500"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
-                        <div className="flex gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <input
-                                type="text"
-                                placeholder="1차 상태 추가"
-                                className="flex-1 p-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
-                                value={newStatus}
-                                onChange={e => setNewStatus(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddStatus(); } }}
-                            />
-                            <button
-                                type="button"
-                                onClick={onAddStatus}
-                                className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg"
-                            >
-                                추가
-                            </button>
-                        </div>
+                        {canEdit && (
+                            <div className="flex gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <input
+                                    type="text"
+                                    placeholder="1차 상태 추가"
+                                    className="flex-1 p-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
+                                    value={newStatus}
+                                    onChange={e => setNewStatus(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddStatus(); } }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={onAddStatus}
+                                    className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg"
+                                >
+                                    추가
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* [2차 상태] */}
@@ -393,33 +431,37 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                     }`}
                                 >
                                     <span>{s}</span>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => { e.stopPropagation(); onDeleteSecondaryStatus(s); }}
-                                        className="text-gray-400 hover:text-rose-500"
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
+                                    {canEdit && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); onDeleteSecondaryStatus(s); }}
+                                            className="text-gray-400 hover:text-rose-500"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
-                        <div className="flex gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <input
-                                type="text"
-                                placeholder="2차 상태 추가"
-                                className="flex-1 p-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
-                                value={newSecondaryStatus}
-                                onChange={e => setNewSecondaryStatus(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddSecondaryStatus(); } }}
-                            />
-                            <button
-                                type="button"
-                                onClick={onAddSecondaryStatus}
-                                className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg"
-                            >
-                                추가
-                            </button>
-                        </div>
+                        {canEdit && (
+                            <div className="flex gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <input
+                                    type="text"
+                                    placeholder="2차 상태 추가"
+                                    className="flex-1 p-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
+                                    value={newSecondaryStatus}
+                                    onChange={e => setNewSecondaryStatus(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddSecondaryStatus(); } }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={onAddSecondaryStatus}
+                                    className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg"
+                                >
+                                    추가
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* [3차 상태] */}
@@ -447,36 +489,40 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                         className="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200/60 dark:border-gray-700 text-xs font-semibold"
                                     >
                                         <span>{t}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => onDeleteTertiaryStatus(selectedTertiarySecondary, t)}
-                                            className="text-gray-400 hover:text-rose-500"
-                                        >
-                                            <Trash2 size={12} />
-                                        </button>
+                                        {canEdit && (
+                                            <button
+                                                type="button"
+                                                onClick={() => onDeleteTertiaryStatus(selectedTertiarySecondary, t)}
+                                                className="text-gray-400 hover:text-rose-500"
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                             )}
                         </div>
-                        <div className="flex gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <input
-                                type="text"
-                                disabled={!selectedTertiarySecondary}
-                                placeholder={selectedTertiarySecondary ? "3차 상태 추가" : "2차 선택 필요"}
-                                className="flex-1 p-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none disabled:opacity-50"
-                                value={newTertiaryStatus}
-                                onChange={e => setNewTertiaryStatus(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddTertiaryStatus(); } }}
-                            />
-                            <button
-                                type="button"
-                                disabled={!selectedTertiarySecondary}
-                                onClick={onAddTertiaryStatus}
-                                className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg disabled:opacity-50"
-                            >
-                                추가
-                            </button>
-                        </div>
+                        {canEdit && (
+                            <div className="flex gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <input
+                                    type="text"
+                                    disabled={!selectedTertiarySecondary}
+                                    placeholder={selectedTertiarySecondary ? "3차 상태 추가" : "2차 선택 필요"}
+                                    className="flex-1 p-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg outline-none disabled:opacity-50"
+                                    value={newTertiaryStatus}
+                                    onChange={e => setNewTertiaryStatus(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddTertiaryStatus(); } }}
+                                />
+                                <button
+                                    type="button"
+                                    disabled={!selectedTertiarySecondary}
+                                    onClick={onAddTertiaryStatus}
+                                    className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg disabled:opacity-50"
+                                >
+                                    추가
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </SettingsCard>
@@ -487,20 +533,23 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                 description="배정된 상담원이 일정 시간 동안 첫 전화를 시도하지 않을 경우 관리자에게 이메일로 알림을 전송합니다."
                 icon={<Mail size={18} />}
                 headerAction={
-                    <button
-                        type="button"
-                        onClick={onSaveEmailSettings}
-                        disabled={emailSettingsLoading}
-                        className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors disabled:opacity-50"
-                    >
-                        <Save size={14} /> {emailSettingsLoading ? '저장 중...' : '이메일 설정 저장'}
-                    </button>
+                    canEdit ? (
+                        <button
+                            type="button"
+                            onClick={onSaveEmailSettings}
+                            disabled={emailSettingsLoading}
+                            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                        >
+                            <Save size={14} /> {emailSettingsLoading ? '저장 중...' : '이메일 설정 저장'}
+                        </button>
+                    ) : undefined
                 }
             >
                 <SettingsRow label="이메일 알림 사용 여부" description="기능 활성화 시 미응답 케이스 감지 엔진이 동작합니다.">
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label className={`relative inline-flex items-center ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}>
                         <input
                             type="checkbox"
+                            disabled={!canEdit}
                             className="sr-only peer"
                             checked={emailNotificationEnabled}
                             onChange={e => setEmailNotificationEnabled(e.target.checked)}
@@ -516,7 +565,8 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                     <div className="flex items-center gap-2">
                         <input
                             type="number"
-                            className="w-20 p-2 text-sm text-right font-bold bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                            disabled={!canEdit}
+                            className="w-20 p-2 text-sm text-right font-bold bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none disabled:opacity-70"
                             value={emailNotificationMinutes}
                             onChange={e => setEmailNotificationMinutes(Number(e.target.value))}
                         />
@@ -533,36 +583,40 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                     className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-50 dark:bg-gray-750 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full text-xs font-semibold"
                                 >
                                     {email}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveEmail(email)}
-                                        className="hover:text-rose-500 text-gray-400"
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
+                                    {canEdit && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveEmail(email)}
+                                            className="hover:text-rose-500 text-gray-400"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    )}
                                 </span>
                             ))}
                             {emailNotificationRecipients.length === 0 && (
                                 <span className="text-xs text-gray-400">등록된 수신 이메일이 없습니다.</span>
                             )}
                         </div>
-                        <div className="flex gap-2 max-w-sm">
-                            <input
-                                type="email"
-                                placeholder="관리자 이메일 주소"
-                                className="flex-1 p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
-                                value={newEmailRecipient}
-                                onChange={e => setNewEmailRecipient(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddEmail(); } }}
-                            />
-                            <button
-                                type="button"
-                                onClick={handleAddEmail}
-                                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-xs font-bold rounded-xl"
-                            >
-                                추가
-                            </button>
-                        </div>
+                        {canEdit && (
+                            <div className="flex gap-2 max-w-sm">
+                                <input
+                                    type="email"
+                                    placeholder="관리자 이메일 주소"
+                                    className="flex-1 p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                    value={newEmailRecipient}
+                                    onChange={e => setNewEmailRecipient(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddEmail(); } }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleAddEmail}
+                                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-xs font-bold rounded-xl"
+                                >
+                                    추가
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </SettingsRow>
             </SettingsCard>

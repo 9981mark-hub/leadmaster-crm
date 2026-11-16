@@ -17,6 +17,7 @@ import {
   Bell,
   Send,
   GraduationCap,
+  Settings,
 } from 'lucide-react';
 import {
   TeamMember,
@@ -25,6 +26,7 @@ import {
   TelegramAdminPermissions,
   NoticeAdminPermissions,
   TrainingAdminPermissions,
+  SettingsAdminPermissions,
   DEFAULT_TIER1_PERMISSIONS,
   DEFAULT_TIER2_PERMISSIONS,
   DEFAULT_TIER3_PERMISSIONS,
@@ -64,6 +66,9 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
   const [trainingPerms, setTrainingPerms] = useState<TrainingAdminPermissions>(
     initialPerms.training || DEFAULT_TIER1_PERMISSIONS.training
   );
+  const [settingsPerms, setSettingsPerms] = useState<SettingsAdminPermissions>(
+    initialPerms.settings || DEFAULT_TIER1_PERMISSIONS.settings
+  );
   const [teamName, setTeamName] = useState<string>(member?.teamName || '1팀');
 
   // member 변경 시 폼 상태 동기화
@@ -76,6 +81,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
       setTelegramPerms({ ...(p.telegram || DEFAULT_TIER1_PERMISSIONS.telegram) });
       setNoticePerms({ ...(p.notice || DEFAULT_TIER1_PERMISSIONS.notice) });
       setTrainingPerms({ ...(p.training || DEFAULT_TIER1_PERMISSIONS.training) });
+      setSettingsPerms({ ...(p.settings || DEFAULT_TIER1_PERMISSIONS.settings) });
       setTeamName(member.teamName || '1팀');
     }
   }, [member]);
@@ -91,18 +97,21 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
       setTelegramPerms({ ...DEFAULT_TIER1_PERMISSIONS.telegram });
       setNoticePerms({ ...DEFAULT_TIER1_PERMISSIONS.notice });
       setTrainingPerms({ ...DEFAULT_TIER1_PERMISSIONS.training });
+      setSettingsPerms({ ...DEFAULT_TIER1_PERMISSIONS.settings });
     } else if (newTier === 2) {
       setTeamPerms({ ...DEFAULT_TIER2_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER2_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER2_PERMISSIONS.telegram });
       setNoticePerms({ ...DEFAULT_TIER2_PERMISSIONS.notice });
       setTrainingPerms({ ...DEFAULT_TIER2_PERMISSIONS.training });
+      setSettingsPerms({ ...DEFAULT_TIER2_PERMISSIONS.settings });
     } else if (newTier === 3) {
       setTeamPerms({ ...DEFAULT_TIER3_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER3_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER3_PERMISSIONS.telegram });
       setNoticePerms({ ...DEFAULT_TIER3_PERMISSIONS.notice });
       setTrainingPerms({ ...DEFAULT_TIER3_PERMISSIONS.training });
+      setSettingsPerms({ ...DEFAULT_TIER3_PERMISSIONS.settings });
     }
   };
 
@@ -116,6 +125,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
         telegram: telegramPerms,
         notice: noticePerms,
         training: trainingPerms,
+        settings: settingsPerms,
       };
 
       await Promise.all([
@@ -866,6 +876,146 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                     </label>
                   </div>
                 </>
+              )}
+            </div>
+          </div>
+
+          {/* 7. 시스템 설정(Settings) 권한 위임 스위치 */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 p-4 rounded-xl border border-slate-200/80 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Settings size={16} className="text-slate-600 dark:text-slate-300" />
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  7. 시스템 설정(Settings) 권한 위임 스위치 (전사 표준 및 인프라)
+                </h4>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-200 text-slate-800 dark:bg-gray-600 dark:text-slate-200">
+                표준체계 & 인프라
+              </span>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-blue-400">
+                <input
+                  type="checkbox"
+                  checked={settingsPerms.allowAccess}
+                  onChange={(e) =>
+                    setSettingsPerms({ ...settingsPerms, allowAccess: e.target.checked })
+                  }
+                  className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                    <span>시스템 설정 페이지 접근 권한</span>
+                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
+                      {settingsPerms.allowAccess ? '허용' : '차단'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                    좌측 메뉴의 '시스템 설정' 페이지 접근을 허용합니다 (체크 해제 시 메뉴 비노출).
+                  </div>
+                </div>
+              </label>
+
+              {settingsPerms.allowAccess && (
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 space-y-2">
+                    <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <SlidersHorizontal size={14} className="text-blue-600" />
+                      <span>대분류 탭별 접근 및 편집 권한</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-start gap-2.5 p-2 rounded-lg border border-slate-200 dark:border-gray-700 cursor-pointer hover:border-blue-400">
+                        <input
+                          type="checkbox"
+                          checked={settingsPerms.allowPartners}
+                          onChange={(e) =>
+                            setSettingsPerms({ ...settingsPerms, allowPartners: e.target.checked })
+                          }
+                          className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <div className="flex-1">
+                          <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                            <span>1. 거래처 맞춤 관리 탭 오픈 (수임 수수료율 기밀)</span>
+                            <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                              {settingsPerms.allowPartners ? '오픈' : '숨김(차단)'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                            제휴 법무법인의 건당 수임 수수료율 규칙 및 서식 설정 탭을 오픈합니다 (대표/총괄 권장).
+                          </div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2.5 p-2 rounded-lg border border-slate-200 dark:border-gray-700 cursor-pointer hover:border-blue-400">
+                        <input
+                          type="checkbox"
+                          checked={settingsPerms.allowOperations}
+                          onChange={(e) =>
+                            setSettingsPerms({ ...settingsPerms, allowOperations: e.target.checked })
+                          }
+                          className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <div className="flex-1">
+                          <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                            <span>2. 공통 업무 설정 편집 권한 (상담상태/유입경로/콜간격)</span>
+                            <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
+                              {settingsPerms.allowOperations ? '수정/삭제 허용' : '읽기 전용 뷰어'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                            체크 시 상담 상태 체계 및 콜 리마인더 간격을 수정할 수 있습니다. (미체크 시 열람만 가능한 안전 뷰어 모드로 동작)
+                          </div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2.5 p-2 rounded-lg border border-slate-200 dark:border-gray-700 cursor-pointer hover:border-blue-400">
+                        <input
+                          type="checkbox"
+                          checked={settingsPerms.allowIntegrations}
+                          onChange={(e) =>
+                            setSettingsPerms({ ...settingsPerms, allowIntegrations: e.target.checked })
+                          }
+                          className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <div className="flex-1">
+                          <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                            <span>3. 외부 연동 & AI 탭 관리 권한</span>
+                            <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                              {settingsPerms.allowIntegrations ? '오픈' : '숨김(차단)'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                            텔레그램 알림방 타깃 설정 및 AI 회생/파산 도메인 감지 키워드 관리를 허용합니다.
+                          </div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2.5 p-2 rounded-lg border border-slate-200 dark:border-gray-700 cursor-pointer hover:border-blue-400">
+                        <input
+                          type="checkbox"
+                          checked={settingsPerms.allowDataSecurity}
+                          onChange={(e) =>
+                            setSettingsPerms({ ...settingsPerms, allowDataSecurity: e.target.checked })
+                          }
+                          className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                        />
+                        <div className="flex-1">
+                          <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                            <span>4. 데이터 백업 다운로드 권한</span>
+                            <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                              {settingsPerms.allowDataSecurity ? '다운로드 허용' : '숨김(차단)'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                            전사 수동 DB 백업 다운로드 및 캐시 재동기화를 허용합니다. (긴급 데이터 파기 및 백업 복원은 대표 전권 고정)
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>

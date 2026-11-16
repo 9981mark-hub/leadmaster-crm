@@ -60,22 +60,30 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
                                 이전에 다운로드한 JSON 백업 파일을 선택하여 시스템 데이터를 복구합니다. (기존 데이터가 덮어씌워질 수 있습니다.)
                             </p>
                         </div>
-                        <div>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                accept=".json"
-                                onChange={onRestoreBackup}
-                                className="hidden"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="mt-4 w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5"
-                            >
-                                <Upload size={14} /> 백업 파일 선택 및 복원
-                            </button>
-                        </div>
+                        {isOwner ? (
+                            <div>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    accept=".json"
+                                    onChange={onRestoreBackup}
+                                    className="hidden"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="mt-4 w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5"
+                                >
+                                    <Upload size={14} /> 백업 파일 선택 및 복원
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="mt-4 p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-center border border-gray-200 dark:border-gray-700">
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                                    🔒 데이터 복원은 조직 대표(Owner) 전용 권한입니다.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

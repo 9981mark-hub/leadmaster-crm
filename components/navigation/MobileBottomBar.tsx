@@ -18,7 +18,8 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
 }) => {
   const location = useLocation();
   const path = location.pathname;
-  const { org, isAdmin, isPlatformAdmin, logout } = useAuth();
+  const { org, user, isAdmin, isPlatformAdmin, logout } = useAuth();
+  const isOwner = org?.role === 'owner' || user?.email === (org as any)?.ownerEmail;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const isLiteOnly = !isAdmin && org?.uiMode === 'lite_only';
@@ -67,7 +68,9 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
       label: '시스템 & 마이',
       items: [
         ...(isPlatformAdmin ? [{ to: '/platform', icon: Building2, label: '회사 관리 (Host)' }] : []),
-        ...(isAdmin ? [{ to: '/settings', icon: Settings, label: '시스템 설정' }] : []),
+        ...(isOwner || isPlatformAdmin || (isAdmin && org?.adminPermissions?.settings?.allowAccess)
+          ? [{ to: '/settings', icon: Settings, label: '시스템 설정' }]
+          : []),
         { to: '/mypage', icon: User, label: '마이페이지' },
       ],
     },

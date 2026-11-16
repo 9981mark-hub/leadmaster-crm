@@ -39,7 +39,9 @@ import {
     AlertTriangle,
     Save,
     Trash2,
-    Check
+    Check,
+    ShieldAlert,
+    Lock
 } from 'lucide-react';
 import { loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
 import {
@@ -53,6 +55,7 @@ import { EmergencyPurgeModal } from '../components/settings/EmergencyPurgeModal'
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchAiUsage, AiUsage } from '../services/aiProxy';
+import { SettingsAdminPermissions } from '../services/org';
 
 // 신규 모듈형 4대 탭 컴포넌트
 import { PartnerSettingsTab } from '../components/settings/tabs/PartnerSettingsTab';
@@ -69,7 +72,36 @@ export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<SettingsMainTab>('partners');
     const [searchQuery, setSearchQuery] = useState('');
     const { showToast } = useToast();
-    const { isAdmin, org } = useAuth();
+    const { isAdmin, isPlatformAdmin, org, user } = useAuth();
+
+    // 직급 및 시스템 설정 세부 권한 판별
+    const isOwner = org?.role === 'owner' || isPlatformAdmin;
+    const settingsPerms: SettingsAdminPermissions = org?.adminPermissions?.settings || {
+        allowAccess: false,
+        allowPartners: false,
+        allowOperations: false,
+        allowIntegrations: false,
+        allowDataSecurity: false
+    };
+    const canAccessSettings = isOwner || settingsPerms.allowAccess;
+
+    const showPartnersTab = isOwner || settingsPerms.allowPartners;
+    const showOperationsTab = isOwner || settingsPerms.allowAccess;
+    const showIntegrationsTab = isOwner || settingsPerms.allowIntegrations;
+    const showDataSecurityTab = isOwner || settingsPerms.allowDataSecurity;
+
+    // 허용된 탭 자동 선택 가드
+    useEffect(() => {
+        const availableTabs: SettingsMainTab[] = [];
+        if (showPartnersTab) availableTabs.push('partners');
+        if (showOperationsTab) availableTabs.push('operations');
+        if (showIntegrationsTab) availableTabs.push('integrations');
+        if (showDataSecurityTab) availableTabs.push('data_security');
+
+        if (availableTabs.length > 0 && !availableTabs.includes(activeTab)) {
+            setActiveTab(availableTabs[0]);
+        }
+    }, [showPartnersTab, showOperationsTab, showIntegrationsTab, showDataSecurityTab, activeTab]);
 
     // -------------------------------------------------------------
     // 1. Partners State
@@ -583,6 +615,30 @@ export default function SettingsPage() {
     // -------------------------------------------------------------
     // Render
     // -------------------------------------------------------------
+    if (!canAccessSettings) {
+        return (
+            <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 sm:p-12 shadow-xs border border-gray-150 dark:border-gray-700 text-center">
+                    <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-rose-200 dark:border-rose-800">
+                        <ShieldAlert size={32} />
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 mb-2">
+                        시스템 설정 접근 권한 제한
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed mb-6">
+                        시스템 설정 센터는 TM 조직 대표(Owner) 및 대표의 권한 위임을 받은 관리자만 접근할 수 있는 핵심 관리 구역입니다.
+                    </p>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-600 dark:text-gray-300">
+                        <span>현재 계정 직급:</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100">
+                            {user?.role === 'admin' ? '중간 관리자 (설정 위임 권한 없음)' : '상담원 (시스템 설정 접근 불가)'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
             {/* 1. 최상단 헤더 & 빠른 검색바 */}
@@ -592,9 +648,20 @@ export default function SettingsPage() {
                         <Sliders size={22} />
                     </div>
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
-                            시스템 설정
-                        </h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
+                                시스템 설정
+                            </h1>
+                            {isOwner ? (
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-md">
+                                    대표 최고 관리자
+                                </span>
+                            ) : (
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-md">
+                                    권한 위임 관리자
+                                </span>
+                            )}
+                        </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                             거래처별 정산 정책, 상담 상태 체계, 텔레그램 연동 및 데이터 백업을 통합 관리합니다.
                         </p>
@@ -611,13 +678,13 @@ export default function SettingsPage() {
                         onChange={e => {
                             const q = e.target.value;
                             setSearchQuery(q);
-                            if (q.includes('거래처') || q.includes('정산') || q.includes('수수료') || q.includes('계좌')) {
+                            if ((q.includes('거래처') || q.includes('정산') || q.includes('수수료') || q.includes('계좌')) && showPartnersTab) {
                                 setActiveTab('partners');
-                            } else if (q.includes('콜') || q.includes('부재') || q.includes('상태') || q.includes('유입') || q.includes('이메일') || q.includes('담당자')) {
+                            } else if ((q.includes('콜') || q.includes('부재') || q.includes('상태') || q.includes('유입') || q.includes('이메일') || q.includes('담당자')) && showOperationsTab) {
                                 setActiveTab('operations');
-                            } else if (q.includes('텔레') || q.includes('봇') || q.includes('ai') || q.includes('단어') || q.includes('키워드')) {
+                            } else if ((q.includes('텔레') || q.includes('봇') || q.includes('ai') || q.includes('단어') || q.includes('키워드')) && showIntegrationsTab) {
                                 setActiveTab('integrations');
-                            } else if (q.includes('백업') || q.includes('복원') || q.includes('파기') || q.includes('삭제')) {
+                            } else if ((q.includes('백업') || q.includes('복원') || q.includes('파기') || q.includes('삭제')) && showDataSecurityTab) {
                                 setActiveTab('data_security');
                             }
                         }}
@@ -627,67 +694,78 @@ export default function SettingsPage() {
 
             {/* 2. 대분류 4대 탭 바 */}
             <div className="bg-gray-100/80 dark:bg-gray-800/80 p-1.5 rounded-2xl flex items-center space-x-1 overflow-x-auto shadow-inner">
-                <button
-                    onClick={() => setActiveTab('partners')}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-                        activeTab === 'partners'
-                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                    }`}
-                >
-                    <Building size={16} />
-                    <span>1. 거래처 맞춤 관리</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300">
-                        {partners.length}개
-                    </span>
-                </button>
+                {showPartnersTab && (
+                    <button
+                        onClick={() => setActiveTab('partners')}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                            activeTab === 'partners'
+                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                        }`}
+                    >
+                        <Building size={16} />
+                        <span>1. 거래처 맞춤 관리</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300">
+                            {partners.length}개
+                        </span>
+                    </button>
+                )}
 
-                <button
-                    onClick={() => setActiveTab('operations')}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-                        activeTab === 'operations'
-                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                    }`}
-                >
-                    <Sliders size={16} />
-                    <span>2. 공통 업무 설정</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        콜/상태
-                    </span>
-                </button>
+                {showOperationsTab && (
+                    <button
+                        onClick={() => setActiveTab('operations')}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                            activeTab === 'operations'
+                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                        }`}
+                    >
+                        <Sliders size={16} />
+                        <span>2. 공통 업무 설정</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                            {isOwner || settingsPerms.allowOperations ? '편집 가능' : '안전 열람'}
+                        </span>
+                    </button>
+                )}
 
-                <button
-                    onClick={() => setActiveTab('integrations')}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-                        activeTab === 'integrations'
-                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                    }`}
-                >
-                    <MessageCircle size={16} />
-                    <span>3. 외부 연동 & AI</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300">
-                        텔레그램/AI
-                    </span>
-                </button>
+                {showIntegrationsTab && (
+                    <button
+                        onClick={() => setActiveTab('integrations')}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                            activeTab === 'integrations'
+                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                        }`}
+                    >
+                        <MessageCircle size={16} />
+                        <span>3. 외부 연동 & AI</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300">
+                            텔레그램/AI
+                        </span>
+                    </button>
+                )}
 
-                <button
-                    onClick={() => setActiveTab('data_security')}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-                        activeTab === 'data_security'
-                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                    }`}
-                >
-                    <Shield size={16} />
-                    <span>4. 데이터 & 보안</span>
-                </button>
+                {showDataSecurityTab && (
+                    <button
+                        onClick={() => setActiveTab('data_security')}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                            activeTab === 'data_security'
+                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                        }`}
+                    >
+                        <Shield size={16} />
+                        <span>4. 데이터 & 보안</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
+                            {isOwner ? '전권 관리' : '백업 다운로드'}
+                        </span>
+                    </button>
+                )}
             </div>
 
             {/* 3. 탭별 메인 뷰 */}
             <div className="pt-2">
-                {activeTab === 'partners' && (
+                {activeTab === 'partners' && showPartnersTab && (
                     <PartnerSettingsTab
                         partners={partners}
                         selectedPartnerId={selectedPartnerId}
@@ -707,7 +785,7 @@ export default function SettingsPage() {
                     />
                 )}
 
-                {activeTab === 'operations' && (
+                {activeTab === 'operations' && showOperationsTab && (
                     <OperationsSettingsTab
                         managerName={managerName}
                         setManagerName={setManagerName}
@@ -748,10 +826,11 @@ export default function SettingsPage() {
                         setNewEmailRecipient={setNewEmailRecipient}
                         onSaveEmailSettings={handleSaveEmailSettings}
                         emailSettingsLoading={emailSettingsLoading}
+                        canEdit={isOwner || settingsPerms.allowOperations}
                     />
                 )}
 
-                {activeTab === 'integrations' && (
+                {activeTab === 'integrations' && showIntegrationsTab && (
                     <IntegrationsSettingsTab
                         telegramRooms={telegramRooms}
                         setTelegramRooms={setTelegramRooms}
@@ -760,16 +839,16 @@ export default function SettingsPage() {
                         aiKeywords={aiKeywords}
                         setAiKeywords={setAiKeywords}
                         onSaveAiKeywords={handleSaveAiKeywords}
-                        isAdmin={isAdmin}
+                        isAdmin={isOwner || settingsPerms.allowIntegrations}
                     />
                 )}
 
-                {activeTab === 'data_security' && (
+                {activeTab === 'data_security' && showDataSecurityTab && (
                     <DataSecurityTab
                         onDownloadBackup={handleDownloadBackup}
                         onRestoreBackup={handleRestoreBackup}
                         onForceSync={handleForceSync}
-                        isOwner={org?.role === 'owner'}
+                        isOwner={isOwner}
                         onOpenEmergencyPurge={() => setIsEmergencyPurgeOpen(true)}
                     />
                 )}

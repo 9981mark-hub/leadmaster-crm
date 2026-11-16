@@ -49,6 +49,14 @@ export interface TrainingAdminPermissions {
   canGrade: boolean;           // 모의 훈련 평가 등급(S~F) 및 코칭 피드백 작성 권한
 }
 
+export interface SettingsAdminPermissions {
+  allowAccess: boolean;        // 시스템 설정 페이지 접근 허용 여부
+  allowPartners: boolean;      // 1. 거래처 맞춤 관리 탭 오픈 (수임 수수료율 기밀)
+  allowOperations: boolean;    // 2. 공통 업무 설정 편집 권한 (false면 읽기 전용 뷰어)
+  allowIntegrations: boolean;  // 3. 외부 연동 & AI 탭 관리 권한
+  allowDataSecurity: boolean;  // 4. 데이터 백업 다운로드 권한 (파기/복원은 대표 전권)
+}
+
 export interface AdminPermissions {
   tier: AdminTier;
   team: TeamAdminPermissions;
@@ -56,6 +64,7 @@ export interface AdminPermissions {
   telegram: TelegramAdminPermissions;
   notice: NoticeAdminPermissions;
   training: TrainingAdminPermissions;
+  settings: SettingsAdminPermissions;
 }
 
 export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
@@ -94,6 +103,13 @@ export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
     viewScope: 'team',
     canManageConfig: false,
     canGrade: true,
+  },
+  settings: {
+    allowAccess: false,
+    allowPartners: false,
+    allowOperations: false,
+    allowIntegrations: false,
+    allowDataSecurity: false,
   },
 };
 
@@ -134,6 +150,13 @@ export const DEFAULT_TIER2_PERMISSIONS: AdminPermissions = {
     canManageConfig: false,
     canGrade: true,
   },
+  settings: {
+    allowAccess: true,
+    allowPartners: false,
+    allowOperations: false,
+    allowIntegrations: false,
+    allowDataSecurity: false,
+  },
 };
 
 export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
@@ -173,6 +196,13 @@ export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
     canManageConfig: true,
     canGrade: true,
   },
+  settings: {
+    allowAccess: true,
+    allowPartners: true,
+    allowOperations: true,
+    allowIntegrations: true,
+    allowDataSecurity: true,
+  },
 };
 
 export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
@@ -211,6 +241,13 @@ export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
     viewScope: 'all',
     canManageConfig: true,
     canGrade: true,
+  },
+  settings: {
+    allowAccess: true,
+    allowPartners: true,
+    allowOperations: true,
+    allowIntegrations: true,
+    allowDataSecurity: true,
   },
 };
 
@@ -338,6 +375,7 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
       telegram: { ...DEFAULT_TIER1_PERMISSIONS.telegram, ...(raw.telegram || {}) },
       notice: { ...DEFAULT_TIER1_PERMISSIONS.notice, ...(raw.notice || {}) },
       training: { ...DEFAULT_TIER1_PERMISSIONS.training, ...(raw.training || {}) },
+      settings: { ...DEFAULT_TIER1_PERMISSIONS.settings, ...(raw.settings || {}) },
     };
   }
 
