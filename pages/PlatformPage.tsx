@@ -528,18 +528,29 @@ export default function PlatformPage() {
                     </td>
                     <td className="p-3.5 text-xs text-gray-600 dark:text-gray-300">
                       {o.ownerInviteEmail ? (
-                        <div>
-                          <div className="font-mono">{o.ownerInviteEmail}</div>
-                          <div className="mt-0.5 text-[11px]">
+                        <div className="flex flex-col gap-1 min-w-[190px]">
+                          <div 
+                            className="font-mono text-xs text-gray-900 dark:text-gray-100 select-all truncate max-w-[240px]" 
+                            title={o.ownerInviteEmail}
+                          >
+                            {o.ownerInviteEmail}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px]">
                             {o.ownerInviteAccepted ? (
-                              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">가입 완료</span>
+                              <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                가입 완료
+                              </span>
                             ) : (
-                              <span className="text-amber-600 dark:text-amber-400 font-semibold">초대 수락 대기</span>
+                              <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                초대 수락 대기
+                              </span>
                             )}
                           </div>
                         </div>
                       ) : (
-                        '-'
+                        <span className="text-gray-400">-</span>
                       )}
                     </td>
                     <td className="p-3.5 text-right font-mono tabular-nums text-gray-900 dark:text-gray-100">
