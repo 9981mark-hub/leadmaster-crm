@@ -1,67 +1,31 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { format, parseISO, isSameDay, isToday, isBefore } from 'date-fns';
+import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { fetchCases, fetchPartners, fetchSettlementBatches, subscribe, getSyncStatus, refreshData } from '../services/api';
-import { Case, Partner, ReminderItem, SettlementBatch, CalendarEventType } from '../types';
-import { getCaseWarnings, getReminderStatus, calculateNextSettlement, isOverdueMissedCall, loadMissedCallTiers } from '../utils';
+import { Case, Partner, ReminderItem, SettlementBatch } from '../types';
+import { getCaseWarnings, getReminderStatus } from '../utils';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Calendar, PhoneCall, CheckCircle, Clock, Wallet, Phone, Briefcase, MapPin, MoreHorizontal, X, DollarSign, FileText, Bell, MessageSquare, Sparkles } from 'lucide-react';
-import { DEFAULT_STATUS_LIST } from '../constants';
+import { AlertCircle, Clock, X } from 'lucide-react';
 import CalendarWidget from '../components/CalendarWidget';
 import { MonthlyTrendChart, StatusPieChart } from '../components/DashboardCharts';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
-import { KPICard } from '../components/ui/KPICard';
 import { CardSkeleton } from '../components/Skeleton';
-import RevenueWidget from '../components/RevenueWidget';
-import { ParalegalPipelineWidget } from '../components/dashboard/ParalegalPipelineWidget';
 import AiUsageWidget from '../components/AiUsageWidget';
 import { fetchDetailedAiUsage, DetailedAiUsage } from '../services/aiUsage';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchTeamMembers, TeamMember } from '../services/team';
 
-
-interface CaseListItemProps {
-  c: Case;
-  type: 'today' | 'overdue' | 'warning';
-  reminder?: ReminderItem;
-}
-
-const CaseListItem: React.FC<CaseListItemProps> = ({ c, type, reminder }) => {
-  let badgeColor = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-  let badgeText = c.status;
-
-  if (type === 'overdue') badgeColor = 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
-  if (type === 'today') badgeColor = 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
-  if (type === 'warning') badgeColor = 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-
-  return (
-    <Link to={`/case/${c.caseId}`} className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0">
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-800 dark:text-gray-100">{c.customerName}</span>
-          <span className="text-xs text-gray-400">|</span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">{c.phone}</span>
-        </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 rounded">{c.caseType || '-'}</span>
-          {c.inboundPath && <span className="text-[10px] bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 px-1.5 py-0.5 rounded">{c.inboundPath}</span>}
-        </div>
-        <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex gap-2">
-          <span>{c.status}</span>
-          {reminder && <span className={type === 'overdue' ? 'text-red-500 dark:text-red-400 font-medium' : ''}>📅 {reminder.datetime}</span>}
-        </div>
-      </div>
-      <span className={`px-2 py-1 rounded text-xs font-medium ${badgeColor}`}>
-        {type === 'overdue' ? '지연' : type === 'today' ? '오늘' : '확인'}
-      </span>
-    </Link>
-  );
-};
+// 직급별 신설 대시보드 컴포넌트
+import DashboardModeSwitcher, { OwnerDashboardMode } from '../components/dashboard/DashboardModeSwitcher';
+import AgentDashboardView from '../components/dashboard/AgentDashboardView';
+import ManagerDashboardView from '../components/dashboard/ManagerDashboardView';
+import OwnerDashboardView from '../components/dashboard/OwnerDashboardView';
+import HybridDashboardView from '../components/dashboard/HybridDashboardView';
 
 export default function Dashboard() {
   const { theme } = useTheme();
-  const { isAdmin, isPlatformAdmin, org } = useAuth();
+  const { isAdmin, isPlatformAdmin, org, user } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<string>('all');
@@ -69,15 +33,33 @@ export default function Dashboard() {
   const [batches, setBatches] = useState<SettlementBatch[]>([]);
   const [loading, setLoading] = useState(true);
 
-  /* New: Dashboard State for Calendar Interactivity */
+  // 캘린더 날짜 상태
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  /* [NEW] State for Overdue Reminders Modal */
+  // 지연 리마인더 및 조치 필요 모달
   const [showOverdueModal, setShowOverdueModal] = useState(false);
-
-  /* [NEW] State for Warning Cases Modal */
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [aiUsageSummary, setAiUsageSummary] = useState<DetailedAiUsage | null>(null);
+
+  // 직급 판별: 대표(owner), 팀장(admin), 일반 상담원(agent)
+  const role = org?.role || 'agent';
+  const isOwner = role === 'owner';
+  const isManager = role === 'admin';
+
+  // 대표 전용 뷰 모드 스위처 (기본값: 'hybrid' 올인원 겸직 모드)
+  const [ownerMode, setOwnerMode] = useState<OwnerDashboardMode>(() => {
+    const saved = localStorage.getItem('lm_owner_dashboard_view_mode') as OwnerDashboardMode;
+    return saved || 'hybrid';
+  });
+
+  const handleOwnerModeChange = (mode: OwnerDashboardMode) => {
+    setOwnerMode(mode);
+    try {
+      localStorage.setItem('lm_owner_dashboard_view_mode', mode);
+    } catch {
+      // 로컬스토리지 예외 방어
+    }
+  };
 
   useEffect(() => {
     if (isPlatformAdmin) {
@@ -91,27 +73,31 @@ export default function Dashboard() {
     }
   }, [isAdmin, org?.orgId]);
 
-  useEffect(() => {
+  const loadAllData = () => {
     Promise.all([fetchCases(), fetchPartners(), fetchSettlementBatches()]).then(([data, partnerData, batchData]) => {
       setCases(data);
       setPartners(partnerData);
       setBatches(batchData);
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    loadAllData();
   }, []);
 
-  // [FIX] 백그라운드 서버 데이터 도착 시 Dashboard 자동 갱신
-  // 새로고침 직후 빈 캐시로 렌더링 → 서버 데이터 도착 시 정확한 카운트로 업데이트
+  // 백그라운드 데이터 변경 구독
   useEffect(() => {
     const unsubscribe = subscribe(() => {
-      fetchCases().then(data => setCases(data));
-      fetchPartners().then(data => setPartners(data));
-      fetchSettlementBatches().then(data => setBatches(data));
+      loadAllData();
+      if (isAdmin && org?.orgId) {
+        fetchTeamMembers().then(setTeamMembers).catch(() => {});
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [isAdmin, org?.orgId]);
 
-  // 상담원은 오직 본인 배정 리드만, 관리자는 전체 대상
+  // 본인 배정 리드 판별자 (상담원 기준)
   const isMyCase = useMemo(() => {
     return (c: Case) => {
       if (c.assignedUserId) return c.assignedUserId === org?.userId;
@@ -120,175 +106,226 @@ export default function Dashboard() {
     };
   }, [org?.userId, org?.displayName]);
 
-  const scopedCases = useMemo(() => {
-    if (!isAdmin) {
-      return cases.filter(isMyCase);
-    }
-    return cases;
-  }, [cases, isAdmin, isMyCase]);
+  // 본인 케이스 목록
+  const myCases = useMemo(() => {
+    return cases.filter(isMyCase);
+  }, [cases, isMyCase]);
 
-  // 차트 표시용 케이스 (관리자는 특정 상담원별 소팅 가능, 상담원은 본인 것만)
+  // 미배정 리드 건수 (대표 스위처 뱃지용)
+  const unassignedCount = useMemo(() => {
+    return cases.filter(c => !c.assignedUserId && c.status !== '휴지통' && !c.deletedAt).length;
+  }, [cases]);
+
+  // 차트 표시용 케이스
   const chartCases = useMemo(() => {
-    if (!isAdmin) return scopedCases;
+    if (!isAdmin && !isOwner) return myCases;
     if (selectedMemberId === 'all') return cases;
     if (selectedMemberId === 'unassigned') return cases.filter(c => !c.assignedUserId);
     return cases.filter(c => c.assignedUserId === selectedMemberId);
-  }, [cases, scopedCases, isAdmin, selectedMemberId]);
+  }, [cases, myCases, isAdmin, isOwner, selectedMemberId]);
+
+  // 활성 케이스
+  const activeCases = useMemo(() => {
+    return (isAdmin || isOwner ? cases : myCases).filter(c => c.status !== '휴지통' && !c.deletedAt);
+  }, [cases, myCases, isAdmin, isOwner]);
+
+  const allRemindersWithCase = useMemo(() => {
+    return activeCases.flatMap(c =>
+      (c.reminders || []).map(r => ({ reminder: r, caseData: c }))
+    );
+  }, [activeCases]);
+
+  // 지연 리마인더 목록 (모달용)
+  const thirtyDaysAgo = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d;
+  }, []);
+
+  const overdueReminders = useMemo(() => {
+    return allRemindersWithCase.filter(item => {
+      if (getReminderStatus(item.reminder.datetime) !== 'overdue') return false;
+      if (item.reminder.resultStatus || item.reminder.isCompleted) return false;
+      if (item.reminder.datetime) {
+        const reminderDate = new Date(item.reminder.datetime.replace(' ', 'T'));
+        if (!isNaN(reminderDate.getTime()) && reminderDate < thirtyDaysAgo) return false;
+      }
+      return true;
+    });
+  }, [allRemindersWithCase, thirtyDaysAgo]);
+
+  // 경고 케이스 목록 (모달용)
+  const warningCasesWithDetails = useMemo(() => {
+    return activeCases.map(c => {
+      const partner = partners.find(p => p.partnerId === c.partnerId);
+      const warnings = getCaseWarnings(c, partner);
+      return { caseData: c, warnings };
+    }).filter(item => item.warnings.length > 0);
+  }, [activeCases, partners]);
 
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto space-y-6 pt-6">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <CardSkeleton />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <CardSkeleton />
           <CardSkeleton />
           <CardSkeleton />
           <CardSkeleton />
         </div>
-        <div className="h-64 glass-panel rounded-xl"></div>
+        <div className="h-64 glass-panel rounded-xl" />
       </div>
     );
   }
 
-  // [NEW] Missed call settings from localStorage
-  const missedCallStatus = localStorage.getItem('lm_missedStatus') || '부재';
-  const missedCallTiers = loadMissedCallTiers();
-
-  // [NEW] Calculate overdue missed call count (재통화 필요 건수) - using tiered intervals
-  const overdueMissedCallCount = scopedCases.filter(c => isOverdueMissedCall(c, missedCallStatus, missedCallTiers)).length;
-
-  // KPIs (Summary)
-  // [FIX] 삭제된(휴지통) 케이스의 리마인더는 대시보드 카운트에서 제외
-  const activeCases = scopedCases.filter(c => c.status !== '휴지통' && !c.deletedAt);
-  const allRemindersWithCase = activeCases.flatMap(c =>
-    (c.reminders || []).map(r => ({ reminder: r, caseData: c }))
-  );
-
-  const todayReminders = allRemindersWithCase.filter(item =>
-    getReminderStatus(item.reminder.datetime) === 'today' &&
-    // [FIX] Exclude completed reminders from count
-    !item.reminder.resultStatus &&
-    !item.reminder.isCompleted
-  );
-
-  // [FIX] 지연된 리마인더: resultStatus/isCompleted 처리된 항목 제외 + 30일 이상 지난 미처리 리마인더 제외
-  // 30일 이상 된 리마인더는 이미 처리되었지만 resultStatus가 기록되지 않은 과거 데이터로 간주
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  const overdueReminders = allRemindersWithCase.filter(item => {
-    if (getReminderStatus(item.reminder.datetime) !== 'overdue') return false;
-    // 이미 처리된 리마인더 제외
-    if (item.reminder.resultStatus || item.reminder.isCompleted) return false;
-    // 30일 이상 지난 미처리 리마인더 제외 (사실상 방치된 과거 데이터)
-    if (item.reminder.datetime) {
-      const reminderDate = new Date(item.reminder.datetime.replace(' ', 'T'));
-      if (!isNaN(reminderDate.getTime()) && reminderDate < thirtyDaysAgo) return false;
-    }
-    return true;
-  });
-
-  // Warnings - with details
-  const warningCasesWithDetails = scopedCases.map(c => {
-    const partner = partners.find(p => p.partnerId === c.partnerId);
-    const warnings = getCaseWarnings(c, partner);
-    return { caseData: c, warnings };
-  }).filter(item => item.warnings.length > 0);
-
-  const warningCases = warningCasesWithDetails.map(item => item.caseData);
-
-  // Next Settlement Calc
-  let settlementInfo = null;
-  if (partners.length > 0) {
-    settlementInfo = calculateNextSettlement(cases, partners[0]);
-  }
-
-  // Determine events for Selected Date
-  // FIX: Use date-fns format to keep local date instead of UTC from toISOString()
-  const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const selectedDayEvents = allRemindersWithCase.filter(item => {
-    if (!item.reminder.datetime) return false;
-    return item.reminder.datetime.startsWith(selectedDateStr);
-  }).sort((a, b) => String(a.reminder?.datetime || '').localeCompare(String(b.reminder?.datetime || '')));
-
-  const formatDateTitle = (d: Date) => {
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
-    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]}) 일정`;
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6 max-w-7xl mx-auto pb-4 md:pb-0"
+      transition={{ duration: 0.35 }}
+      className="space-y-6 max-w-7xl mx-auto pb-6"
     >
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-white">대시보드</h2>
-
-      {/* [SYNC FIX] 동기화 실패 경고 배너 */}
-      {getSyncStatus().status !== 'ok' && (
-        <div className={`rounded-lg p-3 flex items-center gap-3 text-sm ${
-          getSyncStatus().status === 'session_expired'
-            ? 'bg-red-50 border border-red-200 text-red-700'
-            : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
-        }`}>
-          <AlertCircle size={18} className="flex-shrink-0" />
-          <div className="flex-1">
-            {getSyncStatus().status === 'session_expired' ? (
-              <span>⚠️ 일시적 서버 세션 지연이 발생했습니다. <strong>잠시 후 자동으로 최신 데이터가 동기화됩니다.</strong></span>
-            ) : (
-              <span>⚠️ 서버 연결에 실패했습니다. 네트워크를 확인하고 새로고침해주세요.</span>
+      {/* 최상단 타이틀 & 동기화 상태 */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            <span>대시보드</span>
+            {isOwner && (
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-700">
+                TM 대표 계정
+              </span>
             )}
-          </div>
-          <button onClick={() => refreshData()} className="px-3 py-1 bg-blue-600 text-white rounded text-xs font-bold whitespace-nowrap hover:bg-blue-700">
-            동기화 재시도
-          </button>
+            {isManager && (
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 font-bold border border-indigo-300 dark:border-indigo-700">
+                중간 관리자(팀장) 계정
+              </span>
+            )}
+            {!isOwner && !isManager && (
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 font-bold border border-blue-300 dark:border-blue-700">
+                상담원 계정
+              </span>
+            )}
+          </h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            {org?.name ? `${org.name} · ` : ''}
+            {isOwner ? '경영 관제 및 현장 배정을 유연하게 지휘합니다.' : isManager ? '실시간 플로어 모니터링 및 리드 관제' : '개인 상담 리마인더 및 인센티브 달성'}
+          </p>
         </div>
-      )}
 
-      {/* KPI Grid */}
-      <div className={`grid gap-4 ${isAdmin ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'}`}>
-        <KPICard title={isAdmin ? "오늘 리마인더" : "오늘 내 리마인더"} count={todayReminders.length} color="text-blue-600" icon={PhoneCall} />
-        <div onClick={() => setShowOverdueModal(true)} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
-          <KPICard title={isAdmin ? "지연된 리마인더" : "지연된 내 리마인더"} count={overdueReminders.length} color="text-red-600" icon={Clock} />
-        </div>
-        <div onClick={() => setShowWarningModal(true)} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
-          <KPICard title="조치 필요 (경고)" count={warningCases.length} color="text-yellow-600" icon={AlertCircle} />
-        </div>
-        <Link to="/cases" onClick={() => sessionStorage.setItem('lm_showOverdueMissed', 'true')}>
-          <KPICard title="재통화 필요" count={overdueMissedCallCount} color="text-orange-600" icon={Phone} subText="구간별 알림 적용중" pulseGlow={overdueMissedCallCount > 0} />
-        </Link>
-        {/* 총괄 운영자/HOST 전용: 일반 고객사 및 회사 관리자 비노출 */}
-        {isPlatformAdmin && (
-          <div onClick={() => { const el = document.getElementById('ai-usage-widget'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
-            <KPICard
-              title="오늘 AI 사용량"
-              count={aiUsageSummary ? `${aiUsageSummary.todayCount}회` : '-'}
-              color="text-purple-600"
-              icon={Sparkles}
-              subText={aiUsageSummary ? `약 ₩${aiUsageSummary.todayCostKrw.toLocaleString()} (${aiUsageSummary.todayCount}/${aiUsageSummary.dailyCap})` : '실시간 집계'}
-            />
+        {/* 동기화 실패 시 재시도 버튼 */}
+        {getSyncStatus().status !== 'ok' && (
+          <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg text-xs text-yellow-800 dark:text-yellow-200">
+            <AlertCircle size={15} />
+            <span>동기화 지연</span>
+            <button onClick={() => refreshData()} className="px-2 py-0.5 bg-yellow-600 text-white rounded font-bold hover:bg-yellow-700">
+              재시도
+            </button>
           </div>
         )}
       </div>
 
-      {/* Revenue KPI Widget (관리자 전용: 회사 매출/수수료/미수금) */}
-      {isAdmin && <RevenueWidget cases={cases} partners={partners} />}
+      {/* 👑 대표(Owner) 전용: 스마트 뷰 모드 스위처 */}
+      {isOwner && (
+        <DashboardModeSwitcher
+          currentMode={ownerMode}
+          onChange={handleOwnerModeChange}
+          unassignedCount={unassignedCount}
+        />
+      )}
 
-      {/* 사무장 인계 & 수임 파이프라인 관제 센터 (관리자 전용: 전환율 & 미컨택 관제) */}
-      {isAdmin && <ParalegalPipelineWidget cases={cases} isAdmin={isAdmin} />}
+      {/* 직급 및 선택 모드에 따른 뷰 컴포넌트 렌더링 */}
+      {(() => {
+        // 1. 대표(Owner) 분기
+        if (isOwner) {
+          if (ownerMode === 'owner') {
+            return (
+              <OwnerDashboardView
+                cases={cases}
+                partners={partners}
+                batches={batches}
+                teamMembers={teamMembers}
+              />
+            );
+          }
+          if (ownerMode === 'manager') {
+            return (
+              <ManagerDashboardView
+                cases={cases}
+                teamMembers={teamMembers}
+                partners={partners}
+                onRefreshCases={loadAllData}
+                onShowOverdueModal={() => setShowOverdueModal(true)}
+                onShowWarningModal={() => setShowWarningModal(true)}
+              />
+            );
+          }
+          if (ownerMode === 'agent') {
+            return (
+              <AgentDashboardView
+                myCases={myCases}
+                allCasesCount={cases.length}
+                onShowOverdueModal={() => setShowOverdueModal(true)}
+                onShowWarningModal={() => setShowWarningModal(true)}
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+                userName={org?.displayName || user?.displayName || '대표'}
+              />
+            );
+          }
+          // 기본값: hybrid (올인원 통합 뷰 - 추천)
+          return (
+            <HybridDashboardView
+              cases={cases}
+              partners={partners}
+              batches={batches}
+              teamMembers={teamMembers}
+              onRefreshCases={loadAllData}
+              onShowOverdueModal={() => setShowOverdueModal(true)}
+              onShowWarningModal={() => setShowWarningModal(true)}
+            />
+          );
+        }
 
-      {/* Gemini AI 실시간 사용량 & 비용 분석 위젯 (플랫폼 총괄 최고관리자/HOST 전용: 고객사 및 회사 관리자 비노출 격리) */}
+        // 2. 중간 관리자(Admin/팀장) 분기
+        if (isManager) {
+          return (
+            <ManagerDashboardView
+              cases={cases}
+              teamMembers={teamMembers}
+              partners={partners}
+              onRefreshCases={loadAllData}
+              onShowOverdueModal={() => setShowOverdueModal(true)}
+              onShowWarningModal={() => setShowWarningModal(true)}
+            />
+          );
+        }
+
+        // 3. 일반 상담원(Agent) 분기
+        return (
+          <AgentDashboardView
+            myCases={myCases}
+            allCasesCount={cases.length}
+            onShowOverdueModal={() => setShowOverdueModal(true)}
+            onShowWarningModal={() => setShowWarningModal(true)}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            userName={org?.displayName || user?.displayName || '상담원'}
+          />
+        );
+      })()}
+
+      {/* 최고관리자(HOST HQ) 전용: Gemini AI 실시간 사용량 위젯 */}
       {isPlatformAdmin && <AiUsageWidget />}
 
-      {/* Charts Section */}
-      <div className="space-y-2">
+      {/* 공통 영업 현황 차트 섹션 */}
+      <div className="space-y-3 pt-2">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div className="flex items-center gap-3">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">영업 현황</h3>
-            {isAdmin && teamMembers.length > 0 && (
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              영업 추이 및 상태 분포
+            </h3>
+            {(isAdmin || isOwner) && teamMembers.length > 0 && (
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-gray-500 dark:text-gray-400">담당자별:</span>
+                <span className="text-gray-500 dark:text-gray-400">조회 대상:</span>
                 <select
                   value={selectedMemberId}
                   onChange={e => setSelectedMemberId(e.target.value)}
@@ -304,18 +341,18 @@ export default function Dashboard() {
                 </select>
               </div>
             )}
-            {!isAdmin && (
+            {!isAdmin && !isOwner && (
               <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
                 내 배정 리드 기준
               </span>
             )}
           </div>
-          {isAdmin && (
+          {(isAdmin || isOwner) && (
             <Link
               to="/statistics"
               className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium flex items-center gap-1 hover:underline"
             >
-              📊 상세 통계 보기 →
+              📊 상세 통계 센터 바로가기 →
             </Link>
           )}
         </div>
@@ -325,219 +362,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* NEW: Today's Schedule Box (Replaces 3 Lists) */}
-      <div className="glass-panel rounded-xl">
-        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-indigo-50/50 dark:bg-indigo-900/20 flex justify-between items-center rounded-t-xl">
-          <h3 className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
-            <Calendar size={20} />
-            {formatDateTitle(selectedDate)}
-          </h3>
-          <span className="text-xs bg-white/80 backdrop-blur text-indigo-600 px-3 py-1 rounded-full font-bold shadow-sm">
-            {selectedDayEvents.length}
-          </span>
-        </div>
-
-        <div className="p-4 min-h-[150px] max-h-[300px] overflow-y-auto">
-          {selectedDayEvents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-24 text-gray-400">
-              <p>등록된 일정이 없습니다.</p>
-            </div>
-          ) : (
-            <div className="grid gap-3">
-              {selectedDayEvents.map((item, idx) => {
-                const timeStr = item.reminder.datetime?.split(' ')[1] || '';
-                const type = item.reminder.type || '통화'; // Fallback
-
-                // Color coding based on Type
-                let typeColor = 'bg-gray-100 text-gray-600';
-                if (type === '통화') typeColor = 'bg-blue-100 text-blue-700';
-                else if (type === '출장미팅') typeColor = 'bg-green-100 text-green-700';
-                else if (type === '방문미팅') typeColor = 'bg-purple-100 text-purple-700';
-                else if (type === '입금') typeColor = 'bg-emerald-100 text-emerald-700';
-                else if (type === '기타') typeColor = 'bg-gray-100 text-gray-700';
-
-                return (
-                  <Link
-                    to={`/case/${item.caseData.caseId}`}
-                    key={item.reminder.id}
-                    className="block group bg-gray-50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-indigo-200 rounded-lg p-3 transition-all shadow-sm hover:shadow-md"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                      {/* Mobile Row 1: Time, Badge */}
-                      <div className="flex md:hidden items-center gap-2 flex-wrap mb-1">
-                        <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
-                      </div>
-
-                      {/* Desktop Row: Standard Layout */}
-                      <div className="hidden md:flex items-center gap-3 md:w-auto flex-shrink-0">
-                        <span className="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">{timeStr}</span>
-                        {/* Icon added */}
-                        <span title={type} className="flex items-center justify-center">
-                          {type === '통화' && <Phone size={16} className="text-blue-600" />}
-                          {type === '출장미팅' && <Briefcase size={16} className="text-green-600" />}
-                          {type === '방문미팅' && <MapPin size={16} className="text-purple-600" />}
-                          {type === '입금' && <Wallet size={16} className="text-emerald-600" />}
-                          {type === '기타' && <MoreHorizontal size={16} className="text-gray-600" />}
-                          {type === '문자' && <MessageSquare size={16} className="text-gray-600" />}
-                        </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${typeColor} whitespace-nowrap`}>{type}</span>
-                      </div>
-
-                      {/* Content Row (Name & Content) */}
-                      <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-0.5 md:gap-3">
-                        <span className={`font-bold whitespace-nowrap ${item.reminder.resultStatus ? 'text-gray-400 line-through' : 'text-gray-800 dark:text-white'}`}>
-                          {item.caseData.customerName}
-                        </span>
-                        <span className="hidden md:inline text-gray-300">|</span>
-                        <span className={`text-xs md:text-sm truncate block w-full md:w-auto ${item.reminder.resultStatus ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                          {item.reminder.content || '내용 없음'}
-                        </span>
-                      </div>
-
-                      {/* Result & Note Display (Right on Desktop, Row 3 on Mobile) */}
-                      {(item.reminder.resultStatus || item.reminder.resultNote) && (
-                        <div className="md:ml-auto flex items-center gap-2 text-xs mt-1 md:mt-0 flex-shrink-0">
-                          {item.reminder.resultStatus && (
-                            <span className={`px-2 py-1 rounded font-bold whitespace-nowrap shadow-sm ${item.reminder.resultStatus === '완료' ? 'bg-green-100 text-green-700' :
-                              item.reminder.resultStatus === '미연결' ? 'bg-red-100 text-red-700' :
-                                item.reminder.resultStatus === '재예약' ? 'bg-blue-100 text-blue-700' :
-                                  'bg-gray-100 text-gray-600'
-                              }`}>
-                              {item.reminder.resultStatus === '완료' && "✅ "}
-                              {item.reminder.resultStatus === '미연결' && "📞 "}
-                              {item.reminder.resultStatus === '재예약' && "🔄 "}
-                              {item.reminder.resultStatus}
-                            </span>
-                          )}
-                          {item.reminder.resultNote && (
-                            <span className="text-gray-600 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-gray-200 dark:border-gray-600 truncate max-w-[200px] md:max-w-[300px]" title={item.reminder.resultNote}>
-                              {item.reminder.resultNote}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Desktop Only: Detail Arrow */}
-                      <div className="hidden md:block text-right whitespace-nowrap flex-shrink-0">
-                        <span className="text-xs text-gray-400 group-hover:text-indigo-500 font-medium transition-colors">→</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Today's Events Banner */}
-      {(() => {
-        const todayStr = format(new Date(), 'yyyy-MM-dd');
-        const currentYear = new Date().getFullYear();
-
-        // Tax schedules for today check
-        const TAX_SCHEDULES = [
-          { month: 1, day: 25, name: '부가세 확정신고' },
-          { month: 2, day: 10, name: '원천세 납부' },
-          { month: 3, day: 10, name: '원천세 납부' },
-          { month: 4, day: 10, name: '원천세 납부' },
-          { month: 4, day: 25, name: '부가세 예정신고' },
-          { month: 5, day: 10, name: '원천세 납부' },
-          { month: 5, day: 31, name: '종합소득세 신고' },
-          { month: 6, day: 10, name: '원천세 납부' },
-          { month: 7, day: 10, name: '원천세 납부' },
-          { month: 7, day: 25, name: '부가세 확정신고' },
-          { month: 8, day: 10, name: '원천세 납부' },
-          { month: 9, day: 10, name: '원천세 납부' },
-          { month: 10, day: 10, name: '원천세 납부' },
-          { month: 10, day: 25, name: '부가세 예정신고' },
-          { month: 11, day: 10, name: '원천세 납부' },
-          { month: 12, day: 10, name: '원천세 납부' },
-        ];
-
-        const todayEvents: { type: CalendarEventType; title: string; time?: string; color: string }[] = [];
-
-        // Reminders for today
-        allRemindersWithCase.filter(item =>
-          item.reminder.datetime?.startsWith(todayStr) && !item.reminder.resultStatus
-        ).forEach(item => {
-          todayEvents.push({
-            type: 'reminder',
-            title: `${item.caseData.customerName} (${item.reminder.type || '통화'})`,
-            time: item.reminder.datetime?.split(' ')[1] || '',
-            color: 'blue'
-          });
-        });
-
-        // Settlement events for today
-        batches.forEach(b => {
-          if (b.collectionInfo?.collectedAt?.startsWith(todayStr)) {
-            todayEvents.push({ type: 'settlement', title: `수금 ${b.totalCommission}만원`, color: 'green' });
-          }
-          (b.payoutItems || []).forEach(p => {
-            if (p.paidAt?.startsWith(todayStr)) {
-              todayEvents.push({ type: 'settlement', title: `지급 ${p.amount}만원`, color: 'orange' });
-            }
-          });
-        });
-
-        // Tax events for today
-        const today = new Date();
-        TAX_SCHEDULES.forEach(s => {
-          if (today.getMonth() + 1 === s.month && today.getDate() === s.day) {
-            todayEvents.push({ type: 'tax', title: s.name, color: 'red' });
-          }
-        });
-
-        if (todayEvents.length === 0) return null;
-
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white shadow-lg"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Bell size={20} />
-                <span className="font-bold text-lg">오늘의 일정</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm font-bold">
-                  {todayEvents.length}건
-                </span>
-              </div>
-              <span className="text-sm opacity-80">
-                {format(new Date(), 'M월 d일 (E)', { locale: ko })}
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {todayEvents.slice(0, 5).map((ev, idx) => (
-                <div
-                  key={idx}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 ${ev.type === 'reminder' ? 'bg-blue-400/30' :
-                    ev.type === 'settlement' ? 'bg-green-400/30' :
-                      ev.type === 'tax' ? 'bg-red-400/30' : 'bg-purple-400/30'
-                    }`}
-                >
-                  {ev.type === 'reminder' && <Phone size={14} />}
-                  {ev.type === 'settlement' && <DollarSign size={14} />}
-                  {ev.type === 'tax' && <FileText size={14} />}
-                  {ev.time && <span className="font-mono">{ev.time}</span>}
-                  <span>{ev.title}</span>
-                </div>
-              ))}
-              {todayEvents.length > 5 && (
-                <span className="text-sm opacity-70">+{todayEvents.length - 5}개 더</span>
-              )}
-            </div>
-          </motion.div>
-        );
-      })()}
-
-      {/* Calendar Section - Connected with Batches */}
+      {/* 캘린더 위젯 섹션 */}
       <div>
         <CalendarWidget
-          cases={cases}
+          cases={isOwner || isManager ? cases : myCases}
           batches={batches}
           partners={partners}
           selectedDate={selectedDate}
@@ -545,11 +373,10 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* [NEW] Overdue Reminders Modal */}
+      {/* 지연된 리마인더 상세 모달 */}
       {showOverdueModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowOverdueModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/20 rounded-t-xl">
               <h3 className="font-bold text-red-800 dark:text-red-300 flex items-center gap-2">
                 <Clock size={20} />
@@ -560,7 +387,6 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Content */}
             <div className="flex-1 overflow-y-auto p-4">
               {overdueReminders.length === 0 ? (
                 <div className="text-center text-gray-400 py-8">
@@ -604,22 +430,20 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* [NEW] Warning Cases Modal */}
+      {/* 조치 필요 케이스 상세 모달 */}
       {showWarningModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowWarningModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20 rounded-t-xl">
               <h3 className="font-bold text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
                 <AlertCircle size={20} />
-                조치 필요 케이스 ({warningCases.length}건)
+                조치 필요 케이스 ({warningCasesWithDetails.length}건)
               </h3>
               <button onClick={() => setShowWarningModal(false)} className="p-1 hover:bg-yellow-100 dark:hover:bg-yellow-800 rounded-full transition-colors">
                 <X size={20} className="text-yellow-600 dark:text-yellow-400" />
               </button>
             </div>
 
-            {/* Content */}
             <div className="flex-1 overflow-y-auto p-4">
               {warningCasesWithDetails.length === 0 ? (
                 <div className="text-center text-gray-400 py-8">
@@ -644,7 +468,6 @@ export default function Dashboard() {
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {item.caseData.status}
                           </div>
-                          {/* Warning Tags */}
                           <div className="flex flex-wrap gap-1 mt-2">
                             {item.warnings.map((warning, idx) => (
                               <span key={idx} className="text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-400 px-2 py-0.5 rounded font-medium">
@@ -663,6 +486,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </motion.div >
+    </motion.div>
   );
 }
