@@ -16,6 +16,7 @@ import {
   Trash2,
   Bell,
   Send,
+  GraduationCap,
 } from 'lucide-react';
 import {
   TeamMember,
@@ -23,6 +24,7 @@ import {
   AdminTier,
   TelegramAdminPermissions,
   NoticeAdminPermissions,
+  TrainingAdminPermissions,
   DEFAULT_TIER1_PERMISSIONS,
   DEFAULT_TIER2_PERMISSIONS,
   DEFAULT_TIER3_PERMISSIONS,
@@ -59,6 +61,9 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
   const [noticePerms, setNoticePerms] = useState<NoticeAdminPermissions>(
     initialPerms.notice || DEFAULT_TIER1_PERMISSIONS.notice
   );
+  const [trainingPerms, setTrainingPerms] = useState<TrainingAdminPermissions>(
+    initialPerms.training || DEFAULT_TIER1_PERMISSIONS.training
+  );
   const [teamName, setTeamName] = useState<string>(member?.teamName || '1팀');
 
   // member 변경 시 폼 상태 동기화
@@ -70,6 +75,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
       setSettlementPerms({ ...p.settlement });
       setTelegramPerms({ ...(p.telegram || DEFAULT_TIER1_PERMISSIONS.telegram) });
       setNoticePerms({ ...(p.notice || DEFAULT_TIER1_PERMISSIONS.notice) });
+      setTrainingPerms({ ...(p.training || DEFAULT_TIER1_PERMISSIONS.training) });
       setTeamName(member.teamName || '1팀');
     }
   }, [member]);
@@ -84,16 +90,19 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
       setSettlementPerms({ ...DEFAULT_TIER1_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER1_PERMISSIONS.telegram });
       setNoticePerms({ ...DEFAULT_TIER1_PERMISSIONS.notice });
+      setTrainingPerms({ ...DEFAULT_TIER1_PERMISSIONS.training });
     } else if (newTier === 2) {
       setTeamPerms({ ...DEFAULT_TIER2_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER2_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER2_PERMISSIONS.telegram });
       setNoticePerms({ ...DEFAULT_TIER2_PERMISSIONS.notice });
+      setTrainingPerms({ ...DEFAULT_TIER2_PERMISSIONS.training });
     } else if (newTier === 3) {
       setTeamPerms({ ...DEFAULT_TIER3_PERMISSIONS.team });
       setSettlementPerms({ ...DEFAULT_TIER3_PERMISSIONS.settlement });
       setTelegramPerms({ ...DEFAULT_TIER3_PERMISSIONS.telegram });
       setNoticePerms({ ...DEFAULT_TIER3_PERMISSIONS.notice });
+      setTrainingPerms({ ...DEFAULT_TIER3_PERMISSIONS.training });
     }
   };
 
@@ -106,6 +115,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
         settlement: settlementPerms,
         telegram: telegramPerms,
         notice: noticePerms,
+        training: trainingPerms,
       };
 
       await Promise.all([
@@ -739,6 +749,122 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                       </div>
                     </div>
                   </label>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* 6. AI 트레이닝 & 코칭 센터 위임 스위치 */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 p-4 rounded-xl border border-slate-200/80 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <GraduationCap size={16} className="text-purple-600" />
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  6. AI 트레이닝 & 코칭 센터 위임 스위치 (실전 훈련 및 역량 지도)
+                </h4>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300">
+                AI 모의실습 & 피드백
+              </span>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-purple-400">
+                <input
+                  type="checkbox"
+                  checked={trainingPerms.allowAccess}
+                  onChange={(e) =>
+                    setTrainingPerms({ ...trainingPerms, allowAccess: e.target.checked })
+                  }
+                  className="mt-0.5 rounded text-purple-600 focus:ring-purple-500"
+                />
+                <div className="flex-1">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                    <span>AI 트레이닝 관리 & 코칭 허브 접근 권한</span>
+                    <span className="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">
+                      {trainingPerms.allowAccess ? '허용' : '차단'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                    좌측 메뉴의 'AI 트레이닝' 센터 내 관리자 코칭 허브 및 평가 기능을 허용합니다.
+                  </div>
+                </div>
+              </label>
+
+              {trainingPerms.allowAccess && (
+                <>
+                  <div className="p-2.5 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 space-y-2">
+                    <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <SlidersHorizontal size={14} className="text-purple-600" />
+                      <span>훈련 세션 열람 및 코칭 대상 범위 (Scope)</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setTrainingPerms({ ...trainingPerms, viewScope: 'team' })}
+                        className={`p-2 rounded-lg border text-left transition-all ${
+                          trainingPerms.viewScope === 'team'
+                            ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-300 font-bold'
+                            : 'border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300'
+                        }`}
+                      >
+                        <div className="text-xs">👥 담당 팀 한정 (추천)</div>
+                        <div className="text-[10px] opacity-80 mt-0.5">{teamName} 소속 팀원의 모의 훈련 세션만 열람 및 밀착 지도</div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTrainingPerms({ ...trainingPerms, viewScope: 'all' })}
+                        className={`p-2 rounded-lg border text-left transition-all ${
+                          trainingPerms.viewScope === 'all'
+                            ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-500 text-indigo-700 dark:text-indigo-300 font-bold'
+                            : 'border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300'
+                        }`}
+                      >
+                        <div className="text-xs">🌐 전사 전체 허용 (총괄)</div>
+                        <div className="text-[10px] opacity-80 mt-0.5">전사 모든 팀 상담원의 모의 통화 이력 및 녹취 열람</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-purple-400">
+                      <input
+                        type="checkbox"
+                        checked={trainingPerms.canGrade}
+                        onChange={(e) =>
+                          setTrainingPerms({ ...trainingPerms, canGrade: e.target.checked })
+                        }
+                        className="mt-0.5 rounded text-purple-600 focus:ring-purple-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">
+                          평가 등급(S~F) 및 코칭 작성
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          팀원 모의 훈련에 등급을 매기고 피드백을 등록합니다.
+                        </div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 cursor-pointer hover:border-purple-400">
+                      <input
+                        type="checkbox"
+                        checked={trainingPerms.canManageConfig}
+                        onChange={(e) =>
+                          setTrainingPerms({ ...trainingPerms, canManageConfig: e.target.checked })
+                        }
+                        className="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">
+                          전사 훈련 정책 설정 권한
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          회사 표준 첫인사 및 키워드 설정을 수정합니다 (대표/총괄 권장).
+                        </div>
+                      </div>
+                    </label>
+                  </div>
                 </>
               )}
             </div>

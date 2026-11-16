@@ -117,6 +117,8 @@ export interface TrainingSessionRecord {
   consultationResult: string;
   agentMemo: string;
   agentName?: string;
+  /** 소속 팀명 (직급별/팀별 관제용) */
+  teamName?: string;
   /** 훈련한 사람 (auth user id) — 회사 서버 기록에서 사람별로 나눌 때 씀 */
   userId?: string;
   fullTranscript?: TrainingMessage[];
@@ -811,8 +813,14 @@ export const loadTrainingHistoryFromServer = async (): Promise<TrainingSessionRe
  * @returns 'server' | 'local'
  */
 export const saveTrainingSession = async (record: TrainingSessionRecord): Promise<'server' | 'local'> => {
-  const me = loadCachedOrg()?.userId;
-  const rec: TrainingSessionRecord = { ...record, userId: record.userId || me };
+  const cached = loadCachedOrg();
+  const me = cached?.userId;
+  const team = cached?.teamName || '1팀';
+  const rec: TrainingSessionRecord = {
+    ...record,
+    userId: record.userId || me,
+    teamName: record.teamName || team,
+  };
   if (canWriteOrgStore()) {
     const res = await mutateOrgStore(TRAINING_SESSIONS_SPEC, list => [rec, ...list.filter(s => s.sessionId !== rec.sessionId)]);
     if (res.ok) return 'server';

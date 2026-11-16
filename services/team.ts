@@ -9,13 +9,14 @@ import {
   AdminPermissions,
   TelegramAdminPermissions,
   NoticeAdminPermissions,
+  TrainingAdminPermissions,
   DEFAULT_TIER1_PERMISSIONS,
   DEFAULT_TIER2_PERMISSIONS,
   DEFAULT_TIER3_PERMISSIONS,
   OWNER_FULL_PERMISSIONS,
 } from './org';
 
-export type { MemberSecurityProfile, AdminPermissions, AdminTier, TelegramAdminPermissions, NoticeAdminPermissions } from './org';
+export type { MemberSecurityProfile, AdminPermissions, AdminTier, TelegramAdminPermissions, NoticeAdminPermissions, TrainingAdminPermissions } from './org';
 export {
   DEFAULT_AGENT_SECURITY_PROFILE,
   TRUSTED_TEAM_LEAD_SECURITY_PROFILE,

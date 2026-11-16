@@ -42,12 +42,20 @@ export interface NoticeAdminPermissions {
   canDeleteNotice: boolean;     // 공지사항 삭제 권한
 }
 
+export interface TrainingAdminPermissions {
+  allowAccess: boolean;        // AI 트레이닝 관리/코칭 허브 접근 허용 여부
+  viewScope: 'all' | 'team';   // 'all' (전사) | 'team' (소속 팀원만)
+  canManageConfig: boolean;    // 전사 훈련 정책 및 첫인사 스크립트 설정 수정 권한
+  canGrade: boolean;           // 모의 훈련 평가 등급(S~F) 및 코칭 피드백 작성 권한
+}
+
 export interface AdminPermissions {
   tier: AdminTier;
   team: TeamAdminPermissions;
   settlement: SettlementAdminPermissions;
   telegram: TelegramAdminPermissions;
   notice: NoticeAdminPermissions;
+  training: TrainingAdminPermissions;
 }
 
 export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
@@ -80,6 +88,12 @@ export const DEFAULT_TIER1_PERMISSIONS: AdminPermissions = {
     canCreateNotice: true,
     canIssueDirective: true,
     canDeleteNotice: false,
+  },
+  training: {
+    allowAccess: true,
+    viewScope: 'team',
+    canManageConfig: false,
+    canGrade: true,
   },
 };
 
@@ -114,6 +128,12 @@ export const DEFAULT_TIER2_PERMISSIONS: AdminPermissions = {
     canIssueDirective: true,
     canDeleteNotice: false,
   },
+  training: {
+    allowAccess: true,
+    viewScope: 'team',
+    canManageConfig: false,
+    canGrade: true,
+  },
 };
 
 export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
@@ -147,6 +167,12 @@ export const DEFAULT_TIER3_PERMISSIONS: AdminPermissions = {
     canIssueDirective: true,
     canDeleteNotice: true,
   },
+  training: {
+    allowAccess: true,
+    viewScope: 'all',
+    canManageConfig: true,
+    canGrade: true,
+  },
 };
 
 export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
@@ -179,6 +205,12 @@ export const OWNER_FULL_PERMISSIONS: AdminPermissions = {
     canCreateNotice: true,
     canIssueDirective: true,
     canDeleteNotice: true,
+  },
+  training: {
+    allowAccess: true,
+    viewScope: 'all',
+    canManageConfig: true,
+    canGrade: true,
   },
 };
 
@@ -304,6 +336,8 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
       team: { ...DEFAULT_TIER1_PERMISSIONS.team, ...(raw.team || {}) },
       settlement: { ...DEFAULT_TIER1_PERMISSIONS.settlement, ...(raw.settlement || {}) },
       telegram: { ...DEFAULT_TIER1_PERMISSIONS.telegram, ...(raw.telegram || {}) },
+      notice: { ...DEFAULT_TIER1_PERMISSIONS.notice, ...(raw.notice || {}) },
+      training: { ...DEFAULT_TIER1_PERMISSIONS.training, ...(raw.training || {}) },
     };
   }
 

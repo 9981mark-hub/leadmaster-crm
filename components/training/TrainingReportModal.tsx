@@ -34,6 +34,7 @@ interface Props {
   onRetry: () => void;
   onNextLevel?: () => void;
   hasNextLevel: boolean;
+  canGrade?: boolean;
 }
 
 export const TrainingReportModal: React.FC<Props> = ({
@@ -44,6 +45,7 @@ export const TrainingReportModal: React.FC<Props> = ({
   onRetry,
   onNextLevel,
   hasNextLevel,
+  canGrade = true,
 }) => {
   const [copied, setCopied] = useState(false);
   const [briefingCopied, setBriefingCopied] = useState(false);
@@ -437,52 +439,85 @@ export const TrainingReportModal: React.FC<Props> = ({
               )}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">평가 등급:</span>
-                  {(['S', 'A', 'B', 'C', 'F'] as const).map(grade => (
-                    <button
-                      key={grade}
-                      onClick={() => { setAdminGrade(grade); setIsSavedFeedback(false); }}
-                      className={`px-3 py-1 text-xs font-black rounded-lg transition-all ${
-                        adminGrade === grade
-                          ? 'bg-amber-500 text-white shadow-sm scale-105'
-                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-amber-50'
-                      }`}
-                    >
-                      {grade}
-                    </button>
-                  ))}
+            {canGrade ? (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">평가 등급:</span>
+                    {(['S', 'A', 'B', 'C', 'F'] as const).map(grade => (
+                      <button
+                        key={grade}
+                        onClick={() => { setAdminGrade(grade); setIsSavedFeedback(false); }}
+                        className={`px-3 py-1 text-xs font-black rounded-lg transition-all ${
+                          adminGrade === grade
+                            ? 'bg-amber-500 text-white shadow-sm scale-105'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-amber-50'
+                        }`}
+                      >
+                        {grade}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">평가자:</span>
+                    <input
+                      type="text"
+                      value={adminEvaluator}
+                      onChange={e => { setAdminEvaluator(e.target.value); setIsSavedFeedback(false); }}
+                      className="w-24 text-xs px-2 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 ml-auto">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">평가자:</span>
-                  <input
-                    type="text"
-                    value={adminEvaluator}
-                    onChange={e => { setAdminEvaluator(e.target.value); setIsSavedFeedback(false); }}
-                    className="w-24 text-xs px-2 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                  />
+
+                <textarea
+                  value={adminComment}
+                  onChange={e => { setAdminComment(e.target.value); setIsSavedFeedback(false); }}
+                  placeholder="신입 상담원에게 전달할 팀장의 직접 코칭 조언을 입력하세요. (예: 보이스피싱 의심 시 당황하지 말고 3대 무과금 원칙을 먼저 단호히 짚어줄 것)"
+                  rows={2}
+                  className="w-full text-xs p-2.5 rounded-xl bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900/80 focus:ring-1 focus:ring-amber-500 focus:outline-none placeholder-gray-400"
+                />
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSaveAdminFeedback}
+                    className="px-4 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-sm transition-all"
+                  >
+                    팀장 평가 & 피드백 저장
+                  </button>
                 </div>
               </div>
-
-              <textarea
-                value={adminComment}
-                onChange={e => { setAdminComment(e.target.value); setIsSavedFeedback(false); }}
-                placeholder="신입 상담원에게 전달할 팀장의 직접 코칭 조언을 입력하세요. (예: 보이스피싱 의심 시 당황하지 말고 3대 무과금 원칙을 먼저 단호히 짚어줄 것)"
-                rows={2}
-                className="w-full text-xs p-2.5 rounded-xl bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900/80 focus:ring-1 focus:ring-amber-500 focus:outline-none placeholder-gray-400"
-              />
-
-              <div className="flex justify-end">
-                <button
-                  onClick={handleSaveAdminFeedback}
-                  className="px-4 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-sm transition-all"
-                >
-                  팀장 평가 & 피드백 저장
-                </button>
+            ) : (
+              <div className="space-y-2 text-xs">
+                {existingFeedback ? (
+                  <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">평가 등급:</span>
+                        <span className={`px-2 py-0.5 rounded font-black text-xs ${
+                          existingFeedback.grade === 'S' ? 'bg-amber-100 text-amber-800' :
+                          existingFeedback.grade === 'A' ? 'bg-emerald-100 text-emerald-800' :
+                          existingFeedback.grade === 'B' ? 'bg-blue-100 text-blue-800' :
+                          existingFeedback.grade === 'C' ? 'bg-orange-100 text-orange-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {existingFeedback.grade}등급
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                        평가자: {existingFeedback.evaluatorName || '관리자'} ({new Date(existingFeedback.evaluatedAt).toLocaleDateString()})
+                      </span>
+                    </div>
+                    <div className="text-gray-800 dark:text-gray-200 font-medium whitespace-pre-wrap leading-relaxed">
+                      {existingFeedback.comment || '등록된 코칭 코멘트가 없습니다.'}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 text-center text-gray-500">
+                    아직 관리자(팀장)의 모의 훈련 평가 등급 및 코칭 피드백이 등록되지 않았습니다.
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
         </div>
 

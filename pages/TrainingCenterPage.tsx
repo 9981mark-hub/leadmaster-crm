@@ -28,6 +28,11 @@ import { TrainingReportModal } from '../components/training/TrainingReportModal'
 import { TrainingConfigModal } from '../components/training/TrainingConfigModal';
 import EducationHubTab from '../components/training/EducationHubTab';
 import {
+  TrainingAdminPermissions,
+  DEFAULT_TIER1_PERMISSIONS,
+  OWNER_FULL_PERMISSIONS,
+} from '../services/org';
+import {
   GraduationCap,
   BookOpen,
   PhoneCall,
@@ -77,6 +82,8 @@ import {
   Lightbulb,
   Server,
   Radio,
+  Search,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -84,8 +91,21 @@ import { useToast } from '../contexts/ToastContext';
 type TabMode = 'random' | 'clinic' | 'standard' | 'education' | 'admin';
 
 export default function TrainingCenterPage() {
-  const { user } = useAuth();
+  const { isAdmin, isPlatformAdmin, org, user } = useAuth();
   const { showToast } = useToast();
+
+  // 4대 직급 및 권한 판별
+  const isOwner = org?.role === 'owner' || user?.email === (org as any)?.ownerEmail;
+  const trainingPerms: TrainingAdminPermissions =
+    org?.adminPermissions?.training || (isOwner ? OWNER_FULL_PERMISSIONS.training : DEFAULT_TIER1_PERMISSIONS.training);
+  const canViewAll = isOwner || isPlatformAdmin || trainingPerms.viewScope === 'all';
+  const isTeamScope = !canViewAll && isAdmin;
+  const isAgent = !isAdmin && !isOwner && !isPlatformAdmin;
+  const myTeam = org?.teamName || '1팀';
+
+  // 코칭 허브 필터 상태
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
+  const [searchAgentName, setSearchAgentName] = useState<string>('');
 
   // Mode Selection: 'random' | 'clinic' | 'standard' | 'admin'
   const [activeTab, setActiveTab] = useState<TabMode>('clinic');
@@ -97,6 +117,34 @@ export default function TrainingCenterPage() {
   const [trainingConfig, setTrainingConfig] = useState<CompanyTrainingConfig>(() => getCompanyTrainingConfig());
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [history, setHistory] = useState<TrainingSessionRecord[]>([]);
+
+  // 일반 상담원 전용: 내 훈련 기록 필터링
+  const mySessions = history.filter(
+    r => (r.userId && r.userId === user?.id) ||
+         (user?.name && r.agentName === user.name) ||
+         (user?.email && r.agentName === user.email.split('@')[0])
+  );
+
+  // 관리자 전용: 권한 스코프 및 검색어 필터링
+  const adminSessions = history.filter(r => {
+    // 1. 소속 팀 스코프 가드 (총괄 권한이 없으면 담당 팀만)
+    if (!canViewAll) {
+      if ((r.teamName || '1팀') !== myTeam) return false;
+    } else {
+      if (selectedTeamFilter !== 'all' && (r.teamName || '1팀') !== selectedTeamFilter) {
+        return false;
+      }
+    }
+    // 2. 상담원 이름 또는 고객명 검색
+    if (searchAgentName.trim()) {
+      const q = searchAgentName.trim().toLowerCase();
+      const matchAgent = (r.agentName || '').toLowerCase().includes(q);
+      const matchPersona = (r.personaName || '').toLowerCase().includes(q);
+      if (!matchAgent && !matchPersona) return false;
+    }
+    return true;
+  });
+
   const [selectedThemeId, setSelectedThemeId] = useState<string>('all');
   const [showGroundTruth, setShowGroundTruth] = useState<boolean>(false);
   const [isBlindMode, setIsBlindMode] = useState<boolean>(true); // 기본값: 실전 블라인드 모드 ON (정답 가림)
@@ -914,7 +962,9 @@ export default function TrainingCenterPage() {
         report,
         consultationResult,
         agentMemo,
-        agentName: (user as any)?.name || '신입 상담원',
+        agentName: (user as any)?.name || (user?.email ? user.email.split('@')[0] : '신입 상담원'),
+        teamName: myTeam,
+        userId: user?.id,
         fullTranscript: messages,
       };
 
@@ -1097,129 +1147,332 @@ export default function TrainingCenterPage() {
           📚 실전 교육자료 & 모범 녹취 허브
         </button>
 
-        <button
-          onClick={() => setActiveTab('admin')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ml-auto ${
-            activeTab === 'admin'
-              ? 'bg-amber-500 text-white shadow-sm'
-              : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
-          }`}
-        >
-          <UserCheck className="w-4 h-4" />
-          👔 관리자(팀장) 코칭 허브 ({history.length})
-        </button>
+        {isAgent ? (
+          <button
+            onClick={() => setActiveTab('admin')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ml-auto ${
+              activeTab === 'admin'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            🎓 내 훈련 기록 & 코칭 피드백 ({mySessions.length})
+          </button>
+        ) : (
+          (isOwner || trainingPerms.allowAccess) && (
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ml-auto ${
+                activeTab === 'admin'
+                  ? 'bg-amber-500 text-white shadow-sm'
+                  : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              👔 {canViewAll ? '전사 코칭 허브' : `${myTeam} 코칭 허브`} ({adminSessions.length})
+            </button>
+          )
+        )}
       </div>
 
       {/* Main Grid: Left Scenario / Right Call Studio */}
       {activeTab === 'admin' ? (
-        /* 👔 관리자(팀장) 전용 코칭 대시보드 뷰 */
-        <div className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
-            <div>
-              <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-amber-500" />
-                신입/저실적 상담원 모의 훈련 평가 & 코칭 허브
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                팀원들이 수행한 실전 모의 통화의 녹음 로그, 7대 인계 항목 채점표를 열람하고 팀장 피드백 및 평가 등급(S/A/B/C/F)을 부여합니다.
-              </p>
+        isAgent ? (
+          /* 🎓 일반 상담원 전용: 내 훈련 기록 및 팀장 코칭 피드백 뷰 */
+          <div className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-900/60 shadow-sm space-y-5">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
+              <div>
+                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-purple-600" />
+                  나의 AI 모의 훈련 이력 & 팀장 코칭 피드백
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  내가 연습한 실전 모의 통화 기록과 관리자(팀장)님이 남겨주신 평가 등급(S~F) 및 실전 조언을 확인하세요.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800">
+                  내 훈련 세션 총 {mySessions.length}건 완료
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowConfigModal(true)}
-                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02]"
-              >
-                <Settings className="w-4 h-4" />
-                ⚙️ 훈련 정책 & 첫인사 스크립트 설정
-              </button>
-              <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
-                총 {history.length}건 기록
-              </span>
-            </div>
-          </div>
 
-          {history.length === 0 ? (
-            <div className="py-16 text-center text-gray-400 space-y-2">
-              <UserCheck className="w-12 h-12 mx-auto stroke-1 text-gray-300 dark:text-gray-600" />
-              <p className="text-sm font-semibold">아직 진행된 모의 훈련 세션이 없습니다.</p>
-              <p className="text-xs text-gray-500">상담원이 모의 통화를 완료하면 자동으로 이곳에 시험 결과가 축적됩니다.</p>
+            {/* 상담원 개인 성과 요약 카드 */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50">
+                <div className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">총 모의 훈련</div>
+                <div className="text-lg font-black text-purple-950 dark:text-purple-100 mt-1">{mySessions.length}회</div>
+              </div>
+              <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50">
+                <div className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">최고 평가 점수</div>
+                <div className="text-lg font-black text-blue-950 dark:text-blue-100 mt-1">
+                  {mySessions.length > 0 ? Math.max(...mySessions.map(s => s.report.totalScore)) : 0}점
+                </div>
+              </div>
+              <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
+                <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">최근 평가 등급</div>
+                <div className="text-lg font-black text-emerald-950 dark:text-emerald-100 mt-1">
+                  {mySessions[0]?.adminFeedback?.grade
+                    ? `${mySessions[0].adminFeedback.grade}등급`
+                    : mySessions[0]
+                    ? `${mySessions[0].report.totalScore >= 90 ? 'S' : mySessions[0].report.totalScore >= 75 ? 'A' : mySessions[0].report.totalScore >= 60 ? 'B' : 'C'}등급 (AI)`
+                    : '-'}
+                </div>
+              </div>
+              <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50">
+                <div className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">평균 통화 시간</div>
+                <div className="text-lg font-black text-amber-950 dark:text-amber-100 mt-1">
+                  {mySessions.length > 0
+                    ? `${Math.floor(mySessions.reduce((acc, s) => acc + s.durationSeconds, 0) / mySessions.length / 60)}분 ${Math.round(mySessions.reduce((acc, s) => acc + s.durationSeconds, 0) / mySessions.length % 60)}초`
+                    : '0초'}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 text-gray-500 font-bold">
-                    <th className="py-3 px-4">훈련 일시</th>
-                    <th className="py-3 px-4">상담원</th>
-                    <th className="py-3 px-4">고객 페르소나 (유형)</th>
-                    <th className="py-3 px-4">통화 시간</th>
-                    <th className="py-3 px-4">종합 점수</th>
-                    <th className="py-3 px-4">사무장 인계율</th>
-                    <th className="py-3 px-4">팀장 평가 등급</th>
-                    <th className="py-3 px-4 text-right">상세 평가 / 코칭</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {history.map(record => (
-                    <tr key={record.sessionId} className="hover:bg-gray-50/80 dark:hover:bg-gray-900/40 transition-colors">
-                      <td className="py-3 px-4 text-gray-500 font-mono">
-                        {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td className="py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                        {record.agentName || '신입 상담원'}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">
-                          {record.personaName || '가상 고객'}
-                        </span>
-                        <span className="ml-1.5 px-2 py-0.5 rounded text-[10px] bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
-                          {record.categoryTitle || '모의'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
-                        {Math.floor(record.durationSeconds / 60)}분 {record.durationSeconds % 60}초 ({record.totalTurns}턴)
-                      </td>
-                      <td className="py-3 px-4 font-extrabold text-blue-600 dark:text-blue-400">
-                        {record.report.totalScore}점
-                      </td>
-                      <td className="py-3 px-4 font-bold text-indigo-600 dark:text-indigo-400">
-                        {record.report.paralegalCard ? `${record.report.paralegalCard.handoffScore}점` : '-'}
-                      </td>
-                      <td className="py-3 px-4">
-                        {record.adminFeedback ? (
-                          <span className={`px-2 py-0.5 rounded font-black text-xs ${
-                            record.adminFeedback.grade === 'S' ? 'bg-amber-100 text-amber-800' :
-                            record.adminFeedback.grade === 'A' ? 'bg-emerald-100 text-emerald-800' :
-                            record.adminFeedback.grade === 'B' ? 'bg-blue-100 text-blue-800' :
-                            record.adminFeedback.grade === 'C' ? 'bg-orange-100 text-orange-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {record.adminFeedback.grade}등급
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-[11px]">미평가</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => {
-                            setSelectedAdminSession(record);
-                            setCurrentReport(record.report);
-                            setCurrentSessionRecord(record);
-                            setShowModal(true);
-                          }}
-                          className="px-3 py-1 text-xs font-semibold rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition-colors"
-                        >
-                          코칭 리포트 열람
-                        </button>
-                      </td>
+
+            {mySessions.length === 0 ? (
+              <div className="py-16 text-center text-gray-400 space-y-2">
+                <GraduationCap className="w-12 h-12 mx-auto stroke-1 text-purple-300 dark:text-purple-600" />
+                <p className="text-sm font-semibold">아직 완료된 모의 훈련 세션이 없습니다.</p>
+                <p className="text-xs text-gray-500">
+                  상단의 🎯 6대 취약점 클리닉이나 🎲 무규칙 고객을 선택하여 실전 모의 통화를 시작해 보세요!
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 text-gray-500 font-bold">
+                      <th className="py-3 px-4">훈련 일시</th>
+                      <th className="py-3 px-4">연습 고객 페르소나 (유형)</th>
+                      <th className="py-3 px-4">통화 시간</th>
+                      <th className="py-3 px-4">종합 점수</th>
+                      <th className="py-3 px-4">사무장 인계율</th>
+                      <th className="py-3 px-4">팀장 평가 등급</th>
+                      <th className="py-3 px-4 text-right">피드백 & 녹취 확인</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {mySessions.map(record => (
+                      <tr key={record.sessionId} className="hover:bg-purple-50/40 dark:hover:bg-purple-950/20 transition-colors">
+                        <td className="py-3 px-4 text-gray-500 font-mono">
+                          {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-gray-800 dark:text-gray-200">
+                            {record.personaName || '가상 고객'}
+                          </span>
+                          <span className="ml-1.5 px-2 py-0.5 rounded text-[10px] bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                            {record.categoryTitle || '모의'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                          {Math.floor(record.durationSeconds / 60)}분 {record.durationSeconds % 60}초 ({record.totalTurns}턴)
+                        </td>
+                        <td className="py-3 px-4 font-extrabold text-blue-600 dark:text-blue-400">
+                          {record.report.totalScore}점
+                        </td>
+                        <td className="py-3 px-4 font-bold text-indigo-600 dark:text-indigo-400">
+                          {record.report.paralegalCard ? `${record.report.paralegalCard.handoffScore}점` : '-'}
+                        </td>
+                        <td className="py-3 px-4">
+                          {record.adminFeedback ? (
+                            <span className={`px-2 py-0.5 rounded font-black text-xs ${
+                              record.adminFeedback.grade === 'S' ? 'bg-amber-100 text-amber-800' :
+                              record.adminFeedback.grade === 'A' ? 'bg-emerald-100 text-emerald-800' :
+                              record.adminFeedback.grade === 'B' ? 'bg-blue-100 text-blue-800' :
+                              record.adminFeedback.grade === 'C' ? 'bg-orange-100 text-orange-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {record.adminFeedback.grade}등급
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-[11px]">미평가</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => {
+                              setSelectedAdminSession(record);
+                              setCurrentReport(record.report);
+                              setCurrentSessionRecord(record);
+                              setShowModal(true);
+                            }}
+                            className="px-3 py-1 text-xs font-semibold rounded-lg bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/60 dark:hover:bg-purple-900 text-purple-800 dark:text-purple-200 transition-colors"
+                          >
+                            📋 피드백 & 녹취 확인
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* 👔 관리자(대표·총괄·팀장) 전용 코칭 대시보드 뷰 */
+          <div className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-700">
+              <div>
+                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-amber-500" />
+                  {canViewAll ? '👔 [전사 총괄 관제] 상담원 모의 훈련 평가 & 코칭 허브' : `👔 [${myTeam} 전용] 소속 상담원 훈련 평가 & 코칭 허브`}
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {canViewAll
+                    ? '전사 모든 팀 상담원들의 실전 모의 통화 녹취록과 인계 채점표를 모니터링하고 피드백을 총괄합니다.'
+                    : `${myTeam} 팀원들이 수행한 실전 모의 통화 녹취록과 채점표를 열람하고 팀장 피드백 및 평가 등급(S/A/B/C/F)을 부여합니다.`}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                {(isOwner || trainingPerms.canManageConfig) && (
+                  <button
+                    onClick={() => setShowConfigModal(true)}
+                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02]"
+                  >
+                    <Settings className="w-4 h-4" />
+                    ⚙️ 훈련 정책 & 첫인사 스크립트 설정
+                  </button>
+                )}
+                <span className="text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-xl">
+                  총 {adminSessions.length}건 기록
+                </span>
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* 필터 툴바 */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-900/60 rounded-xl border border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-3">
+                {canViewAll ? (
+                  <div className="flex items-center gap-1.5">
+                    <SlidersHorizontal size={14} className="text-gray-500" />
+                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">팀 필터:</span>
+                    <select
+                      value={selectedTeamFilter}
+                      onChange={(e) => setSelectedTeamFilter(e.target.value)}
+                      className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                    >
+                      <option value="all">전체 팀 (전사)</option>
+                      <option value="1팀">1팀</option>
+                      <option value="2팀">2팀</option>
+                      <option value="3팀">3팀</option>
+                      <option value="4팀">4팀</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-900/50">
+                    <Users size={14} />
+                    <span>👥 {myTeam} 소속 훈련 데이터만 표시됩니다.</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="상담원명 또는 고객명 검색..."
+                  value={searchAgentName}
+                  onChange={(e) => setSearchAgentName(e.target.value)}
+                  className="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+            </div>
+
+            {adminSessions.length === 0 ? (
+              <div className="py-16 text-center text-gray-400 space-y-2">
+                <UserCheck className="w-12 h-12 mx-auto stroke-1 text-gray-300 dark:text-gray-600" />
+                <p className="text-sm font-semibold">조건에 맞는 모의 훈련 세션이 없습니다.</p>
+                <p className="text-xs text-gray-500">상담원이 모의 통화를 완료하면 자동으로 이곳에 시험 결과가 축적됩니다.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 text-gray-500 font-bold">
+                      <th className="py-3 px-4">훈련 일시</th>
+                      <th className="py-3 px-4">소속 팀</th>
+                      <th className="py-3 px-4">상담원</th>
+                      <th className="py-3 px-4">고객 페르소나 (유형)</th>
+                      <th className="py-3 px-4">통화 시간</th>
+                      <th className="py-3 px-4">종합 점수</th>
+                      <th className="py-3 px-4">사무장 인계율</th>
+                      <th className="py-3 px-4">팀장 평가 등급</th>
+                      <th className="py-3 px-4 text-right">상세 평가 / 코칭</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {adminSessions.map(record => (
+                      <tr key={record.sessionId} className="hover:bg-gray-50/80 dark:hover:bg-gray-900/40 transition-colors">
+                        <td className="py-3 px-4 text-gray-500 font-mono">
+                          {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                            {record.teamName || '1팀'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-semibold text-gray-900 dark:text-white">
+                          {record.agentName || '신입 상담원'}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-gray-800 dark:text-gray-200">
+                            {record.personaName || '가상 고객'}
+                          </span>
+                          <span className="ml-1.5 px-2 py-0.5 rounded text-[10px] bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                            {record.categoryTitle || '모의'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                          {Math.floor(record.durationSeconds / 60)}분 {record.durationSeconds % 60}초 ({record.totalTurns}턴)
+                        </td>
+                        <td className="py-3 px-4 font-extrabold text-blue-600 dark:text-blue-400">
+                          {record.report.totalScore}점
+                        </td>
+                        <td className="py-3 px-4 font-bold text-indigo-600 dark:text-indigo-400">
+                          {record.report.paralegalCard ? `${record.report.paralegalCard.handoffScore}점` : '-'}
+                        </td>
+                        <td className="py-3 px-4">
+                          {record.adminFeedback ? (
+                            <span className={`px-2 py-0.5 rounded font-black text-xs ${
+                              record.adminFeedback.grade === 'S' ? 'bg-amber-100 text-amber-800' :
+                              record.adminFeedback.grade === 'A' ? 'bg-emerald-100 text-emerald-800' :
+                              record.adminFeedback.grade === 'B' ? 'bg-blue-100 text-blue-800' :
+                              record.adminFeedback.grade === 'C' ? 'bg-orange-100 text-orange-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {record.adminFeedback.grade}등급
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-[11px]">미평가</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => {
+                              setSelectedAdminSession(record);
+                              setCurrentReport(record.report);
+                              setCurrentSessionRecord(record);
+                              setShowModal(true);
+                            }}
+                            className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                              record.adminFeedback
+                                ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
+                                : 'bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-xs'
+                            }`}
+                          >
+                            {record.adminFeedback ? '코칭 리포트 열람' : '✍️ 피드백 작성'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )
       ) : activeTab === 'education' ? (
         <EducationHubTab />
       ) : (
@@ -1868,12 +2121,14 @@ export default function TrainingCenterPage() {
                           [{trainingConfig.companyName}] 표준 오프닝 가이드
                         </span>
                       </div>
-                      <button
-                        onClick={() => setShowConfigModal(true)}
-                        className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                      >
-                        <Settings className="w-3 h-3" /> 스크립트 설정
-                      </button>
+                      {(isOwner || trainingPerms.canManageConfig) && (
+                        <button
+                          onClick={() => setShowConfigModal(true)}
+                          className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        >
+                          <Settings className="w-3 h-3" /> 스크립트 설정
+                        </button>
+                      )}
                     </div>
                     <p className="text-[11px] text-blue-950 dark:text-blue-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
                       💬 "{interpolateOpeningScript(trainingConfig.standardOpening, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName)}"
@@ -2269,6 +2524,7 @@ export default function TrainingCenterPage() {
             handleStartCall();
           }}
           hasNextLevel={false}
+          canGrade={!isAgent && (isOwner || trainingPerms.canGrade)}
         />
       )}
 
