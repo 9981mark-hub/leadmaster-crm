@@ -36,7 +36,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
   const [inputKey, setInputKey] = useState('');
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [activeTab, setActiveTab] = useState<'preview' | 'edit'>('preview');
+  const [activeTab, setActiveTab] = useState<'html' | 'text' | 'edit'>('html');
 
   useEffect(() => {
     if (!isOpen || !companyName || !ownerEmail) return;
@@ -230,7 +230,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
             )}
           </div>
 
-          {/* 메일 내용 탭 (미리보기 vs 내용 편집) */}
+          {/* 메일 내용 탭 (디자인 HTML vs 텍스트 vs 내용 편집) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="text-xs font-bold text-slate-300">
@@ -239,19 +239,30 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
               <div className="flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs">
                 <button
                   type="button"
-                  onClick={() => setActiveTab('preview')}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    activeTab === 'preview'
+                  onClick={() => setActiveTab('html')}
+                  className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                    activeTab === 'html'
                       ? 'bg-blue-600 text-white font-bold'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  미리보기
+                  디자인 미리보기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('text')}
+                  className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                    activeTab === 'text'
+                      ? 'bg-blue-600 text-white font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  텍스트 본문
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('edit')}
-                  className={`px-3 py-1 rounded-md transition-all ${
+                  className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
                     activeTab === 'edit'
                       ? 'bg-blue-600 text-white font-bold'
                       : 'text-slate-400 hover:text-white'
@@ -262,7 +273,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
               </div>
             </div>
 
-            {activeTab === 'preview' ? (
+            {activeTab === 'html' && (
               <div className="space-y-2">
                 <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs space-y-1">
                   <div className="flex gap-2 text-slate-400">
@@ -279,11 +290,44 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 text-xs text-slate-300 whitespace-pre-line leading-relaxed font-sans max-h-52 overflow-y-auto">
+                <div className="rounded-xl overflow-hidden border border-slate-800 shadow-inner bg-[#070c18]">
+                  <iframe
+                    title="Email HTML Preview"
+                    srcDoc={generateApprovalHtmlEmail({
+                      companyName,
+                      ownerEmail,
+                      loginUrl: 'https://www.lmaster.xyz/login',
+                    })}
+                    className="w-full h-80 border-0 bg-[#070c18]"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'text' && (
+              <div className="space-y-2">
+                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs space-y-1">
+                  <div className="flex gap-2 text-slate-400">
+                    <span className="w-14 shrink-0 font-medium">보낸사람:</span>
+                    <span className="text-slate-200 font-semibold">리드마스터 CRM &lt;support@lmaster.xyz&gt;</span>
+                  </div>
+                  <div className="flex gap-2 text-slate-400">
+                    <span className="w-14 shrink-0 font-medium">받는사람:</span>
+                    <span className="text-blue-400 font-semibold">{ownerEmail}</span>
+                  </div>
+                  <div className="flex gap-2 text-slate-400">
+                    <span className="w-14 shrink-0 font-medium">제목:</span>
+                    <span className="text-white font-bold">{subject}</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 text-xs text-slate-300 whitespace-pre-line leading-relaxed font-sans max-h-64 overflow-y-auto">
                   {bodyText}
                 </div>
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'edit' && (
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1">
