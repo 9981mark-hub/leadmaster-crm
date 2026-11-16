@@ -362,6 +362,36 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                 ))}
               </div>
             </div>
+
+            {/* Phone Filter Toggle (Owner Controlled) */}
+            <div className="p-4 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5 text-xs">
+                  <PhoneCall className="w-4 h-4 text-indigo-600" />
+                  전사 스마트폰 수화기 음질 필터 (300~3400Hz 주파수 모사)
+                </h4>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                  모든 상담원의 AI 모의 훈련 시 실제 전화 통화 수화기 주파수 필터를 기본으로 적용합니다.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfig(prev => ({
+                    ...prev,
+                    usePhoneFilter: prev.usePhoneFilter === false ? true : false,
+                  }));
+                  setIsSaved(false);
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  config.usePhoneFilter !== false
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                }`}
+              >
+                {config.usePhoneFilter !== false ? '전사 필터 ON (적용 중)' : '필터 OFF (원음)'}
+              </button>
+            </div>
           </div>
         </div>
 

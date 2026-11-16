@@ -18,6 +18,7 @@ import {
   WEAKNESS_CATEGORIES,
   WeaknessCategoryId,
   getCompanyTrainingConfig,
+  saveCompanyTrainingConfig,
   interpolateOpeningScript,
   CompanyTrainingConfig,
   INFINITE_THEMES,
@@ -164,7 +165,9 @@ export default function TrainingCenterPage() {
   const [micTestResult, setMicTestResult] = useState('');
   const [showMicPermissionModal, setShowMicPermissionModal] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
-  const [isPhoneFilterEnabled, setIsPhoneFilterEnabled] = useState(true);
+  const [isPhoneFilterEnabled, setIsPhoneFilterEnabled] = useState(() => {
+    return getCompanyTrainingConfig().usePhoneFilter !== false;
+  });
   const [ageTone, setAgeTone] = useState<'young' | 'middle' | 'senior' | 'elder'>('middle');
   const [isAiReplying, setIsAiReplying] = useState(false);
   const [isCustomerSpeaking, setIsCustomerSpeaking] = useState(false);
@@ -334,7 +337,14 @@ export default function TrainingCenterPage() {
     let alive = true;
     setHistory(loadTrainingHistory());
     loadTrainingHistoryFromServer().then(list => { if (alive) setHistory(list); }).catch(() => undefined);
-    loadCompanyTrainingConfig().then(cfg => { if (alive) setTrainingConfig(cfg); }).catch(() => undefined);
+    loadCompanyTrainingConfig().then(cfg => {
+      if (alive) {
+        setTrainingConfig(cfg);
+        const filterOn = cfg.usePhoneFilter !== false;
+        setIsPhoneFilterEnabled(filterOn);
+        speechService.setUsePhoneFilter(filterOn);
+      }
+    }).catch(() => undefined);
     return () => { alive = false; };
   }, []);
 
@@ -1906,29 +1916,34 @@ export default function TrainingCenterPage() {
                 )}
               </div>
 
-              {/* Telephone Filter Toggle */}
-              <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex flex-col">
-                  <span className="font-medium text-[11px] flex items-center gap-1">
-                    📞 전화 수화기 음질 필터
-                  </span>
-                  <span className="text-[9px] text-gray-400">실제 스마트폰 통화 주파수(300~3400Hz) 모사</span>
+              {/* Telephone Filter Toggle (상담원은 기본 ON 고정 숨김, 대표만 전사 설정 제어) */}
+              {isOwner && (
+                <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex flex-col">
+                    <span className="font-medium text-[11px] flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                      📞 전화 수화기 음질 필터 (대표 전용)
+                    </span>
+                    <span className="text-[9px] text-gray-400">전사 상담원에게 기본 적용 (300~3400Hz 모사)</span>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const next = !isPhoneFilterEnabled;
+                      setIsPhoneFilterEnabled(next);
+                      speechService.setUsePhoneFilter(next);
+                      const currentCfg = getCompanyTrainingConfig();
+                      await saveCompanyTrainingConfig({ ...currentCfg, usePhoneFilter: next });
+                      setTrainingConfig(prev => ({ ...prev, usePhoneFilter: next }));
+                    }}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                      isPhoneFilterEnabled
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                    }`}
+                  >
+                    {isPhoneFilterEnabled ? '전사 필터 ON' : '필터 OFF'}
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    const next = !isPhoneFilterEnabled;
-                    setIsPhoneFilterEnabled(next);
-                    speechService.setUsePhoneFilter(next);
-                  }}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                    isPhoneFilterEnabled
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-                  }`}
-                >
-                  {isPhoneFilterEnabled ? '필터 ON' : '원음'}
-                </button>
-              </div>
+              )}
 
               {/* TTS Mute Toggle */}
               <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">

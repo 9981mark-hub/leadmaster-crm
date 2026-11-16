@@ -138,6 +138,7 @@ export interface CompanyTrainingConfig {
   requiredKeywords: string[];   // 필수 포함 키워드 (미언급 시 감점)
   bannedKeywords: string[];     // 엄격 금지어 (과장광고 방지)
   customQuestions: string[];    // 회사별 추가 문진 항목
+  usePhoneFilter?: boolean;     // [대표 전용] 전사 스마트폰 수화기 대역 주파수(300~3400Hz) 필터 강제 적용 (기본 true)
 }
 
 export const PRESETS_CONFIG: Record<string, { label: string; desc: string; config: CompanyTrainingConfig }> = {
@@ -154,6 +155,7 @@ export const PRESETS_CONFIG: Record<string, { label: string; desc: string; confi
       requiredKeywords: ['비밀 보장', '취소 수수료 없음', '법원 접수'],
       bannedKeywords: ['100% 무조건 승인', '전액 탕감 보장', '불법 수수료'],
       customQuestions: ['최근 1년 내 신규 대출 발생 여부', '배우자 명의 재산 유무'],
+      usePhoneFilter: true,
     },
   },
   loan: {
@@ -169,6 +171,7 @@ export const PRESETS_CONFIG: Record<string, { label: string; desc: string; confi
       requiredKeywords: ['대출중개수수료 무료', '정식 등록 법인', '신용점수 영향 없음'],
       bannedKeywords: ['작업대출', '선입금 요구', '무조건 100% 한도'],
       customQuestions: ['기존 대출 금리대 (15% 이상 여부)', '월 소득 대비 상환액'],
+      usePhoneFilter: true,
     },
   },
   business: {
@@ -184,6 +187,7 @@ export const PRESETS_CONFIG: Record<string, { label: string; desc: string; confi
       requiredKeywords: ['세금 분할납부', '신용보증재단 연계', '사업자 등록 유지'],
       bannedKeywords: ['일수 사채 대출', '통장 대여', '무조건 전액 지원'],
       customQuestions: ['부가가치세 및 국세 체납액', '직원 4대보험 가입 여부'],
+      usePhoneFilter: true,
     },
   },
 };
