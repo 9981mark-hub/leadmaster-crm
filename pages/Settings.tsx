@@ -32,6 +32,7 @@ import {
 } from '../types';
 import {
     Building,
+    Building2,
     Sliders,
     MessageCircle,
     Shield,
@@ -52,6 +53,7 @@ import {
 } from '../constants';
 import Modal from '../components/Modal';
 import { EmergencyPurgeModal } from '../components/settings/EmergencyPurgeModal';
+import { CompanyProfileModal } from '../components/navigation/CompanyProfileModal';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchAiUsage, AiUsage } from '../services/aiProxy';
@@ -72,7 +74,18 @@ export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<SettingsMainTab>('partners');
     const [searchQuery, setSearchQuery] = useState('');
     const { showToast } = useToast();
-    const { isAdmin, isPlatformAdmin, org, user } = useAuth();
+    const { isAdmin, isPlatformAdmin, org, user, updateOrgProfile } = useAuth();
+    const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+    const orgName = org?.orgName || '리드마스터 CRM';
+
+    const handleSaveCompanyProfile = async (updates: { orgName: string; orgLogo: string | null }) => {
+        try {
+            await updateOrgProfile(updates);
+            showToast('🏢 회사명과 대표 사진이 성공적으로 저장되었습니다.', 'success');
+        } catch (err: any) {
+            showToast('회사 정보 저장 중 오류가 발생했습니다.', 'error');
+        }
+    };
 
     // 직급 및 시스템 설정 세부 권한 판별
     const isOwner = org?.role === 'owner' || isPlatformAdmin;
@@ -692,6 +705,46 @@ export default function SettingsPage() {
                 </div>
             </div>
 
+            {/* 🏢 회사(워크스페이스) 프로필 배너 (TM 대표 전용 설정 연동) */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 dark:from-indigo-950/40 dark:via-blue-950/30 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-3 min-w-0">
+                    {org?.orgLogo ? (
+                        <img
+                            src={org.orgLogo}
+                            alt={orgName}
+                            className="w-11 h-11 rounded-2xl object-cover border-2 border-white dark:border-gray-700 shadow-xs shrink-0"
+                        />
+                    ) : (
+                        <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
+                            <Building2 size={22} />
+                        </div>
+                    )}
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <h2 className="text-base font-black text-gray-900 dark:text-gray-100 truncate">
+                                {orgName}
+                            </h2>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                                멀티테넌트 워크스페이스
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                            사이드바, 글로벌 헤더, 통화 스크립트에 공통 적용되는 우리 회사 공식 상호 및 대표 로고입니다.
+                        </p>
+                    </div>
+                </div>
+
+                {isOwner && (
+                    <button
+                        type="button"
+                        onClick={() => setIsCompanyModalOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-750 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs transition-colors shrink-0 cursor-pointer"
+                    >
+                        <Building2 size={14} /> 회사명 · 대표 사진 설정
+                    </button>
+                )}
+            </div>
+
             {/* 2. 대분류 4대 탭 바 */}
             <div className="bg-gray-100/80 dark:bg-gray-800/80 p-1.5 rounded-2xl flex items-center space-x-1 overflow-x-auto shadow-inner">
                 {showPartnersTab && (
@@ -1014,6 +1067,18 @@ export default function SettingsPage() {
                 <EmergencyPurgeModal
                     isOpen={isEmergencyPurgeOpen}
                     onClose={() => setIsEmergencyPurgeOpen(false)}
+                />
+            )}
+            {/* ------------------------------------------------------------- */}
+            {/* Modal 6: TM대표 전용 회사 프로필/로고 설정 모달               */}
+            {/* ------------------------------------------------------------- */}
+            {isOwner && (
+                <CompanyProfileModal
+                    isOpen={isCompanyModalOpen}
+                    onClose={() => setIsCompanyModalOpen(false)}
+                    currentOrgName={orgName}
+                    currentOrgLogo={org?.orgLogo}
+                    onSave={handleSaveCompanyProfile}
                 />
             )}
         </div>

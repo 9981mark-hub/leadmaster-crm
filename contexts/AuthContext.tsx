@@ -9,7 +9,7 @@ import {
   resetInitState
 } from '../services/api';
 import { supabase } from '../services/supabase';
-import { OrgInfo, resolveOrg, loadCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole, HQ_ORG_ID } from '../services/org';
+import { OrgInfo, resolveOrg, loadCachedOrg, saveCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole, HQ_ORG_ID } from '../services/org';
 import { syncAppSession, clearAppSession, syncAppSecurityProfile } from '../services/appBridge';
 
 /** 플랫폼 총괄 최고관리자(HOST) 이메일 풀 */
@@ -58,6 +58,7 @@ interface AuthContextType {
 
   logout: () => void;
   updateProfilePicture: (newPictureUrl: string | null) => Promise<void>;
+  updateOrgProfile: (updates: { orgName?: string; orgLogo?: string | null }) => Promise<void>;
   addAllowedEmail: (email: string) => void;
   removeAllowedEmail: (email: string) => void;
 }
@@ -534,6 +535,48 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     }
   }, [user]);
 
+  /** TM대표 전용: 회사명 및 회사 대표 사진(로고) 변경 및 전사 동기화 */
+  const updateOrgProfile = useCallback(async (updates: { orgName?: string; orgLogo?: string | null }) => {
+    if (!org) return;
+
+    const customKey = `leadmaster_org_custom_${org.orgId}`;
+    let existingCustom: any = {};
+    try {
+      existingCustom = JSON.parse(localStorage.getItem(customKey) || '{}');
+    } catch {}
+
+    const newOrgName = updates.orgName !== undefined && updates.orgName.trim()
+      ? updates.orgName.trim()
+      : (existingCustom.orgName || org.orgName);
+    const newOrgLogo = updates.orgLogo !== undefined
+      ? (updates.orgLogo || undefined)
+      : (existingCustom.orgLogo || org.orgLogo);
+
+    const customToSave = {
+      ...existingCustom,
+      orgName: newOrgName,
+      orgLogo: newOrgLogo || null,
+    };
+    localStorage.setItem(customKey, JSON.stringify(customToSave));
+
+    const updatedOrg: OrgInfo = {
+      ...org,
+      orgName: newOrgName,
+      orgLogo: newOrgLogo,
+    };
+    saveCachedOrg(updatedOrg);
+    setOrg(updatedOrg);
+
+    // Supabase DB organizations 이름 업데이트 시도
+    if (supabase && updates.orgName?.trim()) {
+      try {
+        await supabase.from('organizations').update({ name: newOrgName }).eq('id', org.orgId);
+      } catch (err) {
+        console.warn('[Auth] Supabase organization name update failed (local updated):', err);
+      }
+    }
+  }, [org, setOrg]);
+
   // [Security Feature 5] 관리자에 의한 원클릭 세션 즉시 강제 파기 (Instant Session Revoke) 실시간 수신
   useEffect(() => {
     if (!org || !supabase || !isAuthenticated) return;
@@ -575,8 +618,8 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   const value = useMemo(() => ({
     isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails,
     authNotice, closeAuthNotice, openAuthNotice,
-    loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, addAllowedEmail, removeAllowedEmail,
-  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, authNotice, closeAuthNotice, openAuthNotice, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, addAllowedEmail, removeAllowedEmail]);
+    loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, updateOrgProfile, addAllowedEmail, removeAllowedEmail,
+  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, authNotice, closeAuthNotice, openAuthNotice, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, updateOrgProfile, addAllowedEmail, removeAllowedEmail]);
 
   return (
     <AuthContext.Provider value={value}>

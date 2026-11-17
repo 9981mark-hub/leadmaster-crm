@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Zap, Calendar, PhoneCall, 
@@ -7,7 +7,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import { ROLE_LABEL } from '../../services/org';
+import { CompanyProfileModal } from './CompanyProfileModal';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -38,11 +40,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
   const path = location.pathname;
   const { theme } = useTheme();
-  const { org, isAdmin, isPlatformAdmin, user } = useAuth();
+  const { org, isAdmin, isPlatformAdmin, user, updateOrgProfile } = useAuth();
+  const { showToast } = useToast();
 
+  const isOwner = org?.role === 'owner' || isPlatformAdmin || user?.email === (org as any)?.ownerEmail;
   const isLiteOnly = !isAdmin && org?.uiMode === 'lite_only';
   const roleLabel = org?.role ? ROLE_LABEL[org.role] : '상담원';
   const orgName = org?.orgName || '리드마스터 CRM';
+
+  // TM대표 전용 회사 프로필/로고 설정 모달 상태
+  const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+
+  const handleSaveCompanyProfile = async (updates: { orgName: string; orgLogo: string | null }) => {
+    try {
+      await updateOrgProfile(updates);
+      showToast('🏢 회사명과 대표 사진이 성공적으로 저장되었습니다.', 'success');
+    } catch (err: any) {
+      showToast('회사 정보 저장 중 오류가 발생했습니다.', 'error');
+    }
+  };
 
   // 4대 기능별 그룹 메뉴 정의
   const navGroups: NavGroupDef[] = [
@@ -110,6 +126,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={onToggleCollapse} 
               title="클릭하여 사이드바 펼치기" 
             />
+            {org?.orgLogo ? (
+              <img
+                src={org.orgLogo}
+                alt={orgName}
+                className="w-7 h-7 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => {
+                  if (isOwner) setIsCompanyModalOpen(true);
+                  else onToggleCollapse();
+                }}
+                title={`${orgName} (${roleLabel})${isOwner ? ' - 클릭하여 설정' : ''}`}
+              />
+            ) : (
+              <div 
+                onClick={() => {
+                  if (isOwner) setIsCompanyModalOpen(true);
+                  else onToggleCollapse();
+                }}
+                className={`w-7 h-7 rounded-lg bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/50 dark:border-blue-800/50 transition-transform ${isOwner ? 'cursor-pointer hover:scale-105' : ''}`}
+                title={`${orgName} (${roleLabel})${isOwner ? ' - 클릭하여 설정' : ''}`}
+              >
+                <Building2 size={13} />
+              </div>
+            )}
             <button 
               onClick={onToggleCollapse}
               className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -138,14 +177,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
 
-            {/* Tenant Workspace Card */}
-            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between gap-2 shadow-2xs">
+            {/* Tenant Workspace Card (회사명 & 대표 사진/로고 설정) */}
+            <div 
+              onClick={() => {
+                if (isOwner) setIsCompanyModalOpen(true);
+              }}
+              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 shadow-2xs transition-all ${
+                isOwner 
+                  ? 'cursor-pointer group bg-slate-50 hover:bg-indigo-50/70 border-slate-200/80 hover:border-indigo-300 dark:bg-slate-800/60 dark:hover:bg-slate-800 dark:border-slate-700/60 dark:hover:border-indigo-700/80' 
+                  : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60'
+              }`}
+              title={isOwner ? '클릭하여 회사명 및 대표 사진/로고 설정 (대표 전용)' : orgName}
+            >
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-6 h-6 rounded-lg bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                  <Building2 size={13} />
-                </div>
+                {org?.orgLogo ? (
+                  <img
+                    src={org.orgLogo}
+                    alt={orgName}
+                    className="w-6 h-6 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-lg bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:bg-indigo-600/20 transition-colors">
+                    <Building2 size={13} />
+                  </div>
+                )}
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight" title={orgName}>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" title={orgName}>
                     {orgName}
                   </p>
                   <p className="text-[10px] text-slate-400 leading-tight">
@@ -153,15 +210,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </p>
                 </div>
               </div>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                org?.role === 'owner' 
-                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
-                  : org?.role === 'admin'
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
-                  : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-              }`}>
-                {roleLabel}
-              </span>
+              <div className="flex items-center gap-1 shrink-0">
+                {isOwner && (
+                  <Settings size={12} className="text-slate-400 opacity-60 group-hover:opacity-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all" />
+                )}
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  org?.role === 'owner' 
+                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+                    : org?.role === 'admin'
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                    : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                }`}>
+                  {roleLabel}
+                </span>
+              </div>
             </div>
 
             {/* 👑 플랫폼 호스트 전용 총괄 배너 */}
@@ -299,6 +361,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className="text-[10px] font-mono text-slate-400">v3.8</span>
         )}
       </div>
+
+      {/* TM 대표 전용 회사 프로필/로고 설정 모달 */}
+      {isOwner && (
+        <CompanyProfileModal
+          isOpen={isCompanyModalOpen}
+          onClose={() => setIsCompanyModalOpen(false)}
+          currentOrgName={orgName}
+          currentOrgLogo={org?.orgLogo}
+          onSave={handleSaveCompanyProfile}
+        />
+      )}
     </aside>
   );
 };

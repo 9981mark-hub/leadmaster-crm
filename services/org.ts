@@ -278,6 +278,7 @@ export interface OrgInfo {
   userId: string;
   orgId: string;
   orgName: string;
+  orgLogo?: string;
   role: OrgRole;
   displayName?: string;
   isPlatformAdmin: boolean;
@@ -304,13 +305,23 @@ export const ROLE_LABEL: Record<OrgRole, string> = {
 export const loadCachedOrg = (): OrgInfo | null => {
   try {
     const raw = localStorage.getItem(ORG_CACHE_KEY);
-    return raw ? (JSON.parse(raw) as OrgInfo) : null;
+    if (!raw) return null;
+    const info = JSON.parse(raw) as OrgInfo;
+    const custom = localStorage.getItem(`leadmaster_org_custom_${info.orgId}`);
+    if (custom) {
+      try {
+        const parsed = JSON.parse(custom);
+        if (parsed.orgName) info.orgName = parsed.orgName;
+        if (parsed.orgLogo !== undefined) info.orgLogo = parsed.orgLogo || undefined;
+      } catch {}
+    }
+    return info;
   } catch {
     return null;
   }
 };
 
-const saveCachedOrg = (info: OrgInfo | null) => {
+export const saveCachedOrg = (info: OrgInfo | null) => {
   if (info) localStorage.setItem(ORG_CACHE_KEY, JSON.stringify(info));
   else localStorage.removeItem(ORG_CACHE_KEY);
 };
@@ -392,6 +403,16 @@ export const resolveOrg = async (): Promise<OrgInfo | null> => {
     sessionRevokedAt: member?.session_revoked_at || undefined,
     teamName: (member as any)?.team_name || '1팀',
   };
+
+  const custom = localStorage.getItem(`leadmaster_org_custom_${info.orgId}`);
+  if (custom) {
+    try {
+      const parsed = JSON.parse(custom);
+      if (parsed.orgName) info.orgName = parsed.orgName;
+      if (parsed.orgLogo !== undefined) info.orgLogo = parsed.orgLogo || undefined;
+    } catch {}
+  }
+
   saveCachedOrg(info);
   return info;
 };

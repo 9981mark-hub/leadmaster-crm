@@ -228,13 +228,23 @@ export const TRAINING_CONFIG_SPEC: StoreKeySpec<Partial<CompanyTrainingConfig>> 
 // 관리자 훈련 설정 로드 (메모리/브라우저 사본 즉시, 서버 확인은 뒤에서)
 export const getCompanyTrainingConfig = (): CompanyTrainingConfig => {
   const v = peekOrgStore(TRAINING_CONFIG_SPEC);
-  return v && typeof v === 'object' ? { ...DEFAULT_TRAINING_CONFIG, ...v } : DEFAULT_TRAINING_CONFIG;
+  const orgName = loadCachedOrg()?.orgName;
+  const base = { ...DEFAULT_TRAINING_CONFIG };
+  if (orgName && orgName !== '리드마스터 CRM' && orgName !== '리드마스터 본사') {
+    base.companyName = orgName;
+  }
+  return v && typeof v === 'object' ? { ...base, ...v } : base;
 };
 
 /** 서버에서 훈련 설정 확인 */
 export const loadCompanyTrainingConfig = async (): Promise<CompanyTrainingConfig> => {
   const v = await loadOrgStore(TRAINING_CONFIG_SPEC);
-  return v && typeof v === 'object' ? { ...DEFAULT_TRAINING_CONFIG, ...v } : DEFAULT_TRAINING_CONFIG;
+  const orgName = loadCachedOrg()?.orgName;
+  const base = { ...DEFAULT_TRAINING_CONFIG };
+  if (orgName && orgName !== '리드마스터 CRM' && orgName !== '리드마스터 본사') {
+    base.companyName = orgName;
+  }
+  return v && typeof v === 'object' ? { ...base, ...v } : base;
 };
 
 // 관리자 훈련 설정 저장. 실패하면 한국어 오류 문구를 돌려준다(성공 = null).
