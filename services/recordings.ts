@@ -56,6 +56,7 @@ export interface CallRecording {
   expiresAt?: string;
   downloadCount?: number;
   lastDownloadedAt?: string;
+  bitrateKbps?: number;
 }
 
 export interface ExpiringRecordingItem {
@@ -113,10 +114,11 @@ const mapRow = (r: any): CallRecording => ({
   expiresAt: r.expires_at || undefined,
   downloadCount: Number(r.download_count || 0),
   lastDownloadedAt: r.last_downloaded_at || undefined,
+  bitrateKbps: r.bitrate_kbps ? Number(r.bitrate_kbps) : undefined,
 });
 
 const LIST_COLS_014: string = 'id, case_id, user_id, direction, call_started_at, duration_sec, storage_path, size_bytes, mime_type, source_app, status, error, summary, transcript, extracted, model, analyzed_at, applied_at, audio_deleted_at, created_at';
-const LIST_COLS: string = `${LIST_COLS_014}, storage_kind, drive_file_id, archive_status, source, file_name, expires_at, download_count, last_downloaded_at`;
+const LIST_COLS: string = `${LIST_COLS_014}, storage_kind, drive_file_id, archive_status, source, file_name, expires_at, download_count, last_downloaded_at, bitrate_kbps`;
 
 // 017 칸이 없는 서버(스테이징 일부 등)에서도 동작하도록 한 번 실패하면 014 칸만 읽는다
 let cols017 = true;

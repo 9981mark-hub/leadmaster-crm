@@ -375,6 +375,16 @@ export default function SmartAudioPlayer({
             )}
           </div>
 
+          {/* 32kbps AAC 모노 H/W 가속 압축 뱃지 */}
+          <div className="flex items-center gap-1">
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+              title="스마트폰 하드웨어 가속 32kbps AAC 모노 압축 인코딩 적용 (용량 75% 절감)"
+            >
+              <span>⚡ {rec.bitrateKbps ? `${rec.bitrateKbps}kbps` : '32kbps'} AAC 모노</span>
+            </span>
+          </div>
+
           {/* 보관 및 만료 안내 뱃지 */}
           {expInfo && (
             <div className="flex items-center gap-1 ml-auto">
