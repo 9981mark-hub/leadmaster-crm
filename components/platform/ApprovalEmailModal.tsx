@@ -8,7 +8,7 @@ import {
   generateApprovalHtmlEmail,
 } from '../../services/mailService';
 import { useToast } from '../../contexts/ToastContext';
-import { approveOrgApplication, OrgApplication } from '../../services/orgApplicationService';
+import { approveOrgApplication, markApplicationPaid, OrgApplication } from '../../services/orgApplicationService';
 
 interface ApprovalEmailModalProps {
   isOpen: boolean;
@@ -92,6 +92,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
       // 1. 대기열에 있는 신청건인 경우 테넌트 생성 & 승인 처리
       if (application && application.status === 'pending') {
         await approveOrgApplication(application);
+        await markApplicationPaid(application.id, 0);
       }
 
       // 2. Brevo API를 통한 HTML 전문 이메일 자동 발송

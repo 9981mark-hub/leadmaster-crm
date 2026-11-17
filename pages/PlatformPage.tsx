@@ -11,7 +11,7 @@ import {
   OrgFeaturePermissions, fetchAllOrgPermissions, calculateOrgMonthlyBill, generateApprovalEmailContent
 } from '../services/platform';
 import {
-  fetchOrgApplications, approveOrgApplication, rejectOrgApplication, OrgApplication
+  fetchOrgApplications, approveOrgApplication, rejectOrgApplication, markApplicationPaid, OrgApplication
 } from '../services/orgApplicationService';
 import { HQ_ORG_ID } from '../services/org';
 import { useCountUp } from '../utils/useCountUp';
@@ -314,8 +314,20 @@ export default function PlatformPage() {
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">({app.ownerName} 대표)</span>
                     <span className="text-xs font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap">{app.ownerEmail}</span>
                     <span className="text-xs text-gray-400 whitespace-nowrap">| {app.phone}</span>
-                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                      상담원 {app.agentCountTier === '1-5' ? '1~5명' : app.agentCountTier === '6-20' ? '6~20명' : '21명 이상'}
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap font-medium">
+                      상담원 {app.agentCountTier === '1-5' ? '1~5인' : app.agentCountTier === '6-20' ? '6~20인' : '21인+'} ({app.selectedPlan?.toUpperCase() || 'STARTER'})
+                    </span>
+                    {app.termsAgreedAt && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 whitespace-nowrap font-semibold" title={`동의 IP: ${app.termsAgreedIp || '확인됨'}`}>
+                        🛡️ 전자계약 동의 ({app.termsVersion || 'v1.0'})
+                      </span>
+                    )}
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
+                      app.paymentStatus === 'paid'
+                        ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
+                    }`}>
+                      {app.paymentStatus === 'paid' ? '💳 입금 확인됨' : '⏳ 입금 대기중'}
                     </span>
                     <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
                       app.status === 'pending'
@@ -324,9 +336,16 @@ export default function PlatformPage() {
                         ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
                         : 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400'
                     }`}>
-                      {app.status === 'pending' ? '승인 대기중' : app.status === 'approved' ? '승인 완료' : '반려됨'}
+                      {app.status === 'pending' ? '승인 대기' : app.status === 'approved' ? '승인 완료' : '반려'}
                     </span>
                   </div>
+                  {/* 세금계산서 및 추가 정보 */}
+                  {(app.businessNumber || app.taxInvoiceEmail) && (
+                    <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-3 pt-0.5">
+                      {app.businessNumber && <span>사업자번호: <strong className="font-mono text-gray-800 dark:text-gray-200">{app.businessNumber}</strong></span>}
+                      {app.taxInvoiceEmail && <span>계산서 이메일: <strong className="font-mono text-gray-800 dark:text-gray-200">{app.taxInvoiceEmail}</strong></span>}
+                    </div>
+                  )}
                   {app.memo && (
                     <div className="text-xs text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/5 p-2 rounded-lg">
                       문의/메모: {app.memo}
@@ -334,6 +353,7 @@ export default function PlatformPage() {
                   )}
                   <div className="text-[11px] text-gray-400">
                     신청일: {new Date(app.createdAt).toLocaleString('ko-KR')}
+                    {app.termsAgreedIp && ` • IP: ${app.termsAgreedIp}`}
                     {app.approvedAt && ` • 승인일: ${new Date(app.approvedAt).toLocaleString('ko-KR')}`}
                   </div>
                 </div>

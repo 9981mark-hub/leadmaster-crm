@@ -22,6 +22,7 @@ const PlatformPage = lazyWithRetry(() => import('./pages/PlatformPage'));
 const LiteCallPage = lazyWithRetry(() => import('./pages/LiteCallPage'));
 const NoticePage = lazyWithRetry(() => import('./pages/NoticePage'));
 const TrainingCenterPage = lazyWithRetry(() => import('./pages/TrainingCenterPage'));
+const PricingPage = lazyWithRetry(() => import('./pages/PricingPage'));
 
 // Navigation & Layout Components
 import { GlobalAppBar } from './components/navigation/GlobalAppBar';
@@ -393,6 +394,7 @@ export default function App() {
                     }>
                       <Routes>
                         <Route path="/login" element={<ErrorBoundary><LoginPage /></ErrorBoundary>} />
+                        <Route path="/pricing" element={<ErrorBoundary><PricingPage /></ErrorBoundary>} />
                         <Route path="/*" element={<ProtectedRoutes />} />
                       </Routes>
                       <ReminderNotificationContainer />

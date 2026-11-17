@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { 
@@ -15,15 +16,18 @@ import {
     Lock,
     EyeOff,
     Building2,
-    ArrowRight
+    ArrowRight,
+    CreditCard
 } from 'lucide-react';
 import CustomAlertModal from '../components/common/CustomAlertModal';
 import CompanySignupModal from '../components/CompanySignupModal';
+import PricingModal from '../components/pricing/PricingModal';
 
 export default function LoginPage() {
     const { loginWithGoogle, authNotice, closeAuthNotice, openAuthNotice } = useAuth();
     const [showGuide, setShowGuide] = useState(false);
     const [showSignupModal, setShowSignupModal] = useState(false);
+    const [showPricingModal, setShowPricingModal] = useState(false);
     const [signupInitialEmail, setSignupInitialEmail] = useState('');
 
     const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
@@ -203,8 +207,8 @@ export default function LoginPage() {
                                 사내 워크스페이스에 등록된 전용 구글 계정으로 원클릭 로그인됩니다.
                             </p>
 
-                            {/* 🏢 신규 TM 회사 도입 / 가입 신청 창구 버튼 */}
-                            <div className="pt-1">
+                            {/* 🏢 신규 TM 회사 도입 / 가입 신청 창구 및 요금제 안내 버튼 */}
+                            <div className="pt-1 space-y-2">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -214,8 +218,17 @@ export default function LoginPage() {
                                     className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-blue-900/30 via-indigo-900/25 to-blue-900/30 border border-blue-500/30 hover:border-blue-400/60 text-blue-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer group shadow-sm"
                                 >
                                     <Building2 size={14} className="text-blue-400 group-hover:scale-110 transition-transform" />
-                                    <span>신규 TM 회사 가입 신청 / 도입 문의</span>
+                                    <span>신규 TM 회사 가입 신청 / 전자계약</span>
                                     <ArrowRight size={12} className="opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPricingModal(true)}
+                                    className="w-full py-2 px-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                                >
+                                    <CreditCard size={13} className="text-emerald-400" />
+                                    <span>프로그램 사용료 및 비용 시뮬레이터 안내</span>
+                                    <ArrowRight size={11} className="opacity-40" />
                                 </button>
                             </div>
                         </div>
@@ -352,6 +365,12 @@ export default function LoginPage() {
                 isOpen={showSignupModal}
                 onClose={() => setShowSignupModal(false)}
                 initialEmail={signupInitialEmail}
+            />
+
+            {/* 💰 프로그램 사용료 및 비용 시뮬레이터 안내 모달 */}
+            <PricingModal
+                isOpen={showPricingModal}
+                onClose={() => setShowPricingModal(false)}
             />
 
         </div>
