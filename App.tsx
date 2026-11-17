@@ -46,6 +46,7 @@ import ReminderNotificationContainer from './components/ReminderNotificationCont
 import ActiveCallPopup from './components/ActiveCallPopup';
 import NewCasePopup from './components/NewCasePopup';
 import SecurityWatermark from './components/SecurityWatermark';
+import SessionKickoutModal from './components/common/SessionKickoutModal';
 
 // Services
 import { fetchPendingCount, subscribeTelegramFeedbacks } from './services/telegramFeedback';
@@ -241,7 +242,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
    Protected Application Routes
    ======================================================== */
 const ProtectedRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, kickoutEvent, confirmKickout } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -312,30 +313,33 @@ const ProtectedRoutes = () => {
   }
 
   return (
-    <Layout>
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/" element={<StandardRoute><Dashboard /></StandardRoute>} />
-          <Route path="/notices" element={<NoticePage />} />
-          <Route path="/training" element={<TrainingCenterPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/cases" element={<StandardRoute><CaseList /></StandardRoute>} />
-          <Route path="/lite" element={<LiteCallPage />} />
-          <Route path="/new" element={<StandardRoute><QuickNewCase /></StandardRoute>} />
-          <Route path="/new/full" element={<StandardRoute><NewCase /></StandardRoute>} />
-          <Route path="/case/:caseId" element={<StandardRoute><CaseDetail /></StandardRoute>} />
-          <Route path="/telegram" element={<TelegramSync />} />
-          <Route path="/auto-dial" element={<PlatformAdminOnly><AutoDial /></PlatformAdminOnly>} />
-          <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
-          <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />
-          <Route path="/settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />
-          <Route path="/team" element={<AdminOnly><TeamPage /></AdminOnly>} />
-          <Route path="/platform" element={<PlatformAdminOnly><PlatformPage /></PlatformAdminOnly>} />
-          <Route path="/mypage" element={<MyPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </ErrorBoundary>
-    </Layout>
+    <>
+      <Layout>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<StandardRoute><Dashboard /></StandardRoute>} />
+            <Route path="/notices" element={<NoticePage />} />
+            <Route path="/training" element={<TrainingCenterPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/cases" element={<StandardRoute><CaseList /></StandardRoute>} />
+            <Route path="/lite" element={<LiteCallPage />} />
+            <Route path="/new" element={<StandardRoute><QuickNewCase /></StandardRoute>} />
+            <Route path="/new/full" element={<StandardRoute><NewCase /></StandardRoute>} />
+            <Route path="/case/:caseId" element={<StandardRoute><CaseDetail /></StandardRoute>} />
+            <Route path="/telegram" element={<TelegramSync />} />
+            <Route path="/auto-dial" element={<PlatformAdminOnly><AutoDial /></PlatformAdminOnly>} />
+            <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
+            <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />
+            <Route path="/settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />
+            <Route path="/team" element={<AdminOnly><TeamPage /></AdminOnly>} />
+            <Route path="/platform" element={<PlatformAdminOnly><PlatformPage /></PlatformAdminOnly>} />
+            <Route path="/mypage" element={<MyPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </ErrorBoundary>
+      </Layout>
+      <SessionKickoutModal event={kickoutEvent} onConfirm={confirmKickout} />
+    </>
   );
 };
 

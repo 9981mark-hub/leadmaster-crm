@@ -15,6 +15,7 @@ import {
   createInvite, cancelInvite, assignCases, revokeMemberSession, MemberSecurityProfile
 } from '../services/team';
 import { Case } from '../types';
+import { checkOrgSeatLimit, OrgSeatStatus } from '../services/sessionGuard';
 import TelegramBotSection from '../components/TelegramBotSection';
 import DistributionPanel from '../components/team/DistributionPanel';
 import ImportModal from '../components/ImportModal';
@@ -109,6 +110,7 @@ export default function TeamPage() {
   const [permissionTargetMember, setPermissionTargetMember] = useState<TeamMember | null>(null);
   const [logs, setLogs] = useState<AssignmentLog[]>([]);
   const [panelKey, setPanelKey] = useState(0);
+  const [seatStatus, setSeatStatus] = useState<OrgSeatStatus | null>(null);
 
   const { data: cases = [] } = useQuery({ queryKey: ['cases'], queryFn: fetchCases });
   const { data: partners = [] } = usePartners();
@@ -119,16 +121,18 @@ export default function TeamPage() {
     if (!org) return;
     setLoading(true);
     try {
-      const [m, i, l, b] = await Promise.all([
+      const [m, i, l, b, s] = await Promise.all([
         fetchTeamMembers(),
         fetchPendingInvites(org.orgId),
         fetchAssignmentLogs({ limit: 50 }).catch(() => [] as AssignmentLog[]),
         fetchImportBatches(30).catch(() => [] as ImportBatch[]),
+        checkOrgSeatLimit(org.orgId).catch(() => null),
       ]);
       setMembers(m);
       setInvites(i);
       setLogs(l);
       setImportBatches(b);
+      if (s) setSeatStatus(s);
     } catch (e: any) {
       showToast(`팀 정보를 불러오지 못했습니다: ${e.message}`, 'error');
     } finally {
@@ -1001,8 +1005,39 @@ export default function TeamPage() {
               </table>
             </div>
 
-            {/* 초대 */}
+            {/* 초대 및 라이선스 좌석 현황 */}
             <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/60 rounded-b-xl space-y-3">
+              {/* 좌석 하드 리밋(Hard Seat Limit) 현황 게이지 바 */}
+              {seatStatus && seatStatus.maxSeats < 999999 && (
+                <div className="p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200">
+                      <ShieldCheck size={14} className="text-blue-600 dark:text-blue-400" />
+                      <span>라이선스 좌석 현황 (Seat Limit)</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-mono">
+                      <span className="text-gray-500 dark:text-gray-400">사용 중: <strong className="text-gray-900 dark:text-white">{seatStatus.totalOccupied}석</strong> / 최대 {seatStatus.maxSeats}석</span>
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${seatStatus.isLimitReached ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'}`}>
+                        {seatStatus.isLimitReached ? '한도 소진' : `잔여 ${seatStatus.remainingSeats}석`}
+                      </span>
+                    </div>
+                  </div>
+                  {/* 진행률 바 */}
+                  <div className="w-full bg-gray-150 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-300 rounded-full ${seatStatus.isLimitReached ? 'bg-rose-500' : seatStatus.remainingSeats <= 2 ? 'bg-amber-500' : 'bg-blue-600'}`}
+                      style={{ width: `${Math.min(100, Math.round((seatStatus.totalOccupied / seatStatus.maxSeats) * 100))}%` }}
+                    />
+                  </div>
+                  {seatStatus.isLimitReached && (
+                    <div className="text-[11px] text-rose-600 dark:text-rose-400 flex items-center gap-1 pt-0.5">
+                      <ShieldAlert size={12} className="shrink-0" />
+                      <span>보유 라이선스 좌석을 모두 소진하여 추가 초대가 차단되었습니다. 추가 등록을 원하시면 플랫폼 관리자에게 좌석 확장을 요청하세요.</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200">
                   <UserPlus size={16} /> 새 멤버 초대
@@ -1010,8 +1045,19 @@ export default function TeamPage() {
                 {(isOwner || myTeamPerms.canInviteMembers) && (
                   <button
                     type="button"
-                    onClick={() => setShowBulkInvite(true)}
-                    className="px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 dark:border-blue-800 shadow-sm"
+                    onClick={() => {
+                      if (seatStatus?.isLimitReached) {
+                        showToast(`보유 좌석(${seatStatus.maxSeats}석)을 모두 사용하여 대량 초대를 할 수 없습니다.`, 'error');
+                        return;
+                      }
+                      setShowBulkInvite(true);
+                    }}
+                    disabled={seatStatus?.isLimitReached}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors border shadow-sm ${
+                      seatStatus?.isLimitReached 
+                        ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-300 dark:border-gray-700' 
+                        : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border-blue-200 dark:border-blue-800'
+                    }`}
                   >
                     <Users size={14} /> 상담원 대량 초대 (10~50명)
                   </button>
@@ -1029,18 +1075,21 @@ export default function TeamPage() {
                       value={inviteEmail}
                       onChange={e => setInviteEmail(e.target.value)}
                       placeholder="구글 계정 이메일"
-                      className="flex-1 min-w-[220px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
+                      disabled={seatStatus?.isLimitReached}
+                      className="flex-1 min-w-[220px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white disabled:opacity-50"
                     />
                     <input
                       value={inviteName}
                       onChange={e => setInviteName(e.target.value)}
                       placeholder="표시 이름 (선택)"
-                      className="w-40 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
+                      disabled={seatStatus?.isLimitReached}
+                      className="w-40 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white disabled:opacity-50"
                     />
                     <select
                       value={inviteRole}
                       onChange={e => setInviteRole(e.target.value as OrgRole)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
+                      disabled={seatStatus?.isLimitReached}
+                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white disabled:opacity-50"
                     >
                       <option value="agent">상담원</option>
                       {isOwner && <option value="admin">관리자</option>}
@@ -1048,7 +1097,7 @@ export default function TeamPage() {
                     </select>
                     <button
                       onClick={handleInvite}
-                      disabled={busy || !inviteEmail.trim()}
+                      disabled={busy || !inviteEmail.trim() || seatStatus?.isLimitReached}
                       className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                     >
                       초대 만들기

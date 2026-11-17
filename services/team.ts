@@ -2,6 +2,7 @@
 // 팀 관리 (멤버·초대·리드 배정) — DB 함수: 007_team_management.sql, 028_agent_security_profiles.sql
 // ============================================
 import { supabase } from './supabase';
+import { checkOrgSeatLimit } from './sessionGuard';
 import {
   OrgRole,
   MemberSecurityProfile,
@@ -167,6 +168,13 @@ export const fetchPendingInvites = async (orgId: string): Promise<TeamInvite[]> 
 export const createInvite = async (orgId: string, email: string, role: OrgRole, displayName?: string): Promise<void> => {
   const clean = email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) throw new Error('이메일 형식이 올바르지 않습니다');
+
+  // 좌석 하드 리밋(Hard Seat Limit) 검증
+  const seatStatus = await checkOrgSeatLimit(orgId);
+  if (seatStatus.isLimitReached) {
+    throw new Error(`라이선스 좌석 한도 초과: 현재 등록된 상담원 및 초대(${seatStatus.totalOccupied}명)가 보유 좌석(${seatStatus.maxSeats}석)에 도달했습니다. 추가 초대를 위해 라이선스를 증설하세요.`);
+  }
+
   const { error } = await need().from('org_invites').upsert(
     {
       org_id: orgId, email: clean, role, display_name: displayName?.trim() || null,
@@ -254,6 +262,15 @@ export const bulkInviteMembers = async (
 
   let dbSuccessCount = 0;
   if (validRows.length > 0) {
+    // 좌석 하드 리밋 검증
+    const seatStatus = await checkOrgSeatLimit(orgId);
+    if (seatStatus.isLimitReached) {
+      throw new Error(`라이선스 좌석 한도 초과: 현재 등록된 상담원 및 초대(${seatStatus.totalOccupied}명)가 보유 좌석(${seatStatus.maxSeats}석)에 도달했습니다.`);
+    }
+    if (validRows.length > seatStatus.remainingSeats) {
+      throw new Error(`초대 인원(${validRows.length}명)이 잔여 라이선스 좌석(${seatStatus.remainingSeats}석)을 초과합니다. (최대 ${seatStatus.maxSeats}석 중 ${seatStatus.totalOccupied}석 사용 중)`);
+    }
+
     for (let i = 0; i < validRows.length; i += 50) {
       const chunk = validRows.slice(i, i + 50);
       const { error } = await need().from('org_invites').upsert(chunk, { onConflict: 'org_id,email' });

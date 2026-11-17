@@ -11,6 +11,7 @@ import {
 import { supabase } from '../services/supabase';
 import { OrgInfo, resolveOrg, loadCachedOrg, saveCachedOrg, clearOrgCache, ensureCacheOwner, isAdminRole, HQ_ORG_ID } from '../services/org';
 import { syncAppSession, clearAppSession, syncAppSecurityProfile } from '../services/appBridge';
+import { startSessionGuard, stopSessionGuard, KickoutEvent } from '../services/sessionGuard';
 
 /** 플랫폼 총괄 최고관리자(HOST) 이메일 풀 */
 export const PLATFORM_HOST_EMAILS = [
@@ -61,6 +62,9 @@ interface AuthContextType {
   updateOrgProfile: (updates: { orgName?: string; orgLogo?: string | null }) => Promise<void>;
   addAllowedEmail: (email: string) => void;
   removeAllowedEmail: (email: string) => void;
+  /** 중복 로그인으로 인한 세션 종료 이벤트 */
+  kickoutEvent: KickoutEvent | null;
+  confirmKickout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -133,6 +137,9 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   const openAuthNotice = useCallback((notice: Omit<AuthNotice, 'isOpen'>) => {
     setAuthNotice({ ...notice, isOpen: true });
   }, []);
+
+  // 중복 로그인 킥아웃 상태 관리
+  const [kickoutEvent, setKickoutEvent] = useState<KickoutEvent | null>(null);
 
   useEffect(() => {
     // 초기 로드: 로컬 캐시 또는 API에서 가져오기
@@ -476,7 +483,25 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     };
   }, [isAuthenticated, setOrg]);
 
+  // [SessionGuard] 1계정당 PC 1대 + 폰 1대 단일 활성 세션 보장 및 중복 로그인 감시
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email) {
+      stopSessionGuard();
+      return;
+    }
+
+    startSessionGuard(user.email, org?.userId, (event) => {
+      console.warn('[AuthContext] Received duplicate login kickout event:', event);
+      setKickoutEvent(event);
+    });
+
+    return () => {
+      stopSessionGuard();
+    };
+  }, [isAuthenticated, user?.email, org?.userId]);
+
   const logout = useCallback(async () => {
+    stopSessionGuard();
     clearAppSession();
     // scope local: 이 기기만 로그아웃. 기본값(global)은 같은 계정의 폰 앱 세션까지 폐기해서
     // 앱이 전화·문자 요청을 조용히 못 받게 된다 (2026-11-01 문자 미발송 원인)
@@ -493,6 +518,11 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     setUser(null);
     navigate('/login');
   }, [navigate, setOrg]);
+
+  const confirmKickout = useCallback(() => {
+    setKickoutEvent(null);
+    logout();
+  }, [logout]);
 
   /** 사용자 대표 프로필 사진 커스텀 변경 / 복원 */
   const updateProfilePicture = useCallback(async (newPictureUrl: string | null) => {
@@ -619,7 +649,8 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails,
     authNotice, closeAuthNotice, openAuthNotice,
     loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, updateOrgProfile, addAllowedEmail, removeAllowedEmail,
-  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, authNotice, closeAuthNotice, openAuthNotice, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, updateOrgProfile, addAllowedEmail, removeAllowedEmail]);
+    kickoutEvent, confirmKickout,
+  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, authNotice, closeAuthNotice, openAuthNotice, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, updateOrgProfile, addAllowedEmail, removeAllowedEmail, kickoutEvent, confirmKickout]);
 
   return (
     <AuthContext.Provider value={value}>
