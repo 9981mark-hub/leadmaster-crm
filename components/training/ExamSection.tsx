@@ -470,13 +470,13 @@ export const ExamSection: React.FC = () => {
                     <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-snug">
                       제 {rNum}회차: {rInfo.title}
                     </h3>
-                    <p className="mt-1.5 text-xs md:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="mt-1.5 text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
                       {rInfo.desc}
                     </p>
                   </div>
 
                   {/* 문항 범위 및 시험 안내 */}
-                  <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between">
+                  <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-900/80 border border-gray-100 dark:border-gray-700/60 text-[11px] text-gray-600 dark:text-gray-300 flex items-center justify-between font-medium">
                     <div className="flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-gray-400" />
                       <span>제한시간 20분 · 25문항</span>

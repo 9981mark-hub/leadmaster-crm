@@ -125,7 +125,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
         </div>
 
         {/* 필터 및 검색 바 */}
-        <div className="p-4 border-b border-gray-100 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-850 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-900 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-64">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -203,7 +203,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
           ) : (
             <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
               <table className="w-full text-left text-xs">
-                <thead className="bg-gray-100/80 dark:bg-gray-850 text-gray-600 dark:text-gray-300 font-bold border-b border-gray-200 dark:border-gray-700">
+                <thead className="bg-gray-100/80 dark:bg-gray-900 text-gray-600 dark:text-gray-300 font-bold border-b border-gray-200 dark:border-gray-700">
                   <tr>
                     <th className="p-3.5">상담원 정보</th>
                     <th className="p-3.5">시작 일시</th>
@@ -221,7 +221,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     return (
                       <tr
                         key={p.userId}
-                        className="hover:bg-gray-50/80 dark:hover:bg-gray-750 transition-all"
+                        className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-all"
                       >
                         <td className="p-3.5">
                           <div className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
@@ -322,7 +322,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
           {/* 특정 상담원 상세 이력 팝업/카드 */}
           {selectedProfile && (
-            <div className="p-5 rounded-2xl bg-indigo-50/50 dark:bg-gray-850 border border-indigo-200 dark:border-gray-700 space-y-4">
+            <div className="p-5 rounded-2xl bg-indigo-50/50 dark:bg-gray-900 border border-indigo-200 dark:border-gray-700 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <span className="font-black text-sm text-gray-900 dark:text-white">
@@ -332,7 +332,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </div>
                 <button
                   onClick={() => setSelectedProfile(null)}
-                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 font-bold"
                 >
                   닫기
                 </button>
@@ -348,23 +348,23 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                       key={m.id}
                       className={`p-3 rounded-xl border text-xs space-y-1 ${
                         isDone
-                          ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
+                          ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-gray-800 dark:text-gray-200'
                           : sState?.status === 'in_progress'
-                          ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-700'
-                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60'
+                          ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-600 text-gray-800 dark:text-gray-200'
+                          : 'bg-gray-50 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       <div className="flex items-center justify-between font-bold">
-                        <span>Step {m.order}. {m.title}</span>
+                        <span className="text-gray-900 dark:text-white">Step {m.order}. {m.title}</span>
                         {isDone ? (
-                          <span className="text-emerald-600 font-black">완료</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-black">완료</span>
                         ) : (
-                          <span className="text-gray-400 font-normal">
+                          <span className="text-gray-500 dark:text-gray-400 font-normal">
                             {sState?.status === 'in_progress' ? '진행 중' : '잠김'}
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                      <div className="text-[11px] text-gray-600 dark:text-gray-300">
                         {m.requirement}
                       </div>
                       {sState?.score !== undefined && (
