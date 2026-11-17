@@ -11,6 +11,7 @@ import {
 } from '../../services/recordings';
 import { logRecordingPlay } from '../../services/accessLog';
 import { AiApplyModal } from './AiApplyModal';
+import SmartAudioPlayer from './SmartAudioPlayer';
 
 interface Props {
   c: Case;
@@ -40,7 +41,7 @@ const fmtWhen = (iso: string) => {
 };
 
 /**
- * 컴팩트 오디오 플레이어 (배속 지원 및 안정적인 재생바)
+ * 컴팩트 오디오 플레이어 호환 래퍼
  */
 function CompactAudioPlayer({
   rec,
@@ -49,89 +50,7 @@ function CompactAudioPlayer({
   rec: CallRecording;
   showToast: Props['showToast'];
 }) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [loadingUrl, setLoadingUrl] = useState(false);
-  const [speed, setSpeed] = useState<number>(1.0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const loadUrl = useCallback(async () => {
-    if (rec.audioDeletedAt) return;
-    setLoadingUrl(true);
-    try {
-      const u = await getPlayableUrl(rec);
-      setUrl(u);
-    } catch (e: any) {
-      showToast(`녹음을 열지 못했습니다: ${e.message}`, 'error');
-    } finally {
-      setLoadingUrl(false);
-    }
-  }, [rec, showToast]);
-
-  useEffect(() => {
-    setUrl(null);
-    if (!rec.audioDeletedAt) {
-      loadUrl();
-    }
-  }, [rec.id, rec.audioDeletedAt, loadUrl]);
-
-  const changeSpeed = (s: number) => {
-    setSpeed(s);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = s;
-    }
-  };
-
-  if (rec.audioDeletedAt) {
-    return (
-      <div className="text-xs text-gray-400 bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2">
-        <Clock size={14} className="shrink-0" />
-        <span>{rec.storageKind === 'gdrive' ? '원본 오디오 파일이 삭제되었습니다.' : '오디오 보관 기간이 만료되어 파일이 삭제되었습니다.'}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-slate-50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center gap-2">
-      {url ? (
-        <>
-          <audio
-            ref={audioRef}
-            controls
-            preload="none"
-            src={url}
-            className="w-full sm:flex-1 h-9"
-            onPlay={() => logRecordingPlay(rec.caseId, rec.id)}
-          />
-          <div className="flex items-center gap-1 shrink-0 self-end sm:self-center">
-            {[1.0, 1.25, 1.5, 2.0].map(s => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => changeSpeed(s)}
-                className={`px-2 py-1 text-xs rounded-md font-medium transition-all ${
-                  speed === s
-                    ? 'bg-purple-600 text-white font-bold shadow-xs'
-                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-                title={`재생 속도 ${s}배`}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
-        </>
-      ) : (
-        <button
-          onClick={loadUrl}
-          disabled={loadingUrl}
-          className="text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 w-full hover:bg-purple-100 transition-colors"
-        >
-          {loadingUrl ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />}
-          <span>{loadingUrl ? '녹음 파일 불러오는 중…' : '녹음 듣기'}</span>
-        </button>
-      )}
-    </div>
-  );
+  return <SmartAudioPlayer rec={rec} showToast={showToast} />;
 }
 
 /**
@@ -333,7 +252,23 @@ function RecordingDetailDashboard({
   const [busy, setBusy] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [showApply, setShowApply] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [seekTarget, setSeekTarget] = useState<number | null>(null);
   const st = STATUS_LABEL[rec.status] || STATUS_LABEL.uploaded;
+
+  const parseTimeToSec = (tStr: string): number => {
+    if (!tStr) return 0;
+    const parts = tStr.split(':').map(p => parseInt(p, 10));
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) return (parts[0] * 60) + parts[1];
+    if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+    return 0;
+  };
+
+  const jumpToTranscriptTime = (tStr: string) => {
+    const sec = parseTimeToSec(tStr);
+    setSeekTarget(sec);
+    showToast(`${tStr} 지점으로 이동하여 재생합니다.`, 'success');
+  };
 
   const analyze = async () => {
     setBusy(true);
@@ -416,8 +351,14 @@ function RecordingDetailDashboard({
           </div>
         </div>
 
-        {/* 오디오 플레이어 */}
-        <CompactAudioPlayer rec={rec} showToast={showToast} />
+        {/* 차세대 스마트 오디오 플레이어 (Supabase Storage 고속 스트리밍 + 대화록 싱크) */}
+        <SmartAudioPlayer
+          rec={rec}
+          showToast={showToast}
+          onCurrentTimeChange={setCurrentTime}
+          seekTrigger={seekTarget}
+          onSeekHandled={() => setSeekTarget(null)}
+        />
       </div>
 
       {/* 오류 상태 메시지 */}
@@ -569,28 +510,44 @@ function RecordingDetailDashboard({
             )}
           </div>
 
-          {/* 대화록 보기 (메신저 스타일 말풍선 뷰어) */}
+          {/* 대화록 보기 (메신저 스타일 말풍선 뷰어 + 스마트 싱크 점프) */}
           {showTranscript && rec.transcript && (
             <div className="bg-slate-50 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-2.5 max-h-96 overflow-y-auto">
-              <div className="text-xs font-bold text-gray-500 mb-2">전체 대화록 전사본 ({rec.transcript.length}줄)</div>
+              <div className="flex items-center justify-between text-xs font-bold text-gray-500 mb-2">
+                <span>전체 대화록 전사본 ({rec.transcript.length}줄)</span>
+                <span className="text-[11px] text-blue-600 dark:text-blue-400 font-normal">💡 말풍선을 클릭하면 해당 시점으로 즉시 이동합니다</span>
+              </div>
               {rec.transcript.map((l, i) => {
                 const isCustomer = l.speaker === '고객';
+                const lineSec = parseTimeToSec(l.t);
+                const nextLine = rec.transcript ? rec.transcript[i + 1] : undefined;
+                const nextSec = nextLine ? parseTimeToSec(nextLine.t) : lineSec + 15;
+                const isActive = currentTime >= lineSec && currentTime < nextSec;
+
                 return (
                   <div
                     key={i}
-                    className={`flex flex-col gap-1 max-w-[85%] ${
+                    onClick={() => jumpToTranscriptTime(l.t)}
+                    className={`flex flex-col gap-1 max-w-[85%] cursor-pointer group transition-all ${
                       isCustomer ? 'mr-auto items-start' : 'ml-auto items-end'
                     }`}
+                    title={`${l.t} 시점으로 이동하여 재생`}
                   >
                     <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
                       <span className="font-bold text-gray-600 dark:text-gray-300">{l.speaker}</span>
-                      <span className="tabular-nums">{l.t}</span>
+                      <span className={`tabular-nums px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                        isActive
+                          ? 'bg-blue-600 text-white font-bold'
+                          : 'group-hover:bg-slate-200 dark:group-hover:bg-gray-700 text-gray-500 dark:text-gray-400'
+                      }`}>
+                        {l.t} ▶
+                      </span>
                     </div>
                     <div
-                      className={`p-2.5 rounded-2xl text-xs leading-relaxed ${
+                      className={`p-2.5 rounded-2xl text-xs leading-relaxed transition-all ${
                         isCustomer
-                          ? 'bg-purple-50/90 border border-purple-100 dark:bg-purple-950/40 dark:border-purple-900/50 text-gray-900 dark:text-gray-100 rounded-tl-xs'
-                          : 'bg-blue-600 text-white rounded-tr-xs shadow-xs'
+                          ? `bg-purple-50/90 border ${isActive ? 'border-blue-500 ring-2 ring-blue-400/40' : 'border-purple-100'} dark:bg-purple-950/40 dark:border-purple-900/50 text-gray-900 dark:text-gray-100 rounded-tl-xs group-hover:bg-purple-100/90`
+                          : `bg-blue-600 ${isActive ? 'ring-3 ring-blue-300 dark:ring-blue-400 font-semibold' : ''} text-white rounded-tr-xs shadow-xs group-hover:bg-blue-700`
                       }`}
                     >
                       {l.text}

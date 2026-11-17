@@ -29,6 +29,8 @@ import { Sidebar } from './components/navigation/Sidebar';
 import { MobileBottomBar } from './components/navigation/MobileBottomBar';
 import { CommandPalette } from './components/CommandPalette';
 import { NoticeBanner } from './components/NoticeBanner';
+import ExpiringRecordingsBanner from './components/recordings/ExpiringRecordingsBanner';
+import RecordingBackupCenterModal from './components/recordings/RecordingBackupCenterModal';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Contexts & Providers
@@ -81,9 +83,12 @@ const StandardRoute: React.FC<{ children: React.ReactElement }> = ({ children })
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
-  const { org } = useAuth();
+  const { org, isAdmin, isPlatformAdmin } = useAuth();
+  const { showToast } = useToast();
   const [pendingTgCount, setPendingTgCount] = React.useState(0);
   const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
+  const [isBackupCenterOpen, setIsBackupCenterOpen] = useState(false);
+  const isOwnerOrAdmin = isAdmin || isPlatformAdmin || org?.role === 'owner';
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try { return localStorage.getItem('sidebar_collapsed') === 'true'; } catch { return false; }
   });
@@ -193,6 +198,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         <NoticeBanner />
 
+        {/* 1년 만료 D-30 사전 경고 배너 */}
+        <ExpiringRecordingsBanner
+          orgId={org?.orgId || ''}
+          isOwnerOrAdmin={isOwnerOrAdmin}
+          onOpenBackupCenter={() => setIsBackupCenterOpen(true)}
+        />
+
         {/* Scrollable Work Area with 150ms Micro Page Transition */}
         <div 
           id="main-scroll-container" 
@@ -210,6 +222,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           isOpen={isCmdPaletteOpen} 
           onClose={() => setIsCmdPaletteOpen(false)} 
         />
+
+        {/* 5. 통화 녹음 만료 & 백업 센터 모달 (ZIP 일괄 다운로드) */}
+        {org?.orgId && (
+          <RecordingBackupCenterModal
+            orgId={org.orgId}
+            isOpen={isBackupCenterOpen}
+            onClose={() => setIsBackupCenterOpen(false)}
+            showToast={showToast}
+          />
+        )}
       </div>
     </div>
   );

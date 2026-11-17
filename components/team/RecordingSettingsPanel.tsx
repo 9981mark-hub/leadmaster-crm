@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Mic, Save, RefreshCw } from 'lucide-react';
+import { Mic, Save, RefreshCw, Archive, Download, ShieldCheck } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import {
   RecordingSettings, RecordingUsage, DEFAULT_RECORDING_SETTINGS, fetchRecordingSettings, fetchRecordingUsage,
   saveRecordingSettings, isNotReadyError, fmtBytes,
 } from '../../services/recordings';
 import DriveConnectionCard from './DriveConnectionCard';
+import RecordingBackupCenterModal from '../recordings/RecordingBackupCenterModal';
 
 /** 팀 관리 → 통화 녹음·AI 정리 설정 + 사용량 */
 export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
@@ -16,6 +17,7 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [notReady, setNotReady] = useState(false);
+  const [showBackupCenter, setShowBackupCenter] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -55,14 +57,24 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
         <Mic size={18} className="text-purple-600" />
         <h2 className="font-bold text-gray-800 dark:text-white">통화 녹음 · AI 채무 정리</h2>
         <span className="text-xs text-gray-400">상담원 폰의 통화 녹음을 리드에 붙이고 AI가 채무·소득·재산을 정리</span>
-        <button onClick={reload} className="ml-auto text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowBackupCenter(true)}
+            className="px-3 py-1 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950 dark:text-amber-300 rounded-lg border border-amber-300 dark:border-amber-800 flex items-center gap-1.5 transition-all shadow-xs"
+          >
+            <Archive size={13} />
+            <span>만료 & 백업 센터 (ZIP 다운로드)</span>
+          </button>
+          <button onClick={reload} className="text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
+        </div>
       </div>
       <div className="p-5 grid lg:grid-cols-2 gap-5">
         <div className="space-y-3 text-sm">
           <label className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
             <input type="checkbox" checked={s.autoUpload} onChange={e => setS({ ...s, autoUpload: e.target.checked })} /> 리드 통화 녹음 자동 업로드
           </label>
-          <p className="text-xs text-gray-500 -mt-2">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b>리드 번호와의 통화만</b> 아래에서 연결한 <b>회사 구글 드라이브</b>에 올립니다. 리드마스터 서버에는 녹음 파일을 저장하지 않습니다. 상담원 개인 통화는 올리지 않습니다.</p>
+          <p className="text-xs text-gray-500 -mt-2">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b>리드 번호와의 통화만</b> 회사의 안전한 <b>Supabase Storage(call-recordings 버킷)</b>에 1년간 암호화 보관합니다. 0.1초 고속 스트리밍 및 대화록 싱크 청취를 지원합니다.</p>
           <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
             <input type="checkbox" checked={s.autoAnalyze} onChange={e => setS({ ...s, autoAnalyze: e.target.checked })} disabled={!s.autoUpload} /> 올리면 바로 AI 정리 (요약·대화록·채무 정리)
           </label>
@@ -100,7 +112,7 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           </div>
           {usage && (
             <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs text-gray-600 dark:text-gray-300 grid grid-cols-2 gap-1">
-              <span>드라이브 보관 녹음</span><b>{usage.files.toLocaleString()}개 · {fmtBytes(usage.bytes)}</b>
+              <span>스토리지 보관 녹음</span><b>{usage.files.toLocaleString()}개 · {fmtBytes(usage.bytes)}</b>
               <span>오늘 올라온 녹음</span><b>{usage.uploadedToday.toLocaleString()}개</b>
               <span>오늘 / 이번 달 AI 정리</span><b>{usage.analyzedToday.toLocaleString()} / {usage.analyzedMonth.toLocaleString()}건</b>
               <span>이번 달 AI 사용량</span><b>입력 {(usage.tokensInMonth / 1e6).toFixed(2)}M · 출력 {(usage.tokensOutMonth / 1e6).toFixed(2)}M 토큰</b>
@@ -116,6 +128,13 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
       <div className="px-5 pb-5">
         <DriveConnectionCard />
       </div>
+
+      <RecordingBackupCenterModal
+        orgId={orgId}
+        isOpen={showBackupCenter}
+        onClose={() => setShowBackupCenter(false)}
+        showToast={showToast}
+      />
     </section>
   );
 }

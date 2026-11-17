@@ -53,6 +53,24 @@ export interface CallRecording {
   archiveStatus?: 'pending' | 'uploading' | 'archived' | 'failed';
   source?: 'app' | 'web' | 'import';
   fileName?: string;
+  expiresAt?: string;
+  downloadCount?: number;
+  lastDownloadedAt?: string;
+}
+
+export interface ExpiringRecordingItem {
+  id: string;
+  caseId: string;
+  phone: string;
+  callStartedAt: string;
+  durationSec: number;
+  sizeBytes: number;
+  storagePath: string;
+  fileName: string;
+  expiresAt: string;
+  daysLeft: number;
+  summary?: string;
+  downloadCount: number;
 }
 
 export interface RecordingSettings {
@@ -92,10 +110,13 @@ const mapRow = (r: any): CallRecording => ({
   storageKind: r.storage_kind === 'gdrive' ? 'gdrive' : 'supabase',
   driveFileId: r.drive_file_id || undefined, archiveStatus: r.archive_status || undefined,
   source: r.source || undefined, fileName: r.file_name || undefined,
+  expiresAt: r.expires_at || undefined,
+  downloadCount: Number(r.download_count || 0),
+  lastDownloadedAt: r.last_downloaded_at || undefined,
 });
 
 const LIST_COLS_014: string = 'id, case_id, user_id, direction, call_started_at, duration_sec, storage_path, size_bytes, mime_type, source_app, status, error, summary, transcript, extracted, model, analyzed_at, applied_at, audio_deleted_at, created_at';
-const LIST_COLS: string = `${LIST_COLS_014}, storage_kind, drive_file_id, archive_status, source, file_name`;
+const LIST_COLS: string = `${LIST_COLS_014}, storage_kind, drive_file_id, archive_status, source, file_name, expires_at, download_count, last_downloaded_at`;
 
 // 017 칸이 없는 서버(스테이징 일부 등)에서도 동작하도록 한 번 실패하면 014 칸만 읽는다
 let cols017 = true;
@@ -215,7 +236,50 @@ export const uploadRecordingToDrive = async (caseId: string, phone: string, file
 
 /** 녹음 저장 위치에 맞는 듣기 주소 */
 export const getPlayableUrl = (rec: CallRecording): Promise<string> =>
-  rec.storageKind === 'gdrive' ? signPlay({ recording_id: rec.id }) : getRecordingUrl(rec.storagePath);
+  (rec.storageKind === 'gdrive' && rec.driveFileId) ? signPlay({ recording_id: rec.id }) : getRecordingUrl(rec.storagePath);
+
+/** 녹음 다운로드용 1시간 임시 주소 발급 및 다운로드 횟수 기록 */
+export const getRecordingDownloadUrl = async (rec: CallRecording): Promise<string> => {
+  if (rec.storageKind === 'gdrive' && rec.driveFileId) {
+    return signPlay({ recording_id: rec.id });
+  }
+  const cleanName = rec.fileName || `${rec.caseId}_${rec.callStartedAt?.replace(/[:.]/g, '-') || 'recording'}.m4a`;
+  const { data, error } = await need().storage.from(RECORDING_BUCKET).createSignedUrl(rec.storagePath, 3600, {
+    download: cleanName,
+  });
+  if (error || !data?.signedUrl) fail(error || '다운로드 주소를 생성하지 못했습니다');
+
+  // 다운로드 카운트 백그라운드 기록
+  need().rpc('record_recording_download', { p_recording_id: rec.id }).then(() => {}, () => {});
+  return data!.signedUrl;
+};
+
+/** D-30 이내 만료 예정 녹음 목록 조회 */
+export const fetchExpiringRecordings = async (orgId: string, daysThreshold = 30): Promise<ExpiringRecordingItem[]> => {
+  try {
+    const { data, error } = await need().rpc('get_expiring_recordings', {
+      p_org_id: orgId,
+      p_days_threshold: daysThreshold,
+    });
+    if (!error && Array.isArray(data)) {
+      return data.map((r: any) => ({
+        id: r.id,
+        caseId: r.case_id,
+        phone: r.phone,
+        callStartedAt: r.call_started_at,
+        durationSec: Number(r.duration_sec || 0),
+        sizeBytes: Number(r.size_bytes || 0),
+        storagePath: r.storage_path,
+        fileName: r.file_name || `${r.case_id}_recording.m4a`,
+        expiresAt: r.expires_at,
+        daysLeft: Number(r.days_left || 0),
+        summary: r.summary || undefined,
+        downloadCount: Number(r.download_count || 0),
+      }));
+    }
+  } catch {}
+  return [];
+};
 
 export const driveFileIdFromUrl = (url: string) => (url.match(/\/d\/([A-Za-z0-9_-]{10,})/) || url.match(/[?&]id=([A-Za-z0-9_-]{10,})/) || [])[1] || '';
 
