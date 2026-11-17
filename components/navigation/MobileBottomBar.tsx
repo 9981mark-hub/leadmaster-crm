@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Zap, Calculator, Grid3X3, 
   X, PhoneCall, Calendar, UserCog, Smartphone, Megaphone, 
-  GraduationCap, Building2, Settings, User, LogOut, ChevronRight
+  GraduationCap, Building2, Settings, User, LogOut, ChevronRight, CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -52,6 +52,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
     ...(isAdmin ? [{
       label: '정산 & 경영',
       items: [
+        { to: '/billing', icon: CreditCard, label: '빌링 & 광고비' },
         { to: '/settlement', icon: Calculator, label: '정산·손익 센터' },
         { to: '/team', icon: UserCog, label: '팀 관리' },
       ],

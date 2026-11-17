@@ -23,6 +23,7 @@ const LiteCallPage = lazyWithRetry(() => import('./pages/LiteCallPage'));
 const NoticePage = lazyWithRetry(() => import('./pages/NoticePage'));
 const TrainingCenterPage = lazyWithRetry(() => import('./pages/TrainingCenterPage'));
 const PricingPage = lazyWithRetry(() => import('./pages/PricingPage'));
+const BillingPage = lazyWithRetry(() => import('./pages/BillingPage'));
 
 // Navigation & Layout Components
 import { GlobalAppBar } from './components/navigation/GlobalAppBar';
@@ -329,6 +330,7 @@ const ProtectedRoutes = () => {
             <Route path="/case/:caseId" element={<StandardRoute><CaseDetail /></StandardRoute>} />
             <Route path="/telegram" element={<TelegramSync />} />
             <Route path="/auto-dial" element={<PlatformAdminOnly><AutoDial /></PlatformAdminOnly>} />
+            <Route path="/billing" element={<AdminOnly><BillingPage /></AdminOnly>} />
             <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
             <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />
             <Route path="/settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />

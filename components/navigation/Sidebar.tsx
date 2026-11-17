@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Zap, Calendar, PhoneCall, 
   Calculator, UserCog, Smartphone, Megaphone, GraduationCap, 
-  Building2, Settings, User, ChevronsLeft, ChevronsRight, Shield, Crown
+  Building2, Settings, User, ChevronsLeft, ChevronsRight, Shield, Crown, CreditCard
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -77,6 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'finance',
       label: '정산 / 경영',
       items: [
+        { to: '/billing', icon: CreditCard, label: '빌링 & 광고비', adminOnly: true },
         { to: '/settlement', icon: Calculator, label: '정산·손익 센터', adminOnly: true },
         { to: '/team', icon: UserCog, label: '팀 관리', adminOnly: true },
       ],

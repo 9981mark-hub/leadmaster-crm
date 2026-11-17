@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
     fetchPartners,
     savePartner,
@@ -42,7 +43,8 @@ import {
     Trash2,
     Check,
     ShieldAlert,
-    Lock
+    Lock,
+    CreditCard
 } from 'lucide-react';
 import { loadMissedCallTiers, loadTelegramRooms, saveTelegramRooms } from '../utils';
 import {
@@ -734,15 +736,23 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                {isOwner && (
-                    <button
-                        type="button"
-                        onClick={() => setIsCompanyModalOpen(true)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-750 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs transition-colors shrink-0 cursor-pointer"
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <Link
+                        to="/billing"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-colors cursor-pointer"
                     >
-                        <Building2 size={14} /> 회사명 · 대표 사진 설정
-                    </button>
-                )}
+                        <CreditCard size={14} /> 빌링 & 광고비 센터
+                    </Link>
+                    {isOwner && (
+                        <button
+                            type="button"
+                            onClick={() => setIsCompanyModalOpen(true)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-750 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs transition-colors shrink-0 cursor-pointer"
+                        >
+                            <Building2 size={14} /> 회사명 · 대표 사진 설정
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* 2. 대분류 4대 탭 바 */}

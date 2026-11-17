@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { differenceInDays, parseISO } from 'date-fns';
 import { fetchCases, fetchPartners, fetchSettlementBatches, generateWeeklyBatch, updateSettlementBatch, refreshWeeklyBatch, getSettlementStatusLabel, getWeekLabel, getWeekMonday, getWeekSunday, fetchExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, EXPENSE_CATEGORIES, parseBankExcel, matchTransactionsWithPartners, fetchBankTransactions, saveBankTransactions, updateBankTransaction, deleteBankTransaction, getBankTransactionStats, TRANSACTION_CATEGORIES, parseTossAdsCsv, saveTossAdsRecords, fetchTossAdsRecords, getTossAdsWeeklySummary } from '../services/api';
 import { Case, Partner, SettlementBatch, ExpenseItem, ExpenseCategory, BankTransaction, TransactionCategory, TossAdsRecord, TossAdsWeeklySummary } from '../types';
@@ -2398,6 +2399,27 @@ export default function Settlement() {
 
         return (
             <div className="space-y-6">
+                {/* TM대표 전용 빌링 & 광고비 관제 센터 바로가기 배너 */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                            <CreditCard size={18} className="text-white" />
+                        </div>
+                        <div>
+                            <div className="text-xs font-bold text-blue-200">TM대표 전용 신설 메뉴</div>
+                            <div className="text-sm font-bold text-white mt-0.5">
+                                빌링 & 광고비 종합 관제 센터에서 누적 광고비와 CRM 구독료를 통합 확인하세요.
+                            </div>
+                        </div>
+                    </div>
+                    <Link
+                        to="/billing"
+                        className="px-3.5 py-1.5 rounded-lg bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs transition-colors self-start sm:self-auto shrink-0 shadow-xs"
+                    >
+                        빌링 & 광고비 센터 바로가기 →
+                    </Link>
+                </div>
+
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div onClick={() => setActiveExpenseKpiModal('commission')} className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200 cursor-pointer hover:shadow-md transition-all active:scale-95">

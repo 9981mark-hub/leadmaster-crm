@@ -23,6 +23,7 @@ const PAGE_TITLES: Record<string, { title: string; category: string }> = {
   '/lite': { title: '간편 콜 모드', category: '콜 영업 / 상담' },
   '/auto-dial': { title: '스마트 오토콜 관제', category: '콜 영업 / 상담' },
   '/schedule': { title: '일정 캘린더', category: '콜 영업 / 상담' },
+  '/billing': { title: '빌링 & 광고비 종합 관제', category: '정산 / 경영' },
   '/settlement': { title: '정산·손익 센터', category: '정산 / 경영' },
   '/team': { title: '팀 관리 & DB 원가', category: '정산 / 경영' },
   '/telegram': { title: 'TG 연동 센터', category: '연동 / 소통' },
