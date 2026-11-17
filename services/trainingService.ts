@@ -25,6 +25,25 @@ export {
   REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS,
 };
 
+// 트레이닝 영업 모드: 일반 콜드콜(아웃바운드) vs 광고 신청 인바운드 리드
+export type TrainingMode = 'cold_call' | 'inbound_lead';
+
+// 광고 유입 온라인 상담신청서 (인바운드 리드) 상세 데이터
+export interface InboundAdLeadContext {
+  channel: 'instagram' | 'facebook' | 'youtube' | 'naver' | 'blind' | 'kakao';
+  channelLabel: string; // 예: "인스타그램 광고"
+  channelBadgeColor: string; // 예: "bg-pink-500/10 text-pink-700 dark:text-pink-300 border-pink-500/20"
+  campaignName: string; // 예: "2026 개인회생 탕감율 무료 자가진단"
+  appliedAt: string;    // 예: "방금 전 (약 3분 전)"
+  customerName: string;
+  customerAge: number;
+  customerPhone: string;
+  declaredDebt: string; // 고객 입력 채무 (예: "약 7,500만 원 (카드론 3건, 저축은행 2건, 대부업 1건)")
+  delinquencyStatus: string; // 연체 상태 (예: "25일째 연체 중 (추심 독촉 전화 빗발침)")
+  incomeAndJob: string;      // 소득/직업 (예: "중소기업 제조업 정규직 (실수령 약 280만 원)")
+  inquiryNote: string;       // 고객 남김말
+}
+
 export interface TrainingPersona {
   id: string;
   level: number;
@@ -48,6 +67,8 @@ export interface TrainingPersona {
   groundTruth?: GroundTruthLegalDiagnosis;
   behaviorType?: CustomerBehaviorType;
   outboundChannelType?: 'cold_db' | 'inbound_ad';
+  mode?: TrainingMode;
+  leadContext?: InboundAdLeadContext;
   objectionFocus?: string;
   recommendedDefenseScript?: string;
   realQuestionPool?: RealCustomerQuestion[];
@@ -319,6 +340,110 @@ export const WEAKNESS_CATEGORIES: WeaknessCategoryInfo[] = [
     coreGoal: '우편물 송달지 직장 지정 안심, 수임료 분납 안내, 10초 콜백 예약 일정 확정',
     recommendedVoice: 'ko-KR-SunHiNeural',
   },
+];
+
+// 6대 광고신청 인바운드리드 특화 카테고리 정의
+export type InboundCategoryId =
+  | 'inbound_cat_ad_doubt'
+  | 'inbound_cat_fee_compare'
+  | 'inbound_cat_investment_anxiety'
+  | 'inbound_cat_privacy_secret'
+  | 'inbound_cat_urgent_collection'
+  | 'inbound_cat_qualification_only';
+
+export interface InboundCategoryInfo {
+  id: InboundCategoryId;
+  title: string;
+  subtitle: string;
+  badge: string;
+  icon: string;
+  description: string;
+  coreGoal: string;
+  recommendedVoice: string;
+}
+
+export const INBOUND_CATEGORIES: InboundCategoryInfo[] = [
+  {
+    id: 'inbound_cat_ad_doubt',
+    title: '광고 기대치 검증형',
+    subtitle: '"광고에선 90% 다 탕감해준다더니 진짜인가요? 낚시 아니죠?"',
+    badge: '🎯 광고검증',
+    icon: 'Sparkles',
+    description: '인스타그램/페이스북 자가진단 광고를 보고 기대감 반 의심 반으로 신청한 고객',
+    coreGoal: '섣부른 확답 금지, 법정 최저생계비와 가용소득 원리로 현실적 기대치 형성 및 신뢰 구축',
+    recommendedVoice: 'ko-KR-InJoonNeural',
+  },
+  {
+    id: 'inbound_cat_fee_compare',
+    title: '수임료·비용 최우선 비교형',
+    subtitle: '"다른 데도 알아보고 있거든요? 거긴 얼마라던데 여긴 수임료 얼마예요?"',
+    badge: '💰 비용비교',
+    icon: 'BadgePercent',
+    description: '네이버 파워링크 검색으로 2~3곳에 동시 신청해 가격부터 떠보는 깐깐한 비교 고객',
+    coreGoal: '가격부터 말하지 않고, 100% 기각 시 환불 보장제 및 무이자 분납 안내로 사건 관리 가치 입증',
+    recommendedVoice: 'ko-KR-SunHiNeural',
+  },
+  {
+    id: 'inbound_cat_investment_anxiety',
+    title: '주식·코인·도박 불안형',
+    subtitle: '"블라인드 보고 신청했는데 코인 선물 빚도 진짜 기각 안 되고 돼요?"',
+    badge: '📉 투자/불안',
+    icon: 'AlertCircle',
+    description: '커뮤니티 배너를 보고 신청했으나 인터넷에서 본 기각 루머 때문에 불안에 떠는 고객',
+    coreGoal: '서울회생법원 준칙 제408호(손실금 청산가치 제외) 및 맞춤 소명 노하우로 기각 공포 불식',
+    recommendedVoice: 'ko-KR-InJoonNeural',
+  },
+  {
+    id: 'inbound_cat_privacy_secret',
+    title: '가족·직장 극비 보장형',
+    subtitle: '"와이프랑 회사에 절대 알리면 안 돼요. 법원 우편물 오면 저 이혼당합니다"',
+    badge: '🔒 극비보장',
+    icon: 'Lock',
+    description: '가족 몰래 생긴 빚이라 신분 노출 시 가정이 파탄 날 위기에 처한 절박한 고객',
+    coreGoal: '송달장소를 법무법인 사무실로 지정하여 자택/직장 우편물 100% 원천 차단 확약',
+    recommendedVoice: 'ko-KR-SunHiNeural',
+  },
+  {
+    id: 'inbound_cat_urgent_collection',
+    title: '당일 독촉·압류 공황형',
+    subtitle: '"오늘 당장 통장 압류 들어온다고 문자 왔어요! 오늘 당장 막아줄 수 있어요?!"',
+    badge: '🚨 긴급독촉',
+    icon: 'AlertTriangle',
+    description: '유튜브 숏츠를 보고 당일 압류 독촉에 패닉 상태로 급히 신청서를 남긴 고객',
+    coreGoal: '금지명령 및 채무자대리인 제도로 즉시 추심 차단 가능함을 알리고 패스트트랙 접수 안내',
+    recommendedVoice: 'ko-KR-InJoonNeural',
+  },
+  {
+    id: 'inbound_cat_qualification_only',
+    title: '자격만 간보기형',
+    subtitle: '"사무장 상담이고 뭐고, 내 조건에서 되는지만 딱 30초 안에 말해요"',
+    badge: '⚡ 자격간보기',
+    icon: 'Zap',
+    description: '카카오 비즈보드로 가볍게 신청해 바쁘다며 꼬치꼬치 묻는 것을 거부하는 고객',
+    coreGoal: '정중한 주도권 장악: 잘못된 안내 방지를 위해 법원이 보는 핵심 2가지만 30초 내 확인',
+    recommendedVoice: 'ko-KR-InJoonNeural',
+  },
+];
+
+// 인바운드 광고신청건 전용 7대 문진 체크리스트 인터페이스
+export interface InboundParalegalChecklist {
+  leadConfirmation: boolean;       // 1. 광고 신청 내역 및 본인 확인
+  expectationAnchoring: boolean;   // 2. 광고 기대치 현실화 (법정 원리 설명)
+  debtAndOverdue: boolean;         // 3. 총 채무액 및 연체 팩트체크
+  incomeAndJob: boolean;           // 4. 직업 및 실수령 소득 파악
+  assetsAndDeposit: boolean;       // 5. 재산/보증금/배우자 청산가치
+  privacyAssurance: boolean;       // 6. 비밀보장 및 우편물 대리수령 확약
+  paralegalClosing: boolean;       // 7. 수석 사무장 심층 상담/방문 예약 클로징
+}
+
+export const INBOUND_PARALEGAL_QUESTIONS: { key: keyof InboundParalegalChecklist; label: string; desc: string }[] = [
+  { key: 'leadConfirmation', label: '1. 신청 리드 및 본인 확인', desc: '유입 채널 및 온라인 자가진단 신청 맥락 정확히 언급' },
+  { key: 'expectationAnchoring', label: '2. 광고 기대치 현실화', desc: '무조건 90% 확답 금지, 법정 생계비 원리로 신뢰 형성' },
+  { key: 'debtAndOverdue', label: '3. 총 채무액 및 연체 팩트체크', desc: '신청서 기재 채무 외 카드론/대부/사채 추가 내역 확인' },
+  { key: 'incomeAndJob', label: '4. 직업 및 실수령 소득 파악', desc: '4대보험 유무, 최근 3개월 평균 실수령 소득 확인' },
+  { key: 'assetsAndDeposit', label: '5. 재산 및 청산가치 파악', desc: '주거형태(보증금 공제한도), 차량, 배우자 재산 확인' },
+  { key: 'privacyAssurance', label: '6. 가족·직장 비밀보장 확약', desc: '우편물 송달지 법무법인 지정으로 100% 비밀 안내' },
+  { key: 'paralegalClosing', label: '7. 수석 사무장 심층 상담 예약', desc: '예상 변제금 정밀 시뮬레이션을 위한 30분 내 사무장 인계 클로징' },
 ];
 
 export const TRAINING_PERSONAS: TrainingPersona[] = [
@@ -721,6 +846,296 @@ export const generateCustomPersonaByCategory = (categoryId: WeaknessCategoryId):
         personaPrompt: `너는 ${age}세 ${fullName}이다. ${promptText}`,
         initialMessage: initial,
         category: categoryId,
+      };
+    }
+  }
+};
+
+// 6대 광고신청 인바운드 리드 전용 페르소나 생성기
+export const generateInboundLeadPersona = (categoryId: InboundCategoryId): TrainingPersona => {
+  const timestamp = Date.now();
+
+  switch (categoryId) {
+    case 'inbound_cat_ad_doubt': {
+      const leadContext: InboundAdLeadContext = {
+        channel: 'instagram',
+        channelLabel: '인스타그램 광고',
+        channelBadgeColor: 'bg-pink-500/10 text-pink-700 dark:text-pink-300 border-pink-500/30',
+        campaignName: '2026 개인회생 탕감율 무료 자가진단 (Meta Ads)',
+        appliedAt: '방금 전 (약 3분 전)',
+        customerName: '김태호',
+        customerAge: 38,
+        customerPhone: '010-8921-3482',
+        declaredDebt: '약 7,500만 원 (카드론 3건, 저축은행 2건, 대부업 1건)',
+        delinquencyStatus: '25일째 연체 중 (추심 독촉 전화 빗발침)',
+        incomeAndJob: '중소 제조업 정규직 (실수령 약 280만 원)',
+        inquiryNote: '이번 달 카드값 막을 길이 없습니다. 급여 압류 들어온다는데 진짜 해결 가능한가요?',
+      };
+      return {
+        id: `inbound_${categoryId}_${timestamp}`,
+        level: 3,
+        badge: '🎯 광고기대치 검증',
+        customerName: leadContext.customerName,
+        age: leadContext.customerAge,
+        gender: 'male',
+        phone: leadContext.customerPhone,
+        job: leadContext.incomeAndJob,
+        salary: '월 실수령 280만 원',
+        debtSummary: leadContext.declaredDebt,
+        housing: '월세 (보증금 1,000만 원 / 월 55만 원)',
+        difficulty: '중급',
+        title: '인스타 90% 탕감 광고를 보고 과장/낚시를 의심하는 고객',
+        scenarioDescription: '인스타그램 자가진단 광고를 보고 직접 신청했으나, "진짜 90% 다 깎아주는 거 맞냐, 낚시 광고 아니냐"며 탕감율 확답을 요구합니다.',
+        trainingGoal: '섣부른 탕감 확답 금지, 법정 최저생계비와 가용소득 원리로 현실적 기대치 형성 및 신뢰 구축',
+        speechOptions: {
+          pitch: 0.75,
+          rate: 1.05,
+          gender: 'male',
+          neuralVoice: 'ko-KR-InJoonNeural',
+          neuralRate: '+3%',
+          neuralPitch: '-4Hz',
+        },
+        mode: 'inbound_lead',
+        leadContext,
+        outboundChannelType: 'inbound_ad',
+        personaPrompt: `너는 38세 남성 ${leadContext.customerName}이다. 인스타그램에서 "내 빚 최대 90% 탕감" 광고를 보고 방금 자가진단 신청서를 제출했다. 모르는 번호로 전화가 와서 "여보세요? 방금 인스타에서 빚 탕감 진단 신청했는데요. 광고 보니까 빚 90% 다 깎아준다던데 저도 진짜 그렇게 되나요? 낚시 광고 아니죠?"라고 직설적으로 묻는다. 상담원이 "무조건 90% 다 탕감됩니다"라고 거짓 장담하면 "사기꾼 아니냐"며 더 의심하고, 반대로 "그건 광고고 실제로는 얼마 안 돼요"라고 찬물을 끼얹으면 실망해서 전화를 끊으려 한다. 상담원이 "법원에서 인정하는 최저생계비를 제외한 가용소득으로 변제금이 산정되기 때문에 고객님 조건에 따라 최대 90%까지 가능한 것이며, 고객님의 정확한 변제금 산출을 위해 몇 가지만 확인해 드리겠습니다"라고 법적 원리를 차분하게 설명하면 비로소 고개를 끄덕이며 협조한다.`,
+        initialMessage: `여보세요? 방금 인스타에서 빚 탕감 진단 신청했는데요. 광고 보니까 빚 90% 다 깎아준다던데 저도 진짜 그렇게 되나요? 낚시 광고 아니죠?`,
+      };
+    }
+
+    case 'inbound_cat_fee_compare': {
+      const leadContext: InboundAdLeadContext = {
+        channel: 'naver',
+        channelLabel: '네이버 파워링크 검색',
+        channelBadgeColor: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+        campaignName: '개인회생 수임료 분납 지원 센터 (파워링크)',
+        appliedAt: '약 7분 전',
+        customerName: '이수진',
+        customerAge: 32,
+        customerPhone: '010-4712-9081',
+        declaredDebt: '신용대출 2건, 마이너스통장 1건 합산 4,200만 원',
+        delinquencyStatus: '연체 직전 (이번 달 돌려막기 불가)',
+        incomeAndJob: 'IT 스타트업 마케터 (실수령 약 250만 원)',
+        inquiryNote: '다른 곳도 상담 신청해 뒀습니다. 수임료 얼마인지와 분납 개월 수 알려주세요.',
+      };
+      return {
+        id: `inbound_${categoryId}_${timestamp}`,
+        level: 3,
+        badge: '💰 수임료 가격비교',
+        customerName: leadContext.customerName,
+        age: leadContext.customerAge,
+        gender: 'female',
+        phone: leadContext.customerPhone,
+        job: leadContext.incomeAndJob,
+        salary: '월 실수령 250만 원',
+        debtSummary: leadContext.declaredDebt,
+        housing: '전세 (보증금 8,000만 원 / 청년전세대출 6,000만 원)',
+        difficulty: '상급',
+        title: '타사 3곳에 동시 신청해 수임료부터 떠보는 깐깐한 직장인',
+        scenarioDescription: '네이버 파워링크로 여러 곳에 동시 신청해 방금 전에도 타사와 통화했습니다. 수임료 금액부터 단도직입적으로 캐묻습니다.',
+        trainingGoal: '가격부터 말하지 않고, 100% 기각 시 환불 보장제 및 무이자 분납 안내로 사건 관리 가치 입증',
+        speechOptions: {
+          pitch: 0.95,
+          rate: 1.10,
+          gender: 'female',
+          neuralVoice: 'ko-KR-SunHiNeural',
+          neuralRate: '+8%',
+          neuralPitch: '-2Hz',
+        },
+        mode: 'inbound_lead',
+        leadContext,
+        outboundChannelType: 'inbound_ad',
+        personaPrompt: `너는 32세 여성 ${leadContext.customerName}이다. 네이버 검색으로 법무법인 세 곳에 동시에 상담 신청서를 남겼고, 방금 다른 법무법인 한 곳과 통화하고 나서 전화를 받았다. 전화를 받고 "여보세요? 저 네이버에서 보고 상담 신청 남겼는데요, 솔직히 다른 법무법인에도 신청해놔서 방금 통화했거든요. 거긴 수임료 150 부르던데 여긴 수임료 얼마예요? 몇 개월 분납 돼요?"라고 가격을 먼저 묻는다. 상담원이 덜컥 금액만 부르면 "네, 다른 데랑 비교해보고 연락드릴게요"하고 바로 끊으려 한다. 반면 상담원이 "고객님, 수임료만 비교하시다가 사건이 기각되면 그 비용을 전부 날리게 됩니다. 저희는 기각 시 100% 전액 환불 보장제와 무이자 6개월 분납을 지원하고 있으며, 무엇보다 고객님의 통장 압류를 가장 빠르게 막아드리는 것이 핵심입니다"라며 법무법인의 전문성과 안전장치(기각보상제)를 짚어주면 귀를 기울이며 상담에 응한다.`,
+        initialMessage: `여보세요? 저 네이버에서 보고 상담 신청 남겼는데요, 솔직히 다른 법무법인에도 신청해놔서 방금 통화했거든요. 거긴 수임료 150 부르던데 여긴 수임료 얼마예요? 몇 개월 분납 돼요?`,
+      };
+    }
+
+    case 'inbound_cat_investment_anxiety': {
+      const leadContext: InboundAdLeadContext = {
+        channel: 'blind',
+        channelLabel: '블라인드 직장인 배너 광고',
+        channelBadgeColor: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30',
+        campaignName: '직장인 주식·코인 투자 채무 탕감 솔루션',
+        appliedAt: '약 12분 전',
+        customerName: '박성민',
+        customerAge: 41,
+        customerPhone: '010-3819-7724',
+        declaredDebt: '코인 선물거래 및 신용대출 합산 6,800만 원',
+        delinquencyStatus: '연체 10일째 (사금융 독촉 문자 시작)',
+        incomeAndJob: '대기업 계열사 사무직 (실수령 약 360만 원)',
+        inquiryNote: '코인 선물하다가 빚졌는데 인터넷 보니까 투자 실패는 기각된다던데 진짜 신청 가능한가요?',
+      };
+      return {
+        id: `inbound_${categoryId}_${timestamp}`,
+        level: 4,
+        badge: '📉 투자빚 기각불안',
+        customerName: leadContext.customerName,
+        age: leadContext.customerAge,
+        gender: 'male',
+        phone: leadContext.customerPhone,
+        job: leadContext.incomeAndJob,
+        salary: '월 실수령 360만 원',
+        debtSummary: leadContext.declaredDebt,
+        housing: '자가 아파트 (시세 4억 / 주담대 3억)',
+        difficulty: '상급',
+        title: '코인·주식 투자 실패 빚으로 법원 기각을 극도로 두려워하는 고객',
+        scenarioDescription: '블라인드 배너를 보고 신청했으나, 인터넷에서 본 "주식/코인은 무조건 기각된다"는 글 때문에 죄책감과 공포에 사로잡혀 있습니다.',
+        trainingGoal: '서울회생법원 준칙 제408호(손실금 청산가치 제외) 및 맞춤 소명 노하우로 기각 공포 불식',
+        speechOptions: {
+          pitch: 0.70,
+          rate: 1.0,
+          gender: 'male',
+          neuralVoice: 'ko-KR-InJoonNeural',
+          neuralRate: '+0%',
+          neuralPitch: '-6Hz',
+        },
+        mode: 'inbound_lead',
+        leadContext,
+        outboundChannelType: 'inbound_ad',
+        personaPrompt: `너는 41세 남성 ${leadContext.customerName}이다. 대기업에 다니지만 코인 선물거래에 손을 댔다가 6,800만 원의 빚을 졌다. 인터넷 커뮤니티에서 "투자 빚은 법원에서 괘씸죄로 100% 기각당한다"는 글을 보고 패닉 상태에서 블라인드 배너 광고를 보고 신청했다. 전화를 받고 "여보세요... 제가 블라인드에서 보고 신청했는데요, 제가 코인 선물거래 하다가 빚이 6천 생겼거든요. 인터넷 보니까 투자 빚은 무조건 기각된다고 하던데 저도 회생 신청이 진짜 되나요?"라며 불안해한다. 상담원이 "서울회생법원 실무준칙 제408호에 따라 주식·코인 손실금을 청산가치에 반영하지 않는 기준이 마련되어 있으며, 어떻게 소명하느냐에 따라 기각 없이 안전하게 인가를 받을 수 있다"고 법적 근거를 들어 안심시켜 주면 깊이 감사하며 모든 질문에 솔직하게 털어놓는다.`,
+        initialMessage: `여보세요... 제가 블라인드에서 보고 신청했는데요, 제가 코인 선물거래 하다가 빚이 6천 생겼거든요. 인터넷 보니까 투자 빚은 무조건 기각된다고 하던데 저도 회생 신청이 진짜 되나요?`,
+      };
+    }
+
+    case 'inbound_cat_privacy_secret': {
+      const leadContext: InboundAdLeadContext = {
+        channel: 'facebook',
+        channelLabel: '페이스북 피드 광고',
+        channelBadgeColor: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
+        campaignName: '100% 비밀보장 개인회생 비공개 무료진단',
+        appliedAt: '약 5분 전',
+        customerName: '정은지',
+        customerAge: 36,
+        customerPhone: '010-5591-6238',
+        declaredDebt: '남편 모르는 생활비/카드 대출 합산 3,500만 원',
+        delinquencyStatus: '연체 5일째',
+        incomeAndJob: '어린이집 교사 (실수령 약 210만 원)',
+        inquiryNote: '남편과 시댁에서 알면 절대 안 됩니다. 집으로 우편물이나 연락 안 오게 할 수 있나요?',
+      };
+      return {
+        id: `inbound_${categoryId}_${timestamp}`,
+        level: 3,
+        badge: '🔒 가족극비 보장요구',
+        customerName: leadContext.customerName,
+        age: leadContext.customerAge,
+        gender: 'female',
+        phone: leadContext.customerPhone,
+        job: leadContext.incomeAndJob,
+        salary: '월 실수령 210만 원',
+        debtSummary: leadContext.declaredDebt,
+        housing: '남편 명의 아파트 거주',
+        difficulty: '상급',
+        title: '남편과 시댁에 채무 노출 시 이혼 위기라 극비 보장을 요구하는 고객',
+        scenarioDescription: '페이스북 광고를 보고 신청했으나, 집으로 법원 등기나 서류가 날아오면 가정이 파탄 난다며 비밀 유지를 최우선으로 요구합니다.',
+        trainingGoal: '송달장소를 법무법인 사무실로 지정하여 자택/직장 우편물 100% 원천 차단 확약',
+        speechOptions: {
+          pitch: 0.90,
+          rate: 1.05,
+          gender: 'female',
+          neuralVoice: 'ko-KR-SunHiNeural',
+          neuralRate: '+5%',
+          neuralPitch: '-2Hz',
+        },
+        mode: 'inbound_lead',
+        leadContext,
+        outboundChannelType: 'inbound_ad',
+        personaPrompt: `너는 36세 여성 ${leadContext.customerName}이다. 남편 몰래 카드 돌려막기와 대출로 3,500만 원의 빚이 생겼다. 페이스북 비밀보장 광고를 보고 절박하게 신청했다. 전화를 받고 "여보세요? 페이스북 보고 신청했는데요, 진짜 중요한 게 저희 남편이랑 직장에 절대 비밀이 보장되나요? 법원 우편물 집으로 오면 저 바로 이혼당합니다."라고 다급하게 말한다. 상담원이 "법원에서 오는 모든 우편물의 송달장소를 저희 법무법인 사무실로 지정하여 자택이나 직장으로는 단 한 통의 우편물도 가지 않도록 100% 원천 차단해 드립니다"라고 확약해주면 비로소 안도의 한숨을 쉬며 협조한다.`,
+        initialMessage: `여보세요? 페이스북 보고 신청했는데요, 진짜 중요한 게 저희 남편이랑 직장에 절대 비밀이 보장되나요? 법원 우편물 집으로 오면 저 바로 이혼당합니다.`,
+      };
+    }
+
+    case 'inbound_cat_urgent_collection': {
+      const leadContext: InboundAdLeadContext = {
+        channel: 'youtube',
+        channelLabel: '유튜브 숏츠 채무 솔루션',
+        channelBadgeColor: 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30',
+        campaignName: '급여/통장 압류 즉시 중단 긴급 회생 신청',
+        appliedAt: '약 1분 전 (초긴급 접수)',
+        customerName: '최동석',
+        customerAge: 49,
+        customerPhone: '010-2184-4903',
+        declaredDebt: '카드론 4건, 대부 3건 합산 8,200만 원',
+        delinquencyStatus: '연체 35일째 (당일 통장 압류 예고 통지서 수신)',
+        incomeAndJob: '개인용달 운전기사 (실수령 약 290만 원)',
+        inquiryNote: '오늘 당장 통장 압류 들어온다고 독촉 문자 왔습니다. 제발 오늘 안에 막아주세요!',
+      };
+      return {
+        id: `inbound_${categoryId}_${timestamp}`,
+        level: 4,
+        badge: '🚨 당일압류 공황상태',
+        customerName: leadContext.customerName,
+        age: leadContext.customerAge,
+        gender: 'male',
+        phone: leadContext.customerPhone,
+        job: leadContext.incomeAndJob,
+        salary: '월 실수령 290만 원',
+        debtSummary: leadContext.declaredDebt,
+        housing: '월세 (보증금 500만 원 / 월 40만 원)',
+        difficulty: '최고급',
+        title: '당일 통장 압류 예고 문자를 받고 극도의 공황 상태로 신청한 고객',
+        scenarioDescription: '유튜브 숏츠 광고를 보고 급히 신청했습니다. 오늘 당장 압류를 막아주지 않으면 죽는다고 울먹이며 패닉을 보입니다.',
+        trainingGoal: '금지명령 및 채무자대리인 제도로 즉시 추심 차단 가능함을 알리고 패스트트랙 접수 안내',
+        speechOptions: {
+          pitch: 0.65,
+          rate: 1.15,
+          gender: 'male',
+          neuralVoice: 'ko-KR-InJoonNeural',
+          neuralRate: '+12%',
+          neuralPitch: '-5Hz',
+        },
+        mode: 'inbound_lead',
+        leadContext,
+        outboundChannelType: 'inbound_ad',
+        personaPrompt: `너는 49세 남성 ${leadContext.customerName}이다. 용달 운전을 하며 대부업체 빚이 연체되어 오늘 아침 "통장 및 급여 압류 절차 착수" 문자를 받고 극도의 공황 상태다. 유튜브 숏츠를 보다 긴급 신청을 남겼다. 전화를 받고 "여보세요?! 저 오늘 당장 급여 통장 압류 들어온다고 독촉 문자 와서 유튜브 보고 급하게 신청했거든요! 이거 오늘 당장 압류 막을 수 있어요? 제발 도와주세요!"라고 다급하게 소리친다. 상담원이 "선생님, 당황하지 마십시오. 법원 금지명령 접수 패스트트랙과 함께, 합법적으로 채권자의 직접 추심을 즉시 차단하는 채무자대리인 제도를 오늘 바로 가동해 드릴 수 있습니다"라며 신속한 솔루션을 제시하면 상담원을 은인처럼 신뢰하며 사무장 인계에 적극 응한다.`,
+        initialMessage: `여보세요?! 저 오늘 당장 급여 통장 압류 들어온다고 독촉 문자 와서 유튜브 보고 급하게 신청했거든요! 이거 오늘 당장 압류 막을 수 있어요? 제발 도와주세요!`,
+      };
+    }
+
+    case 'inbound_cat_qualification_only':
+    default: {
+      const leadContext: InboundAdLeadContext = {
+        channel: 'kakao',
+        channelLabel: '카카오 비즈보드 배너 광고',
+        channelBadgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30',
+        campaignName: '1분 간편 자격조회 빚 탕감 테스트',
+        appliedAt: '약 15분 전',
+        customerName: '강민구',
+        customerAge: 45,
+        customerPhone: '010-7382-1194',
+        declaredDebt: '은행 신용대출 5,000만 원, 카드사 1,500만 원',
+        delinquencyStatus: '연체 없음 (정상 상환 중이나 한계 도달)',
+        incomeAndJob: '중견기업 과장 (실수령 약 380만 원)',
+        inquiryNote: '연체는 아직 안 됐는데 자격 되는지만 빠르게 알고 싶습니다.',
+      };
+      return {
+        id: `inbound_${categoryId}_${timestamp}`,
+        level: 3,
+        badge: '⚡ 30초 자격간보기',
+        customerName: leadContext.customerName,
+        age: leadContext.customerAge,
+        gender: 'male',
+        phone: leadContext.customerPhone,
+        job: leadContext.incomeAndJob,
+        salary: '월 실수령 380만 원',
+        debtSummary: leadContext.declaredDebt,
+        housing: '전세 (보증금 1억 8,000만 원 / 전세대출 1억 2,000만 원)',
+        difficulty: '상급',
+        title: '바쁘다며 질문을 사절하고 되는지만 30초 안에 결론 내라는 고객',
+        scenarioDescription: '카카오톡 상단 배너로 가볍게 신청했습니다. 쓸데없는 질문은 거부하고 자격 되는지만 딱 잘라 말하라고 재촉합니다.',
+        trainingGoal: '정중한 주도권 장악: 잘못된 안내 방지를 위해 법원이 보는 핵심 2가지만 30초 내 확인',
+        speechOptions: {
+          pitch: 0.78,
+          rate: 1.10,
+          gender: 'male',
+          neuralVoice: 'ko-KR-InJoonNeural',
+          neuralRate: '+8%',
+          neuralPitch: '-5Hz',
+        },
+        mode: 'inbound_lead',
+        leadContext,
+        outboundChannelType: 'inbound_ad',
+        personaPrompt: `너는 45세 남성 ${leadContext.customerName}이다. 회사 업무 중 카카오톡 배너 광고를 보고 간편 신청을 남겼다. 지금도 일하는 중이라 매우 바쁘고 성격이 급하다. 전화를 받고 "여보세요? 카카오에서 보고 신청했는데요. 딴소리 마시고, 제 조건에서 회생 되는지 안 되는지만 딱 30초 안에 말해요. 꼬치꼬치 묻지 말고요."라고 퉁명스럽게 말한다. 상담원이 "선생님, 잘못된 안내로 소중한 시간 낭비하시지 않도록, 법원이 회생 자격을 심사하는 핵심 조건 딱 2가지(소득과 재산)만 30초 안에 여쭙고 바로 결론을 말씀드리겠습니다"라고 단호하고 명쾌하게 리드하면 수긍하며 빠르게 답한다.`,
+        initialMessage: `여보세요? 카카오에서 보고 신청했는데요. 딴소리 마시고, 제 조건에서 회생 되는지 안 되는지만 딱 30초 안에 말해요. 꼬치꼬치 묻지 말고요.`,
       };
     }
   }
@@ -1129,21 +1544,32 @@ export const evaluateTrainingCall = async (
     .map(m => `${m.speaker === 'agent' ? '상담원' : '고객'}: ${m.text}`)
     .join('\n');
 
+  const isInboundLead = persona.mode === 'inbound_lead' || !!persona.leadContext;
+
   const prompt = `당신은 "${config.companyName}" 수석 사무장이자 금융 CRM 상담 품질 평가 감독관(QA 코치)입니다.
-신입 상담원이 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job}, 행동성향: ${persona.behaviorType || '실전'})과 진행한 모의 상담 통화록을 정밀 평가하고 코칭 리포트 및 '사무장 인계 7대 문진 카드'를 JSON으로 작성하세요.
+신입 상담원이 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job}, 인입유형: ${isInboundLead ? '광고신청 인바운드리드' : '일반 콜드콜'})과 진행한 모의 상담 통화록을 정밀 평가하고 코칭 리포트 및 '사무장 인계 7대 문진 카드'를 JSON으로 작성하세요.
 
 [우리 회사 평가 준수 규칙]
 - 공식 회사명: "${config.companyName}" (상담 서두에 소속을 명확히 밝혔는지 필수 평가)
-- 공식 인입 채널: "${config.leadChannelName}"
+- 공식 인입 채널: "${isInboundLead && persona.leadContext ? persona.leadContext.channelLabel : config.leadChannelName}"
 - 필수 포함 키워드: [${config.requiredKeywords.join(', ')}] (미언급 시 complianceScore 감점)
 - 엄격 금지어: [${config.bannedKeywords.join(', ')}] (발화 시 complianceScore 대폭 감점 및 weaknesses 지적)
 
 [고객 기본 정보]
 - 시나리오: ${persona.scenarioDescription}
-- 행동 성향: ${persona.behaviorType || '실전'} (인입: ${persona.outboundChannelType || 'Cold DB'})
+- 행동 성향: ${persona.behaviorType || '실전'} (인입: ${isInboundLead ? '광고신청 인바운드 리드' : 'Cold DB'})
 - 채무: ${persona.debtSummary}
 - 재산: ${persona.housing}
 - 소득: ${persona.salary}
+${persona.leadContext ? `
+[고객이 온라인 제출한 상담 신청서 데이터 (인바운드 리드 프리뷰)]
+- 유입 매체: ${persona.leadContext.channelLabel} (${persona.leadContext.campaignName})
+- 신청 접수: ${persona.leadContext.appliedAt}
+- 고객 입력 채무: ${persona.leadContext.declaredDebt}
+- 연체 상태: ${persona.leadContext.delinquencyStatus}
+- 직업 및 소득: ${persona.leadContext.incomeAndJob}
+- 고객 남김말: "${persona.leadContext.inquiryNote}"
+` : ''}
 ${persona.objectionFocus ? `- 고객의 핵심 의문/걱정: "${persona.objectionFocus}" (모범 방어 기준: "${persona.recommendedDefenseScript || ''}")` : ''}
 ${persona.groundTruth ? `
 [2026 회생·파산 법률 연산 Ground Truth (사무장 내부 정답 진단서)]
@@ -1152,7 +1578,16 @@ ${persona.groundTruth ? `
 - 예상 월 변제금: 약 ${Math.round(persona.groundTruth.expectedMonthlyPayment / 10000)}만 원 (${persona.groundTruth.expectedRepaymentPeriod}개월 납입, 총 ${Math.round(persona.groundTruth.totalRepaymentAmount / 10000)}만 원, 원금 탕감률 약 ${persona.groundTruth.estimatedForgivenessRate}%)
 - 관할 법원 실무: ${persona.groundTruth.courtRuleNote}
 - 1차 추천 법률 후킹: ${persona.groundTruth.recommendedLegalHook || '없음'}
+` : ''}
 
+${isInboundLead ? `
+* [광고신청 인바운드 리드 전용 5대 QA 평가 기준]:
+  1) [신청 리드 확인 및 오프닝 (20점)]: 고객이 직접 온라인에서 신청서를 남긴 건이므로, 상담 서두에 "방금 ${persona.leadContext?.channelLabel || '온라인'}에서 개인회생 무료 진단 신청 남겨주셔서 신속히 연락드렸습니다"라며 신청 맥락을 정확히 짚었는지 평가하세요. (만약 콜드콜처럼 "합법적 경로로 수집되어..."라고 변명조로 말했다면 complianceScore -20점 대폭 감점!)
+  2) [광고 기대치 현실화 & 신뢰 형성 (25점)]: 고객의 90% 탕감 과장 광고 의심("진짜 90% 다 깎아주나요? 낚시 아니죠?")에 대해 섣부른 확답을 피하고, "법정 최저생계비를 뺀 가용소득으로 법원이 결정한다"는 원리를 차분히 설명하여 신뢰를 형성했는지 평가하세요.
+  3) [수임료 비교 방어 & 가치 입증 (20점)]: 타사와 가격을 비교하거나 수임료부터 캐묻는 고객에게 덜컥 금액만 부르지 않고, 기각 시 100% 전액 환불 보장제 및 무이자 분납 제도를 제시하며 사건 관리의 가치를 설득했는지 평가하세요.
+  4) [신세한탄 완급 조절력 (15점)]: 채무 고민을 쏟아내는 고객에게 공감하되, 30초 내에 능숙하게 문진으로 대화 주도권을 가져왔는지 평가하세요.
+  5) [수석 사무장 심층 인계 클로징 (20점)]: 1차 통화에서 자의적으로 단정 짓지 않고, "수수료 분납 계획 및 예상 변제금 정밀 시뮬레이션을 위해 30분 내 수석 사무장님 직통 상담으로 연결해 드리겠다"며 2차 전문 상담으로 매끄럽게 연결했는지 평가하세요.
+` : `
 * 1차 상담원 실전 평가 지침 (실제 녹취 274건 분석 기반 5대 핵심 기준):
   1) [Cold DB 오프닝 돌파력 (15점)]: 초반 고객의 출처 추궁("내 번호 어디서 알았소?")이나 의심에 당황하지 않고 합법적 제휴 동의 경로와 비용 0원의 무료 가심사임을 명확히 밝혀 고객 감정을 [차분]으로 전환시켰는지 평가하세요. (coldDbOpeningScore: 0~100)
   2) [고객 질문/반론 방어력 (20점)]: 고객이 신용도 하락(바닥 우려), 수임료 기각 걱정, 직장/가족 비밀 등을 질문했을 때 녹취 속 검증된 화법(고3 리셋 비유, 단점 2가지 한정, 100% 비밀 보장 등)으로 명쾌하게 방어했는지 평가하세요. (objectionDefenseScore: 0~100)
@@ -1160,9 +1595,18 @@ ${persona.groundTruth ? `
   4) [섣부른 확정 단정 감점]: 상담원이 1차 통화에서 "무조건 월 OO만 원이다", "OO% 탕감 보장된다"며 금액을 확약한 경우, 2차 상담 시 민원 유발 위험으로 complianceScore 감점(-20점).
   5) [조건부 완충 브릿지 인계 가점]: 대략적인 범위만 조심스럽게 언급하고 "정확한 1원 단위 금액은 수석 사무장님이 서류 정밀 검토 후 확정 안내해 드린다"며 2차 전문 상담으로 매끄럽게 인계했는지 평가하세요(+15점).
   6) [소액 채무(1,200만 원 선) 양심 안내]: 1,500만 원 미만 소액 채무자에게 회생을 억지로 권유하면 감점(-25점), "수임료 부담이 크니 신복위 프리워크아웃(5만 원)이 유리하다"고 솔직히 안내 시 양심 가점(+20점).
-` : ''}
+`}
 
 [사무장 인계 7대 필수 문진 항목 채점 기준]
+${isInboundLead ? `
+1. 신청 리드 및 본인 확인 (유입 채널 및 온라인 자가진단 신청 맥락)
+2. 광고 기대치 현실화 (무조건 90% 확답 금지, 법정 생계비 원리 설명)
+3. 총 채무액 및 연체 팩트체크 (신청서 외 카드론/대부/사채 추가 내역)
+4. 직업 및 실수령 소득 (4대보험/사업소득 및 최근 3개월 실수령액)
+5. 재산 및 청산가치 (주거형태 보증금, 차량, 배우자 재산)
+6. 비밀보장 및 불안 해소 (우편물 사무소 대리수령 확약)
+7. 수석 사무장 심층 인계 (방문/전화 예약 클로징)
+` : `
 1. 직업 및 재직형태 (4대보험/사업자/일용직 등)
 2. 월 평균 실소득 (실수령액)
 3. 부양가족 수 (등본상 동거 가족)
@@ -1170,6 +1614,7 @@ ${persona.groundTruth ? `
 5. 총 채무액 및 채무 원인 (원금 규모 및 용도)
 6. 현재 연체 여부 및 기간 (독촉 상황)
 7. 과거 회생/파산/신복위 이력 (과거 조정 경험)
+`}
 
 [통화 대화록]
 ${conversationText}

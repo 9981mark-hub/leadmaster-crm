@@ -17,6 +17,13 @@ import {
   generateCustomPersonaByCategory,
   WEAKNESS_CATEGORIES,
   WeaknessCategoryId,
+  TrainingMode,
+  InboundCategoryId,
+  INBOUND_CATEGORIES,
+  InboundAdLeadContext,
+  generateInboundLeadPersona,
+  INBOUND_PARALEGAL_QUESTIONS,
+  InboundParalegalChecklist,
   getCompanyTrainingConfig,
   saveCompanyTrainingConfig,
   interpolateOpeningScript,
@@ -136,10 +143,22 @@ export default function TrainingCenterPage() {
     }
   };
 
+  // 영업 모드: 일반 콜드콜(아웃바운드) vs 광고신청 인바운드 리드 (로컬스토리지 기본값 연동)
+  const [trainingMode, setTrainingMode] = useState<TrainingMode>(() => {
+    return (localStorage.getItem('lm_training_mode') as TrainingMode) || 'cold_call';
+  });
+
+  // 인바운드 선택 카테고리
+  const [selectedInboundCategory, setSelectedInboundCategory] = useState<InboundCategoryId>('inbound_cat_ad_doubt');
+
   // Selected persona & history
-  const [selectedPersona, setSelectedPersona] = useState<TrainingPersona>(() =>
-    generateCustomPersonaByCategory('cat_phishing')
-  );
+  const [selectedPersona, setSelectedPersona] = useState<TrainingPersona>(() => {
+    const savedMode = (localStorage.getItem('lm_training_mode') as TrainingMode) || 'cold_call';
+    if (savedMode === 'inbound_lead') {
+      return generateInboundLeadPersona('inbound_cat_ad_doubt');
+    }
+    return generateCustomPersonaByCategory('cat_phishing');
+  });
   const [trainingConfig, setTrainingConfig] = useState<CompanyTrainingConfig>(() => getCompanyTrainingConfig());
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [history, setHistory] = useState<TrainingSessionRecord[]>([]);
@@ -293,7 +312,7 @@ export default function TrainingCenterPage() {
     showToast(`🎭 [${char.id} ${char.name} (${char.age}세, ${char.job})] 목소리가 가상 고객에게 적용되었습니다!`, 'success');
   };
 
-  // Live Paralegal Checklist state during call
+  // Live Paralegal Checklist state during call (아웃바운드 7대 문진)
   const [liveChecklist, setLiveChecklist] = useState({
     job: false,
     salary: false,
@@ -302,6 +321,17 @@ export default function TrainingCenterPage() {
     debt: false,
     overdue: false,
     history: false,
+  });
+
+  // 광고신청 인바운드 리드 전용 7대 문진 체크리스트
+  const [inboundLiveChecklist, setInboundLiveChecklist] = useState<InboundParalegalChecklist>({
+    leadConfirmation: false,
+    expectationAnchoring: false,
+    debtAndOverdue: false,
+    incomeAndJob: false,
+    assetsAndDeposit: false,
+    privacyAssurance: false,
+    paralegalClosing: false,
   });
 
   // 캐릭터 기본 피치에 연령대 프리셋을 합성하는 헬퍼
@@ -553,6 +583,15 @@ export default function TrainingCenterPage() {
       debt: false,
       overdue: false,
       history: false,
+    });
+    setInboundLiveChecklist({
+      leadConfirmation: false,
+      expectationAnchoring: false,
+      debtAndOverdue: false,
+      incomeAndJob: false,
+      assetsAndDeposit: false,
+      privacyAssurance: false,
+      paralegalClosing: false,
     });
 
     try {
@@ -1075,6 +1114,56 @@ export default function TrainingCenterPage() {
     showToast(`🎯 취약점 모듈 [${newPersona.badge}] 고객 생성 완료!`, 'info');
   };
 
+  // Inbound Category Persona Picker (광고신청 인바운드 리드 전용)
+  const handleSelectInboundCategory = (catId: InboundCategoryId) => {
+    if (callState === 'connected') {
+      if (!confirm('통화 진행 중입니다. 다른 광고신청 고객으로 변경하시겠습니까?')) return;
+      handleEndCall();
+    }
+    setSelectedInboundCategory(catId);
+    const newPersona = generateInboundLeadPersona(catId);
+    setSelectedPersona(newPersona);
+    if (newPersona.age >= 65) setAgeTone('elder');
+    else if (newPersona.age >= 50) setAgeTone('senior');
+    else if (newPersona.age >= 40) setAgeTone('middle');
+    else setAgeTone('young');
+    setMessages([]);
+    setShowCheatSheet(false);
+    setShowGroundTruth(false);
+    setInboundLiveChecklist({
+      leadConfirmation: false,
+      expectationAnchoring: false,
+      debtAndOverdue: false,
+      incomeAndJob: false,
+      assetsAndDeposit: false,
+      privacyAssurance: false,
+      paralegalClosing: false,
+    });
+    showToast(`📋 광고신청 리드 [${newPersona.badge}] 고객 로딩 완료!`, 'info');
+  };
+
+  // Toggle Training Mode (Cold Call vs Inbound Lead)
+  const handleToggleTrainingMode = (newMode: TrainingMode) => {
+    if (callState === 'connected') {
+      if (!confirm('통화 진행 중입니다. 영업 모드를 전환하시겠습니까?')) return;
+      handleEndCall();
+    }
+    setTrainingMode(newMode);
+    localStorage.setItem('lm_training_mode', newMode);
+    if (newMode === 'inbound_lead') {
+      const p = generateInboundLeadPersona(selectedInboundCategory);
+      setSelectedPersona(p);
+      showToast('📋 [광고신청 인바운드 리드 모드]로 전환되었습니다. 고객 상담신청서를 확인하세요.', 'info');
+    } else {
+      const p = generateCustomPersonaByCategory('cat_phishing');
+      setSelectedPersona(p);
+      showToast('📞 [일반 아웃바운드(콜드콜) 모드]로 전환되었습니다.', 'info');
+    }
+    setMessages([]);
+    setCallState('idle');
+    setCallDuration(0);
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-5 pb-12 pt-2">
       {/* Top Banner */}
@@ -1137,6 +1226,66 @@ export default function TrainingCenterPage() {
               <RotateCcw className="w-4 h-4" />
             </button>
           )}
+        </div>
+      </div>
+
+      {/* 🚀 영업 환경 모드 전환 스위치 (아웃바운드 콜드콜 vs 광고신청 인바운드 리드) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs ${
+            trainingMode === 'inbound_lead'
+              ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
+              : 'bg-blue-600 text-white'
+          }`}>
+            {trainingMode === 'inbound_lead' ? '광고' : '발신'}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                훈련 영업 모드:
+              </h3>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-colors ${
+                trainingMode === 'inbound_lead'
+                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-300/60'
+                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-300/60'
+              }`}>
+                {trainingMode === 'inbound_lead' ? '📋 광고신청 리드 모드 (Warm Lead)' : '📞 일반 아웃바운드 (Cold Call)'}
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+              {trainingMode === 'inbound_lead'
+                ? '인터넷·SNS 광고를 보고 자가진단/상담신청을 남긴 고객에게 신청서를 먼저 확인하고 발신하는 실전 훈련'
+                : '불특정 잠재 고객에게 첫인사와 출처 소명으로 거절을 돌파하는 전통 아웃바운드 훈련'}
+            </p>
+          </div>
+        </div>
+
+        {/* 세그먼트 전환 스위치 */}
+        <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/80 shrink-0 self-stretch sm:self-auto">
+          <button
+            onClick={() => handleToggleTrainingMode('cold_call')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              trainingMode === 'cold_call'
+                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            <PhoneCall className="w-3.5 h-3.5" />
+            <span>📞 일반 콜드콜</span>
+          </button>
+
+          <button
+            onClick={() => handleToggleTrainingMode('inbound_lead')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              trainingMode === 'inbound_lead'
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
+                : 'text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-300'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+            <span>📋 광고신청 리드</span>
+            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/20 text-white font-extrabold">인바운드</span>
+          </button>
         </div>
       </div>
 
@@ -1543,45 +1692,90 @@ export default function TrainingCenterPage() {
           {/* Left Column (4 Cols): Scenario Pickers */}
           <div className="lg:col-span-4 space-y-3">
             {activeTab === 'clinic' && (
-              /* 🎯 6대 취약점 집중 클리닉 모듈 뷰 */
+              /* 🎯 취약 유형별 타깃 훈련 (아웃바운드 6대 vs 인바운드 광고신청 6대 분기) */
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                    <Target className="w-4 h-4 text-purple-600" />
-                    취약 유형별 타깃 훈련 (6개 모듈)
+                    {trainingMode === 'inbound_lead' ? (
+                      <>
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        <span>광고신청 인바운드리드 6대 유형</span>
+                      </>
+                    ) : (
+                      <>
+                        <Target className="w-4 h-4 text-purple-600" />
+                        <span>콜드콜 취약 유형 타깃 훈련 (6개 모듈)</span>
+                      </>
+                    )}
                   </h2>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    trainingMode === 'inbound_lead'
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  }`}>
+                    {trainingMode === 'inbound_lead' ? '광고 DB 신청건' : '콜드콜 발신건'}
+                  </span>
                 </div>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                  신입 상담원이 가장 버벅대는 6대 상황을 골라 즉각 실전 연습을 진행합니다.
+                  {trainingMode === 'inbound_lead'
+                    ? '인터넷·SNS 광고를 보고 자가진단 신청서를 제출한 고객의 6대 핵심 심리 유형입니다.'
+                    : '신입 상담원이 가장 버벅대는 6대 콜드콜 상황을 골라 즉각 실전 연습을 진행합니다.'}
                 </p>
 
                 <div className="space-y-2">
-                  {WEAKNESS_CATEGORIES.map(cat => {
-                    const isSelected = selectedPersona.category === cat.id;
-                    return (
-                      <div
-                        key={cat.id}
-                        onClick={() => handleSelectCategory(cat.id)}
-                        className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
-                          isSelected
-                            ? 'bg-purple-50/80 dark:bg-purple-950/40 border-purple-400 dark:border-purple-600 shadow-sm ring-1 ring-purple-400'
-                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-purple-300'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                            {cat.badge} {cat.title}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-600 dark:text-gray-300 font-medium mb-1">
-                          {cat.subtitle}
-                        </p>
-                        <p className="text-[10px] text-gray-400 leading-snug line-clamp-2">
-                          🎯 <strong>목표:</strong> {cat.coreGoal}
-                        </p>
-                      </div>
-                    );
-                  })}
+                  {trainingMode === 'inbound_lead'
+                    ? INBOUND_CATEGORIES.map(cat => {
+                        const isSelected = selectedPersona.category === (cat.id as any);
+                        return (
+                          <div
+                            key={cat.id}
+                            onClick={() => handleSelectInboundCategory(cat.id)}
+                            className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                              isSelected
+                                ? 'bg-purple-50/90 dark:bg-purple-950/50 border-purple-400 dark:border-purple-600 shadow-xs ring-1 ring-purple-400'
+                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-purple-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                {cat.badge} {cat.title}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-purple-900 dark:text-purple-200 font-semibold mb-1">
+                              {cat.subtitle}
+                            </p>
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
+                              🎯 <strong>골든룰:</strong> {cat.coreGoal}
+                            </p>
+                          </div>
+                        );
+                      })
+                    : WEAKNESS_CATEGORIES.map(cat => {
+                        const isSelected = selectedPersona.category === cat.id;
+                        return (
+                          <div
+                            key={cat.id}
+                            onClick={() => handleSelectCategory(cat.id)}
+                            className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                              isSelected
+                                ? 'bg-purple-50/80 dark:bg-purple-950/40 border-purple-400 dark:border-purple-600 shadow-sm ring-1 ring-purple-400'
+                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-purple-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                {cat.badge} {cat.title}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-600 dark:text-gray-300 font-medium mb-1">
+                              {cat.subtitle}
+                            </p>
+                            <p className="text-[10px] text-gray-400 leading-snug line-clamp-2">
+                              🎯 <strong>목표:</strong> {cat.coreGoal}
+                            </p>
+                          </div>
+                        );
+                      })}
                 </div>
               </div>
             )}
@@ -2076,6 +2270,65 @@ export default function TrainingCenterPage() {
 
           {/* Right Column (8 Cols): Mock Call Studio + Paralegal Live Handoff Panel */}
           <div className="lg:col-span-8 space-y-4">
+            {/* 📋 고객 온라인 상담신청서 프리뷰 카드 (광고신청 인바운드 리드 모드 전용) */}
+            {trainingMode === 'inbound_lead' && selectedPersona.leadContext && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/70 to-pink-50/50 dark:from-purple-950/40 dark:via-indigo-950/40 dark:to-pink-950/30 border border-purple-200/90 dark:border-purple-800/60 shadow-xs space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-200/60 dark:border-purple-800/40 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[11px] font-black flex items-center gap-1.5 shadow-2xs">
+                      <FileText className="w-3.5 h-3.5" />
+                      온라인 광고 상담신청서 접수건
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold border ${selectedPersona.leadContext.channelBadgeColor}`}>
+                      {selectedPersona.leadContext.channelLabel}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    접수 시각: {selectedPersona.leadContext.appliedAt}
+                  </span>
+                </div>
+
+                {/* 신청서 팩트 4-Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">유입 캠페인</span>
+                    <span className="font-bold text-gray-900 dark:text-gray-100 text-[11px] truncate block" title={selectedPersona.leadContext.campaignName}>
+                      {selectedPersona.leadContext.campaignName}
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">고객 입력 채무</span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400 text-[11px] block">
+                      {selectedPersona.leadContext.declaredDebt}
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">연체 상태</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 text-[11px] block">
+                      {selectedPersona.leadContext.delinquencyStatus}
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">직업 및 소득</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400 text-[11px] block">
+                      {selectedPersona.leadContext.incomeAndJob}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 고객 남김말 / 고민 메모 */}
+                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-gray-900/90 border border-purple-200/70 dark:border-purple-800/50 text-xs">
+                  <span className="text-[10px] font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1 mb-1">
+                    💬 고객 작성 남김말
+                  </span>
+                  <p className="text-gray-800 dark:text-gray-200 text-xs font-medium italic">
+                    "{selectedPersona.leadContext.inquiryNote}"
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Active Call Header Controller */}
             <div className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -2111,7 +2364,7 @@ export default function TrainingCenterPage() {
                         <Sparkles className="w-3.5 h-3.5 animate-spin" /> AI 사무장 인계 문진 채점 및 리포트 작성 중...
                       </span>
                     ) : (
-                      <span>통화 대기 상태 (아웃바운드 발신 시작 버튼을 누르세요)</span>
+                      <span>통화 대기 상태 ({trainingMode === 'inbound_lead' ? '고객 신청서를 확인하신 후 발신 시작 버튼을 누르세요' : '아웃바운드 발신 시작 버튼을 누르세요'})</span>
                     )}
                   </p>
                 </div>
@@ -2125,7 +2378,7 @@ export default function TrainingCenterPage() {
                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.02]"
                   >
                     <PhoneCall className="w-4 h-4" />
-                    📞 아웃바운드 발신 시작
+                    {trainingMode === 'inbound_lead' ? '📞 신청 고객 발신 시작' : '📞 아웃바운드 발신 시작'}
                   </button>
                 ) : callState === 'calling' ? (
                   <button
@@ -2154,7 +2407,7 @@ export default function TrainingCenterPage() {
                 <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs">
                   <span className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                     <PhoneCall className="w-3.5 h-3.5 text-blue-500" />
-                    실시간 아웃바운드 통화 대화록
+                    {trainingMode === 'inbound_lead' ? '실시간 상담신청 고객 통화 대화록' : '실시간 아웃바운드 통화 대화록'}
                   </span>
                   <div className="flex items-center gap-2">
                     {callState === 'connected' ? (
@@ -2170,16 +2423,18 @@ export default function TrainingCenterPage() {
                   </div>
                 </div>
 
-                {/* 📢 아웃바운드 상담원 첫 인사 가이드 배너 */}
+                {/* 📢 아웃바운드 / 인바운드 상담신청 첫 인사 가이드 배너 */}
                 {callState === 'connected' && (
                   <div className="px-3.5 py-2.5 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 border-b border-blue-200/80 dark:border-blue-800/60 flex flex-col gap-1.5 text-xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-black shrink-0">
-                          첫마디 미션
+                          {trainingMode === 'inbound_lead' ? '신청건 첫마디' : '첫마디 미션'}
                         </span>
                         <span className="text-[10px] font-bold text-blue-900 dark:text-blue-200">
-                          [{trainingConfig.companyName}] 표준 오프닝 가이드
+                          {trainingMode === 'inbound_lead'
+                            ? `[${selectedPersona.leadContext?.channelLabel || '온라인광고'} 신청건] 신속 회신 오프닝`
+                            : `[${trainingConfig.companyName}] 표준 오프닝 가이드`}
                         </span>
                       </div>
                       {(isOwner || trainingPerms.canManageConfig) && (
@@ -2192,7 +2447,11 @@ export default function TrainingCenterPage() {
                       )}
                     </div>
                     <p className="text-[11px] text-blue-950 dark:text-blue-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
-                      💬 "{interpolateOpeningScript(trainingConfig.standardOpening, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName)}"
+                      {trainingMode === 'inbound_lead' ? (
+                        <>💬 "안녕하세요, {selectedPersona.customerName} 고객님 맞으실까요? 방금 {selectedPersona.leadContext?.channelLabel || '온라인'}에서 신청 남겨주신 [개인회생 무료 자격진단] 건으로 신속히 도움드리고자 연락드렸습니다."</>
+                      ) : (
+                        <>💬 "{interpolateOpeningScript(trainingConfig.standardOpening, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName)}"</>
+                      )}
                     </p>
                   </div>
                 )}
@@ -2478,10 +2737,12 @@ export default function TrainingCenterPage() {
               <div className="md:col-span-5 flex flex-col h-[520px] rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs overflow-hidden">
                 <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-400">
-                    <ShieldCheck className="w-4 h-4" /> 사무장 인계 7대 문진
+                    <ShieldCheck className="w-4 h-4" /> {trainingMode === 'inbound_lead' ? '광고신청건 7대 심층 문진' : '사무장 인계 7대 문진'}
                   </span>
                   <span className="text-[10px] text-gray-400">
-                    획득: {Object.values(liveChecklist).filter(Boolean).length}/7
+                    획득: {trainingMode === 'inbound_lead'
+                      ? `${Object.values(inboundLiveChecklist).filter(Boolean).length}/7`
+                      : `${Object.values(liveChecklist).filter(Boolean).length}/7`}
                   </span>
                 </div>
 
@@ -2489,34 +2750,54 @@ export default function TrainingCenterPage() {
                   {/* Live 7 Checkpoints Checklist */}
                   <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
                     <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-300 block mb-1">
-                      통화 중 문진 완료 시 체크하세요:
+                      {trainingMode === 'inbound_lead'
+                        ? '온라인 신청내역 검증 및 문진 완료 시 체크:'
+                        : '통화 중 문진 완료 시 체크하세요:'}
                     </span>
-                    {[
-                      { key: 'job', label: '1. 직업 및 재직형태 (4대보험/사업 등)' },
-                      { key: 'salary', label: '2. 월 평균 실소득 (실수령액)' },
-                      { key: 'dependents', label: '3. 부양가족 수 (동거 가족)' },
-                      { key: 'housing', label: '4. 주거 형태 및 보증금' },
-                      { key: 'debt', label: '5. 총 채무액 및 채무 원인' },
-                      { key: 'overdue', label: '6. 현재 연체 여부 및 기간' },
-                      { key: 'history', label: '7. 과거 회생/파산/신복위 이력' },
-                    ].map(item => {
-                      const checked = (liveChecklist as any)[item.key];
+                    {(trainingMode === 'inbound_lead'
+                      ? INBOUND_PARALEGAL_QUESTIONS.map(q => ({ key: q.key, label: q.label, desc: q.desc }))
+                      : [
+                          { key: 'job', label: '1. 직업 및 재직형태 (4대보험/사업 등)', desc: '' },
+                          { key: 'salary', label: '2. 월 평균 실소득 (실수령액)', desc: '' },
+                          { key: 'dependents', label: '3. 부양가족 수 (동거 가족)', desc: '' },
+                          { key: 'housing', label: '4. 주거 형태 및 보증금', desc: '' },
+                          { key: 'debt', label: '5. 총 채무액 및 채무 원인', desc: '' },
+                          { key: 'overdue', label: '6. 현재 연체 여부 및 기간', desc: '' },
+                          { key: 'history', label: '7. 과거 회생/파산/신복위 이력', desc: '' },
+                        ]
+                    ).map(item => {
+                      const checked = trainingMode === 'inbound_lead'
+                        ? (inboundLiveChecklist as any)[item.key]
+                        : (liveChecklist as any)[item.key];
                       return (
                         <div
                           key={item.key}
-                          onClick={() => setLiveChecklist(prev => ({ ...prev, [item.key]: !checked }))}
-                          className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors text-[11px] ${
+                          onClick={() => {
+                            if (trainingMode === 'inbound_lead') {
+                              setInboundLiveChecklist(prev => ({ ...prev, [item.key]: !checked }));
+                            } else {
+                              setLiveChecklist(prev => ({ ...prev, [item.key]: !checked }));
+                            }
+                          }}
+                          className={`flex items-start gap-2 p-1.5 rounded-lg cursor-pointer transition-colors text-[11px] ${
                             checked
                               ? 'bg-emerald-100/70 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold'
                               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                           }`}
                         >
                           {checked ? (
-                            <CheckSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <CheckSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                           ) : (
-                            <Square className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                            <Square className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
                           )}
-                          <span>{item.label}</span>
+                          <div className="flex-1">
+                            <div>{item.label}</div>
+                            {item.desc && (
+                              <div className="text-[9.5px] font-normal text-gray-400 dark:text-gray-400 mt-0.5">
+                                {item.desc}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
