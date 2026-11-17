@@ -168,17 +168,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isPlatformAdmin && (
               <Link
                 to="/platform"
-                className={`p-2 rounded-xl flex items-center justify-between transition-all text-xs ${
+                className={`p-2.5 rounded-xl flex items-center justify-between transition-all text-xs font-semibold ${
                   path === '/platform'
-                    ? 'bg-purple-600 text-white font-bold shadow-xs'
-                    : 'bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-500/30 text-purple-300 hover:text-white hover:border-purple-400/60'
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs border border-purple-500 font-bold'
+                    : 'bg-gradient-to-r from-purple-50 to-indigo-50/80 hover:from-purple-100/90 hover:to-indigo-100/90 border border-purple-200/90 text-purple-900 shadow-2xs dark:from-purple-950/40 dark:to-indigo-950/40 dark:border-purple-500/30 dark:text-purple-200 dark:hover:text-white dark:hover:border-purple-400/60'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <Crown size={14} className="text-amber-400 shrink-0" />
-                  <span className="font-semibold">플랫폼 총괄 어드민</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Crown 
+                    size={14} 
+                    className={`shrink-0 ${
+                      path === '/platform' 
+                        ? 'text-amber-300' 
+                        : 'text-amber-500 dark:text-amber-400'
+                    }`} 
+                  />
+                  <span className="truncate">플랫폼 총괄 어드민</span>
                 </div>
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-200 border border-purple-500/30 font-bold shrink-0">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 transition-colors ${
+                  path === '/platform'
+                    ? 'bg-white/20 text-white border border-white/30'
+                    : 'bg-purple-100 text-purple-700 border border-purple-300/80 dark:bg-purple-500/25 dark:text-purple-200 dark:border-purple-500/40'
+                }`}>
                   HOST
                 </span>
               </Link>
