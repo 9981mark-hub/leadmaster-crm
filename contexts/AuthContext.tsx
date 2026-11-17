@@ -23,10 +23,12 @@ export const isHostEmail = (email?: string | null): boolean => {
   return PLATFORM_HOST_EMAILS.includes(email.trim().toLowerCase());
 };
 
-interface UserProfile {
+export interface UserProfile {
   email: string;
   name: string;
   picture?: string;
+  googlePicture?: string;
+  customPicture?: string;
 }
 
 export interface AuthNotice {
@@ -55,6 +57,7 @@ interface AuthContextType {
   verifyEmailOtp: (email: string, code: string) => Promise<void>;
 
   logout: () => void;
+  updateProfilePicture: (newPictureUrl: string | null) => Promise<void>;
   addAllowedEmail: (email: string) => void;
   removeAllowedEmail: (email: string) => void;
 }
@@ -83,7 +86,30 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
   const [user, setUser] = useState<UserProfile | null>(() => {
     const storedUser = localStorage.getItem('userProfile');
-    return storedUser ? JSON.parse(storedUser) : null;
+    if (!storedUser) return null;
+    try {
+      const parsed: UserProfile = JSON.parse(storedUser);
+      const cleanEmail = parsed.email?.trim().toLowerCase();
+      const customPic = cleanEmail ? localStorage.getItem(`leadmaster_custom_avatar_${cleanEmail}`) : null;
+      if (customPic === 'NONE') {
+        if (!parsed.googlePicture && parsed.picture) {
+          parsed.googlePicture = parsed.picture;
+        }
+        parsed.customPicture = 'NONE';
+        parsed.picture = undefined;
+      } else if (customPic) {
+        if (!parsed.googlePicture && parsed.picture && parsed.picture !== customPic) {
+          parsed.googlePicture = parsed.picture;
+        }
+        parsed.customPicture = customPic;
+        parsed.picture = customPic;
+      } else if (parsed.picture && !parsed.googlePicture) {
+        parsed.googlePicture = parsed.picture;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
   });
 
   // 동적 이메일 리스트 관리 (API 연동)
@@ -159,7 +185,21 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       // 1. Google ID Token 디코딩
       const decoded: any = jwtDecode(credential);
       const { email, name, picture } = decoded;
-      const userProfile = { email, name, picture };
+      const cleanEmail = email?.trim().toLowerCase();
+      const customPic = cleanEmail ? localStorage.getItem(`leadmaster_custom_avatar_${cleanEmail}`) : null;
+      let finalPicture: string | undefined = picture;
+      if (customPic === 'NONE') {
+        finalPicture = undefined;
+      } else if (customPic) {
+        finalPicture = customPic;
+      }
+      const userProfile: UserProfile = {
+        email,
+        name,
+        googlePicture: picture,
+        customPicture: customPic || undefined,
+        picture: finalPicture,
+      };
 
       // 2. Supabase 로그인 (회사 소속 확인을 위해 먼저 로그인한다. 데이터 권한은 DB(RLS)가 막는다)
       if (supabase) {
@@ -284,7 +324,22 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     const authUser = data.session.user;
     const userEmail = authUser.email || cleanEmail;
     const name = authUser.user_metadata?.full_name || userEmail.split('@')[0];
-    const userProfile = { email: userEmail, name, picture: authUser.user_metadata?.avatar_url };
+    const googlePic = authUser.user_metadata?.avatar_url;
+    const cleanMail = userEmail.trim().toLowerCase();
+    const customPic = cleanMail ? localStorage.getItem(`leadmaster_custom_avatar_${cleanMail}`) : null;
+    let finalPicture: string | undefined = googlePic;
+    if (customPic === 'NONE') {
+      finalPicture = undefined;
+    } else if (customPic) {
+      finalPicture = customPic;
+    }
+    const userProfile: UserProfile = {
+      email: userEmail,
+      name,
+      googlePicture: googlePic,
+      customPicture: customPic || undefined,
+      picture: finalPicture,
+    };
 
     // 소속 회사 확인 (초대가 있으면 자동 수락)
     let orgInfo: OrgInfo | null = null;
@@ -438,6 +493,47 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     navigate('/login');
   }, [navigate, setOrg]);
 
+  /** 사용자 대표 프로필 사진 커스텀 변경 / 복원 */
+  const updateProfilePicture = useCallback(async (newPictureUrl: string | null) => {
+    if (!user) return;
+    const cleanEmail = user.email.trim().toLowerCase();
+    const emailKey = `leadmaster_custom_avatar_${cleanEmail}`;
+    let updatedPicture: string | undefined;
+
+    if (newPictureUrl === 'NONE') {
+      localStorage.setItem(emailKey, 'NONE');
+      updatedPicture = undefined;
+    } else if (newPictureUrl) {
+      localStorage.setItem(emailKey, newPictureUrl);
+      updatedPicture = newPictureUrl;
+    } else {
+      localStorage.removeItem(emailKey);
+      updatedPicture = user.googlePicture || undefined;
+    }
+
+    const updatedUser: UserProfile = {
+      ...user,
+      customPicture: newPictureUrl || undefined,
+      picture: updatedPicture,
+    };
+
+    localStorage.setItem('userProfile', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+
+    if (supabase) {
+      try {
+        await supabase.auth.updateUser({
+          data: {
+            avatar_url: updatedPicture || null,
+            custom_avatar: newPictureUrl || null,
+          }
+        });
+      } catch (err) {
+        console.warn('[Auth] Supabase avatar sync failed (local updated):', err);
+      }
+    }
+  }, [user]);
+
   // [Security Feature 5] 관리자에 의한 원클릭 세션 즉시 강제 파기 (Instant Session Revoke) 실시간 수신
   useEffect(() => {
     if (!org || !supabase || !isAuthenticated) return;
@@ -479,8 +575,8 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   const value = useMemo(() => ({
     isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails,
     authNotice, closeAuthNotice, openAuthNotice,
-    loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail,
-  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, authNotice, closeAuthNotice, openAuthNotice, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, addAllowedEmail, removeAllowedEmail]);
+    loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, addAllowedEmail, removeAllowedEmail,
+  }), [isAuthenticated, user, org, isAdmin, isPlatformAdmin, allowedEmails, authNotice, closeAuthNotice, openAuthNotice, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout, updateProfilePicture, addAllowedEmail, removeAllowedEmail]);
 
   return (
     <AuthContext.Provider value={value}>

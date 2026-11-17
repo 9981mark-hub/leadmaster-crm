@@ -27,7 +27,9 @@ import {
     Sparkles,
     Smartphone,
     MousePointer,
-    AlertCircle
+    AlertCircle,
+    Camera,
+    RotateCcw
 } from 'lucide-react';
 import { AttendanceHeaderWidget } from '../components/hr/AttendanceHeaderWidget';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,6 +37,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { saveGlobalSettings } from '../services/api';
 import { PageShell, Card, Button } from '../components/ui';
+import { AvatarSettingModal } from '../components/mypage/AvatarSettingModal';
 import {
     loadUserPreferences,
     saveUserPreferences,
@@ -61,8 +64,29 @@ export default function MyPage() {
         isPlatformAdmin,
         allowedEmails,
         addAllowedEmail,
-        removeAllowedEmail
+        removeAllowedEmail,
+        updateProfilePicture
     } = useAuth();
+
+    // -------------------------------------------------------------
+    // 대표 프로필 사진 설정 모달 상태
+    // -------------------------------------------------------------
+    const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
+    const handleSaveAvatar = async (newPictureUrl: string | null) => {
+        try {
+            await updateProfilePicture(newPictureUrl);
+            if (newPictureUrl === 'NONE') {
+                showToast('대표 이미지가 삭제되고 기본 이니셜 아바타로 변경되었습니다.', 'info');
+            } else if (newPictureUrl === null) {
+                showToast('Google 계정 원래 프로필 사진으로 복원되었습니다.', 'success');
+            } else {
+                showToast('대표 프로필 이미지가 성공적으로 변경되었습니다.', 'success');
+            }
+        } catch (err: any) {
+            showToast('프로필 이미지 저장에 실패했습니다.', 'error');
+        }
+    };
 
     // -------------------------------------------------------------
     // 직급 및 권한 체계 판별
@@ -307,17 +331,66 @@ export default function MyPage() {
                     {/* 1. 프로필 카드 */}
                     <Card>
                         <div className="flex flex-col items-center text-center pb-5 border-b border-gray-150 dark:border-gray-700/80 mb-5">
-                            {user?.picture ? (
-                                <img
-                                    src={user.picture}
-                                    alt="Profile"
-                                    className="w-20 h-20 rounded-2xl border-2 border-white dark:border-gray-700 shadow-md mb-3 object-cover"
-                                />
-                            ) : (
-                                <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md mb-3">
-                                    {user?.name?.charAt(0) || 'U'}
+                            {/* 대표 프로필 이미지 (클릭 시 사진 변경 모달) */}
+                            <div
+                                className="relative group mb-2.5 cursor-pointer"
+                                onClick={() => setIsAvatarModalOpen(true)}
+                                title="클릭하여 대표 프로필 사진 설정"
+                            >
+                                {user?.picture ? (
+                                    <img
+                                        src={user.picture}
+                                        alt="Profile"
+                                        className="w-20 h-20 rounded-2xl border-2 border-white dark:border-gray-700 shadow-md object-cover transition-all group-hover:brightness-90 group-hover:scale-[1.02]"
+                                    />
+                                ) : (
+                                    <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md transition-all group-hover:brightness-90 group-hover:scale-[1.02]">
+                                        {user?.name?.charAt(0) || 'U'}
+                                    </div>
+                                )}
+
+                                {/* 호버 시 사진 변경 오버레이 */}
+                                <div className="absolute inset-0 rounded-2xl bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[11px] font-bold gap-0.5">
+                                    <Camera size={18} className="drop-shadow" />
+                                    <span>사진 변경</span>
                                 </div>
-                            )}
+
+                                {/* 우측 하단 카메라 배지 버튼 */}
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsAvatarModalOpen(true);
+                                    }}
+                                    className="absolute -bottom-1 -right-1 p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md border-2 border-white dark:border-gray-800 transition-transform active:scale-90"
+                                    title="대표 프로필 사진 설정"
+                                >
+                                    <Camera size={13} />
+                                </button>
+                            </div>
+
+                            {/* 프로필 이미지 빠른 설정 버튼 */}
+                            <div className="flex items-center gap-1.5 mb-2.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAvatarModalOpen(true)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 transition-colors shadow-2xs"
+                                >
+                                    <Camera size={12} /> 대표 사진 설정
+                                </button>
+                                {user?.customPicture && (
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            await handleSaveAvatar(null);
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+                                        title="구글 계정 원래 사진으로 복원"
+                                    >
+                                        <RotateCcw size={11} /> 구글 복원
+                                    </button>
+                                )}
+                            </div>
 
                             <h3 className="text-lg font-black text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                                 {managerName || user?.name}
@@ -1020,6 +1093,16 @@ export default function MyPage() {
                     )}
                 </div>
             </div>
+
+            {/* 대표 프로필 사진 설정 모달 */}
+            <AvatarSettingModal
+                isOpen={isAvatarModalOpen}
+                onClose={() => setIsAvatarModalOpen(false)}
+                currentPicture={user?.picture}
+                googlePicture={user?.googlePicture}
+                userName={managerName || user?.name || '사용자'}
+                onSavePicture={handleSaveAvatar}
+            />
         </PageShell>
     );
 }
