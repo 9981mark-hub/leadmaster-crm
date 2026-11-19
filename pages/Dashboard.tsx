@@ -205,10 +205,12 @@ export default function Dashboard() {
               </span>
             )}
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {org?.name ? `${org.name} · ` : ''}
-            {isOwner ? '경영 관제 및 현장 배정을 유연하게 지휘합니다.' : isManager ? '실시간 플로어 모니터링 및 리드 관제' : '개인 상담 리마인더 및 인센티브 달성'}
-          </p>
+          {(!isOwner || isManager) && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {org?.name ? `${org.name} · ` : ''}
+              {isManager ? '실시간 플로어 모니터링 및 리드 관제' : '개인 상담 리마인더 및 인센티브 달성'}
+            </p>
+          )}
         </div>
 
         {/* 동기화 실패 시 재시도 버튼 */}

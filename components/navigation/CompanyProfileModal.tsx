@@ -187,9 +187,6 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                   <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate leading-tight">
                     {orgNameInput.trim() || '회사명을 입력하세요'}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
-                    멀티테넌트 워크스페이스
-                  </p>
                 </div>
               </div>
               <span className="shrink-0 rounded-full px-2 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">

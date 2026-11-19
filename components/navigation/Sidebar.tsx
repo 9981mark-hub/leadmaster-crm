@@ -206,9 +206,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-600 dark:text-indigo-400 transition-colors" title={orgName}>
                     {orgName}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight">
-                    멀티테넌트 워크스페이스
-                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">

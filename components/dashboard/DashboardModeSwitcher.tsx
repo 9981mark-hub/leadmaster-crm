@@ -57,9 +57,6 @@ export const DashboardModeSwitcher: React.FC<DashboardModeSwitcherProps> = ({
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
             TM 대표 스마트 뷰 전환
           </span>
-          <span className="text-xs text-slate-500 dark:text-gray-400 hidden sm:inline">
-            (업무 스타일에 맞춰 경영 지표와 현장 팀장 모드를 자유롭게 전환합니다)
-          </span>
         </div>
         <span className="text-xs text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
           선택한 모드가 자동 기억됩니다

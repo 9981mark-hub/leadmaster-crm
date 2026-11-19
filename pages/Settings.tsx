@@ -740,9 +740,6 @@ export default function SettingsPage() {
                             <h2 className="text-base font-black text-gray-900 dark:text-gray-100 truncate">
                                 {orgName}
                             </h2>
-                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                                멀티테넌트 워크스페이스
-                            </span>
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                             사이드바, 글로벌 헤더, 통화 스크립트에 공통 적용되는 우리 회사 공식 상호 및 대표 로고입니다.
