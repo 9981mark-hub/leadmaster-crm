@@ -78,7 +78,10 @@ const SettlementLockedView: React.FC<{ title: string; desc: string }> = ({ title
 
 export default function Settlement() {
     const { showToast } = useToast();
-    const { org } = useAuth();
+    const { org, isPlatformAdmin } = useAuth();
+    // [HOST 격리] 플랫폼 최고관리자 전용 세무 도구 열람 토글 (일반 TM 고객사 대표/관리자는 영구 비노출)
+    const [showHostTaxTools, setShowHostTaxTools] = useState(false);
+    const canViewTaxTools = Boolean(isPlatformAdmin && showHostTaxTools);
     const [cases, setCases] = useState<Case[]>([]);
     const [partners, setPartners] = useState<Partner[]>([]);
     const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
@@ -1987,8 +1990,8 @@ export default function Settlement() {
                 );
             })()}
 
-            {/* [NEW] Toss Ads Weekly Summary */}
-            {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
+            {/* [HOST 격리] Toss Ads Weekly Summary */}
+            {canViewTaxTools && tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-blue-100 dark:border-gray-700 overflow-hidden mb-6">
                     <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50">
                         <h3 className="font-bold text-blue-800 flex items-center gap-2">
@@ -2249,26 +2252,6 @@ export default function Settlement() {
                 </div>
             )}
 
-            {/* 🚨 세무 리스크 대시보드 */}
-            <div id="section-tax-risk">
-                <TaxRiskDashboardSection cases={partnerCases} batches={batches} partners={partners} />
-            </div>
-
-            {/* 🗓️ 세무 캘린더 2026 */}
-            <div id="section-tax-calendar">
-                <TaxCalendarSection onActionClick={(section) => {
-                    const el = document.getElementById(`section-${section.toLowerCase()}`);
-                    if (el) {
-                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }} />
-            </div>
-
-            {/* 💸 원천세·외주비 관리표 */}
-            <div id="section-withholding">
-                <WithholdingTaxSection year={year} />
-            </div>
-
             {/* Settlement History Calendar */}
             <SettlementCalendar batches={batches} cases={partnerCases} partners={partners} />
 
@@ -2277,29 +2260,54 @@ export default function Settlement() {
                 <ProfitLossSection year={year} />
             </div>
 
-            {/* 🧾 부가세 신고 도우미 (개인 일반과세자 반기 기준) */}
-            <div id="section-vat">
-                <VatHelperSection year={year} />
-            </div>
-
-            {/* 🔍 정산 대사 (Reconciliation) */}
-            <div id="section-reconciliation">
-                <ReconciliationSection year={year} batches={batches} />
-            </div>
-
-            {/* 📜 세금계산서 관리 */}
-            <div id="section-tax_invoice">
-                <TaxInvoiceSection year={year} onDataChanged={() => window.location.reload()} />
-            </div>
-
-            {/* 📷 영수증 OCR 스캔 */}
-            <ReceiptOcrSection onExpenseSaved={() => window.location.reload()} />
-
             {/* 💰 예산 관리 */}
             <BudgetManagementSection year={year} month={month} />
 
             {/* 📌 고정비용 관리 */}
             <FixedCostSection year={year} month={month} onExpenseCreated={() => window.location.reload()} />
+
+            {/* [HOST 격리] 세무 리스크, 캘린더, 원천세, 부가세, 은행대사, 세금계산서, OCR */}
+            {canViewTaxTools && (
+                <>
+                    {/* 🚨 세무 리스크 대시보드 */}
+                    <div id="section-tax-risk">
+                        <TaxRiskDashboardSection cases={partnerCases} batches={batches} partners={partners} />
+                    </div>
+
+                    {/* 🗓️ 세무 캘린더 2026 */}
+                    <div id="section-tax-calendar">
+                        <TaxCalendarSection onActionClick={(section) => {
+                            const el = document.getElementById(`section-${section.toLowerCase()}`);
+                            if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }} />
+                    </div>
+
+                    {/* 💸 원천세·외주비 관리표 */}
+                    <div id="section-withholding">
+                        <WithholdingTaxSection year={year} />
+                    </div>
+
+                    {/* 🧾 부가세 신고 도우미 (개인 일반과세자 반기 기준) */}
+                    <div id="section-vat">
+                        <VatHelperSection year={year} />
+                    </div>
+
+                    {/* 🔍 정산 대사 (Reconciliation) */}
+                    <div id="section-reconciliation">
+                        <ReconciliationSection year={year} batches={batches} />
+                    </div>
+
+                    {/* 📜 세금계산서 관리 */}
+                    <div id="section-tax_invoice">
+                        <TaxInvoiceSection year={year} onDataChanged={() => window.location.reload()} />
+                    </div>
+
+                    {/* 📷 영수증 OCR 스캔 */}
+                    <ReceiptOcrSection onExpenseSaved={() => window.location.reload()} />
+                </>
+            )}
         </div>
     );
 
@@ -2446,67 +2454,69 @@ export default function Settlement() {
                     </div>
                 </div>
 
-                {/* Toss Ads Dashboard Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-blue-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h3 className="font-bold text-blue-800 flex items-center gap-2">
-                                <span className="text-xl">📢</span> 토스 애즈 광고비 연동
-                            </h3>
-                            <p className="text-xs text-blue-600 mt-1">토스 애즈 성과보고서(CSV)를 업로드하여 시스템에 쉽게 반영하세요.</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="file"
-                                accept=".csv,.xlsx,.xls"
-                                className="hidden"
-                                ref={tossAdsFileInputRef}
-                                onChange={handleTossAdsFileUpload}
-                            />
-                            <button
-                                onClick={() => tossAdsFileInputRef.current?.click()}
-                                disabled={uploadingTossAds}
-                                className="px-4 py-2 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-800 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-                            >
-                                {uploadingTossAds ? '업로드 중...' : 'CSV 업로드'}
-                            </button>
-                        </div>
-                    </div>
-                    
-                    {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
-                        <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-                            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                                <div>
-                                    <h4 className="font-bold text-gray-800 dark:text-white text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
-                                    <div className="flex gap-4 mt-2">
-                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
-                                            <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
-                                            <p className="font-bold text-blue-600">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
-                                        </div>
-                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
-                                            <p className="text-[10px] text-gray-500">잠재고객</p>
-                                            <p className="font-bold text-indigo-600">{tossAdsWeeklySummary.totalLeads}명</p>
-                                        </div>
-                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden sm:block">
-                                            <p className="text-[10px] text-gray-500">평균 CPL</p>
-                                            <p className="font-bold text-purple-600">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
-                                        </div>
-                                        <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden md:block">
-                                            <p className="text-[10px] text-gray-500">총 노출</p>
-                                            <p className="font-bold text-gray-700">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
-                                        </div>
-                                    </div>
-                                </div>
+                {/* [HOST 격리] Toss Ads Dashboard Section */}
+                {canViewTaxTools && (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-blue-100 dark:border-gray-700 overflow-hidden">
+                        <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h3 className="font-bold text-blue-800 flex items-center gap-2">
+                                    <span className="text-xl">📢</span> 토스 애즈 광고비 연동
+                                </h3>
+                                <p className="text-xs text-blue-600 mt-1">토스 애즈 성과보고서(CSV)를 업로드하여 시스템에 쉽게 반영하세요.</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="file"
+                                    accept=".csv,.xlsx,.xls"
+                                    className="hidden"
+                                    ref={tossAdsFileInputRef}
+                                    onChange={handleTossAdsFileUpload}
+                                />
                                 <button
-                                    onClick={handleRegisterTossAdsExpense}
-                                    className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold shadow hover:bg-blue-700 transition-colors"
+                                    onClick={() => tossAdsFileInputRef.current?.click()}
+                                    disabled={uploadingTossAds}
+                                    className="px-4 py-2 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-800 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                                 >
-                                    주간 광고비 지출 등록
+                                    {uploadingTossAds ? '업로드 중...' : 'CSV 업로드'}
                                 </button>
                             </div>
                         </div>
-                    )}
-                </div>
+                        
+                        {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
+                            <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                                    <div>
+                                        <h4 className="font-bold text-gray-800 dark:text-white text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
+                                        <div className="flex gap-4 mt-2">
+                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
+                                                <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
+                                                <p className="font-bold text-blue-600">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
+                                            </div>
+                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
+                                                <p className="text-[10px] text-gray-500">잠재고객</p>
+                                                <p className="font-bold text-indigo-600">{tossAdsWeeklySummary.totalLeads}명</p>
+                                            </div>
+                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden sm:block">
+                                                <p className="text-[10px] text-gray-500">평균 CPL</p>
+                                                <p className="font-bold text-purple-600">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
+                                            </div>
+                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden md:block">
+                                                <p className="text-[10px] text-gray-500">총 노출</p>
+                                                <p className="font-bold text-gray-700">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleRegisterTossAdsExpense}
+                                        className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold shadow hover:bg-blue-700 transition-colors"
+                                    >
+                                        주간 광고비 지출 등록
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Add Expense Button */}
                 <div className="flex justify-end gap-2">
@@ -2646,8 +2656,11 @@ export default function Settlement() {
                     </div>
                 </div>
 
-                {/* Bank Transaction Upload Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                {/* [HOST 격리] 은행 거래내역 대사 및 개인 세무 계산기군 */}
+                {canViewTaxTools && (
+                    <>
+                        {/* Bank Transaction Upload Section */}
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50 flex justify-between items-center">
                         <div>
                             <h3 className="font-bold text-indigo-700">🏦 은행 거래내역 업로드</h3>
@@ -3229,6 +3242,8 @@ export default function Settlement() {
                         })()}
                     </div>
                 </div>
+            </>
+        )}
 
                 {/* Monthly/Quarterly Income Statement (손익계산서) */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700 overflow-hidden">
@@ -3439,8 +3454,11 @@ export default function Settlement() {
                     </div>
                 </div>
 
-                {/* 더존/세무사랑 형식 엑셀 내보내기 */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
+                {/* [HOST 격리] 세무사 제출용 엑셀 및 세무 관리 도구군 */}
+                {canViewTaxTools && (
+                    <>
+                        {/* 더존/세무사랑 형식 엑셀 내보내기 */}
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-gray-50">
                         <h3 className="font-bold text-slate-700 flex items-center gap-2">
                             📤 세무사 제출용 엑셀 내보내기
@@ -3774,6 +3792,8 @@ export default function Settlement() {
                         </div>
                     </div>
                 </div>
+            </>
+        )}
             </div>
         );
     };
@@ -4204,6 +4224,22 @@ export default function Settlement() {
                         <Settings className="w-3.5 h-3.5" />
                         정산 정책 및 분배 설정
                     </button>
+                    {/* [HOST 격리] 플랫폼 최고관리자 전용 세무 뷰 토글 */}
+                    {isPlatformAdmin && (
+                        <button
+                            type="button"
+                            onClick={() => setShowHostTaxTools(!showHostTaxTools)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm border ${
+                                showHostTaxTools
+                                    ? 'bg-amber-500 text-white border-amber-600 shadow-amber-500/20'
+                                    : 'bg-amber-950/40 text-amber-300 border-amber-700/50 hover:bg-amber-900/40'
+                            }`}
+                            title="TM 대표/실무자에게는 숨겨진 개인용 세무·은행대사·부가세 도구를 열람합니다."
+                        >
+                            <Lock size={12} />
+                            {showHostTaxTools ? '👑 호스트 세무도구 숨김' : '👑 호스트 세무도구 열기'}
+                        </button>
+                    )}
                     {policySource !== 'saved' && (
                         <span
                             className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40"
@@ -4436,7 +4472,7 @@ export default function Settlement() {
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
-                    💳 지출
+                    💳 운영 지출
                     {!isOwner && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
             </div>
