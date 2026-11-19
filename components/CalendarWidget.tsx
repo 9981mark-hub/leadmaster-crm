@@ -487,16 +487,16 @@ export default function CalendarWidget({
 
   const getColorClass = (color: string, type: 'bg' | 'text' | 'border' = 'bg') => {
     const colors: Record<string, Record<string, string>> = {
-      blue: { bg: 'bg-blue-100', text: 'text-blue-600', border: 'border-blue-300' },
-      green: { bg: 'bg-green-100', text: 'text-green-600', border: 'border-green-300' },
-      orange: { bg: 'bg-orange-100', text: 'text-orange-600', border: 'border-orange-300' },
-      red: { bg: 'bg-red-100', text: 'text-red-600', border: 'border-red-300' },
-      purple: { bg: 'bg-purple-100', text: 'text-purple-600', border: 'border-purple-300' },
-      teal: { bg: 'bg-teal-100', text: 'text-teal-600', border: 'border-teal-300' },
-      gray: { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' },
-      cyan: { bg: 'bg-cyan-100', text: 'text-cyan-600', border: 'border-cyan-300' },
-      lime: { bg: 'bg-lime-100', text: 'text-lime-600', border: 'border-lime-300' },
-      emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', border: 'border-emerald-300' },
+      blue: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-800' },
+      green: { bg: 'bg-green-100 dark:bg-green-900/40', text: 'text-green-700 dark:text-green-300', border: 'border-green-300 dark:border-green-800' },
+      orange: { bg: 'bg-orange-100 dark:bg-orange-900/40', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-300 dark:border-orange-800' },
+      red: { bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-300', border: 'border-red-300 dark:border-red-800' },
+      purple: { bg: 'bg-purple-100 dark:bg-purple-900/40', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-300 dark:border-purple-800' },
+      teal: { bg: 'bg-teal-100 dark:bg-teal-900/40', text: 'text-teal-700 dark:text-teal-300', border: 'border-teal-300 dark:border-teal-800' },
+      gray: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-gray-300 dark:border-gray-700' },
+      cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/40', text: 'text-cyan-700 dark:text-cyan-300', border: 'border-cyan-300 dark:border-cyan-800' },
+      lime: { bg: 'bg-lime-100 dark:bg-lime-900/40', text: 'text-lime-700 dark:text-lime-300', border: 'border-lime-300 dark:border-lime-800' },
+      emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-800' },
     };
     return colors[color]?.[type] || colors.gray[type];
   };
@@ -575,11 +575,11 @@ export default function CalendarWidget({
   }, [unifiedEvents]);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-150 dark:border-gray-700">
       {/* Header */}
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-4 border-b border-gray-150 dark:border-gray-700">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-gray-800 flex items-center gap-2">
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <span className="text-xl">
               {viewMode === 'week'
                 ? `${format(startDate, 'M/d', { locale: ko })} ~ ${format(endDate, 'M/d', { locale: ko })}`
@@ -589,38 +589,38 @@ export default function CalendarWidget({
           </h3>
           <div className="flex items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-0.5">
+            <div className="flex bg-gray-100 dark:bg-gray-700/80 rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-2 py-1 text-xs rounded ${viewMode === 'month' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}
+                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'month' ? 'bg-white dark:bg-gray-800 shadow-xs text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
                 title="월간"
               >
                 <Calendar size={14} />
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-2 py-1 text-xs rounded ${viewMode === 'week' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}
+                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'week' ? 'bg-white dark:bg-gray-800 shadow-xs text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
                 title="주간"
               >
                 <Clock size={14} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-2 py-1 text-xs rounded ${viewMode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}
+                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-gray-800 shadow-xs text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
                 title="리스트"
               >
                 <List size={14} />
               </button>
             </div>
 
-            <button onClick={goToday} className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200 text-gray-600">
+            <button onClick={goToday} className="px-3 py-1 text-xs font-semibold bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded transition-colors">
               오늘
             </button>
-            <div className="flex rounded-md border border-gray-200 bg-white">
-              <button onClick={prevMonth} className="p-1 hover:bg-gray-50 text-gray-600 border-r border-gray-200">
+            <div className="flex rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <button onClick={prevMonth} className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 transition-colors">
                 <ChevronLeft size={20} />
               </button>
-              <button onClick={nextMonth} className="p-1 hover:bg-gray-50 text-gray-600">
+              <button onClick={nextMonth} className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors">
                 <ChevronRight size={20} />
               </button>
             </div>
@@ -632,49 +632,54 @@ export default function CalendarWidget({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => toggleFilter('reminder')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.reminder ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
-                }`}
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.reminder 
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 ring-1 ring-blue-400/30' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
             >
               📞 리마인더
             </button>
             <button
               onClick={() => toggleFilter('settlement')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.settlement ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
-                }`}
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.settlement 
+                ? 'bg-green-100 text-green-700 dark:bg-emerald-900/40 dark:text-emerald-300 ring-1 ring-emerald-400/30' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
             >
               💰 정산
             </button>
             <button
               onClick={() => toggleFilter('tax')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.tax ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
-                }`}
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.tax 
+                ? 'bg-red-100 text-red-700 dark:bg-rose-900/40 dark:text-rose-300 ring-1 ring-rose-400/30' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
             >
               📅 세금
             </button>
             <button
               onClick={() => toggleFilter('memo')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.memo ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
-                }`}
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.memo 
+                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 ring-1 ring-purple-400/30' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
             >
               📝 메모
             </button>
             <button
               onClick={() => toggleFilter('holiday')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.holiday ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
-                }`}
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.holiday 
+                ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 ring-1 ring-rose-400/30' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
             >
               🎌 공휴일
             </button>
             <div className="flex-1" />
             <button
               onClick={() => handleAddMemo(new Date())}
-              className="px-3 py-1 text-xs rounded-full font-medium bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1"
+              className="px-3 py-1 text-xs rounded-full font-medium bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 shadow-xs transition-colors"
             >
               <Plus size={12} /> 메모 추가
             </button>
             <button
               onClick={handleExport}
-              className="px-3 py-1 text-xs rounded-full font-medium bg-gray-600 text-white hover:bg-gray-700 flex items-center gap-1"
+              className="px-3 py-1 text-xs rounded-full font-medium bg-gray-600 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600 flex items-center gap-1 shadow-xs transition-colors"
               title="ICS 파일로 내보내기"
             >
               <Download size={12} /> 내보내기
@@ -732,16 +737,16 @@ export default function CalendarWidget({
       {viewMode !== 'list' && (
         <>
           {/* Days Header */}
-          <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50">
+          <div className="grid grid-cols-7 border-b border-gray-150 dark:border-gray-700 bg-gray-50 dark:bg-gray-850">
             {['일', '월', '화', '수', '목', '금', '토'].map((day, idx) => (
-              <div key={day} className={`text-center py-2 text-xs font-semibold ${idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-gray-500'}`}>
+              <div key={day} className={`text-center py-2 text-xs font-bold ${idx === 0 ? 'text-red-500 dark:text-red-400' : idx === 6 ? 'text-blue-500 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 bg-gray-200 gap-px">
+          <div className="grid grid-cols-7 bg-gray-200 dark:bg-gray-700 gap-px">
             {calendarDays.map((day) => {
               const dayEvents = getEventsForDay(day);
               const isCurrentMonth = isSameMonth(day, monthStart);
@@ -754,8 +759,13 @@ export default function CalendarWidget({
                   onClick={() => onDateSelect && onDateSelect(day)}
                   onMouseEnter={() => dayEvents.length > 0 && setHoveredDate(day.toISOString())}
                   onMouseLeave={() => setHoveredDate(null)}
-                  className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors ${viewMode === 'week' ? 'h-[260px]' : 'h-[104px] md:h-[156px]'} border border-gray-100 relative
-                    ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset z-10' : (!isCurrentMonth && viewMode === 'month' ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-50')}
+                  className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors ${viewMode === 'week' ? 'h-[260px]' : 'h-[104px] md:h-[156px]'} border border-gray-100 dark:border-gray-700/60 relative
+                    ${isSelected 
+                      ? 'bg-blue-50/70 dark:bg-blue-950/40 ring-2 ring-blue-500 ring-inset z-10' 
+                      : (!isCurrentMonth && viewMode === 'month' 
+                          ? 'bg-gray-50/70 dark:bg-gray-900/60 hover:bg-gray-100 dark:hover:bg-gray-850' 
+                          : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750')
+                    }
                   `}
                 >
                   {/* Tooltip */}
@@ -784,19 +794,26 @@ export default function CalendarWidget({
                   <div className="flex justify-between items-start">
                     <span
                       className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full
-                        ${isTodayDate ? 'bg-blue-600 text-white' : (isSelected ? 'text-blue-700 font-bold' : (isCurrentMonth || viewMode === 'week' ? 'text-gray-700' : 'text-gray-500 dark:text-gray-400'))}`}
+                        ${isTodayDate 
+                          ? 'bg-blue-600 text-white shadow-xs' 
+                          : (isSelected 
+                              ? 'text-blue-700 dark:text-blue-300 font-extrabold' 
+                              : (isCurrentMonth || viewMode === 'week' 
+                                  ? 'text-gray-800 dark:text-gray-200 font-bold' 
+                                  : 'text-gray-400 dark:text-gray-500')
+                            )}`}
                     >
                       {format(day, 'd')}
                     </span>
                     <div className="flex items-center gap-1">
                       {dayEvents.length > 0 && (
-                        <span className="text-xs bg-blue-50 text-blue-600 px-1.5 rounded font-bold">
+                        <span className="text-xs bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 px-1.5 rounded font-bold">
                           {dayEvents.length}
                         </span>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleAddMemo(day); }}
-                        className="opacity-0 hover:opacity-100 p-0.5 hover:bg-blue-100 rounded text-blue-500"
+                        className="opacity-0 hover:opacity-100 p-0.5 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded text-blue-500 dark:text-blue-400 transition-colors"
                       >
                         <Plus size={12} />
                       </button>
@@ -846,10 +863,10 @@ export default function CalendarWidget({
                           className={`text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1
                             ${isSettlement
                               ? (ev.title.includes('예정')
-                                ? 'bg-emerald-50 text-emerald-700 border border-dashed border-emerald-300'
-                                : 'bg-emerald-100 text-emerald-700 font-medium')
+                                ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-dashed border-emerald-300 dark:border-emerald-700'
+                                : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium border border-emerald-200 dark:border-emerald-800')
                               : isHoliday
-                                ? 'bg-red-100 text-red-700 font-medium'
+                                ? 'bg-red-100 dark:bg-rose-950/60 text-red-700 dark:text-rose-300 font-medium border border-rose-200 dark:border-rose-800'
                                 : `${getColorClass(ev.color, 'bg')} ${getColorClass(ev.color, 'text')}`
                             }`}
                           title={`${ev.time || ''} ${ev.title} - ${ev.subtitle || ''}`}
