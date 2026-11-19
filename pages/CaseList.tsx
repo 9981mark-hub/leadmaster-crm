@@ -182,6 +182,23 @@ export default function CaseList() {
     const [members, setMembers] = useState<TeamMember[]>([]);
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [bulkBusy, setBulkBusy] = useState(false);
+
+    // [대표/총괄 관리자 선택형] 회사 전체 리드 목록 마스킹 정책 ('masked' vs 'unmasked')
+    const [companyMaskingPolicy, setCompanyMaskingPolicy] = useState<'masked' | 'unmasked'>(() => {
+        return (localStorage.getItem('lm_company_list_masking_policy') as 'masked' | 'unmasked') || 'masked';
+    });
+
+    const handleToggleCompanyMaskingPolicy = () => {
+        const next = companyMaskingPolicy === 'masked' ? 'unmasked' : 'masked';
+        setCompanyMaskingPolicy(next);
+        localStorage.setItem('lm_company_list_masking_policy', next);
+        window.dispatchEvent(new Event('storage'));
+        showToast(next === 'masked'
+            ? '회사 보안 정책: [대량 유출 방어 모드] 활성화 (일반 상담원 목록 번호 마스킹)'
+            : '회사 보안 정책: [속도 우선 공개 모드] 활성화 (전체 상담원 목록 번호 공개)',
+            next === 'masked' ? 'info' : 'success'
+        );
+    };
     useEffect(() => {
         if (!isAdmin || !org?.orgId) return;
         fetchTeamMembers().then(setMembers).catch(() => setMembers([]));
@@ -856,6 +873,8 @@ export default function CaseList() {
                 onOpenImportModal={isAdmin ? () => setIsImportModalOpen(true) : undefined}
                 onOpenStatusVisibilityModal={() => setIsVisibilityModalOpen(true)}
                 onResetPage={() => setCurrentPage(1)}
+                companyMaskingPolicy={companyMaskingPolicy}
+                onToggleCompanyMaskingPolicy={isAdmin ? handleToggleCompanyMaskingPolicy : undefined}
             />
 
             {/* Filter Chips Bar (Active Filters Visualization) */}

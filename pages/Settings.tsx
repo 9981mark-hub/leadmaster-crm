@@ -190,6 +190,20 @@ export default function SettingsPage() {
     // 4. Data & Security State
     // -------------------------------------------------------------
     const [isEmergencyPurgeOpen, setIsEmergencyPurgeOpen] = useState(false);
+    const [companyMaskingPolicy, setCompanyMaskingPolicy] = useState<'masked' | 'unmasked'>(() => {
+        return (localStorage.getItem('lm_company_list_masking_policy') as 'masked' | 'unmasked') || 'masked';
+    });
+
+    const handleCompanyMaskingPolicyChange = (val: 'masked' | 'unmasked') => {
+        setCompanyMaskingPolicy(val);
+        localStorage.setItem('lm_company_list_masking_policy', val);
+        window.dispatchEvent(new Event('storage'));
+        showToast(val === 'masked' 
+            ? '회사 보안 정책: [대량 유출 방어 모드] 활성화 (일반 상담원 목록 번호 마스킹)'
+            : '회사 보안 정책: [속도 우선 공개 모드] 활성화 (전체 상담원 목록 번호 공개)',
+            val === 'masked' ? 'info' : 'success'
+        );
+    };
 
     // Status Queries
     const addSecondaryStatusMutation = useAddSecondaryStatusMutation();
@@ -913,6 +927,8 @@ export default function SettingsPage() {
                         onForceSync={handleForceSync}
                         isOwner={isOwner}
                         onOpenEmergencyPurge={() => setIsEmergencyPurgeOpen(true)}
+                        companyMaskingPolicy={companyMaskingPolicy}
+                        onChangeCompanyMaskingPolicy={handleCompanyMaskingPolicyChange}
                     />
                 )}
             </div>

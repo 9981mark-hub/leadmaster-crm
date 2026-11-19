@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Layout } from 'lucide-react';
+import { ArrowLeft, Layout, AlertTriangle } from 'lucide-react';
 import { Case, CaseStatus, ReminderItem, MemoItem, RecordingItem } from '../types';
 import { useCase, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation, UPDATE_CASE_MUTATION_KEY } from '../services/queries';
 import { useMutationState } from '@tanstack/react-query';
@@ -40,7 +40,7 @@ export default function CaseDetail() {
     const { data: globalTertiaryStatuses = {} } = useTertiaryStatuses();
     const updateCaseMutation = useUpdateCaseMutation();
     // [KIRO 2026-11-13] 수임료/정산 탭은 회사 관리자만 (상담원 권한 격리)
-    const { isAdmin } = useAuth();
+    const { isAdmin, org } = useAuth();
 
     // UI State
     const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline' | 'calls_sms' | 'recordings'>('info');
@@ -687,6 +687,28 @@ export default function CaseDetail() {
             </button>
         </div>
     );
+
+    // [보안 가드] 일반 상담원이 타인에게 배정된 케이스 URL 직접 접근 시 원천 차단
+    const isAssignedToMe = !c.assignedUserId || c.assignedUserId === org?.userId || (org?.displayName && c.managerName === org.displayName);
+    if (!isAdmin && org?.userId && !isAssignedToMe) {
+        return (
+            <div className="p-12 text-center text-slate-800 dark:text-gray-200 flex flex-col items-center gap-4 max-w-md mx-auto my-12 bg-white dark:bg-gray-800 rounded-2xl border border-rose-200 dark:border-rose-900/50 shadow-lg animate-fade-in">
+                <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center text-rose-600">
+                    <AlertTriangle size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-rose-700 dark:text-rose-400">열람 권한이 없습니다</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                    본인에게 배정된 고객 또는 관리자 권한을 가진 계정만 상세 정보를 열람할 수 있습니다.
+                </p>
+                <button
+                    onClick={() => navigate('/cases')}
+                    className="mt-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors"
+                >
+                    내 담당 케이스 목록으로 이동
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="pb-20 animate-page-in">

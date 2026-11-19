@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star, Archive } from 'lucide-react';
+import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star, Archive, ShieldAlert, Eye } from 'lucide-react';
 import { Partner, CaseStatus } from '../../types';
 
 interface CaseListFilterProps {
@@ -38,6 +38,9 @@ interface CaseListFilterProps {
     canImport?: boolean;
     onOpenStatusVisibilityModal: () => void;
     onResetPage: () => void;
+    /** 회사 전체 리드 목록 마스킹 정책 ('masked': 방어모드 / 'unmasked': 전체공개) */
+    companyMaskingPolicy?: 'masked' | 'unmasked';
+    onToggleCompanyMaskingPolicy?: () => void;
 }
 
 export const CaseListFilter: React.FC<CaseListFilterProps> = ({
@@ -55,7 +58,8 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     showStarredOnly, setShowStarredOnly,
     partners, inboundPaths, statuses,
     secondaryStatuses, tertiaryStatuses,
-    onOpenImportModal, canImport = false, onOpenStatusVisibilityModal, onResetPage
+    onOpenImportModal, canImport = false, onOpenStatusVisibilityModal, onResetPage,
+    companyMaskingPolicy = 'masked', onToggleCompanyMaskingPolicy
 }) => {
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = React.useState(false);
 
@@ -310,6 +314,25 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             </button>
                         </div>
 
+
+                        {/* [대표/총괄 관리자 전용] 리드 목록 대량 유출 방어(마스킹) 정책 선택 토글 */}
+                        {onToggleCompanyMaskingPolicy && (
+                            <button
+                                type="button"
+                                onClick={onToggleCompanyMaskingPolicy}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all shadow-sm shrink-0 font-medium text-xs border ${
+                                    companyMaskingPolicy === 'masked'
+                                        ? 'bg-slate-900 border-slate-700 text-amber-300 hover:bg-slate-800'
+                                        : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
+                                }`}
+                                title={companyMaskingPolicy === 'masked'
+                                    ? "현재 [대량 유출 방어 모드] 활성 (일반 상담원 번호 마스킹). 클릭 시 회사 전체 공개(속도 우선 모드)로 전환합니다."
+                                    : "현재 [속도 우선 공개 모드] 활성 (일반 상담원 번호 전체 노출). 클릭 시 대량 유출 방어 모드로 전환합니다."}
+                            >
+                                {companyMaskingPolicy === 'masked' ? <ShieldAlert size={15} className="text-amber-400 shrink-0" /> : <Eye size={15} className="text-emerald-500 shrink-0" />}
+                                <span>{companyMaskingPolicy === 'masked' ? '목록 마스킹: 방어(ON)' : '목록 마스킹: 해제(OFF)'}</span>
+                            </button>
+                        )}
 
                         {/* 보관함 버튼: 평소 활성 상태에서는 이 버튼만 노출되며, 1차로 누르면 보관함 및 삭제 관리 영역 활성화 */}
                         {canManageArchive && (

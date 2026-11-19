@@ -201,9 +201,23 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
         return !phonesWithSmsOut.has(normalizedPhone);
     };
 
-    // [Security Feature 3] 상담원별 리드 목록 개인정보 마스킹 (팀장급 해제 / 신입 마스킹)
-    const { org } = useAuth();
-    const isMaskingEnabled = org?.securityProfile?.masking ?? false;
+    // [Security Feature 3] 회사별 리드 목록 개인정보 보호 정책 연동 (대표/총괄 관리자 선택 가능)
+    const { org, isAdmin } = useAuth();
+    const [companyMaskingPolicy, setCompanyMaskingPolicy] = useState<'masked' | 'unmasked'>(() => {
+        return (localStorage.getItem('lm_company_list_masking_policy') as 'masked' | 'unmasked') || 'masked';
+    });
+
+    useEffect(() => {
+        const handleStorage = () => {
+            const current = (localStorage.getItem('lm_company_list_masking_policy') as 'masked' | 'unmasked') || 'masked';
+            setCompanyMaskingPolicy(current);
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, []);
+
+    // 대표/관리자는 항상 원본 공개, 일반 상담원은 회사 정책이 'masked'일 때만 마스킹 적용
+    const isMaskingEnabled = !isAdmin && companyMaskingPolicy === 'masked' && (org?.securityProfile?.masking ?? true);
     const [unmaskedCases, setUnmaskedCases] = useState<Set<string>>(new Set());
 
     const getDisplayName = (name: string, caseId: string) => {

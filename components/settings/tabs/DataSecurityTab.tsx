@@ -9,6 +9,8 @@ interface DataSecurityTabProps {
     onForceSync: () => void;
     isOwner: boolean;
     onOpenEmergencyPurge: () => void;
+    companyMaskingPolicy?: 'masked' | 'unmasked';
+    onChangeCompanyMaskingPolicy?: (val: 'masked' | 'unmasked') => void;
 }
 
 export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
@@ -16,7 +18,9 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
     onRestoreBackup,
     onForceSync,
     isOwner,
-    onOpenEmergencyPurge
+    onOpenEmergencyPurge,
+    companyMaskingPolicy = 'masked',
+    onChangeCompanyMaskingPolicy
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -106,7 +110,58 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
                 </div>
             </SettingsCard>
 
-            {/* 2. 위험 구역 (Danger Zone) - 조직 소유자 전용 */}
+            {/* 2. 회사 전체 리드 목록 개인정보 보호 정책 (대표/총괄 관리자 선택형) */}
+            <SettingsCard
+                title="리드 목록 대량 유출 방어(마스킹) 정책"
+                description="케이스 목록(/cases) 화면에서 일반 상담원에게 고객 전화번호를 마스킹할지, 전체 공개할지 회사의 운영 방침에 맞춰 선택합니다."
+                icon={<ShieldAlert size={18} />}
+            >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div 
+                        onClick={() => onChangeCompanyMaskingPolicy?.('masked')}
+                        className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                            companyMaskingPolicy === 'masked'
+                                ? 'bg-indigo-50/60 dark:bg-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/20'
+                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-1.5">
+                                🛡️ 대량 유출 방어 모드 (권장)
+                            </span>
+                            {companyMaskingPolicy === 'masked' && (
+                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-600 text-white">적용중</span>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            일반 상담원의 목록 화면에서 전화번호 가운데가 마스킹(010-****-1234)됩니다. 상세페이지 진입 시에만 온전한 번호가 보이며 열람 감사 로그가 기록됩니다.
+                        </p>
+                    </div>
+
+                    <div 
+                        onClick={() => onChangeCompanyMaskingPolicy?.('unmasked')}
+                        className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                            companyMaskingPolicy === 'unmasked'
+                                ? 'bg-emerald-50/60 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/20'
+                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-1.5">
+                                🔓 속도 우선 공개 모드
+                            </span>
+                            {companyMaskingPolicy === 'unmasked' && (
+                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">적용중</span>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            일반 상담원도 목록 화면에서 전화번호 전체(010-1234-5678)를 즉시 확인하고 바로 다이얼러를 실행할 수 있습니다. (상담 속도 및 통화량 우선 센터)
+                        </p>
+                    </div>
+                </div>
+            </SettingsCard>
+
+            {/* 3. 위험 구역 (Danger Zone) - 조직 소유자 전용 */}
             {isOwner && (
                 <SettingsCard
                     title="위험 구역 (Danger Zone)"
