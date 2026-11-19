@@ -1,6 +1,6 @@
 {
-  "versionCode": 35,
-  "versionName": "1.8.3",
-  "releaseDate": "2026-11-13",
-  "notes": "1.8.3: 구글 로그인 팝업 최적화 (도메인 리다이렉트 외부 이탈 방지 및 로그인 완료 즉시 메인 자동 세션 동기화), 스마트폰 순정 고음질 한국어 TTS 엔진 탑재 및 가상 고객 통화 볼륨 감쇠 버그 해결."
+  "versionCode": 36,
+  "versionName": "1.8.4",
+  "releaseDate": "2026-11-19",
+  "notes": "1.8.4: 통화 녹음 m4a AAC 32kbps H/W 가속 압축 인코딩 탑재(녹음 용량 1/10 감소) 및 Supabase Storage 직접 업로드 연동."
 }
