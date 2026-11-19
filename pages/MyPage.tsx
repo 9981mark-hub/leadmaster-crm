@@ -384,7 +384,7 @@ export default function MyPage() {
                                         onClick={async () => {
                                             await handleSaveAvatar(null);
                                         }}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                         title="구글 계정 원래 사진으로 복원"
                                     >
                                         <RotateCcw size={11} /> 구글 복원
@@ -420,7 +420,7 @@ export default function MyPage() {
                                     </span>
                                 )}
 
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-750 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
                                     소속: {myTeamName}
                                 </span>
                             </div>
@@ -436,7 +436,7 @@ export default function MyPage() {
                                     <div className="relative flex-1">
                                         <input
                                             type="text"
-                                            className="w-full p-2.5 pl-9 text-xs font-bold border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none bg-white dark:bg-gray-750 text-gray-900 dark:text-white"
+                                            className="w-full p-2.5 pl-9 text-xs font-bold border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                                             value={managerName}
                                             onChange={(e) => setManagerName(e.target.value)}
                                         />
@@ -458,11 +458,11 @@ export default function MyPage() {
                                         <input
                                             type="text"
                                             placeholder="예: 070-1234-5678 또는 101"
-                                            className="w-full p-2.5 pl-9 text-xs border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none bg-white dark:bg-gray-750 text-gray-900 dark:text-white"
+                                            className="w-full p-2.5 pl-9 text-xs border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                                             value={directExtension}
                                             onChange={(e) => setDirectExtension(e.target.value)}
                                         />
-                                        <Phone className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={15} />
+                                        <Phone className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={15} />
                                     </div>
                                     <Button variant="secondary" size="sm" onClick={handleSaveExtension}>
                                         등록
@@ -478,7 +478,7 @@ export default function MyPage() {
                                 <div className="relative">
                                     <input
                                         type="email"
-                                        className="w-full p-2.5 pl-9 text-xs border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 cursor-not-allowed outline-none"
+                                        className="w-full p-2.5 pl-9 text-xs border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400 cursor-not-allowed outline-none"
                                         value={user?.email || ''}
                                         readOnly
                                     />
@@ -508,7 +508,7 @@ export default function MyPage() {
                         </h4>
 
                         <div className="space-y-2.5 mb-4">
-                            <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-750 rounded-xl">
+                            <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl">
                                 <Globe className="mr-2.5 text-gray-500 dark:text-gray-400 shrink-0" size={16} />
                                 <div className="min-w-0">
                                     <p className="text-xs text-gray-500 dark:text-gray-400">현재 접속 IP</p>
@@ -516,7 +516,7 @@ export default function MyPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-750 rounded-xl">
+                            <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl">
                                 <Monitor className="mr-2.5 text-gray-500 dark:text-gray-400 shrink-0" size={16} />
                                 <div className="min-w-0">
                                     <p className="text-xs text-gray-500 dark:text-gray-400">접속 브라우저 및 환경</p>
@@ -631,10 +631,10 @@ export default function MyPage() {
                         </div>
 
                         {/* 통화 종료 후 쿨다운 (휴식 시간) */}
-                        <div className="p-3.5 bg-gray-50 dark:bg-gray-750 rounded-xl mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="p-3.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <div>
-                                <span className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                                    <Clock size={14} className="text-blue-600" /> 통화 후 메모 정리 쿨다운 (자동 대기)
+                                <span className="text-xs font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                                    <Clock size={14} className="text-blue-600 dark:text-blue-400" /> 통화 후 메모 정리 쿨다운 (자동 대기)
                                 </span>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                     통화가 끝난 직후 다음 콜이 배정되거나 전화가 울리지 않도록 메모를 작성할 휴식 시간입니다.
@@ -649,7 +649,7 @@ export default function MyPage() {
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                                             prefs.callCooldownSeconds === sec
                                                 ? 'bg-blue-600 text-white shadow-xs'
-                                                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100'
+                                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                     >
                                         {sec === 0 ? '즉시' : `${sec}초`}
@@ -715,7 +715,7 @@ export default function MyPage() {
                                 </div>
                                 <button
                                     onClick={handleFloatingButtonToggle}
-                                    className="flex items-center justify-between w-full p-2.5 bg-gray-50 dark:bg-gray-750 rounded-lg text-xs"
+                                    className="flex items-center justify-between w-full p-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-lg text-xs"
                                 >
                                     <span className="text-gray-700 dark:text-gray-300">통화 수신 후 미니 플로팅 버튼 표시</span>
                                     <span className={`px-2 py-0.5 rounded font-bold ${floatingButtonEnabled ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
@@ -741,16 +741,16 @@ export default function MyPage() {
 
                         <div className="space-y-4">
                             {/* 벨소리 선택 및 미리듣기 */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-750 rounded-xl">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl">
                                 <div>
-                                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                                    <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
                                         신규 리드 인입 벨소리
                                     </span>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">내게 새로운 고객이 배정되었을 때 울릴 사운드입니다.</p>
                                 </div>
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
                                     <select
-                                        className="p-2 text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl font-bold outline-none"
+                                        className="p-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-xl font-bold outline-none"
                                         value={prefs.soundType}
                                         onChange={(e) => updatePref({ soundType: e.target.value as SoundType })}
                                     >
@@ -762,7 +762,7 @@ export default function MyPage() {
                                     <button
                                         type="button"
                                         onClick={handlePlayTestSound}
-                                        className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors"
+                                        className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
                                     >
                                         <Play size={13} /> 미리듣기
                                     </button>
@@ -770,9 +770,9 @@ export default function MyPage() {
                             </div>
 
                             {/* 알림 볼륨 조절 */}
-                            <div className="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300">
-                                    <Volume2 size={16} className="text-gray-500" />
+                            <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2 text-xs font-bold text-gray-900 dark:text-gray-100">
+                                    <Volume2 size={16} className="text-gray-500 dark:text-gray-400" />
                                     <span>알림 볼륨 ({prefs.soundVolume}%)</span>
                                 </div>
                                 <input
@@ -786,9 +786,9 @@ export default function MyPage() {
                             </div>
 
                             {/* 데스크톱 푸시 알림 토글 */}
-                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-750 rounded-xl">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl">
                                 <div>
-                                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                                    <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
                                         브라우저 바탕화면 푸시 알림
                                     </span>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">다른 탭이나 다른 프로그램을 보고 있을 때 바탕화면 알림을 띄웁니다.</p>
@@ -798,8 +798,8 @@ export default function MyPage() {
                                     onClick={handleRequestDesktopNotification}
                                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                                         prefs.desktopNotification
-                                            ? 'bg-emerald-600 text-white'
-                                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                                            ? 'bg-emerald-600 text-white shadow-xs'
+                                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-650'
                                     }`}
                                 >
                                     {prefs.desktopNotification ? '작동 중 ✓' : '알림 켜기'}
@@ -914,7 +914,7 @@ export default function MyPage() {
                                             <p className="text-xs text-gray-500">정기 백업 파일 안전 추출 가능</p>
                                         </div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
+                                    <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">긴급 데이터 영구 파기</p>
@@ -945,7 +945,7 @@ export default function MyPage() {
                                             <p className="text-xs text-gray-500">상태/주기 뷰어 모드 접근 허용</p>
                                         </div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
+                                    <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">거래처 수수료율 및 경영 손익</p>
@@ -969,14 +969,14 @@ export default function MyPage() {
                                             <p className="text-xs text-gray-500">6대 취약점 훈련 및 내 피드백 열람</p>
                                         </div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
+                                    <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">타 팀원 리드 및 녹취 열람</p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">개인정보 보호를 위한 접근 차단</p>
                                         </div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
+                                    <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">정산 손익 및 시스템 설정</p>
@@ -1002,8 +1002,8 @@ export default function MyPage() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-gray-200">
+                            <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-xs font-bold text-gray-900 dark:text-gray-100">
                                     {theme === 'dark' ? <Moon size={16} className="text-purple-600 dark:text-purple-400" /> : <Sun size={16} className="text-amber-500" />}
                                     <span>컬러 테마</span>
                                 </div>
@@ -1012,8 +1012,8 @@ export default function MyPage() {
                                 </Button>
                             </div>
 
-                            <div className="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl flex items-center justify-between">
-                                <div className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                            <div className="p-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl flex items-center justify-between">
+                                <div className="text-xs font-bold text-gray-900 dark:text-gray-100">
                                     <span>케이스 목록 행 간격</span>
                                 </div>
                                 <div className="flex gap-1">
@@ -1022,8 +1022,8 @@ export default function MyPage() {
                                         onClick={() => updatePref({ tableDensity: 'normal' })}
                                         className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
                                             prefs.tableDensity === 'normal'
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                                ? 'bg-blue-600 text-white shadow-xs'
+                                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
                                         }`}
                                     >
                                         기본형
@@ -1033,8 +1033,8 @@ export default function MyPage() {
                                         onClick={() => updatePref({ tableDensity: 'compact' })}
                                         className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
                                             prefs.tableDensity === 'compact'
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                                ? 'bg-blue-600 text-white shadow-xs'
+                                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
                                         }`}
                                     >
                                         좁게(컴팩트)
@@ -1058,7 +1058,7 @@ export default function MyPage() {
                                 <input
                                     type="email"
                                     placeholder="추가할 Google 이메일 (예: manager@example.com)"
-                                    className="flex-1 p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl outline-none text-xs bg-white dark:bg-gray-750 text-gray-900 dark:text-white"
+                                    className="flex-1 p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl outline-none text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                                     value={newEmail}
                                     onChange={e => setNewEmail(e.target.value)}
                                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddEmail(); } }}
@@ -1072,7 +1072,7 @@ export default function MyPage() {
                                 {allowedEmails.map(email => (
                                     <div
                                         key={email}
-                                        className="flex justify-between items-center p-2.5 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-150 dark:border-gray-700"
+                                        className="flex justify-between items-center p-2.5 bg-gray-50 dark:bg-gray-800/80 rounded-xl border border-gray-200/80 dark:border-gray-700/80"
                                     >
                                         <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-mono">
                                             {email}
