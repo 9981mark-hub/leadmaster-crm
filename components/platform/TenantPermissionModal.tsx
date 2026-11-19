@@ -311,7 +311,7 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPerms(prev => ({ ...prev, trialExpiresAt: undefined }))}
-                  className="flex-1 py-1 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-900/50 text-xs font-semibold cursor-pointer"
+                  className="flex-1 py-1 rounded-lg bg-emerald-100/40 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-900/50 text-xs font-semibold cursor-pointer"
                 >
                   정기 구독 전환
                 </button>

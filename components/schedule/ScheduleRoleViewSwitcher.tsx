@@ -162,7 +162,7 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
                   : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-100/50 dark:bg-slate-800/50'
               }`}
             >
-              <Icon size={14} className={isActive ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400'} />
+              <Icon size={14} className={isActive ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'} />
               <span className="hidden md:inline">{tab.label}</span>
               <span className="md:hidden">{tab.shortLabel}</span>
               {tab.badge && (

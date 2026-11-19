@@ -344,7 +344,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                         }}
                         className={`
               min-h-[60px] p-1 border border-gray-100 cursor-pointer transition-all
-              ${!isCurrentMonth ? 'bg-gray-50 text-gray-300' : 'hover:bg-blue-50'}
+              ${!isCurrentMonth ? 'bg-gray-50 text-gray-600 dark:text-gray-300' : 'hover:bg-blue-50'}
               ${isToday(day) ? 'bg-blue-50 border-blue-300' : ''}
               ${isSelected ? 'ring-2 ring-blue-500' : ''}
             `}
@@ -462,7 +462,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                                                 {getModalIcon()}
                                             </span>
                                             <p className="text-gray-600 text-sm mt-1">{e.customerName ? `${e.customerName} - ${e.label}` : e.label}</p>
-                                            {e.weekLabel && <p className="text-xs text-gray-400 mt-1">{e.weekLabel}</p>}
+                                            {e.weekLabel && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{e.weekLabel}</p>}
                                         </div>
                                         {e.amount && (
                                             <span className="text-lg font-bold text-gray-800 dark:text-white">{e.amount.toLocaleString()}만원</span>
@@ -482,7 +482,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>
-                    <p className="text-xs text-gray-400 mt-1">총 {events.length}개의 이벤트 / {safeBatches.length}개 배치</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">총 {events.length}개의 이벤트 / {safeBatches.length}개 배치</p>
                 </div>
                 <div className="flex gap-1.5 text-xs flex-wrap">
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">💵 입금</span>

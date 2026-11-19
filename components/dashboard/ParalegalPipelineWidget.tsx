@@ -73,7 +73,7 @@ export const ParalegalPipelineWidget: React.FC<ParalegalPipelineWidgetProps> = (
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-indigo-100 dark:border-gray-700 shadow-sm overflow-hidden transition-all">
             {/* 상단 헤더 */}
-            <div className="px-5 py-4 bg-gradient-to-r from-white dark:from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-wrap items-center justify-between gap-3">
+            <div className="px-5 py-4 bg-gradient-to-r from-indigo-50 via-indigo-100 to-indigo-50 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
                         <Scale size={20} />

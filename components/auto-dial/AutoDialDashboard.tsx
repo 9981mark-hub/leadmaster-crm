@@ -306,7 +306,7 @@ const AutoDialDashboard: React.FC = () => {
           {/* 캠페인 셀렉터 바 (캠페인이 여러 개일 경우 탭 전환) */}
           {campaigns.length > 0 ? (
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <span className="text-xs font-bold text-gray-400 shrink-0">캠페인 선택:</span>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 shrink-0">캠페인 선택:</span>
               {campaigns.map(camp => {
                 const isSelected = activeCampaignId === camp.id;
                 return (
@@ -322,7 +322,7 @@ const AutoDialDashboard: React.FC = () => {
                   >
                     <span className={`w-2 h-2 rounded-full ${camp.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
                     <span>{camp.name}</span>
-                    <span className="font-mono text-xs text-gray-400">
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
                       ({camp.completedLeads}/{camp.totalLeads})
                     </span>
                     {isAdmin && (
@@ -475,7 +475,7 @@ const AutoDialDashboard: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               {batches.length === 0 ? (
-                <div className="text-center py-12 text-gray-400 text-xs">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-xs">
                   등록된 배치가 없습니다.
                 </div>
               ) : (

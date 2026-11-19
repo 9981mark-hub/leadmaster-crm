@@ -197,7 +197,7 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
 
                 {/* Duration if available */}
                 {call.durationLabel && (
-                  <span className={`text-xs ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>
+                  <span className={`text-xs ${isSelected ? 'text-purple-200' : 'text-gray-500 dark:text-gray-400'}`}>
                     ({call.durationLabel})
                   </span>
                 )}
@@ -217,7 +217,7 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
 
                 {/* Manual Source Tag */}
                 {call.source === 'manual' && !call.isLatest && (
-                  <span className={`text-xs opacity-75 ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>
+                  <span className={`text-xs opacity-75 ${isSelected ? 'text-purple-200' : 'text-gray-500 dark:text-gray-400'}`}>
                     수동
                   </span>
                 )}

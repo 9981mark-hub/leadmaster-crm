@@ -99,7 +99,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
               </span>
               <button
                 onClick={onOpenTaxInfoModal}
-                className="px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-100/40 dark:bg-blue-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Edit3 size={12} /> 정보 수정
               </button>
@@ -211,7 +211,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
                   <td className="py-2.5 px-3 text-center font-sans">
                     <button
                       onClick={() => onOpenInvoiceModal(inv)}
-                      className="px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-100/40 dark:bg-blue-950/40 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
                     >
                       <FileText size={12} /> 청구서 보기
                     </button>

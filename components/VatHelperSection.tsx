@@ -207,7 +207,7 @@ const VatHelperSection: React.FC<VatHelperSectionProps> = ({ year }) => {
                                                 </p>
                                                 <p className="text-xs text-gray-500 mt-1">확정신고 {d.filingDeadline}</p>
                                             </div>
-                                            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${isPast ? 'bg-gray-100 text-gray-400' : isUrgent ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-amber-100 text-amber-700'}`}>
+                                            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${isPast ? 'bg-gray-100 text-gray-500 dark:text-gray-400' : isUrgent ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-amber-100 text-amber-700'}`}>
                                                 {isPast ? '완료' : `D-${daysLeft}`}
                                             </span>
                                         </div>

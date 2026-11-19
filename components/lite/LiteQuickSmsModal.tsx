@@ -139,7 +139,7 @@ export const LiteQuickSmsModal: React.FC<Props> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
               <X size={18} />
             </button>
@@ -167,7 +167,7 @@ export const LiteQuickSmsModal: React.FC<Props> = ({
                           : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
                       }`}
                     >
-                      <span className="text-xs text-gray-400">{tpl.badge}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{tpl.badge}</span>
                       <span className="truncate">{tpl.title}</span>
                     </button>
                   );

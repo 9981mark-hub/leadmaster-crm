@@ -76,7 +76,7 @@ export default function StatusVisibilityModal({
                                     key={status}
                                     className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${isVisible
                                             ? 'bg-white border-blue-200 shadow-sm ring-1 ring-blue-100 dark:bg-gray-700 dark:border-blue-500/50'
-                                            : 'bg-gray-50 border-gray-100 text-gray-400 dark:bg-gray-800 dark:border-gray-700'
+                                            : 'bg-gray-50 border-gray-100 text-gray-500 dark:text-gray-400 dark:bg-gray-800 dark:border-gray-700'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ export default function StatusVisibilityModal({
                                             }`}>
                                             {isVisible && <Check size={14} strokeWidth={3} />}
                                         </div>
-                                        <span className={`font-medium ${isVisible ? 'text-gray-800 dark:text-white' : 'text-gray-400'}`}>
+                                        <span className={`font-medium ${isVisible ? 'text-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                                             {status}
                                         </span>
                                     </div>

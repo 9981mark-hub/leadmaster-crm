@@ -82,7 +82,7 @@ export const TelegramChatPicker: React.FC<Props> = ({ value, onChange }) => {
                 </p>
             )}
             {msg && <p className={`text-xs ${msg.ok ? 'text-green-600' : 'text-red-600'}`}>{msg.text}</p>}
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
                 변호사 사무실 방에 회사 봇을 초대하면 이 목록에 자동으로 나타납니다(방에 메시지가 한 번 오가면 확실히 잡힙니다).
                 방을 고른 뒤 아래 저장을 눌러야 적용됩니다.
             </p>

@@ -698,7 +698,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="w-full md:w-72 relative">
-                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
                     <input
                         type="text"
                         placeholder="설정 항목 검색 (예: 부재콜, 정산, 텔레그램)"

@@ -274,7 +274,7 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
             {/* Table */}
             <div className="p-4 overflow-x-auto" style={{ overscrollBehavior: 'auto' }}>
                 {records.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <p className="text-sm">등록된 외주비 지급 내역이 없습니다.</p>
                         <p className="text-xs mt-1">프리랜서/외주 지급 시 위 "지급 등록" 버튼으로 추가하세요.</p>
                     </div>
@@ -347,7 +347,7 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
             </div>
 
             <div className="px-4 pb-3">
-                <p className="text-xs text-gray-400">※ 사업소득 3.3% = 소득세 3% + 지방소득세 0.3%. 매월 10일까지 홈택스에서 신고·납부 필요.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">※ 사업소득 3.3% = 소득세 3% + 지방소득세 0.3%. 매월 10일까지 홈택스에서 신고·납부 필요.</p>
             </div>
         </div>
     );

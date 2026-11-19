@@ -141,7 +141,7 @@ export default function RevenueWidget({ cases, partners }: RevenueWidgetProps) {
             <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                     💰 매출 현황
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                         ({format(now, 'yyyy년 M월', { locale: ko })})
                     </span>
                 </h3>
@@ -174,7 +174,7 @@ export default function RevenueWidget({ cases, partners }: RevenueWidgetProps) {
 
                             <p className={`text-xl md:text-2xl font-bold ${kpi.color} mb-1`}>
                                 {kpi.value.toLocaleString()}
-                                <span className="text-xs font-normal text-gray-400 ml-1">{kpi.unit}</span>
+                                <span className="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">{kpi.unit}</span>
                             </p>
 
                             {/* 전월 비교 or subLabel */}
@@ -186,17 +186,17 @@ export default function RevenueWidget({ cases, partners }: RevenueWidgetProps) {
                                         }`}>
                                         {change.direction === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                                         {change.direction === 'up' ? '↑' : '↓'} {change.pct}%
-                                        <span className="text-gray-400 font-normal ml-1">전월비</span>
+                                        <span className="text-gray-500 dark:text-gray-400 font-normal ml-1">전월비</span>
                                     </span>
                                 ) : change ? (
-                                    <span className="text-xs text-gray-400 flex items-center gap-0.5">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-0.5">
                                         <Minus size={12} /> 전월 동일
                                     </span>
                                 ) : null}
                                 {kpi.subLabel && (
                                     <span className={`text-xs ${kpi.label === '미수금 현황' && kpi.value > 0
                                         ? 'text-amber-500 font-bold'
-                                        : 'text-gray-400'
+                                        : 'text-gray-500 dark:text-gray-400'
                                         }`}>
                                         {kpi.subValue || ''} {kpi.subLabel}
                                     </span>

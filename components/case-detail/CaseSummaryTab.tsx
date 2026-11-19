@@ -147,13 +147,13 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
             >
                 <div className="flex items-center gap-2 mb-1">
                     <span className="font-bold">{line.speaker}</span>
-                    {line.time && <span className="text-xs text-gray-400 dark:text-gray-400 tabular-nums">{line.time}</span>}
+                    {line.time && <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 tabular-nums">{line.time}</span>}
                 </div>
                 <div className="whitespace-pre-wrap">{line.text}</div>
             </div>
         );
     }) : (
-        <div className="text-sm text-gray-400 dark:text-gray-500 whitespace-pre-wrap">
+        <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 whitespace-pre-wrap">
             {activeRawTranscript || '분석된 대화록이 없습니다.'}
         </div>
     );
@@ -320,14 +320,14 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                             </div>
                         ) : selectedCall && selectedCall.status === 'no_audio' ? (
                             <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 gap-3 min-h-[220px] p-6 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
-                                <VolumeX size={36} className="text-gray-400 dark:text-gray-500" />
+                                <VolumeX size={36} className="text-gray-500 dark:text-gray-400 dark:text-gray-500" />
                                 <div className="space-y-1.5 max-w-md">
                                     <h4 className="font-bold text-sm text-gray-800 dark:text-gray-200">음성 소스 파일 없음</h4>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                                         {selectedCall.audioProblem || '이 통화는 녹음 원본(음성 소스) 파일이 서버에 남아있지 않거나 브라우저 임시 주소(blob:)가 만료되어 AI 요약을 진행할 수 없습니다.'}
                                     </p>
                                     {selectedCall.fileName && (
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 font-mono bg-white dark:bg-gray-900 px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 inline-block mt-1">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-mono bg-white dark:bg-gray-900 px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 inline-block mt-1">
                                             파일명: {selectedCall.fileName}
                                         </p>
                                     )}
@@ -415,7 +415,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                 )}
                             </>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 gap-4 min-h-[200px]">
+                            <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 dark:text-gray-500 gap-4 min-h-[200px]">
                                 <Sparkles size={48} className="opacity-20" />
                                 <p className="text-center text-sm">
                                     AI 요약 결과가 없습니다.<br />

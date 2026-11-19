@@ -96,7 +96,7 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
                         <div className="text-xs font-bold text-gray-700 dark:text-gray-300">
                             🔄 로컬 캐시 강제 동기화
                         </div>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                             PC와 모바일의 케이스 수량이 일치하지 않을 때, 로컬 캐시를 비우고 서버에서 최신 상태를 강제 수신합니다.
                         </p>
                     </div>

@@ -97,7 +97,7 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={20} />
           </button>
@@ -235,7 +235,7 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                   }}
                   className="w-full accent-indigo-600 cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-gray-400 font-mono">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-mono">
                   <span>회사 0% : 상담원 100%</span>
                   <span>40% : 60% (추천 기본)</span>
                   <span>50% : 50%</span>
@@ -257,11 +257,11 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                     onChange={e => setPolicy(p => ({ ...p, companyFixedMargin: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-bold font-mono text-gray-900 dark:text-white"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-400">
+                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">
                     ₩{(policy.companyFixedMargin / 10000).toLocaleString()}만원
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   예: 거래처 수수료가 120만원이면 회사가 30만원을 떼고 나머지 90만원을 상담원에게 지급합니다.
                 </p>
               </div>
@@ -280,11 +280,11 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                     onChange={e => setPolicy(p => ({ ...p, agentFixedIncentive: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-bold font-mono text-gray-900 dark:text-white"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-400">
+                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">
                     ₩{(policy.agentFixedIncentive / 10000).toLocaleString()}만원
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   예: 거래처 수수료 금액과 관계없이 상담원에게는 수임 성공 1건당 15만원을 지급합니다.
                 </p>
               </div>

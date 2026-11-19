@@ -264,11 +264,11 @@ const ActiveCallPopup: React.FC = () => {
                 >
                     <div className="flex items-center gap-3 px-4 py-3">
                         <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
-                            <PhoneOff size={14} className="text-gray-300" />
+                            <PhoneOff size={14} className="text-gray-600 dark:text-gray-300" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold truncate">{callState.customerName}</p>
-                            <p className="text-xs text-gray-400">통화 종료</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">통화 종료</p>
                         </div>
                         <div className="flex items-center gap-1">
                             {callState.caseId && (
@@ -285,7 +285,7 @@ const ActiveCallPopup: React.FC = () => {
                                 className="p-1.5 rounded-lg hover:bg-gray-700 transition-colors"
                                 title="닫기"
                             >
-                                <X size={14} className="text-gray-400" />
+                                <X size={14} className="text-gray-500 dark:text-gray-400" />
                             </button>
                         </div>
                     </div>
@@ -407,7 +407,7 @@ const ActiveCallPopup: React.FC = () => {
 
                 {/* 사전 정보 & 최근 상담 이력 로딩 상태 */}
                 {isLoading && (
-                    <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-6 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500">
+                    <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-6 flex flex-col items-center justify-center gap-2 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                         <Loader2 size={18} className="animate-spin text-blue-500" />
                         <span className="text-xs font-medium">고객 정보를 불러오는 중...</span>
                     </div>
@@ -434,7 +434,7 @@ const ActiveCallPopup: React.FC = () => {
                                         {/* 1열: 총 채무액 */}
                                         <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
                                                     총 채무액
                                                 </span>
                                                 <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 block mt-0.5 truncate">
@@ -457,7 +457,7 @@ const ActiveCallPopup: React.FC = () => {
                                         {/* 2열: 월 순소득 */}
                                         <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
                                                     월 순소득
                                                 </span>
                                                 <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 block mt-0.5 truncate">
@@ -474,7 +474,7 @@ const ActiveCallPopup: React.FC = () => {
                                         {/* 3열: 주거 / 이력 */}
                                         <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
                                                     주거 / 이력
                                                 </span>
                                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block mt-0.5 truncate">
@@ -518,7 +518,7 @@ const ActiveCallPopup: React.FC = () => {
 
                         {parsePreInfo(matchedCase.preInfo).length > 0 && (
                             <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3 text-left">
-                                <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider">
+                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider">
                                     사전 고객 정보
                                 </div>
                                 <div className="space-y-1 bg-gray-50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800/80">
@@ -537,10 +537,10 @@ const ActiveCallPopup: React.FC = () => {
                             return (
                                 <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3 text-left">
                                     <div className="flex justify-between items-center mb-1.5">
-                                        <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                                             최근 상담 이력
                                         </span>
-                                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                                             {formatMemoDate(latestMemo.createdAt)}
                                         </span>
                                     </div>

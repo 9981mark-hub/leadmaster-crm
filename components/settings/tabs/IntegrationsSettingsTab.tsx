@@ -86,7 +86,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                                         <MessageCircle size={14} className="text-blue-500 shrink-0" />
                                         <span className="truncate">{room.name}</span>
                                     </div>
-                                    <div className="text-xs text-gray-400 truncate mt-0.5 font-mono">
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 font-mono">
                                         {room.url}
                                     </div>
                                 </div>
@@ -95,7 +95,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                                         href={room.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-blue-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                         title="바로가기"
                                     >
                                         <ExternalLink size={14} />
@@ -103,7 +103,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                                     <button
                                         type="button"
                                         onClick={() => handleDeleteRoom(room.id)}
-                                        className="p-1.5 text-gray-400 hover:text-rose-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-rose-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                         title="삭제"
                                     >
                                         <Trash2 size={14} />
@@ -112,7 +112,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                             </div>
                         ))}
                         {telegramRooms.length === 0 && (
-                            <div className="col-span-full text-center py-6 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                            <div className="col-span-full text-center py-6 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
                                 등록된 텔레그램 방이 없습니다. 아래에서 새 방을 추가하세요.
                             </div>
                         )}
@@ -207,7 +207,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                             >
                                 <RefreshCw size={12} /> 기본 어휘집으로 초기화
                             </button>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                                 총 {aiKeywords.split(',').filter(k => k.trim()).length}개 단어 등록됨
                             </span>
                         </div>

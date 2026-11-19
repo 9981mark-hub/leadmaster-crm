@@ -142,9 +142,9 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
             </span>
           </div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {stats.activeCount.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
+            {stats.activeCount.toLocaleString()} <span className="text-xs font-normal text-gray-500 dark:text-gray-400">건</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             오늘 당장 상담/통화가 진행 중인 실전 영업 DB
           </p>
         </div>
@@ -160,9 +160,9 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
             </span>
           </div>
           <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-            {stats.archivedCount.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
+            {stats.archivedCount.toLocaleString()} <span className="text-xs font-normal text-gray-500 dark:text-gray-400">건</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             계약 완료/장기 미접촉 격리 DB (재인입 시 자동 부활)
           </p>
         </div>
@@ -178,9 +178,9 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
             </span>
           </div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {stats.trashCount.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
+            {stats.trashCount.toLocaleString()} <span className="text-xs font-normal text-gray-500 dark:text-gray-400">건</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             결번, 수신거부 및 수동 삭제된 DB
           </p>
         </div>
@@ -330,7 +330,7 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
               오래된 미접촉 DB 조건부 대량 일괄 보관 콘솔
             </h3>
           </div>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             필터 조건에 부합하는 리드를 1클릭으로 상담원 시야에서 일제히 은닉합니다.
           </span>
         </div>

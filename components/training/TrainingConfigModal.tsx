@@ -133,7 +133,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -209,7 +209,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                   placeholder="예: 온라인 무료 안심 자가진단, 유튜브 간편조회"
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-xs text-gray-400 mt-0.5 block">AI 고객이 이 신청 경로를 듣고 경계를 풉니다.</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">AI 고객이 이 신청 경로를 듣고 경계를 풉니다.</span>
               </div>
 
               <div>
@@ -223,7 +223,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                   placeholder="예: 02-588-7119, 1588-4920"
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-xs text-gray-400 mt-0.5 block">보이스피싱 의심 시 안심 역발신 제안 번호</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">보이스피싱 의심 시 안심 역발신 제안 번호</span>
               </div>
             </div>
           </div>

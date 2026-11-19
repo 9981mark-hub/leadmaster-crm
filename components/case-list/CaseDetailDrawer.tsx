@@ -96,7 +96,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
             <div className="px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50/80 dark:bg-gray-800/80 shrink-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-bold text-gray-500 dark:text-gray-400">퀵 인스펙터</span>
-                <span className="text-gray-300 dark:text-gray-600">|</span>
+                <span className="text-gray-600 dark:text-gray-300 dark:text-gray-600">|</span>
                 {/* 이전/다음 고객 이동 버튼 */}
                 <div className="flex items-center gap-0.5 bg-white dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 p-0.5 shadow-sm">
                   <button
@@ -128,7 +128,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                 </Link>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   title="닫기 (ESC)"
                 >
                   <X size={18} />
@@ -201,23 +201,23 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                 </h4>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">출생 / 성별:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">출생 / 성별:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.birth || '-'}년 / {c.gender || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">거주지역:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">거주지역:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.region || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">결혼 / 자녀:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">결혼 / 자녀:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.maritalStatus || '-'} / {c.childrenCount !== undefined ? `${c.childrenCount}명` : '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">유입경로:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">유입경로:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.inboundPath || '-'}</span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-gray-400 dark:text-gray-500">제휴 법무법인:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">제휴 법무법인:</span>{' '}
                     <span className="font-semibold text-indigo-600 dark:text-indigo-400">{partner?.name || '미지정'}</span>
                   </div>
                 </div>
@@ -230,19 +230,19 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                 </h4>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">직업군:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">직업군:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.jobTypes?.join(', ') || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">4대보험:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">4대보험:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.insurance4 || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">월 순소득:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">월 순소득:</span>{' '}
                     <span className="font-bold text-blue-600 dark:text-blue-400">{c.incomeNet ? `${c.incomeNet.toLocaleString()}만 원` : '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">월 대출상환액:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">월 대출상환액:</span>{' '}
                     <span className="font-semibold text-rose-600 dark:text-rose-400">{c.loanMonthlyPay ? `${c.loanMonthlyPay.toLocaleString()}만 원` : '-'}</span>
                   </div>
                 </div>
@@ -255,15 +255,15 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                 </h4>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">주거:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">주거:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.housingType || '-'} ({c.housingDetail || '-'})</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 dark:text-gray-500">보증금/월세:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">보증금/월세:</span>{' '}
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{c.deposit || 0} / {c.rent || 0}만 원</span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-gray-400 dark:text-gray-500">신용대출 추정 총액:</span>{' '}
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">신용대출 추정 총액:</span>{' '}
                     <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
                       {totalCreditDebt > 0 ? `${totalCreditDebt.toLocaleString()}만 원` : '기록 없음'}
                     </span>
@@ -301,14 +301,14 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                   {c.specialMemo && c.specialMemo.length > 0 ? (
                     [...c.specialMemo].reverse().slice(0, 5).map((m, idx) => (
                       <div key={m.id || idx} className="text-xs p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600">
-                        <div className="flex justify-between text-xs text-gray-400 mb-0.5">
+                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-0.5">
                           <span>{safeFormat(m.createdAt, 'yyyy-MM-dd HH:mm')}</span>
                         </div>
                         <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{m.content}</p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-gray-400 py-2 text-center">등록된 메모가 없습니다.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 py-2 text-center">등록된 메모가 없습니다.</p>
                   )}
                 </div>
 

@@ -378,7 +378,7 @@ export default function AgentPerformancePanel() {
           <span className="truncate max-w-[420px]" title={scheduleSentence}>
             📌 <b>지급 규칙</b>: {scheduleSentence}
           </span>
-          <span className="text-gray-400">·</span>
+          <span className="text-gray-500 dark:text-gray-400">·</span>
           <span className="text-blue-600 dark:text-blue-400 font-semibold">
             계약 종류 {settings.contractTypes.length}개 적용 중
           </span>
@@ -481,7 +481,7 @@ export default function AgentPerformancePanel() {
                         3
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold text-gray-400">{idx + 1}</span>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{idx + 1}</span>
                     )}
                   </td>
 
@@ -492,7 +492,7 @@ export default function AgentPerformancePanel() {
                         <span className="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-600">중지</span>
                       )}
                     </div>
-                    <div className="text-xs text-gray-400">{k.email || '이메일 없음'}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{k.email || '이메일 없음'}</div>
                   </td>
 
                   <td className="px-3 py-3 text-right tabular-nums text-gray-700 dark:text-gray-300">
@@ -501,7 +501,7 @@ export default function AgentPerformancePanel() {
 
                   <td className="px-3 py-3 text-right tabular-nums">
                     <div className="font-semibold text-gray-800 dark:text-gray-200">
-                      {k.totalCalls.toLocaleString()} <span className="text-xs text-gray-400">/</span> {k.connectedCalls.toLocaleString()}
+                      {k.totalCalls.toLocaleString()} <span className="text-xs text-gray-500 dark:text-gray-400">/</span> {k.connectedCalls.toLocaleString()}
                     </div>
                     <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                       {k.connectRate}%
@@ -512,7 +512,7 @@ export default function AgentPerformancePanel() {
                     <div className="font-semibold text-gray-800 dark:text-gray-200">
                       {fmtSec(k.totalDurationSeconds)}
                     </div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       평균 {fmtSec(k.avgDurationSeconds)}
                     </div>
                   </td>
@@ -525,7 +525,7 @@ export default function AgentPerformancePanel() {
                     <div className="font-semibold text-indigo-600 dark:text-indigo-400">
                       {k.transferredCount}건
                     </div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {k.transferRate}%
                     </div>
                   </td>
@@ -559,7 +559,7 @@ export default function AgentPerformancePanel() {
 
             {!loading && kpis.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-5 py-12 text-center text-gray-400">
+                <td colSpan={10} className="px-5 py-12 text-center text-gray-500 dark:text-gray-400">
                   해당 기간에 집계된 팀원 성과 데이터가 없습니다.
                 </td>
               </tr>
@@ -679,7 +679,7 @@ export default function AgentPerformancePanel() {
                               type="button"
                               onClick={() => handleRemoveContractType(type.id)}
                               disabled={draftSettings.contractTypes.length <= 1}
-                              className="p-1.5 text-gray-400 hover:text-red-500 disabled:opacity-30 rounded"
+                              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 disabled:opacity-30 rounded"
                               title="삭제"
                             >
                               <Trash2 size={15} />
@@ -718,7 +718,7 @@ export default function AgentPerformancePanel() {
                                     onChange={e => handleUpdateTypeField(type.id, 'amount', parseInt(e.target.value, 10) || 0)}
                                     className="w-full text-xs p-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg font-bold dark:bg-gray-700 dark:text-white"
                                   />
-                                  <span className="absolute right-2.5 top-2 text-xs text-gray-400">원</span>
+                                  <span className="absolute right-2.5 top-2 text-xs text-gray-500 dark:text-gray-400">원</span>
                                 </div>
                               </div>
                             ) : (
@@ -736,7 +736,7 @@ export default function AgentPerformancePanel() {
                                     onChange={e => handleUpdateTypeField(type.id, 'rate', parseFloat(e.target.value) || 0)}
                                     className="w-full text-xs p-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg font-bold dark:bg-gray-700 dark:text-white"
                                   />
-                                  <span className="absolute right-2.5 top-2 text-xs text-gray-400">%</span>
+                                  <span className="absolute right-2.5 top-2 text-xs text-gray-500 dark:text-gray-400">%</span>
                                 </div>
                               </div>
                             )}
@@ -1009,7 +1009,7 @@ export default function AgentPerformancePanel() {
 
               {/* Modal Footer */}
               <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   {activeModalTab === 'types' ? (
                     <span>계약 종류 {draftSettings.contractTypes.length}개 / 최대 10개</span>
                   ) : (
@@ -1049,7 +1049,7 @@ export default function AgentPerformancePanel() {
               </h3>
               <button
                 onClick={() => setSelectedAgentBreakdown(null)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold"
               >
                 ✕
               </button>
@@ -1065,7 +1065,7 @@ export default function AgentPerformancePanel() {
                   <div key={b.typeId} className="p-3 flex justify-between items-center bg-gray-50/50 dark:bg-gray-750">
                     <div>
                       <div className="font-bold text-gray-800 dark:text-gray-200">{b.typeName}</div>
-                      <div className="text-xs text-gray-400">수임료 합계: {b.feeRevenueManwon}만원</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">수임료 합계: {b.feeRevenueManwon}만원</div>
                     </div>
                     <div className="text-right">
                       <div className="font-extrabold text-indigo-600 dark:text-indigo-400 text-sm">
@@ -1076,7 +1076,7 @@ export default function AgentPerformancePanel() {
                   </div>
                 ))}
                 {selectedAgentBreakdown.contractBreakdown.length === 0 && (
-                  <div className="p-6 text-center text-gray-400">체결된 계약 내역이 없습니다.</div>
+                  <div className="p-6 text-center text-gray-500 dark:text-gray-400">체결된 계약 내역이 없습니다.</div>
                 )}
               </div>
             </div>

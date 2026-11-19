@@ -110,7 +110,7 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
         return <Link to={`/case/${r.caseId}`} className="text-blue-600 dark:text-blue-400 hover:underline">{name || '(이름 없음)'}</Link>;
       }
       const label = typeof r.detail.label === 'string' && r.detail.label ? r.detail.label : '';
-      return <span className="text-gray-400" title={r.caseId}>{label || '지금은 없는 리드'}</span>;
+      return <span className="text-gray-500 dark:text-gray-400" title={r.caseId}>{label || '지금은 없는 리드'}</span>;
     }
     const ids: string[] = Array.isArray(r.detail.case_ids) ? r.detail.case_ids : [];
     if (ids.length > 0) {
@@ -120,7 +120,7 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
       const shown = names.slice(0, 3).join(', ');
       return <span className="text-gray-700 dark:text-gray-200" title={names.join(', ')}>{shown || `${total}건`}{shown && total > 3 ? ` 외 ${total - 3}건` : ''}</span>;
     }
-    return <span className="text-gray-300">-</span>;
+    return <span className="text-gray-600 dark:text-gray-300">-</span>;
   };
 
   const countCell = (r: AccessLogRow) => {
@@ -130,8 +130,8 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
     return (
       <span className="text-gray-600 dark:text-gray-300">
         {parts.join(' ')}
-        {file && <span className="ml-1 text-gray-400 break-all" title={file}>{file}</span>}
-        {!parts.length && !file && <span className="text-gray-300">-</span>}
+        {file && <span className="ml-1 text-gray-500 dark:text-gray-400 break-all" title={file}>{file}</span>}
+        {!parts.length && !file && <span className="text-gray-600 dark:text-gray-300">-</span>}
       </span>
     );
   };
@@ -139,7 +139,7 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
   if (notReady) {
     return (
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm px-5 py-4 flex items-center gap-2 text-sm text-gray-500">
-        <ShieldCheck size={18} className="text-gray-400" />
+        <ShieldCheck size={18} className="text-gray-500 dark:text-gray-400" />
         <b className="text-gray-700 dark:text-gray-200">접근 기록</b> 서버 업데이트 후 사용할 수 있습니다.
         <button onClick={() => fetchPage()} className="ml-auto text-xs flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 다시 확인</button>
       </section>
@@ -152,7 +152,7 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
       <div className="px-5 py-3 flex flex-wrap items-center gap-2">
         <ShieldCheck size={18} className="text-emerald-600" />
         <h2 className="font-bold text-gray-800 dark:text-white">접근 기록</h2>
-        <span className="text-xs text-gray-400">누가 언제 어떤 리드를 열람·내보내기·삭제·녹음 재생했는지 · 정책 연동 보관(6개월/1년/2년) · 관리자 전용</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">누가 언제 어떤 리드를 열람·내보내기·삭제·녹음 재생했는지 · 정책 연동 보관(6개월/1년/2년) · 관리자 전용</span>
         <div className="ml-auto flex items-center gap-3">
           {open && (
             <button onClick={() => fetchPage()} disabled={loading} className="text-xs text-gray-500 flex items-center gap-1 disabled:opacity-50">
@@ -214,13 +214,13 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
                   </tr>
                 ))}
                 {!loading && rows.length === 0 && (
-                  <tr><td colSpan={5} className="px-5 py-8 text-center text-gray-400">이 기간에 기록이 없습니다.</td></tr>
+                  <tr><td colSpan={5} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">이 기간에 기록이 없습니다.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          <div className="px-5 py-2.5 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2 text-xs text-gray-400">
+          <div className="px-5 py-2.5 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             {loading && <Loader2 size={14} className="animate-spin" />}
             <span>최근 것부터 {ACCESS_LOG_PAGE_SIZE}건씩 · 시각은 한국 시간 · 같은 리드를 10분 안에 다시 연 것은 한 번만 남습니다</span>
             {hasMore && (

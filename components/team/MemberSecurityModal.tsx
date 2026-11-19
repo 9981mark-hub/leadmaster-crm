@@ -93,7 +93,7 @@ export default function MemberSecurityModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={18} />
           </button>
@@ -119,7 +119,7 @@ export default function MemberSecurityModal({
                 <div className="flex items-center gap-1 font-bold">
                   <Sparkles size={14} className="text-amber-500" /> 팀장급 신뢰 프리셋
                 </div>
-                <span className="text-xs text-gray-400 font-normal">모든 보안 제한 해제</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">모든 보안 제한 해제</span>
               </button>
 
               <button
@@ -134,7 +134,7 @@ export default function MemberSecurityModal({
                 <div className="flex items-center gap-1 font-bold">
                   <ShieldAlert size={14} className="text-blue-500" /> 일반/신입 상담원
                 </div>
-                <span className="text-xs text-gray-400 font-normal">보안 4종 전체 활성화</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">보안 4종 전체 활성화</span>
               </button>
             </div>
           </div>

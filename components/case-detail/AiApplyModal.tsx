@@ -287,7 +287,7 @@ export function AiApplyModal({ c, extracted, memo, preferNew, sourceLabel = 'AI 
         </div>
         <div className="overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs text-gray-400 bg-gray-50 dark:bg-gray-700/40"><tr><th className="w-10" /><th className="text-left px-2 py-1.5">항목</th><th className="text-left px-2">지금</th><th className="text-left px-2">AI</th></tr></thead>
+            <thead className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/40"><tr><th className="w-10" /><th className="text-left px-2 py-1.5">항목</th><th className="text-left px-2">지금</th><th className="text-left px-2">AI</th></tr></thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {cands.map(x => (
                 <tr key={x.key} className={`cursor-pointer ${on[x.key] ? (x.kind === 'remove' ? 'bg-red-50/60 dark:bg-red-900/10' : 'bg-blue-50/50 dark:bg-blue-900/10') : ''}`} onClick={() => toggle(x.key)}>
@@ -295,16 +295,16 @@ export function AiApplyModal({ c, extracted, memo, preferNew, sourceLabel = 'AI 
                   <td className="px-2 py-1.5 font-medium text-gray-700 dark:text-gray-200">
                     <span className={`mr-1.5 text-xs px-1 py-0.5 rounded border ${KIND_BADGE[x.kind].cls}`}>{KIND_BADGE[x.kind].text}</span>{x.label}
                   </td>
-                  <td className="px-2 text-gray-400">{x.current}</td>
+                  <td className="px-2 text-gray-500 dark:text-gray-400">{x.current}</td>
                   <td className={`px-2 ${x.kind === 'remove' ? 'text-red-600 text-xs' : 'text-gray-800 dark:text-gray-100'}`}>{x.next}</td>
                 </tr>
               ))}
-              {cands.length === 0 && <tr><td colSpan={4} className="px-5 py-6 text-center text-gray-400">바뀐 값이 없습니다. 지금 상담 정보와 같습니다.</td></tr>}
+              {cands.length === 0 && <tr><td colSpan={4} className="px-5 py-6 text-center text-gray-500 dark:text-gray-400">바뀐 값이 없습니다. 지금 상담 정보와 같습니다.</td></tr>}
             </tbody>
           </table>
         </div>
         <div className="px-5 py-3 border-t dark:border-gray-700 flex items-center justify-end gap-2">
-          <span className="mr-auto text-xs text-gray-400">반영하면 바뀐 내용이 상담 메모에 기록됩니다.</span>
+          <span className="mr-auto text-xs text-gray-500 dark:text-gray-400">반영하면 바뀐 내용이 상담 메모에 기록됩니다.</span>
           <button onClick={onClose} className="px-4 py-2 rounded border border-gray-300 text-sm">취소</button>
           <button disabled={count === 0} onClick={() => {
             const chosen = cands.filter(x => on[x.key]);

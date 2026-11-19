@@ -196,7 +196,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                                     <p className="font-bold text-teal-700">{cost.amount.toLocaleString()}원</p>
                                     <button
                                         onClick={() => handleDelete(cost.id)}
-                                        className="text-gray-400 hover:text-red-500"
+                                        className="text-gray-500 dark:text-gray-400 hover:text-red-500"
                                     >
                                         ×
                                     </button>
@@ -205,7 +205,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         등록된 고정비용이 없습니다.
                     </div>
                 )}

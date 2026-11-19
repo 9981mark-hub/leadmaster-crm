@@ -389,7 +389,7 @@ export default function Dashboard() {
 
             <div className="flex-1 overflow-y-auto p-4">
               {overdueReminders.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
+                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                   지연된 리마인더가 없습니다.
                 </div>
               ) : (
@@ -405,7 +405,7 @@ export default function Dashboard() {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
-                            <span className="text-xs text-gray-400">|</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">|</span>
                             <span className="text-sm text-gray-600 dark:text-gray-400">{item.caseData.phone}</span>
                           </div>
                           <div className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">
@@ -446,7 +446,7 @@ export default function Dashboard() {
 
             <div className="flex-1 overflow-y-auto p-4">
               {warningCasesWithDetails.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
+                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                   조치가 필요한 케이스가 없습니다.
                 </div>
               ) : (
@@ -462,7 +462,7 @@ export default function Dashboard() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
-                            <span className="text-xs text-gray-400">|</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">|</span>
                             <span className="text-sm text-gray-600 dark:text-gray-400">{item.caseData.phone}</span>
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -476,7 +476,7 @@ export default function Dashboard() {
                             ))}
                           </div>
                         </div>
-                        <span className="text-xs text-gray-400 mt-1">→</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">→</span>
                       </div>
                     </Link>
                   ))}

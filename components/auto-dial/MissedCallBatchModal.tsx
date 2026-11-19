@@ -185,7 +185,7 @@ const MissedCallBatchModal: React.FC<MissedCallBatchModalProps> = ({
             <div className="flex-1">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">검색</label>
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
                 <input
                   type="text"
                   value={search}
@@ -265,7 +265,7 @@ const MissedCallBatchModal: React.FC<MissedCallBatchModalProps> = ({
                     {selectedIds.has(c.caseId) ? (
                       <CheckSquare size={18} className="text-blue-600 flex-shrink-0" />
                     ) : (
-                      <Square size={18} className="text-gray-400 flex-shrink-0" />
+                      <Square size={18} className="text-gray-500 dark:text-gray-400 flex-shrink-0" />
                     )}
                     <span className="text-sm font-medium text-gray-900 dark:text-white min-w-[60px]">
                       {c.customerName}
@@ -275,7 +275,7 @@ const MissedCallBatchModal: React.FC<MissedCallBatchModalProps> = ({
                       부재 {c.missedCallCount || 0}회
                     </span>
                     {c.lastMissedCallAt && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(c.lastMissedCallAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                       </span>
                     )}

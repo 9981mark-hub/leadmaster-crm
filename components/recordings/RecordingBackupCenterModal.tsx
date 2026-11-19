@@ -205,7 +205,7 @@ export default function RecordingBackupCenterModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <X size={20} />
           </button>
@@ -219,7 +219,7 @@ export default function RecordingBackupCenterModal({
                 <AlertTriangle size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-400 font-medium">30일 이내 만료 예정</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">30일 이내 만료 예정</div>
                 <div className="text-base font-bold text-amber-600 dark:text-amber-400">
                   {stats.urgentCount}건 ({fmtBytes(stats.urgentBytes)})
                 </div>
@@ -231,7 +231,7 @@ export default function RecordingBackupCenterModal({
                 <Clock size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-400 font-medium">60일 이내 만료 예정</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">60일 이내 만료 예정</div>
                 <div className="text-base font-bold text-gray-800 dark:text-gray-100">
                   {stats.totalCount}건 ({fmtBytes(stats.totalBytes)})
                 </div>
@@ -243,7 +243,7 @@ export default function RecordingBackupCenterModal({
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-400 font-medium">AI 요약/대화록 영구 보존</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">AI 요약/대화록 영구 보존</div>
                 <div className="text-xs font-semibold text-green-600 dark:text-green-400">
                   파일 삭제 후에도 텍스트 보존
                 </div>
@@ -254,7 +254,7 @@ export default function RecordingBackupCenterModal({
           {/* 검색 및 액션 컨트롤 */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <div className="relative flex-1 min-w-[240px]">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
               <input
                 type="text"
                 value={search}
@@ -302,17 +302,17 @@ export default function RecordingBackupCenterModal({
         {/* 목록 테이블 */}
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-gray-400">
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-gray-500 dark:text-gray-400">
               <Loader2 size={32} className="animate-spin text-amber-500" />
               <span className="text-xs">만료 예정 녹음 목록을 조회하고 있습니다…</span>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-2 text-gray-400">
+            <div className="py-20 flex flex-col items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
               <ShieldCheck size={36} className="text-green-500 mb-1" />
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 만료 임박 대상 녹음이 없습니다.
               </span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 모든 통화 녹음이 1년 보관 정책 내에서 안전하게 유지되고 있습니다.
               </span>
             </div>
@@ -351,7 +351,7 @@ export default function RecordingBackupCenterModal({
                       <button
                         type="button"
                         onClick={() => toggleSelect(it.id)}
-                        className="text-gray-400 hover:text-amber-600 shrink-0"
+                        className="text-gray-500 dark:text-gray-400 hover:text-amber-600 shrink-0"
                       >
                         {isSelected ? (
                           <CheckSquare size={18} className="text-amber-600" />
@@ -372,10 +372,10 @@ export default function RecordingBackupCenterModal({
                           <span className="text-xs font-mono text-gray-500">
                             {it.phone}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             {it.callStartedAt?.slice(0, 16).replace('T', ' ')} ({fmtDuration(it.durationSec)})
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             {fmtBytes(it.sizeBytes)}
                           </span>
                         </div>

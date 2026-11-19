@@ -48,7 +48,7 @@ export default function ReceivablesTab({ cases, partners }: Props) {
 
   const current = ledgers.find(l => l.partner.partnerId === selected) || null;
 
-  if (loading) return <div className="p-8 text-center text-gray-400 flex items-center justify-center gap-2"><Loader2 size={16} className="animate-spin" /> 불러오는 중…</div>;
+  if (loading) return <div className="p-8 text-center text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2"><Loader2 size={16} className="animate-spin" /> 불러오는 중…</div>;
 
   return (
     <div className="space-y-5">

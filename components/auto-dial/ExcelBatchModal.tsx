@@ -248,7 +248,7 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -258,7 +258,7 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {!fileName ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-              <Upload className="w-12 h-12 text-gray-400 mb-4" />
+              <Upload className="w-12 h-12 text-gray-500 dark:text-gray-400 mb-4" />
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
                 엑셀 또는 CSV 파일을 선택해주세요.<br />
                 (이름, 전화번호 열 자동 인식)
@@ -364,7 +364,7 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
                               <button 
                                 onClick={() => row.isValid && toggleRow(row.id)}
                                 disabled={!row.isValid}
-                                className={`${row.selected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'} disabled:opacity-50`}
+                                className={`${row.selected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 dark:text-gray-600'} disabled:opacity-50`}
                               >
                                 {row.selected ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                               </button>

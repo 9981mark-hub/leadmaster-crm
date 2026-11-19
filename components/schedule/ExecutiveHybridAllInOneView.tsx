@@ -169,14 +169,14 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
     <div className="space-y-6 animate-fade-in">
       
       {/* 최상단 배너: 대표 겸직 모드 상태 안내 */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-white dark:from-slate-900 via-indigo-950 to-slate-900 border border-indigo-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-indigo-100 to-indigo-50 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 border border-indigo-200 dark:border-indigo-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner">
             <Sparkles size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-800/60">
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100/80 dark:bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/60">
                 TM 최고경영자 · 현장 총괄 통합 뷰
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{todayFormatted}</span>
@@ -215,7 +215,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               <DollarSign size={14} className="text-sky-600 dark:text-sky-400" />
               제휴처 수수료 매출
             </span>
-            <span className="text-xs text-sky-600 dark:text-sky-400 font-bold bg-sky-950 px-2 py-0.5 rounded border border-sky-800/40">
+            <span className="text-xs text-sky-600 dark:text-sky-400 font-bold bg-sky-100 dark:bg-sky-950 px-2 py-0.5 rounded border border-sky-200/40 dark:border-sky-800/40">
               {partners.length}개 로펌
             </span>
           </div>
@@ -235,7 +235,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               <Users size={14} className="text-emerald-600 dark:text-emerald-400" />
               상담원 수당 지급 대기
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/40">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200/40 dark:border-emerald-800/40">
               지급 예정
             </span>
           </div>
@@ -254,7 +254,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               <MapPin size={14} className="text-purple-600 dark:text-purple-400" />
               오늘 대면 미팅 (외근/방문)
             </span>
-            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-950 px-2 py-0.5 rounded border border-purple-800/40">
+            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-200/40 dark:border-purple-800/40">
               클로징 중요
             </span>
           </div>
@@ -270,7 +270,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
         {/* 지연된 미처리 콜 (Overdue) */}
         <div className={`p-4 rounded-2xl border shadow-md ${
           todayOperations.overdueRemindersCount > 0 
-            ? 'bg-rose-950/20 border-rose-900/40' 
+            ? 'bg-rose-100/20 dark:bg-rose-950/20 border-rose-900/40' 
             : 'bg-white/80 dark:bg-slate-900/80 border-slate-200/80 dark:border-slate-800/80'
         }`}>
           <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
@@ -279,7 +279,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               지연된 미처리 콜 (Overdue)
             </span>
             {todayOperations.overdueRemindersCount > 0 && (
-              <span className="text-xs text-rose-600 dark:text-rose-400 font-bold bg-rose-950 px-2 py-0.5 rounded border border-rose-800/50">
+              <span className="text-xs text-rose-600 dark:text-rose-400 font-bold bg-rose-100 dark:bg-rose-950 px-2 py-0.5 rounded border border-rose-200/50 dark:border-rose-800/50">
                 독려 필요
               </span>
             )}
@@ -309,7 +309,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                 <p className="text-xs text-slate-500 dark:text-slate-400">외근 나간 상담원과 클로징 미팅 일정을 확인하세요.</p>
               </div>
             </div>
-            <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-950/80 px-2.5 py-1 rounded-full border border-purple-800/50">
+            <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100/80 dark:bg-purple-950/80 px-2.5 py-1 rounded-full border border-purple-200/50 dark:border-purple-800/50">
               총 {todayOperations.fieldMeetings.length}건
             </span>
           </div>
@@ -376,7 +376,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                 <p className="text-xs text-slate-500 dark:text-slate-400">오늘 입금 완료되어야 할 착수금 및 분납금 건입니다.</p>
               </div>
             </div>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-800/50">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-200/50 dark:border-emerald-800/50">
               총 {todayOperations.depositPromises.length}건
             </span>
           </div>

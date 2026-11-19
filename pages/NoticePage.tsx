@@ -491,7 +491,7 @@ export const NoticePage: React.FC = () => {
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}
               >
-                <AlertCircle size={14} className={unreadNoticeCount > 0 ? 'text-amber-600' : 'text-gray-400'} />
+                <AlertCircle size={14} className={unreadNoticeCount > 0 ? 'text-amber-600' : 'text-gray-500 dark:text-gray-400'} />
                 <span>미확인 공지 {unreadNoticeCount}건</span>
               </button>
 
@@ -504,7 +504,7 @@ export const NoticePage: React.FC = () => {
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}
               >
-                <Clock size={14} className={directiveMetrics.pending > 0 ? 'text-red-600' : 'text-gray-400'} />
+                <Clock size={14} className={directiveMetrics.pending > 0 ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'} />
                 <span>확인 대기 지시 {directiveMetrics.pending}건</span>
               </button>
             </div>
@@ -575,9 +575,9 @@ export const NoticePage: React.FC = () => {
 
           {/* Notice Card List */}
           {loadingNotices ? (
-            <div className="text-center py-12 text-gray-400">공지사항을 불러오는 중...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">공지사항을 불러오는 중...</div>
           ) : filteredNotices.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400">
+            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400">
               등록된 공지사항이 없습니다.
             </div>
           ) : (
@@ -672,7 +672,7 @@ export const NoticePage: React.FC = () => {
                           {notice.content}
                         </p>
 
-                        <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500 pt-2">
+                        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 pt-2">
                           <span>등록일: {new Date(notice.created_at).toLocaleDateString('ko-KR')}</span>
                           {notice.ends_at && (
                             <span>게시 종료: {new Date(notice.ends_at).toLocaleDateString('ko-KR')}</span>
@@ -711,7 +711,7 @@ export const NoticePage: React.FC = () => {
                             {(isOwner || canViewAll || noticePerms.canDeleteNotice) && (
                               <button
                                 onClick={() => handleDeleteNotice(notice.id)}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
                                 title="공지 삭제"
                               >
                                 <Trash2 size={16} />
@@ -743,7 +743,7 @@ export const NoticePage: React.FC = () => {
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {directiveMetrics.total}<span className="text-xs font-normal text-gray-500 ml-1">건</span>
               </div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {canViewAll ? '전사 하달 누적 건' : isTeamScope ? '소속 팀원 지시 총합' : '본인 할당 전체 지시'}
               </div>
             </div>
@@ -756,7 +756,7 @@ export const NoticePage: React.FC = () => {
             }`}>
               <div className="flex items-center justify-between text-xs text-red-600 dark:text-red-400 font-bold mb-1">
                 <span>{isAgent ? '새 지시 (확인 필요)' : isTeamScope ? '팀원 미확인 대기' : '전사 확인 대기'}</span>
-                <Clock size={15} className={directiveMetrics.pending > 0 ? 'text-red-500 animate-pulse' : 'text-gray-400'} />
+                <Clock size={15} className={directiveMetrics.pending > 0 ? 'text-red-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'} />
               </div>
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {directiveMetrics.pending}<span className="text-xs font-normal text-red-500 ml-1">건</span>
@@ -775,7 +775,7 @@ export const NoticePage: React.FC = () => {
               <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">
                 {directiveMetrics.inProgress}<span className="text-xs font-normal text-gray-500 ml-1">건</span>
               </div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 현재 현장 상담/통화 조치 중인 건
               </div>
             </div>
@@ -790,7 +790,7 @@ export const NoticePage: React.FC = () => {
                 {isAgent ? directiveMetrics.completed : `${directiveMetrics.completionRate}%`}
                 <span className="text-xs font-normal text-gray-500 ml-1">{isAgent ? '건' : `(${directiveMetrics.completed}건 완료)`}</span>
               </div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 결과 메모 제출 완료된 업무
               </div>
             </div>
@@ -864,9 +864,9 @@ export const NoticePage: React.FC = () => {
           </div>
 
           {loadingDirectives ? (
-            <div className="text-center py-12 text-gray-400">업무 지시를 불러오는 중...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">업무 지시를 불러오는 중...</div>
           ) : filteredDirectives.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400">
+            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400">
               해당 조건의 업무 지시사항이 없습니다.
             </div>
           ) : (
@@ -943,7 +943,7 @@ export const NoticePage: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500 pt-1">
+                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 pt-1">
                         {directive.due_date && (
                           <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
                             <Clock size={12} /> 마감: {new Date(directive.due_date).toLocaleString('ko-KR')}
@@ -1329,7 +1329,7 @@ export const NoticePage: React.FC = () => {
                   ))}
                 </select>
                 {isTeamScope && (
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     중간 관리자(팀장)는 본인 소속 팀원에게만 업무 지시를 내릴 수 있습니다.
                   </p>
                 )}
@@ -1473,7 +1473,7 @@ export const NoticePage: React.FC = () => {
               </h3>
               <button
                 onClick={() => setStatsNotice(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-sm"
               >
                 ✕
               </button>
@@ -1484,7 +1484,7 @@ export const NoticePage: React.FC = () => {
             </p>
 
             {loadingStats ? (
-              <div className="py-8 text-center text-xs text-gray-400">통계 집계 중...</div>
+              <div className="py-8 text-center text-xs text-gray-500 dark:text-gray-400">통계 집계 중...</div>
             ) : statsData ? (
               <div className="space-y-4 text-xs">
                 {/* Stats Summary Gauge */}
@@ -1542,7 +1542,7 @@ export const NoticePage: React.FC = () => {
                                 <span>{m.displayName}</span>
                                 <span className="text-xs px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium">{m.teamName || '1팀'}</span>
                               </span>
-                              <span className="text-xs text-gray-400">{new Date(m.readAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(m.readAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           ))}
                         </div>

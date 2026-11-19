@@ -16,11 +16,11 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
     }
 
     if (error || !logs) {
-        return <div className="text-center text-gray-400 py-4">기록을 불러올 수 없습니다.</div>;
+        return <div className="text-center text-gray-500 dark:text-gray-400 py-4">기록을 불러올 수 없습니다.</div>;
     }
 
     if (logs.length === 0) {
-        return <div className="text-center text-gray-400 py-4">통화 및 문자 기록이 없습니다.</div>;
+        return <div className="text-center text-gray-500 dark:text-gray-400 py-4">통화 및 문자 기록이 없습니다.</div>;
     }
 
     const getIcon = (type: string) => {
@@ -61,26 +61,26 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
                             {getIcon(log.type)}
                             <span>{getLabel(log.type)}</span>
                         </div>
-                        <span className="text-gray-400 text-xs">
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">
                             {format(new Date(log.timestamp), 'MM.dd HH:mm')}
                         </span>
                     </div>
                     
                     
                     {log.duration !== undefined && log.duration > 0 && log.type.startsWith('CALL') && (
-                        <div className="text-gray-300 mt-1 font-medium bg-gray-700/30 inline-block px-1.5 py-0.5 rounded text-xs">
+                        <div className="text-gray-600 dark:text-gray-300 mt-1 font-medium bg-gray-700/30 inline-block px-1.5 py-0.5 rounded text-xs">
                             ⏱ 통화 시간: {formatDuration(log.duration)}
                         </div>
                     )}
                     
                     {log.content && (
-                        <div className="text-gray-300 mt-1 whitespace-pre-wrap break-words">
+                        <div className="text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-wrap break-words">
                             {log.content}
                         </div>
                     )}
                     
                     {log.lineInfo && log.lineInfo !== '기본' && (
-                        <div className="mt-1.5 inline-block px-1.5 py-0.5 bg-gray-700 text-gray-300 rounded text-xs">
+                        <div className="mt-1.5 inline-block px-1.5 py-0.5 bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs">
                             {log.lineInfo}
                         </div>
                     )}

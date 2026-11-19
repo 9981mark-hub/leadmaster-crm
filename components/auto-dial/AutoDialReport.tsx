@@ -86,7 +86,7 @@ const AutoDialReport: React.FC<AutoDialReportProps> = ({ batchId, onClose, onReb
       case 'no_answer': return <PhoneMissed size={16} className="text-orange-500" />;
       case 'busy': return <PhoneOff size={16} className="text-red-500" />;
       case 'error': case 'invalid': return <AlertCircle size={16} className="text-red-500" />;
-      default: return <SkipForward size={16} className="text-gray-400" />;
+      default: return <SkipForward size={16} className="text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -116,7 +116,7 @@ const AutoDialReport: React.FC<AutoDialReportProps> = ({ batchId, onClose, onReb
         </div>
         <button
           onClick={onClose}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300"
         >
           <ArrowLeft size={16} />
           돌아가기
@@ -186,7 +186,7 @@ const AutoDialReport: React.FC<AutoDialReportProps> = ({ batchId, onClose, onReb
               className="flex items-center justify-between px-4 py-2.5 border-b border-gray-50 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-750"
             >
               <div className="flex items-center gap-3">
-                <span className="text-xs text-gray-400 w-6 text-right">{idx + 1}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-right">{idx + 1}</span>
                 {getResultIcon(item.status === 'skipped' ? 'skipped' : item.result)}
                 <span className="text-sm font-medium text-gray-900 dark:text-white">{item.customerName}</span>
                 <span className="text-xs text-gray-500">{item.phone}</span>
@@ -201,7 +201,7 @@ const AutoDialReport: React.FC<AutoDialReportProps> = ({ batchId, onClose, onReb
                   {getResultLabel(item)}
                 </span>
                 {item.ringDurationSeconds !== undefined && item.ringDurationSeconds > 0 && (
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     <Clock size={12} />
                     {item.ringDurationSeconds}초
                   </span>

@@ -90,7 +90,7 @@ export const TelegramRuleModal: React.FC<Props> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             <X size={20} />
           </button>
@@ -156,7 +156,7 @@ export const TelegramRuleModal: React.FC<Props> = ({
                         {rule.label || rule.feedbackType}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 font-mono">[{rule.feedbackType}]</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">[{rule.feedbackType}]</span>
                   </div>
 
                   {/* 설정 컨트롤들 */}
@@ -183,7 +183,7 @@ export const TelegramRuleModal: React.FC<Props> = ({
 
                     {/* 2. 변경할 케이스 상태 드롭다운 */}
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-xs text-gray-400">변경 상태:</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">변경 상태:</span>
                       <select
                         value={rule.targetStatus || ''}
                         onChange={(e) => handleRuleChange(key, 'targetStatus', e.target.value)}

@@ -125,7 +125,7 @@ function StructuredDataCards({ e }: { e: ExtractedInfo }) {
                   {e.debt.creditors.map((cr, i) => (
                     <div key={i} className="flex justify-between items-center text-xs bg-white/70 dark:bg-gray-800/60 px-2 py-1 rounded">
                       <span className="font-medium text-gray-800 dark:text-gray-200">
-                        {cr.name || cr.kind} <span className="text-gray-400 font-normal">({cr.kind})</span>
+                        {cr.name || cr.kind} <span className="text-gray-500 dark:text-gray-400 font-normal">({cr.kind})</span>
                       </span>
                       <span className="font-bold text-gray-900 dark:text-gray-100">
                         {fmtManwon(cr.amount_manwon)}
@@ -504,7 +504,7 @@ function RecordingDetailDashboard({
             </div>
 
             {rec.model && rec.analyzedAt && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {fmtWhen(rec.analyzedAt)} AI 정리됨 ({rec.model})
               </span>
             )}
@@ -533,7 +533,7 @@ function RecordingDetailDashboard({
                     }`}
                     title={`${l.t} 시점으로 이동하여 재생`}
                   >
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                       <span className="font-bold text-gray-600 dark:text-gray-300">{l.speaker}</span>
                       <span className={`tabular-nums px-1.5 py-0.5 rounded text-xs transition-colors ${
                         isActive
@@ -738,7 +738,7 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
                     <PhoneOutgoing size={13} className={isSelected ? 'text-purple-200' : 'text-blue-600'} />
                   )}
                   <span>{isFirst ? `⭐ ${num}차(최신)` : `${num}차`}</span>
-                  <span className={isSelected ? 'text-purple-200 font-normal' : 'text-gray-400'}>
+                  <span className={isSelected ? 'text-purple-200 font-normal' : 'text-gray-500 dark:text-gray-400'}>
                     {fmtWhen(r.callStartedAt)}
                   </span>
                   <span className={isSelected ? 'text-purple-100 font-medium' : 'text-gray-500'}>
@@ -845,7 +845,7 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
       ) : (
         !loading && list.length === 0 && (
           <div className="text-sm text-gray-500 bg-gray-50 dark:bg-gray-800/40 rounded-2xl p-8 text-center space-y-2 border border-gray-100 dark:border-gray-700">
-            <Mic size={36} className="mx-auto text-gray-300 dark:text-gray-600" />
+            <Mic size={36} className="mx-auto text-gray-600 dark:text-gray-300 dark:text-gray-600" />
             <p className="font-bold text-gray-700 dark:text-gray-300 text-base">아직 등록된 통화 녹음이 없습니다.</p>
             <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
               스마트폰 전화 앱에서 통화 자동 녹음을 켜두시면, 리드마스터 앱이 이 고객과의 통화 녹음을 자동으로 올려 AI로 정리합니다.

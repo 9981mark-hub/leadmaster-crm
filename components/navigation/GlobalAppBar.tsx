@@ -382,7 +382,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                       setIsProfileOpen(false);
                       logout();
                     }}
-                    className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                    className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-100/40 dark:bg-rose-950/40 transition-colors"
                   >
                     <LogOut size={15} />
                     <span>로그아웃</span>

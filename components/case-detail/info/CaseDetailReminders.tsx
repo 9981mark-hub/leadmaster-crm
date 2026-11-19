@@ -285,7 +285,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                         {/* Body */}
                         <div className="p-5">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                <MessageSquare size={14} className="inline mr-1.5 text-gray-400" />
+                                <MessageSquare size={14} className="inline mr-1.5 text-gray-500 dark:text-gray-400" />
                                 메모 (선택사항)
                             </label>
                             <textarea
@@ -462,7 +462,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
 
                         <div className="space-y-2 mt-2 max-h-72 overflow-y-auto">
                             {sortedReminders.length === 0 ? (
-                                <div className="text-center py-2 text-xs text-gray-400 bg-gray-50 rounded border border-gray-100 border-dashed">
+                                <div className="text-center py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 rounded border border-gray-100 border-dashed">
                                     지정된 일정이 없습니다.
                                 </div>
                             ) : (
@@ -523,7 +523,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                                     <button onClick={handleEditReminderSave} className="text-green-600 hover:bg-green-50 p-1.5 rounded" title="저장">
                                                         <Check size={16} />
                                                     </button>
-                                                    <button onClick={handleEditReminderCancel} className="text-gray-400 hover:bg-gray-100 p-1.5 rounded" title="취소">
+                                                    <button onClick={handleEditReminderCancel} className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 p-1.5 rounded" title="취소">
                                                         <X size={16} />
                                                     </button>
                                                 </div>
@@ -564,7 +564,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                                                 <button onClick={() => {
                                                                     const newReminders = reminders.map(r => r.id === reminder.id ? { ...r, resultStatus: undefined, resultNote: undefined } : r);
                                                                     onUpdateReminders(newReminders);
-                                                                }} className="text-gray-400 hover:text-gray-600 underline whitespace-nowrap">수정</button>
+                                                                }} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 underline whitespace-nowrap">수정</button>
                                                             </div>
                                                         </div>
                                                     ) : (
@@ -649,7 +649,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                                         <button type="button" onClick={handleEditMemoSave} className="text-green-600 hover:bg-green-50 p-1 rounded" title="저장">
                                                             <Check size={14} />
                                                         </button>
-                                                        <button type="button" onClick={() => setEditingMemoId(null)} className="text-gray-400 hover:bg-gray-100 p-1 rounded" title="취소">
+                                                        <button type="button" onClick={() => setEditingMemoId(null)} className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 p-1 rounded" title="취소">
                                                             <X size={14} />
                                                         </button>
                                                     </>

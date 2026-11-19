@@ -340,9 +340,9 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         <span className="text-2xl font-black text-gray-900 dark:text-white">
                             {summaryKPI.totalContracts.toLocaleString()}
                         </span>
-                        <span className="text-xs font-semibold text-gray-400">건 계약</span>
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">건 계약</span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400">
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         수임료 매출: ₩ {(summaryKPI.totalRevenue / 10000).toLocaleString()}만원
                     </div>
                 </div>
@@ -353,7 +353,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
                             ₩ {(summaryKPI.totalGrossPay / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-bold text-gray-400">만원 (세전)</span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원 (세전)</span>
                     </div>
                     <div className="mt-2 text-xs text-indigo-500 font-semibold">
                         기본급 + 성과급 + 일비 합산
@@ -366,7 +366,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                             ₩ {(summaryKPI.totalNetPay / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-bold text-gray-400">만원</span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
                     </div>
                     <div className="mt-2 text-xs text-emerald-600 font-medium">
                         상담원 실수령액 총합
@@ -379,9 +379,9 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
                             ₩ {(summaryKPI.totalTax / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-bold text-gray-400">만원</span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400">
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         소득세(3%) + 지방세(0.3%)
                     </div>
                 </div>
@@ -434,7 +434,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                                             <div className="font-bold text-gray-900 dark:text-white">
                                                 {item.member.displayName}
                                             </div>
-                                            <div className="text-xs text-gray-400">
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
                                                 {item.member.email}
                                             </div>
                                         </td>
@@ -494,7 +494,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                             })}
                             {agentCalculations.length === 0 && (
                                 <tr>
-                                    <td colSpan={10} className="py-12 text-center text-gray-400">
+                                    <td colSpan={10} className="py-12 text-center text-gray-500 dark:text-gray-400">
                                         등록된 상담원 또는 조회된 근태/실적 데이터가 없습니다.
                                     </td>
                                 </tr>

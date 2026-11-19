@@ -205,10 +205,10 @@ export default function TaxCalendarSection({ onActionClick }: TaxCalendarSection
                                         </span>
                                         <span className="text-xs text-gray-500">{event.date}</span>
                                         {event.period && (
-                                            <span className="text-xs text-gray-400">({event.period})</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">({event.period})</span>
                                         )}
                                     </div>
-                                    <p className={`text-sm font-medium mt-0.5 ${event.isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                    <p className={`text-sm font-medium mt-0.5 ${event.isDone ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-800'}`}>
                                         {event.title}
                                     </p>
                                 </div>
@@ -216,14 +216,14 @@ export default function TaxCalendarSection({ onActionClick }: TaxCalendarSection
                                 {/* D-day badge */}
                                 <div className="shrink-0 text-right">
                                     {isPast
-                                        ? <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">완료</span>
+                                        ? <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">완료</span>
                                         : event.daysLeft === 0
                                         ? <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">오늘!</span>
                                         : <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isUrgent ? 'bg-red-100 text-red-700' : isSoon ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
                                             D-{event.daysLeft}
                                         </span>
                                     }
-                                    {isExpanded ? <ChevronUp size={14} className="text-gray-400 ml-1 inline" /> : <ChevronDown size={14} className="text-gray-400 ml-1 inline" />}
+                                    {isExpanded ? <ChevronUp size={14} className="text-gray-500 dark:text-gray-400 ml-1 inline" /> : <ChevronDown size={14} className="text-gray-500 dark:text-gray-400 ml-1 inline" />}
                                 </div>
                             </div>
 
@@ -233,8 +233,8 @@ export default function TaxCalendarSection({ onActionClick }: TaxCalendarSection
                                     <p className="text-sm text-gray-600 mt-2">{event.description}</p>
                                     <div className="mt-2 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <Clock size={12} className="text-gray-400" />
-                                            <span className="text-xs text-gray-400">
+                                            <Clock size={12} className="text-gray-500 dark:text-gray-400" />
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
                                                 {format(parseISO(event.date), 'yyyy년 M월 d일 (EEEE)', { locale: ko })}
                                             </span>
                                         </div>
@@ -257,7 +257,7 @@ export default function TaxCalendarSection({ onActionClick }: TaxCalendarSection
                 })}
 
                 {upcomingEvents.length === 0 && (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <Calendar size={32} className="mx-auto mb-2 opacity-40" />
                         <p className="text-sm">해당 항목이 없습니다.</p>
                     </div>
@@ -271,7 +271,7 @@ export default function TaxCalendarSection({ onActionClick }: TaxCalendarSection
                         <span key={tag} className={`px-2 py-0.5 rounded border ${style}`}>{tag}</span>
                     ))}
                 </div>
-                <p className="text-xs text-gray-400 mt-2">※ 신고 기한이 공휴일·토요일이면 다음 영업일로 연장됩니다. 실제 신고 전 홈택스 및 세무대리인 확인 권장.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">※ 신고 기한이 공휴일·토요일이면 다음 영업일로 연장됩니다. 실제 신고 전 홈택스 및 세무대리인 확인 권장.</p>
             </div>
         </div>
     );

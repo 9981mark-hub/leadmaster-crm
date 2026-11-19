@@ -234,11 +234,11 @@ export const LitePostCallSheet: React.FC<Props> = ({
               <span>{c.customerName} 고객</span>
               <span className="text-xs font-normal text-gray-500">통화 후 결과 처리</span>
             </h3>
-            <p className="text-xs text-gray-400 mt-0.5">{c.phone}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{c.phone}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X size={20} />
           </button>
@@ -326,7 +326,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
                       <span className="text-xs font-bold">{opt.label}</span>
                       {isSelected && <CheckCircle2 size={15} className="text-blue-600 dark:text-blue-400" />}
                     </div>
-                    <p className="text-xs text-gray-400 mt-0.5 truncate">{opt.desc}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{opt.desc}</p>
                   </button>
                 );
               })}
@@ -435,7 +435,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
             <button
               type="button"
               onClick={onClose}
-              className="hover:underline text-gray-400"
+              className="hover:underline text-gray-500 dark:text-gray-400"
             >
               취소하고 목록으로
             </button>

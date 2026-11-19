@@ -131,7 +131,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                     {c.preInfo}
                   </p>
                 ) : (
-                  <p className="text-gray-400 italic">사전 메모가 없습니다.</p>
+                  <p className="text-gray-500 dark:text-gray-400 italic">사전 메모가 없습니다.</p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1 text-xs text-gray-500">
                   <span>유입경로: <strong className="text-gray-700 dark:text-gray-300">{c.inboundPath || '기타'}</strong></span>
@@ -148,7 +148,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                 통화 중 확인 필수 질문 (터치하여 체크)
               </h4>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {Object.values(checkedItems).filter(Boolean).length} / 5 확인 완료
               </span>
             </div>
@@ -163,7 +163,7 @@ export const LiteInCallHud: React.FC<Props> = ({
               }`}
             >
               <div className="mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
-                {checkedItems['q1'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-300 dark:text-gray-600" />}
+                {checkedItems['q1'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-600 dark:text-gray-300 dark:text-gray-600" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-xs font-bold ${checkedItems['q1'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
@@ -185,7 +185,7 @@ export const LiteInCallHud: React.FC<Props> = ({
               }`}
             >
               <div className="mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
-                {checkedItems['q2'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-300 dark:text-gray-600" />}
+                {checkedItems['q2'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-600 dark:text-gray-300 dark:text-gray-600" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-xs font-bold ${checkedItems['q2'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
@@ -207,7 +207,7 @@ export const LiteInCallHud: React.FC<Props> = ({
               }`}
             >
               <div className="mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
-                {checkedItems['q3'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-300 dark:text-gray-600" />}
+                {checkedItems['q3'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-600 dark:text-gray-300 dark:text-gray-600" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-xs font-bold ${checkedItems['q3'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
@@ -229,7 +229,7 @@ export const LiteInCallHud: React.FC<Props> = ({
               }`}
             >
               <div className="mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
-                {checkedItems['q4'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-300 dark:text-gray-600" />}
+                {checkedItems['q4'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-600 dark:text-gray-300 dark:text-gray-600" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-xs font-bold ${checkedItems['q4'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
@@ -251,7 +251,7 @@ export const LiteInCallHud: React.FC<Props> = ({
               }`}
             >
               <div className="mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
-                {checkedItems['q5'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-300 dark:text-gray-600" />}
+                {checkedItems['q5'] ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-gray-600 dark:text-gray-300 dark:text-gray-600" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-xs font-bold ${checkedItems['q5'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>

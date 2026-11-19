@@ -440,13 +440,13 @@ export default function MyPage() {
                                             value={managerName}
                                             onChange={(e) => setManagerName(e.target.value)}
                                         />
-                                        <User className="absolute left-3 top-2.5 text-gray-400" size={15} />
+                                        <User className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={15} />
                                     </div>
                                     <Button variant="primary" size="sm" onClick={handleSaveName}>
                                         저장
                                     </Button>
                                 </div>
-                                <p className="text-xs text-gray-400 mt-1">상담 히스토리, 통화 기록, 정산표에 노출되는 활동명입니다.</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">상담 히스토리, 통화 기록, 정산표에 노출되는 활동명입니다.</p>
                             </div>
 
                             <div>
@@ -462,13 +462,13 @@ export default function MyPage() {
                                             value={directExtension}
                                             onChange={(e) => setDirectExtension(e.target.value)}
                                         />
-                                        <Phone className="absolute left-3 top-2.5 text-gray-400" size={15} />
+                                        <Phone className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={15} />
                                     </div>
                                     <Button variant="secondary" size="sm" onClick={handleSaveExtension}>
                                         등록
                                     </Button>
                                 </div>
-                                <p className="text-xs text-gray-400 mt-1">외부 콜백 연결 및 팀원 간 직통 호전환에 사용됩니다.</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">외부 콜백 연결 및 팀원 간 직통 호전환에 사용됩니다.</p>
                             </div>
 
                             <div>
@@ -482,7 +482,7 @@ export default function MyPage() {
                                         value={user?.email || ''}
                                         readOnly
                                     />
-                                    <Mail className="absolute left-3 top-2.5 text-gray-400" size={15} />
+                                    <Mail className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={15} />
                                 </div>
                             </div>
                         </div>
@@ -509,17 +509,17 @@ export default function MyPage() {
 
                         <div className="space-y-2.5 mb-4">
                             <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-750 rounded-xl">
-                                <Globe className="mr-2.5 text-gray-400 shrink-0" size={16} />
+                                <Globe className="mr-2.5 text-gray-500 dark:text-gray-400 shrink-0" size={16} />
                                 <div className="min-w-0">
-                                    <p className="text-xs text-gray-400">현재 접속 IP</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">현재 접속 IP</p>
                                     <p className="text-xs font-mono font-bold text-gray-800 dark:text-gray-200">{ipAddress}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-750 rounded-xl">
-                                <Monitor className="mr-2.5 text-gray-400 shrink-0" size={16} />
+                                <Monitor className="mr-2.5 text-gray-500 dark:text-gray-400 shrink-0" size={16} />
                                 <div className="min-w-0">
-                                    <p className="text-xs text-gray-400">접속 브라우저 및 환경</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">접속 브라우저 및 환경</p>
                                     <p className="text-xs font-mono truncate text-gray-700 dark:text-gray-300">{deviceInfo || 'Chrome on Windows'}</p>
                                 </div>
                             </div>
@@ -587,7 +587,7 @@ export default function MyPage() {
                                         <Smartphone size={15} />
                                         <span>스마트폰 앱 연동</span>
                                     </div>
-                                    <p className="text-xs text-gray-400 leading-tight">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
                                         안드로이드 앱을 통해 업무폰으로 자동 발신
                                     </p>
                                 </button>
@@ -605,7 +605,7 @@ export default function MyPage() {
                                         <Headphones size={15} />
                                         <span>PC 헤드셋 웹 다이얼</span>
                                     </div>
-                                    <p className="text-xs text-gray-400 leading-tight">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
                                         PC 브라우저 마이크/헤드셋으로 즉시 통화
                                     </p>
                                 </button>
@@ -623,7 +623,7 @@ export default function MyPage() {
                                         <MousePointer size={15} />
                                         <span>간편 클릭 다이얼</span>
                                     </div>
-                                    <p className="text-xs text-gray-400 leading-tight">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
                                         번호 복사 및 팝업 안내창 수동 확인
                                     </p>
                                 </button>
@@ -636,7 +636,7 @@ export default function MyPage() {
                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                                     <Clock size={14} className="text-blue-600" /> 통화 후 메모 정리 쿨다운 (자동 대기)
                                 </span>
-                                <p className="text-xs text-gray-400 mt-0.5">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                     통화가 끝난 직후 다음 콜이 배정되거나 전화가 울리지 않도록 메모를 작성할 휴식 시간입니다.
                                 </p>
                             </div>
@@ -662,7 +662,7 @@ export default function MyPage() {
                         <div className="p-3.5 border border-gray-200 dark:border-gray-700/80 rounded-xl">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <Mic size={16} className={isTestingMic ? 'text-rose-500 animate-pulse' : 'text-gray-400'} />
+                                    <Mic size={16} className={isTestingMic ? 'text-rose-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'} />
                                     <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
                                         헤드셋 마이크 입력 테스트
                                     </span>
@@ -685,7 +685,7 @@ export default function MyPage() {
                                     style={{ width: `${micVolume}%` }}
                                 />
                             </div>
-                            <p className="text-xs text-gray-400 mt-1.5">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
                                 {isTestingMic
                                     ? `마이크 입력 감지 중: ${micVolume}% (정상 감지 시 게이지가 초록색으로 움직입니다)`
                                     : '버튼을 눌러 통화 전 마이크 상태를 점검할 수 있습니다.'}
@@ -746,7 +746,7 @@ export default function MyPage() {
                                     <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
                                         신규 리드 인입 벨소리
                                     </span>
-                                    <p className="text-xs text-gray-400">내게 새로운 고객이 배정되었을 때 울릴 사운드입니다.</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">내게 새로운 고객이 배정되었을 때 울릴 사운드입니다.</p>
                                 </div>
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
                                     <select
@@ -791,7 +791,7 @@ export default function MyPage() {
                                     <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
                                         브라우저 바탕화면 푸시 알림
                                     </span>
-                                    <p className="text-xs text-gray-400">다른 탭이나 다른 프로그램을 보고 있을 때 바탕화면 알림을 띄웁니다.</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">다른 탭이나 다른 프로그램을 보고 있을 때 바탕화면 알림을 띄웁니다.</p>
                                 </div>
                                 <button
                                     type="button"
@@ -915,10 +915,10 @@ export default function MyPage() {
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
-                                        <Lock size={16} className="text-gray-400 shrink-0" />
+                                        <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">긴급 데이터 영구 파기</p>
-                                            <p className="text-xs text-gray-400">조직 대표(Owner) 전용 제한</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">조직 대표(Owner) 전용 제한</p>
                                         </div>
                                     </div>
                                 </>
@@ -946,10 +946,10 @@ export default function MyPage() {
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
-                                        <Lock size={16} className="text-gray-400 shrink-0" />
+                                        <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">거래처 수수료율 및 경영 손익</p>
-                                            <p className="text-xs text-gray-400">경영 기밀 보호 (대표 전용)</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">경영 기밀 보호 (대표 전용)</p>
                                         </div>
                                     </div>
                                 </>
@@ -970,17 +970,17 @@ export default function MyPage() {
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
-                                        <Lock size={16} className="text-gray-400 shrink-0" />
+                                        <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">타 팀원 리드 및 녹취 열람</p>
-                                            <p className="text-xs text-gray-400">개인정보 보호를 위한 접근 차단</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">개인정보 보호를 위한 접근 차단</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
-                                        <Lock size={16} className="text-gray-400 shrink-0" />
+                                        <Lock size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">정산 손익 및 시스템 설정</p>
-                                            <p className="text-xs text-gray-400">관리자 전용 메뉴 은닉</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">관리자 전용 메뉴 은닉</p>
                                         </div>
                                     </div>
                                 </>
@@ -1080,7 +1080,7 @@ export default function MyPage() {
                                         {allowedEmails.length > 1 && (
                                             <button
                                                 onClick={() => handleRemoveEmail(email)}
-                                                className="text-gray-400 hover:text-rose-500 p-1 rounded-lg transition-colors"
+                                                className="text-gray-500 dark:text-gray-400 hover:text-rose-500 p-1 rounded-lg transition-colors"
                                                 title="계정 삭제"
                                             >
                                                 <Trash2 size={14} />

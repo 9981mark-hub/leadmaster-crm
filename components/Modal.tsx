@@ -25,7 +25,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700">
           <h3 id="modal-title" className="text-lg font-bold text-gray-800 dark:text-white">{title}</h3>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg transition-colors" aria-label="Close">
+          <button onClick={onClose} className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg transition-colors" aria-label="Close">
             <X size={20} />
           </button>
         </div>

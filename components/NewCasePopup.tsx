@@ -75,7 +75,7 @@ const NewCasePopup: React.FC = () => {
                     </div>
                     <button
                         onClick={() => setVisible(false)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                        className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                     >
                         <X size={18} />
                     </button>

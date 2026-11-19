@@ -62,7 +62,7 @@ const Input = ({ label, value, onChange, onBlur, type = "text", placeholder = ""
         <input
           type={type === 'number' && !isCurrency ? 'text' : 'text'}
           autoComplete="off"
-          className={`w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 rounded focus:bg-white dark:focus:bg-gray-800 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-none ${readOnly ? 'bg-gray-50 text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
+          className={`w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 rounded focus:bg-white dark:focus:bg-gray-800 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-none ${readOnly ? 'bg-gray-50 text-gray-500 dark:text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
           value={displayValue || ''}
           onChange={!readOnly ? handleInputChange : undefined}
           onBlur={onBlur}
@@ -157,14 +157,14 @@ const CompactInput = ({ label, value, onChange, onBlur, type = "text", placehold
         <input
           type="text"
           autoComplete="off"
-          className={`w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm font-medium shadow-none ${readOnly ? 'bg-gray-50 text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
+          className={`w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm font-medium shadow-none ${readOnly ? 'bg-gray-50 text-gray-500 dark:text-gray-400 cursor-not-allowed dark:bg-gray-900/50' : 'text-gray-900 dark:text-gray-100'}`}
           value={displayValue || ''}
           onChange={!readOnly ? handleInputChange : undefined}
           onBlur={onBlur}
           placeholder={placeholder}
           readOnly={readOnly}
         />
-        {suffix && <span className="absolute right-3 top-2.5 text-gray-400 dark:text-gray-400 text-xs font-bold">{suffix}</span>}
+        {suffix && <span className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400 dark:text-gray-400 text-xs font-bold">{suffix}</span>}
       </div>
     </div>
   );
@@ -614,7 +614,7 @@ export default function NewCase() {
           <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/20"></div>
           <h4 className="font-bold text-gray-800 dark:text-gray-100 mb-4 text-[13px] flex items-center gap-1.5"><AlertCircle size={14} className="text-indigo-500" />자산 목록 (본인/배우자 포함)</h4>
           <div className="space-y-3 mb-4">
-            {formData.assets.length === 0 && <p className="text-xs text-gray-400 text-center py-2">등록된 자산이 없습니다.</p>}
+            {formData.assets.length === 0 && <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">등록된 자산이 없습니다.</p>}
             {formData.assets.map((asset: AssetItem) => (
               <div key={asset.id} className="bg-white p-3.5 rounded-xl border flex justify-between items-center text-sm shadow-sm">
                 <div className="flex flex-col sm:flex-row flex-1 gap-1">
@@ -663,7 +663,7 @@ export default function NewCase() {
         <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/20"></div>
         <h4 className="font-bold text-gray-800 dark:text-gray-100 mb-4 text-[13px] flex items-center gap-1.5"><AlertCircle size={14} className="text-rose-500" />신용대출 목록</h4>
           <div className="space-y-3 mb-4">
-          {(formData.creditLoan || []).length === 0 && <p className="text-xs text-gray-400 text-center py-2">등록된 신용대출이 없습니다.</p>}
+          {(formData.creditLoan || []).length === 0 && <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">등록된 신용대출이 없습니다.</p>}
           {formData.creditLoan?.map((loan: CreditLoanItem) => (
             <div key={loan.id} className="bg-white p-3.5 rounded-xl border flex justify-between items-center text-sm shadow-sm">
               <div className="flex flex-col sm:flex-row flex-1 gap-1">
@@ -809,7 +809,7 @@ export default function NewCase() {
               PC 와이드 콕핏 모드
             </span>
           </div>
-          <span className="text-gray-400 dark:text-gray-500 text-xs hidden lg:inline">
+          <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-xs hidden lg:inline">
             | 실시간 상담 입력 &amp; Zero-Scroll 레이아웃
           </span>
         </div>
@@ -818,9 +818,9 @@ export default function NewCase() {
         <div className="flex items-center gap-3">
           <div className="hidden xl:flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-xs">
             <span className="text-gray-500 dark:text-gray-400">고객: <b className="text-gray-800 dark:text-gray-200 font-semibold">{formData.customerName || '미입력'}</b></span>
-            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <span className="text-gray-600 dark:text-gray-300 dark:text-gray-600">|</span>
             <span className="text-gray-500 dark:text-gray-400">연락처: <b className="text-blue-600 dark:text-blue-400 font-mono">{formData.phone || '010'}</b></span>
-            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <span className="text-gray-600 dark:text-gray-300 dark:text-gray-600">|</span>
             <span className="text-gray-500 dark:text-gray-400">유형: <b className="text-indigo-600 dark:text-indigo-400">{formData.caseType}</b></span>
           </div>
 
@@ -1291,7 +1291,7 @@ export default function NewCase() {
                     {/* 등록된 자산 목록 */}
                     <div className="space-y-1.5 mb-2.5 max-h-40 overflow-y-auto pr-1">
                       {formData.assets.length === 0 && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2.5 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 text-center py-2.5 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
                           등록된 자산이 없습니다.
                         </p>
                       )}
@@ -1312,7 +1312,7 @@ export default function NewCase() {
                           <button
                             type="button"
                             onClick={() => handleRemoveAsset(asset.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-lg transition-colors"
                             title="삭제"
                           >
                             <Trash2 size={15} />
@@ -1402,7 +1402,7 @@ export default function NewCase() {
                   {/* 등록된 신용대출 리스트 */}
                   <div className="space-y-1.5 mb-2.5 max-h-36 overflow-y-auto pr-1">
                     {formData.creditLoan.length === 0 && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2.5 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 text-center py-2.5 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
                         등록된 신용대출이 없습니다.
                       </p>
                     )}
@@ -1417,7 +1417,7 @@ export default function NewCase() {
                         <button
                           type="button"
                           onClick={() => handleRemoveCreditLoan(loan.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-lg transition-colors"
                           title="삭제"
                         >
                           <Trash2 size={15} />

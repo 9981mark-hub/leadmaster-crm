@@ -1376,7 +1376,7 @@ export default function TrainingCenterPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ml-auto ${
                 activeTab === 'admin'
                   ? 'bg-amber-500 text-white shadow-sm'
-                  : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+                  : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-100/40 dark:bg-amber-950/40'
               }`}
             >
               <UserCheck className="w-4 h-4" />
@@ -1441,7 +1441,7 @@ export default function TrainingCenterPage() {
             </div>
 
             {mySessions.length === 0 ? (
-              <div className="py-16 text-center text-gray-400 space-y-2">
+              <div className="py-16 text-center text-gray-500 dark:text-gray-400 space-y-2">
                 <GraduationCap className="w-12 h-12 mx-auto stroke-1 text-purple-300 dark:text-purple-600" />
                 <p className="text-sm font-semibold">아직 완료된 모의 훈련 세션이 없습니다.</p>
                 <p className="text-xs text-gray-500">
@@ -1497,7 +1497,7 @@ export default function TrainingCenterPage() {
                               {record.adminFeedback.grade}등급
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-xs">미평가</span>
+                            <span className="text-gray-500 dark:text-gray-400 text-xs">미평가</span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -1579,7 +1579,7 @@ export default function TrainingCenterPage() {
               </div>
 
               <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
                 <input
                   type="text"
                   placeholder="상담원명 또는 고객명 검색..."
@@ -1591,8 +1591,8 @@ export default function TrainingCenterPage() {
             </div>
 
             {adminSessions.length === 0 ? (
-              <div className="py-16 text-center text-gray-400 space-y-2">
-                <UserCheck className="w-12 h-12 mx-auto stroke-1 text-gray-300 dark:text-gray-600" />
+              <div className="py-16 text-center text-gray-500 dark:text-gray-400 space-y-2">
+                <UserCheck className="w-12 h-12 mx-auto stroke-1 text-gray-600 dark:text-gray-300 dark:text-gray-600" />
                 <p className="text-sm font-semibold">조건에 맞는 모의 훈련 세션이 없습니다.</p>
                 <p className="text-xs text-gray-500">상담원이 모의 통화를 완료하면 자동으로 이곳에 시험 결과가 축적됩니다.</p>
               </div>
@@ -1655,7 +1655,7 @@ export default function TrainingCenterPage() {
                               {record.adminFeedback.grade}등급
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-xs">미평가</span>
+                            <span className="text-gray-500 dark:text-gray-400 text-xs">미평가</span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -1770,7 +1770,7 @@ export default function TrainingCenterPage() {
                             <p className="text-xs text-gray-600 dark:text-gray-300 font-medium mb-1">
                               {cat.subtitle}
                             </p>
-                            <p className="text-xs text-gray-400 leading-snug line-clamp-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
                               🎯 <strong>목표:</strong> {cat.coreGoal}
                             </p>
                           </div>
@@ -1800,7 +1800,7 @@ export default function TrainingCenterPage() {
                 <div className="space-y-1.5 pt-1">
                   <div className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                     <span>🎯 집중 연습 테마 선택</span>
-                    <span className="text-xs font-normal text-gray-400">클릭 즉시 소환</span>
+                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">클릭 즉시 소환</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {INFINITE_THEMES.map(t => {
@@ -1838,7 +1838,7 @@ export default function TrainingCenterPage() {
                       className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all ${
                         isBlindMode
                           ? 'bg-blue-600 text-white shadow-xs'
-                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300'
                       }`}
                     >
                       <Lock className="w-3 h-3" />
@@ -1850,7 +1850,7 @@ export default function TrainingCenterPage() {
                       className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all ${
                         !isBlindMode
                           ? 'bg-purple-600 text-white shadow-xs'
-                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300'
                       }`}
                     >
                       <Eye className="w-3 h-3" />
@@ -1960,7 +1960,7 @@ export default function TrainingCenterPage() {
                             </div>
 
                             <div className="pt-1.5 border-t border-indigo-100 dark:border-indigo-950 flex items-center justify-between text-xs">
-                              <span className="text-gray-400">💡 통화 종료 시 실제 정답이 전격 공개됩니다</span>
+                              <span className="text-gray-500 dark:text-gray-400">💡 통화 종료 시 실제 정답이 전격 공개됩니다</span>
                               <button
                                 type="button"
                                 onClick={() => setShowCheatSheet(true)}
@@ -2135,14 +2135,14 @@ export default function TrainingCenterPage() {
                           <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                             {persona.badge}
                           </span>
-                          <span className="text-xs font-mono text-gray-400">
+                          <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
                             {persona.speechOptions.gender === 'female' ? '여성 성우' : '남성 성우'}
                           </span>
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">
                           {persona.title}
                         </p>
-                        <p className="text-xs text-gray-400 leading-snug line-clamp-2">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
                           {persona.scenarioDescription}
                         </p>
                       </div>
@@ -2173,7 +2173,7 @@ export default function TrainingCenterPage() {
                     <span className="font-medium text-xs flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
                       📞 전화 수화기 음질 필터 (대표 전용)
                     </span>
-                    <span className="text-xs text-gray-400">전사 상담원에게 기본 적용 (300~3400Hz 모사)</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">전사 상담원에게 기본 적용 (300~3400Hz 모사)</span>
                   </div>
                   <button
                     onClick={async () => {
@@ -2212,7 +2212,7 @@ export default function TrainingCenterPage() {
                   <span className="font-medium text-xs flex items-center gap-1">
                     ⏱️ 고객 말속도 (성향 맞춤 자동)
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     고객의 나이·성향에 따라 실전 호흡이 자동 결정됩니다
                   </span>
                 </div>
@@ -2416,7 +2416,7 @@ export default function TrainingCenterPage() {
                         실시간 통화 연결 중
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         발신 대기 상태
                       </span>
                     )}
@@ -2567,8 +2567,8 @@ export default function TrainingCenterPage() {
                         </p>
                       </div>
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
-                        <PhoneCall className="w-10 h-10 mb-2 stroke-1 text-gray-300 dark:text-gray-600" />
+                      <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500 dark:text-gray-400">
+                        <PhoneCall className="w-10 h-10 mb-2 stroke-1 text-gray-600 dark:text-gray-300 dark:text-gray-600" />
                         <p className="text-xs font-medium">아웃바운드 발신 시작 버튼을 누르면</p>
                         <p className="text-xs text-gray-500 mt-0.5">신호음이 울린 후 고객이 전화를 받습니다.</p>
                       </div>
@@ -2599,7 +2599,7 @@ export default function TrainingCenterPage() {
                               {msg.emotion === 'calm' && '😌 차분/경청'}
                             </span>
                           )}
-                          <span className="text-xs text-gray-400">{msg.timestamp}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{msg.timestamp}</span>
                         </div>
                         <div
                           className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-xs relative ${
@@ -2612,7 +2612,7 @@ export default function TrainingCenterPage() {
                           {msg.speaker === 'customer' && isTtsEnabled && (
                             <button
                               onClick={() => handleReplayCustomerMessage(msg.text, msg.emotion)}
-                              className="ml-2 text-gray-400 hover:text-blue-500 inline-block align-middle"
+                              className="ml-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 inline-block align-middle"
                               title="다시 듣기 (재생 후 마이크 자동 재개)"
                             >
                               <Volume2 className="w-3.5 h-3.5 inline" />
@@ -2640,7 +2640,7 @@ export default function TrainingCenterPage() {
 
                   {/* AI Thinking Animation */}
                   {isAiReplying && !isCustomerSpeaking && (
-                    <div className="flex items-center gap-2 text-xs text-gray-400 italic py-1">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 italic py-1">
                       <Sparkles className="w-3.5 h-3.5 animate-spin text-purple-500" />
                       <span>고객이 답변하는 중...</span>
                     </div>
@@ -2679,7 +2679,7 @@ export default function TrainingCenterPage() {
                           : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20'
                         : isMicTesting
                         ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 animate-pulse'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 hover:border-blue-400'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-100/40 dark:bg-blue-950/40 hover:text-blue-600 hover:border-blue-400'
                     } disabled:opacity-40 disabled:cursor-not-allowed`}
                     title={
                       callState === 'connected'
@@ -2739,7 +2739,7 @@ export default function TrainingCenterPage() {
                   <span className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-400">
                     <ShieldCheck className="w-4 h-4" /> {trainingMode === 'inbound_lead' ? '광고신청건 7대 심층 문진' : '사무장 인계 7대 문진'}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     획득: {trainingMode === 'inbound_lead'
                       ? `${Object.values(inboundLiveChecklist).filter(Boolean).length}/7`
                       : `${Object.values(liveChecklist).filter(Boolean).length}/7`}
@@ -2788,12 +2788,12 @@ export default function TrainingCenterPage() {
                           {checked ? (
                             <CheckSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                           ) : (
-                            <Square className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
+                            <Square className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
                           )}
                           <div className="flex-1">
                             <div>{item.label}</div>
                             {item.desc && (
-                              <div className="text-[9.5px] font-normal text-gray-400 dark:text-gray-400 mt-0.5">
+                              <div className="text-[9.5px] font-normal text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-0.5">
                                 {item.desc}
                               </div>
                             )}
@@ -3196,7 +3196,7 @@ export default function TrainingCenterPage() {
                   setPreviewingVoiceId(null);
                   setShowVoice60Modal(false);
                 }}
-                className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shrink-0"
+                className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3279,7 +3279,7 @@ export default function TrainingCenterPage() {
                           <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-xs">
                             {char.traitTag}
                           </span>
-                          <span className="text-gray-400">·</span>
+                          <span className="text-gray-500 dark:text-gray-400">·</span>
                           <span className="truncate">{char.job}</span>
                         </div>
 

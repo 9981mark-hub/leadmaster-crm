@@ -203,7 +203,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4">
                     <Loader2 className="animate-spin text-blue-600" size={32} />
                     <p className="text-gray-600 font-medium">기초 데이터를 불러오는 중입니다...</p>
-                    <button onClick={onClose} className="text-sm text-gray-400 hover:text-gray-600 underline">
+                    <button onClick={onClose} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-600 underline">
                         닫기
                     </button>
                 </div>
@@ -650,7 +650,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                         <Upload size={20} className="text-blue-600" />
                         케이스 일괄/간편 등록
                     </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 transition-colors">
                         <X size={24} />
                     </button>
                 </div>
@@ -785,7 +785,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                     }}
                                                     className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold"
                                                 />
-                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-400">₩</span>
+                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
                                             </div>
                                         </div>
 
@@ -807,7 +807,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                     placeholder="자동 계산"
                                                     className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold"
                                                 />
-                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-400">₩</span>
+                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
                                             </div>
                                         </div>
                                     </>
@@ -852,7 +852,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                     }}
                                                     className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
                                                 />
-                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-400">₩</span>
+                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
                                             </div>
                                         </div>
                                     </>
@@ -1030,7 +1030,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         <ImageIcon size={24} />
                                     </div>
                                     <p className="font-medium text-lg">파일을 드래그하거나 클릭하여 업로드</p>
-                                    <p className="text-xs text-gray-400">지원 형식: JPG, PNG, PDF</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">지원 형식: JPG, PNG, PDF</p>
                                 </div>
                             </div>
 
@@ -1046,7 +1046,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                             {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                                             분석 시작
                                         </button>
-                                        <button onClick={() => { setOcrFile(null); setOcrPreview(null); }} className="p-1.5 text-gray-400 hover:bg-gray-100 rounded">
+                                        <button onClick={() => { setOcrFile(null); setOcrPreview(null); }} className="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 rounded">
                                             <X size={16} />
                                         </button>
                                     </div>
@@ -1120,7 +1120,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                 const isDup = row.phone.trim() && checkIsDuplicate(formatPhone(row.phone), existingCases);
                                                 return (
                                                     <tr key={rowIdx} className={`border-t ${isDup ? 'bg-red-50' : 'hover:bg-gray-50'} transition-colors`}>
-                                                        <td className="p-1 text-center text-xs text-gray-400 border-r">{rowIdx + 1}</td>
+                                                        <td className="p-1 text-center text-xs text-gray-500 dark:text-gray-400 border-r">{rowIdx + 1}</td>
                                                         <td className="p-0.5 border-r">
                                                             <input
                                                                 className="w-full px-2 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded"
@@ -1170,7 +1170,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                         <td className="p-0.5 text-center">
                                                             <button
                                                                 onClick={() => removeSheetRow(rowIdx)}
-                                                                className="p-1 text-gray-300 hover:text-red-500 transition-colors rounded hover:bg-red-50"
+                                                                className="p-1 text-gray-600 dark:text-gray-300 hover:text-red-500 transition-colors rounded hover:bg-red-50"
                                                                 title="행 삭제"
                                                             >
                                                                 <Trash2 size={14} />

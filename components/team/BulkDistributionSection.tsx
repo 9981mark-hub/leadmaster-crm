@@ -162,7 +162,7 @@ export default function BulkDistributionSection({
             <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">배분 대상 활동 상담원</span>
             <div className="text-2xl font-extrabold text-gray-800 dark:text-white mt-0.5 flex items-baseline gap-1.5">
               <span>{targetUserCount}</span>
-              <span className="text-xs font-normal text-gray-400">/ 총 {activeAgents.length}명</span>
+              <span className="text-xs font-normal text-gray-500 dark:text-gray-400">/ 총 {activeAgents.length}명</span>
             </div>
           </div>
 
@@ -269,7 +269,7 @@ export default function BulkDistributionSection({
                   onChange={e => setLimitCount(e.target.value)}
                   className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
                 />
-                <span className="text-xs text-gray-400 mt-0.5 block">비워두면 미배정 리드 전체를 배분합니다</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">비워두면 미배정 리드 전체를 배분합니다</span>
               </div>
 
               <div>
@@ -319,7 +319,7 @@ export default function BulkDistributionSection({
                   <button onClick={selectAllUsers} className="text-blue-600 hover:underline">
                     전원 선택
                   </button>
-                  <span className="text-gray-300">|</span>
+                  <span className="text-gray-600 dark:text-gray-300">|</span>
                   <button onClick={clearAllUsers} className="text-gray-500 hover:underline">
                     선택 해제
                   </button>

@@ -225,7 +225,7 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
                   {colSelect('inbound', '유입경로')}
                   {colSelect('type', '사건 유형')}
                   <div className="text-sm">
-                    <div className="text-gray-600 dark:text-gray-300 mb-1">사전정보로 넣을 열 <span className="text-xs text-gray-400">("열이름: 값"으로 저장)</span></div>
+                    <div className="text-gray-600 dark:text-gray-300 mb-1">사전정보로 넣을 열 <span className="text-xs text-gray-500 dark:text-gray-400">("열이름: 값"으로 저장)</span></div>
                     <div className="flex flex-wrap gap-1.5">
                       {headers.map((h, i) => [col.phone, col.name, col.inbound, col.type].includes(i) ? null : (
                         <label key={i} className={`text-xs px-2 py-1 rounded border cursor-pointer ${memoCols.includes(i) ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-600'}`}>
@@ -297,7 +297,7 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
                 {parsed.length > 0 && (
                   <div className="overflow-x-auto">
                     <table className="text-xs w-full">
-                      <thead className="text-gray-400"><tr><th className="text-left pr-3">이름</th><th className="text-left pr-3">전화</th><th className="text-left pr-3">유입경로</th><th className="text-left">사전정보</th></tr></thead>
+                      <thead className="text-gray-500 dark:text-gray-400"><tr><th className="text-left pr-3">이름</th><th className="text-left pr-3">전화</th><th className="text-left pr-3">유입경로</th><th className="text-left">사전정보</th></tr></thead>
                       <tbody>
                         {parsed.slice(0, 5).map(x => (
                           <tr key={x.idx} className={!x.valid || x.dupInFile ? 'text-red-500' : ''}>
@@ -325,7 +325,7 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
                 </div>
                 {['round_robin', 'balanced', 'quantity'].includes(mode) && (
                   <div className="flex flex-wrap gap-3 pl-1 pt-1">
-                    {agents.length === 0 && <span className="text-xs text-gray-400">상담원이 없습니다</span>}
+                    {agents.length === 0 && <span className="text-xs text-gray-500 dark:text-gray-400">상담원이 없습니다</span>}
                     {agents.map(a => (
                       <label key={a.userId} className="flex items-center gap-1 text-sm">
                         <input type="checkbox" checked={picked.includes(a.userId)} onChange={() => setPicked(p => p.includes(a.userId) ? p.filter(x => x !== a.userId) : [...p, a.userId])} />

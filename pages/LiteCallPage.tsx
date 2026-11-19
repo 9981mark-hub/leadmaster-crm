@@ -372,7 +372,7 @@ export default function LiteCallPage() {
                 간편 모드
               </span>
             </h1>
-            <p className="text-xs text-gray-400">콜 & 텔레그램 전달 전용</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">콜 & 텔레그램 전달 전용</p>
           </div>
         </div>
 
@@ -421,7 +421,7 @@ export default function LiteCallPage() {
         
         {/* Search Input */}
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           <input
             type="text"
             value={search}
@@ -432,7 +432,7 @@ export default function LiteCallPage() {
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-600 p-0.5"
             >
               <X size={14} />
             </button>
@@ -506,7 +506,7 @@ export default function LiteCallPage() {
         {isLoading ? (
           <div className="py-20 text-center space-y-2">
             <RefreshCw size={24} className="animate-spin text-amber-500 mx-auto" />
-            <p className="text-xs text-gray-400">콜 리스트를 불러오고 있습니다...</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">콜 리스트를 불러오고 있습니다...</p>
           </div>
         ) : filteredCases.length === 0 ? (
           <div className="py-20 text-center space-y-3 bg-white dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-6">
@@ -514,7 +514,7 @@ export default function LiteCallPage() {
             <h3 className="font-bold text-gray-700 dark:text-gray-200 text-sm">
               진행할 리드가 없습니다!
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {search ? '검색 결과가 없습니다.' : '현재 필터 조건에 해당하는 고객이 모두 처리되었습니다.'}
             </p>
           </div>
@@ -557,7 +557,7 @@ export default function LiteCallPage() {
                     </span>
                   </div>
 
-                  <span className="text-xs text-gray-400 font-mono">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                     {c.createdAt ? c.createdAt.split('T')[0] : ''}
                   </span>
                 </div>
@@ -568,7 +568,7 @@ export default function LiteCallPage() {
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                       <span>{c.customerName}</span>
                       {c.gender && (
-                        <span className="text-xs text-gray-400 font-normal">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
                           ({c.birth ? `${c.birth}년생` : ''} {c.gender})
                         </span>
                       )}

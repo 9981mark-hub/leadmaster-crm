@@ -163,7 +163,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={18} />
           </button>
@@ -221,7 +221,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
               className={`flex-1 pb-2.5 flex items-center justify-center gap-1.5 transition-all border-b-2 ${
                 activeTab === 'upload'
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300'
               }`}
             >
               <Upload size={14} /> 내 사진 직접 업로드
@@ -232,7 +232,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
               className={`flex-1 pb-2.5 flex items-center justify-center gap-1.5 transition-all border-b-2 ${
                 activeTab === 'preset'
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300'
               }`}
             >
               <Sparkles size={14} /> 비즈니스 아바타 프리셋
@@ -243,7 +243,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
               className={`flex-1 pb-2.5 flex items-center justify-center gap-1.5 transition-all border-b-2 ${
                 activeTab === 'url'
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300'
               }`}
             >
               <LinkIcon size={14} /> 이미지 웹 링크
@@ -281,7 +281,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
                 <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                   클릭하여 사진 파일 선택 또는 여기에 드래그
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">
                   JPG, PNG, WEBP 지원 (자동 정사각형 크롭 & 400x400 압축)
                 </p>
               </div>
@@ -320,7 +320,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
                       <span className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate w-full">
                         {preset.name}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 truncate w-full mt-0.5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 truncate w-full mt-0.5">
                         {preset.roleHint}
                       </span>
                     </div>
@@ -352,7 +352,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
                   미리보기
                 </button>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 웹상에 호스팅된 이미지 링크를 직접 지정하여 대표 이미지로 사용할 수 있습니다.
               </p>
             </div>
@@ -368,7 +368,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title="Google 계정에 설정된 원래 프로필 사진으로 복구합니다."
               >
-                <RotateCcw size={14} className="text-gray-400" />
+                <RotateCcw size={14} className="text-gray-500 dark:text-gray-400" />
                 <span>구글 계정 원래 사진으로 복원</span>
               </button>
             )}

@@ -632,35 +632,35 @@ export default function CalendarWidget({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => toggleFilter('reminder')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.reminder ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.reminder ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
                 }`}
             >
               📞 리마인더
             </button>
             <button
               onClick={() => toggleFilter('settlement')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.settlement ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.settlement ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
                 }`}
             >
               💰 정산
             </button>
             <button
               onClick={() => toggleFilter('tax')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.tax ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-400'
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.tax ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
                 }`}
             >
               📅 세금
             </button>
             <button
               onClick={() => toggleFilter('memo')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.memo ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-400'
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.memo ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
                 }`}
             >
               📝 메모
             </button>
             <button
               onClick={() => toggleFilter('holiday')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.holiday ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-400'
+              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.holiday ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-500 dark:text-gray-400'
                 }`}
             >
               🎌 공휴일
@@ -687,7 +687,7 @@ export default function CalendarWidget({
       {viewMode === 'list' && (
         <div className="p-4 max-h-[500px] overflow-y-auto">
           {upcomingEvents.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               예정된 일정이 없습니다
             </div>
           ) : (
@@ -773,7 +773,7 @@ export default function CalendarWidget({
                               {ev.time && <span className="font-mono font-bold text-yellow-300">{ev.time}</span>}
                               <span className="font-medium text-white">{ev.title}</span>
                             </div>
-                            {ev.subtitle && <div className="text-gray-400">{ev.subtitle}</div>}
+                            {ev.subtitle && <div className="text-gray-500 dark:text-gray-400">{ev.subtitle}</div>}
                           </div>
                         ))}
                       </div>
@@ -784,7 +784,7 @@ export default function CalendarWidget({
                   <div className="flex justify-between items-start">
                     <span
                       className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full
-                        ${isTodayDate ? 'bg-blue-600 text-white' : (isSelected ? 'text-blue-700 font-bold' : (isCurrentMonth || viewMode === 'week' ? 'text-gray-700' : 'text-gray-400'))}`}
+                        ${isTodayDate ? 'bg-blue-600 text-white' : (isSelected ? 'text-blue-700 font-bold' : (isCurrentMonth || viewMode === 'week' ? 'text-gray-700' : 'text-gray-500 dark:text-gray-400'))}`}
                     >
                       {format(day, 'd')}
                     </span>
@@ -808,7 +808,7 @@ export default function CalendarWidget({
                     {dayEvents.slice(0, 5).map((ev, i) => (
                       <div key={i} className={`w-1.5 h-1.5 rounded-full ${getColorClass(ev.color, 'bg').replace('100', '500')}`} />
                     ))}
-                    {dayEvents.length > 5 && <span className="text-[8px] text-gray-400">+</span>}
+                    {dayEvents.length > 5 && <span className="text-[8px] text-gray-500 dark:text-gray-400">+</span>}
                   </div>
 
                   {/* Desktop: Event List */}
@@ -863,7 +863,7 @@ export default function CalendarWidget({
                       );
                     })}
                     {dayEvents.length > (viewMode === 'week' ? 8 : 3) && (
-                      <div className="text-xs text-gray-400 text-center">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
                         +{dayEvents.length - (viewMode === 'week' ? 8 : 3)}개 더
                       </div>
                     )}

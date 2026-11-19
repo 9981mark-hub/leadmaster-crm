@@ -28,7 +28,7 @@ export const AppRecordingsList: React.FC<{ c: Case; onOpen?: () => void }> = ({ 
     if (list.length === 0) return null;
     return (
         <div className="mb-4">
-            <h4 className="text-xs font-bold text-gray-600 mb-2 flex items-center"><Smartphone size={12} className="mr-1" /> 앱 자동 업로드 녹음 <span className="ml-1 text-gray-400 font-normal">(통화 녹음·AI 탭)</span></h4>
+            <h4 className="text-xs font-bold text-gray-600 mb-2 flex items-center"><Smartphone size={12} className="mr-1" /> 앱 자동 업로드 녹음 <span className="ml-1 text-gray-500 dark:text-gray-400 font-normal">(통화 녹음·AI 탭)</span></h4>
             <div className="space-y-1 max-h-32 overflow-y-auto no-scrollbar">
                 {list.map(r => (
                     <button
@@ -40,7 +40,7 @@ export const AppRecordingsList: React.FC<{ c: Case; onOpen?: () => void }> = ({ 
                         <span className="font-medium text-gray-800 tabular-nums">{fmt(r.callStartedAt)}</span>
                         <span className="text-gray-500">{r.direction === 'CALL_IN' ? '수신' : r.direction === 'CALL_OUT' ? '발신' : '통화'} · {fmtDuration(r.durationSec)}</span>
                         <span className={`ml-auto px-1.5 rounded ${r.status === 'done' ? 'bg-green-100 text-green-700' : r.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>{STATUS[r.status]}</span>
-                        <ChevronRight size={14} className="text-gray-400" />
+                        <ChevronRight size={14} className="text-gray-500 dark:text-gray-400" />
                     </button>
                 ))}
             </div>

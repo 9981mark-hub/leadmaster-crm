@@ -133,9 +133,9 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             <span className="text-xl md:text-2xl font-black text-gray-900 dark:text-white font-mono">
               ₩{(totals.billedWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-gray-400 font-bold ml-1">만원</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">만원</span>
           </div>
-          <span className="text-xs text-gray-400 mt-1">
+          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             총 {totals.totalCases}건 수임 분배
           </span>
         </div>
@@ -203,9 +203,9 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono">
               {totals.partnerCount}
             </span>
-            <span className="text-xs text-gray-400 font-bold ml-1">개 사무소</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">개 사무소</span>
           </div>
-          <span className="text-xs text-gray-400 mt-1">
+          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             정산 회수율: {collectionRate}%
           </span>
         </div>
@@ -216,7 +216,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {/* 검색창 */}
           <div className="relative flex-1 sm:w-64">
-            <Search size={14} className="absolute left-3 top-3 text-gray-400" />
+            <Search size={14} className="absolute left-3 top-3 text-gray-500 dark:text-gray-400" />
             <input
               type="text"
               value={searchTerm}
@@ -383,7 +383,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                   <button
                     type="button"
                     onClick={() => onSelectPartner(card.partnerId)}
-                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
                     title="상세 정산 원장 보기"
                   >
                     <ArrowUpRight size={16} />

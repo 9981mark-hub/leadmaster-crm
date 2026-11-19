@@ -207,7 +207,7 @@ export default function DbCostSettlementTab({
       </div>
 
       {/* 안내 알림 배너 */}
-      <div className="bg-white/50 dark:bg-slate-900/50 border border-indigo-900/40 rounded-xl p-4 flex items-center justify-between text-xs text-indigo-300">
+      <div className="bg-white/50 dark:bg-slate-900/50 border border-indigo-200/40 dark:border-indigo-900/40 rounded-xl p-4 flex items-center justify-between text-xs text-indigo-300">
         <div className="flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
           <span>
@@ -217,7 +217,7 @@ export default function DbCostSettlementTab({
         {onRefresh && (
           <button
             onClick={onRefresh}
-            className="flex items-center gap-1 px-2.5 py-1 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800 text-indigo-200 rounded text-xs transition-colors shrink-0"
+            className="flex items-center gap-1 px-2.5 py-1 bg-indigo-100/80 dark:bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 text-indigo-200 rounded text-xs transition-colors shrink-0"
           >
             <RefreshCw className="w-3 h-3" />
             새로고침

@@ -152,7 +152,7 @@ export const CustomAudioPlayer = forwardRef<CustomAudioPlayerRef, CustomAudioPla
                         />
                     </div>
                     <div className="flex justify-end items-center gap-2">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                             * 구글 드라이브 보안 정책으로 표준 플레이어를 사용합니다.
                         </span>
                         <a
@@ -207,7 +207,7 @@ export const CustomAudioPlayer = forwardRef<CustomAudioPlayerRef, CustomAudioPla
                                         background: `linear-gradient(to right, #9333ea ${(currentTime / (duration || 1)) * 100}%, #e5e7eb ${(currentTime / (duration || 1)) * 100}%)`
                                     }}
                                 />
-                                <div className="flex justify-between text-xs text-gray-400 font-mono mt-1">
+                                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">
                                     <span>{formatTime(currentTime)}</span>
                                     <span>{formatTime(duration)}</span>
                                 </div>
@@ -215,13 +215,13 @@ export const CustomAudioPlayer = forwardRef<CustomAudioPlayerRef, CustomAudioPla
 
                             {/* Control Buttons */}
                             <div className="flex justify-center items-center gap-6">
-                                <button onClick={() => skip(-10)} className="text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full" title="10초 뒤로">
+                                <button onClick={() => skip(-10)} className="text-gray-500 dark:text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full" title="10초 뒤로">
                                     <RotateCcw size={20} />
                                 </button>
                                 <button onClick={togglePlay} className="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-purple-700 hover:scale-105 transition-all">
                                     {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                                 </button>
-                                <button onClick={() => skip(30)} className="text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full" title="30초 앞으로">
+                                <button onClick={() => skip(30)} className="text-gray-500 dark:text-gray-400 hover:text-purple-600 transition-colors p-2 hover:bg-purple-50 rounded-full" title="30초 앞으로">
                                     <RotateCw size={20} />
                                 </button>
                             </div>

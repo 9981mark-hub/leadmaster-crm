@@ -198,7 +198,7 @@ export default function AgentCommissionTab({
       </div>
 
       {problemCases.length > 0 && (
-        <div className="bg-amber-950/40 border border-amber-700/50 rounded-xl p-4 text-xs text-amber-200">
+        <div className="bg-amber-100/40 dark:bg-amber-950/40 border border-amber-700/50 rounded-xl p-4 text-xs text-amber-200">
           <div className="font-bold mb-2">
             ⚠ 수당 계산에서 뺀 리드 {problemCases.length}건 — 거래처 수당 규칙·수임료를 확인해 주세요
           </div>

@@ -96,7 +96,7 @@ export const LiteBattlecards: React.FC<Props> = ({ onCopyScript }) => {
     <div className="space-y-1.5">
       {/* 4개 1-Tap 칩 바 */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-        <span className="text-xs font-bold text-gray-400 shrink-0 uppercase tracking-wider pl-1">
+        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 shrink-0 uppercase tracking-wider pl-1">
           반론 치트키:
         </span>
         {BATTLECARDS.map(card => {
@@ -141,7 +141,7 @@ export const LiteBattlecards: React.FC<Props> = ({ onCopyScript }) => {
                 </div>
                 <button
                   onClick={() => setSelectedCard(null)}
-                  className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <X size={15} />
                 </button>

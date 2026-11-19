@@ -823,7 +823,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                       <th className="p-3 whitespace-nowrap">가구원수</th>
                       <th className="p-3 whitespace-nowrap text-indigo-600 dark:text-indigo-400">2026 기준 중위소득 (100%)</th>
                       <th className="p-3 whitespace-nowrap text-emerald-600 dark:text-emerald-400">2026 최저생계비 (60%) [확정]</th>
-                      <th className="p-3 whitespace-nowrap text-gray-400">2025 최저생계비 (전년)</th>
+                      <th className="p-3 whitespace-nowrap text-gray-500 dark:text-gray-400">2025 최저생계비 (전년)</th>
                       <th className="p-3">실무 상담 포인트 및 변제금 절감 효과</th>
                     </tr>
                   </thead>
@@ -833,7 +833,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         <td className="p-3 font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{item.householdSize}인 가구</td>
                         <td className="p-3 font-semibold whitespace-nowrap">{item.medianIncome2026 || item.medianIncome}</td>
                         <td className="p-3 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap bg-emerald-50/50 dark:bg-emerald-950/20">{item.minLivingCost2026 || item.minLivingCost}</td>
-                        <td className="p-3 text-gray-400 whitespace-nowrap line-through">{item.minLivingCost2025 || '2025년 기준'}</td>
+                        <td className="p-3 text-gray-500 dark:text-gray-400 whitespace-nowrap line-through">{item.minLivingCost2025 || '2025년 기준'}</td>
                         <td className="p-3 text-gray-600 dark:text-gray-400 text-xs leading-relaxed">
                           {item.advice || (item.householdSize === 1
                             ? '월 소득 155만 원 이상 권장 (생계비 인상으로 변제금 부담 경감)'
@@ -896,7 +896,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-gray-800 dark:text-gray-200 font-medium">
                     {materials.legalStandards.reliefSchemes.map((s) => (
-                      <tr key={s.id} className="hover:bg-amber-50/30 dark:hover:bg-amber-950/20">
+                      <tr key={s.id} className="hover:bg-amber-50/30 dark:hover:bg-amber-100/20 dark:bg-amber-950/20">
                         <td className="p-3 font-bold text-gray-900 dark:text-white whitespace-nowrap">{s.name}</td>
                         <td className="p-3 whitespace-nowrap text-indigo-600 dark:text-indigo-400">{s.organ}</td>
                         <td className="p-3 whitespace-nowrap">{s.delinquencyReq}</td>
@@ -1162,7 +1162,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                           setIsPlaying(false);
                           setPlaybackTime(0);
                         }}
-                        className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300"
+                        className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                       >
                         <RotateCcw className="w-4 h-4" />
                       </button>
@@ -1172,7 +1172,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                       <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
                         {formatTime(playbackTime)}
                       </span>
-                      <span className="text-xs font-mono text-gray-400">
+                      <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
                         {' '}
                         / {formatTime(currentRecording.totalSeconds)}
                       </span>
@@ -1227,7 +1227,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                             >
                               {turn.speaker}
                             </span>
-                            <span className="text-xs font-mono text-gray-400">
+                            <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
                               {turn.timeLabel}
                             </span>
                           </div>
@@ -1249,7 +1249,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 </div>
               </div>
             ) : (
-              <div className="p-12 text-center text-gray-400">녹취 파일이 없습니다.</div>
+              <div className="p-12 text-center text-gray-500 dark:text-gray-400">녹취 파일이 없습니다.</div>
             )}
           </div>
         </div>
@@ -1301,7 +1301,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 className="rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col justify-between"
               >
                 {/* 16:9 Video Embed Player */}
-                <div className="relative aspect-video bg-gray-950 w-full overflow-hidden">
+                <div className="relative aspect-video bg-gray-100 dark:bg-gray-950 w-full overflow-hidden">
                   <iframe
                     src={vid.youtubeId}
                     title={vid.title}
@@ -1317,7 +1317,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
                         {vid.category}
                       </span>
-                      <span className="text-xs font-mono text-gray-400 flex items-center gap-1">
+                      <span className="text-xs font-mono text-gray-500 dark:text-gray-400 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {vid.duration}
                       </span>
@@ -1378,7 +1378,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                             videos: materials.videos.filter((v) => v.id !== vid.id),
                           })
                         }
-                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950"
+                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-100 dark:bg-rose-950"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1432,7 +1432,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
           {/* Search & Category Filter */}
           <div className="p-4 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm space-y-3">
             <div className="relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-gray-500 dark:text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={faqSearch}
@@ -1468,7 +1468,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
           {/* FAQ Accordion List */}
           <div className="space-y-3">
             {filteredFaqs.length === 0 ? (
-              <div className="p-12 text-center text-gray-400 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700">
+              <div className="p-12 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700">
                 검색된 질문이 없습니다. 다른 키워드로 검색해 보세요.
               </div>
             ) : (
@@ -1504,7 +1504,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         </h3>
                       </div>
 
-                      <div className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                      <div className="p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                         {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                       </div>
                     </button>
@@ -1601,7 +1601,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     <Sparkles className="w-3 h-3" />
                     사이트 내 실시간 즉답 모드
                   </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                     2025 법정 기준표 & 교육자료(PDF 3종) 연동
                   </span>
                 </div>
@@ -1627,14 +1627,14 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     ])
                   }
                   title="대화 초기화"
-                  className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all text-xs flex items-center gap-1 font-bold"
+                  className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all text-xs flex items-center gap-1 font-bold"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span className="hidden sm:inline">초기화</span>
                 </button>
                 <button
                   onClick={() => setShowNotebookModal(false)}
-                  className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                  className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1753,7 +1753,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
               </form>
 
               {/* Bottom Quick Link: Google Official NotebookLM Website */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-gray-400">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-gray-500 dark:text-gray-400">
                 <span className="flex items-center gap-1">
                   💡 구글 공식 웹사이트에서 더 방대한 서적 원문을 직접 검색하시려면?
                 </span>

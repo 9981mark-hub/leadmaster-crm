@@ -157,7 +157,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={18} />
           </button>
@@ -219,9 +219,9 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                 placeholder="예: 법무법인 한결, 리드마스터 본사, 신안 파트너스"
                 className="w-full p-2.5 pl-9 text-xs font-bold border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
-              <Building className="absolute left-3 top-2.5 text-gray-400" size={15} />
+              <Building className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={15} />
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               사이드바, 상단 앱바, 스크립트 변수 및 보고서에 표시되는 공식 상호명입니다.
             </p>
           </div>
@@ -251,7 +251,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                 className={`flex-1 pb-2 flex items-center justify-center gap-1.5 transition-all border-b-2 ${
                   activeTab === 'upload'
                     ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                    : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300'
                 }`}
               >
                 <Upload size={13} /> 사진 직접 업로드
@@ -262,7 +262,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                 className={`flex-1 pb-2 flex items-center justify-center gap-1.5 transition-all border-b-2 ${
                   activeTab === 'preset'
                     ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                    : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300'
                 }`}
               >
                 <Sparkles size={13} /> 비즈니스 심볼 프리셋
@@ -273,7 +273,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                 className={`flex-1 pb-2 flex items-center justify-center gap-1.5 transition-all border-b-2 ${
                   activeTab === 'url'
                     ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                    : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300'
                 }`}
               >
                 <LinkIcon size={13} /> 로고 웹 주소
@@ -311,7 +311,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                   <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                     클릭하여 회사 간판 사진/로고 선택 또는 드래그
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">
                     PNG, JPG, SVG, WEBP 지원 (400x400 정사각형 자동 최적화)
                   </p>
                 </div>
@@ -350,7 +350,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                         <span className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate w-full">
                           {preset.name}
                         </span>
-                        <span className="text-[9.5px] text-gray-400 dark:text-gray-500 truncate w-full">
+                        <span className="text-[9.5px] text-gray-500 dark:text-gray-400 dark:text-gray-500 truncate w-full">
                           {preset.category}
                         </span>
                       </div>
@@ -389,7 +389,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
 
         {/* Footer Actions */}
         <div className="px-6 py-4 border-t border-gray-150 dark:border-gray-700/80 bg-gray-50/70 dark:bg-gray-900/40 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
             <ShieldCheck size={14} className="text-emerald-500" />
             <span>전사 상담원에게 실시간 즉시 반영</span>
           </div>

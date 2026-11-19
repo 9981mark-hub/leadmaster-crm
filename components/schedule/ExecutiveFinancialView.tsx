@@ -136,14 +136,14 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 상단 헤더 배너 */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-white dark:from-slate-900 via-sky-950 to-slate-900 border border-sky-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-sky-100 to-sky-50 dark:from-slate-900 dark:via-sky-950 dark:to-slate-900 border border-sky-200 dark:border-sky-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-600 dark:text-sky-400 shadow-inner">
             <Building size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-950/80 px-2.5 py-0.5 rounded-full border border-sky-800/60">
+              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-100/80 dark:bg-sky-950/80 px-2.5 py-0.5 rounded-full border border-sky-200/60 dark:border-sky-800/60">
                 TM 대표 전용 · 경영 & 자금 전용 뷰
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{todayFormatted}</span>
@@ -180,7 +180,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <DollarSign size={14} className="text-sky-600 dark:text-sky-400" />
               로펌 수수료 총매출
             </span>
-            <span className="text-xs text-sky-600 dark:text-sky-400 font-bold bg-sky-950 px-2 py-0.5 rounded border border-sky-800/50">
+            <span className="text-xs text-sky-600 dark:text-sky-400 font-bold bg-sky-100 dark:bg-sky-950 px-2 py-0.5 rounded border border-sky-200/50 dark:border-sky-800/50">
               {partners.length}개 로펌
             </span>
           </div>
@@ -198,7 +198,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
               수금 완료 금액
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/50">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50">
               정산 완료
             </span>
           </div>
@@ -216,7 +216,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <AlertCircle size={14} className="text-amber-600 dark:text-amber-400" />
               미수금 잔액
             </span>
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-950 px-2 py-0.5 rounded border border-amber-800/50">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/50">
               회수 관리
             </span>
           </div>
@@ -234,7 +234,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <Users size={14} className="text-purple-600 dark:text-purple-400" />
               상담원 인센티브 대기
             </span>
-            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-950 px-2 py-0.5 rounded border border-purple-800/50">
+            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/50">
               지급 예정
             </span>
           </div>
@@ -257,7 +257,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <p className="text-xs text-slate-500 dark:text-slate-400">대표가 반드시 사전에 대비해야 할 주간/월간 자금 일정입니다.</p>
             </div>
           </div>
-          <span className="text-xs text-sky-600 dark:text-sky-400 bg-sky-950/80 px-2.5 py-1 rounded-full border border-sky-800/50 font-bold">
+          <span className="text-xs text-sky-600 dark:text-sky-400 bg-sky-100/80 dark:bg-sky-950/80 px-2.5 py-1 rounded-full border border-sky-200/50 dark:border-sky-800/50 font-bold">
             정기 집행 스케줄
           </span>
         </div>
@@ -327,7 +327,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <div>
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sm text-slate-900 dark:text-white">{p.name}</span>
-                  <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/40">
+                  <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-100/80 dark:bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-200/40 dark:border-indigo-800/40">
                     {p.caseCount}건 유치
                   </span>
                 </div>

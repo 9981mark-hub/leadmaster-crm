@@ -291,7 +291,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                        className="text-gray-500 dark:text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
                     >
                         <X size={18} />
                     </button>

@@ -233,7 +233,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             이 녹음은 예전에 브라우저 임시 주소로만 저장되어 서버에 원본이 없습니다. 원본 파일이 있으면 다시 올려 주세요.
                         </div>
                     ) : (activeAudioUrl && activeAudioUrl.includes('drive.google.com') && !playSrc) ? (
-                        <div className="text-xs text-gray-400 p-3">녹음 여는 중…</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 p-3">녹음 여는 중…</div>
                     ) : (
                         <CustomAudioPlayer
                             ref={playerRef}
@@ -267,11 +267,11 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                         />
                                         <div className="truncate">
                                             <span className={isSelected ? "text-purple-900" : "font-medium text-gray-800"}>{rec.filename}</span>
-                                            <span className="text-gray-400 text-xs ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
+                                            <span className="text-gray-500 dark:text-gray-400 text-xs ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
                                             {(rec.aiCurrent || rec.aiSummary) && <span className="ml-1 text-xs px-1 rounded bg-purple-100 text-purple-700">요약{rec.aiCurrent ? ' 최근' : ''}</span>}
                                         </div>
                                     </div>
-                                    <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-400 hover:text-red-500 ml-2">
+                                    <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-500 dark:text-gray-400 hover:text-red-500 ml-2">
                                         <X size={14} />
                                     </button>
                                 </div>
@@ -370,7 +370,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                 </button>
                             </div>
                             <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed pr-10">
-                                {summaryText || <span className="text-gray-400">요약된 상담 내용이 없습니다. 통화 파일을 업로드하고 [AI 분석 실행]을 클릭해보세요.</span>}
+                                {summaryText || <span className="text-gray-500 dark:text-gray-400">요약된 상담 내용이 없습니다. 통화 파일을 업로드하고 [AI 분석 실행]을 클릭해보세요.</span>}
                             </div>
                         </div>
                     )}
@@ -435,7 +435,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-6 text-gray-400 text-xs">
+                        <div className="text-center py-6 text-gray-500 dark:text-gray-400 text-xs">
                             {rawTranscript ? (
                                 <div className="text-left text-gray-700 whitespace-pre-wrap text-xs">
                                     {rawTranscript}
@@ -443,7 +443,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             ) : (
                                 <div>
                                     <p className="mb-1">분석된 대화록이 없습니다.</p>
-                                    <p className="text-xs text-gray-400">통화 녹음 파일을 업로드하고 [AI 분석 실행]을 누르면 화자분리 대화록이 자동 생성됩니다.</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">통화 녹음 파일을 업로드하고 [AI 분석 실행]을 누르면 화자분리 대화록이 자동 생성됩니다.</p>
                                 </div>
                             )}
                         </div>

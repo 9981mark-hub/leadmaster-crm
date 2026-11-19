@@ -211,7 +211,7 @@ const ReconciliationSection: React.FC<ReconciliationSectionProps> = ({ year, bat
                     </h3>
                     <p className="text-xs text-cyan-500 mt-1">CRM 정산 배치 vs 실제 세금계산서 비교</p>
                 </div>
-                <div className="p-8 text-center text-gray-400">
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                     <p>정산 배치 또는 세금계산서 데이터가 없습니다.</p>
                     <p className="text-xs mt-1">홈택스 엑셀을 업로드하면 자동으로 대사가 시작됩니다.</p>
                 </div>
@@ -313,20 +313,20 @@ const ReconciliationSection: React.FC<ReconciliationSectionProps> = ({ year, bat
                                                 {row.crmCommission > 0 ? (
                                                     <span className="text-blue-600">{row.crmCommission.toLocaleString()}만</span>
                                                 ) : (
-                                                    <span className="text-gray-300">-</span>
+                                                    <span className="text-gray-600 dark:text-gray-300">-</span>
                                                 )}
                                                 {row.crmDealCount > 0 && (
-                                                    <span className="text-gray-400 text-xs ml-1">({row.crmDealCount}건)</span>
+                                                    <span className="text-gray-500 dark:text-gray-400 text-xs ml-1">({row.crmDealCount}건)</span>
                                                 )}
                                             </td>
                                             <td className="py-2 px-2 text-right whitespace-nowrap">
                                                 {row.taxTotalAmount > 0 ? (
                                                     <span className="text-green-600">{row.taxTotalAmount.toLocaleString()}원</span>
                                                 ) : (
-                                                    <span className="text-gray-300">-</span>
+                                                    <span className="text-gray-600 dark:text-gray-300">-</span>
                                                 )}
                                                 {row.taxInvoices.length > 0 && (
-                                                    <span className="text-gray-400 text-xs ml-1">({row.taxInvoices.length}건)</span>
+                                                    <span className="text-gray-500 dark:text-gray-400 text-xs ml-1">({row.taxInvoices.length}건)</span>
                                                 )}
                                             </td>
                                             <td className="py-2 px-2 text-right whitespace-nowrap">
@@ -382,7 +382,7 @@ const ReconciliationSection: React.FC<ReconciliationSectionProps> = ({ year, bat
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <p className="text-xs text-gray-400">CRM 배치 없음</p>
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400">CRM 배치 없음</p>
                                                             )}
                                                         </div>
                                                         {/* 세금계산서 정보 */}
@@ -394,7 +394,7 @@ const ReconciliationSection: React.FC<ReconciliationSectionProps> = ({ year, bat
                                                                         <div key={idx} className="flex justify-between text-xs bg-white rounded p-1.5">
                                                                             <div>
                                                                                 <span className="text-gray-700">{inv.issueDate}</span>
-                                                                                <span className="text-gray-400 ml-1">{inv.companyName}</span>
+                                                                                <span className="text-gray-500 dark:text-gray-400 ml-1">{inv.companyName}</span>
                                                                             </div>
                                                                             <span className="font-medium text-green-600">{inv.totalAmount.toLocaleString()}원</span>
                                                                         </div>
@@ -405,7 +405,7 @@ const ReconciliationSection: React.FC<ReconciliationSectionProps> = ({ year, bat
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <p className="text-xs text-gray-400">매칭된 세금계산서 없음</p>
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400">매칭된 세금계산서 없음</p>
                                                             )}
                                                         </div>
                                                     </div>
@@ -420,7 +420,7 @@ const ReconciliationSection: React.FC<ReconciliationSectionProps> = ({ year, bat
                 </div>
 
                 {filtered.length === 0 && (
-                    <div className="text-center py-6 text-gray-400 text-sm">
+                    <div className="text-center py-6 text-gray-500 dark:text-gray-400 text-sm">
                         {filterType === 'matched' ? '일치하는 항목이 없습니다.' : '불일치 항목이 없습니다.'}
                     </div>
                 )}

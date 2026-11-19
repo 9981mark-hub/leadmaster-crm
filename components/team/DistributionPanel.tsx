@@ -232,7 +232,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
   if (notReady) {
     return (
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm px-5 py-4 flex items-center gap-2 text-sm text-gray-500">
-        <Settings2 size={18} className="text-gray-400" />
+        <Settings2 size={18} className="text-gray-500 dark:text-gray-400" />
         <b className="text-gray-700 dark:text-gray-200">리드 배분 규칙</b> 서버 업데이트 후 사용할 수 있습니다.
         <button onClick={reload} className="ml-auto text-xs flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 다시 확인</button>
       </section>
@@ -244,7 +244,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
       <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
         <Settings2 size={18} className="text-blue-600" />
         <h2 className="font-bold text-gray-800 dark:text-white">리드 배분 규칙</h2>
-        <span className="text-xs text-gray-400">새 리드를 누구에게 줄지, 손대지 않은 리드를 언제 회수할지</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">새 리드를 누구에게 줄지, 손대지 않은 리드를 언제 회수할지</span>
         <button onClick={reload} className="ml-auto text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
       </div>
 
@@ -267,17 +267,17 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
               <span className="w-28 text-gray-600 dark:text-gray-300">1인 하루 상한</span>
               <input type="number" min={1} value={s.defaultDailyCap ?? ''} placeholder="제한 없음"
                 onChange={e => setS({ ...s, defaultDailyCap: numOrNull(e.target.value) })} className={`${input} w-28`} />
-              <span className="text-xs text-gray-400">건 (상담원별로 따로 정할 수도 있음)</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">건 (상담원별로 따로 정할 수도 있음)</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="w-28 text-gray-600 dark:text-gray-300">1인 진행 중 상한</span>
               <input type="number" min={1} value={s.maxOpenPerAgent ?? ''} placeholder="제한 없음"
                 onChange={e => setS({ ...s, maxOpenPerAgent: numOrNull(e.target.value) })} className={`${input} w-28`} />
-              <span className="text-xs text-gray-400">건이 넘으면 그 사람은 건너뜀</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">건이 넘으면 그 사람은 건너뜀</span>
             </div>
           </div>
           <div className="text-sm">
-            <div className="text-gray-600 dark:text-gray-300 mb-1">"끝난 리드"로 보는 상태 <span className="text-xs text-gray-400">(진행 중 건수·균형 배분·회수에서 뺌)</span></div>
+            <div className="text-gray-600 dark:text-gray-300 mb-1">"끝난 리드"로 보는 상태 <span className="text-xs text-gray-500 dark:text-gray-400">(진행 중 건수·균형 배분·회수에서 뺌)</span></div>
             <div className="flex flex-wrap gap-1.5">
               {allStatuses.map(st => (
                 <label key={st} className={`text-xs px-2 py-1 rounded border cursor-pointer ${s.closedStatuses.includes(st) ? 'bg-gray-700 text-white border-gray-700' : 'border-gray-300 text-gray-600'}`}>
@@ -301,7 +301,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
               <span className="w-28 text-gray-600 dark:text-gray-300">회수 기준 시간</span>
               <input type="number" min={10} step={10} value={s.reclaimAfterMinutes}
                 onChange={e => setS({ ...s, reclaimAfterMinutes: parseInt(e.target.value, 10) || 60 })} className={`${input} w-24`} />
-              <span className="text-xs text-gray-400">분 ({(s.reclaimAfterMinutes / 60).toFixed(1)}시간)</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">분 ({(s.reclaimAfterMinutes / 60).toFixed(1)}시간)</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="w-28 text-gray-600 dark:text-gray-300">회수한 리드는</span>
@@ -468,7 +468,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
               </tr>
             ))}
             {!loading && agentRows.length === 0 && (
-              <tr><td colSpan={10} className="px-5 py-6 text-center text-gray-400">상담원이 없습니다. 위에서 상담원을 초대하세요.</td></tr>
+              <tr><td colSpan={10} className="px-5 py-6 text-center text-gray-500 dark:text-gray-400">상담원이 없습니다. 위에서 상담원을 초대하세요.</td></tr>
             )}
           </tbody>
         </table>
@@ -494,7 +494,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
         </select>
         <button onClick={doTransfer} disabled={busy || !transferFrom || !transferTo}
           className="px-3 py-1.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-40">옮기기</button>
-        <span className="text-xs text-gray-400">퇴사·휴가 때 사용. 일부만 옮기려면 아래 목록에서 골라 "직접 배정"</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">퇴사·휴가 때 사용. 일부만 옮기려면 아래 목록에서 골라 "직접 배정"</span>
       </div>
 
       {/* [NEW] 부재중 DB 교차 셔플 모달 */}
@@ -511,7 +511,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
               <button
                 type="button"
                 onClick={() => setShowShuffleModal(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               >
                 <X className="w-5 h-5" />
               </button>

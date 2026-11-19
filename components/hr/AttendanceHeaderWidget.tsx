@@ -177,7 +177,7 @@ export const AttendanceHeaderWidget: React.FC<AttendanceHeaderWidgetProps> = ({
                         className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-2 z-50 text-xs"
                     >
                         <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 mb-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">
                                 근무 상태 선택
                             </span>
                             {timeLabel && (
@@ -234,7 +234,7 @@ export const AttendanceHeaderWidget: React.FC<AttendanceHeaderWidgetProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => handleChangeStatus('off')}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-100/30 dark:bg-rose-950/30 transition-colors"
                                 >
                                     <Power size={13} />
                                     <span>퇴근하기</span>

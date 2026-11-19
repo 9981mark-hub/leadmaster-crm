@@ -118,7 +118,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="p-2 rounded-2xl text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            className="p-2 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-white hover:bg-white/10 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
@@ -128,7 +128,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-4 border-b border-gray-100 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-900 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-64">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-gray-500 dark:text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="상담원 이름 / 아이디 검색..."
@@ -190,13 +190,13 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {filteredProfiles.length === 0 ? (
             <div className="text-center py-16 space-y-3">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto text-gray-400">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto text-gray-500 dark:text-gray-400">
                 <Users className="w-8 h-8" />
               </div>
               <p className="text-sm font-bold text-gray-600 dark:text-gray-300">
                 등록된 신입 상담원 온보딩 데이터가 없습니다.
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 신입 상담원이 로그인하여 [신입 온보딩 패키지]에 접속하면 자동으로 집계됩니다.
               </p>
             </div>
@@ -230,7 +230,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" title="발신 권한 승인됨" />
                             )}
                           </div>
-                          <div className="text-xs text-gray-400 font-mono">{p.userId}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">{p.userId}</div>
                         </td>
 
                         <td className="p-3.5 text-gray-500 dark:text-gray-400">
@@ -243,7 +243,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                               <span className="font-bold text-indigo-600 dark:text-indigo-400">
                                 {p.progressPercent}%
                               </span>
-                              <span className="text-gray-400">{p.completedCount}/9완료</span>
+                              <span className="text-gray-500 dark:text-gray-400">{p.completedCount}/9완료</span>
                             </div>
                             <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                               <div
@@ -305,7 +305,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
                             <button
                               onClick={() => handleReset(p.userId, p.userName)}
-                              className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
+                              className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-100/40 dark:bg-rose-950/40 transition-all"
                               title="온보딩 기록 초기화"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
@@ -328,11 +328,11 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   <span className="font-black text-sm text-gray-900 dark:text-white">
                     [{selectedProfile.userName}] 상담원 9단계 세부 이력표
                   </span>
-                  <span className="text-xs text-gray-400 font-mono">({selectedProfile.userId})</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">({selectedProfile.userId})</span>
                 </div>
                 <button
                   onClick={() => setSelectedProfile(null)}
-                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 font-bold"
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 font-bold"
                 >
                   닫기
                 </button>
@@ -373,7 +373,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         </div>
                       )}
                       {sState?.completedAt && (
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           완료일시: {sState.completedAt.replace('T', ' ').substring(0, 16)}
                         </div>
                       )}

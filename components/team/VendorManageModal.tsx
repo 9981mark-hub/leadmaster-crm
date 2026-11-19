@@ -169,7 +169,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={20} />
           </button>
@@ -189,7 +189,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                 >
                   수정 취소
                 </button>
@@ -260,7 +260,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                           onChange={(e) => setFormData({ ...formData, defaultUnitCost: Number(e.target.value) })}
                           className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 font-semibold"
                         />
-                        <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">₩</span>
+                        <span className="absolute left-2.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
                       </div>
                     </div>
 
@@ -323,7 +323,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                             onChange={(e) => setFormData({ ...formData, packagePrice: Math.max(0, Number(e.target.value)) })}
                             className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
                           />
-                          <span className="absolute left-2.5 top-2.5 text-xs text-gray-400">₩</span>
+                          <span className="absolute left-2.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
                         </div>
                       </div>
                     </div>
@@ -417,7 +417,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
 
             <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[490px] pr-1">
               {vendors.length === 0 ? (
-                <div className="text-center py-16 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 text-xs">
+                <div className="text-center py-16 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 text-xs">
                   등록된 거래처가 없습니다. 좌측에서 신규 거래처를 등록하세요.
                 </div>
               ) : (
@@ -472,14 +472,14 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                       <div className="flex items-center gap-1.5 shrink-0 ml-2">
                         <button
                           onClick={() => startEdit(v)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                           title="수정"
                         >
                           <Edit2 size={15} />
                         </button>
                         <button
                           onClick={() => handleDelete(v.id, v.name)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
+                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
                           title="삭제"
                         >
                           <Trash2 size={15} />

@@ -63,15 +63,15 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
         
         <div className="flex-1 overflow-y-auto pr-3 space-y-6 custom-scrollbar" style={{ minHeight: 0 }}>
           {logsLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+            <div className="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400">
               <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
               기록을 불러오는 중...
             </div>
           ) : logs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
-              <MessageSquare className="w-8 h-8 text-gray-300 mb-2" />
+            <div className="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+              <MessageSquare className="w-8 h-8 text-gray-600 dark:text-gray-300 mb-2" />
               해당 고객과의 통화 및 문자 기록이 없습니다.
-              <span className="text-xs mt-1 text-gray-400">(스마트폰 앱에서 자동으로 동기화됩니다)</span>
+              <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">(스마트폰 앱에서 자동으로 동기화됩니다)</span>
             </div>
           ) : (
             <>
@@ -160,7 +160,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                           ) : (
                             <span className="text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">기본</span>
                           )}
-                          <span className="text-xs text-gray-400 whitespace-nowrap">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                             {format(date, 'a h:mm', { locale: ko })}
                           </span>
                         </div>

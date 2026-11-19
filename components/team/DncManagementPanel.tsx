@@ -138,7 +138,7 @@ export default function DncManagementPanel() {
       {/* Filter bar */}
       <div className="p-4 bg-gray-50/70 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700 flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[240px]">
-          <Search size={15} className="absolute left-3 top-2.5 text-gray-400" />
+          <Search size={15} className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" />
           <input
             type="text"
             placeholder="전화번호, 사유, 메모 검색..."
@@ -183,7 +183,7 @@ export default function DncManagementPanel() {
                   <td className="px-3 py-3 text-xs text-gray-500 max-w-xs truncate" title={item.note}>
                     {item.note || '-'}
                   </td>
-                  <td className="px-3 py-3 text-xs text-gray-400">
+                  <td className="px-3 py-3 text-xs text-gray-500 dark:text-gray-400">
                     {new Date(item.createdAt).toLocaleString('ko-KR', {
                       year: 'numeric',
                       month: '2-digit',
@@ -195,7 +195,7 @@ export default function DncManagementPanel() {
                   <td className="px-5 py-3 text-right">
                     <button
                       onClick={() => handleDelete(item)}
-                      className="text-xs text-gray-400 hover:text-red-600 transition-colors p-1"
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 transition-colors p-1"
                       title="차단 해제"
                     >
                       <Trash2 size={15} />
@@ -207,7 +207,7 @@ export default function DncManagementPanel() {
 
             {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-12 text-center text-gray-400">
+                <td colSpan={5} className="px-5 py-12 text-center text-gray-500 dark:text-gray-400">
                   {search ? '검색된 DNC 번호가 없습니다.' : '등록된 수신거부 번호가 없습니다.'}
                 </td>
               </tr>

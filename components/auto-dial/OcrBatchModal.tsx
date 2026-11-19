@@ -189,7 +189,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -204,7 +204,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
                   <img src={previewUrl} alt="Preview" className="h-full object-contain p-2" />
                 ) : (
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <ImageIcon className="w-10 h-10 mb-3 text-gray-400" />
+                    <ImageIcon className="w-10 h-10 mb-3 text-gray-500 dark:text-gray-400" />
                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                       <span className="font-semibold">클릭하여 업로드</span> 하거나 드래그앤드롭
                     </p>
@@ -273,7 +273,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
                             {contact.selected ? (
                               <CheckSquare className="w-4 h-4 text-blue-600 dark:text-blue-500" />
                             ) : (
-                              <Square className="w-4 h-4 text-gray-400" />
+                              <Square className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
@@ -310,7 +310,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                      <Clock className="w-4 h-4 mr-1 text-gray-400" />
+                      <Clock className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" />
                       연결 대기 시간 (초)
                     </label>
                     <input
@@ -324,7 +324,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                      <Clock className="w-4 h-4 mr-1 text-gray-400" />
+                      <Clock className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" />
                       다음 발신 대기 (초)
                     </label>
                     <input

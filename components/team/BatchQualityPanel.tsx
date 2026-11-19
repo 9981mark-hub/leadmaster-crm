@@ -381,7 +381,7 @@ export default function BatchQualityPanel() {
           )}
 
           <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
             <input
               type="text"
               value={searchKeyword}
@@ -397,11 +397,11 @@ export default function BatchQualityPanel() {
       {activeTab === 'vendor' && (
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="text-center py-16 text-gray-400">거래처 성과 데이터를 집계하는 중...</div>
+            <div className="text-center py-16 text-gray-500 dark:text-gray-400">거래처 성과 데이터를 집계하는 중...</div>
           ) : filteredVendors.length === 0 ? (
             <div className="text-center py-16 px-4">
               <div className="max-w-md mx-auto space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto text-gray-400">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto text-gray-500 dark:text-gray-400">
                   <Building2 size={24} />
                 </div>
                 <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
@@ -464,7 +464,7 @@ export default function BatchQualityPanel() {
                             <div className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                               {v.vendorName}
                             </div>
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               계약 1건당 획득비용(CAC): ₩{v.cac.toLocaleString()}
                             </div>
                           </div>
@@ -497,7 +497,7 @@ export default function BatchQualityPanel() {
                         <div className="font-bold text-gray-800 dark:text-gray-100">
                           {v.totalInserted.toLocaleString()}건
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           총 {v.batchCount}개 회차
                         </div>
                       </td>
@@ -517,7 +517,7 @@ export default function BatchQualityPanel() {
                         <span className={`font-bold ${v.contactRate >= 50 ? 'text-blue-600' : v.contactRate < 30 ? 'text-red-500' : 'text-gray-700'}`}>
                           {v.contactRate}%
                         </span>
-                        <div className="text-xs text-gray-400">{v.totalContacted.toLocaleString()}건 연결</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{v.totalContacted.toLocaleString()}건 연결</div>
                       </td>
 
                       {/* 계약 건수 (전환율) */}
@@ -525,7 +525,7 @@ export default function BatchQualityPanel() {
                         <span className="font-bold text-emerald-600 dark:text-emerald-400">
                           {v.totalContracted.toLocaleString()}건
                         </span>
-                        <div className="text-xs text-gray-400">{v.contractRate}%</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{v.contractRate}%</div>
                       </td>
 
                       {/* 총 수임료 매출 */}
@@ -578,11 +578,11 @@ export default function BatchQualityPanel() {
       {activeTab === 'batch' && (
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="text-center py-16 text-gray-400">회차별 손익 데이터를 불러오는 중...</div>
+            <div className="text-center py-16 text-gray-500 dark:text-gray-400">회차별 손익 데이터를 불러오는 중...</div>
           ) : filteredBatches.length === 0 ? (
             <div className="text-center py-16 px-4">
               <div className="max-w-md mx-auto space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto text-gray-400">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto text-gray-500 dark:text-gray-400">
                   <FileSpreadsheet size={24} />
                 </div>
                 <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
@@ -626,7 +626,7 @@ export default function BatchQualityPanel() {
                     <tr key={b.batchId} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/40 transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="font-semibold text-gray-800 dark:text-white flex items-center gap-1.5">
-                          <FileSpreadsheet size={15} className="text-gray-400 shrink-0" />
+                          <FileSpreadsheet size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
                           <span className="truncate max-w-[200px]" title={b.batchName}>{b.batchName}</span>
                         </div>
                         <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
@@ -638,7 +638,7 @@ export default function BatchQualityPanel() {
                         <div className="font-bold text-gray-800 dark:text-gray-100">
                           {b.inserted.toLocaleString()}건
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           총 {b.totalRows.toLocaleString()}건 중
                         </div>
                       </td>
@@ -653,7 +653,7 @@ export default function BatchQualityPanel() {
                         >
                           <div className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-1 group-hover:text-blue-600">
                             ₩{b.totalCost.toLocaleString()}
-                            <Edit3 size={11} className="text-gray-400 group-hover:text-blue-500" />
+                            <Edit3 size={11} className="text-gray-500 dark:text-gray-400 group-hover:text-blue-500" />
                           </div>
                           <div className="text-xs text-blue-600 dark:text-blue-400">
                             {b.unitCost > 0 ? `CPL ₩${b.unitCost.toLocaleString()}` : '단가 미입력 (설정 클릭)'}
@@ -664,19 +664,19 @@ export default function BatchQualityPanel() {
                       {/* 통화 연결률 */}
                       <td className="px-3 py-3.5 text-right tabular-nums">
                         <div className="font-bold text-blue-600 dark:text-blue-400">{b.contactRate}%</div>
-                        <div className="text-xs text-gray-400">{b.contactCount.toLocaleString()}건 연결</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{b.contactCount.toLocaleString()}건 연결</div>
                       </td>
 
                       {/* 사무장 전달률 */}
                       <td className="px-3 py-3.5 text-right tabular-nums">
                         <div className="font-bold text-purple-600 dark:text-purple-400">{b.transferRate}%</div>
-                        <div className="text-xs text-gray-400">{b.transferredCount.toLocaleString()}건 전달</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{b.transferredCount.toLocaleString()}건 전달</div>
                       </td>
 
                       {/* 계약 전환율 */}
                       <td className="px-3 py-3.5 text-right tabular-nums">
                         <div className="font-bold text-emerald-600 dark:text-emerald-400">{b.contractRate}%</div>
-                        <div className="text-xs text-gray-400">{b.contractedCount.toLocaleString()}건 계약</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{b.contractedCount.toLocaleString()}건 계약</div>
                       </td>
 
                       {/* 총 수임료 매출 */}
@@ -717,7 +717,7 @@ export default function BatchQualityPanel() {
                           <button
                             type="button"
                             onClick={() => setAsBatch(b)}
-                            className="p-1 rounded-md text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400"
+                            className="p-1 rounded-md text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400"
                             title="이 회차 불량 A/S 청구서 출력"
                           >
                             <FileSpreadsheet size={15} />
@@ -745,7 +745,7 @@ export default function BatchQualityPanel() {
               <button
                 type="button"
                 onClick={() => setEditingBatch(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-600"
               >
                 <X size={18} />
               </button>
@@ -899,7 +899,7 @@ export default function BatchQualityPanel() {
               <button
                 type="button"
                 onClick={() => { setAsVendor(null); setAsBatch(null); }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-600"
               >
                 <X size={18} />
               </button>

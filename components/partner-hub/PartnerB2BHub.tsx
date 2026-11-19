@@ -274,7 +274,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                         </span>
                         <span className="text-xs font-semibold text-gray-500">건</span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400">
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         1차 상담원이 적격 판정 후 사무장에 넘긴 건수
                     </div>
                 </div>
@@ -298,7 +298,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                             {totalKPI.overallSuccessRate}%
                         </span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400">
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         고객 총 수임료: ₩ {(totalKPI.totalContractFee / 10000).toFixed(1)}억원
                     </div>
                 </div>
@@ -338,7 +338,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                             미수: {totalKPI.totalUnpaidIncentive.toLocaleString()}만
                         </div>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400">
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         {totalKPI.totalUnpaidIncentive > 0 ? '⚠️ 제휴처에 인센티브 정산 청구 필요' : '🎉 모든 인센티브 입금 완료'}
                     </div>
                 </div>
@@ -390,7 +390,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                 return (
                                     <React.Fragment key={st.partner.partnerId}>
                                         <tr className="hover:bg-gray-50/80 dark:hover:bg-gray-750/50 transition-colors">
-                                            <td className="py-3.5 px-4 text-center font-bold text-gray-400">
+                                            <td className="py-3.5 px-4 text-center font-bold text-gray-500 dark:text-gray-400">
                                                 {idx + 1}
                                             </td>
                                             <td className="py-3.5 px-4">
@@ -421,7 +421,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                     <span className={`px-2 py-0.5 rounded-full font-bold text-xs ${rateColor}`}>
                                                         {st.successRate}%
                                                     </span>
-                                                    <span className="text-xs text-gray-400">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
                                                         {st.contractedCount}/{st.totalHandedOver}
                                                     </span>
                                                 </div>
@@ -464,7 +464,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                     <button
                                                         type="button"
                                                         onClick={() => setExpandedPartnerId(isExpanded ? null : st.partner.partnerId)}
-                                                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                                     >
                                                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                                     </button>
@@ -479,7 +479,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 space-y-3">
                                                         <div className="flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
                                                             <span>[{st.partner.name}] 수임 완료 사건 및 인센티브 정산 내역 ({st.contractedCount}건)</span>
-                                                            <span className="text-xs text-gray-400 font-normal">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
                                                                 클릭하여 입금 완료/미수를 즉시 토글할 수 있습니다.
                                                             </span>
                                                         </div>
@@ -536,7 +536,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                                     })}
                                                                     {st.cases.filter(c => c.contractAt).length === 0 && (
                                                                         <tr>
-                                                                            <td colSpan={6} className="py-6 text-center text-gray-400">
+                                                                            <td colSpan={6} className="py-6 text-center text-gray-500 dark:text-gray-400">
                                                                                 수임 완료된 케이스가 없습니다.
                                                                             </td>
                                                                         </tr>
@@ -553,7 +553,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                             })}
                             {partnerStats.length === 0 && (
                                 <tr>
-                                    <td colSpan={9} className="py-12 text-center text-gray-400">
+                                    <td colSpan={9} className="py-12 text-center text-gray-500 dark:text-gray-400">
                                         등록된 제휴 법률사무소가 없습니다. 설정에서 거래처를 등록해주세요.
                                     </td>
                                 </tr>
@@ -571,7 +571,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                             <TrendingUp size={18} className="text-indigo-600" />
                             거래처별 인계 건수 대비 수임 전환율(성공률) 비교
                         </span>
-                        <span className="text-xs text-gray-400 font-normal">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
                             성공률(선 그래프)이 높을수록 리드를 계약으로 잘 이끄는 우량 거래처입니다.
                         </span>
                     </h3>

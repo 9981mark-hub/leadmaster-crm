@@ -90,7 +90,7 @@ export default function TelegramBotSection({ orgId }: { orgId: string }) {
       <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
         <Send size={18} className="text-sky-600" />
         <h2 className="font-bold text-gray-800 dark:text-white">텔레그램 봇 연결</h2>
-        <span className="text-xs text-gray-400">변호사 사무실 방의 피드백을 이 회사 리드에만 연결합니다</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">변호사 사무실 방의 피드백을 이 회사 리드에만 연결합니다</span>
         <button onClick={checkLive} disabled={busy} className="ml-auto text-xs flex items-center gap-1 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
           <RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> 상태 확인
         </button>
@@ -106,8 +106,8 @@ export default function TelegramBotSection({ orgId }: { orgId: string }) {
           ) : (
             <span className="flex items-center gap-1 text-gray-500"><AlertTriangle size={16} /> 아직 봇이 없습니다</span>
           )}
-          {isHq && <span className="text-xs text-gray-400">본사는 기존 봇(서버 설정)을 사용합니다</span>}
-          {db?.tokenTail && <span className="text-xs text-gray-400">저장된 토큰 ****{db.tokenTail}</span>}
+          {isHq && <span className="text-xs text-gray-500 dark:text-gray-400">본사는 기존 봇(서버 설정)을 사용합니다</span>}
+          {db?.tokenTail && <span className="text-xs text-gray-500 dark:text-gray-400">저장된 토큰 ****{db.tokenTail}</span>}
           {live?.lastError && <span className="text-xs text-red-500">최근 오류: {live.lastError}</span>}
           {(isHq || db?.hasBot) && !live?.webhookConnected && (
             <button onClick={handleReRegister} disabled={busy}

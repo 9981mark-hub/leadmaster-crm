@@ -150,7 +150,7 @@ export const TrainingReportModal: React.FC<Props> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -164,7 +164,7 @@ export const TrainingReportModal: React.FC<Props> = ({
               <div className={`relative flex items-center justify-center w-20 h-20 rounded-full border-4 ${getScoreColor(report.totalScore)} bg-white dark:bg-gray-900 shadow-inner`}>
                 <div className="text-center">
                   <span className="text-2xl font-black">{report.totalScore}</span>
-                  <span className="text-xs block text-gray-400 font-medium">/ 100점</span>
+                  <span className="text-xs block text-gray-500 dark:text-gray-400 font-medium">/ 100점</span>
                 </div>
               </div>
               <div>
@@ -191,7 +191,7 @@ export const TrainingReportModal: React.FC<Props> = ({
                 <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
                   {paralegalCard.handoffScore}점
                 </span>
-                <span className="text-xs text-gray-400">7대 문진 항목 기반</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">7대 문진 항목 기반</span>
               </div>
             )}
           </div>
@@ -273,7 +273,7 @@ export const TrainingReportModal: React.FC<Props> = ({
                   style={{ width: `${(report.complianceScore / 30) * 100}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">소속 법인명 및 수수료 0원 고지</p>
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">소속 법인명 및 수수료 0원 고지</p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700">
@@ -287,7 +287,7 @@ export const TrainingReportModal: React.FC<Props> = ({
                   style={{ width: `${(report.listeningScore / 30) * 100}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">자금 필요 시기 및 부채 질문</p>
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">자금 필요 시기 및 부채 질문</p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700">
@@ -301,7 +301,7 @@ export const TrainingReportModal: React.FC<Props> = ({
                   style={{ width: `${(report.objectionScore / 40) * 100}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">의심/거절 극복 및 콜백 성사</p>
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">의심/거절 극복 및 콜백 성사</p>
             </div>
           </div>
 
@@ -324,7 +324,7 @@ export const TrainingReportModal: React.FC<Props> = ({
                   <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                     <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${report.coldDbOpeningScore || 70}%` }} />
                   </div>
-                  <p className="mt-1 text-xs text-gray-400">15초 내 의심·적대감 불식 및 안심</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">15초 내 의심·적대감 불식 및 안심</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-indigo-100 dark:border-indigo-900 text-xs">
                   <div className="flex justify-between items-center mb-1">
@@ -334,7 +334,7 @@ export const TrainingReportModal: React.FC<Props> = ({
                   <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                     <div className="h-full bg-purple-500 rounded-full" style={{ width: `${report.objectionDefenseScore || 70}%` }} />
                   </div>
-                  <p className="mt-1 text-xs text-gray-400">신용도/수임료/가족비밀 안심 방어</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">신용도/수임료/가족비밀 안심 방어</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-indigo-100 dark:border-indigo-900 text-xs">
                   <div className="flex justify-between items-center mb-1">
@@ -344,7 +344,7 @@ export const TrainingReportModal: React.FC<Props> = ({
                   <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                     <div className="h-full bg-teal-500 rounded-full" style={{ width: `${report.pacingControlScore || 70}%` }} />
                   </div>
-                  <p className="mt-1 text-xs text-gray-400">경청 공감 후 30초 내 주도권 전환</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">경청 공감 후 30초 내 주도권 전환</p>
                 </div>
               </div>
             </div>

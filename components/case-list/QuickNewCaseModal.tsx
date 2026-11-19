@@ -153,14 +153,14 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                             <h3 className="text-base font-bold text-gray-900 dark:text-white">
                                 신규 케이스 빠른 등록
                             </h3>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                 번호와 이름만 입력하고 즉시 상담을 시작할 수 있습니다.
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -319,7 +319,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
 
                 {/* Modal Footer */}
                 <div className="flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-gray-750/70 border-t border-gray-100 dark:border-gray-700">
-                    <span className="text-xs text-gray-400 hidden sm:inline">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
                         단축키: Ctrl + Enter = 등록 후 즉시 열기
                     </span>
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

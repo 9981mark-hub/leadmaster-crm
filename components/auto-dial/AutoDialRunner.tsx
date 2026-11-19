@@ -367,7 +367,7 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
       case 'no_answer': return <PhoneMissed size={16} className="text-orange-500" />;
       case 'busy': return <PhoneOff size={16} className="text-red-500" />;
       case 'error': return <AlertCircle size={16} className="text-red-500" />;
-      default: return <SkipForward size={16} className="text-gray-400" />;
+      default: return <SkipForward size={16} className="text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -656,7 +656,7 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
             ))}
 
             {phoneAccounts.length === 0 && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 ml-9">
+              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 ml-9">
                 "SIM 조회" 버튼을 눌러 사용 가능한 SIM을 확인하세요
               </p>
             )}
@@ -697,7 +697,7 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
           <span className="flex items-center gap-1 text-red-500">
             <PhoneOff size={14} /> 통화중 {stats.busy}
           </span>
-          <span className="flex items-center gap-1 text-gray-400">
+          <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
             <SkipForward size={14} /> 건너뜀 {stats.skipped}
           </span>
         </div>
@@ -723,7 +723,7 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
                   className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-750 border-b border-gray-50 dark:border-gray-700 last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400 w-6 text-right">{item.sortOrder + 1}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-right">{item.sortOrder + 1}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">{item.customerName}</span>
                     <span className="text-xs text-gray-500">{item.phone}</span>
                   </div>
@@ -774,7 +774,7 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
                       {getResultLabel(item.result)}
                     </span>
                     {item.ringDurationSeconds !== undefined && (
-                      <span className="text-xs text-gray-400">{item.ringDurationSeconds}초</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{item.ringDurationSeconds}초</span>
                     )}
                   </div>
                 </div>

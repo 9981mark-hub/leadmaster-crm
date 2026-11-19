@@ -351,7 +351,7 @@ export const ExamSection: React.FC = () => {
                       <Award className="w-4 h-4" /> 최종 마스터 달성
                     </span>
                   ) : (
-                    <span className="text-gray-300">
+                    <span className="text-gray-600 dark:text-gray-300">
                       진행 중 ({Object.values(progress.roundResults).filter((r: ExamRoundResult | null | undefined) => !!r?.passed).length}/4 합격)
                     </span>
                   )}
@@ -366,14 +366,14 @@ export const ExamSection: React.FC = () => {
           </div>
 
           {/* 난이도 선택 탭 (초급 / 중급 / 고급) */}
-          <div className="mt-6 pt-5 border-t border-indigo-800/60 flex flex-wrap items-center justify-between gap-3">
+          <div className="mt-6 pt-5 border-t border-indigo-200/60 dark:border-indigo-800/60 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10">
               <button
                 onClick={() => setSelectedLevel('beginner')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all ${
                   selectedLevel === 'beginner'
                     ? 'bg-emerald-500 text-white shadow-md'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <Zap className="w-4 h-4" />
@@ -385,7 +385,7 @@ export const ExamSection: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all ${
                   selectedLevel === 'intermediate'
                     ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <FileText className="w-4 h-4" />
@@ -397,7 +397,7 @@ export const ExamSection: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all ${
                   selectedLevel === 'advanced'
                     ? 'bg-purple-600 text-white shadow-md'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <Award className="w-4 h-4" />
@@ -461,7 +461,7 @@ export const ExamSection: React.FC = () => {
                         </div>
                       )
                     ) : (
-                      <span className="text-xs text-gray-400 font-medium">미응시 (25제)</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">미응시 (25제)</span>
                     )}
                   </div>
 
@@ -478,7 +478,7 @@ export const ExamSection: React.FC = () => {
                   {/* 문항 범위 및 시험 안내 */}
                   <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-900/80 border border-gray-100 dark:border-gray-700/60 text-xs text-gray-600 dark:text-gray-300 flex items-center justify-between font-medium">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      <Clock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                       <span>제한시간 20분 · 25문항</span>
                     </div>
                     <span>문항 번호: {(rNum - 1) * 25 + 1}번 ~ {rNum * 25}번</span>
@@ -607,7 +607,7 @@ export const ExamSection: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   배점: <span className="font-bold text-gray-700 dark:text-gray-300">4점</span>
                 </div>
               </div>
@@ -801,7 +801,7 @@ export const ExamSection: React.FC = () => {
                   {isPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                   {isPassed ? 'TEST PASSED' : 'TEST FAILED'}
                 </span>
-                <span className="text-xs text-gray-300">
+                <span className="text-xs text-gray-600 dark:text-gray-300">
                   {selectedLevel.toUpperCase()} ROUND 0{activeRound} 채점 완료
                 </span>
               </div>
@@ -809,7 +809,7 @@ export const ExamSection: React.FC = () => {
               <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
                 {isPassed ? '🎉 합격을 축하합니다!' : '⚠️ 조금 더 보완이 필요합니다!'}
               </h2>
-              <p className="text-xs md:text-sm text-gray-300 max-w-xl leading-relaxed">
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 max-w-xl leading-relaxed">
                 {isPassed
                   ? '기준 점수(80점)를 달성하여 해당 회차를 정식 마스터하셨습니다. 실전 고객 상담에 바로 적용 가능한 실무 지식을 갖추셨습니다.'
                   : '합격 기준은 80점(20문제 이상 정답)입니다. 아래 오답 노트의 [실무 해설]과 [실전 멘트]를 복습하신 후 재도전해 주세요.'}
@@ -819,16 +819,16 @@ export const ExamSection: React.FC = () => {
             {/* 대형 점수 카드 */}
             <div className="flex items-center gap-5 p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0">
               <div className="text-center">
-                <div className="text-xs text-gray-300 font-medium">최종 획득 점수</div>
+                <div className="text-xs text-gray-600 dark:text-gray-300 font-medium">최종 획득 점수</div>
                 <div className="text-4xl md:text-5xl font-black text-white mt-1">
                   {lastResult.score}
-                  <span className="text-lg font-normal text-gray-300"> / 100</span>
+                  <span className="text-lg font-normal text-gray-600 dark:text-gray-300"> / 100</span>
                 </div>
               </div>
 
               <div className="h-12 w-px bg-white/20" />
 
-              <div className="text-xs space-y-1 text-gray-300">
+              <div className="text-xs space-y-1 text-gray-600 dark:text-gray-300">
                 <div>
                   정답 문항: <span className="font-bold text-white">{lastResult.correctCount} / 25개</span>
                 </div>

@@ -224,7 +224,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
           <button
             type="button"
             onClick={loadData}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl"
+            className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl"
             title="새로고침"
           >
             <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
@@ -310,7 +310,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
             <span className="text-lg font-black text-gray-900 dark:text-white font-mono">
               {totalCompletedLeads}
             </span>
-            <span className="text-xs text-gray-400 font-mono"> / {totalAssignedLeads}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono"> / {totalAssignedLeads}</span>
             <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mt-1.5 overflow-hidden">
               <div
                 className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
@@ -330,7 +330,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
             <span className="text-lg font-black text-emerald-600 font-mono">
               {totalConnectedLeads}건
             </span>
-            <span className="text-xs text-gray-400 font-mono">부재 {totalNoAnswerLeads}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">부재 {totalNoAnswerLeads}</span>
           </div>
         </div>
       </div>
@@ -342,7 +342,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
             <Users size={15} className="text-indigo-600" />
             상담원별 실시간 콜 상태 및 소화 현황 ({allocations.length}명)
           </span>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             상태 뱃지 클릭 시 세션 리셋 가능
           </span>
         </div>
@@ -381,7 +381,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
                           <div className="font-bold text-gray-900 dark:text-gray-100 text-sm">
                             {alloc.agentName}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             {alloc.agentId}
                           </div>
                         </div>
@@ -433,7 +433,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
                           {alloc.currentCustomerName} 고객
                         </span>
                       ) : (
-                        <span className="text-gray-400 text-xs">-</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">-</span>
                       )}
                     </td>
 
@@ -465,7 +465,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
                     {/* 부재 / 거절 */}
                     <td className="py-3.5 px-4 text-center">
                       <span className="font-mono text-gray-600 dark:text-gray-400">
-                        {alloc.noAnswerCount} <span className="text-gray-300">/</span> {alloc.rejectedCount}
+                        {alloc.noAnswerCount} <span className="text-gray-600 dark:text-gray-300">/</span> {alloc.rejectedCount}
                       </span>
                     </td>
 
@@ -487,7 +487,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
                         <button
                           type="button"
                           onClick={() => handleResetAgentStatus(alloc.id, alloc.agentName)}
-                          className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:underline"
+                          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:underline"
                         >
                           세션 리셋
                         </button>

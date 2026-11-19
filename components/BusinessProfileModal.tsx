@@ -54,7 +54,7 @@ export default function BusinessProfileModal({ isOpen, onClose }: Props) {
                         <Building size={18} className="text-blue-500" />
                         내 사업 유형 설정
                     </h3>
-                    <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-200">
+                    <button onClick={onClose} className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-200">
                         <X size={20} />
                     </button>
                 </div>

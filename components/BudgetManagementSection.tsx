@@ -193,7 +193,7 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                                 )}
 
                                 {!isEditMode && limit === 0 && (
-                                    <div className="text-xs text-gray-400">
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
                                         예산 미설정 | 지출: {spent.toLocaleString()}원
                                     </div>
                                 )}

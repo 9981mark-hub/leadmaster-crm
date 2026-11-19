@@ -146,7 +146,7 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                             )}
 
                             {!sent && (
-                                <p className="text-gray-400 dark:text-gray-500 text-xs mt-3">
+                                <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-xs mt-3">
                                     {isMobile
                                         ? '이 고객에게 전화를 거시겠습니까?'
                                         : '핸드폰으로 전화 요청을 보냅니다'}

@@ -110,14 +110,14 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 상단 헤더 배너 */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-white dark:from-slate-900 via-indigo-950 to-slate-900 border border-indigo-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-indigo-100 to-indigo-50 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 border border-indigo-200 dark:border-indigo-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner">
             <Users size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-800/60">
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100/80 dark:bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/60">
                 일반 관리자 / 팀장 · 팀 영업 코칭 뷰
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">[{currentTeamName}] · {todayFormatted}</span>
@@ -143,7 +143,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
               <DollarSign size={14} className="text-emerald-600 dark:text-emerald-400" />
               팀 수임 입금 약속
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/50">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50">
               핵심
             </span>
           </div>
@@ -161,7 +161,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
               <MapPin size={14} className="text-purple-600 dark:text-purple-400" />
               팀 대면 미팅
             </span>
-            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-950 px-2 py-0.5 rounded border border-purple-800/50">
+            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/50">
               외근·방문
             </span>
           </div>
@@ -179,7 +179,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
               <Handshake size={14} className="text-amber-600 dark:text-amber-400" />
               클로징 동행 서포트
             </span>
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-950 px-2 py-0.5 rounded border border-amber-800/50">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/50">
               팀장 지원
             </span>
           </div>
@@ -192,7 +192,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
         </div>
 
         <div className={`p-4 rounded-2xl border shadow-sm ${
-          teamTodayData.overdueCount > 0 ? 'bg-rose-950/20 border-rose-900/40' : 'bg-white/80 dark:bg-slate-900/80 border-slate-200/80 dark:border-slate-800/80'
+          teamTodayData.overdueCount > 0 ? 'bg-rose-100/20 dark:bg-rose-950/20 border-rose-900/40' : 'bg-white/80 dark:bg-slate-900/80 border-slate-200/80 dark:border-slate-800/80'
         }`}>
           <div className="flex items-center justify-between text-xs font-semibold mb-1">
             <span className={`flex items-center gap-1.5 ${teamTodayData.overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
@@ -200,7 +200,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
               우리 팀 지연 콜
             </span>
             {teamTodayData.overdueCount > 0 && (
-              <span className="text-xs text-rose-600 dark:text-rose-400 font-bold bg-rose-950 px-2 py-0.5 rounded border border-rose-800/50">
+              <span className="text-xs text-rose-600 dark:text-rose-400 font-bold bg-rose-100 dark:bg-rose-950 px-2 py-0.5 rounded border border-rose-200/50 dark:border-rose-800/50">
                 독려 필요
               </span>
             )}
@@ -216,7 +216,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
 
       {/* 2단: 클로징 동행 및 3자 통화(Closer) 요청 하이라이트 (있을 때만) */}
       {teamTodayData.closerRequests.length > 0 && (
-        <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-900/50 shadow-sm animate-fade-in">
+        <div className="p-4 rounded-2xl bg-amber-100/20 dark:bg-amber-950/20 border border-amber-900/50 shadow-sm animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
             <Handshake size={18} className="text-amber-600 dark:text-amber-400" />
             <h4 className="text-sm font-bold text-amber-300">
@@ -234,7 +234,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-xs text-white">{caseData.customerName}</span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">담당: {caseData.assignee}</span>
-                    <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-950 px-1.5 py-0.5 rounded border border-amber-800/40">
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-950 px-1.5 py-0.5 rounded border border-amber-200/40 dark:border-amber-800/40">
                       서포트 요청
                     </span>
                   </div>
@@ -309,9 +309,9 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
                               isCompleted 
                                 ? 'bg-white/40 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-500 opacity-70'
                                 : isDeposit
-                                ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300'
+                                ? 'bg-emerald-100/30 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-800/50 text-emerald-300'
                                 : isField
-                                ? 'bg-purple-950/30 border-purple-800/50 text-purple-300'
+                                ? 'bg-purple-100/30 dark:bg-purple-950/30 border-purple-200/50 dark:border-purple-800/50 text-purple-600 dark:text-purple-300'
                                 : 'bg-white dark:bg-gray-900 border-slate-200/80 dark:border-slate-700/80 text-slate-200 hover:border-indigo-500/50'
                             }`}
                           >

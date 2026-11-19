@@ -55,7 +55,7 @@ const KPICard = ({ title, value, subValue, icon: Icon, color, deltaComponent }: 
                     <p className={`text-2xl font-bold ${color}`}>{value}</p>
                     {deltaComponent}
                 </div>
-                {subValue && <p className="text-xs text-gray-400 mt-1">{subValue}</p>}
+                {subValue && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subValue}</p>}
             </div>
             <div className={`p-3 rounded-full bg-opacity-10 ${color.replace('text-', 'bg-')}`}>
                 <Icon className={color} size={24} />
@@ -313,7 +313,7 @@ export default function Statistics() {
     const renderDelta = (curr: number, prev: number, isPercentPoint = false, isWon = false) => {
         if (periodFilter === 'all') return null;
         const diff = curr - prev;
-        if (diff === 0) return <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1">(0)</span>;
+        if (diff === 0) return <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-normal ml-1">(0)</span>;
 
         let displayDiff = '';
         if (isPercentPoint) {
@@ -520,7 +520,7 @@ export default function Statistics() {
 
     const renderSortIcon = (field: 'period' | 'leads' | 'contracts' | 'rate' | 'fee') => {
         if (tableSortBy !== field) {
-            return <ArrowUpDown size={12} className="text-gray-400 dark:text-gray-500 opacity-60 hover:opacity-100 transition-opacity ml-1" />;
+            return <ArrowUpDown size={12} className="text-gray-500 dark:text-gray-400 dark:text-gray-500 opacity-60 hover:opacity-100 transition-opacity ml-1" />;
         }
         return tableSortDir === 'asc' 
             ? <ArrowUp size={12} className="text-blue-600 dark:text-blue-400 ml-1" />
@@ -1266,7 +1266,7 @@ export default function Statistics() {
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel no-print">
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <Filter size={16} className="text-gray-400" />
+                        <Filter size={16} className="text-gray-500 dark:text-gray-400" />
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-300">필터:</span>
                     </div>
 
@@ -1314,7 +1314,7 @@ export default function Statistics() {
                         ))}
                     </select>
 
-                    <span className="text-xs text-gray-400 ml-auto">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
                         총 {filteredCases.length}건 조회됨
                     </span>
                 </div>
@@ -1399,16 +1399,16 @@ export default function Statistics() {
                         ) : (
                             <div className="flex items-baseline gap-1">
                                 <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{currentMonthContracts}</span>
-                                <span className="text-xs text-gray-400">/ {targetContracts}건</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">/ {targetContracts}건</span>
                                 <button
                                     onClick={() => { setTargetInput(targetContracts.toString()); setIsEditingTarget(true); }}
-                                    className="text-xs text-gray-400 hover:text-blue-500 ml-1.5 underline"
+                                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 ml-1.5 underline"
                                 >
                                     설정
                                 </button>
                             </div>
                         )}
-                        <p className="text-xs text-gray-400 mt-2">달성률 {targetPercent}%</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">달성률 {targetPercent}%</p>
                     </div>
                     <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
                         <svg className="w-full h-full transform -rotate-90">
@@ -1536,7 +1536,7 @@ export default function Statistics() {
                                                         {i > 0 && Number(dropOffPercent) > 0 && (
                                                             <div className="flex items-center justify-end pr-2 gap-1 text-xs text-red-500 font-semibold">
                                                                 <span>이탈: -{dropOffPercent}%</span>
-                                                                <span className="text-gray-400 font-normal">({funnelData[i - 1].value - stage.value}명 이탈)</span>
+                                                                <span className="text-gray-500 dark:text-gray-400 font-normal">({funnelData[i - 1].value - stage.value}명 이탈)</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1596,7 +1596,7 @@ export default function Statistics() {
                                                 </RechartsPie>
                                             </ResponsiveContainer>
                                         ) : (
-                                            <div className="h-full flex items-center justify-center text-gray-400">
+                                            <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
                                                 리마인더 데이터가 없습니다
                                             </div>
                                         )}
@@ -1609,7 +1609,7 @@ export default function Statistics() {
                                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                                     <div>
                                         <h3 className="text-base font-bold text-gray-800 dark:text-white">📅 기간별 성과 분석</h3>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5">
                                             {tableGroupBy === 'month' ? '월별' : '주별'} 신규 접수 및 계약 성과와 전환율을 비교 정렬합니다.
                                         </p>
                                     </div>
@@ -1668,7 +1668,7 @@ export default function Statistics() {
                                                         <td className="py-3 px-3">
                                                             <div className="flex flex-col">
                                                                 <span className="font-semibold text-gray-800 dark:text-white text-sm">{row.label}</span>
-                                                                <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{row.subLabel}</span>
+                                                                <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5">{row.subLabel}</span>
                                                             </div>
                                                         </td>
                                                         <td className="py-3 px-3 text-right font-medium text-gray-700 dark:text-gray-300">{row.leads}건</td>
@@ -1690,7 +1690,7 @@ export default function Statistics() {
                                             })}
                                             {periodPerformanceData.length === 0 && (
                                                 <tr>
-                                                    <td colSpan={5} className="text-center py-8 text-gray-400">
+                                                    <td colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
                                                         해당 기간에 조회된 데이터가 없습니다.
                                                     </td>
                                                 </tr>
@@ -1854,7 +1854,7 @@ export default function Statistics() {
                                                                     <th className="text-right py-2 px-2 font-semibold text-blue-600">수수료 (매출)</th>
                                                                     <th className="text-right py-2 px-2">CPA</th>
                                                                     <th className="text-right py-2 px-2">CPC</th>
-                                                                    <th className="text-right py-2 px-2 font-bold">ROAS <span className="text-xs font-normal text-gray-400 block">(수수료 기준)</span></th>
+                                                                    <th className="text-right py-2 px-2 font-bold">ROAS <span className="text-xs font-normal text-gray-500 dark:text-gray-400 block">(수수료 기준)</span></th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -1878,7 +1878,7 @@ export default function Statistics() {
                                                     </div>
 
                                                     <div className="h-[180px] md:h-[250px] mt-4">
-                                                        <p className="text-xs text-gray-400 mb-2 font-medium">ROAS 비교 (광고수익률 %)</p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">ROAS 비교 (광고수익률 %)</p>
                                                         <ResponsiveContainer width="100%" height="100%">
                                                             <BarChart data={roiData.filter(d => d.광고비 > 0)}>
                                                                 <defs>
@@ -1912,7 +1912,7 @@ export default function Statistics() {
                                                     </div>
                                                 </>
                                             ) : (
-                                                <div className="text-center py-8 text-gray-400">
+                                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                                     <DollarSign size={32} className="mx-auto mb-2 opacity-30" />
                                                     <p className="text-sm">광고비를 입력하면 ROI 분석이 표시됩니다.</p>
                                                 </div>
@@ -1974,13 +1974,13 @@ export default function Statistics() {
                                                         </a>
                                                         <button
                                                             onClick={() => setIsEditingUrl(true)}
-                                                            className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5"
+                                                            className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5"
                                                         >
                                                             연동 주소 변경
                                                         </button>
                                                     </div>
                                                 )}
-                                                <p className="text-xs text-gray-400 mt-1">
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                     최종 동기화 시간: <span className="font-semibold text-gray-600 dark:text-gray-300">{lastSyncTime}</span>
                                                 </p>
                                             </div>
@@ -2005,7 +2005,7 @@ export default function Statistics() {
                                             <h4 className="text-xl font-bold text-gray-800 dark:text-white">
                                                 {tossSummaryKpis.totalSpend.toLocaleString()}원
                                             </h4>
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 부가세 10% 포함: <span className="font-medium text-gray-500">{(Math.round(tossSummaryKpis.totalSpend * 1.1)).toLocaleString()}원</span>
                                             </p>
                                         </div>
@@ -2014,7 +2014,7 @@ export default function Statistics() {
                                             <h4 className="text-xl font-bold text-blue-600 dark:text-blue-400">
                                                 {tossSummaryKpis.avgCtr}%
                                             </h4>
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 클릭 {tossSummaryKpis.totalClicks.toLocaleString()}건 | 평균 CPC: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpc.toLocaleString()}원</span>
                                             </p>
                                         </div>
@@ -2023,7 +2023,7 @@ export default function Statistics() {
                                             <h4 className="text-xl font-bold text-purple-600 dark:text-purple-400">
                                                 {tossSummaryKpis.totalTossLeads}명
                                             </h4>
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 광고비 기준 CPL: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpl.toLocaleString()}원</span>
                                             </p>
                                         </div>
@@ -2031,16 +2031,16 @@ export default function Statistics() {
                                             <div className="flex items-center gap-1.5 mb-1">
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">CRM 실접수 & 최종 계약율</p>
                                                 <div className="group relative">
-                                                    <HelpCircle size={12} className="text-gray-400 cursor-help" />
+                                                    <HelpCircle size={12} className="text-gray-500 dark:text-gray-400 cursor-help" />
                                                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 z-10">
                                                         지연 매칭 등으로 100% 일치하지 않을 수 있으며, 정확한 효율은 주간/월간 뷰로 대조 권장합니다.
                                                     </div>
                                                 </div>
                                             </div>
                                             <h4 className="text-xl font-bold text-green-600 dark:text-green-400">
-                                                {tossSummaryKpis.totalCrmLeads}건 <span className="text-xs text-gray-400 font-normal">➔ {tossSummaryKpis.totalContracts}건</span>
+                                                {tossSummaryKpis.totalCrmLeads}건 <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">➔ {tossSummaryKpis.totalContracts}건</span>
                                             </h4>
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 연동 매칭율: <span className="font-medium">{tossSummaryKpis.matchRate}%</span> | 최종 전환율: <span className="font-bold text-green-600 dark:text-green-400">{tossSummaryKpis.overallClosingRate}%</span>
                                             </p>
                                         </div>
@@ -2053,7 +2053,7 @@ export default function Statistics() {
                                             className="lg:col-span-2"
                                             headerExtra={(
                                                 <div className="flex items-center gap-1.5 no-print">
-                                                    <span className="text-xs text-gray-400 mr-1.5">보기 단위:</span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 mr-1.5">보기 단위:</span>
                                                     {[
                                                         { id: 'day', label: '일별' },
                                                         { id: 'week', label: '주간별' },
@@ -2093,7 +2093,7 @@ export default function Statistics() {
                                                         </ComposedChart>
                                                     </ResponsiveContainer>
                                                 ) : (
-                                                    <div className="flex items-center justify-center h-full text-gray-400 text-sm">데이터가 없습니다.</div>
+                                                    <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">데이터가 없습니다.</div>
                                                 )}
                                             </div>
                                         </ChartSection>
@@ -2123,7 +2123,7 @@ export default function Statistics() {
                                                                 </motion.div>
                                                             </div>
                                                             {idx > 0 && (
-                                                                <p className="text-xs text-gray-400 dark:text-gray-500 text-right font-medium">
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 text-right font-medium">
                                                                     이전 단계 대비 효율: <span className="font-bold text-gray-600 dark:text-gray-300">
                                                                         {idx === 1 
                                                                             ? `${tossSummaryKpis.matchRate}% (CRM 등록율)` 
@@ -2172,7 +2172,7 @@ export default function Statistics() {
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between gap-4 flex-wrap no-print">
                                                 <div className="relative flex-1 min-w-[200px] max-w-xs">
-                                                    <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                                                    <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 dark:text-gray-400">
                                                         <Filter size={13} />
                                                     </span>
                                                     <input
@@ -2183,7 +2183,7 @@ export default function Statistics() {
                                                         className="w-full text-xs pl-8 pr-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"
                                                     />
                                                 </div>
-                                                <div className="flex items-center gap-1 text-xs text-gray-400 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 px-2 py-1 rounded-md">
+                                                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 px-2 py-1 rounded-md">
                                                     <Info size={11} className="text-blue-500" />
                                                     주말/야간 유입은 CRM에 다음 날 접수될 수 있으므로, 정확한 전환율 대조를 위해서는 <strong>주간별/월간별</strong> 뷰를 사용하세요.
                                                 </div>
@@ -2248,16 +2248,16 @@ export default function Statistics() {
                                                                     <tr key={i} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
                                                                         <td className="py-2.5 px-2 font-bold text-gray-700 dark:text-gray-300">{d.label}</td>
                                                                         <td className="py-2.5 px-2 text-right text-gray-500 font-medium">{d.spend > 0 ? `${d.spend.toLocaleString()}원` : '-'}</td>
-                                                                        <td className="py-2.5 px-2 text-right text-gray-400">{d.impressions > 0 ? d.impressions.toLocaleString() : '-'}</td>
+                                                                        <td className="py-2.5 px-2 text-right text-gray-500 dark:text-gray-400">{d.impressions > 0 ? d.impressions.toLocaleString() : '-'}</td>
                                                                         <td className="py-2.5 px-2 text-right">
                                                                             <span className="font-semibold">{d.clicks > 0 ? d.clicks.toLocaleString() : '-'}</span>
-                                                                            {d.ctr > 0 && <span className="text-xs text-gray-400 block">({d.ctr}%)</span>}
+                                                                            {d.ctr > 0 && <span className="text-xs text-gray-500 dark:text-gray-400 block">({d.ctr}%)</span>}
                                                                         </td>
                                                                         <td className="py-2.5 px-2 text-right font-bold text-purple-600">{d.tossLeads > 0 ? `${d.tossLeads}명` : '-'}</td>
                                                                         <td className="py-2.5 px-2 text-right text-gray-600 dark:text-gray-400">{d.cpl > 0 ? `${d.cpl.toLocaleString()}원` : '-'}</td>
                                                                         <td className="py-2.5 px-2 text-right font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/10">
                                                                             {d.crmLeads > 0 ? `${d.crmLeads}건` : '-'}
-                                                                            {d.tossLeads > 0 && <span className="text-xs text-gray-400 block font-normal">매칭 {dayMatchRate}%</span>}
+                                                                            {d.tossLeads > 0 && <span className="text-xs text-gray-500 dark:text-gray-400 block font-normal">매칭 {dayMatchRate}%</span>}
                                                                         </td>
                                                                         <td className="py-2.5 px-2 text-right font-bold text-green-600 dark:text-green-400 bg-green-50/10">
                                                                             {d.contracts > 0 ? `${d.contracts}건` : '-'}
@@ -2273,7 +2273,7 @@ export default function Statistics() {
                                                             })
                                                         ) : (
                                                             <tr>
-                                                                <td colSpan={9} className="py-8 text-center text-gray-400">데이터가 없습니다.</td>
+                                                                <td colSpan={9} className="py-8 text-center text-gray-500 dark:text-gray-400">데이터가 없습니다.</td>
                                                             </tr>
                                                         )}
                                                     </tbody>
@@ -2283,7 +2283,7 @@ export default function Statistics() {
                                             {/* Table Pagination */}
                                             {totalTossPages > 1 && (
                                                 <div className="flex items-center justify-between pt-4 no-print border-t border-gray-100 dark:border-gray-700/30">
-                                                    <span className="text-xs text-gray-400">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
                                                         총 {sortedPerformanceData.length}개 항목 중 {tossPage} / {totalTossPages} 페이지
                                                     </span>
                                                     <div className="flex items-center gap-1">
@@ -2344,7 +2344,7 @@ export default function Statistics() {
                                     {totalDropOff > 0 ? (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
-                                                <p className="text-xs text-gray-400 mb-2 font-medium">이탈 분류 사유 분포 (dropOffReason)</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">이탈 분류 사유 분포 (dropOffReason)</p>
                                                 <div className="h-[180px] md:h-[250px]">
                                                     {dropOffReasonData.length > 0 ? (
                                                         <ResponsiveContainer width="100%" height="100%">
@@ -2368,7 +2368,7 @@ export default function Statistics() {
                                                             </RechartsPie>
                                                         </ResponsiveContainer>
                                                     ) : (
-                                                        <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                                        <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
                                                             <p className="text-center">분류 사유 데이터가 없습니다.<br />이탈 처리 시 사유를 입력하면 집계됩니다.</p>
                                                         </div>
                                                     )}
@@ -2376,7 +2376,7 @@ export default function Statistics() {
                                             </div>
 
                                             <div>
-                                                <p className="text-xs text-gray-400 mb-2 font-medium">단계별 이탈 직전 시점</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">단계별 이탈 직전 시점</p>
                                                 <div className="h-[180px] md:h-[250px]">
                                                     {dropOffStageData.length > 0 ? (
                                                         <ResponsiveContainer width="100%" height="100%">
@@ -2395,7 +2395,7 @@ export default function Statistics() {
                                                             </BarChart>
                                                         </ResponsiveContainer>
                                                     ) : (
-                                                        <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                                        <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
                                                             <p>이탈 단계 로그가 존재하지 않습니다.</p>
                                                         </div>
                                                     )}
@@ -2403,7 +2403,7 @@ export default function Statistics() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="text-center py-8 text-gray-400 font-medium">
+                                        <div className="text-center py-8 text-gray-500 dark:text-gray-400 font-medium">
                                             <AlertTriangle size={32} className="mx-auto mb-2 opacity-30" />
                                             <p className="text-sm">현재 필터 기간 내 고객취소/진행불가 건이 없습니다.</p>
                                         </div>
@@ -2418,7 +2418,7 @@ export default function Statistics() {
                                         <AlertTriangle size={18} className="text-red-500" />
                                         📁 이탈 고객 상세 피드백 목록 (직접 입력값 확인)
                                     </h3>
-                                    <p className="text-xs text-gray-400 mt-1">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                         * 고객 이탈 처리 시 작성한 상세 내용 원문입니다. 분류 사유는 추후 표준 항목으로 자동 집계 연동됩니다.
                                     </p>
                                 </div>
@@ -2457,9 +2457,9 @@ export default function Statistics() {
                                                             </span>
                                                         </td>
                                                         <td className="py-2 px-3 text-gray-600 dark:text-gray-300 max-w-sm truncate" title={c.dropOffDetail || ''}>
-                                                            {c.dropOffDetail || <span className="text-gray-400 italic">상세 내용 없음</span>}
+                                                            {c.dropOffDetail || <span className="text-gray-500 dark:text-gray-400 italic">상세 내용 없음</span>}
                                                         </td>
-                                                        <td className="py-2 px-3 text-right text-gray-400 text-xs">
+                                                        <td className="py-2 px-3 text-right text-gray-500 dark:text-gray-400 text-xs">
                                                             {c.createdAt ? format(new Date(c.createdAt), 'yyyy-MM-dd') : '-'}
                                                         </td>
                                                     </tr>
@@ -2491,7 +2491,7 @@ export default function Statistics() {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-6 text-gray-400">
+                                    <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                                         필터 조건 하에 등록된 이탈 피드백이 없습니다.
                                     </div>
                                 )}

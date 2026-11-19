@@ -56,11 +56,11 @@ const StatusHistoryTooltipContent = ({ c }: { c: Case }) => {
                     <p className="font-bold text-blue-300 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">1차 상태 변경 이력</p>
                     {logs.map((log, i) => (
                         <div key={i} className="text-xs border-b border-gray-700 last:border-0 pb-1 mb-1">
-                            <div className="flex justify-between text-gray-400 mb-0.5">
+                            <div className="flex justify-between text-gray-500 dark:text-gray-400 mb-0.5">
                                 <span>{log.fromStatus || '신규'} → <span className="text-blue-300">{log.toStatus}</span></span>
                                 <span className="text-xs">{log.changedAt?.split('T')[0] || ''}</span>
                             </div>
-                            {log.memo && <div className="text-gray-300 pl-1 border-l-2 border-gray-600">{log.memo}</div>}
+                            {log.memo && <div className="text-gray-600 dark:text-gray-300 pl-1 border-l-2 border-gray-600">{log.memo}</div>}
                         </div>
                     ))}
                 </>
@@ -71,15 +71,15 @@ const StatusHistoryTooltipContent = ({ c }: { c: Case }) => {
                     <p className="font-bold text-purple-300 border-b border-gray-600 pb-1 mt-2">2차 상태 변경 이력</p>
                     {secondaryChanges.map((change, i) => (
                         <div key={i} className="text-xs border-b border-gray-700 last:border-0 pb-1 mb-1">
-                            <div className="flex justify-between text-gray-400 mb-0.5">
+                            <div className="flex justify-between text-gray-500 dark:text-gray-400 mb-0.5">
                                 <span>
-                                    <span className={SECONDARY_STATUS_COLOR_MAP[change.from] || 'text-gray-300'}>{change.from}</span>
+                                    <span className={SECONDARY_STATUS_COLOR_MAP[change.from] || 'text-gray-600 dark:text-gray-300'}>{change.from}</span>
                                     {' → '}
                                     <span className={SECONDARY_STATUS_COLOR_MAP[change.to] || 'text-purple-300'}>{change.to}</span>
                                 </span>
                                 <span className="text-xs">{change.date?.split('T')[0] || ''}</span>
                             </div>
-                            {change.memo && <div className="text-gray-300 pl-1 border-l-2 border-purple-600">{change.memo}</div>}
+                            {change.memo && <div className="text-gray-600 dark:text-gray-300 pl-1 border-l-2 border-purple-600">{change.memo}</div>}
                         </div>
                     ))}
                 </>
@@ -276,7 +276,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     }, [openDropdownId]);
 
     if (cases.length === 0) {
-        return <div className="p-8 text-center text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>;
+        return <div className="p-8 text-center text-gray-500 dark:text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>;
     }
 
     return (
@@ -293,7 +293,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     {/* [NEW] Star Toggle (Mobile) */}
                                     <button
                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
-                                        className={`p-0.5 transition-all active:scale-125 ${c.isStarred ? 'text-amber-600 dark:text-amber-400' : 'text-gray-300 dark:text-gray-500'}`}
+                                        className={`p-0.5 transition-all active:scale-125 ${c.isStarred ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-300 dark:text-gray-500'}`}
                                         title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
                                     >
                                         <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
@@ -340,7 +340,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     transition={{ duration: 0.15 }}
                                                     className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[250px] overflow-y-auto"
                                                 >
-                                                    <div className="px-2 py-1 text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                                    <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                                         <span>상태 변경</span>
                                                         <button
                                                             onClick={() => setOpenDropdownId(null)}
@@ -380,7 +380,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         </button>
                                     )}
                                 </div>
-                                <span className="text-xs text-gray-400">{safeFormat(c.createdAt, 'MM-dd')}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{safeFormat(c.createdAt, 'MM-dd')}</span>
                             </div>
 
                             <div className="flex justify-between items-center mt-1">
@@ -417,7 +417,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={(e) => handleUnmask(e, c.caseId)}
-                                                className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                                 title="마스킹 해제 (열람 기록 남김)"
                                             >
                                                 <Eye size={13} />
@@ -487,9 +487,9 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
                                                     {c.reminders?.map((reminder, idx) => (
                                                         <div key={idx} className="text-xs border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
-                                                            <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                            <p className="text-gray-600 dark:text-gray-300 font-medium">{reminder.datetime}</p>
                                                             {reminder.content && (
-                                                                <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                <p className="text-gray-500 dark:text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
                                                                     {reminder.content}
                                                                 </p>
                                                             )}
@@ -520,7 +520,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         }
                                         content={
                                             <div className="space-y-2 max-h-60 overflow-y-auto">
-                                                <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
+                                                <p className="font-bold text-gray-600 dark:text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
                                                 {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
                                                     c.specialMemo
                                                         .filter(m => !m.content.startsWith('[상태변경]'))
@@ -589,7 +589,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <input type="checkbox" aria-label="이 쪽 모두 선택" checked={allOnPage} onChange={() => onToggleSelectAll?.(pageIds, !allOnPage)} />
                                 </th>
                             )}
-                            <th className={`px-2 ${headerPadding} w-[3%] text-center whitespace-nowrap`}><Star size={14} className="inline text-gray-400" /></th>
+                            <th className={`px-2 ${headerPadding} w-[3%] text-center whitespace-nowrap`}><Star size={14} className="inline text-gray-500 dark:text-gray-400" /></th>
                             <th className={`px-3 md:px-4 ${headerPadding} w-[14%] whitespace-nowrap`}>유형/경로/거래처</th>
                             <th className={`px-3 md:px-4 ${headerPadding} w-[11%] whitespace-nowrap`}>고객명</th>
                             <th className={`px-3 md:px-4 ${headerPadding} w-[12%] whitespace-nowrap`}>연락처</th>
@@ -627,7 +627,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <td className={`px-2 ${cellPadding} text-center`}>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
-                                            className={`p-1 rounded-full transition-all hover:scale-110 ${c.isStarred ? 'text-amber-600 dark:text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-amber-300 dark:text-gray-600 dark:hover:text-amber-600 dark:text-amber-400'}`}
+                                            className={`p-1 rounded-full transition-all hover:scale-110 ${c.isStarred ? 'text-amber-600 dark:text-amber-400 hover:text-amber-500' : 'text-gray-600 dark:text-gray-300 hover:text-amber-300 dark:text-gray-600 dark:hover:text-amber-600 dark:text-amber-400'}`}
                                             title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
                                         >
                                             <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
@@ -637,7 +637,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
                                             <span className="text-xs text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
-                                            <span className="text-xs text-gray-400 dark:text-gray-500">{partner?.name}</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{partner?.name}</span>
                                         </div>
                                     </td>
                                     <td className={cellPadding}>
@@ -672,11 +672,11 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         <div className="ml-1 inline-block">
                                             <HoverCheckTooltip
                                                 trigger={
-                                                    <MessageSquare size={14} className="text-gray-300 hover:text-blue-500 transition-colors" />
+                                                    <MessageSquare size={14} className="text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors" />
                                                 }
                                                 content={
                                                     <div className="space-y-2">
-                                                        <p className="font-bold text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
+                                                        <p className="font-bold text-gray-600 dark:text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
                                                         {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
                                                             c.specialMemo
                                                                 .filter(m => !m.content.startsWith('[상태변경]'))
@@ -717,7 +717,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={(e) => handleUnmask(e, c.caseId)}
-                                                    className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                    className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                                     title="마스킹 해제 (열람 기록 남김)"
                                                 >
                                                     <Eye size={12} />
@@ -754,7 +754,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                                         }`}>{c.secondaryStatus}</span>
                                                                     {c.tertiaryStatus && (
                                                                         <>
-                                                                            <span className="text-gray-400">›</span>
+                                                                            <span className="text-gray-500 dark:text-gray-400">›</span>
                                                                             <span className="font-medium text-amber-700 truncate">{c.tertiaryStatus}</span>
                                                                         </>
                                                                     )}
@@ -770,7 +770,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                                 {c.status === '사무장 접수' ? '✓ 사무장접수' : c.status}
                                                             </span>
                                                         )}
-                                                        <ChevronDown size={12} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+                                                        <ChevronDown size={12} className="text-gray-500 dark:text-gray-400 group-hover:text-gray-600 transition-colors" />
                                                     </button>
                                                 }
                                                 content={() => <StatusHistoryTooltipContent c={c} />}
@@ -796,7 +796,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         transition={{ duration: 0.15 }}
                                                         className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[300px] overflow-y-auto"
                                                     >
-                                                        <div className="px-2 py-1 text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                                        <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
                                                             상태 변경
                                                         </div>
                                                         {statuses.map((status) => (
@@ -868,7 +868,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                             return <MoreHorizontal size={14} className="text-gray-600" />;
                                                         })()}
                                                         <span className="text-gray-700 dark:text-gray-300 font-medium">{nextReminder.datetime}</span>
-                                                        {(c.reminders?.length || 0) > 1 && <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
+                                                        {(c.reminders?.length || 0) > 1 && <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
                                                     </div>
                                                 }
                                                 content={
@@ -876,9 +876,9 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
                                                         {c.reminders?.map((reminder, idx) => (
                                                             <div key={idx} className="text-xs border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
-                                                                <p className="text-gray-300 font-medium">{reminder.datetime}</p>
+                                                                <p className="text-gray-600 dark:text-gray-300 font-medium">{reminder.datetime}</p>
                                                                 {reminder.content && (
-                                                                    <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                    <p className="text-gray-500 dark:text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
                                                                         {reminder.content}
                                                                     </p>
                                                                 )}
@@ -919,7 +919,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     </button>
                                                     <button
                                                         onClick={(e) => onDelete(c.caseId, e)}
-                                                        className="text-gray-400 hover:text-red-500 p-1.5 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-1.5 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                                                         title="휴지통으로 이동"
                                                     >
                                                         <Trash2 size={16} />

@@ -151,7 +151,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             </span>
                         )}
                         {totalPages > 1 && (
-                            <span className="text-xs text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
                         )}
                     </div>
                     {onToggleDensity && (

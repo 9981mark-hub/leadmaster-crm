@@ -143,7 +143,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 웰컴 배너 */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-50 via-indigo-100 to-blue-50 dark:from-blue-900 dark:via-indigo-900 dark:to-slate-900 rounded-2xl p-5 text-slate-900 dark:text-white shadow-lg border border-blue-200 dark:border-transparent relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">

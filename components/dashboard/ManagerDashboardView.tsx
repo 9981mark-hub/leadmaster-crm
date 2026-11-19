@@ -167,7 +167,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 관리자 헤더 & 배너 */}
-      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-800 via-indigo-950 to-blue-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-indigo-50 via-blue-100 to-indigo-50 dark:from-slate-800 dark:via-indigo-950 dark:to-blue-900 rounded-2xl p-5 text-slate-900 dark:text-white shadow-lg border border-indigo-200 dark:border-transparent relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">

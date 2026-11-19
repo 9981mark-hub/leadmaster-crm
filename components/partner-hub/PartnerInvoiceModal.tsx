@@ -162,7 +162,7 @@ export const PartnerInvoiceModal: React.FC<PartnerInvoiceModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                         <X size={20} />
                     </button>
@@ -223,7 +223,7 @@ export const PartnerInvoiceModal: React.FC<PartnerInvoiceModalProps> = ({
                     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                         <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-700/60 border-b border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-600 dark:text-gray-300 flex justify-between items-center">
                             <span>정산 대상 수임 완료 내역 ({items.length}건)</span>
-                            <span className="text-xs font-normal text-gray-400">
+                            <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
                                 요율: {partner.incentiveType === 'fixed' ? `건당 ${partner.incentiveFixedAmount || 50}만` : `${partner.incentiveRate || 30}%`}
                             </span>
                         </div>
@@ -242,7 +242,7 @@ export const PartnerInvoiceModal: React.FC<PartnerInvoiceModalProps> = ({
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {items.map((it) => (
                                         <tr key={it.caseId} className="hover:bg-gray-50/60 dark:hover:bg-gray-700/30">
-                                            <td className="py-2 px-3 text-center text-gray-400 font-medium">{it.no}</td>
+                                            <td className="py-2 px-3 text-center text-gray-500 dark:text-gray-400 font-medium">{it.no}</td>
                                             <td className="py-2 px-3 font-semibold text-gray-800 dark:text-gray-200">{it.customerName}</td>
                                             <td className="py-2 px-3 text-gray-600 dark:text-gray-400">{it.caseType}</td>
                                             <td className="py-2 px-3 text-center text-gray-500">{it.contractAt}</td>
@@ -252,7 +252,7 @@ export const PartnerInvoiceModal: React.FC<PartnerInvoiceModalProps> = ({
                                     ))}
                                     {items.length === 0 && (
                                         <tr>
-                                            <td colSpan={6} className="py-8 text-center text-gray-400">
+                                            <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">
                                                 해당 기간에 수임 완료된 케이스가 없습니다.
                                             </td>
                                         </tr>

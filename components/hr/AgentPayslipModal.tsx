@@ -149,7 +149,7 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                         <X size={20} />
                     </button>
@@ -166,14 +166,14 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                             <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
                                 ₩ {calculation.netPay.toLocaleString()} <span className="text-sm font-semibold">원</span>
                             </div>
-                            <div className="text-xs text-gray-400 mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 총 세전: ₩ {calculation.grossPay.toLocaleString()}원 • 공제: -₩ {calculation.taxDeduction.toLocaleString()}원
                             </div>
                         </div>
 
                         {profile.bankName && profile.accountNumber && (
                             <div className="text-right sm:border-l sm:border-gray-200 sm:dark:border-gray-600 sm:pl-4">
-                                <span className="text-xs font-semibold text-gray-400 block">입금 예정 계좌</span>
+                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 block">입금 예정 계좌</span>
                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">
                                     {profile.bankName} {profile.accountNumber}
                                 </span>
@@ -248,13 +248,13 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                         <div className="px-4 py-2 bg-gray-50 dark:bg-gray-750 text-xs font-bold text-gray-700 dark:text-gray-300 flex justify-between">
                             <span>수임 완료 계약 세부 명세 ({contractItems.length}건)</span>
-                            <span className="text-xs text-gray-400 font-normal">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
                                 투명한 건당 인센티브 산출 내역
                             </span>
                         </div>
                         <div className="max-h-48 overflow-y-auto">
                             <table className="w-full text-left text-xs">
-                                <thead className="bg-gray-50/50 dark:bg-gray-800 text-gray-400 sticky top-0">
+                                <thead className="bg-gray-50/50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 sticky top-0">
                                     <tr className="border-b border-gray-100 dark:border-gray-700">
                                         <th className="py-2 px-3">#</th>
                                         <th className="py-2 px-3">고객명</th>
@@ -267,7 +267,7 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {contractItems.map((it, idx) => (
                                         <tr key={it.caseId} className="hover:bg-gray-50 dark:hover:bg-gray-750">
-                                            <td className="py-2 px-3 text-gray-400">{idx + 1}</td>
+                                            <td className="py-2 px-3 text-gray-500 dark:text-gray-400">{idx + 1}</td>
                                             <td className="py-2 px-3 font-semibold text-gray-800 dark:text-gray-200">{it.customerName}</td>
                                             <td className="py-2 px-3 text-gray-600 dark:text-gray-400">{it.caseType}</td>
                                             <td className="py-2 px-3 text-center text-gray-500">{it.contractAt}</td>
@@ -279,7 +279,7 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                                     ))}
                                     {contractItems.length === 0 && (
                                         <tr>
-                                            <td colSpan={6} className="py-6 text-center text-gray-400">
+                                            <td colSpan={6} className="py-6 text-center text-gray-500 dark:text-gray-400">
                                                 해당 월 수임 완료 사건이 없습니다.
                                             </td>
                                         </tr>
@@ -292,7 +292,7 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
 
                 {/* 하단 푸터 액션 버튼 */}
                 <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 no-print">
-                    <span className="text-xs text-gray-400 flex items-center">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                         <ShieldCheck size={14} className="mr-1 text-emerald-500" />
                         복사된 양식은 카카오톡 또는 문자로 1초 전송 가능합니다.
                     </span>

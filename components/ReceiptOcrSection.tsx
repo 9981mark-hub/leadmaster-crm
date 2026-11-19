@@ -344,7 +344,7 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
 
                 {/* 초기 상태 */}
                 {!ocrResult && !ocrLoading && (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <span className="text-4xl block mb-2">📷</span>
                         <p>영수증 사진을 업로드하면 AI가 자동으로 분석합니다</p>
                         <p className="text-xs mt-1">지원 형식: JPG, PNG (최대 4MB)</p>
@@ -356,7 +356,7 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
                     <div className="text-center py-8">
                         <span className="text-4xl block mb-2 animate-pulse">🔍</span>
                         <p className="text-cyan-600">영수증을 분석하고 있습니다...</p>
-                        <p className="text-xs text-gray-400 mt-1">잠시만 기다려주세요</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">잠시만 기다려주세요</p>
                     </div>
                 )}
             </div>

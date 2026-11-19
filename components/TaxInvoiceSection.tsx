@@ -292,7 +292,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                                         <td className="py-2 px-2">
                                             <button
                                                 onClick={() => handleDelete(inv.id, inv.companyName)}
-                                                className="text-gray-400 hover:text-red-500"
+                                                className="text-gray-500 dark:text-gray-400 hover:text-red-500"
                                             >
                                                 ×
                                             </button>
@@ -303,7 +303,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                         </table>
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         {activeTab === 'all' ? '등록된 세금계산서가 없습니다.' : `${activeTab} 세금계산서가 없습니다.`}
                         <p className="text-xs mt-2">홈택스에서 다운로드한 엑셀 파일을 업로드하거나 수동으로 등록해주세요.</p>
                     </div>

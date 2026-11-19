@@ -188,7 +188,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
 
           <button 
             type="button"
-            className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             title={expanded ? '간략히 접기' : '상세 펼치기'}
           >
             {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -217,7 +217,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                   {totalCalls}
                   <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   연결 {connectedCalls}건
                 </span>
               </div>
@@ -256,14 +256,14 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                   <PhoneMissed size={12} className="text-amber-500" />
                   부재콜 처리
                 </span>
-                <ArrowUpRight size={11} className="text-gray-400 group-hover:text-amber-500 transition-colors" />
+                <ArrowUpRight size={11} className="text-gray-500 dark:text-gray-400 group-hover:text-amber-500 transition-colors" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
                 <span className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">
                   {missedCount}
                   <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   원터치 처리
                 </span>
               </div>
@@ -302,7 +302,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                     <span className="text-sm font-black text-gray-800 dark:text-gray-200 font-mono truncate">
                       {fmtDuration(totalDurationSec)}
                     </span>
-                    <span className="text-xs text-gray-400 truncate">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       평균 {fmtDuration(avgDurationSec)}
                     </span>
                   </>

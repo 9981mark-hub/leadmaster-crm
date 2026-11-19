@@ -386,7 +386,7 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                         {r.source === 'expense' ? (
                           <button
                             onClick={() => onDeleteExpense(r.id)}
-                            className="p-1 text-slate-500 dark:text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            className="p-1 text-slate-500 dark:text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 dark:hover:bg-rose-100/40 dark:bg-rose-950/40 transition-colors cursor-pointer"
                             title="지출 삭제"
                           >
                             <Trash2 size={13} />

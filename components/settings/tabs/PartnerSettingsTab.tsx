@@ -67,7 +67,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     </button>
                 }
             >
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     등록된 거래처가 없거나 선택되지 않았습니다.
                 </div>
             </SettingsCard>
@@ -230,7 +230,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                         headerAction={
                             <button
                                 onClick={onDeletePartner}
-                                className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 font-bold px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                                className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 font-bold px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-100/30 dark:bg-rose-950/30 transition-colors"
                             >
                                 거래처 삭제
                             </button>
@@ -313,7 +313,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <option key={d} value={d}>매주 {getDayName(d)}요일</option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-gray-400 mt-1">한 주간의 정산 대상을 집계 마감하는 요일</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">한 주간의 정산 대상을 집계 마감하는 요일</p>
                             </div>
 
                             <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -331,7 +331,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     <option value={0}>이번 주 (금주 지급)</option>
                                     <option value={1}>다음 주 (차주 지급)</option>
                                 </select>
-                                <p className="text-xs text-gray-400 mt-1">마감 주차 기준 지급 발생 주</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">마감 주차 기준 지급 발생 주</p>
                             </div>
 
                             <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -350,7 +350,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <option key={d} value={d}>매주 {getDayName(d)}요일</option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-gray-400 mt-1">상담원 및 파트너에게 실지급하는 요일</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">상담원 및 파트너에게 실지급하는 요일</p>
                             </div>
                         </div>
 
@@ -483,7 +483,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         </span>
                                     ))}
                                     {(editingPartner.depositNames || []).length === 0 && (
-                                        <span className="text-xs text-gray-400">등록된 매칭 키워드가 없습니다.</span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">등록된 매칭 키워드가 없습니다.</span>
                                     )}
                                 </div>
                                 <div className="flex gap-2 max-w-sm">
@@ -533,7 +533,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => handleDeletePreset(preset.id)}
-                                            className="text-gray-400 hover:text-rose-500 p-1 transition-colors"
+                                            className="text-gray-500 dark:text-gray-400 hover:text-rose-500 p-1 transition-colors"
                                             title="프리셋 삭제"
                                         >
                                             <Trash2 size={14} />
@@ -541,7 +541,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     </div>
                                 ))}
                                 {(editingPartner.payoutPartnerPresets || []).length === 0 && (
-                                    <div className="text-center py-6 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                                    <div className="text-center py-6 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
                                         등록된 지급처 프리셋이 없습니다. 아래에서 추가하세요.
                                     </div>
                                 )}
@@ -749,7 +749,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                             <td className="p-3 text-right">
                                                 <button
                                                     onClick={() => onDeleteRule(r.ruleId)}
-                                                    className="text-gray-400 hover:text-rose-500 p-1 transition-colors"
+                                                    className="text-gray-500 dark:text-gray-400 hover:text-rose-500 p-1 transition-colors"
                                                     title="규칙 삭제"
                                                 >
                                                     <Trash2 size={14} />
@@ -759,7 +759,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     ))}
                                     {(editingPartner.commissionRules || []).length === 0 && (
                                         <tr>
-                                            <td colSpan={5} className="p-6 text-center text-gray-400">
+                                            <td colSpan={5} className="p-6 text-center text-gray-500 dark:text-gray-400">
                                                 등록된 구간 규칙이 없습니다. 기본 수수료 정책이 적용됩니다.
                                             </td>
                                         </tr>

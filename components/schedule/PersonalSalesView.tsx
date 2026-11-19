@@ -353,7 +353,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
     const dayOfWeek = day.getDay();
     if (dayOfWeek === 0) return 'text-red-600 dark:text-red-400/80';
     if (dayOfWeek === 6) return 'text-blue-600 dark:text-blue-400/80';
-    return 'text-gray-400 dark:text-gray-500';
+    return 'text-gray-500 dark:text-gray-400 dark:text-gray-500';
   };
 
   // 복합 일정 가공 (필터링, 검색, 정렬)
@@ -449,7 +449,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
 
         {/* 정렬 셀렉터 */}
         <div className="flex items-center gap-2 self-start md:self-center">
-          <Filter size={14} className="text-gray-400" />
+          <Filter size={14} className="text-gray-500 dark:text-gray-400" />
           <select
             value={sortOrder}
             onChange={(e) => {
@@ -468,7 +468,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
       {/* 2. 오늘의 지표 위젯 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
-          <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">전체 일정</span>
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase">전체 일정</span>
           <span className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{selectedDateStats.total}건</span>
         </div>
         <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
@@ -565,7 +565,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
       {/* 4. 검색창 및 필터 패널 */}
       <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl space-y-3">
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-3 text-gray-400" />
+          <Search size={16} className="absolute left-3.5 top-3 text-gray-500 dark:text-gray-400" />
           <input
             type="text"
             placeholder="고객명, 연락처, 유입경로 또는 메모 내용으로 검색..."
@@ -670,7 +670,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                       ? 'opacity-65 grayscale-[30%] border-gray-100 dark:border-gray-800' 
                       : isNext 
                         ? 'border-indigo-400 shadow-md shadow-indigo-50/50 dark:shadow-none ring-2 ring-indigo-500/10' 
-                        : 'border-transparent hover:border-indigo-300 dark:hover:border-indigo-800'
+                        : 'border-transparent hover:border-indigo-300 dark:hover:border-indigo-200 dark:border-indigo-800'
                   }`}
                 >
                   <span className={`hidden sm:block absolute -left-[28px] top-6 w-4.5 h-4.5 rounded-full border-2 bg-white dark:bg-gray-800 transition-all ${
@@ -690,7 +690,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                   <div className="p-4 flex items-start gap-3">
                     <button
                       onClick={(e) => handleToggleReminderComplete(e, item.caseData.caseId, item.reminder.id)}
-                      className="mt-1 text-gray-300 hover:text-indigo-500 dark:text-gray-600 dark:hover:text-indigo-600 dark:text-indigo-400 transition-colors"
+                      className="mt-1 text-gray-600 dark:text-gray-300 hover:text-indigo-500 dark:text-gray-600 dark:hover:text-indigo-600 dark:text-indigo-400 transition-colors"
                       title={isCompleted ? '진행 상태로 변경' : '일정 완료 처리'}
                     >
                       {isCompleted ? (
@@ -707,7 +707,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                       <div className="flex flex-col md:flex-row md:items-center gap-3">
                         <div className="flex items-center gap-3 md:w-32 flex-shrink-0">
                           <div className="font-mono text-base font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                            <Clock size={15} className="text-gray-400" />
+                            <Clock size={15} className="text-gray-500 dark:text-gray-400" />
                             {timeStr}
                           </div>
                           
@@ -718,7 +718,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
 
                         <div className="flex-1 flex flex-wrap items-center gap-2">
                           <span className={`font-bold text-base text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors ${
-                            isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : ''
+                            isCompleted ? 'line-through text-gray-500 dark:text-gray-400 dark:text-gray-500' : ''
                           }`}>
                             {item.caseData.customerName}
                           </span>
@@ -760,7 +760,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                             }
                             return (
                               <span 
-                                className="text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700"
+                                className="text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700"
                                 title="유입 경로 정보 없음"
                               >
                                 경로 미지정
@@ -778,14 +778,14 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                           )}
                         </div>
 
-                        <div className="hidden md:block text-right text-xs text-gray-400">
+                        <div className="hidden md:block text-right text-xs text-gray-500 dark:text-gray-400">
                           <div>등록: {format(new Date(item.caseData.createdAt || 0), 'MM-dd')}</div>
                           <div>수정: {format(new Date(item.caseData.updatedAt || 0), 'MM-dd')}</div>
                         </div>
                       </div>
 
                       <p className={`text-gray-600 dark:text-gray-400 text-xs mt-2 break-all ${
-                        isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : ''
+                        isCompleted ? 'line-through text-gray-500 dark:text-gray-400 dark:text-gray-500' : ''
                       }`}>
                         {item.reminder.content || '내용 없음'}
                       </p>
@@ -823,7 +823,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                               <FileText size={14} className="text-blue-500" />
                               사전 인바운드 접수 정보
                             </h4>
-                            <div className={`text-xs ${!item.caseData.preInfo ? 'text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                            <div className={`text-xs ${!item.caseData.preInfo ? 'text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
                               {item.caseData.preInfo ? item.caseData.preInfo.split(/\s\/\s|\n/).filter((line: string) => {
                                   const lower = line.toLowerCase();
                                   return !lower.includes('[referrer]') &&
@@ -850,7 +850,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                                           <span className="text-gray-800 dark:text-gray-200">{trimmed}</span>
                                       </div>
                                   );
-                              }) : <span className="italic text-gray-400">사전 정보가 등록되어 있지 않습니다.</span>}
+                              }) : <span className="italic text-gray-500 dark:text-gray-400">사전 정보가 등록되어 있지 않습니다.</span>}
                             </div>
                           </div>
 

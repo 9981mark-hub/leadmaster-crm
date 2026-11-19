@@ -221,7 +221,7 @@ export default function PricingPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-blue-950/50 border border-blue-500/50 space-y-1">
+            <div className="p-4 rounded-2xl bg-blue-100/50 dark:bg-blue-950/50 border border-blue-500/50 space-y-1">
               <div className="text-xs text-blue-300 font-semibold">월 총 청구 금액 (VAT 별도)</div>
               <div className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
                 ₩{effectiveMonthlyTotal.toLocaleString()}

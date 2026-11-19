@@ -198,7 +198,7 @@ export default function PlatformPage() {
             <span className="text-3xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
               {animatedActiveOrgs}
             </span>
-            <span className="text-xs text-gray-400 font-mono tabular-nums">/ 총 {billingSummary.totalOrgs}개사</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono tabular-nums">/ 총 {billingSummary.totalOrgs}개사</span>
           </div>
           <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
             <CheckCircle2 size={13} /> {billingSummary.activeOrgs > 0 ? '정상 서비스 가동 중' : '첫 고객사 유치 대기'}
@@ -217,7 +217,7 @@ export default function PlatformPage() {
             <span className="text-3xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
               {animatedTotalSeats}
             </span>
-            <span className="text-xs text-gray-400">석 (활성 계정)</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">석 (활성 계정)</span>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
             좌석당 단가: <span className="font-semibold text-gray-800 dark:text-gray-200">₩48,000 / 월</span>
@@ -285,14 +285,14 @@ export default function PlatformPage() {
           <button
             onClick={reload}
             disabled={loading}
-            className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1 cursor-pointer"
+            className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300 flex items-center gap-1 cursor-pointer"
           >
             <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침
           </button>
         </div>
 
         {applications.length === 0 ? (
-          <div className="p-8 text-center text-xs text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+          <div className="p-8 text-center text-xs text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
             접수된 가입 신청이 없습니다. 로그인 페이지에서 [TM 회사 가입 신청]이 접수되면 여기에 실시간 표시됩니다.
           </div>
         ) : (
@@ -313,7 +313,7 @@ export default function PlatformPage() {
                     <span className="font-bold text-sm text-gray-900 dark:text-white whitespace-nowrap">{app.companyName}</span>
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">({app.ownerName} 대표)</span>
                     <span className="text-xs font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap">{app.ownerEmail}</span>
-                    <span className="text-xs text-gray-400 whitespace-nowrap">| {app.phone}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">| {app.phone}</span>
                     <span className="text-xs px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap font-medium">
                       상담원 {app.agentCountTier === '1-5' ? '1~5인' : app.agentCountTier === '6-20' ? '6~20인' : '21인+'} ({app.selectedPlan?.toUpperCase() || 'STARTER'})
                     </span>
@@ -351,7 +351,7 @@ export default function PlatformPage() {
                       문의/메모: {app.memo}
                     </div>
                   )}
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     신청일: {new Date(app.createdAt).toLocaleString('ko-KR')}
                     {app.termsAgreedIp && ` • IP: ${app.termsAgreedIp}`}
                     {app.approvedAt && ` • 승인일: ${new Date(app.approvedAt).toLocaleString('ko-KR')}`}
@@ -443,7 +443,7 @@ export default function PlatformPage() {
             <span className="font-semibold text-gray-800 dark:text-gray-200">
               TM 표준 프리셋 자동 적용
             </span>
-            <span className="text-gray-400">
+            <span className="text-gray-500 dark:text-gray-400">
               (10종 1·2차 상태, 법률 첫인사 스크립트, 10년 녹음 보존 설정 일괄 주입)
             </span>
           </label>
@@ -518,21 +518,21 @@ export default function PlatformPage() {
                           <span className={`text-xs px-1.5 py-0.2 rounded font-semibold ${
                             permissionsMap[o.id].settlementEnabled
                               ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 line-through'
                           }`}>
                             광고비·정산 {permissionsMap[o.id].settlementEnabled ? 'ON' : 'OFF'}
                           </span>
                           <span className={`text-xs px-1.5 py-0.2 rounded font-semibold ${
                             permissionsMap[o.id].autoDialEnabled
                               ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 line-through'
                           }`}>
                             오토콜 {permissionsMap[o.id].autoDialEnabled ? 'ON' : 'OFF'}
                           </span>
                           <span className={`text-xs px-1.5 py-0.2 rounded font-semibold ${
                             permissionsMap[o.id].aiTrainingEnabled
                               ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 line-through'
                           }`}>
                             AI교육 {permissionsMap[o.id].aiTrainingEnabled ? 'ON' : 'OFF'}
                           </span>
@@ -574,7 +574,7 @@ export default function PlatformPage() {
                           </div>
                         </div>
                       ) : (
-                        <span className="text-gray-400 whitespace-nowrap">-</span>
+                        <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">-</span>
                       )}
                     </td>
                     <td className="p-3.5 text-right font-mono tabular-nums text-gray-900 dark:text-gray-100 whitespace-nowrap">
@@ -582,13 +582,13 @@ export default function PlatformPage() {
                     </td>
                     <td className="p-3.5 text-right font-mono tabular-nums font-bold whitespace-nowrap">
                       {isHq ? (
-                        <span className="text-gray-400 text-xs font-normal whitespace-nowrap">본사 운영</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xs font-normal whitespace-nowrap">본사 운영</span>
                       ) : (
                         <div className="whitespace-nowrap">
                           <span className="text-gray-900 dark:text-white">
                             ₩{monthlyBill.toLocaleString()}
                           </span>
-                          <div className="text-xs text-gray-400 font-normal whitespace-nowrap">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-normal whitespace-nowrap">
                             (₩{bill.unitPrice.toLocaleString()}/석 • {bill.tierName})
                           </div>
                         </div>
@@ -603,7 +603,7 @@ export default function PlatformPage() {
                       ) : o.hasTelegramBot ? (
                         <span className="text-emerald-600 font-medium whitespace-nowrap">연동 완료</span>
                       ) : (
-                        <span className="text-gray-400 whitespace-nowrap">미등록</span>
+                        <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">미등록</span>
                       )}
                     </td>
                     <td className="p-3.5 text-xs text-gray-500 font-mono tabular-nums whitespace-nowrap">
@@ -672,7 +672,7 @@ export default function PlatformPage() {
               })}
               {!loading && orgs.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-gray-400">
+                  <td colSpan={9} className="p-8 text-center text-gray-500 dark:text-gray-400">
                     등록된 고객 회사가 없습니다.
                   </td>
                 </tr>

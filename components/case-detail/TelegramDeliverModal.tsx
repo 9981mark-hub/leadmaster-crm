@@ -97,8 +97,8 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                 <div className="px-5 py-3 space-y-3 overflow-y-auto">
                     <div className="text-sm text-gray-600">
                         받는 곳: <span className="font-bold text-gray-900">{partner?.name || '거래처 미정'}</span>
-                        {chatId && <span className="text-xs text-gray-400 ml-2">방 ID {chatId}</span>}
-                        <p className="text-xs text-gray-400 mt-1">회사 봇이 이 내용을 그 방에 올립니다. 사무실에서 이 메시지에 <b>답장</b>하면 피드백이 이 리드에 자동으로 연결됩니다.</p>
+                        {chatId && <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">방 ID {chatId}</span>}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">회사 봇이 이 내용을 그 방에 올립니다. 사무실에서 이 메시지에 <b>답장</b>하면 피드백이 이 리드에 자동으로 연결됩니다.</p>
                     </div>
 
                     {blocker && (
@@ -130,7 +130,7 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                                 {text !== initialText && (
                                     <button type="button" className="text-xs text-gray-500 underline" onClick={() => setText(initialText)}>처음 요약문으로</button>
                                 )}
-                                <span className="text-xs text-gray-400">{text.length.toLocaleString()}자</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{text.length.toLocaleString()}자</span>
                             </div>
                         </div>
                         <textarea
@@ -151,7 +151,7 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                     {canChangeStatus && (
                         <label className="flex items-center gap-2 text-sm text-gray-700">
                             <input type="checkbox" checked={changeStatus} onChange={e => setChangeStatus(e.target.checked)} />
-                            보낸 뒤 상태를 <b>{RECEIVED_STATUS}</b>(으)로 바꾸기 <span className="text-xs text-gray-400">(지금: {c.status})</span>
+                            보낸 뒤 상태를 <b>{RECEIVED_STATUS}</b>(으)로 바꾸기 <span className="text-xs text-gray-500 dark:text-gray-400">(지금: {c.status})</span>
                         </label>
                     )}
 

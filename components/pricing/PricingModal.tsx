@@ -220,7 +220,7 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-500/40 space-y-1">
+              <div className="p-3.5 rounded-xl bg-blue-100/40 dark:bg-blue-950/40 border border-blue-500/40 space-y-1">
                 <div className="text-xs text-blue-300 font-semibold">월 총 사용료 (VAT 별도)</div>
                 <div className="text-lg font-black font-mono text-blue-600 dark:text-blue-400">
                   ₩{effectiveMonthlyTotal.toLocaleString()}

@@ -104,7 +104,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
 
         <div className="flex items-center gap-2">
           {data?.lastUpdated && (
-            <span className="text-xs text-gray-400 tabular-nums hidden sm:inline">
+            <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums hidden sm:inline">
               최근 갱신: {format(data.lastUpdated, 'HH:mm:ss')}
             </span>
           )}
@@ -178,7 +178,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
               <span className="flex items-center gap-1">
                 <Activity size={14} /> 이번 달 누적 호출
               </span>
-              <span className="text-xs text-gray-400">당월 총계</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">당월 총계</span>
             </div>
             <div className="text-xl font-black text-gray-900 dark:text-white tabular-nums">
               {data?.monthCount.toLocaleString() || 0} <span className="text-xs font-normal text-gray-500">건</span>
@@ -205,7 +205,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
           </div>
           <div className="mt-2.5 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-emerald-100/60 dark:border-emerald-900/40 pt-1.5">
             <span>달러 합산: ${data?.monthCostUsd.toFixed(3) || '0.000'}</span>
-            <span className="text-xs text-gray-400">환율 1,390원</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">환율 1,390원</span>
           </div>
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
             className={`px-3 py-2 border-b-2 transition-all flex items-center gap-1.5 ${
               activeTab === 'tasks'
                 ? 'border-purple-600 text-purple-700 dark:text-purple-300'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300'
             }`}
           >
             <Layers size={13} />
@@ -231,7 +231,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
             className={`px-3 py-2 border-b-2 transition-all flex items-center gap-1.5 ${
               activeTab === 'logs'
                 ? 'border-purple-600 text-purple-700 dark:text-purple-300'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300'
             }`}
           >
             <Clock size={13} />
@@ -243,7 +243,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
             className={`px-3 py-2 border-b-2 transition-all flex items-center gap-1.5 ${
               activeTab === 'pricing'
                 ? 'border-purple-600 text-purple-700 dark:text-purple-300'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300'
             }`}
           >
             <HelpCircle size={13} />
@@ -268,7 +268,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
                           <span>{st.icon}</span> {st.label}
                         </span>
                         <span className="text-xs font-black text-purple-700 dark:text-purple-300">
-                          {st.count}건 <span className="text-xs text-gray-400 font-normal">({pct}%)</span>
+                          {st.count}건 <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">({pct}%)</span>
                         </span>
                       </div>
                       <div className="w-full bg-gray-100 dark:bg-gray-700 h-1 rounded-full overflow-hidden mb-2">
@@ -285,7 +285,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
                 })}
               </div>
             ) : (
-              <div className="text-center py-6 text-xs text-gray-400">
+              <div className="text-center py-6 text-xs text-gray-500 dark:text-gray-400">
                 아직 기록된 세부 AI 호출 내역이 없습니다. (통화 녹음 AI 분석 실행 시 자동 기록)
               </div>
             )}
@@ -313,7 +313,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
                               {log.model}
                             </span>
                           </div>
-                          <div className="text-xs text-gray-400 flex items-center gap-2">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                             <span>{logTime}</span>
                             <span>·</span>
                             <span>입력 {log.inputTokens.toLocaleString()} / 출력 {log.outputTokens.toLocaleString()} 토큰</span>
@@ -326,7 +326,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
                           <div className="font-bold text-gray-900 dark:text-white tabular-nums">
                             약 ₩{log.costKrw}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             ${log.costUsd.toFixed(4)}
                           </div>
                         </div>
@@ -345,7 +345,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
                 })}
               </div>
             ) : (
-              <div className="text-center py-6 text-xs text-gray-400">
+              <div className="text-center py-6 text-xs text-gray-500 dark:text-gray-400">
                 최근 호출된 로그가 없습니다.
               </div>
             )}

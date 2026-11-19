@@ -47,7 +47,7 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
   if (notReady) {
     return (
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm px-5 py-4 flex items-center gap-2 text-sm text-gray-500">
-        <Mic size={18} className="text-gray-400" /><b className="text-gray-700 dark:text-gray-200">통화 녹음·AI 정리</b> 서버 업데이트 후 사용할 수 있습니다.
+        <Mic size={18} className="text-gray-500 dark:text-gray-400" /><b className="text-gray-700 dark:text-gray-200">통화 녹음·AI 정리</b> 서버 업데이트 후 사용할 수 있습니다.
       </section>
     );
   }
@@ -56,7 +56,7 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
       <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
         <Mic size={18} className="text-purple-600" />
         <h2 className="font-bold text-gray-800 dark:text-white">통화 녹음 · AI 채무 정리</h2>
-        <span className="text-xs text-gray-400">상담원 폰의 통화 녹음을 리드에 붙이고 AI가 채무·소득·재산을 정리</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">상담원 폰의 통화 녹음을 리드에 붙이고 AI가 채무·소득·재산을 정리</span>
         <div className="ml-auto flex items-center gap-2">
           <button
             type="button"
@@ -84,7 +84,7 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           </label>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-32 text-gray-600 dark:text-gray-300">이보다 짧은 통화 제외</span>
-            <input type="number" min={0} max={3600} value={s.minDurationSec} onChange={e => setS({ ...s, minDurationSec: parseInt(e.target.value, 10) || 0 })} className={`${input} w-20`} /> <span className="text-xs text-gray-400">초</span>
+            <input type="number" min={0} max={3600} value={s.minDurationSec} onChange={e => setS({ ...s, minDurationSec: parseInt(e.target.value, 10) || 0 })} className={`${input} w-20`} /> <span className="text-xs text-gray-500 dark:text-gray-400">초</span>
           </div>
           <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
             <input type="checkbox" checked={s.wifiOnly} onChange={e => setS({ ...s, wifiOnly: e.target.checked })} /> 와이파이에서만 올리기 (상담원 데이터 요금 절약)
@@ -108,11 +108,11 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
                 </option>
               )}
             </select>
-            <span className="text-xs text-gray-400">설정 기간 경과 시 자동 정리</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">설정 기간 경과 시 자동 정리</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-32 text-gray-600 dark:text-gray-300">하루 AI 정리 상한</span>
-            <input type="number" min={0} value={s.dailyAnalyzeCap} onChange={e => setS({ ...s, dailyAnalyzeCap: parseInt(e.target.value, 10) || 0 })} className={`${input} w-24`} /> <span className="text-xs text-gray-400">건 (비용 보호, 넘으면 다음 날)</span>
+            <input type="number" min={0} value={s.dailyAnalyzeCap} onChange={e => setS({ ...s, dailyAnalyzeCap: parseInt(e.target.value, 10) || 0 })} className={`${input} w-24`} /> <span className="text-xs text-gray-500 dark:text-gray-400">건 (비용 보호, 넘으면 다음 날)</span>
           </div>
           {usage && (
             <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs text-gray-600 dark:text-gray-300 grid grid-cols-2 gap-1">

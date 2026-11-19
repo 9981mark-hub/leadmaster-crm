@@ -114,7 +114,7 @@ const ManualLinker = ({ onLink, prefillName }: { onLink: (caseId: string) => voi
                     {results.map(r => (
                         <div key={r.case_id} className="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded-lg border border-blue-100 dark:border-blue-900">
                             <span className="font-medium text-xs text-gray-800 dark:text-gray-200">
-                                {r.customer_name} <span className="text-gray-400">({r.status})</span> - {r.phone?.slice(-4) || '번호없음'}
+                                {r.customer_name} <span className="text-gray-500 dark:text-gray-400">({r.status})</span> - {r.phone?.slice(-4) || '번호없음'}
                             </span>
                             <button 
                                 onClick={() => onLink(r.case_id)} 
@@ -720,7 +720,7 @@ export default function TelegramSync() {
                         <button
                             type="button"
                             onClick={() => toggleSelect(f.id)}
-                            className="mt-1 text-gray-400 hover:text-purple-600 transition shrink-0 cursor-pointer"
+                            className="mt-1 text-gray-500 dark:text-gray-400 hover:text-purple-600 transition shrink-0 cursor-pointer"
                         >
                             {isSelected ? (
                                 <CheckSquare size={19} className="text-purple-600" />
@@ -776,7 +776,7 @@ export default function TelegramSync() {
                                     to={`/case/${c.caseId}`}
                                     className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-0.5"
                                 >
-                                    🎯 {c.customerName} <span className="text-gray-400 font-normal">({c.status})</span>
+                                    🎯 {c.customerName} <span className="text-gray-500 dark:text-gray-400 font-normal">({c.status})</span>
                                     <ChevronRight size={12} />
                                 </Link>
                             ) : f.customerName ? (
@@ -786,7 +786,7 @@ export default function TelegramSync() {
                             ) : null}
 
                             {/* Timestamp */}
-                            <span className="text-xs text-gray-400 ml-auto shrink-0">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto shrink-0">
                                 {format(parseISO(f.createdAt), 'yyyy.MM.dd HH:mm', { locale: ko })}
                             </span>
                         </div>
@@ -1015,20 +1015,20 @@ export default function TelegramSync() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {isAgent ? '내 고객 오늘 피드백' : isTeamScope ? `${myTeam} 오늘 피드백` : '오늘 전사 피드백'}
                         </span>
                         <MessageSquare size={17} className="text-blue-500" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
                         <span className="text-2xl font-black text-gray-900 dark:text-white">{todayFeedbacksCount}</span>
-                        <span className="text-xs text-gray-400 font-medium">건</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건</span>
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {isAgent ? '캘린더 연동 완료' : isTeamScope ? `${myTeam} 오토 반영률` : '오토파일럿 자동 반영'}
                         </span>
                         <Zap size={17} className="text-purple-500" />
@@ -1037,12 +1037,12 @@ export default function TelegramSync() {
                         {isAgent ? (
                             <>
                                 <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{calendarAddedCount}</span>
-                                <span className="text-xs text-gray-400 font-medium">건 완료</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건 완료</span>
                             </>
                         ) : (
                             <>
                                 <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{autoAppliedRate}%</span>
-                                <span className="text-xs text-gray-400 font-medium">{autoAppliedCount}건 처리</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{autoAppliedCount}건 처리</span>
                             </>
                         )}
                     </div>
@@ -1050,29 +1050,29 @@ export default function TelegramSync() {
 
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {isAgent ? '내 승인 대기' : isTeamScope ? `${myTeam} 승인 대기` : '전사 승인 대기'}
                         </span>
                         <Clock size={17} className="text-amber-500" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
                         <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{roleFilteredPending.length}</span>
-                        <span className="text-xs text-gray-400 font-medium">건</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건</span>
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {isAgent ? '내 고객 긴급 재케어' : isTeamScope ? `${myTeam} 긴급 재케어 요망` : '1차 TM 재케어 요망'}
                         </span>
-                        <AlertTriangle size={17} className={careNeededCount > 0 ? "text-rose-500 animate-pulse" : "text-gray-300"} />
+                        <AlertTriangle size={17} className={careNeededCount > 0 ? "text-rose-500 animate-pulse" : "text-gray-600 dark:text-gray-300"} />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
                         <span className={`text-2xl font-black ${careNeededCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-900 dark:text-white'}`}>
                             {careNeededCount}
                         </span>
-                        <span className="text-xs text-gray-400 font-medium">건 긴급</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건 긴급</span>
                     </div>
                 </div>
             </div>
@@ -1173,7 +1173,7 @@ export default function TelegramSync() {
                 >
                     <History size={17} />
                     <span>히스토리 (전체)</span>
-                    <span className="text-xs text-gray-400">({roleFilteredHistory.length})</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">({roleFilteredHistory.length})</span>
                 </button>
             </div>
 
@@ -1249,7 +1249,7 @@ export default function TelegramSync() {
 
                         {/* 4. Search Query Input */}
                         <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-600 text-xs min-w-[200px]">
-                            <Search size={14} className="text-gray-400" />
+                            <Search size={14} className="text-gray-500 dark:text-gray-400" />
                             <input
                                 type="text"
                                 placeholder={isAgent ? "내 고객명, 번호, 메모 검색..." : "고객명, 번호, 본문 검색..."}
@@ -1258,7 +1258,7 @@ export default function TelegramSync() {
                                 className="bg-transparent border-none outline-none text-xs text-gray-800 dark:text-white placeholder-gray-400 w-full"
                             />
                             {searchQuery && (
-                                <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-gray-600">
+                                <button onClick={() => setSearchQuery('')} className="text-gray-500 dark:text-gray-400 hover:text-gray-600">
                                     <X size={13} />
                                 </button>
                             )}
@@ -1266,7 +1266,7 @@ export default function TelegramSync() {
                     </div>
 
                     {/* Filter result count */}
-                    <span className="text-xs text-gray-400 font-medium shrink-0">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium shrink-0">
                         필터 검색: <b>{activeTab === 'pending' ? filteredPending.length : filteredHistory.length}</b>건
                     </span>
                 </div>
@@ -1360,15 +1360,15 @@ export default function TelegramSync() {
 
                     {/* Pending List Contents */}
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center p-16 text-gray-400">
+                        <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
                             <div className="animate-spin inline-block w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-3" />
                             <p className="font-medium text-xs">피드백 데이터를 동기화하는 중...</p>
                         </div>
                     ) : filteredPending.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-16 text-gray-400">
+                        <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
                             <CheckCircle size={44} className="text-emerald-500 mb-3 opacity-60" />
                             <p className="font-bold text-gray-700 dark:text-gray-300 text-sm">대기 중인 피드백이 없습니다.</p>
-                            <p className="text-xs text-gray-400 mt-1">모든 현장 피드백이 처리되었거나 자동 반영되었습니다.</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">모든 현장 피드백이 처리되었거나 자동 반영되었습니다.</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -1388,7 +1388,7 @@ export default function TelegramSync() {
                                 <h3 className="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
                                     <Trash2 className="text-rose-500" size={14} /> 과거 히스토리 데이터 정리
                                 </h3>
-                                <p className="text-xs text-gray-400">보관 주기가 지난 텔레그램 수집 데이터를 영구 삭제합니다.</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">보관 주기가 지난 텔레그램 수집 데이터를 영구 삭제합니다.</p>
                             </div>
                             <div className="flex flex-wrap gap-2 items-center">
                                 <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1.5 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -1429,13 +1429,13 @@ export default function TelegramSync() {
                     {/* History List */}
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 overflow-hidden">
                         {isLoading ? (
-                            <div className="flex flex-col items-center justify-center p-16 text-gray-400">
+                            <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
                                 <div className="animate-spin inline-block w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-3" />
                                 <p className="font-medium text-xs">히스토리를 불러오는 중...</p>
                             </div>
                         ) : filteredHistory.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-16 text-gray-400">
-                                <History size={44} className="text-gray-300 mb-3" />
+                            <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
+                                <History size={44} className="text-gray-600 dark:text-gray-300 mb-3" />
                                 <p className="font-bold text-gray-600 dark:text-gray-300 text-sm">히스토리가 없습니다.</p>
                             </div>
                         ) : (

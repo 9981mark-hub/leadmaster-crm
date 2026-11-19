@@ -142,7 +142,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                         <ChevronLeftIcon />
                                     </button>
                                 )}
-                                <Search className="w-5 h-5 text-gray-400 mr-2" />
+                                <Search className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
                                 <Command.Input
                                     value={search}
                                     onValueChange={setSearch}
@@ -170,9 +170,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                 <div className="bg-orange-100 p-1.5 rounded mr-3 text-orange-600"><Zap size={16} /></div>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-medium">상태 빠른 변경</span>
-                                                    <span className="text-xs text-gray-400">검색 없이 즉시 사건 상태 업데이트</span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">검색 없이 즉시 사건 상태 업데이트</span>
                                                 </div>
-                                                <ChevronRight className="ml-auto w-4 h-4 text-gray-400" />
+                                                <ChevronRight className="ml-auto w-4 h-4 text-gray-500 dark:text-gray-400" />
                                             </Command.Item>
                                         </Command.Group>
 
@@ -235,7 +235,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                     <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{c.customerName}</span>
                                                     <span className="text-xs text-gray-500">{c.phone} | 현재: {c.status}</span>
                                                 </div>
-                                                <ChevronRight className="ml-auto w-4 h-4 text-gray-400" />
+                                                <ChevronRight className="ml-auto w-4 h-4 text-gray-500 dark:text-gray-400" />
                                             </Command.Item>
                                         ))}
                                     </Command.Group>
@@ -257,7 +257,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                 )}
 
                             </Command.List>
-                            <div className="border-t border-gray-100 dark:border-gray-700 p-2 px-4 flex justify-between items-center text-xs text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+                            <div className="border-t border-gray-100 dark:border-gray-700 p-2 px-4 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
                                 <span>선택: ↵</span>
                                 <span>이동: ↑↓</span>
                                 <span>뒤로: Bksp</span>

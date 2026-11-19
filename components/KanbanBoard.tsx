@@ -76,7 +76,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                                         <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-1">
                                                             <Phone size={12} className="mr-1" /> {c.phone}
                                                         </div>
-                                                        <div className="flex items-center text-xs text-gray-400 dark:text-gray-500 justify-between mt-2 pt-2 border-t border-gray-50 dark:border-gray-700">
+                                                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 justify-between mt-2 pt-2 border-t border-gray-50 dark:border-gray-700">
                                                             <span>{c.caseType}</span>
                                                             <span>{c.managerName || '-'}</span>
                                                         </div>
@@ -93,7 +93,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                     ))}
                                     {provided.placeholder}
                                     {(columns[status]?.length || 0) > COLUMN_LIMIT && (
-                                        <div className="text-center text-xs text-gray-400 py-2">외 {(columns[status].length - COLUMN_LIMIT).toLocaleString()}건 — 검색·필터로 좁혀 보세요</div>
+                                        <div className="text-center text-xs text-gray-500 dark:text-gray-400 py-2">외 {(columns[status].length - COLUMN_LIMIT).toLocaleString()}건 — 검색·필터로 좁혀 보세요</div>
                                     )}
                                 </div>
                             )}

@@ -227,7 +227,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <X size={20} />
             </button>
@@ -247,7 +247,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                 <AlertCircle size={15} />
                 <span>녹음 음성 재생 불가: {audioError}</span>
               </div>
-              <span className="text-gray-400 text-xs">(AI 요약문과 대화록 텍스트는 정상 열람 가능합니다)</span>
+              <span className="text-gray-500 dark:text-gray-400 text-xs">(AI 요약문과 대화록 텍스트는 정상 열람 가능합니다)</span>
             </div>
           ) : audioUrl ? (
             <div className="flex flex-wrap items-center gap-3">
@@ -312,7 +312,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
             </div>
           ) : (
             <div className="text-xs text-gray-500 dark:text-gray-400 py-1 flex items-center gap-1.5">
-              <AlertCircle size={14} className="text-gray-400" />
+              <AlertCircle size={14} className="text-gray-500 dark:text-gray-400" />
               <span>보관된 음성 녹음 파일이 없습니다. (AI 텍스트 기록만 보존됨)</span>
             </div>
           )}
@@ -359,7 +359,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                   {item.summaryText}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500 gap-2">
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500 gap-2">
                   <Sparkles size={36} className="opacity-20" />
                   <p className="text-xs">생성된 AI 요약문이 없습니다.</p>
                 </div>
@@ -405,12 +405,12 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
             {/* 대화록 버블 리스트 */}
             <div className="flex-1 p-4 overflow-y-auto max-h-[550px] space-y-3 bg-gray-50/50 dark:bg-gray-900/30">
               {item.transcriptCount === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500 gap-2">
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500 gap-2">
                   <ListOrdered size={36} className="opacity-20" />
                   <p className="text-xs">기록된 STT 대화록이 없습니다.</p>
                 </div>
               ) : filteredTranscript.length === 0 ? (
-                <div className="py-8 text-center text-xs text-gray-400">
+                <div className="py-8 text-center text-xs text-gray-500 dark:text-gray-400">
                   '{transcriptSearch}' 검색 결과가 없습니다.
                 </div>
               ) : (
@@ -421,7 +421,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                       key={idx}
                       className={`flex flex-col ${isAgent ? 'items-end' : 'items-start'}`}
                     >
-                      <div className="flex items-center gap-1.5 mb-1 px-1 text-xs text-gray-400">
+                      <div className="flex items-center gap-1.5 mb-1 px-1 text-xs text-gray-500 dark:text-gray-400">
                         <span className="font-semibold text-gray-600 dark:text-gray-300">
                           {isAgent ? `${item.userName} (상담원)` : '고객'}
                         </span>
@@ -447,7 +447,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
 
         {/* 모달 하단 닫기 바 */}
         <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/80 flex items-center justify-between">
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             * 통화 녹음과 AI 대화록은 개인정보보호법에 의거하여 회사 안전 비공개 저장소에 암호화 보관됩니다.
           </span>
           <button

@@ -116,7 +116,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                         <X size={20} />
                     </button>
@@ -146,7 +146,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                     }`}
                                 >
                                     <div className="font-bold text-xs">{opt.label}</div>
-                                    <div className={`text-xs mt-0.5 ${salaryType === opt.type ? 'text-indigo-100' : 'text-gray-400'}`}>
+                                    <div className={`text-xs mt-0.5 ${salaryType === opt.type ? 'text-indigo-100' : 'text-gray-500 dark:text-gray-400'}`}>
                                         {opt.desc}
                                     </div>
                                 </button>
@@ -159,7 +159,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                         <div className="p-4 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
                             <div>
                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">월 기본급</span>
-                                <span className="text-xs text-gray-400">수임 계약과 무관하게 지급되는 고정 급여입니다.</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">수임 계약과 무관하게 지급되는 고정 급여입니다.</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <input
@@ -234,7 +234,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                             <div className="space-y-2">
                                 {tierRules.map((t, idx) => (
                                     <div key={idx} className="flex items-center gap-2 bg-white dark:bg-gray-700 p-2.5 rounded-lg border border-gray-200 dark:border-gray-600 text-xs">
-                                        <span className="text-gray-400 font-bold w-6">{idx + 1}구간</span>
+                                        <span className="text-gray-500 dark:text-gray-400 font-bold w-6">{idx + 1}구간</span>
                                         <input
                                             type="number"
                                             value={t.min}
@@ -249,7 +249,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                             className="w-12 p-1 text-center font-bold border rounded bg-gray-50 dark:bg-gray-600"
                                         />
                                         <span>건 달성 시:</span>
-                                        <span className="text-gray-400 font-medium">건당</span>
+                                        <span className="text-gray-500 dark:text-gray-400 font-medium">건당</span>
                                         <input
                                             type="number"
                                             step="10000"
@@ -334,7 +334,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                     }`}
                                 >
                                     <div className="font-bold text-xs">{opt.label}</div>
-                                    <div className={`text-xs mt-0.5 ${taxType === opt.type ? 'text-gray-200' : 'text-gray-400'}`}>
+                                    <div className={`text-xs mt-0.5 ${taxType === opt.type ? 'text-gray-200' : 'text-gray-500 dark:text-gray-400'}`}>
                                         {opt.desc}
                                     </div>
                                 </button>

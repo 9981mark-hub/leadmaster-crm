@@ -354,7 +354,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 text-white flex flex-col overflow-hidden select-none animate-in fade-in duration-150">
       {/* 1. 상단 몰입형 헤더 바 */}
-      <header className="h-16 px-6 bg-gray-950 border-b border-gray-800 flex items-center justify-between shrink-0">
+      <header className="h-16 px-6 bg-gray-100 dark:bg-gray-950 border-b border-gray-800 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
@@ -366,7 +366,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
           <span className="text-sm font-bold text-gray-200 truncate max-w-xs md:max-w-md">
             {campaign.name}
           </span>
-          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800 flex items-center gap-1">
+          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
             <Smartphone size={12} />
             SIM {currentQueueItem ? currentQueueItem.simSlot + 1 : 1} 발신
           </span>
@@ -375,7 +375,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
         {/* 진행률 & 일시정지 / 종료 버튼 */}
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-3 bg-gray-900 px-4 py-1.5 rounded-xl border border-gray-800 text-xs">
-            <span className="text-gray-400">당일 소화율:</span>
+            <span className="text-gray-500 dark:text-gray-400">당일 소화율:</span>
             <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
               {allocation.completedCount} / {allocation.targetCount}건 ({progressPercent}%)
             </span>
@@ -391,7 +391,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
           <button
             type="button"
             onClick={() => setIsPauseModalOpen(true)}
-            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-gray-700 transition-colors"
+            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-gray-700 transition-colors"
           >
             <Coffee size={14} className="text-amber-600 dark:text-amber-400" />
             잠시 휴식
@@ -401,7 +401,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
             title="오토콜 HUD 종료"
           >
             <ArrowLeft size={18} />
@@ -421,7 +421,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               <h2 className="text-2xl font-black text-white">
                 오토콜을 시작할 준비가 되셨습니까?
               </h2>
-              <p className="text-sm text-gray-400 mt-1 max-w-md">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">
                 시작 버튼을 누르면 배정받은 {allocation.targetCount - allocation.completedCount}건의 리드가
                 휴식 갭과 후처리 타이머에 맞춰 끊김 없이 자동으로 발신됩니다.
               </p>
@@ -447,7 +447,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               <h2 className="text-2xl font-black text-white">
                 잠시 휴식중 ({pauseReason})
               </h2>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 복귀 준비가 되셨으면 아래 버튼을 눌러 오토콜을 즉시 재개하십시오.
               </p>
             </div>
@@ -472,7 +472,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               <h2 className="text-3xl font-black text-white">
                 오늘의 오토콜 목표를 달성했습니다!
               </h2>
-              <p className="text-sm text-gray-400 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 총 {allocation.completedCount}콜 소화 완료 · 연결 성공 {allocation.connectedCount}건
               </p>
             </div>
@@ -508,7 +508,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
                     {hudState === 'gap_wait' && `⏳ 다음 발신 준비 (${gapSeconds}초)`}
                   </span>
 
-                  <span className="text-xs px-2.5 py-1 rounded-lg bg-gray-700 text-gray-300 font-mono">
+                  <span className="text-xs px-2.5 py-1 rounded-lg bg-gray-700 text-gray-600 dark:text-gray-300 font-mono">
                     {currentCase?.inflowPath || (currentCase as any)?.batchName || '신규 DB'}
                   </span>
                 </div>
@@ -531,9 +531,9 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
                     <h3 className="text-2xl font-black text-white">
                       {currentQueueItem.customerName}
                     </h3>
-                    <span className="text-sm font-semibold text-gray-400">고객님</span>
+                    <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">고객님</span>
                     {(currentCase as any)?.age && (
-                      <span className="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-300">
+                      <span className="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-600 dark:text-gray-300">
                         {(currentCase as any).age}세
                       </span>
                     )}
@@ -544,9 +544,9 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-center text-xs text-gray-400 space-y-1 md:text-right">
+                <div className="flex flex-col justify-center text-xs text-gray-500 dark:text-gray-400 space-y-1 md:text-right">
                   <div>이전 통화 상태: <span className="font-bold text-amber-600 dark:text-amber-400">{currentCase?.status || '신규 접수'}</span></div>
-                  <div>최근 부재 차수: <span className="font-bold text-gray-300">{currentQueueItem.attemptCount}차 시도</span></div>
+                  <div>최근 부재 차수: <span className="font-bold text-gray-600 dark:text-gray-300">{currentQueueItem.attemptCount}차 시도</span></div>
                 </div>
               </div>
 
@@ -578,7 +578,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
 
             {/* 2. 후처리 카운트다운 타이머 바 (Wrap-up Timer Bar) */}
             {hudState === 'wrapup' && (
-              <div className="w-full bg-blue-950/60 border border-blue-500/40 rounded-2xl p-4 text-center space-y-2 animate-in fade-in">
+              <div className="w-full bg-blue-100/60 dark:bg-blue-950/60 border border-blue-500/40 rounded-2xl p-4 text-center space-y-2 animate-in fade-in">
                 <div className="flex items-center justify-center gap-2 text-sm font-bold text-blue-300">
                   <Clock size={16} className="animate-spin text-blue-600 dark:text-blue-400" />
                   <span>
@@ -637,7 +637,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               >
                 <PhoneOff size={22} />
                 <span className="text-sm font-black">거절 / 조건불가</span>
-                <span className="text-xs text-gray-400">수신거부 / 자격미달</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">수신거부 / 자격미달</span>
               </button>
             </div>
           </div>
@@ -652,7 +652,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               <Coffee size={18} className="text-amber-600 dark:text-amber-400" />
               오토콜 잠시 휴식 (이석)
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               휴식 사유를 선택하시면 관리자 실시간 전광판에 '휴식'으로 표기됩니다.
             </p>
             <div className="space-y-2">
@@ -664,7 +664,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
                   className={`w-full p-2.5 rounded-xl text-xs font-semibold text-left border transition-all ${
                     pauseReason === r
                       ? 'bg-amber-500/20 text-amber-300 border-amber-500'
-                      : 'bg-gray-900 text-gray-400 border-gray-700'
+                      : 'bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-700'
                   }`}
                 >
                   {r}
@@ -675,7 +675,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               <button
                 type="button"
                 onClick={() => setIsPauseModalOpen(false)}
-                className="flex-1 py-2 text-xs font-bold bg-gray-700 text-gray-300 rounded-xl"
+                className="flex-1 py-2 text-xs font-bold bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl"
               >
                 취소
               </button>

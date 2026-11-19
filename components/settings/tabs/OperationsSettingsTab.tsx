@@ -261,7 +261,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                         setMissedCallIntervalTiers(next);
                                     }}
                                 />
-                                <span className="text-xs text-gray-400">~</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">~</span>
                                 {tier.maxDays === 0 ? (
                                     <span className="text-xs font-bold text-gray-600 dark:text-gray-300">이후 계속</span>
                                 ) : (
@@ -281,7 +281,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                             </div>
 
                             <div className="col-span-5 flex items-center justify-center gap-2 w-full">
-                                <ArrowRight size={14} className="text-gray-300 hidden sm:block" />
+                                <ArrowRight size={14} className="text-gray-600 dark:text-gray-300 hidden sm:block" />
                                 <input
                                     type="number"
                                     disabled={!canEdit}
@@ -301,7 +301,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setMissedCallIntervalTiers(missedCallIntervalTiers.filter((_, i) => i !== idx))}
-                                        className="text-gray-300 hover:text-rose-500 p-1 transition-colors"
+                                        className="text-gray-600 dark:text-gray-300 hover:text-rose-500 p-1 transition-colors"
                                     >
                                         <Trash2 size={15} />
                                     </button>
@@ -330,7 +330,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => onDeletePath(path)}
-                                        className="hover:text-rose-500 text-gray-400 transition-colors"
+                                        className="hover:text-rose-500 text-gray-500 dark:text-gray-400 transition-colors"
                                     >
                                         <Trash2 size={13} />
                                     </button>
@@ -371,7 +371,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                     <div className="p-4 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                             <span className="text-xs font-bold text-gray-700 dark:text-gray-200">1차 상태 (대분류)</span>
-                            <span className="text-xs text-gray-400">{statuses.length}개</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{statuses.length}개</span>
                         </div>
                         <div className="flex-1 space-y-1.5 overflow-y-auto max-h-60 pr-1">
                             {statuses.map(s => (
@@ -384,7 +384,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => onDeleteStatus(s)}
-                                            className="text-gray-400 hover:text-rose-500"
+                                            className="text-gray-500 dark:text-gray-400 hover:text-rose-500"
                                         >
                                             <Trash2 size={12} />
                                         </button>
@@ -417,7 +417,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                     <div className="p-4 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                             <span className="text-xs font-bold text-gray-700 dark:text-gray-200">2차 세부상태 (중분류)</span>
-                            <span className="text-xs text-gray-400">{secondaryStatuses.length}개</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{secondaryStatuses.length}개</span>
                         </div>
                         <div className="flex-1 space-y-1.5 overflow-y-auto max-h-60 pr-1">
                             {secondaryStatuses.map(s => (
@@ -435,7 +435,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                         <button
                                             type="button"
                                             onClick={(e) => { e.stopPropagation(); onDeleteSecondaryStatus(s); }}
-                                            className="text-gray-400 hover:text-rose-500"
+                                            className="text-gray-500 dark:text-gray-400 hover:text-rose-500"
                                         >
                                             <Trash2 size={12} />
                                         </button>
@@ -473,13 +473,13 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                     <span className="text-xs text-blue-600 ml-1 font-bold">({selectedTertiarySecondary})</span>
                                 )}
                             </div>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {selectedTertiarySecondary ? (tertiaryStatuses[selectedTertiarySecondary]?.length || 0) : 0}개
                             </span>
                         </div>
                         <div className="flex-1 space-y-1.5 overflow-y-auto max-h-60 pr-1">
                             {!selectedTertiarySecondary ? (
-                                <div className="text-center py-10 text-xs text-gray-400">
+                                <div className="text-center py-10 text-xs text-gray-500 dark:text-gray-400">
                                     좌측에서 2차 상태를 선택하세요.
                                 </div>
                             ) : (
@@ -493,7 +493,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={() => onDeleteTertiaryStatus(selectedTertiarySecondary, t)}
-                                                className="text-gray-400 hover:text-rose-500"
+                                                className="text-gray-500 dark:text-gray-400 hover:text-rose-500"
                                             >
                                                 <Trash2 size={12} />
                                             </button>
@@ -587,7 +587,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveEmail(email)}
-                                            className="hover:text-rose-500 text-gray-400"
+                                            className="hover:text-rose-500 text-gray-500 dark:text-gray-400"
                                         >
                                             <Trash2 size={12} />
                                         </button>
@@ -595,7 +595,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                                 </span>
                             ))}
                             {emailNotificationRecipients.length === 0 && (
-                                <span className="text-xs text-gray-400">등록된 수신 이메일이 없습니다.</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">등록된 수신 이메일이 없습니다.</span>
                             )}
                         </div>
                         {canEdit && (

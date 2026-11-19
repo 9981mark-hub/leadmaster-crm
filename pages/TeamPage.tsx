@@ -483,7 +483,7 @@ export default function TeamPage() {
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
               <Shuffle size={18} className="text-blue-600" />
               <h2 className="font-bold text-gray-800 dark:text-white">정밀 개별/필터 배정</h2>
-              <span className="text-xs text-gray-400">직접 체크박스로 특정 리드를 골라 배정하거나 해제할 수 있습니다</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">직접 체크박스로 특정 리드를 골라 배정하거나 해제할 수 있습니다</span>
             </div>
 
             <div className="px-5 py-3 flex flex-wrap gap-2 items-center border-b border-gray-100 dark:border-gray-700">
@@ -555,7 +555,7 @@ export default function TeamPage() {
                   <option value="quantity">수량 직접입력</option>
                 </select>
 
-                {agents.length === 0 && <span className="text-xs text-gray-400">상담원이 없습니다</span>}
+                {agents.length === 0 && <span className="text-xs text-gray-500 dark:text-gray-400">상담원이 없습니다</span>}
                 {agents.map(a => (
                   <label key={a.userId} className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-200">
                     <input
@@ -641,7 +641,7 @@ export default function TeamPage() {
                   ))}
                   {filteredCases.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-5 py-8 text-center text-gray-400">조건에 맞는 리드가 없습니다.</td>
+                      <td colSpan={7} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">조건에 맞는 리드가 없습니다.</td>
                     </tr>
                   )}
                 </tbody>
@@ -659,7 +659,7 @@ export default function TeamPage() {
             <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
               <History size={16} className="text-gray-500" />
               <h2 className="font-bold text-gray-800 dark:text-white text-sm">최근 배정 기록</h2>
-              <span className="text-xs text-gray-400">최근 50건 · 배정 이력 추적</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">최근 50건 · 배정 이력 추적</span>
             </div>
             <div className="max-h-72 overflow-y-auto">
               <table className="w-full text-xs">
@@ -668,7 +668,7 @@ export default function TeamPage() {
                     const cs = liveCases.find(c => c.caseId === l.caseId);
                     return (
                       <tr key={l.id}>
-                        <td className="px-5 py-1.5 text-gray-400 whitespace-nowrap">
+                        <td className="px-5 py-1.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">
                           {new Date(l.createdAt).toLocaleString('ko-KR', {
                             month: 'numeric',
                             day: 'numeric',
@@ -687,14 +687,14 @@ export default function TeamPage() {
                             {REASON_LABEL[l.reason] || l.reason}
                           </span>
                         </td>
-                        <td className="px-2 py-1.5 text-gray-400">
+                        <td className="px-2 py-1.5 text-gray-500 dark:text-gray-400">
                           {l.byUser ? memberName(l.byUser) : '시스템'}{l.note ? ` · ${l.note}` : ''}
                         </td>
                       </tr>
                     );
                   })}
                   {logs.length === 0 && (
-                    <tr><td className="px-5 py-4 text-center text-gray-400">아직 배정 기록이 없습니다.</td></tr>
+                    <tr><td className="px-5 py-4 text-center text-gray-500 dark:text-gray-400">아직 배정 기록이 없습니다.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -760,7 +760,7 @@ export default function TeamPage() {
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
               <Users size={18} className="text-blue-600" />
               <h2 className="font-bold text-gray-800 dark:text-white">멤버 {members.length}명</h2>
-              <span className="text-xs text-gray-400">사용 중 {activeMembers.length}명 · 상담원 {agents.length}명</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">사용 중 {activeMembers.length}명 · 상담원 {agents.length}명</span>
             </div>
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-700">
@@ -837,7 +837,7 @@ export default function TeamPage() {
                 </div>
               ))}
               {!loading && members.length === 0 && (
-                <div className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</div>
+                <div className="px-5 py-6 text-center text-gray-500 dark:text-gray-400">멤버 정보를 불러오지 못했습니다.</div>
               )}
             </div>
 
@@ -967,7 +967,7 @@ export default function TeamPage() {
                             </span>
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-400 whitespace-nowrap">보안 권한 제한</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">보안 권한 제한</span>
                         )}
                       </td>
                       <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{m.assignedCases.toLocaleString()}건</td>
@@ -993,13 +993,13 @@ export default function TeamPage() {
                             </button>
                           )
                         ) : (
-                          <span className="text-xs text-gray-400 whitespace-nowrap">권한 제한</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">권한 제한</span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {!loading && members.length === 0 && (
-                    <tr><td colSpan={9} className="px-5 py-6 text-center text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
+                    <tr><td colSpan={9} className="px-5 py-6 text-center text-gray-500 dark:text-gray-400">멤버 정보를 불러오지 못했습니다.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -1055,7 +1055,7 @@ export default function TeamPage() {
                     disabled={seatStatus?.isLimitReached}
                     className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors border shadow-sm ${
                       seatStatus?.isLimitReached 
-                        ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-300 dark:border-gray-700' 
+                        ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700' 
                         : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border-blue-200 dark:border-blue-800'
                     }`}
                   >
@@ -1114,7 +1114,7 @@ export default function TeamPage() {
                   {invites.map(inv => (
                     <div key={inv.id} className="flex items-center justify-between text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5">
                       <span className="text-gray-700 dark:text-gray-200">
-                        {inv.email} <span className="text-xs text-gray-400">· {ROLE_LABEL[inv.role]}{inv.displayName ? ` · ${inv.displayName}` : ''} · {fmtDate(inv.expiresAt)}까지</span>
+                        {inv.email} <span className="text-xs text-gray-500 dark:text-gray-400">· {ROLE_LABEL[inv.role]}{inv.displayName ? ` · ${inv.displayName}` : ''} · {fmtDate(inv.expiresAt)}까지</span>
                       </span>
                       <button
                         disabled={busy}

@@ -72,8 +72,8 @@ export default function DriveConnectionCard() {
   };
 
   const btn = 'px-3 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1 disabled:opacity-40';
-  if (st === undefined) return <div className="text-xs text-gray-400 px-1 py-2">드라이브 연결 상태 확인 중…</div>;
-  if (st === null) return <div className="text-xs text-gray-400 px-1 py-2 flex items-center gap-1"><HardDrive size={13} /> 구글 드라이브 보관은 서버 업데이트 후 사용할 수 있습니다.</div>;
+  if (st === undefined) return <div className="text-xs text-gray-500 dark:text-gray-400 px-1 py-2">드라이브 연결 상태 확인 중…</div>;
+  if (st === null) return <div className="text-xs text-gray-500 dark:text-gray-400 px-1 py-2 flex items-center gap-1"><HardDrive size={13} /> 구글 드라이브 보관은 서버 업데이트 후 사용할 수 있습니다.</div>;
 
   const ready = st.connected && !!st.rootFolderId;
   return (
@@ -121,7 +121,7 @@ export default function DriveConnectionCard() {
           </>
         )}
       </div>
-      {st.connected && !PICKER_API_KEY && <p className="text-xs text-gray-400">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
+      {st.connected && !PICKER_API_KEY && <p className="text-xs text-gray-500 dark:text-gray-400">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
 
       {imp && (
         <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs text-gray-600 dark:text-gray-300 grid grid-cols-[12rem_1fr] gap-y-0.5">
@@ -143,7 +143,7 @@ export default function DriveConnectionCard() {
             <div key={i} className="flex items-start gap-1.5">
               {s.ok ? <Check size={12} className="text-emerald-600 mt-0.5" /> : <X size={12} className="text-red-600 mt-0.5" />}
               <span className="text-gray-700 dark:text-gray-300">{s.step}</span>
-              {s.detail && <span className="text-gray-400">· {s.detail}</span>}
+              {s.detail && <span className="text-gray-500 dark:text-gray-400">· {s.detail}</span>}
             </div>
           ))}
         </div>

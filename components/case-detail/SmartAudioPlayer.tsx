@@ -183,10 +183,10 @@ export default function SmartAudioPlayer({
     return (
       <div className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-800/80 p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock size={15} className="text-gray-400 shrink-0" />
+          <Clock size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
           <span>보관 기간(1년)이 만료되어 오디오 파일이 자동 정리되었습니다. (대화록/요약은 영구 보존)</span>
         </div>
-        <span className="text-xs text-gray-400 font-mono">삭제됨</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">삭제됨</span>
       </div>
     );
   }
@@ -332,7 +332,7 @@ export default function SmartAudioPlayer({
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-gray-800/60 text-xs">
           {/* 배속 버튼 그룹 */}
           <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-400 mr-1">배속:</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">배속:</span>
             {SPEED_OPTIONS.map((s) => (
               <button
                 key={s}
@@ -368,7 +368,7 @@ export default function SmartAudioPlayer({
               <button
                 type="button"
                 onClick={clearLoop}
-                className="text-xs text-gray-400 hover:text-red-500 underline"
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 underline"
               >
                 해제
               </button>
@@ -394,7 +394,7 @@ export default function SmartAudioPlayer({
                   <span>만료 D-{expInfo.daysLeft} ({expInfo.expDateStr} 삭제 예정)</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                   <ShieldCheck size={12} className="text-green-500" />
                   <span>1년 보관 (~{expInfo.expDateStr})</span>
                 </span>

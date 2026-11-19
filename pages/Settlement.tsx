@@ -1490,7 +1490,7 @@ export default function Settlement() {
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">📋 계약 건수</p>
-                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
                     </div>
                     <p className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white mt-1">{totalCount}건</p>
                     <p className="text-xs text-blue-500 mt-1 hidden md:block">상세 보기 →</p>
@@ -1501,10 +1501,10 @@ export default function Settlement() {
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">💰 총 매출</p>
-                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
                     </div>
                     <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">수임료 합계 · 상세 보기 →</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">수임료 합계 · 상세 보기 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('actualDeposit')}
@@ -1512,10 +1512,10 @@ export default function Settlement() {
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">✅ 실제 입금액</p>
-                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
                     </div>
                     <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">오늘까지 확정 · 상세 보기 →</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">오늘까지 확정 · 상세 보기 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('expectedDeposit')}
@@ -1523,10 +1523,10 @@ export default function Settlement() {
                 >
                     <div className="flex justify-between items-start">
                         <p className="text-xs md:text-sm text-gray-500">📅 예상 입금액</p>
-                        <Search size={14} className="text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
                     </div>
                     <p className="text-lg md:text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">{monthlyExpectedCount}건 입금 예정 · 상세 보기 →</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">{monthlyExpectedCount}건 입금 예정 · 상세 보기 →</p>
                 </div>
             </div>
 
@@ -1673,7 +1673,7 @@ export default function Settlement() {
                                         </div>
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                        <p className="text-xs text-gray-400">마지막: {c.depositHistory?.length ? '입금' : '계약'}일 기준</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">마지막: {c.depositHistory?.length ? '입금' : '계약'}일 기준</p>
                                     </div>
                                 </div>
                             ))}
@@ -1889,7 +1889,7 @@ export default function Settlement() {
                                 <span className="text-2xl">🔮</span>
                                 <h3 className="font-bold text-gray-700 dark:text-gray-200">미래 입금/지급 예측</h3>
                             </div>
-                            <p className="text-gray-400 text-sm">향후 60일 내 예정된 입금이 없습니다.</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">향후 60일 내 예정된 입금이 없습니다.</p>
                         </div>
                     );
                 }
@@ -1956,7 +1956,7 @@ export default function Settlement() {
                                                 <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
                                                     {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                                                 </div>
-                                                <p className="text-xs text-gray-400 mt-1">입금예정</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">입금예정</p>
                                             </div>
 
                                             {/* Customer Info */}
@@ -2100,29 +2100,29 @@ export default function Settlement() {
                                 {/* Status Grid */}
                                 <div className="grid grid-cols-3 gap-2 text-center">
                                     <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-xs text-gray-400 mb-1">수금</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">수금</p>
                                         {b.collectionInfo?.collectedAt ? (
                                             <span className="text-green-600 text-xs font-medium">✓ 완료</span>
                                         ) : (
-                                            <span className="text-gray-400 text-xs">대기</span>
+                                            <span className="text-gray-500 dark:text-gray-400 text-xs">대기</span>
                                         )}
                                     </div>
                                     <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-xs text-gray-400 mb-1">파트너 지급</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">파트너 지급</p>
                                         {payoutCount > 0 ? (
                                             <span className={`text-xs font-medium ${paidPayoutCount === payoutCount ? 'text-green-600' : 'text-yellow-600'}`}>
                                                 {paidPayoutCount}/{payoutCount}건
                                             </span>
                                         ) : (
-                                            <span className="text-gray-400 text-xs">없음</span>
+                                            <span className="text-gray-500 dark:text-gray-400 text-xs">없음</span>
                                         )}
                                     </div>
                                     <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-xs text-gray-400 mb-1">세금계산서</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">세금계산서</p>
                                         {b.purchaseInvoice?.receivedAt ? (
                                             <span className="text-purple-600 text-xs font-medium">✓ 수취</span>
                                         ) : (
-                                            <span className="text-gray-400 text-xs">미수취</span>
+                                            <span className="text-gray-500 dark:text-gray-400 text-xs">미수취</span>
                                         )}
                                     </div>
                                 </div>
@@ -2166,7 +2166,7 @@ export default function Settlement() {
                                                     {paidPayoutCount}/{payoutCount}건 ({totalPayoutAmount}만원)
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-1 bg-gray-100 text-gray-400 rounded-full text-xs">없음</span>
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 dark:text-gray-400 rounded-full text-xs">없음</span>
                                             )}
                                         </td>
                                         <td className="py-3 px-3 text-center">
@@ -2229,7 +2229,7 @@ export default function Settlement() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold text-green-600">{data.paid.toLocaleString()}만원 <span className="text-gray-400 font-normal">지급</span></p>
+                                        <p className="font-bold text-green-600">{data.paid.toLocaleString()}만원 <span className="text-gray-500 dark:text-gray-400 font-normal">지급</span></p>
                                         {data.total > data.paid && (
                                             <p className="text-xs text-orange-600">{(data.total - data.paid).toLocaleString()}만원 미지급</p>
                                         )}
@@ -2570,7 +2570,7 @@ export default function Settlement() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-48 flex items-center justify-center text-gray-400">
+                            <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
                                 지출 데이터가 없습니다
                             </div>
                         )}
@@ -2611,11 +2611,11 @@ export default function Settlement() {
                             <tbody>
                                 {loadingExpenses ? (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-gray-400">로딩중...</td>
+                                        <td colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">로딩중...</td>
                                     </tr>
                                 ) : expenses.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-gray-400">등록된 지출이 없습니다</td>
+                                        <td colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">등록된 지출이 없습니다</td>
                                     </tr>
                                 ) : (
                                     expenses.slice(0, 20).map(exp => (
@@ -2631,7 +2631,7 @@ export default function Settlement() {
                                             </td>
                                             <td className="py-3 px-3 text-gray-800">
                                                 {exp.description}
-                                                {exp.memo && <span className="text-gray-400 ml-2 text-xs">({exp.memo})</span>}
+                                                {exp.memo && <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">({exp.memo})</span>}
                                             </td>
                                             <td className="py-3 px-3 text-right font-bold text-red-600">{exp.amount.toLocaleString()}만원</td>
                                             <td className="py-3 px-3 text-center">
@@ -2707,11 +2707,11 @@ export default function Settlement() {
                             <tbody>
                                 {loadingTransactions ? (
                                     <tr>
-                                        <td colSpan={6} className="py-8 text-center text-gray-400">로딩중...</td>
+                                        <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">로딩중...</td>
                                     </tr>
                                 ) : bankTransactions.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="py-8 text-center text-gray-400">
+                                        <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">
                                             <div className="flex flex-col items-center gap-2">
                                                 <span className="text-2xl">📤</span>
                                                 <span>은행 거래내역 엑셀 파일을 업로드하세요</span>
@@ -2760,7 +2760,7 @@ export default function Settlement() {
                                                 <td className="py-2 px-3 text-center">
                                                     <button
                                                         onClick={() => handleBankTransactionDelete(tx.id)}
-                                                        className="text-gray-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
+                                                        className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
                                                         title="삭제"
                                                     >
                                                         <Trash2 size={16} />
@@ -2982,7 +2982,7 @@ export default function Settlement() {
                             </button>
                         </div>
 
-                        <p className="text-xs text-gray-400 mt-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                             ⚠️ 본 계산은 참고용이며, 정확한 세금은 세무사와 상담하세요.
                         </p>
                     </div>
@@ -3065,7 +3065,7 @@ export default function Settlement() {
                                                 <p className="text-sm font-bold text-teal-700 mt-1">
                                                     {q.vatPayable > 0 ? '+' : ''}{q.vatPayable.toLocaleString()}원
                                                 </p>
-                                                <div className="text-xs text-gray-400 mt-1">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                     <div>매출세액: {q.outputVat.toLocaleString()}</div>
                                                     <div>매입세액: -{q.inputVat.toLocaleString()}</div>
                                                 </div>
@@ -3076,7 +3076,7 @@ export default function Settlement() {
                                         <span className="text-sm text-teal-700">연간 예상 부가세 납부액</span>
                                         <span className="text-xl font-bold text-teal-800">{totalVatPayable.toLocaleString()}원</span>
                                     </div>
-                                    <p className="text-xs text-gray-400 mt-2">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                         💡 1월, 7월: 부가세 확정신고 / 4월, 10월: 예정신고
                                     </p>
                                 </>
@@ -3117,7 +3117,7 @@ export default function Settlement() {
                             return (
                                 <>
                                     {partnerPayouts.length === 0 ? (
-                                        <p className="text-sm text-gray-400 text-center py-4">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
                                             지급 완료된 정산 건이 없습니다.
                                         </p>
                                     ) : (
@@ -3150,7 +3150,7 @@ export default function Settlement() {
                                             </div>
                                         </>
                                     )}
-                                    <p className="text-xs text-gray-400 mt-2">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                         💡 사업소득 원천징수: 소득세 3% + 지방소득세 0.3% = 3.3%
                                     </p>
                                 </>
@@ -3675,7 +3675,7 @@ export default function Settlement() {
                                 <span className="text-xs text-orange-500">지급명세서 형식</span>
                             </button>
                         </div>
-                        <p className="text-xs text-gray-400 mt-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                             💡 다운로드 후 세무사에게 제출 또는 회계 프로그램에 직접 임포트하세요.
                         </p>
                     </div>
@@ -3691,7 +3691,7 @@ export default function Settlement() {
                         <p className="text-xs text-rose-500 mt-1">매입/매출 세금계산서 관리 기능</p>
                     </div>
                     <div className="p-4">
-                        <div className="text-center py-8 text-gray-400">
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             <span className="text-4xl block mb-2"></span>
                             <p>세금계산서 관리 기능 준비 중</p>
                             <p className="text-xs mt-1">곧 사용 가능합니다</p>
@@ -3767,7 +3767,7 @@ export default function Settlement() {
                                                             <span className="text-xs text-gray-600 truncate">{event.day}일 {event.name}</span>
                                                         </div>
                                                     )) : (
-                                                        <div className="text-xs text-gray-400">일정 없음</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">일정 없음</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -4232,7 +4232,7 @@ export default function Settlement() {
                             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm border ${
                                 showHostTaxTools
                                     ? 'bg-amber-500 text-white border-amber-600 shadow-amber-500/20'
-                                    : 'bg-amber-950/40 text-amber-300 border-amber-700/50 hover:bg-amber-900/40'
+                                    : 'bg-amber-100/40 dark:bg-amber-950/40 text-amber-300 border-amber-700/50 hover:bg-amber-900/40'
                             }`}
                             title="TM 대표/실무자에게는 숨겨진 개인용 세무·은행대사·부가세 도구를 열람합니다."
                         >
@@ -4599,7 +4599,7 @@ export default function Settlement() {
             {isAll && activeTab !== 'report' && activeTab !== 'expenses' && activeTab !== 'receivables' && activeTab !== 'overview' && activeTab !== 'agent_commission' && activeTab !== 'db_cost' && activeTab !== 'integrated_pnl' && (
                 <div className="bg-gray-50 dark:bg-gray-800/60 p-8 rounded-xl text-center border border-gray-200 dark:border-gray-700">
                     <p className="text-gray-500">주간 정산 기능은 특정 거래처를 선택해야 사용할 수 있습니다.</p>
-                    <p className="text-sm text-gray-400 mt-2">통계를 보시려면 "리포트" 탭을 선택하세요.</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">통계를 보시려면 "리포트" 탭을 선택하세요.</p>
                 </div>
             )}
 
@@ -4822,7 +4822,7 @@ export default function Settlement() {
                                         <span>받은 수수료 총액</span>
                                         <span className="font-bold text-green-700">{totalPaidCommission.toLocaleString()}만원</span>
                                     </div>
-                                    <div className="flex justify-between text-sm py-1 text-gray-400">
+                                    <div className="flex justify-between text-sm py-1 text-gray-500 dark:text-gray-400">
                                         <span>파트너사 페이아웃</span>
                                         <span>- {0}만원</span>
                                     </div>

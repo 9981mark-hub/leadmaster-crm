@@ -338,7 +338,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                 onClick={() => toggleFilter(type)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${isActive
                                         ? `${config.bgColor} ${config.textColor} ring-1 ring-current`
-                                        : 'bg-white text-gray-400 border border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600'
+                                        : 'bg-white text-gray-500 dark:text-gray-400 border border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600'
                                     }`}
                             >
                                 <span>{config.emoji}</span>
@@ -352,7 +352,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
 
             {/* Timeline */}
             {filteredEvents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
                     <Calendar size={40} className="mb-3 opacity-50" />
                     <p className="text-sm">표시할 활동이 없습니다.</p>
                 </div>
@@ -363,7 +363,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                             {/* Date Group Header */}
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-                                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                                     {group.label}
                                 </span>
                                 <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
@@ -422,7 +422,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                             {hasExpandableContent && (
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); toggleExpand(event.id); }}
-                                                                    className="text-xs text-gray-400 hover:text-gray-600 mt-0.5"
+                                                                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 mt-0.5"
                                                                 >
                                                                     {isExpanded ? '접기 ↑' : '더보기 ↓'}
                                                                 </button>
@@ -446,7 +446,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                         </div>
                                                     </div>
                                                     <div className="flex flex-col items-end flex-shrink-0">
-                                                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                             {formatDate(event.datetime)}
                                                         </span>
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">

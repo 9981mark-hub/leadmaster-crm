@@ -189,7 +189,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                     ⏳ 9단계 완주 · 관리자 승인 대기 중
                   </span>
                 ) : (
-                  <span className="text-gray-300">
+                  <span className="text-gray-600 dark:text-gray-300">
                     현재 Step {ONBOARDING_STEP_METAS.find((m) => m.id === profile.currentStepId)?.order || 1} 진행 중
                   </span>
                 )}
@@ -199,7 +199,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
         </div>
 
         {/* 대형 프로그레스 바 */}
-        <div className="mt-6 pt-5 border-t border-indigo-800/60 space-y-2">
+        <div className="mt-6 pt-5 border-t border-indigo-200/60 dark:border-indigo-800/60 space-y-2">
           <div className="flex items-center justify-between text-xs text-indigo-200">
             <span>Phase 1. 기초 이론 체화 (1~3단계)</span>
             <span>Phase 2. 지식 검증 및 시험 (4~6단계)</span>
@@ -330,7 +330,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                               </span>
                             ) : (
                               <span className="text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
-                                <Lock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> 잠김
+                                <Lock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 dark:text-gray-500" /> 잠김
                               </span>
                             )}
                           </div>
@@ -417,7 +417,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                           </div>
                         ) : (
                           <div className="w-full py-2.5 px-3 rounded-xl bg-gray-100/80 dark:bg-gray-900/70 border border-gray-200/60 dark:border-gray-700/60 text-center text-xs text-gray-600 dark:text-gray-300 font-medium flex items-center justify-center gap-1.5">
-                            <Lock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-400" />
+                            <Lock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 dark:text-gray-400" />
                             <span>이전 단계 완료 후 오픈</span>
                           </div>
                         )}
@@ -466,7 +466,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
             {isAdmin && !profile.isApprovedByAdmin && (
               <button
                 onClick={() => setIsAdminModalOpen(true)}
-                className="px-5 py-2.5 rounded-2xl bg-gray-950 text-white text-xs font-bold shadow-md hover:bg-gray-900 transition-all shrink-0"
+                className="px-5 py-2.5 rounded-2xl bg-gray-100 dark:bg-gray-950 text-white text-xs font-bold shadow-md hover:bg-gray-900 transition-all shrink-0"
               >
                 관제 보드에서 즉시 승인하기
               </button>

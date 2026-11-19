@@ -102,14 +102,14 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 상단 헤더 배너 */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-white dark:from-slate-900 via-purple-950 to-slate-900 border border-purple-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-purple-100 to-purple-50 dark:from-slate-900 dark:via-purple-950 dark:to-slate-900 border border-purple-200 dark:border-purple-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-inner">
             <Building size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-950/80 px-2.5 py-0.5 rounded-full border border-purple-800/60">
+              <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100/80 dark:bg-purple-950/80 px-2.5 py-0.5 rounded-full border border-purple-200/60 dark:border-purple-800/60">
                 총괄 관리자 · 센터 운영 관제 뷰
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{todayFormatted}</span>
@@ -161,7 +161,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <Users size={14} className="text-indigo-600 dark:text-indigo-400" />
               센터 상담 인력
             </span>
-            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-950 px-2 py-0.5 rounded border border-indigo-800/50">
+            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded border border-indigo-200/50 dark:border-indigo-800/50">
               가동 중
             </span>
           </div>
@@ -179,7 +179,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <MapPin size={14} className="text-purple-600 dark:text-purple-400" />
               오늘 대면 미팅
             </span>
-            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-950 px-2 py-0.5 rounded border border-purple-800/50">
+            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/50">
               외근·방문
             </span>
           </div>
@@ -198,7 +198,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <DollarSign size={14} className="text-emerald-600 dark:text-emerald-400" />
               오늘 입금 약속
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/50">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50">
               예상 실현
             </span>
           </div>
@@ -211,7 +211,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
         </div>
 
         <div className={`p-4 rounded-2xl border shadow-sm ${
-          operationsData.totalOverdue > 0 ? 'bg-rose-950/20 border-rose-900/40' : 'bg-white/80 dark:bg-slate-900/80 border-slate-200/80 dark:border-slate-800/80'
+          operationsData.totalOverdue > 0 ? 'bg-rose-100/20 dark:bg-rose-950/20 border-rose-900/40' : 'bg-white/80 dark:bg-slate-900/80 border-slate-200/80 dark:border-slate-800/80'
         }`}>
           <div className="flex items-center justify-between text-xs font-semibold mb-1">
             <span className={`flex items-center gap-1.5 ${operationsData.totalOverdue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
@@ -219,7 +219,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               지연된 콜 (Overdue)
             </span>
             {operationsData.totalOverdue > 0 && (
-              <span className="text-xs text-rose-600 dark:text-rose-400 font-bold bg-rose-950 px-2 py-0.5 rounded border border-rose-800/50">
+              <span className="text-xs text-rose-600 dark:text-rose-400 font-bold bg-rose-100 dark:bg-rose-950 px-2 py-0.5 rounded border border-rose-200/50 dark:border-rose-800/50">
                 집중 관리
               </span>
             )}
@@ -245,7 +245,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <p className="text-xs text-slate-500 dark:text-slate-400">외근 나간 상담원 위치 및 계약 체결 대면 일정을 확인하세요.</p>
             </div>
           </div>
-          <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-950/80 px-2.5 py-1 rounded-full border border-purple-800/50">
+          <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100/80 dark:bg-purple-950/80 px-2.5 py-1 rounded-full border border-purple-200/50 dark:border-purple-800/50">
             총 {filteredMeetings.length}건
           </span>
         </div>
@@ -310,7 +310,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <p className="text-xs text-slate-500 dark:text-slate-400">각 팀별로 당일 처리되지 않고 밀린 고객 콜 건수와 독려 상태입니다.</p>
             </div>
           </div>
-          <span className="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-950/80 px-2.5 py-1 rounded-full border border-rose-800/50">
+          <span className="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-100/80 dark:bg-rose-950/80 px-2.5 py-1 rounded-full border border-rose-200/50 dark:border-rose-800/50">
             총 {operationsData.totalOverdue}건 지연
           </span>
         </div>
@@ -323,7 +323,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
                 key={teamName}
                 className={`p-4 rounded-xl border flex flex-col justify-between transition-all ${
                   hasOverdue 
-                    ? 'bg-rose-950/20 border-rose-900/50' 
+                    ? 'bg-rose-100/20 dark:bg-rose-950/20 border-rose-900/50' 
                     : 'bg-slate-50/50 dark:bg-slate-950/50 border-slate-200/70 dark:border-slate-800/70'
                 }`}
               >
@@ -377,7 +377,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-600 dark:text-slate-300">[1단계] 수임 건 마감</span>
-              <span className="text-xs bg-emerald-950 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">완료</span>
+              <span className="text-xs bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">완료</span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
               전 팀 수임 사건 계약서 및 입금 내역 1차 대사 마감
@@ -385,10 +385,10 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">매주 월요일 18:00</div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-indigo-900/40 bg-indigo-950/10">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-indigo-200/40 dark:border-indigo-900/40 bg-indigo-950/10">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-indigo-300">[2단계] 로펌 청구서 발송</span>
-              <span className="text-xs bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-bold">진행중</span>
+              <span className="text-xs bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-bold">진행중</span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
               제휴 법률사무소별 세금계산서 발행 및 수수료 입금 요청
@@ -399,7 +399,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-600 dark:text-slate-300">[3단계] 수당 지급</span>
-              <span className="text-xs bg-sky-950 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded font-bold">D-1 대기</span>
+              <span className="text-xs bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded font-bold">D-1 대기</span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
               상담원 개인별 인센티브 확정 및 급여 계좌 일괄 이체
@@ -410,7 +410,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-600 dark:text-slate-300">[4단계] DB 수명 관리</span>
-              <span className="text-xs bg-amber-950 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">정기 회수</span>
+              <span className="text-xs bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">정기 회수</span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
               3일 이상 미접촉 장기 방치 리드 40건 일괄 회수 및 재배분

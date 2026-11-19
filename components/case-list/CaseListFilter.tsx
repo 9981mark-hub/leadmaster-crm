@@ -74,7 +74,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
             {/* [Row 1] Search + Mobile Upload Action */}
             <div className="flex w-full xl:w-auto gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                    <Search className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={18} />
                     <input
                         type="text"
                         placeholder="이름·번호·메모·문자 내용"
@@ -87,7 +87,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         <button
                             type="button"
                             onClick={() => { setSearch(''); onResetPage(); }}
-                            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300"
                         >
                             <XCircle size={18} />
                         </button>
@@ -97,7 +97,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 <button
                     type="button"
                     onClick={() => { setShowStarredOnly(!showStarredOnly); onResetPage(); }}
-                    className={`flex items-center justify-center p-2 border rounded-lg transition-colors shadow-sm shrink-0 ${showStarredOnly ? 'bg-amber-50 border-amber-300 text-amber-500' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                    className={`flex items-center justify-center p-2 border rounded-lg transition-colors shadow-sm shrink-0 ${showStarredOnly ? 'bg-amber-50 border-amber-300 text-amber-500' : 'bg-white border-gray-200 text-gray-500 dark:text-gray-400 hover:bg-gray-50'}`}
                     title="중요 표시된 항목만 보기"
                 >
                     <Star size={18} fill={showStarredOnly ? 'currentColor' : 'none'} />
@@ -125,7 +125,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         value={dateFilterStart}
                         onChange={withReset(setDateFilterStart)}
                     />
-                    <span className="text-gray-400 mx-1">~</span>
+                    <span className="text-gray-500 dark:text-gray-400 mx-1">~</span>
                     <input
                         type="date"
                         className="bg-transparent text-sm p-1 outline-none text-gray-600 dark:text-white"
@@ -134,7 +134,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     />
                 </div>
                 <div className="relative flex-1 min-w-[100px]">
-                    <Building className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
+                    <Building className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" size={16} />
                     <select
                         className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
                         value={partnerFilter}
@@ -146,7 +146,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 </div>
 
                 <div className="relative flex-1 min-w-[100px]">
-                    <Filter className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
+                    <Filter className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" size={16} />
                     <select
                         className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
                         value={inboundPathFilter}
@@ -267,7 +267,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     {/* Group 2: Sort, Actions, Trash */}
                     <div className="flex flex-1 xl:contents min-w-[200px] gap-1 mt-1 xl:mt-0">
                         <div className="relative flex-1 min-w-[120px]">
-                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-400" size={16} />
+                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" size={16} />
                             <select
                                 className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none text-ellipsis"
                                 value={sortOrder}
@@ -300,14 +300,14 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex items-center gap-1">
                             <button
                                 onClick={() => setLayoutMode('list')}
-                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600'}`}
                                 title="리스트 보기"
                             >
                                 <LayoutList size={16} />
                             </button>
                             <button
                                 onClick={() => setLayoutMode('kanban')}
-                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600'}`}
                                 title="칸반 보드 보기"
                             >
                                 <LayoutGrid size={16} />

@@ -134,7 +134,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
       <div className="bg-gray-900 border-2 border-rose-600/70 text-gray-100 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         
         {/* 상단 붉은 경고 헤더 */}
-        <div className="bg-rose-950/80 px-6 py-4 border-b border-rose-800/60 flex items-center justify-between">
+        <div className="bg-rose-100/80 dark:bg-rose-950/80 px-6 py-4 border-b border-rose-200/60 dark:border-rose-800/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="p-2 rounded-xl bg-rose-600 text-white animate-pulse">
               <Skull size={22} />
@@ -152,7 +152,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
             <button
               onClick={onClose}
               disabled={isPurging}
-              className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-rose-900/40 transition-colors disabled:opacity-30"
+              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-white rounded-lg hover:bg-rose-900/40 transition-colors disabled:opacity-30"
             >
               <X size={20} />
             </button>
@@ -161,15 +161,15 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
 
         {/* 단계별 스텝 바 (5단계 완료 화면 제외) */}
         {step !== 5 && (
-          <div className="bg-gray-950 px-6 py-2 border-b border-gray-800 flex items-center justify-between text-xs">
+          <div className="bg-gray-100 dark:bg-gray-950 px-6 py-2 border-b border-gray-800 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 1 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-400'}`}>1. 영향도 확인</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 1 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>1. 영향도 확인</span>
               <span className="text-gray-600">→</span>
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 2 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-400'}`}>2. 비상 백업</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 2 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>2. 비상 백업</span>
               <span className="text-gray-600">→</span>
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 3 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-400'}`}>3. 대표자 인증</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 3 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>3. 대표자 인증</span>
               <span className="text-gray-600">→</span>
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 4 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-400'}`}>4. 영구 파기</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 4 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>4. 영구 파기</span>
             </div>
             <span className="text-rose-600 dark:text-rose-400 font-mono font-bold">Step {step}/4</span>
           </div>
@@ -181,7 +181,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
           {/* STEP 1: 영향도 확인 */}
           {step === 1 && (
             <div className="space-y-4">
-              <div className="p-4 bg-rose-950/40 border border-rose-800/80 rounded-xl space-y-2">
+              <div className="p-4 bg-rose-100/40 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800/80 rounded-xl space-y-2">
                 <div className="flex items-center gap-2 text-rose-300 font-bold text-sm">
                   <AlertTriangle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
                   <span>극도의 주의가 필요한 비가역적 파기 작업입니다</span>
@@ -197,35 +197,35 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
               </div>
 
               {loadingSummary ? (
-                <div className="py-8 text-center text-gray-400 space-y-2">
+                <div className="py-8 text-center text-gray-500 dark:text-gray-400 space-y-2">
                   <Loader2 size={24} className="animate-spin mx-auto text-rose-500" />
                   <p className="text-xs">파기 대상 데이터 건수를 집계하고 있습니다...</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div className="p-3 bg-gray-800/80 rounded-xl border border-gray-700">
-                    <span className="text-gray-400 block mb-1">고객 리드 (케이스)</span>
+                    <span className="text-gray-500 dark:text-gray-400 block mb-1">고객 리드 (케이스)</span>
                     <strong className="text-lg text-rose-600 dark:text-rose-400 font-bold">
                       {summary?.casesCount.toLocaleString() || cases.length.toLocaleString()}
-                    </strong> <span className="text-gray-400">건</span>
+                    </strong> <span className="text-gray-500 dark:text-gray-400">건</span>
                   </div>
                   <div className="p-3 bg-gray-800/80 rounded-xl border border-gray-700">
-                    <span className="text-gray-400 block mb-1">통화 녹음 및 AI 요약문</span>
+                    <span className="text-gray-500 dark:text-gray-400 block mb-1">통화 녹음 및 AI 요약문</span>
                     <strong className="text-lg text-rose-600 dark:text-rose-400 font-bold">
                       {summary?.recordingsCount.toLocaleString() || 0}
-                    </strong> <span className="text-gray-400">건</span>
+                    </strong> <span className="text-gray-500 dark:text-gray-400">건</span>
                   </div>
                   <div className="p-3 bg-gray-800/80 rounded-xl border border-gray-700">
-                    <span className="text-gray-400 block mb-1">수신거부(DNC) 번호</span>
+                    <span className="text-gray-500 dark:text-gray-400 block mb-1">수신거부(DNC) 번호</span>
                     <strong className="text-lg text-gray-200 font-bold">
                       {summary?.dncCount.toLocaleString() || 0}
-                    </strong> <span className="text-gray-400">건</span>
+                    </strong> <span className="text-gray-500 dark:text-gray-400">건</span>
                   </div>
                   <div className="p-3 bg-gray-800/80 rounded-xl border border-gray-700">
-                    <span className="text-gray-400 block mb-1">DB 업로드 묶음 회차</span>
+                    <span className="text-gray-500 dark:text-gray-400 block mb-1">DB 업로드 묶음 회차</span>
                     <strong className="text-lg text-gray-200 font-bold">
                       {summary?.batchesCount.toLocaleString() || 0}
-                    </strong> <span className="text-gray-400">회차</span>
+                    </strong> <span className="text-gray-500 dark:text-gray-400">회차</span>
                   </div>
                 </div>
               )}
@@ -234,7 +234,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
                 >
                   취소
                 </button>
@@ -258,7 +258,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   <ShieldCheck size={18} />
                   <span>비상 오프라인 백업 다운로드 (권장)</span>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed">
+                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
                   비상 상황이라도 사후 법적 감사나 소송 등에서 정당한 입증 자료가 필요할 수 있습니다.
                   데이터를 파기하기 전, 대표자 본인만이 오프라인으로 소장할 수 있는 비상 JSON 백업 파일을 저장할 것을 권장합니다.
                 </p>
@@ -267,7 +267,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
               <div className="p-4 border border-dashed border-gray-700 rounded-xl flex items-center justify-between gap-4">
                 <div>
                   <h4 className="text-xs font-bold text-gray-200">현재 보관된 전체 리드 데이터 내보내기</h4>
-                  <p className="text-xs text-gray-400 mt-0.5">총 {cases.length.toLocaleString()}건의 고객 정보가 단일 JSON 파일로 생성됩니다.</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">총 {cases.length.toLocaleString()}건의 고객 정보가 단일 JSON 파일로 생성됩니다.</p>
                 </div>
                 <button
                   type="button"
@@ -283,7 +283,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="text-xs text-gray-400 hover:text-white"
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-white"
                 >
                   ← 이전 단계
                 </button>
@@ -309,13 +309,13 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   <Lock size={18} />
                   <span>회사 대표자(Owner) 본인 계정 확인</span>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed">
+                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
                   도난이나 자리 비움 상태에서의 악의적인 오작동을 차단하기 위해, 현재 로그인된 대표자 계정 이메일을 확인합니다.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-gray-400 block">
+                <label className="text-xs text-gray-500 dark:text-gray-400 block">
                   현재 로그인된 대표자 이메일: <strong className="text-white">{user?.email || '대표자 계정'}</strong>
                 </label>
                 <input
@@ -323,7 +323,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   placeholder="본인의 로그인 이메일 주소를 입력하세요"
                   value={ownerEmailConfirm}
                   onChange={e => setOwnerEmailConfirm(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-gray-950 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-rose-500"
+                  className="w-full px-3 py-2 text-xs bg-gray-100 dark:bg-gray-950 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-rose-500"
                 />
               </div>
 
@@ -331,7 +331,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="text-xs text-gray-400 hover:text-white"
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-white"
                 >
                   ← 이전 단계
                 </button>
@@ -351,7 +351,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
           {/* STEP 4: 최종 타이핑 일치 & 10초 쿨다운 */}
           {step === 4 && (
             <div className="space-y-4">
-              <div className="p-4 bg-rose-950/60 border border-rose-600 rounded-xl space-y-2 text-xs text-rose-200">
+              <div className="p-4 bg-rose-100/60 dark:bg-rose-950/60 border border-rose-600 rounded-xl space-y-2 text-xs text-rose-200">
                 <div className="flex items-center gap-2 font-bold text-sm text-rose-600 dark:text-rose-400">
                   <ShieldAlert size={18} />
                   <span>최종 영구 파기 명령 확인</span>
@@ -365,7 +365,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs text-gray-300 font-semibold block">
+                <label className="text-xs text-gray-600 dark:text-gray-300 font-semibold block">
                   확인 문구 입력:
                 </label>
                 <input
@@ -374,7 +374,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   value={confirmPhraseInput}
                   onChange={e => setConfirmPhraseInput(e.target.value)}
                   disabled={isPurging}
-                  className={`w-full px-3.5 py-2 text-xs bg-gray-950 border rounded-lg text-white focus:outline-none ${
+                  className={`w-full px-3.5 py-2 text-xs bg-gray-100 dark:bg-gray-950 border rounded-lg text-white focus:outline-none ${
                     isPhraseMatched ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-700 focus:border-rose-500'
                   }`}
                 />
@@ -390,7 +390,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs text-gray-400 block">
+                <label className="text-xs text-gray-500 dark:text-gray-400 block">
                   파기 사유 (감사 기록용):
                 </label>
                 <input
@@ -398,7 +398,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   value={purgeReason}
                   onChange={e => setPurgeReason(e.target.value)}
                   disabled={isPurging}
-                  className="w-full px-3 py-1.5 text-xs bg-gray-950 border border-gray-700 rounded-lg text-gray-200 focus:outline-none"
+                  className="w-full px-3 py-1.5 text-xs bg-gray-100 dark:bg-gray-950 border border-gray-700 rounded-lg text-gray-200 focus:outline-none"
                 />
               </div>
 
@@ -407,7 +407,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   type="button"
                   onClick={() => setStep(3)}
                   disabled={isPurging}
-                  className="text-xs text-gray-400 hover:text-white disabled:opacity-40"
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-white disabled:opacity-40"
                 >
                   ← 이전 단계
                 </button>
@@ -448,36 +448,36 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
 
               <div className="space-y-1">
                 <h3 className="text-lg font-bold text-white">데이터 영구 파기 완료</h3>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {purgeResult.orgName} 소속의 모든 고객 DB와 통화 녹음이 물리적으로 완전 소멸되었습니다.
                 </p>
               </div>
 
               {/* 법적 증빙 카드 */}
-              <div className="p-4 bg-gray-950 rounded-xl border border-gray-800 text-left text-xs space-y-2.5 font-mono">
+              <div className="p-4 bg-gray-100 dark:bg-gray-950 rounded-xl border border-gray-800 text-left text-xs space-y-2.5 font-mono">
                 <div className="flex items-center justify-between border-b border-gray-800 pb-2">
-                  <span className="text-gray-400">증빙 문서</span>
+                  <span className="text-gray-500 dark:text-gray-400">증빙 문서</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">개인정보 파기 증빙서 (제21조)</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">파기 대상 회사</span>
+                  <span className="text-gray-500 dark:text-gray-400">파기 대상 회사</span>
                   <span className="text-white font-bold">{purgeResult.orgName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">파기 일시 (KST)</span>
+                  <span className="text-gray-500 dark:text-gray-400">파기 일시 (KST)</span>
                   <span className="text-white">{new Date(purgeResult.executedAt).toLocaleString('ko-KR')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">영구 소멸된 고객 DB</span>
+                  <span className="text-gray-500 dark:text-gray-400">영구 소멸된 고객 DB</span>
                   <span className="text-rose-600 dark:text-rose-400 font-bold">{purgeResult.purgedCases.toLocaleString()} 건</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">영구 소멸된 통화 녹음</span>
+                  <span className="text-gray-500 dark:text-gray-400">영구 소멸된 통화 녹음</span>
                   <span className="text-rose-600 dark:text-rose-400 font-bold">{purgeResult.purgedRecordings.toLocaleString()} 건</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">영구 소멸된 수신거부(DNC)</span>
-                  <span className="text-gray-300">{purgeResult.purgedDnc.toLocaleString()} 건</span>
+                  <span className="text-gray-500 dark:text-gray-400">영구 소멸된 수신거부(DNC)</span>
+                  <span className="text-gray-600 dark:text-gray-300">{purgeResult.purgedDnc.toLocaleString()} 건</span>
                 </div>
               </div>
 

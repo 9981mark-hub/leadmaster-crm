@@ -235,7 +235,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={20} />
           </button>
@@ -424,7 +424,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                           {member.displayName}
                         </span>
                       </div>
-                      <span className="text-xs text-gray-400 font-mono">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                         {member.role}
                       </span>
                     </div>
@@ -479,7 +479,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                   <option value={25}>25초 (여유 대기)</option>
                   <option value={30}>30초</option>
                 </select>
-                <p className="text-xs text-gray-400 mt-1">20초 경과 시 자동 부재 처리</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">20초 경과 시 자동 부재 처리</p>
               </div>
 
               {/* 휴식 갭 */}
@@ -498,7 +498,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                   <option value={6}>6초</option>
                   <option value={10}>10초</option>
                 </select>
-                <p className="text-xs text-gray-400 mt-1">결과 저장 후 다음 발신 대기</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">결과 저장 후 다음 발신 대기</p>
               </div>
 
               {/* 후처리 제한시간 */}
@@ -517,7 +517,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                   <option value={15}>15초</option>
                   <option value={20}>20초</option>
                 </select>
-                <p className="text-xs text-gray-400 mt-1">통화 종료 후 카운트다운</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">통화 종료 후 카운트다운</p>
               </div>
             </div>
 
