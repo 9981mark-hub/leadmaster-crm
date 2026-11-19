@@ -33,7 +33,7 @@ export default function LoginPage() {
     const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative overflow-hidden">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-slate-900 dark:text-white relative overflow-hidden">
             
             {/* 🌌 배경 은은한 오로라/글로우 효과 */}
             <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[120px] pointer-events-none" />
@@ -224,7 +224,7 @@ export default function LoginPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPricingModal(true)}
-                                    className="w-full py-2 px-3 rounded-2xl bg-white/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                                    className="w-full py-2 px-3 rounded-2xl bg-white/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
                                 >
                                     <CreditCard size={13} className="text-emerald-600 dark:text-emerald-400" />
                                     <span>프로그램 사용료 및 비용 시뮬레이터 안내</span>
@@ -286,7 +286,7 @@ export default function LoginPage() {
             {/* ❓ 모바일 앱 1분 설치 가이드 모달 */}
             {showGuide && (
                 <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-                    <div className="bg-white dark:bg-gray-900 text-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700">
+                    <div className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700">
                         <div className="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-800">
                             <h3 className="font-bold text-sm text-white flex items-center gap-2">
                                 <Smartphone size={16} className="text-blue-600 dark:text-blue-400" />

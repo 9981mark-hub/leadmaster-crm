@@ -81,7 +81,7 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl max-w-xl w-full p-6 shadow-2xl text-white space-y-5 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl max-w-xl w-full p-6 shadow-2xl text-slate-900 dark:text-white space-y-5 max-h-[90vh] overflow-y-auto">
         
         {/* 모달 상단 헤더 */}
         <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -279,7 +279,7 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                       perms.maxSeats === cnt
                         ? 'bg-blue-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white'
                     }`}
                   >
                     {cnt === 0 ? '무제한' : `${cnt}석`}
@@ -416,7 +416,7 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
                     step="1000"
                     value={perms.customUnitPrice || 45000}
                     onChange={e => setPerms(prev => ({ ...prev, customUnitPrice: Number(e.target.value) }))}
-                    className="w-32 px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-700 text-white font-mono text-xs text-right outline-none focus:border-blue-500"
+                    className="w-32 px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs text-right outline-none focus:border-blue-500"
                   />
                   <span className="text-xs text-slate-500 dark:text-slate-400">원 / 석</span>
                 </div>
@@ -433,7 +433,7 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
                     step="100000"
                     value={perms.flatMonthlyFee || 3000000}
                     onChange={e => setPerms(prev => ({ ...prev, flatMonthlyFee: Number(e.target.value) }))}
-                    className="w-36 px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-700 text-white font-mono text-xs text-right outline-none focus:border-blue-500"
+                    className="w-36 px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs text-right outline-none focus:border-blue-500"
                   />
                   <span className="text-xs text-slate-500 dark:text-slate-400">원 / 월</span>
                 </div>

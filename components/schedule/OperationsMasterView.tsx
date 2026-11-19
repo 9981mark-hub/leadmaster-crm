@@ -114,7 +114,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{todayFormatted}</span>
             </div>
-            <h3 className="text-base font-bold text-white mt-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">
               센터 전사 외근(방문/출장), 팀별 지연 콜 병목 모니터링 및 실무 파이프라인
             </h3>
           </div>
@@ -165,7 +165,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               가동 중
             </span>
           </div>
-          <div className="text-xl font-black text-white">
+          <div className="text-xl font-black text-slate-900 dark:text-white">
             정상 근무
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -241,7 +241,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <MapPin size={16} />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white">오늘 전사 외근(출장/방문) 미팅 통합 현황판</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">오늘 전사 외근(출장/방문) 미팅 통합 현황판</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">외근 나간 상담원 위치 및 계약 체결 대면 일정을 확인하세요.</p>
             </div>
           </div>
@@ -273,7 +273,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-white group-hover:text-purple-300 transition-colors">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-purple-300 transition-colors">
                           {caseData.customerName || '고객명 미상'}
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -306,7 +306,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
           <div className="flex items-center gap-2">
             <AlertTriangle size={18} className="text-rose-600 dark:text-rose-400" />
             <div>
-              <h4 className="text-sm font-bold text-white">팀별 지연(Overdue) 리마인더 병목 모니터링</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">팀별 지연(Overdue) 리마인더 병목 모니터링</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">각 팀별로 당일 처리되지 않고 밀린 고객 콜 건수와 독려 상태입니다.</p>
             </div>
           </div>
@@ -329,7 +329,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-white">{teamName}</span>
+                    <span className="font-bold text-sm text-slate-900 dark:text-white">{teamName}</span>
                     <span className={`text-xs font-black px-2 py-0.5 rounded ${
                       hasOverdue ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                     }`}>
@@ -366,7 +366,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
           <div className="flex items-center gap-2">
             <Calendar size={18} className="text-indigo-600 dark:text-indigo-400" />
             <div>
-              <h4 className="text-sm font-bold text-white">센터 주간 정산 & 운영 실무 파이프라인</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">센터 주간 정산 & 운영 실무 파이프라인</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">주간 마감부터 청구서 발행, 급여 지급 및 DB 회수까지의 실무 타임라인</p>
             </div>
           </div>

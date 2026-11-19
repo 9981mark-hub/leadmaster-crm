@@ -217,7 +217,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
                     placeholder="xkeysib-..."
                     value={inputKey}
                     onChange={(e) => setInputKey(e.target.value)}
-                    className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-gray-900 border border-slate-650 text-white focus:outline-hidden focus:border-blue-500 font-mono"
+                    className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-gray-900 border border-slate-650 text-slate-900 dark:text-white focus:outline-hidden focus:border-blue-500 font-mono"
                   />
                   <button
                     type="button"
@@ -338,7 +338,7 @@ export const ApprovalEmailModal: React.FC<ApprovalEmailModalProps> = ({
                     type="text"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-750 text-white focus:outline-hidden focus:border-blue-500 font-medium"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-750 text-slate-900 dark:text-white focus:outline-hidden focus:border-blue-500 font-medium"
                   />
                 </div>
                 <div>

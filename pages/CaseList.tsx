@@ -930,7 +930,7 @@ export default function CaseList() {
                     ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (
                         <button key={v.k} type="button" title={v.hint}
                             onClick={() => { setQuickView(v.k); setCurrentPage(1); }}
-                            className={`h-8 px-3 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-white dark:bg-gray-900 text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
+                            className={`h-8 px-3 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-white dark:bg-gray-900 text-slate-900 dark:text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
                             {v.label}
                             <span className={`text-xs tabular-nums ${quickView === v.k ? 'opacity-80' : 'text-slate-500 dark:text-slate-400'}`}>{v.n.toLocaleString()}</span>
                         </button>
@@ -948,7 +948,7 @@ export default function CaseList() {
 
             {/* 여러 건 선택했을 때 */}
             {selected.size > 0 && (
-                <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 text-white shadow-lg">
+                <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 text-slate-900 dark:text-white shadow-lg">
                     <span className="text-sm font-bold tabular-nums">{selected.size}건 선택</span>
                     <select defaultValue="" onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkStatus(v); }}
                         className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="상태 바꾸기">

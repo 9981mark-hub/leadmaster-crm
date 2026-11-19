@@ -185,7 +185,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                     {/* 할 일 */}
                     {/* 모바일(768px 미만)에서는 숨김: 앱 화면에서 고객 정보를 가리지 않게 (2026-11-02) */}
                     <div ref={menuRef} className="hidden md:flex flex-wrap items-center gap-1.5 relative">
-                        <button onClick={call} className={`${btn} bg-white dark:bg-gray-900 text-white border-slate-200 dark:border-slate-900 hover:bg-slate-100 dark:bg-slate-800`}><Phone size={15} /> 전화</button>
+                        <button onClick={call} className={`${btn} bg-white dark:bg-gray-900 text-slate-900 dark:text-white border-slate-200 dark:border-slate-900 hover:bg-slate-100 dark:bg-slate-800`}><Phone size={15} /> 전화</button>
                         {isMobileUA() ? (
                             <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50`}><MessageSquare size={15} /> 문자</a>
                         ) : (
@@ -257,7 +257,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                                 placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs text-slate-500 dark:text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
-                                                <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-white dark:bg-gray-900 text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
+                                                <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-white dark:bg-gray-900 text-slate-900 dark:text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
                                                     {sms.isPending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} 보내기
                                                 </button>
                                             </div>

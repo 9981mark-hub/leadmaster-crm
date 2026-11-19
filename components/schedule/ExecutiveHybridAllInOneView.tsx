@@ -181,7 +181,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{todayFormatted}</span>
             </div>
-            <h3 className="text-base font-bold text-white mt-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">
               자금 흐름(수임료·인센티브·DB)과 당일 현장 영업(외근·입금·미처리) 원스톱 관제
             </h3>
           </div>
@@ -219,7 +219,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               {partners.length}개 로펌
             </span>
           </div>
-          <div className="text-xl font-black text-white">
+          <div className="text-xl font-black text-slate-900 dark:text-white">
             ₩{financialSummary.totalCommissionWon.toLocaleString()}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
@@ -305,7 +305,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                 <MapPin size={16} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">오늘 대면 미팅 현황 (출장·센터방문)</h4>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">오늘 대면 미팅 현황 (출장·센터방문)</h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400">외근 나간 상담원과 클로징 미팅 일정을 확인하세요.</p>
               </div>
             </div>
@@ -337,7 +337,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                       </span>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
+                          <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-300 transition-colors">
                             {caseData.customerName || '고객명 미상'}
                           </span>
                           <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -372,7 +372,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                 <DollarSign size={16} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">오늘 수임료 입금 약속 건 (현금흐름)</h4>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">오늘 수임료 입금 약속 건 (현금흐름)</h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400">오늘 입금 완료되어야 할 착수금 및 분납금 건입니다.</p>
               </div>
             </div>
@@ -402,7 +402,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                       </span>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-white group-hover:text-emerald-300 transition-colors">
+                          <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-emerald-300 transition-colors">
                             {caseData.customerName || '고객명 미상'}
                           </span>
                           <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -436,7 +436,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <Building size={16} className="text-indigo-600 dark:text-indigo-400" />
-            <h4 className="text-sm font-bold text-white">제휴 법률사무소별 정산 마감 & 주간 파이프라인</h4>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">제휴 법률사무소별 정산 마감 & 주간 파이프라인</h4>
           </div>
           <span className="text-xs text-slate-500 dark:text-slate-400">복수 제휴처 개별 정산 정책 연동</span>
         </div>
@@ -445,7 +445,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
           {financialSummary.partnerSchedules.map(p => (
             <div key={p.partnerId} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/80 dark:border-slate-800/80">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-white">{p.name}</span>
+                <span className="font-bold text-sm text-slate-900 dark:text-white">{p.name}</span>
                 <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">{p.caseCount}건 유치</span>
               </div>
               <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">

@@ -426,7 +426,7 @@ export default function AgentCommissionTab({
               </div>
               <button
                 onClick={() => setSelectedAgent(null)}
-                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-semibold transition-colors"
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-semibold transition-colors"
               >
                 닫기
               </button>

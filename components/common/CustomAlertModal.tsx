@@ -147,7 +147,7 @@ export default function CustomAlertModal({
             className={`py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm transition-colors cursor-pointer ${
               type === 'uninvited' 
                 ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300'
-                : 'bg-blue-600 hover:bg-blue-500 text-white flex-1 text-center shadow-md'
+                : 'bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white flex-1 text-center shadow-md'
             }`}
           >
             {confirmText}

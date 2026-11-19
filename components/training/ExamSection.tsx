@@ -874,7 +874,7 @@ export const ExamSection: React.FC = () => {
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 resultFilter === 'all'
                   ? 'bg-white dark:bg-gray-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white'
               }`}
             >
               전체 25문항 보기

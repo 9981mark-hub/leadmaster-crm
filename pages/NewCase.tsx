@@ -1378,7 +1378,7 @@ export default function NewCase() {
                         <button
                           type="button"
                           onClick={handleAddAsset}
-                          className="bg-slate-100 dark:bg-slate-800 hover:bg-white dark:bg-gray-900 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
+                          className="bg-slate-100 dark:bg-slate-800 hover:bg-white dark:bg-gray-900 text-slate-900 dark:text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
                         >
                           <Plus size={13} />
                           <span>자산 추가</span>

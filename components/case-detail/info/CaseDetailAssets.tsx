@@ -202,7 +202,7 @@ export const CaseDetailAssets: React.FC<CaseDetailAssetsProps> = ({
                                     <input type="text" placeholder="차종·연식, 지번 등" aria-label="재산 설명"
                                         className={`flex-1 min-w-0 ${SMALL_CONTROL}`}
                                         value={newAsset.desc || ''} onChange={e => setNewAsset({ ...newAsset, desc: e.target.value })} />
-                                    <button type="button" onClick={handleAddAsset} className="h-9 bg-slate-100 dark:bg-slate-800 hover:bg-white dark:bg-gray-900 text-white font-bold px-3 rounded-lg text-xs flex items-center gap-1 shrink-0">
+                                    <button type="button" onClick={handleAddAsset} className="h-9 bg-slate-100 dark:bg-slate-800 hover:bg-white dark:bg-gray-900 text-slate-900 dark:text-white font-bold px-3 rounded-lg text-xs flex items-center gap-1 shrink-0">
                                         <Plus size={13} /> 추가
                                     </button>
                                 </div>

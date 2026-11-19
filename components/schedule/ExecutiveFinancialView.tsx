@@ -148,7 +148,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{todayFormatted}</span>
             </div>
-            <h3 className="text-base font-bold text-white mt-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">
               제휴 로펌 수임료 청구, 상담원 인센티브, DB 원가 및 고정비 거시 캘린더
             </h3>
           </div>
@@ -184,7 +184,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               {partners.length}개 로펌
             </span>
           </div>
-          <div className="text-xl font-black text-white">
+          <div className="text-xl font-black text-slate-900 dark:text-white">
             ₩{metrics.totalCommissionWon.toLocaleString()}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -253,7 +253,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
           <div className="flex items-center gap-2">
             <Calendar size={18} className="text-sky-600 dark:text-sky-400" />
             <div>
-              <h4 className="text-sm font-bold text-white">이번 달 핵심 자금 집행 & 수금 D-Day 타임라인</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">이번 달 핵심 자금 집행 & 수금 D-Day 타임라인</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">대표가 반드시 사전에 대비해야 할 주간/월간 자금 일정입니다.</p>
             </div>
           </div>
@@ -276,7 +276,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">{evt.title}</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">{evt.title}</span>
                       <span className="text-xs px-2 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                         {evt.category}
                       </span>
@@ -309,7 +309,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
           <div className="flex items-center gap-2">
             <Building size={18} className="text-indigo-600 dark:text-indigo-400" />
             <div>
-              <h4 className="text-sm font-bold text-white">제휴 법률사무소별 계약 대사 & 정산 정책 현황</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">제휴 법률사무소별 계약 대사 & 정산 정책 현황</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">제휴처별 독립 수수료율 및 주간 정산 마감 주기</p>
             </div>
           </div>
@@ -326,7 +326,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
             <div key={p.partnerId} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-white">{p.name}</span>
+                  <span className="font-bold text-sm text-slate-900 dark:text-white">{p.name}</span>
                   <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/40">
                     {p.caseCount}건 유치
                   </span>

@@ -88,7 +88,7 @@ ${data.specialMemo || '없음'}`;
 
                     <button
                         type="button"
-                        className="p-1 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white transition-colors"
+                        className="p-1 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors"
                         aria-label={isExpanded ? '접기' : '펼치기'}
                     >
                         {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}

@@ -122,7 +122,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">[{currentTeamName}] · {todayFormatted}</span>
             </div>
-            <h3 className="text-base font-bold text-white mt-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">
               우리 팀원들의 당일 핵심 계약 건(입금·대면)과 클로징 동행 서포트 캘린더
             </h3>
           </div>
@@ -253,7 +253,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
           <div className="flex items-center gap-2">
             <Clock size={18} className="text-indigo-600 dark:text-indigo-400" />
             <div>
-              <h4 className="text-sm font-bold text-white">팀원별 오늘 상담·미팅 타임라인 매트릭스</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">팀원별 오늘 상담·미팅 타임라인 매트릭스</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">팀원들의 시간대별 일정 흐름을 비교하고 빈틈없이 코칭하세요.</p>
             </div>
           </div>
@@ -275,7 +275,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
                       <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold text-xs flex items-center justify-center border border-indigo-500/30">
                         {member.slice(0, 1)}
                       </div>
-                      <span className="text-sm font-bold text-white">{member}</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{member}</span>
                       <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         (오늘 일정 {items.length}건)
                       </span>

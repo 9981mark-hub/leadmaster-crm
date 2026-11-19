@@ -360,7 +360,7 @@ export default function DbCostSettlementTab({
                   type="text"
                   value={editVendorName}
                   onChange={(e) => setEditVendorName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="예: 페이스북 리드, 제휴사A"
                 />
               </div>
@@ -371,7 +371,7 @@ export default function DbCostSettlementTab({
                   type="number"
                   value={editUnitCost}
                   onChange={(e) => handleUnitCostChange(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="0"
                 />
                 <p className="text-xs text-slate-500 mt-1">단가 입력 시 총 매입비용이 자동 환산됩니다.</p>

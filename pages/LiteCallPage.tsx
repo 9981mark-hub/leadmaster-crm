@@ -446,7 +446,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'all'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >
@@ -456,7 +456,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('today')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'today'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >
@@ -466,7 +466,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('new')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'new'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >
@@ -476,7 +476,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('missed')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'missed'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >

@@ -259,14 +259,14 @@ export default function CompanySignupModal({
                     value={businessNumber}
                     onChange={e => { setBusinessNumber(e.target.value); setTaxSaved(false); }}
                     placeholder="사업자등록번호 (예: 123-45-67890)"
-                    className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none font-mono"
+                    className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-slate-900 dark:text-white outline-none font-mono"
                   />
                   <input
                     type="email"
                     value={taxInvoiceEmail}
                     onChange={e => { setTaxInvoiceEmail(e.target.value); setTaxSaved(false); }}
                     placeholder="계산서 수신 이메일 (미입력 시 구글 메일)"
-                    className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none font-mono"
+                    className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-slate-900 dark:text-white outline-none font-mono"
                   />
                 </div>
                 <p className="text-xs text-slate-500 leading-normal">
@@ -349,7 +349,7 @@ export default function CompanySignupModal({
                       value={companyName}
                       onChange={e => setCompanyName(e.target.value)}
                       placeholder="예: 리드마스터 법률센터"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-slate-900 dark:text-white outline-none text-xs sm:text-sm"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -362,7 +362,7 @@ export default function CompanySignupModal({
                       value={ownerName}
                       onChange={e => setOwnerName(e.target.value)}
                       placeholder="예: 홍길동 대표"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-slate-900 dark:text-white outline-none text-xs sm:text-sm"
                     />
                   </div>
                 </div>
@@ -380,7 +380,7 @@ export default function CompanySignupModal({
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
                       placeholder="010-0000-0000"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-slate-900 dark:text-white outline-none text-xs sm:text-sm font-mono"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -399,7 +399,7 @@ export default function CompanySignupModal({
                       value={ownerEmail}
                       onChange={e => setOwnerEmail(e.target.value)}
                       placeholder="example@gmail.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-slate-900 dark:text-white outline-none text-xs sm:text-sm font-mono"
                     />
                   </div>
                 </div>

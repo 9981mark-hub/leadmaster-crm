@@ -154,7 +154,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
               onClick={() => setFilterStatus('pending')}
               className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
                 filterStatus === 'pending'
-                  ? 'bg-amber-500 text-white shadow-sm'
+                  ? 'bg-amber-500 text-slate-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400'
               }`}
             >
@@ -177,7 +177,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
               onClick={() => setFilterStatus('approved')}
               className={`px-3 py-1.5 rounded-lg transition-all ${
                 filterStatus === 'approved'
-                  ? 'bg-emerald-600 text-white shadow-sm'
+                  ? 'bg-emerald-600 text-slate-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400'
               }`}
             >

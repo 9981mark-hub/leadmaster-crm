@@ -262,7 +262,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
             </div>
 
             {/* 실시간 근태 전광판 (Live Attendance Board) */}
-            <div className="bg-white dark:bg-gray-900 text-white p-4 md:p-5 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white p-4 md:p-5 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
                         <Clock size={20} />

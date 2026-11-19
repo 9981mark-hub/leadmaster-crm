@@ -329,7 +329,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                     onClick={() => setTaxType(opt.type as any)}
                                     className={`p-2.5 rounded-xl border text-left transition-all ${
                                         taxType === opt.type
-                                            ? 'bg-slate-100 dark:bg-slate-800 dark:bg-gray-600 text-white border-slate-200 dark:border-slate-800'
+                                            ? 'bg-slate-100 dark:bg-slate-800 dark:bg-gray-600 text-slate-900 dark:text-white border-slate-200 dark:border-slate-800'
                                             : 'bg-white dark:bg-gray-750 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
                                     }`}
                                 >

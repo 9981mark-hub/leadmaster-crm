@@ -243,7 +243,7 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
             <input value={form.memo} onChange={e => setForm({ ...form, memo: e.target.value })} placeholder="메모 (예: 10월분 일부)" className="w-full border border-slate-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm dark:bg-gray-700" />
             <div className="flex gap-2">
               <button disabled={saving || !(Number(form.amount) > 0)} onClick={() => save({ date: form.date, amount: Number(form.amount), memo: form.memo.trim() || undefined })}
-                className="flex-1 py-2 rounded-lg bg-white dark:bg-gray-900 text-white text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-1"><Plus size={14} /> 기록하기</button>
+                className="flex-1 py-2 rounded-lg bg-white dark:bg-gray-900 text-slate-900 dark:text-white text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-1"><Plus size={14} /> 기록하기</button>
               <button onClick={() => setShowBank(v => !v)} className="px-3 py-2 rounded-lg border border-slate-300 text-sm flex items-center gap-1" title="정산 → 지출 탭에 올린 통장 내역 중 이 사무실 입금"><Landmark size={14} /> 통장에서</button>
             </div>
             {showBank && (

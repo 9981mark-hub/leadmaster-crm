@@ -396,7 +396,7 @@ function RecordingDetailDashboard({
             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200 dark:border-purple-800/60 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
               <div className="flex flex-wrap items-center gap-2">
                 {rec.extracted.classification?.label && (
-                  <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-gray-900 text-white dark:bg-purple-600 font-bold text-xs shadow-xs">
+                  <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-gray-900 text-slate-900 dark:text-white dark:bg-purple-600 font-bold text-xs shadow-xs">
                     {rec.extracted.classification.label}
                   </span>
                 )}

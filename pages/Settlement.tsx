@@ -4187,7 +4187,7 @@ export default function Settlement() {
                             onChange={e => setYear(Number(e.target.value))}
                         >
                             {Array.from({ length: 13 }, (_, i) => 2024 + i).map(y => (
-                                <option key={y} value={y} className="bg-white dark:bg-gray-900 text-white">{y}년</option>
+                                <option key={y} value={y} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">{y}년</option>
                             ))}
                         </select>
                         <span className="text-slate-600">/</span>
@@ -4196,9 +4196,9 @@ export default function Settlement() {
                             value={month}
                             onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                         >
-                            <option value="all" className="bg-white dark:bg-gray-900 text-white">전체 월</option>
+                            <option value="all" className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">전체 월</option>
                             {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                                <option key={m} value={m} className="bg-white dark:bg-gray-900 text-white">{m}월</option>
+                                <option key={m} value={m} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">{m}월</option>
                             ))}
                         </select>
                     </div>
@@ -4210,8 +4210,8 @@ export default function Settlement() {
                             value={selectedPartnerId}
                             onChange={e => setSelectedPartnerId(e.target.value)}
                         >
-                            <option value="all" className="bg-white dark:bg-gray-900 text-white">전체 거래처 (Total)</option>
-                            {partners.map(p => <option key={p.partnerId} value={p.partnerId} className="bg-white dark:bg-gray-900 text-white">{p.name}</option>)}
+                            <option value="all" className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">전체 거래처 (Total)</option>
+                            {partners.map(p => <option key={p.partnerId} value={p.partnerId} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">{p.name}</option>)}
                         </select>
                         <Building className="absolute left-2.5 top-2 text-indigo-600 dark:text-indigo-400" size={14} />
                     </div>
