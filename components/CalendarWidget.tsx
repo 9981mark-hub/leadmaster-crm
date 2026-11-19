@@ -790,7 +790,7 @@ export default function CalendarWidget({
                     </span>
                     <div className="flex items-center gap-1">
                       {dayEvents.length > 0 && (
-                        <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 rounded font-bold">
+                        <span className="text-xs bg-blue-50 text-blue-600 px-1.5 rounded font-bold">
                           {dayEvents.length}
                         </span>
                       )}
@@ -843,7 +843,7 @@ export default function CalendarWidget({
                               handleEditMemo(memoId);
                             }
                           }}
-                          className={`text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1
+                          className={`text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1
                             ${isSettlement
                               ? (ev.title.includes('예정')
                                 ? 'bg-emerald-50 text-emerald-700 border border-dashed border-emerald-300'
@@ -863,7 +863,7 @@ export default function CalendarWidget({
                       );
                     })}
                     {dayEvents.length > (viewMode === 'week' ? 8 : 3) && (
-                      <div className="text-[9px] text-gray-400 text-center">
+                      <div className="text-xs text-gray-400 text-center">
                         +{dayEvents.length - (viewMode === 'week' ? 8 : 3)}개 더
                       </div>
                     )}

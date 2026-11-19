@@ -247,7 +247,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                 <AlertCircle size={15} />
                 <span>녹음 음성 재생 불가: {audioError}</span>
               </div>
-              <span className="text-gray-400 text-[11px]">(AI 요약문과 대화록 텍스트는 정상 열람 가능합니다)</span>
+              <span className="text-gray-400 text-xs">(AI 요약문과 대화록 텍스트는 정상 열람 가능합니다)</span>
             </div>
           ) : audioUrl ? (
             <div className="flex flex-wrap items-center gap-3">
@@ -421,7 +421,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                       key={idx}
                       className={`flex flex-col ${isAgent ? 'items-end' : 'items-start'}`}
                     >
-                      <div className="flex items-center gap-1.5 mb-1 px-1 text-[11px] text-gray-400">
+                      <div className="flex items-center gap-1.5 mb-1 px-1 text-xs text-gray-400">
                         <span className="font-semibold text-gray-600 dark:text-gray-300">
                           {isAgent ? `${item.userName} (상담원)` : '고객'}
                         </span>

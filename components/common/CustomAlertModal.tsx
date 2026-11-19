@@ -46,15 +46,15 @@ export default function CustomAlertModal({
   const getIcon = () => {
     switch (type) {
       case 'uninvited':
-        return <ShieldAlert size={28} className="text-amber-400" />;
+        return <ShieldAlert size={28} className="text-amber-600 dark:text-amber-400" />;
       case 'success':
-        return <CheckCircle2 size={28} className="text-emerald-400" />;
+        return <CheckCircle2 size={28} className="text-emerald-600 dark:text-emerald-400" />;
       case 'warning':
-        return <AlertTriangle size={28} className="text-amber-400" />;
+        return <AlertTriangle size={28} className="text-amber-600 dark:text-amber-400" />;
       case 'error':
-        return <AlertTriangle size={28} className="text-rose-400" />;
+        return <AlertTriangle size={28} className="text-rose-600 dark:text-rose-400" />;
       default:
-        return <Info size={28} className="text-blue-400" />;
+        return <Info size={28} className="text-blue-600 dark:text-blue-400" />;
     }
   };
 
@@ -75,11 +75,11 @@ export default function CustomAlertModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-slate-100"
+        className="w-full max-w-md bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-slate-100"
         onClick={e => e.stopPropagation()}
       >
         {/* 헤더 & 아이콘 */}
@@ -93,9 +93,9 @@ export default function CustomAlertModal({
                 {title}
               </h3>
               {email && (
-                <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                  <span className="font-mono text-slate-300">{email}</span>
+                  <span className="font-mono text-slate-600 dark:text-slate-300">{email}</span>
                 </div>
               )}
             </div>
@@ -103,14 +103,14 @@ export default function CustomAlertModal({
           <button 
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* 본문 메시지 */}
-        <div className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line bg-slate-950/40 p-4 rounded-2xl border border-slate-800/80">
+        <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50/40 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
           {message}
         </div>
 
@@ -135,7 +135,7 @@ export default function CustomAlertModal({
             <button
               type="button"
               onClick={onClose}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
             >
               {cancelText}
             </button>
@@ -146,7 +146,7 @@ export default function CustomAlertModal({
             onClick={handleConfirm}
             className={`py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm transition-colors cursor-pointer ${
               type === 'uninvited' 
-                ? 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300'
                 : 'bg-blue-600 hover:bg-blue-500 text-white flex-1 text-center shadow-md'
             }`}
           >

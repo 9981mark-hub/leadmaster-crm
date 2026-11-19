@@ -182,7 +182,7 @@ export const BillingPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">
             <span>정산 / 경영</span>
-            <ChevronRight size={12} className="text-slate-400" />
+            <ChevronRight size={12} className="text-slate-500 dark:text-slate-400" />
             <span className="text-slate-800 dark:text-slate-200">빌링 & 광고비 종합 관제</span>
           </div>
           <div className="flex items-center gap-3">

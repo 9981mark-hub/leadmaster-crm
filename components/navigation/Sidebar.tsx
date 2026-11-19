@@ -152,7 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <button 
               onClick={onToggleCollapse}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
               title="사이드바 펼치기"
             >
               <ChevronsRight size={16} />
@@ -171,7 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </Link>
               <button 
                 onClick={onToggleCollapse} 
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0" 
+                className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors shrink-0" 
                 title="사이드바 접기"
               >
                 <ChevronsLeft size={17} />
@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }}
               className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 shadow-2xs transition-all ${
                 isOwner 
-                  ? 'cursor-pointer group bg-slate-50 hover:bg-indigo-50/70 border-slate-200/80 hover:border-indigo-300 dark:bg-slate-800/60 dark:hover:bg-slate-800 dark:border-slate-700/60 dark:hover:border-indigo-700/80' 
+                  ? 'cursor-pointer group bg-slate-50 hover:bg-indigo-50/70 border-slate-200/80 hover:border-indigo-300 dark:bg-slate-800/60 dark:hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700/60 dark:hover:border-indigo-700/80' 
                   : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60'
               }`}
               title={isOwner ? '클릭하여 회사명 및 대표 사진/로고 설정 (대표 전용)' : orgName}
@@ -203,19 +203,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" title={orgName}>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-600 dark:text-indigo-400 transition-colors" title={orgName}>
                     {orgName}
                   </p>
-                  <p className="text-[10px] text-slate-400 leading-tight">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight">
                     멀티테넌트 워크스페이스
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 {isOwner && (
-                  <Settings size={12} className="text-slate-400 opacity-60 group-hover:opacity-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all" />
+                  <Settings size={12} className="text-slate-500 dark:text-slate-400 opacity-60 group-hover:opacity-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-600 dark:text-indigo-400 transition-all" />
                 )}
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
                   org?.role === 'owner' 
                     ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
                     : org?.role === 'admin'
@@ -248,7 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                   <span className="truncate">플랫폼 총괄 어드민</span>
                 </div>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 transition-colors ${
+                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 transition-colors ${
                   path === '/platform'
                     ? 'bg-white/20 text-white border border-white/30'
                     : 'bg-purple-100 text-purple-700 border border-purple-300/80 dark:bg-purple-500/25 dark:text-purple-200 dark:border-purple-500/40'
@@ -288,7 +288,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div key={group.id} className="space-y-1">
               {!collapsed ? (
                 <div className="px-2 pt-1 pb-1">
-                  <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 dark:text-slate-500">
+                  <p className="text-xs font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 dark:text-slate-500">
                     {group.label}
                   </p>
                 </div>
@@ -312,7 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     } ${
                       active
                         ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold shadow-2xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100 font-medium'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-100/60 dark:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100 font-medium'
                     }`}
                   >
                     {/* Active accent bar */}
@@ -326,7 +326,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         className={`shrink-0 transition-colors ${
                           active 
                             ? 'text-blue-600 dark:text-blue-400' 
-                            : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                            : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-600 dark:text-slate-300'
                         }`} 
                       />
                       {!collapsed && (
@@ -336,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Badge */}
                     {item.badge && !collapsed && (
-                      <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full animate-pulse shadow-2xs">
+                      <span className="bg-rose-500 text-white text-xs font-bold px-1.5 py-0.2 rounded-full animate-pulse shadow-2xs">
                         {item.badge}
                       </span>
                     )}
@@ -354,12 +354,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 3. Footer: Version & Status */}
       <div className={`border-t border-slate-200/80 dark:border-slate-800/80 ${collapsed ? 'p-2 flex justify-center' : 'p-3 flex items-center justify-between'}`}>
         {!collapsed ? (
-          <div className="flex items-center justify-between w-full text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+          <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 font-medium">
             <span>LeadMaster SaaS</span>
             <span className="font-mono">v3.80</span>
           </div>
         ) : (
-          <span className="text-[10px] font-mono text-slate-400">v3.8</span>
+          <span className="text-xs font-mono text-slate-500 dark:text-slate-400">v3.8</span>
         )}
       </div>
 

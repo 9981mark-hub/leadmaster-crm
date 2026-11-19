@@ -81,14 +81,14 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <span>{formatElapsed(elapsedSec)}</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-tight">
+              <div className="flex items-center gap-1.5 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-2.5 py-1 rounded-full text-xs font-bold tracking-tight">
                 <Loader2 size={12} className="animate-spin text-amber-300" />
                 <span>전화 대기 중</span>
               </div>
             )}
             <button
               onClick={onClose}
-              className="text-[11px] text-blue-200 hover:text-white mt-1 underline"
+              className="text-xs text-blue-200 hover:text-white mt-1 underline"
             >
               화면 닫기
             </button>
@@ -114,7 +114,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <User size={14} className="text-blue-600 dark:text-blue-400" />
                 <span>기본 정보 및 유입 사전 메모</span>
                 {c.region && (
-                  <span className="flex items-center gap-1 text-[11px] text-gray-500 font-normal">
+                  <span className="flex items-center gap-1 text-xs text-gray-500 font-normal">
                     <MapPin size={11} /> {c.region}
                   </span>
                 )}
@@ -133,7 +133,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 ) : (
                   <p className="text-gray-400 italic">사전 메모가 없습니다.</p>
                 )}
-                <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-gray-500">
+                <div className="flex flex-wrap gap-2 pt-1 text-xs text-gray-500">
                   <span>유입경로: <strong className="text-gray-700 dark:text-gray-300">{c.inboundPath || '기타'}</strong></span>
                   {partner && <span>담당로펌: <strong className="text-gray-700 dark:text-gray-300">{partner.name}</strong></span>}
                 </div>
@@ -148,7 +148,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                 통화 중 확인 필수 질문 (터치하여 체크)
               </h4>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-xs text-gray-400">
                 {Object.values(checkedItems).filter(Boolean).length} / 5 확인 완료
               </span>
             </div>
@@ -169,7 +169,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <p className={`text-xs font-bold ${checkedItems['q1'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
                   1. 직업 & 4대보험 가입 여부
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   직장인(4대 유/무) / 사업자 / 프리랜서 / 일용직 / 무직
                 </p>
               </div>
@@ -191,7 +191,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <p className={`text-xs font-bold ${checkedItems['q2'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
                   2. 월 평균 소득 (세후 실수령액)
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   통장에 실제로 찍히는 월 평균 금액 확인 (1인가구 최저생계비 133만원 초과 여부)
                 </p>
               </div>
@@ -213,7 +213,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <p className={`text-xs font-bold ${checkedItems['q3'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
                   3. 총 채무액 (원금 합계) 및 채권기관 수
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   신용대출 + 카드론 + 현금서비스 + 대부업체 (최소 1,000만원 이상 여부)
                 </p>
               </div>
@@ -235,7 +235,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <p className={`text-xs font-bold ${checkedItems['q4'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
                   4. 연체 일수 및 독촉/압류 단계
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   연체 전 / 연체 30일 이내 / 90일 이상 연체 / 통장·급여 가압류 진행 중
                 </p>
               </div>
@@ -257,7 +257,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                 <p className={`text-xs font-bold ${checkedItems['q5'] ? 'text-emerald-900 dark:text-emerald-200 line-through' : 'text-gray-800 dark:text-gray-200'}`}>
                   5. 본인 및 배우자 재산 / 부양가족
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   임차보증금 / 부동산 / 차량 / 미성년 자녀 수 (재산 총액이 채무보다 적어야 함)
                 </p>
               </div>

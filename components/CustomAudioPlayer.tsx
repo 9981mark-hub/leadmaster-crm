@@ -152,7 +152,7 @@ export const CustomAudioPlayer = forwardRef<CustomAudioPlayerRef, CustomAudioPla
                         />
                     </div>
                     <div className="flex justify-end items-center gap-2">
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-xs text-gray-400">
                             * 구글 드라이브 보안 정책으로 표준 플레이어를 사용합니다.
                         </span>
                         <a
@@ -207,7 +207,7 @@ export const CustomAudioPlayer = forwardRef<CustomAudioPlayerRef, CustomAudioPla
                                         background: `linear-gradient(to right, #9333ea ${(currentTime / (duration || 1)) * 100}%, #e5e7eb ${(currentTime / (duration || 1)) * 100}%)`
                                     }}
                                 />
-                                <div className="flex justify-between text-[10px] text-gray-400 font-mono mt-1">
+                                <div className="flex justify-between text-xs text-gray-400 font-mono mt-1">
                                     <span>{formatTime(currentTime)}</span>
                                     <span>{formatTime(duration)}</span>
                                 </div>

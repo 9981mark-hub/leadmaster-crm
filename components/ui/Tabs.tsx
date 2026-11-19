@@ -76,7 +76,7 @@ export const Tabs: React.FC<TabsProps> = ({
             {tab.badge != null && (
               <span
                 className={cn(
-                  'ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full',
+                  'ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full',
                   isActive
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
                     : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',

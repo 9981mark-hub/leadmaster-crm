@@ -171,7 +171,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
               <span className="text-gray-600">→</span>
               <span className={`px-2 py-0.5 rounded font-bold ${step === 4 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-400'}`}>4. 영구 파기</span>
             </div>
-            <span className="text-rose-400 font-mono font-bold">Step {step}/4</span>
+            <span className="text-rose-600 dark:text-rose-400 font-mono font-bold">Step {step}/4</span>
           </div>
         )}
 
@@ -183,7 +183,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
             <div className="space-y-4">
               <div className="p-4 bg-rose-950/40 border border-rose-800/80 rounded-xl space-y-2">
                 <div className="flex items-center gap-2 text-rose-300 font-bold text-sm">
-                  <AlertTriangle size={18} className="text-rose-400 shrink-0" />
+                  <AlertTriangle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
                   <span>극도의 주의가 필요한 비가역적 파기 작업입니다</span>
                 </div>
                 <p className="text-xs text-rose-200/90 leading-relaxed">
@@ -191,7 +191,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   실행 즉시 본 회사의 <strong>모든 고객 인적사항, 채무 내역, 통화 녹음 파일, AI 요약문, 대화록, 메모</strong>가
                   데이터베이스 및 저장소에서 물리적으로 영구 삭제됩니다.
                 </p>
-                <p className="text-xs text-rose-400 font-bold">
+                <p className="text-xs text-rose-600 dark:text-rose-400 font-bold">
                   ⚠️ 삭제된 데이터는 본사 관리자나 개발팀을 통해서도 어떠한 방법으로도 절대 복구할 수 없습니다.
                 </p>
               </div>
@@ -205,13 +205,13 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div className="p-3 bg-gray-800/80 rounded-xl border border-gray-700">
                     <span className="text-gray-400 block mb-1">고객 리드 (케이스)</span>
-                    <strong className="text-lg text-rose-400 font-bold">
+                    <strong className="text-lg text-rose-600 dark:text-rose-400 font-bold">
                       {summary?.casesCount.toLocaleString() || cases.length.toLocaleString()}
                     </strong> <span className="text-gray-400">건</span>
                   </div>
                   <div className="p-3 bg-gray-800/80 rounded-xl border border-gray-700">
                     <span className="text-gray-400 block mb-1">통화 녹음 및 AI 요약문</span>
-                    <strong className="text-lg text-rose-400 font-bold">
+                    <strong className="text-lg text-rose-600 dark:text-rose-400 font-bold">
                       {summary?.recordingsCount.toLocaleString() || 0}
                     </strong> <span className="text-gray-400">건</span>
                   </div>
@@ -254,7 +254,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
           {step === 2 && (
             <div className="space-y-4">
               <div className="p-4 bg-gray-800/70 border border-gray-700 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 text-blue-400 font-bold text-sm">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-sm">
                   <ShieldCheck size={18} />
                   <span>비상 오프라인 백업 다운로드 (권장)</span>
                 </div>
@@ -267,7 +267,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
               <div className="p-4 border border-dashed border-gray-700 rounded-xl flex items-center justify-between gap-4">
                 <div>
                   <h4 className="text-xs font-bold text-gray-200">현재 보관된 전체 리드 데이터 내보내기</h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5">총 {cases.length.toLocaleString()}건의 고객 정보가 단일 JSON 파일로 생성됩니다.</p>
+                  <p className="text-xs text-gray-400 mt-0.5">총 {cases.length.toLocaleString()}건의 고객 정보가 단일 JSON 파일로 생성됩니다.</p>
                 </div>
                 <button
                   type="button"
@@ -305,7 +305,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
           {step === 3 && (
             <div className="space-y-4">
               <div className="p-4 bg-gray-800/70 border border-gray-700 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-sm">
                   <Lock size={18} />
                   <span>회사 대표자(Owner) 본인 계정 확인</span>
                 </div>
@@ -352,7 +352,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
           {step === 4 && (
             <div className="space-y-4">
               <div className="p-4 bg-rose-950/60 border border-rose-600 rounded-xl space-y-2 text-xs text-rose-200">
-                <div className="flex items-center gap-2 font-bold text-sm text-rose-400">
+                <div className="flex items-center gap-2 font-bold text-sm text-rose-600 dark:text-rose-400">
                   <ShieldAlert size={18} />
                   <span>최종 영구 파기 명령 확인</span>
                 </div>
@@ -379,11 +379,11 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                   }`}
                 />
                 {isPhraseMatched ? (
-                  <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                     <Check size={13} /> 확인 문구가 정확히 일치합니다.
                   </p>
                 ) : confirmPhraseInput.length > 0 ? (
-                  <p className="text-[11px] text-rose-400">
+                  <p className="text-xs text-rose-600 dark:text-rose-400">
                     문구가 일치하지 않습니다. 회사명 띄어쓰기까지 정확하게 입력해주세요.
                   </p>
                 ) : null}
@@ -442,7 +442,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
           {/* STEP 5: 파기 완료 및 법적 증빙서 */}
           {step === 5 && purgeResult && (
             <div className="space-y-5 text-center py-4">
-              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/40">
+              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/40">
                 <CheckCircle2 size={36} />
               </div>
 
@@ -457,7 +457,7 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
               <div className="p-4 bg-gray-950 rounded-xl border border-gray-800 text-left text-xs space-y-2.5 font-mono">
                 <div className="flex items-center justify-between border-b border-gray-800 pb-2">
                   <span className="text-gray-400">증빙 문서</span>
-                  <span className="text-emerald-400 font-bold">개인정보 파기 증빙서 (제21조)</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">개인정보 파기 증빙서 (제21조)</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">파기 대상 회사</span>
@@ -469,11 +469,11 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">영구 소멸된 고객 DB</span>
-                  <span className="text-rose-400 font-bold">{purgeResult.purgedCases.toLocaleString()} 건</span>
+                  <span className="text-rose-600 dark:text-rose-400 font-bold">{purgeResult.purgedCases.toLocaleString()} 건</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">영구 소멸된 통화 녹음</span>
-                  <span className="text-rose-400 font-bold">{purgeResult.purgedRecordings.toLocaleString()} 건</span>
+                  <span className="text-rose-600 dark:text-rose-400 font-bold">{purgeResult.purgedRecordings.toLocaleString()} 건</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">영구 소멸된 수신거부(DNC)</span>

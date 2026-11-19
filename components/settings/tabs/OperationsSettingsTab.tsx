@@ -138,7 +138,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                         <div className="text-xs font-bold text-amber-900 dark:text-amber-200">
                             안전 열람 뷰어 모드 (읽기 전용)
                         </div>
-                        <div className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                        <div className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
                             회사의 공통 상담 상태 체계 및 부재콜 리마인더 기준을 열람하고 있습니다. 수정 및 삭제 권한은 대표 및 총괄 관리자에게 있습니다.
                         </div>
                     </div>
@@ -219,7 +219,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                 }
             >
                 <div className="space-y-3">
-                    <div className="hidden sm:grid grid-cols-12 gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-750 rounded-xl text-[11px] font-bold text-gray-500 uppercase">
+                    <div className="hidden sm:grid grid-cols-12 gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-750 rounded-xl text-xs font-bold text-gray-500 uppercase">
                         <div className="col-span-2">단계</div>
                         <div className="col-span-4 text-center">등록 후 경과일 구간</div>
                         <div className="col-span-5 text-center">재통화 알림 주기 (시간)</div>
@@ -371,7 +371,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                     <div className="p-4 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                             <span className="text-xs font-bold text-gray-700 dark:text-gray-200">1차 상태 (대분류)</span>
-                            <span className="text-[10px] text-gray-400">{statuses.length}개</span>
+                            <span className="text-xs text-gray-400">{statuses.length}개</span>
                         </div>
                         <div className="flex-1 space-y-1.5 overflow-y-auto max-h-60 pr-1">
                             {statuses.map(s => (
@@ -417,7 +417,7 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                     <div className="p-4 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
                         <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                             <span className="text-xs font-bold text-gray-700 dark:text-gray-200">2차 세부상태 (중분류)</span>
-                            <span className="text-[10px] text-gray-400">{secondaryStatuses.length}개</span>
+                            <span className="text-xs text-gray-400">{secondaryStatuses.length}개</span>
                         </div>
                         <div className="flex-1 space-y-1.5 overflow-y-auto max-h-60 pr-1">
                             {secondaryStatuses.map(s => (
@@ -470,10 +470,10 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                             <div>
                                 <span className="text-xs font-bold text-gray-700 dark:text-gray-200">3차 최종상태</span>
                                 {selectedTertiarySecondary && (
-                                    <span className="text-[10px] text-blue-600 ml-1 font-bold">({selectedTertiarySecondary})</span>
+                                    <span className="text-xs text-blue-600 ml-1 font-bold">({selectedTertiarySecondary})</span>
                                 )}
                             </div>
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-xs text-gray-400">
                                 {selectedTertiarySecondary ? (tertiaryStatuses[selectedTertiarySecondary]?.length || 0) : 0}개
                             </span>
                         </div>

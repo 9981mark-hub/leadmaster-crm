@@ -160,7 +160,7 @@ export const AttendanceHeaderWidget: React.FC<AttendanceHeaderWidgetProps> = ({
                 <span className={`w-2 h-2 rounded-full ${cur.dot}`} />
                 <span>{cur.label}</span>
                 {timeLabel && (
-                    <span className="text-[10px] font-medium opacity-80 pl-1 border-l border-current/20">
+                    <span className="text-xs font-medium opacity-80 pl-1 border-l border-current/20">
                         {timeLabel}
                     </span>
                 )}
@@ -177,7 +177,7 @@ export const AttendanceHeaderWidget: React.FC<AttendanceHeaderWidgetProps> = ({
                         className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-2 z-50 text-xs"
                     >
                         <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 mb-1">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
                                 근무 상태 선택
                             </span>
                             {timeLabel && (

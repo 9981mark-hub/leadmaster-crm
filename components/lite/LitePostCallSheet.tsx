@@ -256,14 +256,14 @@ export const LitePostCallSheet: React.FC<Props> = ({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-extrabold px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-extrabold px-1.5 py-0.5 rounded">
                       AI 일정 감지
                     </span>
                     <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
                       {detectedSchedule.datetime}
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                     {detectedSchedule.note}
                   </p>
                 </div>
@@ -288,7 +288,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">
                   1-Click 안내 문자 발송
                 </span>
-                <span className="text-[10px] text-gray-500">
+                <span className="text-xs text-gray-500">
                   부재중 1/2차 콜백 요청 · 사무장 배정 안내
                 </span>
               </div>
@@ -326,7 +326,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
                       <span className="text-xs font-bold">{opt.label}</span>
                       {isSelected && <CheckCircle2 size={15} className="text-blue-600 dark:text-blue-400" />}
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-0.5 truncate">{opt.desc}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 truncate">{opt.desc}</p>
                   </button>
                 );
               })}
@@ -341,11 +341,11 @@ export const LitePostCallSheet: React.FC<Props> = ({
                 ② 전달할 변호사 사무실 (텔레그램 방)
               </span>
               {currentPartner?.telegramChatId ? (
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                   ● 텔레그램 연동됨
                 </span>
               ) : (
-                <span className="text-[10px] text-rose-500 font-bold">
+                <span className="text-xs text-rose-500 font-bold">
                   ⚠️ 방 미설정
                 </span>
               )}
@@ -372,7 +372,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
                 ③ 상담 요약문 (자동 생성 · 편집 가능)
               </label>
               {loadingAi && (
-                <span className="text-[11px] text-blue-600 flex items-center gap-1 animate-pulse">
+                <span className="text-xs text-blue-600 flex items-center gap-1 animate-pulse">
                   <Loader2 size={12} className="animate-spin" /> 녹음 AI 분석 불러오는 중...
                 </span>
               )}

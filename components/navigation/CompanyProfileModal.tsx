@@ -148,11 +148,11 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="text-sm font-black text-gray-900 dark:text-gray-100">회사(워크스페이스) 프로필 설정</h3>
-                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                <span className="px-1.5 py-0.2 rounded text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                   대표 전용
                 </span>
               </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">사이드바 및 상단 헤더에 노출되는 공식 회사명과 대표 사진을 설정합니다.</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">사이드바 및 상단 헤더에 노출되는 공식 회사명과 대표 사진을 설정합니다.</p>
             </div>
           </div>
           <button
@@ -187,12 +187,12 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                   <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate leading-tight">
                     {orgNameInput.trim() || '회사명을 입력하세요'}
                   </p>
-                  <p className="text-[10px] text-slate-400 leading-tight mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
                     멀티테넌트 워크스페이스
                   </p>
                 </div>
               </div>
-              <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+              <span className="shrink-0 rounded-full px-2 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                 대표
               </span>
             </div>
@@ -221,7 +221,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
               />
               <Building className="absolute left-3 top-2.5 text-gray-400" size={15} />
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-xs text-gray-400">
               사이드바, 상단 앱바, 스크립트 변수 및 보고서에 표시되는 공식 상호명입니다.
             </p>
           </div>
@@ -236,7 +236,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                 <button
                   type="button"
                   onClick={handleResetToDefault}
-                  className="text-[11px] font-semibold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1 transition-colors"
+                  className="text-xs font-semibold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1 transition-colors"
                 >
                   <RotateCcw size={11} /> 기본 아이콘으로 초기화
                 </button>
@@ -311,7 +311,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                   <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                     클릭하여 회사 간판 사진/로고 선택 또는 드래그
                   </p>
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                     PNG, JPG, SVG, WEBP 지원 (400x400 정사각형 자동 최적화)
                   </p>
                 </div>
@@ -321,7 +321,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
             {/* Tab 2: 비즈니스 심볼 프리셋 */}
             {activeTab === 'preset' && (
               <div className="space-y-3">
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   준비된 로고가 없어도 전문직에 어울리는 대표 심볼을 1클릭으로 적용할 수 있습니다:
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -347,7 +347,7 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
                           alt={preset.name}
                           className="w-12 h-12 rounded-xl shadow-xs object-cover mb-1.5"
                         />
-                        <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate w-full">
+                        <span className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate w-full">
                           {preset.name}
                         </span>
                         <span className="text-[9.5px] text-gray-400 dark:text-gray-500 truncate w-full">

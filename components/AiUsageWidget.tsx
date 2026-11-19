@@ -91,7 +91,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
               <h3 className="font-bold text-gray-900 dark:text-white text-base">
                 Gemini AI 실시간 사용량 & 비용 분석
               </h3>
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 실시간 연동 중
               </span>
@@ -104,7 +104,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
 
         <div className="flex items-center gap-2">
           {data?.lastUpdated && (
-            <span className="text-[11px] text-gray-400 tabular-nums hidden sm:inline">
+            <span className="text-xs text-gray-400 tabular-nums hidden sm:inline">
               최근 갱신: {format(data.lastUpdated, 'HH:mm:ss')}
             </span>
           )}
@@ -129,7 +129,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
               <span className="flex items-center gap-1">
                 <Zap size={14} /> 오늘 AI 호출
               </span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${isCapWarning ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-800'}`}>
+              <span className={`text-xs px-1.5 py-0.2 rounded font-bold ${isCapWarning ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-800'}`}>
                 {todayPercentage}%
               </span>
             </div>
@@ -145,7 +145,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
                 style={{ width: `${todayPercentage}%` }}
               />
             </div>
-            <div className="text-[10px] text-gray-500 dark:text-gray-400 flex justify-between">
+            <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between">
               <span>잔여: {Math.max(0, dailyCap - todayCount)}회</span>
               <span>상한: {dailyCap}회/일</span>
             </div>
@@ -159,15 +159,15 @@ export default function AiUsageWidget({ className = '' }: Props) {
               <span className="flex items-center gap-1">
                 <DollarSign size={14} /> 오늘 예상 비용
               </span>
-              <span className="text-[10px] text-indigo-500">실시간 환산</span>
+              <span className="text-xs text-indigo-500">실시간 환산</span>
             </div>
             <div className="text-xl font-black text-gray-900 dark:text-white tabular-nums">
               약 {data ? `₩${data.todayCostKrw.toLocaleString()}` : '₩0'}
             </div>
           </div>
-          <div className="mt-2.5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-indigo-100/60 dark:border-indigo-900/40 pt-1.5">
+          <div className="mt-2.5 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-indigo-100/60 dark:border-indigo-900/40 pt-1.5">
             <span>달러 환산: ${data?.todayCostUsd.toFixed(4) || '0.0000'}</span>
-            <span className="text-[10px] text-indigo-600 font-medium">Flash 요금</span>
+            <span className="text-xs text-indigo-600 font-medium">Flash 요금</span>
           </div>
         </div>
 
@@ -178,13 +178,13 @@ export default function AiUsageWidget({ className = '' }: Props) {
               <span className="flex items-center gap-1">
                 <Activity size={14} /> 이번 달 누적 호출
               </span>
-              <span className="text-[10px] text-gray-400">당월 총계</span>
+              <span className="text-xs text-gray-400">당월 총계</span>
             </div>
             <div className="text-xl font-black text-gray-900 dark:text-white tabular-nums">
               {data?.monthCount.toLocaleString() || 0} <span className="text-xs font-normal text-gray-500">건</span>
             </div>
           </div>
-          <div className="mt-2.5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-slate-200 dark:border-gray-700 pt-1.5">
+          <div className="mt-2.5 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-slate-200 dark:border-gray-700 pt-1.5">
             <span>토큰 입력: {((data?.monthInputTokens || 0) / 1000000).toFixed(2)}M</span>
             <span>출력: {((data?.monthOutputTokens || 0) / 1000000).toFixed(2)}M</span>
           </div>
@@ -197,15 +197,15 @@ export default function AiUsageWidget({ className = '' }: Props) {
               <span className="flex items-center gap-1">
                 <BarChart3 size={14} /> 이번 달 누적 비용
               </span>
-              <span className="text-[10px] font-bold text-emerald-600">누적 청구</span>
+              <span className="text-xs font-bold text-emerald-600">누적 청구</span>
             </div>
             <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 tabular-nums">
               약 {data ? `₩${data.monthCostKrw.toLocaleString()}` : '₩0'}
             </div>
           </div>
-          <div className="mt-2.5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-emerald-100/60 dark:border-emerald-900/40 pt-1.5">
+          <div className="mt-2.5 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-emerald-100/60 dark:border-emerald-900/40 pt-1.5">
             <span>달러 합산: ${data?.monthCostUsd.toFixed(3) || '0.000'}</span>
-            <span className="text-[10px] text-gray-400">환율 1,390원</span>
+            <span className="text-xs text-gray-400">환율 1,390원</span>
           </div>
         </div>
       </div>
@@ -268,13 +268,13 @@ export default function AiUsageWidget({ className = '' }: Props) {
                           <span>{st.icon}</span> {st.label}
                         </span>
                         <span className="text-xs font-black text-purple-700 dark:text-purple-300">
-                          {st.count}건 <span className="text-[10px] text-gray-400 font-normal">({pct}%)</span>
+                          {st.count}건 <span className="text-xs text-gray-400 font-normal">({pct}%)</span>
                         </span>
                       </div>
                       <div className="w-full bg-gray-100 dark:bg-gray-700 h-1 rounded-full overflow-hidden mb-2">
                         <div className="bg-purple-600 h-full rounded-full" style={{ width: `${pct}%` }} />
                       </div>
-                      <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-50 dark:border-gray-700/60">
+                      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-50 dark:border-gray-700/60">
                         <span>토큰: {((st.inputTokens + st.outputTokens) / 1000).toLocaleString()}k</span>
                         <span className="font-semibold text-gray-700 dark:text-gray-200">
                           약 ₩{st.costKrw.toLocaleString()} (${st.costUsd.toFixed(4)})
@@ -309,11 +309,11 @@ export default function AiUsageWidget({ className = '' }: Props) {
                         <div>
                           <div className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200">
                             <span>{log.taskLabel}</span>
-                            <span className="text-[10px] font-normal px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                            <span className="text-xs font-normal px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                               {log.model}
                             </span>
                           </div>
-                          <div className="text-[10px] text-gray-400 flex items-center gap-2">
+                          <div className="text-xs text-gray-400 flex items-center gap-2">
                             <span>{logTime}</span>
                             <span>·</span>
                             <span>입력 {log.inputTokens.toLocaleString()} / 출력 {log.outputTokens.toLocaleString()} 토큰</span>
@@ -326,16 +326,16 @@ export default function AiUsageWidget({ className = '' }: Props) {
                           <div className="font-bold text-gray-900 dark:text-white tabular-nums">
                             약 ₩{log.costKrw}
                           </div>
-                          <div className="text-[10px] text-gray-400">
+                          <div className="text-xs text-gray-400">
                             ${log.costUsd.toFixed(4)}
                           </div>
                         </div>
                         {log.ok ? (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
+                          <span className="px-1.5 py-0.5 rounded text-xs font-semibold bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
                             성공
                           </span>
                         ) : (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300" title={log.error}>
+                          <span className="px-1.5 py-0.5 rounded text-xs font-semibold bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300" title={log.error}>
                             실패
                           </span>
                         )}
@@ -364,7 +364,7 @@ export default function AiUsageWidget({ className = '' }: Props) {
                 <div className="font-bold text-purple-700 dark:text-purple-300 mb-1">
                   Gemini 1.5 / 2.0 Flash (기본 탑재 모델)
                 </div>
-                <div className="space-y-0.5 text-[11px] text-gray-600 dark:text-gray-400">
+                <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-400">
                   <div>· 입력(Input): 100만 토큰당 <b>$0.075</b> (약 104원)</div>
                   <div>· 출력(Output): 100만 토큰당 <b>$0.300</b> (약 417원)</div>
                   <div>· 오디오 전사: 초당 약 $0.00002 (1분 통화 약 1.6원)</div>
@@ -374,14 +374,14 @@ export default function AiUsageWidget({ className = '' }: Props) {
                 <div className="font-bold text-indigo-700 dark:text-indigo-300 mb-1">
                   실제 체감 비용 가이드
                 </div>
-                <div className="space-y-0.5 text-[11px] text-gray-600 dark:text-gray-400">
+                <div className="space-y-0.5 text-xs text-gray-600 dark:text-gray-400">
                   <div>· 통화 1건(1~2분) 전체 요약: <b>약 3원 ~ 8원</b></div>
                   <div>· 하루 100건 통화 분석 시: <b>약 500원 내외</b></div>
                   <div>· 한 달 1,000건 통화 분석 시: <b>약 5,000원 내외</b></div>
                 </div>
               </div>
             </div>
-            <div className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed border-t border-gray-200 dark:border-gray-700 pt-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed border-t border-gray-200 dark:border-gray-700 pt-2">
               * 기준 환율: <strong>{GEMINI_EXCHANGE_RATE.toLocaleString()}원 / 1 USD</strong>가 실시간으로 자동 적용됩니다.
               <br />
               * 리드마스터는 초저비용 고성능 모델인 Gemini Flash를 활용하여 서버 비용 부담 없이 무제한에 가까운 자동화를 실현하고 있습니다.

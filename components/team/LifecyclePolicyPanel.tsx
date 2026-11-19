@@ -144,7 +144,7 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {stats.activeCount.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
           </div>
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 mt-1">
             오늘 당장 상담/통화가 진행 중인 실전 영업 DB
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
           <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
             {stats.archivedCount.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
           </div>
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 mt-1">
             계약 완료/장기 미접촉 격리 DB (재인입 시 자동 부활)
           </p>
         </div>
@@ -180,7 +180,7 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {stats.trashCount.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
           </div>
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 mt-1">
             결번, 수신거부 및 수동 삭제된 DB
           </p>
         </div>
@@ -232,11 +232,11 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
             <div className="space-y-1 pr-4">
               <div className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <span>계약 완료 건 상담원 목록에서 자동 숨김</span>
-                <span className="px-2 py-0.2 rounded text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-semibold">
+                <span className="px-2 py-0.2 rounded text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-semibold">
                   개인정보 보호
                 </span>
               </div>
-              <p className="text-gray-500 dark:text-gray-400 text-[11px]">
+              <p className="text-gray-500 dark:text-gray-400 text-xs">
                 상태가 '계약 완료'로 변경된 후 지정한 일수가 지나면 상담원 화면에서 숨기고 관리자 보관함으로 이동합니다.
               </p>
             </div>
@@ -267,11 +267,11 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
             <div className="space-y-1 pr-4">
               <div className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <span>장기 미활동/미접촉 방치 DB 자동 보관</span>
-                <span className="px-2 py-0.2 rounded text-[10px] bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-semibold">
+                <span className="px-2 py-0.2 rounded text-xs bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-semibold">
                   콜 집중도 향상
                 </span>
               </div>
-              <p className="text-gray-500 dark:text-gray-400 text-[11px]">
+              <p className="text-gray-500 dark:text-gray-400 text-xs">
                 최종 통화 또는 활동이 없는 채로 일정 기간 방치된 '죽은 DB'를 자동으로 보관함으로 이동합니다.
               </p>
             </div>
@@ -302,7 +302,7 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
               <div className="font-bold text-gray-800 dark:text-gray-200">
                 결번 / 수신거부 DB 자동 휴지통 이동
               </div>
-              <p className="text-gray-500 dark:text-gray-400 text-[11px]">
+              <p className="text-gray-500 dark:text-gray-400 text-xs">
                 통화 결과 상태가 '결번' 또는 '수신거부'로 확정된 리드는 활성 목록에서 제거하고 휴지통으로 보냅니다.
               </p>
             </div>

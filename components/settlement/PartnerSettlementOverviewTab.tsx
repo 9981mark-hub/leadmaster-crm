@@ -135,7 +135,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             </span>
             <span className="text-xs text-gray-400 font-bold ml-1">만원</span>
           </div>
-          <span className="text-[11px] text-gray-400 mt-1">
+          <span className="text-xs text-gray-400 mt-1">
             총 {totals.totalCases}건 수임 분배
           </span>
         </div>
@@ -172,7 +172,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             </span>
             <span className="text-xs text-amber-600 font-bold ml-1">만원</span>
           </div>
-          <span className="text-[11px] text-amber-700 dark:text-amber-400 mt-1">
+          <span className="text-xs text-amber-700 dark:text-amber-400 mt-1">
             7일 내 도래: ₩{(totals.dueSoonWon / 10000).toLocaleString()}만
           </span>
         </div>
@@ -189,7 +189,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             </span>
             <span className="text-xs text-rose-600 font-bold ml-1">만원</span>
           </div>
-          <span className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-semibold">
+          <span className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-semibold">
             {totals.overdueWon > 0 ? '⚠️ 즉시 확인 필요' : '정상 수금 관리중'}
           </span>
         </div>
@@ -205,7 +205,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             </span>
             <span className="text-xs text-gray-400 font-bold ml-1">개 사무소</span>
           </div>
-          <span className="text-[11px] text-gray-400 mt-1">
+          <span className="text-xs text-gray-400 mt-1">
             정산 회수율: {collectionRate}%
           </span>
         </div>

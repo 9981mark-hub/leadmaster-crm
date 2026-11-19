@@ -119,7 +119,7 @@ export default function MemberSecurityModal({
                 <div className="flex items-center gap-1 font-bold">
                   <Sparkles size={14} className="text-amber-500" /> 팀장급 신뢰 프리셋
                 </div>
-                <span className="text-[11px] text-gray-400 font-normal">모든 보안 제한 해제</span>
+                <span className="text-xs text-gray-400 font-normal">모든 보안 제한 해제</span>
               </button>
 
               <button
@@ -134,7 +134,7 @@ export default function MemberSecurityModal({
                 <div className="flex items-center gap-1 font-bold">
                   <ShieldAlert size={14} className="text-blue-500" /> 일반/신입 상담원
                 </div>
-                <span className="text-[11px] text-gray-400 font-normal">보안 4종 전체 활성화</span>
+                <span className="text-xs text-gray-400 font-normal">보안 4종 전체 활성화</span>
               </button>
             </div>
           </div>
@@ -242,7 +242,7 @@ export default function MemberSecurityModal({
             <div className="p-3.5 rounded-xl bg-red-50/70 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-red-700 dark:text-red-400 block">원클릭 세션 강제 파기</span>
-                <span className="text-[11px] text-red-600/80 dark:text-red-400/70">
+                <span className="text-xs text-red-600/80 dark:text-red-400/70">
                   해당 상담원의 현재 브라우저/스마트폰 앱을 즉시 강제 로그아웃
                 </span>
               </div>

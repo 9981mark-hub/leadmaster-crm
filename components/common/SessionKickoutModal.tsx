@@ -40,7 +40,7 @@ export default function SessionKickoutModal({ event, onConfirm }: SessionKickout
   });
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div 
         className="w-full max-w-md bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/60 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center text-slate-900 dark:text-slate-100"
         role="alertdialog"
@@ -76,7 +76,7 @@ export default function SessionKickoutModal({ event, onConfirm }: SessionKickout
             <span>세션 상태:</span>
             <span className="text-rose-600 dark:text-rose-400 font-bold">강제 만료 처리됨</span>
           </div>
-          <div className="pt-2 border-t border-gray-200 dark:border-slate-800/80 text-[11px] text-gray-500 dark:text-slate-400 leading-normal">
+          <div className="pt-2 border-t border-gray-200 dark:border-slate-800/80 text-xs text-gray-500 dark:text-slate-400 leading-normal">
             💡 리드마스터는 1계정당 <b>[PC 웹 1대 + 폰 1대]</b>의 정상 페어링 사용을 지원하며, 
             동종 기기 간(PC-PC 또는 폰-폰) 동시 접속은 엄격히 차단됩니다.
           </div>

@@ -41,9 +41,9 @@ export const CaseListPagination: React.FC<CaseListPaginationProps> = ({
                 </button>
                 {pages.map((p, i) => (
                     <React.Fragment key={p}>
-                        {i > 0 && p - pages[i - 1] > 1 && <span className="px-1 text-slate-400">…</span>}
+                        {i > 0 && p - pages[i - 1] > 1 && <span className="px-1 text-slate-500 dark:text-slate-400">…</span>}
                         <button onClick={() => onPageChange(p)}
-                            className={`${btn} ${p === currentPage ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
+                            className={`${btn} ${p === currentPage ? 'bg-white dark:bg-gray-900 text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
                             {p}
                         </button>
                     </React.Fragment>

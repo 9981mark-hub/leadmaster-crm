@@ -286,14 +286,14 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                   <div className="space-y-2 p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
                     <div className="flex items-center justify-between text-xs font-bold text-indigo-950 dark:text-indigo-200">
                       <span>대량 패키지 계약 조건</span>
-                      <span className="text-[11px] font-normal text-indigo-600 dark:text-indigo-400">
+                      <span className="text-xs font-normal text-indigo-600 dark:text-indigo-400">
                         예: 3,000건에 50만원
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                           공급 수량 (건수)
                         </label>
                         <div className="relative">
@@ -310,7 +310,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                           패키지 총 매입금액 (원)
                         </label>
                         <div className="relative">
@@ -330,7 +330,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
 
                     {/* 실시간 단가 환산 표시 배너 */}
                     <div className="flex items-center justify-between pt-2 border-t border-indigo-200/60 dark:border-indigo-800/60 text-xs">
-                      <span className="text-gray-600 dark:text-gray-300 text-[11px]">
+                      <span className="text-gray-600 dark:text-gray-300 text-xs">
                         💡 <strong>{formData.packageLeads.toLocaleString()}건</strong>에 <strong>₩{formData.packagePrice.toLocaleString()}원</strong>
                       </span>
                       <span className="font-extrabold text-indigo-700 dark:text-indigo-300">
@@ -409,7 +409,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
               <button
                 type="button"
                 onClick={loadVendors}
-                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
+                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400"
               >
                 <RefreshCw size={12} /> 새로고침
               </button>
@@ -436,18 +436,18 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                           <span className="font-bold text-sm text-gray-900 dark:text-white">
                             {v.name}
                           </span>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
                             {v.leadType}
                           </span>
                           
                           {/* 가격 모델 뱃지 */}
                           {v.pricingType === 'package' ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                               <Package size={11} />
                               {(v.packageLeads || 0).toLocaleString()}건 ₩{(v.packagePrice || 0).toLocaleString()}원 (건당 ₩{v.defaultUnitCost.toLocaleString()})
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                               <Tag size={11} />
                               건당 CPL ₩{v.defaultUnitCost.toLocaleString()}
                             </span>

@@ -326,7 +326,7 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
                                     </td>
                                     <td className="py-2 px-3 text-center">
                                         <button onClick={() => handleDelete(r.id)}>
-                                            <Trash2 size={14} className="text-red-400 hover:text-red-600 mx-auto" />
+                                            <Trash2 size={14} className="text-red-600 dark:text-red-400 hover:text-red-600 mx-auto" />
                                         </button>
                                     </td>
                                 </tr>

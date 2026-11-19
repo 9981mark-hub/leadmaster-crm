@@ -805,7 +805,7 @@ export default function NewCase() {
           </button>
           <div className="flex items-center gap-2">
             <span className="font-bold text-gray-800 dark:text-gray-100 text-base">신규 상담 입력</span>
-            <span className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-semibold px-2 py-0.5 rounded text-[11px] border border-blue-200 dark:border-blue-800">
+            <span className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-semibold px-2 py-0.5 rounded text-xs border border-blue-200 dark:border-blue-800">
               PC 와이드 콕핏 모드
             </span>
           </div>
@@ -855,7 +855,7 @@ export default function NewCase() {
                     기본 인적사항 및 접수
                   </h2>
                 </div>
-                <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/50 px-2 py-0.5 rounded">
+                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/50 px-2 py-0.5 rounded">
                   필수 항목 *
                 </span>
               </div>
@@ -989,7 +989,7 @@ export default function NewCase() {
                   </h2>
                 </div>
                 {formData.incomeNet > 0 && (
-                  <span className="text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/50 px-2 py-0.5 rounded font-bold">
+                  <span className="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/50 px-2 py-0.5 rounded font-bold">
                     월 소득: {formData.incomeNet.toLocaleString()}만원
                   </span>
                 )}
@@ -1139,7 +1139,7 @@ export default function NewCase() {
                     주거 형태 및 주거비
                   </h2>
                 </div>
-                <span className="text-[11px] text-amber-800 dark:text-amber-300 font-bold bg-amber-100/80 dark:bg-amber-900/50 px-2 py-0.5 rounded">
+                <span className="text-xs text-amber-800 dark:text-amber-300 font-bold bg-amber-100/80 dark:bg-amber-900/50 px-2 py-0.5 rounded">
                   {formData.housingType} {formData.housingDetail && `(${formData.housingDetail})`}
                 </span>
               </div>
@@ -1269,7 +1269,7 @@ export default function NewCase() {
                     자산 및 부채 관리
                   </h2>
                 </div>
-                <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300 bg-rose-100/80 dark:bg-rose-900/50 px-2 py-0.5 rounded">
+                <span className="text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-100/80 dark:bg-rose-900/50 px-2 py-0.5 rounded">
                   대출 {formData.creditLoan.length}건 | 자산 {formData.assets.length}건
                 </span>
               </div>
@@ -1282,7 +1282,7 @@ export default function NewCase() {
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                         <span>🚗 보유 자산 목록</span>
-                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full text-[11px] font-bold">
+                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">
                           {formData.assets.length}건
                         </span>
                       </label>
@@ -1378,7 +1378,7 @@ export default function NewCase() {
                         <button
                           type="button"
                           onClick={handleAddAsset}
-                          className="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
+                          className="bg-slate-100 dark:bg-slate-800 hover:bg-white dark:bg-gray-900 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
                         >
                           <Plus size={13} />
                           <span>자산 추가</span>
@@ -1393,7 +1393,7 @@ export default function NewCase() {
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                       <span>💳 신용대출 내역</span>
-                      <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-2 py-0.5 rounded-full text-[11px] font-bold">
+                      <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-2 py-0.5 rounded-full text-xs font-bold">
                         {formData.creditLoan.length}건
                       </span>
                     </label>
@@ -1516,7 +1516,7 @@ export default function NewCase() {
                     실시간 상담 메모 (특이사항)
                   </h2>
                 </div>
-                <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300">
+                <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                   Ctrl+Enter 즉시 등록
                 </span>
               </div>

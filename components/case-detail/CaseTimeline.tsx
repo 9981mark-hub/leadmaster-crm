@@ -401,7 +401,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                                     {config.emoji} {config.label}
                                                                 </span>
                                                                 {event.meta?.result && (
-                                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${event.meta.result === '완료' ? 'bg-green-100 text-green-700' :
+                                                                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${event.meta.result === '완료' ? 'bg-green-100 text-green-700' :
                                                                             event.meta.result === '미연결' ? 'bg-red-100 text-red-700' :
                                                                                 event.meta.result === '재예약' ? 'bg-blue-100 text-blue-700' :
                                                                                     'bg-gray-100 text-gray-600'
@@ -422,7 +422,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                             {hasExpandableContent && (
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); toggleExpand(event.id); }}
-                                                                    className="text-[10px] text-gray-400 hover:text-gray-600 mt-0.5"
+                                                                    className="text-xs text-gray-400 hover:text-gray-600 mt-0.5"
                                                                 >
                                                                     {isExpanded ? '접기 ↑' : '더보기 ↓'}
                                                                 </button>
@@ -446,7 +446,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                         </div>
                                                     </div>
                                                     <div className="flex flex-col items-end flex-shrink-0">
-                                                        <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                                        <span className="text-xs text-gray-400 whitespace-nowrap">
                                                             {formatDate(event.datetime)}
                                                         </span>
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">

@@ -785,7 +785,7 @@ export default function CaseDetail() {
                                                 onClick={() => setSelectedDropOffReason(reason)}
                                                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${selectedDropOffReason === reason
                                                         ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400'
+                                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-600 dark:text-red-400'
                                                     }`}
                                             >
                                                 {reason}
@@ -916,7 +916,7 @@ export default function CaseDetail() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={"px-4 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors " + (activeTab === tab.id ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-gray-200 font-medium')}
+                            className={"px-4 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors " + (activeTab === tab.id ? 'border-slate-200 dark:border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-gray-200 font-medium')}
                         >
                             {tab.label}
                         </button>

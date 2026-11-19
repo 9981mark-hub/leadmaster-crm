@@ -77,7 +77,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                     {showNewOnly && (
                         <button
                             onClick={() => { setShowNewOnly(false); onResetPage(); }}
-                            className="absolute top-2 right-2 text-red-400 hover:text-red-600"
+                            className="absolute top-2 right-2 text-red-600 dark:text-red-400 hover:text-red-600"
                         >
                             <X size={16} />
                         </button>

@@ -173,11 +173,11 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
 
                         {profile.bankName && profile.accountNumber && (
                             <div className="text-right sm:border-l sm:border-gray-200 sm:dark:border-gray-600 sm:pl-4">
-                                <span className="text-[11px] font-semibold text-gray-400 block">입금 예정 계좌</span>
+                                <span className="text-xs font-semibold text-gray-400 block">입금 예정 계좌</span>
                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">
                                     {profile.bankName} {profile.accountNumber}
                                 </span>
-                                <span className="text-[11px] text-gray-500">예금주: {profile.accountHolder || calculation.displayName}</span>
+                                <span className="text-xs text-gray-500">예금주: {profile.accountHolder || calculation.displayName}</span>
                             </div>
                         )}
                     </div>
@@ -248,7 +248,7 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                         <div className="px-4 py-2 bg-gray-50 dark:bg-gray-750 text-xs font-bold text-gray-700 dark:text-gray-300 flex justify-between">
                             <span>수임 완료 계약 세부 명세 ({contractItems.length}건)</span>
-                            <span className="text-[11px] text-gray-400 font-normal">
+                            <span className="text-xs text-gray-400 font-normal">
                                 투명한 건당 인센티브 산출 내역
                             </span>
                         </div>

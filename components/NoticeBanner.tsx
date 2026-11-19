@@ -71,7 +71,7 @@ export const NoticeBanner: React.FC = () => {
                 <Crown size={24} />
               </span>
               <div>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
                   {lockedNotice.is_platform_notice ? '🌐 LeadMaster 본사 공식 공지' : '🚨 중요 필독 공지'}
                   {lockedNotice.platform_target_role === 'admins_only' && ' (대표/관리자 전용)'}
                 </span>
@@ -143,7 +143,7 @@ export const NoticeBanner: React.FC = () => {
 
             <div className="flex items-center gap-2 shrink-0">
               {banners.length > 1 && (
-                <span className="text-[11px] bg-black/20 px-2 py-0.5 rounded-full text-white/90">
+                <span className="text-xs bg-black/20 px-2 py-0.5 rounded-full text-white/90">
                   {(currentIndex % banners.length) + 1} / {banners.length}
                 </span>
               )}

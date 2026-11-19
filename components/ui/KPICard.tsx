@@ -48,7 +48,7 @@ export const KPICard: React.FC<KPICardProps> = ({
         <p className={cn('text-2xl sm:text-3xl font-extrabold tracking-tight font-mono tabular-nums leading-none', color)}>
           {displayValue}
         </p>
-        {subText && <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 truncate font-medium">{subText}</p>}
+        {subText && <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1.5 truncate font-medium">{subText}</p>}
       </div>
       <div className={cn(
         'w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105',

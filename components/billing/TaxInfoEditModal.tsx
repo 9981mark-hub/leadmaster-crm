@@ -83,7 +83,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -97,7 +97,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
               사업자등록번호
             </label>
             <div className="relative">
-              <Hash size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Hash size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <input
                 type="text"
                 value={businessNumber}
@@ -144,7 +144,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
               세금계산서 수신 이메일 *
             </label>
             <div className="relative">
-              <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <input
                 type="email"
                 value={taxInvoiceEmail}
@@ -154,7 +154,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
               />
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">입금 완료 시 해당 메일로 국세청 전자세금계산서가 자동 발송됩니다.</p>
+            <p className="text-xs text-slate-500 mt-1">입금 완료 시 해당 메일로 국세청 전자세금계산서가 자동 발송됩니다.</p>
           </div>
 
           {/* 사업장 소재지 */}
@@ -163,7 +163,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
               사업장 주소
             </label>
             <div className="relative">
-              <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <input
                 type="text"
                 value={businessAddress}
@@ -208,7 +208,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 font-medium transition-colors cursor-pointer"
             >
               취소
             </button>

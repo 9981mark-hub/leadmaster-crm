@@ -88,7 +88,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-2"
+              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors ml-2"
             >
               <X size={18} />
             </button>
@@ -98,7 +98,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
         {/* Printable Document Body */}
         <div id="printable-invoice" className="p-6 sm:p-10 space-y-8 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
           {/* Document Header */}
-          <div className="border-b-2 border-slate-900 dark:border-slate-100 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="border-b-2 border-slate-200 dark:border-slate-900 dark:border-slate-100 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-extrabold text-sm tracking-wider uppercase">
                 <ShieldCheck size={18} /> LeadMaster Enterprise Cloud CRM
@@ -122,7 +122,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-850/60 space-y-2">
               <div className="font-bold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <span>[공급자] 서비스 제공사</span>
-                <span className="text-[10px] text-blue-600 font-normal">정식 사업자</span>
+                <span className="text-xs text-blue-600 font-normal">정식 사업자</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">상호 / 회사명</span>
@@ -146,7 +146,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-850/60 space-y-2">
               <div className="font-bold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <span>[공급받는 자] 고객사</span>
-                <span className="text-[10px] text-emerald-600 font-semibold">엔터프라이즈 테넌트</span>
+                <span className="text-xs text-emerald-600 font-semibold">엔터프라이즈 테넌트</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">상호 / 회사명</span>
@@ -250,13 +250,13 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
               <div>• <strong>예금주:</strong> 진성훈 (리드마스터)</div>
               <div>• <strong>입금자명 표기:</strong> [{taxInfo.companyName}_{taxInfo.representativeName}]</div>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
               입금 확인 후 24시간 이내에 홈택스를 통해 전자세금계산서(영수)가 자동 발행됩니다.
             </p>
           </div>
 
           {/* Seal / Footer */}
-          <div className="pt-4 flex items-center justify-between text-xs text-slate-400">
+          <div className="pt-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span>LeadMaster Cloud CRM Platform Operation Team</span>
             <span>공식 전자 청구서 인증 완료</span>
           </div>

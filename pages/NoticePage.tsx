@@ -648,7 +648,7 @@ export const NoticePage: React.FC = () => {
                               : '일반'}
                           </span>
                           {notice.display_mode === 'banner' && (
-                            <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                               상단 띠배너 노출
                             </span>
                           )}
@@ -743,7 +743,7 @@ export const NoticePage: React.FC = () => {
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {directiveMetrics.total}<span className="text-xs font-normal text-gray-500 ml-1">건</span>
               </div>
-              <div className="text-[11px] text-gray-400 mt-1">
+              <div className="text-xs text-gray-400 mt-1">
                 {canViewAll ? '전사 하달 누적 건' : isTeamScope ? '소속 팀원 지시 총합' : '본인 할당 전체 지시'}
               </div>
             </div>
@@ -761,7 +761,7 @@ export const NoticePage: React.FC = () => {
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {directiveMetrics.pending}<span className="text-xs font-normal text-red-500 ml-1">건</span>
               </div>
-              <div className="text-[11px] text-red-500/80 mt-1">
+              <div className="text-xs text-red-500/80 mt-1">
                 {isAgent ? '내용 확인 후 즉시 조치 착수' : '상담원이 아직 확인 안 한 건'}
               </div>
             </div>
@@ -775,7 +775,7 @@ export const NoticePage: React.FC = () => {
               <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">
                 {directiveMetrics.inProgress}<span className="text-xs font-normal text-gray-500 ml-1">건</span>
               </div>
-              <div className="text-[11px] text-gray-400 mt-1">
+              <div className="text-xs text-gray-400 mt-1">
                 현재 현장 상담/통화 조치 중인 건
               </div>
             </div>
@@ -790,7 +790,7 @@ export const NoticePage: React.FC = () => {
                 {isAgent ? directiveMetrics.completed : `${directiveMetrics.completionRate}%`}
                 <span className="text-xs font-normal text-gray-500 ml-1">{isAgent ? '건' : `(${directiveMetrics.completed}건 완료)`}</span>
               </div>
-              <div className="text-[11px] text-gray-400 mt-1">
+              <div className="text-xs text-gray-400 mt-1">
                 결과 메모 제출 완료된 업무
               </div>
             </div>
@@ -856,7 +856,7 @@ export const NoticePage: React.FC = () => {
               )}
 
               {isAgent && (
-                <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
                   <UserCheck size={13} className="text-emerald-500" /> 나에게 할당된 업무 지시만 표시됩니다.
                 </span>
               )}
@@ -1052,7 +1052,7 @@ export const NoticePage: React.FC = () => {
                             }`}
                           >
                             <div className="font-bold flex items-center gap-1">🔒 각 고객사 대표·관리자만</div>
-                            <div className="text-[10px] opacity-80 mt-0.5">과금/정산/약관/관리자 기능 (상담원 비공개)</div>
+                            <div className="text-xs opacity-80 mt-0.5">과금/정산/약관/관리자 기능 (상담원 비공개)</div>
                           </button>
 
                           <button
@@ -1065,7 +1065,7 @@ export const NoticePage: React.FC = () => {
                             }`}
                           >
                             <div className="font-bold flex items-center gap-1">👥 모든 고객사 전원 (대표+직원)</div>
-                            <div className="text-[10px] opacity-80 mt-0.5">서버점검/앱업데이트/전체 기능 안내</div>
+                            <div className="text-xs opacity-80 mt-0.5">서버점검/앱업데이트/전체 기능 안내</div>
                           </button>
                         </div>
                       </div>
@@ -1077,7 +1077,7 @@ export const NoticePage: React.FC = () => {
                             <span className="font-semibold text-gray-700 dark:text-gray-300">
                               대상 고객사 범위
                             </span>
-                            <span className="text-[11px] text-gray-500">
+                            <span className="text-xs text-gray-500">
                               {noticeForm.target_org_ids.length === 0 ? '모든 입점 고객사' : `${noticeForm.target_org_ids.length}개 고객사 선택됨`}
                             </span>
                           </div>
@@ -1085,7 +1085,7 @@ export const NoticePage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setNoticeForm(f => ({ ...f, target_org_ids: [] }))}
-                              className={`px-2 py-1 rounded text-[11px] font-semibold border ${
+                              className={`px-2 py-1 rounded text-xs font-semibold border ${
                                 noticeForm.target_org_ids.length === 0
                                   ? 'bg-purple-600 text-white border-purple-600'
                                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300'
@@ -1102,7 +1102,7 @@ export const NoticePage: React.FC = () => {
                                   setNoticeForm(f => ({ ...f, target_org_ids: [...f.target_org_ids, selectedId] }));
                                 }
                               }}
-                              className="flex-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-[11px]"
+                              className="flex-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs"
                             >
                               <option value="">+ 특정 고객사 추가 선택...</option>
                               {orgsList.map(o => (
@@ -1115,7 +1115,7 @@ export const NoticePage: React.FC = () => {
                               {noticeForm.target_org_ids.map(id => {
                                 const orgObj = orgsList.find(o => o.id === id);
                                 return (
-                                  <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 text-[10px]">
+                                  <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 text-xs">
                                     {orgObj?.name || id}
                                     <button
                                       type="button"
@@ -1215,7 +1215,7 @@ export const NoticePage: React.FC = () => {
                     }`}
                   >
                     <div className="font-bold">상단 띠배너 + 목록</div>
-                    <div className="text-[11px] opacity-75">화면 최상단 띠배너로 즉시 강조 노출</div>
+                    <div className="text-xs opacity-75">화면 최상단 띠배너로 즉시 강조 노출</div>
                   </button>
                   <button
                     type="button"
@@ -1227,7 +1227,7 @@ export const NoticePage: React.FC = () => {
                     }`}
                   >
                     <div className="font-bold">공지사항 목록만</div>
-                    <div className="text-[11px] opacity-75">공지 게시판 메뉴에만 조용히 등록</div>
+                    <div className="text-xs opacity-75">공지 게시판 메뉴에만 조용히 등록</div>
                   </button>
                 </div>
               </div>
@@ -1329,7 +1329,7 @@ export const NoticePage: React.FC = () => {
                   ))}
                 </select>
                 {isTeamScope && (
-                  <p className="text-[11px] text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     중간 관리자(팀장)는 본인 소속 팀원에게만 업무 지시를 내릴 수 있습니다.
                   </p>
                 )}
@@ -1501,7 +1501,7 @@ export const NoticePage: React.FC = () => {
                           <div className="font-semibold text-blue-900 dark:text-blue-200">
                             {isTeamScope ? `${myTeam} 확인 인원:` : '확인 인원:'} {scopedRead.length}명 / 전체 {totalCount}명
                           </div>
-                          <div className="text-[11px] text-blue-700 dark:text-blue-300">
+                          <div className="text-xs text-blue-700 dark:text-blue-300">
                             수신율: {rate}%
                           </div>
                         </div>
@@ -1521,9 +1521,9 @@ export const NoticePage: React.FC = () => {
                               <div key={m.userId} className="text-gray-700 dark:text-gray-300 flex items-center justify-between">
                                 <span className="flex items-center gap-1.5">
                                   <span>{m.displayName}</span>
-                                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 font-medium">{m.teamName || '1팀'}</span>
+                                  <span className="text-xs px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 font-medium">{m.teamName || '1팀'}</span>
                                 </span>
-                                <span className="text-[10px] text-red-500 font-bold">미확인</span>
+                                <span className="text-xs text-red-500 font-bold">미확인</span>
                               </div>
                             ))}
                           </div>
@@ -1537,12 +1537,12 @@ export const NoticePage: React.FC = () => {
                         </div>
                         <div className="max-h-32 overflow-y-auto p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 space-y-1">
                           {scopedRead.map(m => (
-                            <div key={m.userId} className="text-gray-700 dark:text-gray-300 flex items-center justify-between text-[11px]">
+                            <div key={m.userId} className="text-gray-700 dark:text-gray-300 flex items-center justify-between text-xs">
                               <span className="flex items-center gap-1.5">
                                 <span>{m.displayName}</span>
-                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium">{m.teamName || '1팀'}</span>
+                                <span className="text-xs px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium">{m.teamName || '1팀'}</span>
                               </span>
-                              <span className="text-[10px] text-gray-400">{new Date(m.readAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="text-xs text-gray-400">{new Date(m.readAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           ))}
                         </div>

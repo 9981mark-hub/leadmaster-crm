@@ -147,7 +147,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
             >
                 <div className="flex items-center gap-2 mb-1">
                     <span className="font-bold">{line.speaker}</span>
-                    {line.time && <span className="text-[10px] text-gray-400 dark:text-gray-400 tabular-nums">{line.time}</span>}
+                    {line.time && <span className="text-xs text-gray-400 dark:text-gray-400 tabular-nums">{line.time}</span>}
                 </div>
                 <div className="whitespace-pre-wrap">{line.text}</div>
             </div>
@@ -245,7 +245,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                         <h3 className="font-bold text-purple-800 dark:text-purple-300 flex items-center gap-2">
                             <Sparkles size={18} /> AI 요약문
                             {selectedCall && (
-                                <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
+                                <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
                                     {selectedCall.callNumber}차 통화 {selectedCall.isLatest ? '(최신)' : ''}
                                 </span>
                             )}
@@ -286,7 +286,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                 className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-t-lg transition-colors ${
                                     aiTab === 'summary'
                                         ? 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-t border-l border-r border-purple-200 dark:border-purple-800'
-                                        : 'text-gray-500 hover:text-purple-600 dark:hover:text-purple-400'
+                                        : 'text-gray-500 hover:text-purple-600 dark:hover:text-purple-600 dark:text-purple-400'
                                 }`}
                             >
                                 <FileText size={13} /> 요약문
@@ -296,12 +296,12 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                 className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-t-lg transition-colors ${
                                     aiTab === 'transcript'
                                         ? 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-t border-l border-r border-purple-200 dark:border-purple-800'
-                                        : 'text-gray-500 hover:text-purple-600 dark:hover:text-purple-400'
+                                        : 'text-gray-500 hover:text-purple-600 dark:hover:text-purple-600 dark:text-purple-400'
                                 }`}
                             >
                                 <ListOrdered size={13} /> 대화록
                                 {parsed.transcriptLines.length > 0 && (
-                                    <span className="ml-1 px-1.5 bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-full text-[10px]">
+                                    <span className="ml-1 px-1.5 bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-full text-xs">
                                         {parsed.transcriptLines.length}
                                     </span>
                                 )}
@@ -327,7 +327,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                         {selectedCall.audioProblem || '이 통화는 녹음 원본(음성 소스) 파일이 서버에 남아있지 않거나 브라우저 임시 주소(blob:)가 만료되어 AI 요약을 진행할 수 없습니다.'}
                                     </p>
                                     {selectedCall.fileName && (
-                                        <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono bg-white dark:bg-gray-900 px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 inline-block mt-1">
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 font-mono bg-white dark:bg-gray-900 px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 inline-block mt-1">
                                             파일명: {selectedCall.fileName}
                                         </p>
                                     )}
@@ -335,14 +335,14 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                             </div>
                         ) : selectedCall && selectedCall.status === 'no_summary' ? (
                             <div className="flex flex-col items-center justify-center h-full text-slate-600 dark:text-slate-300 gap-3 min-h-[220px] p-6 text-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
-                                <FileText size={36} className="text-slate-400" />
+                                <FileText size={36} className="text-slate-500 dark:text-slate-400" />
                                 <div className="space-y-1.5 max-w-md">
                                     <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">AI 요약 미생성</h4>
                                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                                         {selectedCall.audioProblem || '녹음 원본 파일은 보관되어 있으나, 아직 AI 요약 분석이 실행되지 않았습니다.'}
                                     </p>
                                     {selectedCall.fileName && (
-                                        <p className="text-[11px] text-slate-400 font-mono bg-white dark:bg-gray-800 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 inline-block mt-1">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono bg-white dark:bg-gray-800 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 inline-block mt-1">
                                             파일명: {selectedCall.fileName}
                                         </p>
                                     )}
@@ -357,7 +357,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                         {selectedCall.audioProblem || '통화 녹음 AI 분석 중 오류가 발생했거나 대기 시간이 초과되었습니다.'}
                                     </p>
                                     {selectedCall.fileName && (
-                                        <p className="text-[11px] text-red-400 font-mono bg-white dark:bg-gray-800 px-2.5 py-1 rounded border border-red-200 dark:border-red-800 inline-block mt-1">
+                                        <p className="text-xs text-red-600 dark:text-red-400 font-mono bg-white dark:bg-gray-800 px-2.5 py-1 rounded border border-red-200 dark:border-red-800 inline-block mt-1">
                                             파일명: {selectedCall.fileName}
                                         </p>
                                     )}
@@ -373,7 +373,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                     <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                                         {selectedCall.audioProblem || selectedCall.summaryText || '상대방 무응답, 통화 거절, 또는 단순 인사 통화로 판단되어 20개 항목 템플릿 생성을 생략했습니다.'}
                                     </p>
-                                    <p className="text-[11px] text-purple-600 dark:text-purple-400 font-medium pt-1">
+                                    <p className="text-xs text-purple-600 dark:text-purple-400 font-medium pt-1">
                                         ※ 통화 녹음 원본과 대화록은 우측 탭에서 온전히 확인하실 수 있습니다.
                                     </p>
                                 </div>
@@ -439,7 +439,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                 </button>
                                 <FillFromSummaryButton c={c} text={activeRawText} className="w-full whitespace-nowrap" />
                             </div>
-                            <p className="text-[10px] text-center text-purple-400 dark:text-purple-300">
+                            <p className="text-xs text-center text-purple-600 dark:text-purple-400 dark:text-purple-300">
                                 * 상담이력 전송 시 '특이사항' 부분만 자동으로 추출되어 저장됩니다.
                             </p>
                         </div>
@@ -458,7 +458,7 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
                                     </span>
                                 )}
                                 {parsed.transcriptLines.length > 0 && (
-                                    <span className="px-1.5 bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-full text-[11px]">
+                                    <span className="px-1.5 bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-full text-xs">
                                         발화 {parsed.transcriptLines.length}건
                                     </span>
                                 )}

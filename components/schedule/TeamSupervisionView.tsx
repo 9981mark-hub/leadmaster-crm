@@ -110,17 +110,17 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 상단 헤더 배너 */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-white dark:from-slate-900 via-indigo-950 to-slate-900 border border-indigo-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
+          <div className="w-11 h-11 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner">
             <Users size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-indigo-400 bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-800/60">
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-800/60">
                 일반 관리자 / 팀장 · 팀 영업 코칭 뷰
               </span>
-              <span className="text-xs text-slate-400 font-medium">[{currentTeamName}] · {todayFormatted}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">[{currentTeamName}] · {todayFormatted}</span>
             </div>
             <h3 className="text-base font-bold text-white mt-1">
               우리 팀원들의 당일 핵심 계약 건(입금·대면)과 클로징 동행 서포트 캘린더
@@ -129,7 +129,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-300 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
             소속 팀원: {teamMembers.length}명
           </span>
         </div>
@@ -137,78 +137,78 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
 
       {/* 1단: 팀 오늘 핵심 이벤트 바 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-semibold mb-1">
+        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
             <span className="flex items-center gap-1.5">
-              <DollarSign size={14} className="text-emerald-400" />
+              <DollarSign size={14} className="text-emerald-600 dark:text-emerald-400" />
               팀 수임 입금 약속
             </span>
-            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/50">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/50">
               핵심
             </span>
           </div>
-          <div className="text-xl font-black text-emerald-400">
+          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">
             {teamTodayData.depositPromises.length}건
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             오늘 당일 수임료 결제 예정
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-semibold mb-1">
+        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
             <span className="flex items-center gap-1.5">
-              <MapPin size={14} className="text-purple-400" />
+              <MapPin size={14} className="text-purple-600 dark:text-purple-400" />
               팀 대면 미팅
             </span>
-            <span className="text-[10px] text-purple-400 font-bold bg-purple-950 px-2 py-0.5 rounded border border-purple-800/50">
+            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-950 px-2 py-0.5 rounded border border-purple-800/50">
               외근·방문
             </span>
           </div>
           <div className="text-xl font-black text-purple-300">
             {teamTodayData.fieldMeetings.length}건
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             출장/센터방문 계약 체결 건
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-semibold mb-1">
+        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
             <span className="flex items-center gap-1.5">
-              <Handshake size={14} className="text-amber-400" />
+              <Handshake size={14} className="text-amber-600 dark:text-amber-400" />
               클로징 동행 서포트
             </span>
-            <span className="text-[10px] text-amber-400 font-bold bg-amber-950 px-2 py-0.5 rounded border border-amber-800/50">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-950 px-2 py-0.5 rounded border border-amber-800/50">
               팀장 지원
             </span>
           </div>
-          <div className="text-xl font-black text-amber-400">
+          <div className="text-xl font-black text-amber-600 dark:text-amber-400">
             {teamTodayData.closerRequests.length}건
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             3자 통화 및 외근 동행 요청
           </div>
         </div>
 
         <div className={`p-4 rounded-2xl border shadow-sm ${
-          teamTodayData.overdueCount > 0 ? 'bg-rose-950/20 border-rose-900/40' : 'bg-slate-900/80 border-slate-800/80'
+          teamTodayData.overdueCount > 0 ? 'bg-rose-950/20 border-rose-900/40' : 'bg-white/80 dark:bg-slate-900/80 border-slate-200/80 dark:border-slate-800/80'
         }`}>
           <div className="flex items-center justify-between text-xs font-semibold mb-1">
-            <span className={`flex items-center gap-1.5 ${teamTodayData.overdueCount > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
-              <AlertTriangle size={14} className={teamTodayData.overdueCount > 0 ? 'text-rose-500 animate-pulse' : 'text-slate-400'} />
+            <span className={`flex items-center gap-1.5 ${teamTodayData.overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
+              <AlertTriangle size={14} className={teamTodayData.overdueCount > 0 ? 'text-rose-500 animate-pulse' : 'text-slate-500 dark:text-slate-400'} />
               우리 팀 지연 콜
             </span>
             {teamTodayData.overdueCount > 0 && (
-              <span className="text-[10px] text-rose-400 font-bold bg-rose-950 px-2 py-0.5 rounded border border-rose-800/50">
+              <span className="text-xs text-rose-600 dark:text-rose-400 font-bold bg-rose-950 px-2 py-0.5 rounded border border-rose-800/50">
                 독려 필요
               </span>
             )}
           </div>
-          <div className={`text-xl font-black ${teamTodayData.overdueCount > 0 ? 'text-rose-400' : 'text-slate-300'}`}>
+          <div className={`text-xl font-black ${teamTodayData.overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300'}`}>
             {teamTodayData.overdueCount}건
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             팀원 미완료 지연 리마인더
           </div>
         </div>
@@ -218,7 +218,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
       {teamTodayData.closerRequests.length > 0 && (
         <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-900/50 shadow-sm animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
-            <Handshake size={18} className="text-amber-400" />
+            <Handshake size={18} className="text-amber-600 dark:text-amber-400" />
             <h4 className="text-sm font-bold text-amber-300">
               🤝 팀장 클로징 동행 및 3자 통화 지원 요청 ({teamTodayData.closerRequests.length}건)
             </h4>
@@ -228,19 +228,19 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
               <div 
                 key={reminder.id}
                 onClick={() => navigate(`/cases/${caseData.caseId}`)}
-                className="p-3 rounded-xl bg-slate-950/70 border border-amber-900/40 hover:border-amber-500/50 cursor-pointer flex items-center justify-between transition-all"
+                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-amber-900/40 hover:border-amber-500/50 cursor-pointer flex items-center justify-between transition-all"
               >
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-xs text-white">{caseData.customerName}</span>
-                    <span className="text-[11px] text-slate-400">담당: {caseData.assignee}</span>
-                    <span className="text-[10px] text-amber-400 font-bold bg-amber-950 px-1.5 py-0.5 rounded border border-amber-800/40">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">담당: {caseData.assignee}</span>
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-950 px-1.5 py-0.5 rounded border border-amber-800/40">
                       서포트 요청
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-1 line-clamp-1">{reminder.content}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-1">{reminder.content}</p>
                 </div>
-                <ArrowUpRight size={15} className="text-slate-400 hover:text-amber-400" />
+                <ArrowUpRight size={15} className="text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:text-amber-400" />
               </div>
             ))}
           </div>
@@ -248,16 +248,16 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
       )}
 
       {/* 3단: 팀원별 오늘 타임라인 매트릭스 */}
-      <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+      <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Clock size={18} className="text-indigo-400" />
+            <Clock size={18} className="text-indigo-600 dark:text-indigo-400" />
             <div>
               <h4 className="text-sm font-bold text-white">팀원별 오늘 상담·미팅 타임라인 매트릭스</h4>
-              <p className="text-[11px] text-slate-400">팀원들의 시간대별 일정 흐름을 비교하고 빈틈없이 코칭하세요.</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">팀원들의 시간대별 일정 흐름을 비교하고 빈틈없이 코칭하세요.</p>
             </div>
           </div>
-          <span className="text-xs text-indigo-400 font-semibold">{todayFormatted}</span>
+          <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">{todayFormatted}</span>
         </div>
 
         {teamMembers.length === 0 ? (
@@ -269,21 +269,21 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
             {teamMembers.map(member => {
               const items = teamTodayData.memberTimelineMap[member] || [];
               return (
-                <div key={member} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                <div key={member} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80">
                   <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold text-xs flex items-center justify-center border border-indigo-500/30">
                         {member.slice(0, 1)}
                       </div>
                       <span className="text-sm font-bold text-white">{member}</span>
-                      <span className="text-xs text-slate-400 font-medium">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         (오늘 일정 {items.length}건)
                       </span>
                     </div>
 
                     <button
                       onClick={() => showToast(`[${member}] 상담원과의 1:1 코칭 노트를 엽니다.`)}
-                      className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold"
+                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-300 font-semibold"
                     >
                       1:1 코칭 메모 →
                     </button>
@@ -307,12 +307,12 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
                             onClick={() => navigate(`/cases/${caseData.caseId}`)}
                             className={`flex-shrink-0 p-2.5 rounded-xl border text-xs cursor-pointer transition-all min-w-[180px] max-w-[220px] ${
                               isCompleted 
-                                ? 'bg-slate-900/40 border-slate-800 text-slate-500 opacity-70'
+                                ? 'bg-white/40 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-500 opacity-70'
                                 : isDeposit
                                 ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300'
                                 : isField
                                 ? 'bg-purple-950/30 border-purple-800/50 text-purple-300'
-                                : 'bg-slate-900 border-slate-700/80 text-slate-200 hover:border-indigo-500/50'
+                                : 'bg-white dark:bg-gray-900 border-slate-200/80 dark:border-slate-700/80 text-slate-200 hover:border-indigo-500/50'
                             }`}
                           >
                             <div className="flex items-center justify-between font-bold">
@@ -320,14 +320,14 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
                                 <Clock size={11} />
                                 {time}
                               </span>
-                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/40">
+                              <span className="text-xs px-1.5 py-0.2 rounded bg-black/40">
                                 {reminder.type}
                               </span>
                             </div>
                             <div className="font-semibold text-xs mt-1 text-white truncate">
                               {caseData.customerName}
                             </div>
-                            <div className="text-[11px] opacity-80 truncate mt-0.5">
+                            <div className="text-xs opacity-80 truncate mt-0.5">
                               {reminder.content || '메모 없음'}
                             </div>
                           </div>

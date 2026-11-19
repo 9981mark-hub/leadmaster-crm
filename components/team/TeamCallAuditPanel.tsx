@@ -263,7 +263,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {stats.totalCalls.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
           </div>
-          <div className="text-[11px] text-gray-400 mt-1">
+          <div className="text-xs text-gray-400 mt-1">
             선택 기간 내 발생한 전체 콜
           </div>
         </div>
@@ -279,7 +279,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
               {stats.meaningfulRate}%
             </span>
           </div>
-          <div className="text-[11px] text-gray-400 mt-1">
+          <div className="text-xs text-gray-400 mt-1">
             심층 상담 및 일정 약속 체결
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
           <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
             {stats.appointmentCalls.toLocaleString()} <span className="text-xs font-normal text-gray-400">건</span>
           </div>
-          <div className="text-[11px] text-gray-400 mt-1">
+          <div className="text-xs text-gray-400 mt-1">
             서류 안내 및 2차 통화 예약
           </div>
         </div>
@@ -305,7 +305,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
             {fmtDuration(stats.avgDurationSec)}
           </div>
-          <div className="text-[11px] text-gray-400 mt-1">
+          <div className="text-xs text-gray-400 mt-1">
             총 {fmtDuration(stats.totalDurationSec)}
           </div>
         </div>
@@ -387,7 +387,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
                         )}
                         <span>{item.formattedTime}</span>
                       </div>
-                      <span className="text-[10px] text-gray-400 block mt-0.5">
+                      <span className="text-xs text-gray-400 block mt-0.5">
                         {item.formattedDate.split(' ')[0]}
                       </span>
                     </td>
@@ -397,7 +397,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {item.userName}
                       </div>
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-xs text-gray-400">
                         {item.userRole === 'admin' || item.userRole === 'owner' ? '관리자' : '상담원'}
                       </span>
                     </td>
@@ -407,10 +407,10 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {item.customerName}
                       </div>
-                      <div className="text-[11px] text-gray-400 font-mono">
+                      <div className="text-xs text-gray-400 font-mono">
                         {item.customerPhone}
                       </div>
-                      <span className="inline-block mt-0.5 text-[10px] px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                      <span className="inline-block mt-0.5 text-xs px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                         {item.caseStatus}
                       </span>
                     </td>
@@ -430,7 +430,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
 
                     {/* 5. 통화 판정 뱃지 */}
                     <td className="py-3 px-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                         item.qualification.callType === 'deep_consultation'
                           ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
                           : item.qualification.callType === 'appointment'
@@ -450,7 +450,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
                         {item.summarySnippet}
                       </p>
                       {item.qualification.scheduleNote && (
-                        <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">
+                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-0.5">
                           📅 약속: {item.qualification.scheduleNote}
                         </p>
                       )}
@@ -459,7 +459,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
                     {/* 7. 대화록 건수 */}
                     <td className="py-3 px-4 text-center whitespace-nowrap">
                       {item.transcriptCount > 0 ? (
-                        <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-mono text-[11px]">
+                        <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-mono text-xs">
                           {item.transcriptCount}건
                         </span>
                       ) : (
@@ -478,7 +478,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
                         </button>
                         <button
                           onClick={() => navigate(`/cases/${item.caseId}`)}
-                          className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+                          className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition-colors"
                           title="고객 상세 화면으로 이동"
                         >
                           <ExternalLink size={14} />

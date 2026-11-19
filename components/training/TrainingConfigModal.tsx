@@ -148,7 +148,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                 <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                 업종별 표준 프리셋 원클릭 불러오기
               </span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">클릭 시 자동 세팅</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">클릭 시 자동 세팅</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {Object.entries(PRESETS_CONFIG).map(([key, item]) => (
@@ -159,7 +159,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                   className="p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800/80 hover:border-blue-500 text-left transition-all shadow-2xs hover:scale-[1.01]"
                 >
                   <div className="font-bold text-gray-900 dark:text-white text-xs">{item.label}</div>
-                  <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate mt-0.5">{item.desc}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{item.desc}</div>
                 </button>
               ))}
             </div>
@@ -173,7 +173,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   공식 회사/법인명 <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -186,7 +186,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   담당 부서/팀명
                 </label>
                 <input
@@ -199,7 +199,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   대표 DB 인입 채널명 <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -209,11 +209,11 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                   placeholder="예: 온라인 무료 안심 자가진단, 유튜브 간편조회"
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-[10px] text-gray-400 mt-0.5 block">AI 고객이 이 신청 경로를 듣고 경계를 풉니다.</span>
+                <span className="text-xs text-gray-400 mt-0.5 block">AI 고객이 이 신청 경로를 듣고 경계를 풉니다.</span>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   공식 유선 대표번호
                 </label>
                 <input
@@ -223,7 +223,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                   placeholder="예: 02-588-7119, 1588-4920"
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-[10px] text-gray-400 mt-0.5 block">보이스피싱 의심 시 안심 역발신 제안 번호</span>
+                <span className="text-xs text-gray-400 mt-0.5 block">보이스피싱 의심 시 안심 역발신 제안 번호</span>
               </div>
             </div>
           </div>
@@ -235,18 +235,18 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                 <PhoneCall className="w-4 h-4 text-emerald-500" />
                 2. 표준 첫인사 오프닝 스크립트 템플릿
               </h4>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">태그 클릭 시 텍스트에 자동 삽입</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">태그 클릭 시 텍스트에 자동 삽입</span>
             </div>
 
             {/* Variable Tags Palette */}
             <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <span className="text-[10px] font-bold text-gray-500">치환 태그:</span>
+              <span className="text-xs font-bold text-gray-500">치환 태그:</span>
               {['{회사명}', '{부서명}', '{상담원명}', '{인입채널}', '{대표번호}', '{고객명}'].map(tag => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => handleInsertTag('standardOpening', tag)}
-                  className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono text-[10px] font-bold hover:bg-blue-100 transition-colors"
+                  className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono text-xs font-bold hover:bg-blue-100 transition-colors"
                 >
                   +{tag}
                 </button>
@@ -254,7 +254,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                 기본 정규 첫인사 템플릿 (상담원 통화 화면 상단 미션 배너로 출력)
               </label>
               <textarea
@@ -268,7 +268,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
 
             {/* Live Preview */}
             <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-xs space-y-1">
-              <span className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1 text-[11px]">
+              <span className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1 text-xs">
                 <Eye className="w-3.5 h-3.5" /> 상담원 화면 실시간 렌더링 미리보기
               </span>
               <p className="text-gray-800 dark:text-gray-200 italic leading-relaxed">
@@ -306,7 +306,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                 {config.requiredKeywords.map(kw => (
                   <span
                     key={kw}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 text-[11px] font-semibold"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 text-xs font-semibold"
                   >
                     ✓ {kw}
                     <button
@@ -348,7 +348,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                 {config.bannedKeywords.map(kw => (
                   <span
                     key={kw}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200 text-[11px] font-semibold"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200 text-xs font-semibold"
                   >
                     🚫 {kw}
                     <button
@@ -370,7 +370,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                   <PhoneCall className="w-4 h-4 text-indigo-600" />
                   전사 스마트폰 수화기 음질 필터 (300~3400Hz 주파수 모사)
                 </h4>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   모든 상담원의 AI 모의 훈련 시 실제 전화 통화 수화기 주파수 필터를 기본으로 적용합니다.
                 </p>
               </div>

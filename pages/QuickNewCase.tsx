@@ -188,7 +188,7 @@ export default function QuickNewCase() {
             <Plus size={16} /> 등록하고 다음 리드
           </button>
         </div>
-        <p className="text-xs text-slate-400">Ctrl+Enter = 등록하고 상담 시작 · 여러 건은 케이스 목록의 업로드나 팀 관리 → 수신동의 DB 업로드를 쓰세요 · <Link to="/new/full" className="underline">예전 전체 입력 화면</Link></p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Ctrl+Enter = 등록하고 상담 시작 · 여러 건은 케이스 목록의 업로드나 팀 관리 → 수신동의 DB 업로드를 쓰세요 · <Link to="/new/full" className="underline">예전 전체 입력 화면</Link></p>
       </div>
     </div>
   );

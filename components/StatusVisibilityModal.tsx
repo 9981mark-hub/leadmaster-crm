@@ -96,7 +96,7 @@ export default function StatusVisibilityModal({
                                         checked={isVisible}
                                         onChange={() => onToggleStatus(status)}
                                     />
-                                    {isHidden && <span className="text-xs text-red-400 font-bold">숨김</span>}
+                                    {isHidden && <span className="text-xs text-red-600 dark:text-red-400 font-bold">숨김</span>}
                                 </label>
                             );
                         })}

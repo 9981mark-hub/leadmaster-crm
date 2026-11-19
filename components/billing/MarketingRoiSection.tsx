@@ -83,7 +83,7 @@ export const MarketingRoiSection: React.FC<MarketingRoiSectionProps> = ({
               {roi.overallRoas > 0 ? `${roi.overallRoas}%` : '-'}
             </span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             광고비 1원 투입당 {roi.overallRoas > 0 ? (roi.overallRoas / 100).toFixed(1) : 0}원 회수
           </div>
         </div>
@@ -104,7 +104,7 @@ export const MarketingRoiSection: React.FC<MarketingRoiSectionProps> = ({
             </span>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">원 / 건</span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             총 {roi.totalLeads}개 인입 리드
           </div>
         </div>
@@ -125,7 +125,7 @@ export const MarketingRoiSection: React.FC<MarketingRoiSectionProps> = ({
             </span>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">원 / 건</span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             최종 {roi.contractCount}건 계약 완료 (성약률 {roi.contractRate}%)
           </div>
         </div>
@@ -146,7 +146,7 @@ export const MarketingRoiSection: React.FC<MarketingRoiSectionProps> = ({
             </span>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">원</span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             총 {(roi.totalContractFeeWon / 10000).toLocaleString()}만원 매출 창출
           </div>
         </div>
@@ -175,7 +175,7 @@ export const MarketingRoiSection: React.FC<MarketingRoiSectionProps> = ({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
               {roi.channelStats.length > 0 ? (
                 roi.channelStats.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-100/50 dark:bg-slate-800/50 transition-colors">
                     <td className="py-2.5 px-3 font-sans font-bold text-slate-900 dark:text-slate-100">
                       {item.channel}
                     </td>
@@ -210,7 +210,7 @@ export const MarketingRoiSection: React.FC<MarketingRoiSectionProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400 font-sans text-xs">
+                  <td colSpan={8} className="py-8 text-center text-slate-500 dark:text-slate-400 font-sans text-xs">
                     비교할 마케팅 채널 데이터가 충분하지 않습니다.
                   </td>
                 </tr>

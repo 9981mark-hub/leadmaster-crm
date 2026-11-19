@@ -667,14 +667,14 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 <span className="text-xs font-bold text-gray-900 dark:text-white">
                                     DB 거래처(공급사) 선택
                                 </span>
-                                <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                                     * 회차 품질·전환율 및 ROI 관제 집계의 기준이 됩니다.
                                 </span>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsVendorManageOpen(true)}
-                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-md border border-indigo-200 dark:border-indigo-800 shadow-2xs hover:bg-indigo-50 transition-colors"
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-md border border-indigo-200 dark:border-indigo-800 shadow-2xs hover:bg-indigo-50 transition-colors"
                             >
                                 <Plus size={12} /> 거래처 추가/관리
                             </button>
@@ -702,7 +702,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         key={v.id}
                                         type="button"
                                         onClick={() => handleSelectVendor(v.name)}
-                                        className={`text-[11px] px-2.5 py-1 rounded-full font-medium transition-all ${
+                                        className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${
                                             selectedVendor === v.name
                                                 ? 'bg-indigo-600 text-white shadow-2xs font-bold'
                                                 : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100/60'
@@ -718,7 +718,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                         <div className="space-y-2 pt-1 border-t border-indigo-100/60 dark:border-indigo-900/30">
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
                                 <div className="sm:col-span-5">
-                                    <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
                                         회차명 (Batch Name)
                                     </label>
                                     <input
@@ -732,10 +732,10 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
                                 {/* 정산 방식 토글 (건당 CPL vs 대량 패키지) */}
                                 <div className="sm:col-span-3">
-                                    <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
                                         정산 방식
                                     </label>
-                                    <div className="grid grid-cols-2 gap-1 p-0.5 bg-gray-200 dark:bg-gray-700 rounded-lg text-[11px]">
+                                    <div className="grid grid-cols-2 gap-1 p-0.5 bg-gray-200 dark:bg-gray-700 rounded-lg text-xs">
                                         <button
                                             type="button"
                                             onClick={() => setPricingMode('cpl')}
@@ -769,7 +769,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 {pricingMode === 'cpl' ? (
                                     <>
                                         <div className="sm:col-span-2">
-                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
                                                 건당 단가 (CPL)
                                             </label>
                                             <div className="relative">
@@ -790,7 +790,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         </div>
 
                                         <div className="sm:col-span-2">
-                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
                                                 총 매입 결제액
                                             </label>
                                             <div className="relative">
@@ -814,7 +814,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 ) : (
                                     <>
                                         <div className="sm:col-span-2">
-                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
                                                 공급 수량 (건)
                                             </label>
                                             <input
@@ -834,7 +834,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         </div>
 
                                         <div className="sm:col-span-2">
-                                            <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
                                                 패키지 총액 (원)
                                             </label>
                                             <div className="relative">
@@ -861,7 +861,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
                             {/* 패키지 모드 환산 안내 배너 */}
                             {pricingMode === 'package' && (
-                                <div className="flex items-center justify-between text-[11px] px-2.5 py-1 rounded-md bg-indigo-100/70 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200 font-medium">
+                                <div className="flex items-center justify-between text-xs px-2.5 py-1 rounded-md bg-indigo-100/70 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200 font-medium">
                                     <span>
                                         📦 대량 패키지 적용: <strong>{pkgLeads.toLocaleString()}건</strong>에 <strong>₩{pkgPrice.toLocaleString()}원</strong>
                                     </span>
@@ -970,7 +970,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                             <div className="flex flex-col">
                                                                 <span>{item.phone}</span>
                                                                 {item.duplicateInfo && (
-                                                                    <span className="text-[10px] text-red-500">
+                                                                    <span className="text-xs text-red-500">
                                                                         기존: {item.duplicateInfo.managerName} ({item.duplicateInfo.status})
                                                                     </span>
                                                                 )}

@@ -148,7 +148,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                       {c.caseType || '개인회생'}
                     </span>
                     {c.isNew && (
-                      <span className="text-[10px] bg-red-500 text-white font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                      <span className="text-xs bg-red-500 text-white font-bold px-1.5 py-0.5 rounded-full animate-pulse">
                         NEW
                       </span>
                     )}
@@ -268,7 +268,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                       {totalCreditDebt > 0 ? `${totalCreditDebt.toLocaleString()}만 원` : '기록 없음'}
                     </span>
                     {c.creditLoan && c.creditLoan.length > 0 && (
-                      <span className="text-[11px] text-gray-500 ml-1.5">({c.creditLoan.length}건)</span>
+                      <span className="text-xs text-gray-500 ml-1.5">({c.creditLoan.length}건)</span>
                     )}
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                   {c.specialMemo && c.specialMemo.length > 0 ? (
                     [...c.specialMemo].reverse().slice(0, 5).map((m, idx) => (
                       <div key={m.id || idx} className="text-xs p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600">
-                        <div className="flex justify-between text-[10px] text-gray-400 mb-0.5">
+                        <div className="flex justify-between text-xs text-gray-400 mb-0.5">
                           <span>{safeFormat(m.createdAt, 'yyyy-MM-dd HH:mm')}</span>
                         </div>
                         <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{m.content}</p>

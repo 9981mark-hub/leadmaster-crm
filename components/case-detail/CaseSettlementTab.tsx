@@ -30,9 +30,9 @@ const DepositRow: React.FC<{ idx: number; d: Deposit; removable: boolean; onSave
         <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50/60 dark:bg-gray-900/30 px-3 py-2.5">
             <div className="flex justify-between items-center mb-1.5">
                 <h4 className="font-semibold text-slate-700 dark:text-gray-200 text-xs">
-                    {idx + 1}차 입금 {future && <span className="ml-1 font-normal text-slate-400">입금 예정</span>}
+                    {idx + 1}차 입금 {future && <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">입금 예정</span>}
                 </h4>
-                {removable && <button onClick={onRemove} className="text-slate-300 hover:text-red-500" aria-label={`${idx + 1}차 입금 줄 삭제`}><X size={15} /></button>}
+                {removable && <button onClick={onRemove} className="text-slate-600 dark:text-slate-300 hover:text-red-500" aria-label={`${idx + 1}차 입금 줄 삭제`}><X size={15} /></button>}
             </div>
             <div className="grid grid-cols-2 gap-1.5">
                 <input inputMode="numeric" aria-label={`${idx + 1}차 입금 금액(만원)`} placeholder="금액 (만원)"
@@ -134,7 +134,7 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                 ) : (
                     <span className="text-xs text-slate-500">
                         아직 정산 배치에 포함되지 않았습니다.
-                        {c.contractAt && <span className="text-slate-400 ml-1">(계약일 {c.contractAt} 기준 주차에 자동 배정 예정)</span>}
+                        {c.contractAt && <span className="text-slate-500 dark:text-slate-400 ml-1">(계약일 {c.contractAt} 기준 주차에 자동 배정 예정)</span>}
                     </span>
                 )}
             </div>
@@ -233,10 +233,10 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                         <div className="space-y-2 text-sm">
                             <div className="text-slate-600 dark:text-gray-300">
                                 전체 수수료 <b className="text-slate-900 dark:text-white tabular-nums">{fmtMan(cc.total)}</b> · 고객 입금 <span className="tabular-nums">{fmtMan(cc.depositActual)}</span>{cc.depositPlanned > 0 && <span className="tabular-nums"> (예정 {fmtMan(cc.depositPlanned)})</span>}
-                                <span className="block text-xs text-slate-400 mt-0.5">계약금 단계 기준 {fmtMan(cc.firstThreshold)} 입금 · 완납 단계 기준 {fmtMan(cc.fullThreshold)} 입금</span>
+                                <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">계약금 단계 기준 {fmtMan(cc.firstThreshold)} 입금 · 완납 단계 기준 {fmtMan(cc.fullThreshold)} 입금</span>
                             </div>
                             {cc.stages.length === 0 ? (
-                                <p className="text-slate-400 text-xs">아직 지급 사유가 없습니다. 고객 입금이 {fmtMan(cc.firstThreshold)} 이상이 되면 1단계가 생깁니다.</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs">아직 지급 사유가 없습니다. 고객 입금이 {fmtMan(cc.firstThreshold)} 이상이 되면 1단계가 생깁니다.</p>
                             ) : (
                                 <ul className="divide-y divide-slate-100 dark:divide-gray-700 rounded-lg border border-slate-200 dark:border-gray-700">
                                     {cc.stages.map(s => (
@@ -248,7 +248,7 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                                     ))}
                                 </ul>
                             )}
-                            <p className="text-xs text-slate-400">받은 돈 기록과 미수금은 정산 → 받을 돈에서 사무실별로 관리합니다.</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">받은 돈 기록과 미수금은 정산 → 받을 돈에서 사무실별로 관리합니다.</p>
                         </div>
                     )}
                 </SectionCard>
@@ -256,7 +256,7 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
 
             {/* 고객 입금 내역 */}
             <SectionCard
-                title={<>고객 입금 내역 <span className="text-xs font-normal text-slate-400">(고객 → 사무실)</span></>}
+                title={<>고객 입금 내역 <span className="text-xs font-normal text-slate-500 dark:text-slate-400">(고객 → 사무실)</span></>}
                 meta={<span className="text-sm">누적 입금 <b className="text-blue-600 dark:text-blue-400">{depositedTotal.toLocaleString()}만원</b></span>}
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
@@ -273,7 +273,7 @@ export const CaseSettlementTab: React.FC<CaseSettlementTabProps> = ({
                         <Plus size={15} /> {deposits.length + 1}차 입금 추가
                     </button>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2">누적 입금은 오늘(한국 날짜)까지 들어온 입금만 더합니다. 날짜가 오늘 이후면 "입금 예정"입니다.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">누적 입금은 오늘(한국 날짜)까지 들어온 입금만 더합니다. 날짜가 오늘 이후면 "입금 예정"입니다.</p>
             </SectionCard>
         </div>
     );

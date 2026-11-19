@@ -278,7 +278,7 @@ export function AiApplyModal({ c, extracted, memo, preferNew, sourceLabel = 'AI 
             {preferNew ? '가장 최근 통화라 바뀐 값도 기본으로 체크했습니다.' : '이미 값이 있는 칸은 기본으로 체크하지 않았습니다.'}
             {' '}채무·재산은 기존 항목과 이름·종류로 맞춰 금액만 바꾸고, 이번에 안 나온 항목은 지우지 않습니다.
           </p>
-          <div className="flex gap-1.5 mt-1.5 text-[11px]">
+          <div className="flex gap-1.5 mt-1.5 text-xs">
             {(['add', 'change', 'remove'] as Kind[]).filter(k => counts[k]).map(k => (
               <span key={k} className={`px-1.5 py-0.5 rounded border ${KIND_BADGE[k].cls}`}>{KIND_BADGE[k].text} {counts[k]}</span>
             ))}
@@ -293,7 +293,7 @@ export function AiApplyModal({ c, extracted, memo, preferNew, sourceLabel = 'AI 
                 <tr key={x.key} className={`cursor-pointer ${on[x.key] ? (x.kind === 'remove' ? 'bg-red-50/60 dark:bg-red-900/10' : 'bg-blue-50/50 dark:bg-blue-900/10') : ''}`} onClick={() => toggle(x.key)}>
                   <td className="text-center"><input type="checkbox" checked={!!on[x.key]} onChange={() => toggle(x.key)} onClick={e => e.stopPropagation()} /></td>
                   <td className="px-2 py-1.5 font-medium text-gray-700 dark:text-gray-200">
-                    <span className={`mr-1.5 text-[10px] px-1 py-0.5 rounded border ${KIND_BADGE[x.kind].cls}`}>{KIND_BADGE[x.kind].text}</span>{x.label}
+                    <span className={`mr-1.5 text-xs px-1 py-0.5 rounded border ${KIND_BADGE[x.kind].cls}`}>{KIND_BADGE[x.kind].text}</span>{x.label}
                   </td>
                   <td className="px-2 text-gray-400">{x.current}</td>
                   <td className={`px-2 ${x.kind === 'remove' ? 'text-red-600 text-xs' : 'text-gray-800 dark:text-gray-100'}`}>{x.next}</td>
@@ -304,7 +304,7 @@ export function AiApplyModal({ c, extracted, memo, preferNew, sourceLabel = 'AI 
           </table>
         </div>
         <div className="px-5 py-3 border-t dark:border-gray-700 flex items-center justify-end gap-2">
-          <span className="mr-auto text-[11px] text-gray-400">반영하면 바뀐 내용이 상담 메모에 기록됩니다.</span>
+          <span className="mr-auto text-xs text-gray-400">반영하면 바뀐 내용이 상담 메모에 기록됩니다.</span>
           <button onClick={onClose} className="px-4 py-2 rounded border border-gray-300 text-sm">취소</button>
           <button disabled={count === 0} onClick={() => {
             const chosen = cands.filter(x => on[x.key]);

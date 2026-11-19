@@ -263,7 +263,7 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                   className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                     channelFilter === item.channel
                       ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 shadow-xs'
-                      : 'border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800'
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
@@ -281,7 +281,7 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                   <div className="mt-1 text-xs font-extrabold text-slate-900 dark:text-slate-100 tabular-nums">
                     ₩{item.amountWon.toLocaleString()}
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
                     {item.amountManwon.toLocaleString()}만원
                   </div>
                 </div>
@@ -308,7 +308,7 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             {/* Search Input */}
             <div className="relative">
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
@@ -349,13 +349,13 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                 filteredRecords.map(r => (
                   <tr 
                     key={r.id} 
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="hover:bg-slate-50 dark:hover:bg-slate-100/50 dark:bg-slate-800/50 transition-colors"
                   >
                     <td className="py-2.5 px-3 whitespace-nowrap text-slate-700 dark:text-slate-300">
                       {r.date}
                     </td>
                     <td className="py-2.5 px-3 whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded font-sans font-bold text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                      <span className="px-2 py-0.5 rounded font-sans font-bold text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
                         {r.channel}
                       </span>
                     </td>
@@ -366,11 +366,11 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                       {r.amountManwon.toLocaleString()}만원
                     </td>
                     <td className="py-2.5 px-3 whitespace-nowrap font-sans text-slate-600 dark:text-slate-400">
-                      <span className="text-[11px]">
+                      <span className="text-xs">
                         {r.paymentMethod || '-'}
                       </span>
                       {r.receiptStatus && (
-                        <span className="ml-1 text-[10px] text-slate-400">
+                        <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">
                           ({r.receiptStatus})
                         </span>
                       )}
@@ -386,13 +386,13 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                         {r.source === 'expense' ? (
                           <button
                             onClick={() => onDeleteExpense(r.id)}
-                            className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            className="p-1 text-slate-500 dark:text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                             title="지출 삭제"
                           >
                             <Trash2 size={13} />
                           </button>
                         ) : (
-                          <span className="text-[10px] text-slate-400 font-sans">연동</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-sans">연동</span>
                         )}
                       </td>
                     )}
@@ -402,7 +402,7 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                 <tr>
                   <td 
                     colSpan={onDeleteExpense ? 8 : 7} 
-                    className="py-8 text-center text-slate-400 font-sans text-xs"
+                    className="py-8 text-center text-slate-500 dark:text-slate-400 font-sans text-xs"
                   >
                     해당 조건의 광고비 지출 내역이 없습니다.
                   </td>

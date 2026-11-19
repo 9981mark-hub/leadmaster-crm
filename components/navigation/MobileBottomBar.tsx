@@ -100,7 +100,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
                       : 'text-blue-600 dark:text-blue-400 font-bold'
                     : isLite
                     ? 'text-amber-600/80 dark:text-amber-400/80'
-                    : 'text-slate-400 dark:text-slate-500'
+                    : 'text-slate-500 dark:text-slate-400 dark:text-slate-500'
                 }`}
               >
                 <div className="relative">
@@ -109,7 +109,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
                     <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-current rounded-full" />
                   )}
                 </div>
-                <span className="text-[10px] mt-0.5 tracking-tight">{tab.label}</span>
+                <span className="text-xs mt-0.5 tracking-tight">{tab.label}</span>
               </Link>
             );
           })}
@@ -120,7 +120,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
             className={`flex-1 flex flex-col items-center justify-center py-1 min-w-[54px] transition-colors ${
               isDrawerOpen 
                 ? 'text-blue-600 dark:text-blue-400 font-bold' 
-                : 'text-slate-400 dark:text-slate-500'
+                : 'text-slate-500 dark:text-slate-400 dark:text-slate-500'
             }`}
           >
             <div className="relative">
@@ -129,7 +129,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
                 <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500" />
               )}
             </div>
-            <span className="text-[10px] mt-0.5 tracking-tight">전체 메뉴</span>
+            <span className="text-xs mt-0.5 tracking-tight">전체 메뉴</span>
           </button>
         </div>
       </div>
@@ -155,13 +155,13 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
                   <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     전체 메뉴
                   </h3>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {org?.orgName} ({roleLabel})
                   </p>
                 </div>
                 <button
                   onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -171,7 +171,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
               <div className="flex-1 overflow-y-auto p-4 space-y-5">
                 {fullGroups.map(group => (
                   <div key={group.label} className="space-y-2">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">
                       {group.label}
                     </p>
                     <div className="grid grid-cols-2 gap-2">
@@ -201,7 +201,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
                               <span className="text-xs truncate block">{item.label}</span>
                             </div>
                             {'badge' in item && typeof item.badge === 'number' && item.badge > 0 && (
-                              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500 text-white shrink-0">
+                              <span className="px-1.5 py-0.2 rounded-full text-xs font-bold bg-rose-500 text-white shrink-0">
                                 {item.badge}
                               </span>
                             )}

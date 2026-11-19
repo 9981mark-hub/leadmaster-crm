@@ -174,7 +174,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={18} />
           </button>
@@ -189,7 +189,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <Sparkles size={14} className="text-amber-500" />
                 1. 기본 권한 등급 (Tier Preset) 선택
               </label>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 프리셋 선택 후 아래 세부 스위치를 개별 조정할 수 있습니다
               </span>
             </div>
@@ -211,7 +211,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   </span>
                   {tier === 1 && <Check size={14} className="text-blue-600" />}
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 leading-tight">
+                <p className="text-xs text-slate-500 dark:text-gray-400 leading-tight">
                   배정 · 모니터링 · 녹음감사 중심 (신임/현장형)
                 </p>
               </button>
@@ -232,7 +232,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   </span>
                   {tier === 2 && <Check size={14} className="text-indigo-600" />}
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 leading-tight">
+                <p className="text-xs text-slate-500 dark:text-gray-400 leading-tight">
                   Tier 1 + 실적검토 · 상담원초대 · 대량배분
                 </p>
               </button>
@@ -253,7 +253,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   </span>
                   {tier === 3 && <Check size={14} className="text-purple-600" />}
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 leading-tight">
+                <p className="text-xs text-slate-500 dark:text-gray-400 leading-tight">
                   Tier 2 + 보안프로필 · 분배규칙 · 계정정지
                 </p>
               </button>
@@ -283,7 +283,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     신규 상담원 초대 권한
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     새로운 상담원 가입 초대장 발송 가능
                   </div>
                 </div>
@@ -302,7 +302,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     상담원 인센티브/실적 보드 검토
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     팀원별 콜·인계 실적 및 수당 산출 확인
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     상담원 보안 프로필 수정 권한
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     워터마크, 번호 마스킹, 캡처 차단 변경
                   </div>
                 </div>
@@ -340,7 +340,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     분배 규칙 및 수명주기 정책 수정
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     라운드로빈 쿼터 및 자동 회수 룰 설정
                   </div>
                 </div>
@@ -359,7 +359,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     상담원 계정 정지 / 비활성화 권한 (고위험)
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     문제 상담원 계정 사용 중지 및 즉시 세션 파기
                   </div>
                 </div>
@@ -389,11 +389,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <div className="flex-1">
                   <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                     <span>미수금 및 분납 잔금 현황 열람</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-bold">
+                    <span className="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-bold">
                       기본 권장
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     고객 분납금 미납 건을 확인하여 상담원에게 잔금 회수 통화를 독려할 수 있습니다.
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     상담원 인센티브/수당 상세 대장 열람
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     팀원들의 건당 인센티브 산출 내역을 검토하고 수당 문의를 조율할 수 있습니다.
                   </div>
                 </div>
@@ -431,7 +431,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     제휴 거래처(법무법인) 정산 수수료율 및 청구서 복사
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     법무법인과의 건당 수임 수수료율(%) 및 공식 청구서 추출 기능을 허용합니다.
                   </div>
                 </div>
@@ -449,11 +449,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <div className="flex-1">
                   <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <span>DB 구입 원가 및 대행사별 지출 단가 열람</span>
-                    <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-bold">
+                    <span className="text-xs bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-bold">
                       보안 주의
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     외부 광고 대행사에 지불하는 건당 DB 구매 단가 및 품질 원가를 확인합니다.
                   </div>
                 </div>
@@ -471,11 +471,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <div className="flex-1">
                   <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <span>전사 통합 경영 손익 (순영업이익/고정비) 열람</span>
-                    <span className="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">
+                    <span className="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">
                       최고 기밀
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     회사의 최종 순마진율, 임대료, 서버비 등 손익 종합 지표를 열람합니다.
                   </div>
                 </div>
@@ -493,7 +493,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 </h4>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-gray-400">소속 관리 팀:</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-gray-400">소속 관리 팀:</span>
                 <input
                   type="text"
                   value={teamName}
@@ -517,11 +517,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <div className="flex-1">
                   <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                     <span>텔레그램 연동 관제 센터 접근 권한</span>
-                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
                       {telegramPerms.allowAccess ? '허용' : '차단'}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     좌측 메뉴의 'TG 연동 센터' 진입 및 실시간 현장 피드백 관제를 허용합니다.
                   </div>
                 </div>
@@ -545,7 +545,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         }`}
                       >
                         <div className="text-xs">👥 담당 팀만 조회 (추천)</div>
-                        <div className="text-[10px] opacity-80 mt-0.5">{teamName} 소속 팀원 리드의 피드백만 열람</div>
+                        <div className="text-xs opacity-80 mt-0.5">{teamName} 소속 팀원 리드의 피드백만 열람</div>
                       </button>
                       <button
                         type="button"
@@ -557,7 +557,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         }`}
                       >
                         <div className="text-xs">🌐 전사 전체 조회 (총괄)</div>
-                        <div className="text-[10px] opacity-80 mt-0.5">모든 팀과 법률사무소의 피드백 전면 열람</div>
+                        <div className="text-xs opacity-80 mt-0.5">모든 팀과 법률사무소의 피드백 전면 열람</div>
                       </button>
                     </div>
                   </div>
@@ -575,7 +575,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                       <div className="font-bold text-slate-800 dark:text-slate-200">
                         AI 추천 대량 일괄 승인 권한 위임
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                      <div className="text-xs text-slate-500 dark:text-gray-400">
                         선택 승인 및 'AI 추천대로 전체 일괄 저장·승인' 일괄 처리 허용
                       </div>
                     </div>
@@ -594,7 +594,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                       <div className="font-bold text-slate-800 dark:text-slate-200">
                         자동화 룰 (AI 상태 변경 및 부재 카운트) 설정 권한 위임
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                      <div className="text-xs text-slate-500 dark:text-gray-400">
                         법률사무소 키워드 파싱 규칙 및 오토파일럿 상태 변경 규칙 수정 허용
                       </div>
                     </div>
@@ -612,11 +612,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                     <div className="flex-1">
                       <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                         <span>과거 히스토리 데이터 영구 삭제 권한 위임</span>
-                        <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-xs bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-bold">
                           고위험
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                      <div className="text-xs text-slate-500 dark:text-gray-400">
                         보관 주기가 지난 텔레그램 수집 원본 로그를 영구 삭제할 수 있습니다.
                       </div>
                     </div>
@@ -635,7 +635,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   5. 사내 공지사항 & 업무 지시 권한 위임
                 </h4>
               </div>
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-gray-400">
+              <span className="text-xs font-semibold text-slate-500 dark:text-gray-400">
                 대상: {teamName}
               </span>
             </div>
@@ -653,11 +653,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <div className="flex-1">
                   <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                     <span>공지사항 & 업무 지시 관리 권한</span>
-                    <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">
+                    <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">
                       {noticePerms.allowAccess ? '허용' : '차단'}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     좌측 메뉴의 '사내 공지사항' 관리 기능(공지 작성, 업무 지시 하달, 수신 통계 열람)을 허용합니다.
                   </div>
                 </div>
@@ -681,7 +681,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         }`}
                       >
                         <div className="text-xs">👥 담당 팀 한정 (추천)</div>
-                        <div className="text-[10px] opacity-80 mt-0.5">{teamName} 팀 공지 작성 및 소속 팀원에게만 업무 지시 하달</div>
+                        <div className="text-xs opacity-80 mt-0.5">{teamName} 팀 공지 작성 및 소속 팀원에게만 업무 지시 하달</div>
                       </button>
                       <button
                         type="button"
@@ -693,7 +693,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         }`}
                       >
                         <div className="text-xs">🌐 전사 전체 허용 (총괄)</div>
-                        <div className="text-[10px] opacity-80 mt-0.5">전사 공지사항 작성 및 모든 팀 상담원에게 지시 하달</div>
+                        <div className="text-xs opacity-80 mt-0.5">전사 공지사항 작성 및 모든 팀 상담원에게 지시 하달</div>
                       </button>
                     </div>
                   </div>
@@ -712,7 +712,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="font-bold text-slate-800 dark:text-slate-200">
                           새 공지사항 등록 권한
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        <div className="text-xs text-slate-500 dark:text-gray-400">
                           새로운 공지 글을 게시할 수 있습니다.
                         </div>
                       </div>
@@ -731,7 +731,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="font-bold text-slate-800 dark:text-slate-200">
                           업무 지시 하달 권한
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        <div className="text-xs text-slate-500 dark:text-gray-400">
                           상담원에게 조치 요구 업무 지시를 내릴 수 있습니다.
                         </div>
                       </div>
@@ -750,11 +750,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                     <div className="flex-1">
                       <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                         <span>공지사항 삭제 권한</span>
-                        <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-xs bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
                           {noticePerms.canDeleteNotice ? '삭제 가능' : '삭제 차단'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                      <div className="text-xs text-slate-500 dark:text-gray-400">
                         게시된 공지사항을 삭제할 수 있습니다 (대표/총괄 권장).
                       </div>
                     </div>
@@ -773,7 +773,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   6. AI 트레이닝 & 코칭 센터 위임 스위치 (실전 훈련 및 역량 지도)
                 </h4>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300">
+              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300">
                 AI 모의실습 & 피드백
               </span>
             </div>
@@ -791,11 +791,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <div className="flex-1">
                   <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                     <span>AI 트레이닝 관리 & 코칭 허브 접근 권한</span>
-                    <span className="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">
+                    <span className="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">
                       {trainingPerms.allowAccess ? '허용' : '차단'}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     좌측 메뉴의 'AI 트레이닝' 센터 내 관리자 코칭 허브 및 평가 기능을 허용합니다.
                   </div>
                 </div>
@@ -819,7 +819,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         }`}
                       >
                         <div className="text-xs">👥 담당 팀 한정 (추천)</div>
-                        <div className="text-[10px] opacity-80 mt-0.5">{teamName} 소속 팀원의 모의 훈련 세션만 열람 및 밀착 지도</div>
+                        <div className="text-xs opacity-80 mt-0.5">{teamName} 소속 팀원의 모의 훈련 세션만 열람 및 밀착 지도</div>
                       </button>
                       <button
                         type="button"
@@ -831,7 +831,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         }`}
                       >
                         <div className="text-xs">🌐 전사 전체 허용 (총괄)</div>
-                        <div className="text-[10px] opacity-80 mt-0.5">전사 모든 팀 상담원의 모의 통화 이력 및 녹취 열람</div>
+                        <div className="text-xs opacity-80 mt-0.5">전사 모든 팀 상담원의 모의 통화 이력 및 녹취 열람</div>
                       </button>
                     </div>
                   </div>
@@ -850,7 +850,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="font-bold text-slate-800 dark:text-slate-200">
                           평가 등급(S~F) 및 코칭 작성
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        <div className="text-xs text-slate-500 dark:text-gray-400">
                           팀원 모의 훈련에 등급을 매기고 피드백을 등록합니다.
                         </div>
                       </div>
@@ -869,7 +869,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="font-bold text-slate-800 dark:text-slate-200">
                           전사 훈련 정책 설정 권한
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                        <div className="text-xs text-slate-500 dark:text-gray-400">
                           회사 표준 첫인사 및 키워드 설정을 수정합니다 (대표/총괄 권장).
                         </div>
                       </div>
@@ -889,7 +889,7 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                   7. 시스템 설정(Settings) 권한 위임 스위치 (전사 표준 및 인프라)
                 </h4>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-200 text-slate-800 dark:bg-gray-600 dark:text-slate-200">
+              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-slate-200 text-slate-800 dark:bg-gray-600 dark:text-slate-200">
                 표준체계 & 인프라
               </span>
             </div>
@@ -907,11 +907,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                 <div className="flex-1">
                   <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                     <span>시스템 설정 페이지 접근 권한</span>
-                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
                       {settingsPerms.allowAccess ? '허용' : '차단'}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     좌측 메뉴의 '시스템 설정' 페이지 접근을 허용합니다 (체크 해제 시 메뉴 비노출).
                   </div>
                 </div>
@@ -938,11 +938,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="flex-1">
                           <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                             <span>1. 거래처 맞춤 관리 탭 오픈 (수임 수수료율 기밀)</span>
-                            <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                            <span className="text-xs bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
                               {settingsPerms.allowPartners ? '오픈' : '숨김(차단)'}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          <div className="text-xs text-slate-500 dark:text-gray-400">
                             제휴 법무법인의 건당 수임 수수료율 규칙 및 서식 설정 탭을 오픈합니다 (대표/총괄 권장).
                           </div>
                         </div>
@@ -960,11 +960,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="flex-1">
                           <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                             <span>2. 공통 업무 설정 편집 권한 (상담상태/유입경로/콜간격)</span>
-                            <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
                               {settingsPerms.allowOperations ? '수정/삭제 허용' : '읽기 전용 뷰어'}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          <div className="text-xs text-slate-500 dark:text-gray-400">
                             체크 시 상담 상태 체계 및 콜 리마인더 간격을 수정할 수 있습니다. (미체크 시 열람만 가능한 안전 뷰어 모드로 동작)
                           </div>
                         </div>
@@ -982,11 +982,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="flex-1">
                           <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                             <span>3. 외부 연동 & AI 탭 관리 권한</span>
-                            <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                            <span className="text-xs bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
                               {settingsPerms.allowIntegrations ? '오픈' : '숨김(차단)'}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          <div className="text-xs text-slate-500 dark:text-gray-400">
                             텔레그램 알림방 타깃 설정 및 AI 회생/파산 도메인 감지 키워드 관리를 허용합니다.
                           </div>
                         </div>
@@ -1004,11 +1004,11 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
                         <div className="flex-1">
                           <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                             <span>4. 데이터 백업 다운로드 권한</span>
-                            <span className="text-[10px] bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
+                            <span className="text-xs bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded font-bold">
                               {settingsPerms.allowDataSecurity ? '다운로드 허용' : '숨김(차단)'}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-gray-400">
+                          <div className="text-xs text-slate-500 dark:text-gray-400">
                             전사 수동 DB 백업 다운로드 및 캐시 재동기화를 허용합니다. (긴급 데이터 파기 및 백업 복원은 대표 전권 고정)
                           </div>
                         </div>

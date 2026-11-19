@@ -64,7 +64,7 @@ export default function ReceivablesTab({ cases, partners }: Props) {
           <Stat label="이번 달 새로 생긴 청구" value={totals.thisMonth} />
           <Stat label="고객 입금 예정으로 생길 돈" value={totals.planned} tone="muted" />
         </div>
-        <p className="text-xs text-slate-400 mt-3">고객이 사무실에 낸 입금(리드 상세 → 수임료/정산)과 거래처별 수당 룰로 계산합니다. 받은 돈을 기록하면 오래된 청구부터 차감합니다.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">고객이 사무실에 낸 입금(리드 상세 → 수임료/정산)과 거래처별 수당 룰로 계산합니다. 받은 돈을 기록하면 오래된 청구부터 차감합니다.</p>
       </section>
 
       {/* 사무실별 */}
@@ -87,21 +87,21 @@ export default function ReceivablesTab({ cases, partners }: Props) {
                 className={`cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700/40 ${selected === lg.partner.partnerId ? 'bg-blue-50/60 dark:bg-blue-900/20' : ''}`}>
                 <td className="px-4 py-3 font-semibold text-slate-800 dark:text-gray-100">
                   {lg.partner.name}
-                  <span className="ml-2 text-[11px] font-normal text-slate-400">{VAT_LABEL[vatModeOf(lg.partner)]}</span>
-                  {lg.problems.length > 0 && <span className="ml-2 text-[11px] font-normal text-amber-700">확인 필요 {lg.problems.length}건</span>}
+                  <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">{VAT_LABEL[vatModeOf(lg.partner)]}</span>
+                  {lg.problems.length > 0 && <span className="ml-2 text-xs font-normal text-amber-700">확인 필요 {lg.problems.length}건</span>}
                 </td>
                 <td className={`px-3 py-3 text-right ${num}`}>{fmtMan(lg.billedTotal)}</td>
                 <td className={`px-3 py-3 text-right text-emerald-700 ${num}`}>{fmtMan(lg.receivedTotal)}</td>
                 <td className={`px-3 py-3 text-right font-bold ${lg.outstanding > 0 ? 'text-slate-900 dark:text-white' : 'text-emerald-700'} ${num}`}>
                   {lg.outstanding < 0 ? `더 받음 ${fmtMan(-lg.outstanding)}` : fmtMan(lg.outstanding)}
                 </td>
-                <td className={`px-3 py-3 text-right ${lg.overdue > 0 ? 'text-red-600 font-semibold' : 'text-slate-300'} ${num}`}>{lg.overdue > 0 ? fmtMan(lg.overdue) : '-'}</td>
+                <td className={`px-3 py-3 text-right ${lg.overdue > 0 ? 'text-red-600 font-semibold' : 'text-slate-600 dark:text-slate-300'} ${num}`}>{lg.overdue > 0 ? fmtMan(lg.overdue) : '-'}</td>
                 <td className="px-3 py-3 text-slate-600">{lg.nextDueAt ? `${md(lg.nextDueAt)} (${daysBetween(today, lg.nextDueAt)}일 뒤)` : '-'}</td>
-                <td className="px-3 py-3 text-slate-400"><ChevronRight size={16} /></td>
+                <td className="px-3 py-3 text-slate-500 dark:text-slate-400"><ChevronRight size={16} /></td>
               </tr>
             ))}
             {ledgers.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-400">아직 계산할 계약이 없습니다. 리드 상세 → 수임료/정산에 계약일·수임료·고객 입금을 넣으면 여기에 나옵니다.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-500 dark:text-slate-400">아직 계산할 계약이 없습니다. 리드 상세 → 수임료/정산에 계약일·수임료·고객 입금을 넣으면 여기에 나옵니다.</td></tr>
             )}
           </tbody>
         </table>
@@ -116,7 +116,7 @@ export default function ReceivablesTab({ cases, partners }: Props) {
 }
 
 function Stat({ label, value, tone = 'plain' }: { label: string; value: number; tone?: 'plain' | 'red' | 'muted' }) {
-  const color = tone === 'red' ? 'text-red-600' : tone === 'muted' ? 'text-slate-400' : 'text-slate-800 dark:text-gray-100';
+  const color = tone === 'red' ? 'text-red-600' : tone === 'muted' ? 'text-slate-500 dark:text-slate-400' : 'text-slate-800 dark:text-gray-100';
   return (
     <div>
       <div className="text-xs text-slate-500">{label}</div>
@@ -171,7 +171,7 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
         {/* 청구 내역 */}
         <div className="xl:col-span-2 space-y-4">
           <div>
-            <h4 className="text-sm font-bold text-slate-700 dark:text-gray-200 mb-2">청구 내역 <span className="font-normal text-slate-400">(받은 돈은 받기로 한 날이 빠른 것부터 차감)</span></h4>
+            <h4 className="text-sm font-bold text-slate-700 dark:text-gray-200 mb-2">청구 내역 <span className="font-normal text-slate-500 dark:text-slate-400">(받은 돈은 받기로 한 날이 빠른 것부터 차감)</span></h4>
             <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-gray-700">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 dark:bg-gray-700/40 text-xs text-slate-500">
@@ -185,7 +185,7 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
                   {[...lg.lines].reverse().map(l => (
                     <tr key={l.key} className={l.cancelled ? 'bg-amber-50/50' : ''}>
                       <td className="px-3 py-2"><Link to={`/case/${l.caseId}`} className="font-medium text-slate-800 dark:text-gray-100 hover:underline">{l.customerName}</Link>
-                        {l.cancelled && <span className="ml-1 text-[11px] text-amber-700">({l.status})</span>}</td>
+                        {l.cancelled && <span className="ml-1 text-xs text-amber-700">({l.status})</span>}</td>
                       <td className="px-2 text-slate-600 text-xs">{l.stageLabel}</td>
                       <td className={`px-2 text-slate-500 ${num}`}>{md(l.earnedAt)}</td>
                       <td className={`px-2 text-slate-500 ${num}`}>{md(l.dueAt)}</td>
@@ -194,7 +194,7 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
                       <td className="px-3"><span className={`text-xs px-1.5 py-0.5 rounded ${STATE_CLS[l.state]}`}>{l.state}{l.state === '연체' ? ` ${l.overdueDays}일` : ''}</span></td>
                     </tr>
                   ))}
-                  {lg.lines.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-slate-400">아직 지급 사유가 생긴 건이 없습니다.</td></tr>}
+                  {lg.lines.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-slate-500 dark:text-slate-400">아직 지급 사유가 생긴 건이 없습니다.</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -237,18 +237,18 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="border border-slate-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm dark:bg-gray-700" />
               <div className="relative">
                 <input inputMode="decimal" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value.replace(/[^0-9.]/g, '') })} placeholder="금액" className={`w-full border border-slate-300 dark:border-gray-600 rounded px-2 py-1.5 pr-10 text-sm text-right dark:bg-gray-700 ${num}`} />
-                <span className="absolute right-2 top-1.5 text-xs text-slate-400">만원</span>
+                <span className="absolute right-2 top-1.5 text-xs text-slate-500 dark:text-slate-400">만원</span>
               </div>
             </div>
             <input value={form.memo} onChange={e => setForm({ ...form, memo: e.target.value })} placeholder="메모 (예: 10월분 일부)" className="w-full border border-slate-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm dark:bg-gray-700" />
             <div className="flex gap-2">
               <button disabled={saving || !(Number(form.amount) > 0)} onClick={() => save({ date: form.date, amount: Number(form.amount), memo: form.memo.trim() || undefined })}
-                className="flex-1 py-2 rounded-lg bg-slate-900 text-white text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-1"><Plus size={14} /> 기록하기</button>
+                className="flex-1 py-2 rounded-lg bg-white dark:bg-gray-900 text-white text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-1"><Plus size={14} /> 기록하기</button>
               <button onClick={() => setShowBank(v => !v)} className="px-3 py-2 rounded-lg border border-slate-300 text-sm flex items-center gap-1" title="정산 → 지출 탭에 올린 통장 내역 중 이 사무실 입금"><Landmark size={14} /> 통장에서</button>
             </div>
             {showBank && (
               <div className="max-h-48 overflow-y-auto text-xs space-y-1 pt-1">
-                {bankRows.length === 0 && <p className="text-slate-400">이 사무실 입금으로 찾은 통장 내역이 없습니다. (설정 → 거래처 → 입금자명, 정산 → 지출 탭에서 통장 엑셀 업로드)</p>}
+                {bankRows.length === 0 && <p className="text-slate-500 dark:text-slate-400">이 사무실 입금으로 찾은 통장 내역이 없습니다. (설정 → 거래처 → 입금자명, 정산 → 지출 탭에서 통장 엑셀 업로드)</p>}
                 {bankRows.map(t => (
                   <div key={t.id} className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded px-2 py-1">
                     <span className={num}>{t.date}</span><span className="truncate">{t.counterparty}</span>
@@ -266,7 +266,7 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
                     <span className="truncate text-slate-500">{c.memo}</span>
                     <span className={`ml-auto font-semibold ${num}`}>{fmtMan(c.amount)}</span>
                     <button onClick={async () => { if (!window.confirm(`${c.date} ${fmtMan(c.amount)} 기록을 지울까요?`)) return; try { onCollectionsChange(await deleteCollection(c.id)); } catch (e: any) { showToast(e.message, 'error'); } }}
-                      className="text-slate-300 hover:text-red-600" aria-label="기록 삭제"><Trash2 size={13} /></button>
+                      className="text-slate-600 dark:text-slate-300 hover:text-red-600" aria-label="기록 삭제"><Trash2 size={13} /></button>
                   </li>
                 ))}
               </ul>

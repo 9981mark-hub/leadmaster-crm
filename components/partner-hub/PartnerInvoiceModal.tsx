@@ -223,7 +223,7 @@ export const PartnerInvoiceModal: React.FC<PartnerInvoiceModalProps> = ({
                     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                         <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-700/60 border-b border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-600 dark:text-gray-300 flex justify-between items-center">
                             <span>정산 대상 수임 완료 내역 ({items.length}건)</span>
-                            <span className="text-[11px] font-normal text-gray-400">
+                            <span className="text-xs font-normal text-gray-400">
                                 요율: {partner.incentiveType === 'fixed' ? `건당 ${partner.incentiveFixedAmount || 50}만` : `${partner.incentiveRate || 30}%`}
                             </span>
                         </div>

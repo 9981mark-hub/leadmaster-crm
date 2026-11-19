@@ -682,11 +682,11 @@ export default function SettingsPage() {
                                 시스템 설정
                             </h1>
                             {isOwner ? (
-                                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-md">
+                                <span className="px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-md">
                                     대표 최고 관리자
                                 </span>
                             ) : (
-                                <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-md">
+                                <span className="px-2 py-0.5 text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-md">
                                     권한 위임 관리자
                                 </span>
                             )}
@@ -740,7 +740,7 @@ export default function SettingsPage() {
                             <h2 className="text-base font-black text-gray-900 dark:text-gray-100 truncate">
                                 {orgName}
                             </h2>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                                 멀티테넌트 워크스페이스
                             </span>
                         </div>
@@ -782,7 +782,7 @@ export default function SettingsPage() {
                     >
                         <Building size={16} />
                         <span>1. 거래처 맞춤 관리</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300">
                             {partners.length}개
                         </span>
                     </button>
@@ -799,7 +799,7 @@ export default function SettingsPage() {
                     >
                         <Sliders size={16} />
                         <span>2. 공통 업무 설정</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">
                             {isOwner || settingsPerms.allowOperations ? '편집 가능' : '안전 열람'}
                         </span>
                     </button>
@@ -816,7 +816,7 @@ export default function SettingsPage() {
                     >
                         <MessageCircle size={16} />
                         <span>3. 외부 연동 & AI</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300">
                             텔레그램/AI
                         </span>
                     </button>
@@ -833,7 +833,7 @@ export default function SettingsPage() {
                     >
                         <Shield size={16} />
                         <span>4. 데이터 & 보안</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
                             {isOwner ? '전권 관리' : '백업 다운로드'}
                         </span>
                     </button>

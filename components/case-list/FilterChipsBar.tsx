@@ -71,7 +71,7 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 py-1 px-3 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs animate-in fade-in duration-150">
-      <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 mr-1 shrink-0">
+      <div className="flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400 dark:text-slate-500 mr-1 shrink-0">
         <Filter size={12} />
         <span>적용된 필터:</span>
       </div>
@@ -126,7 +126,7 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Date Range */}
       {(dateFilterStart || dateFilterEnd) && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-medium font-mono text-[11px]">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-medium font-mono text-xs">
           기간: {dateFilterStart || '~'} ~ {dateFilterEnd || ''}
           {onClearDateFilter && (
             <button onClick={onClearDateFilter} className="hover:text-slate-900 transition-colors">

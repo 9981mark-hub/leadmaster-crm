@@ -313,7 +313,7 @@ export default function Statistics() {
     const renderDelta = (curr: number, prev: number, isPercentPoint = false, isWon = false) => {
         if (periodFilter === 'all') return null;
         const diff = curr - prev;
-        if (diff === 0) return <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal ml-1">(0)</span>;
+        if (diff === 0) return <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1">(0)</span>;
 
         let displayDiff = '';
         if (isPercentPoint) {
@@ -329,7 +329,7 @@ export default function Statistics() {
         const colorClass = isPositive ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400';
 
         return (
-            <span className={`text-[10px] font-semibold ml-1.5 flex items-center gap-0.5 ${colorClass}`}>
+            <span className={`text-xs font-semibold ml-1.5 flex items-center gap-0.5 ${colorClass}`}>
                 {isPositive ? '▲' : '▼'} {displayDiff}
             </span>
         );
@@ -1402,7 +1402,7 @@ export default function Statistics() {
                                 <span className="text-xs text-gray-400">/ {targetContracts}건</span>
                                 <button
                                     onClick={() => { setTargetInput(targetContracts.toString()); setIsEditingTarget(true); }}
-                                    className="text-[10px] text-gray-400 hover:text-blue-500 ml-1.5 underline"
+                                    className="text-xs text-gray-400 hover:text-blue-500 ml-1.5 underline"
                                 >
                                     설정
                                 </button>
@@ -1432,7 +1432,7 @@ export default function Statistics() {
                                 fill="transparent"
                             />
                         </svg>
-                        <span className="absolute text-[10px] font-bold text-indigo-600 dark:text-indigo-400">{targetPercent}%</span>
+                        <span className="absolute text-xs font-bold text-indigo-600 dark:text-indigo-400">{targetPercent}%</span>
                     </div>
                 </div>
             </div>
@@ -1456,7 +1456,7 @@ export default function Statistics() {
                                 <ChartSection 
                                     title={`📈 ${trendGroupBy === 'month' ? '월별' : '주별'} 신규 접수 & 계약 추이 (그라데이션 분석)`}
                                     headerExtra={
-                                        <div className="flex bg-gray-150 dark:bg-gray-750 p-0.5 rounded-lg text-[11px] font-bold shadow-inner">
+                                        <div className="flex bg-gray-150 dark:bg-gray-750 p-0.5 rounded-lg text-xs font-bold shadow-inner">
                                             <button 
                                                 onClick={() => setTrendGroupBy('month')} 
                                                 className={`px-2.5 py-1 rounded-md transition-all ${trendGroupBy === 'month' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
@@ -1534,7 +1534,7 @@ export default function Statistics() {
                                                             </div>
                                                         </div>
                                                         {i > 0 && Number(dropOffPercent) > 0 && (
-                                                            <div className="flex items-center justify-end pr-2 gap-1 text-[10px] text-red-500 font-semibold">
+                                                            <div className="flex items-center justify-end pr-2 gap-1 text-xs text-red-500 font-semibold">
                                                                 <span>이탈: -{dropOffPercent}%</span>
                                                                 <span className="text-gray-400 font-normal">({funnelData[i - 1].value - stage.value}명 이탈)</span>
                                                             </div>
@@ -1613,7 +1613,7 @@ export default function Statistics() {
                                             {tableGroupBy === 'month' ? '월별' : '주별'} 신규 접수 및 계약 성과와 전환율을 비교 정렬합니다.
                                         </p>
                                     </div>
-                                    <div className="flex bg-gray-100 dark:bg-gray-700 p-0.5 rounded-lg text-[11px] font-bold shadow-inner">
+                                    <div className="flex bg-gray-100 dark:bg-gray-700 p-0.5 rounded-lg text-xs font-bold shadow-inner">
                                         <button 
                                             onClick={() => setTableGroupBy('month')} 
                                             className={`px-2.5 py-1 rounded-md transition-all ${tableGroupBy === 'month' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
@@ -1668,7 +1668,7 @@ export default function Statistics() {
                                                         <td className="py-3 px-3">
                                                             <div className="flex flex-col">
                                                                 <span className="font-semibold text-gray-800 dark:text-white text-sm">{row.label}</span>
-                                                                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{row.subLabel}</span>
+                                                                <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{row.subLabel}</span>
                                                             </div>
                                                         </td>
                                                         <td className="py-3 px-3 text-right font-medium text-gray-700 dark:text-gray-300">{row.leads}건</td>
@@ -1854,7 +1854,7 @@ export default function Statistics() {
                                                                     <th className="text-right py-2 px-2 font-semibold text-blue-600">수수료 (매출)</th>
                                                                     <th className="text-right py-2 px-2">CPA</th>
                                                                     <th className="text-right py-2 px-2">CPC</th>
-                                                                    <th className="text-right py-2 px-2 font-bold">ROAS <span className="text-[10px] font-normal text-gray-400 block">(수수료 기준)</span></th>
+                                                                    <th className="text-right py-2 px-2 font-bold">ROAS <span className="text-xs font-normal text-gray-400 block">(수수료 기준)</span></th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -1932,7 +1932,7 @@ export default function Statistics() {
                                                         <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse block"></span>
                                                         토스애즈 성과보고서 구글 시트 연동
                                                     </h4>
-                                                    <span className="text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-bold px-2 py-0.5 rounded-full">
+                                                    <span className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-bold px-2 py-0.5 rounded-full">
                                                         CORS 우회 지원
                                                     </span>
                                                 </div>
@@ -1974,13 +1974,13 @@ export default function Statistics() {
                                                         </a>
                                                         <button
                                                             onClick={() => setIsEditingUrl(true)}
-                                                            className="text-[10px] text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5"
+                                                            className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5"
                                                         >
                                                             연동 주소 변경
                                                         </button>
                                                     </div>
                                                 )}
-                                                <p className="text-[10px] text-gray-400 mt-1">
+                                                <p className="text-xs text-gray-400 mt-1">
                                                     최종 동기화 시간: <span className="font-semibold text-gray-600 dark:text-gray-300">{lastSyncTime}</span>
                                                 </p>
                                             </div>
@@ -2005,7 +2005,7 @@ export default function Statistics() {
                                             <h4 className="text-xl font-bold text-gray-800 dark:text-white">
                                                 {tossSummaryKpis.totalSpend.toLocaleString()}원
                                             </h4>
-                                            <p className="text-[10px] text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-400 mt-1">
                                                 부가세 10% 포함: <span className="font-medium text-gray-500">{(Math.round(tossSummaryKpis.totalSpend * 1.1)).toLocaleString()}원</span>
                                             </p>
                                         </div>
@@ -2014,7 +2014,7 @@ export default function Statistics() {
                                             <h4 className="text-xl font-bold text-blue-600 dark:text-blue-400">
                                                 {tossSummaryKpis.avgCtr}%
                                             </h4>
-                                            <p className="text-[10px] text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-400 mt-1">
                                                 클릭 {tossSummaryKpis.totalClicks.toLocaleString()}건 | 평균 CPC: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpc.toLocaleString()}원</span>
                                             </p>
                                         </div>
@@ -2023,7 +2023,7 @@ export default function Statistics() {
                                             <h4 className="text-xl font-bold text-purple-600 dark:text-purple-400">
                                                 {tossSummaryKpis.totalTossLeads}명
                                             </h4>
-                                            <p className="text-[10px] text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-400 mt-1">
                                                 광고비 기준 CPL: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpl.toLocaleString()}원</span>
                                             </p>
                                         </div>
@@ -2032,7 +2032,7 @@ export default function Statistics() {
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">CRM 실접수 & 최종 계약율</p>
                                                 <div className="group relative">
                                                     <HelpCircle size={12} className="text-gray-400 cursor-help" />
-                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 z-10">
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 z-10">
                                                         지연 매칭 등으로 100% 일치하지 않을 수 있으며, 정확한 효율은 주간/월간 뷰로 대조 권장합니다.
                                                     </div>
                                                 </div>
@@ -2040,7 +2040,7 @@ export default function Statistics() {
                                             <h4 className="text-xl font-bold text-green-600 dark:text-green-400">
                                                 {tossSummaryKpis.totalCrmLeads}건 <span className="text-xs text-gray-400 font-normal">➔ {tossSummaryKpis.totalContracts}건</span>
                                             </h4>
-                                            <p className="text-[10px] text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-400 mt-1">
                                                 연동 매칭율: <span className="font-medium">{tossSummaryKpis.matchRate}%</span> | 최종 전환율: <span className="font-bold text-green-600 dark:text-green-400">{tossSummaryKpis.overallClosingRate}%</span>
                                             </p>
                                         </div>
@@ -2062,7 +2062,7 @@ export default function Statistics() {
                                                         <button
                                                             key={g.id}
                                                             onClick={() => setTossTimeGroup(g.id as any)}
-                                                            className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all ${tossTimeGroup === g.id
+                                                            className={`text-xs font-bold px-2 py-1 rounded-md transition-all ${tossTimeGroup === g.id
                                                                 ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                                                                 : 'text-gray-500 border border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                                                         >
@@ -2123,7 +2123,7 @@ export default function Statistics() {
                                                                 </motion.div>
                                                             </div>
                                                             {idx > 0 && (
-                                                                <p className="text-[10px] text-gray-400 dark:text-gray-500 text-right font-medium">
+                                                                <p className="text-xs text-gray-400 dark:text-gray-500 text-right font-medium">
                                                                     이전 단계 대비 효율: <span className="font-bold text-gray-600 dark:text-gray-300">
                                                                         {idx === 1 
                                                                             ? `${tossSummaryKpis.matchRate}% (CRM 등록율)` 
@@ -2152,7 +2152,7 @@ export default function Statistics() {
                                                         <button
                                                             key={g.id}
                                                             onClick={() => setTossTimeGroup(g.id as any)}
-                                                            className={`text-[10px] font-bold px-2.5 py-1.5 rounded-md transition-all ${tossTimeGroup === g.id
+                                                            className={`text-xs font-bold px-2.5 py-1.5 rounded-md transition-all ${tossTimeGroup === g.id
                                                                 ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
                                                                 : 'text-gray-500 hover:text-gray-800'}`}
                                                         >
@@ -2162,7 +2162,7 @@ export default function Statistics() {
                                                 </div>
                                                 <button
                                                     onClick={exportTossPerformanceCsv}
-                                                    className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
+                                                    className="flex items-center gap-1 text-xs px-2.5 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
                                                 >
                                                     <Download size={12} /> CSV 다운로드
                                                 </button>
@@ -2183,7 +2183,7 @@ export default function Statistics() {
                                                         className="w-full text-xs pl-8 pr-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"
                                                     />
                                                 </div>
-                                                <div className="flex items-center gap-1 text-[10px] text-gray-400 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 px-2 py-1 rounded-md">
+                                                <div className="flex items-center gap-1 text-xs text-gray-400 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 px-2 py-1 rounded-md">
                                                     <Info size={11} className="text-blue-500" />
                                                     주말/야간 유입은 CRM에 다음 날 접수될 수 있으므로, 정확한 전환율 대조를 위해서는 <strong>주간별/월간별</strong> 뷰를 사용하세요.
                                                 </div>
@@ -2251,13 +2251,13 @@ export default function Statistics() {
                                                                         <td className="py-2.5 px-2 text-right text-gray-400">{d.impressions > 0 ? d.impressions.toLocaleString() : '-'}</td>
                                                                         <td className="py-2.5 px-2 text-right">
                                                                             <span className="font-semibold">{d.clicks > 0 ? d.clicks.toLocaleString() : '-'}</span>
-                                                                            {d.ctr > 0 && <span className="text-[10px] text-gray-400 block">({d.ctr}%)</span>}
+                                                                            {d.ctr > 0 && <span className="text-xs text-gray-400 block">({d.ctr}%)</span>}
                                                                         </td>
                                                                         <td className="py-2.5 px-2 text-right font-bold text-purple-600">{d.tossLeads > 0 ? `${d.tossLeads}명` : '-'}</td>
                                                                         <td className="py-2.5 px-2 text-right text-gray-600 dark:text-gray-400">{d.cpl > 0 ? `${d.cpl.toLocaleString()}원` : '-'}</td>
                                                                         <td className="py-2.5 px-2 text-right font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/10">
                                                                             {d.crmLeads > 0 ? `${d.crmLeads}건` : '-'}
-                                                                            {d.tossLeads > 0 && <span className="text-[9px] text-gray-400 block font-normal">매칭 {dayMatchRate}%</span>}
+                                                                            {d.tossLeads > 0 && <span className="text-xs text-gray-400 block font-normal">매칭 {dayMatchRate}%</span>}
                                                                         </td>
                                                                         <td className="py-2.5 px-2 text-right font-bold text-green-600 dark:text-green-400 bg-green-50/10">
                                                                             {d.contracts > 0 ? `${d.contracts}건` : '-'}
@@ -2266,7 +2266,7 @@ export default function Statistics() {
                                                                             <span className={`font-black ${dayClosingRate >= 5 ? 'text-green-600' : 'text-gray-600 dark:text-gray-400'}`}>
                                                                                 {dayClosingRate > 0 ? `${dayClosingRate}%` : '-'}
                                                                             </span>
-                                                                            {d.crmRevenue > 0 && <span className="text-[10px] text-purple-600 block">({d.crmRevenue.toLocaleString()}만원)</span>}
+                                                                            {d.crmRevenue > 0 && <span className="text-xs text-purple-600 block">({d.crmRevenue.toLocaleString()}만원)</span>}
                                                                         </td>
                                                                     </tr>
                                                                 );
@@ -2283,14 +2283,14 @@ export default function Statistics() {
                                             {/* Table Pagination */}
                                             {totalTossPages > 1 && (
                                                 <div className="flex items-center justify-between pt-4 no-print border-t border-gray-100 dark:border-gray-700/30">
-                                                    <span className="text-[10px] text-gray-400">
+                                                    <span className="text-xs text-gray-400">
                                                         총 {sortedPerformanceData.length}개 항목 중 {tossPage} / {totalTossPages} 페이지
                                                     </span>
                                                     <div className="flex items-center gap-1">
                                                         <button
                                                             onClick={() => setTossPage(prev => Math.max(1, prev - 1))}
                                                             disabled={tossPage === 1}
-                                                            className="px-2.5 py-1 text-[11px] border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                            className="px-2.5 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
                                                         >
                                                             이전
                                                         </button>
@@ -2298,7 +2298,7 @@ export default function Statistics() {
                                                             <button
                                                                 key={page}
                                                                 onClick={() => setTossPage(page)}
-                                                                className={`px-2 py-1 text-[11px] border rounded ${tossPage === page
+                                                                className={`px-2 py-1 text-xs border rounded ${tossPage === page
                                                                     ? 'bg-blue-600 text-white border-blue-600 font-bold'
                                                                     : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
                                                             >
@@ -2308,7 +2308,7 @@ export default function Statistics() {
                                                         <button
                                                             onClick={() => setTossPage(prev => Math.min(totalTossPages, prev + 1))}
                                                             disabled={tossPage === totalTossPages}
-                                                            className="px-2.5 py-1 text-[11px] border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                            className="px-2.5 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
                                                         >
                                                             다음
                                                         </button>

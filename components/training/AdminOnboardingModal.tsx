@@ -101,12 +101,12 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-900 to-slate-900 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-400/30">
-              <Users className="w-5 h-5 text-indigo-400" />
+              <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
               <h2 className="text-lg font-black tracking-tight text-white flex items-center gap-2">
                 <span>신입 온보딩 패스트트랙 전사 관제 보드</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-gray-950 text-[10px] font-black">
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-gray-950 text-xs font-black">
                   관리자 전용
                 </span>
               </h2>
@@ -159,7 +159,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
               }`}
             >
               <span>승인 대기</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-600 text-white">
+              <span className="px-1.5 py-0.2 rounded-full text-xs bg-amber-600 text-white">
                 {profiles.filter((p) => p.isCompleted && !p.isApprovedByAdmin).length}
               </span>
             </button>
@@ -230,7 +230,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" title="발신 권한 승인됨" />
                             )}
                           </div>
-                          <div className="text-[11px] text-gray-400 font-mono">{p.userId}</div>
+                          <div className="text-xs text-gray-400 font-mono">{p.userId}</div>
                         </td>
 
                         <td className="p-3.5 text-gray-500 dark:text-gray-400">
@@ -239,7 +239,7 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
                         <td className="p-3.5">
                           <div className="space-y-1 w-32">
-                            <div className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center justify-between text-xs">
                               <span className="font-bold text-indigo-600 dark:text-indigo-400">
                                 {p.progressPercent}%
                               </span>
@@ -270,15 +270,15 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
                         <td className="p-3.5">
                           {p.isApprovedByAdmin ? (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                               ✅ 실전 발신 승인완료
                             </span>
                           ) : isPendingApproval ? (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 animate-pulse">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 animate-pulse">
                               ⏳ 승인 대기 중
                             </span>
                           ) : (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                               훈련 진행 중
                             </span>
                           )}
@@ -364,16 +364,16 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-gray-600 dark:text-gray-300">
+                      <div className="text-xs text-gray-600 dark:text-gray-300">
                         {m.requirement}
                       </div>
                       {sState?.score !== undefined && (
-                        <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                        <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
                           점수: {sState.score}점
                         </div>
                       )}
                       {sState?.completedAt && (
-                        <div className="text-[10px] text-gray-400">
+                        <div className="text-xs text-gray-400">
                           완료일시: {sState.completedAt.replace('T', ' ').substring(0, 16)}
                         </div>
                       )}

@@ -162,12 +162,12 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                         <MessageSquare size={16} />
                                     </a>
                                 )}
-                                {c.isNew && <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-600 text-white font-bold">신규</span>}
+                                {c.isNew && <span className="text-xs px-1.5 py-0.5 rounded bg-red-600 text-white font-bold">신규</span>}
                             </div>
                             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                                 <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 font-medium">{c.caseType || '유형 미정'}</span>
                                 <span className={`px-1.5 py-0.5 rounded font-medium ${partner ? 'bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200' : 'bg-red-50 text-red-700'}`}>{partner?.name || '거래처 미정'}</span>
-                                {c.inboundPath && <span className="text-slate-400">{c.inboundPath}</span>}
+                                {c.inboundPath && <span className="text-slate-500 dark:text-slate-400">{c.inboundPath}</span>}
                                 {progress && progress.total > 0 && (
                                     <span className={`px-1.5 py-0.5 rounded font-medium ${progress.done === progress.total ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}
                                         title={progress.missing.length ? `확인 안 한 항목: ${progress.missing.join(', ')}` : '필수 확인 항목을 모두 입력했습니다'}>
@@ -185,7 +185,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                     {/* 할 일 */}
                     {/* 모바일(768px 미만)에서는 숨김: 앱 화면에서 고객 정보를 가리지 않게 (2026-11-02) */}
                     <div ref={menuRef} className="hidden md:flex flex-wrap items-center gap-1.5 relative">
-                        <button onClick={call} className={`${btn} bg-slate-900 text-white border-slate-900 hover:bg-slate-800`}><Phone size={15} /> 전화</button>
+                        <button onClick={call} className={`${btn} bg-white dark:bg-gray-900 text-white border-slate-200 dark:border-slate-900 hover:bg-slate-100 dark:bg-slate-800`}><Phone size={15} /> 전화</button>
                         {isMobileUA() ? (
                             <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50`}><MessageSquare size={15} /> 문자</a>
                         ) : (
@@ -219,7 +219,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             <button onClick={onDeliverClick} className={`${btn} border-sky-200 text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20`} title="회사 텔레그램 봇으로 변호사 사무실 방에 상담 내용을 보냅니다"><Send size={15} /> 사무실 전달</button>
                         )}
                         {onOpenPalette && (
-                            <button onClick={onOpenPalette} className="h-9 w-9 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 hidden md:flex items-center justify-center" title="빠른 이동 (Ctrl+K)"><Command size={16} /></button>
+                            <button onClick={onOpenPalette} className="h-9 w-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 hidden md:flex items-center justify-center" title="빠른 이동 (Ctrl+K)"><Command size={16} /></button>
                         )}
 
                         {/* 팝업은 body에 띄운다: 상단 고정 영역(backdrop-blur·overflow-hidden) 안에 있으면 화면 위쪽이 잘린다 */}
@@ -231,7 +231,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                         <div className="p-4 space-y-3">
                                             <div className="flex items-center justify-between text-base font-semibold text-slate-800 dark:text-gray-100">
                                                 <span>{c.customerName}님께 문자 보내기</span>
-                                                <button onClick={() => setMenu(null)} className="text-slate-400 hover:text-slate-600 p-1" aria-label="닫기"><X size={18} /></button>
+                                                <button onClick={() => setMenu(null)} className="text-slate-500 dark:text-slate-400 hover:text-slate-600 p-1" aria-label="닫기"><X size={18} /></button>
                                             </div>
                                             {smsTemplates.length > 0 && (
                                                 <div className="space-y-1.5">
@@ -245,7 +245,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                                                 title={tmpl.content}
                                                             >
                                                                 <div className="font-medium text-slate-800 dark:text-gray-100 truncate">{tmpl.title}</div>
-                                                                <div className="text-slate-400 truncate">{tmpl.content.slice(0, 20)}...</div>
+                                                                <div className="text-slate-500 dark:text-slate-400 truncate">{tmpl.content.slice(0, 20)}...</div>
                                                             </button>
                                                         ))}
                                                     </div>
@@ -256,8 +256,8 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                                 className="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-sm dark:bg-gray-900 dark:text-gray-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" 
                                                 placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
-                                                <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-800 flex items-center gap-1.5">
+                                                <span className="text-xs text-slate-500 dark:text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
+                                                <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-white dark:bg-gray-900 text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
                                                     {sms.isPending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} 보내기
                                                 </button>
                                             </div>
@@ -276,11 +276,11 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                         {quickSlots().map(s => (
                                             <button key={s.label} onClick={() => { onAddCallReminder(s.at, s.label); setMenu(null); }}
                                                 className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-gray-700 flex justify-between items-center group">
-                                                <span className="text-sm font-medium text-slate-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">{s.label}</span>
-                                                <span className="text-xs text-slate-400 tabular-nums">{s.at.slice(5)}</span>
+                                                <span className="text-sm font-medium text-slate-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-600 dark:text-blue-400">{s.label}</span>
+                                                <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">{s.at.slice(5)}</span>
                                             </button>
                                         ))}
-                                        <div className="px-4 py-2 text-xs text-slate-400 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">다른 시각은 오른쪽 "상담 메모 · 일정" 탭에서 추가하세요</div>
+                                        <div className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">다른 시각은 오른쪽 "상담 메모 · 일정" 탭에서 추가하세요</div>
                                     </div>
                                 </div>
                             </div>,
@@ -322,7 +322,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             </button>
                         )}
                         {isMissedStatus && c.lastMissedCallAt && (
-                            <span className="text-[11px] text-orange-600 tabular-nums">마지막 부재 {(() => { const d = new Date(c.lastMissedCallAt!); return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; })()}</span>
+                            <span className="text-xs text-orange-600 tabular-nums">마지막 부재 {(() => { const d = new Date(c.lastMissedCallAt!); return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; })()}</span>
                         )}
                     </div>
                 </div>

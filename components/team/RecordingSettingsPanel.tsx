@@ -77,7 +77,7 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           <p className="text-xs text-gray-500 -mt-2">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b>리드 번호와의 통화만</b> 회사의 안전한 <b>Supabase Storage(call-recordings 버킷)</b>에 1년간 암호화 보관합니다. 0.1초 고속 스트리밍 및 대화록 싱크 청취를 지원합니다.</p>
           <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-200 flex flex-wrap items-center gap-1.5 shadow-2xs">
             <span className="font-bold shrink-0">⚡ 32kbps AAC 모노 H/W 가속 압축 활성화</span>
-            <span className="text-[11px] text-emerald-700 dark:text-emerald-300">· 원본 대비 용량 75% 절감 (100GB 무료 한도 1년 보관 완비)</span>
+            <span className="text-xs text-emerald-700 dark:text-emerald-300">· 원본 대비 용량 75% 절감 (100GB 무료 한도 1년 보관 완비)</span>
           </div>
           <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
             <input type="checkbox" checked={s.autoAnalyze} onChange={e => setS({ ...s, autoAnalyze: e.target.checked })} disabled={!s.autoUpload} /> 올리면 바로 AI 정리 (요약·대화록·채무 정리)

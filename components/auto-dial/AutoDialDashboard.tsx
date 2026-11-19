@@ -212,7 +212,7 @@ const AutoDialDashboard: React.FC = () => {
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black flex items-center gap-3">
-            <PhoneCall className="w-8 h-8 text-amber-400" />
+            <PhoneCall className="w-8 h-8 text-amber-600 dark:text-amber-400" />
             스마트 오토콜 센터
           </h1>
           <p className="text-indigo-200 mt-1 text-xs md:text-sm max-w-xl">
@@ -274,7 +274,7 @@ const AutoDialDashboard: React.FC = () => {
             <LayoutDashboard size={16} />
             캠페인 & 플로어 관제 (v4.0)
             {campaigns.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full text-[11px] bg-white/20 text-white">
+              <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-white/20 text-white">
                 {campaigns.length}
               </span>
             )}
@@ -292,7 +292,7 @@ const AutoDialDashboard: React.FC = () => {
             <FileSpreadsheet size={16} />
             간편 수동 배치 (v1.0 호환)
             {batches.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full text-[11px] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                 {batches.length}
               </span>
             )}
@@ -322,7 +322,7 @@ const AutoDialDashboard: React.FC = () => {
                   >
                     <span className={`w-2 h-2 rounded-full ${camp.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
                     <span>{camp.name}</span>
-                    <span className="font-mono text-[11px] text-gray-400">
+                    <span className="font-mono text-xs text-gray-400">
                       ({camp.completedLeads}/{camp.totalLeads})
                     </span>
                     {isAdmin && (

@@ -53,7 +53,7 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -64,13 +64,13 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
           {/* Current Status Box */}
           <div className="p-4 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-center justify-between">
             <div>
-              <span className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold">현재 라이선스 좌석 현황</span>
+              <span className="text-xs text-blue-700 dark:text-blue-400 font-semibold">현재 라이선스 좌석 현황</span>
               <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
                 {currentSeats}석 사용 중 / 최대 {maxSeats}석
               </div>
             </div>
             <div className="text-right">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">잔여 여유 좌석</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">잔여 여유 좌석</span>
               <div className="text-base font-bold text-blue-600 dark:text-blue-400 font-mono">
                 {Math.max(0, maxSeats - currentSeats)}석 남음
               </div>
@@ -89,14 +89,14 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
               </div>
               <div className="p-2.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/20">
                 <div className="font-bold text-slate-800 dark:text-slate-200">비즈니스 (6~20인)</div>
-                <div className="text-blue-600 dark:text-blue-400 font-bold font-mono">₩52,000/석 <span className="text-[10px] text-emerald-600">(-10%)</span></div>
+                <div className="text-blue-600 dark:text-blue-400 font-bold font-mono">₩52,000/석 <span className="text-xs text-emerald-600">(-10%)</span></div>
               </div>
               <div className="p-2.5 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-950/20">
                 <div className="font-bold text-slate-800 dark:text-slate-200">프로 (21~50인)</div>
-                <div className="text-purple-600 dark:text-purple-400 font-bold font-mono">₩46,000/석 <span className="text-[10px] text-emerald-600">(-20%)</span></div>
+                <div className="text-purple-600 dark:text-purple-400 font-bold font-mono">₩46,000/석 <span className="text-xs text-emerald-600">(-20%)</span></div>
               </div>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               * 좌석 수가 증가할수록 단가가 자동으로 인하되어 전체 상담원 비용이 절감됩니다.
             </p>
           </div>
@@ -114,7 +114,7 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
                 onChange={e => setRequestedSeats(e.target.value)}
                 className="w-full px-3 py-2 pr-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono font-bold text-sm focus:outline-none focus:border-blue-500"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 font-semibold text-slate-400">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 font-semibold text-slate-500 dark:text-slate-400">
                 석
               </span>
             </div>
@@ -135,7 +135,7 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
           </div>
 
           {/* Quick Contact Info */}
-          <div className="pt-2 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
             <span>긴급 문의: support@lmaster.xyz</span>
             <span className="text-blue-600 dark:text-blue-400 font-semibold">운영팀 24시간 실시간 승인</span>
           </div>
@@ -145,7 +145,7 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 font-medium transition-colors cursor-pointer"
             >
               닫기
             </button>

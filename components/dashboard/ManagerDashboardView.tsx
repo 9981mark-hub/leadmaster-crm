@@ -167,11 +167,11 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 관리자 헤더 & 배너 */}
-      <div className="bg-gradient-to-r from-slate-800 via-indigo-950 to-blue-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-800 via-indigo-950 to-blue-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 flex items-center gap-1">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 flex items-center gap-1">
                 <ShieldCheck size={13} /> 현장 플로어 관제 센터
               </span>
               <span className="text-xs text-indigo-200/80">
@@ -272,7 +272,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
               className={`w-full md:w-auto px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm ${
                 unassignedCases.length > 0
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white cursor-pointer hover:shadow'
-                  : 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-gray-500 cursor-not-allowed'
+                  : 'bg-slate-100 dark:bg-gray-700 text-slate-500 dark:text-slate-400 dark:text-gray-500 cursor-not-allowed'
               }`}
             >
               <Zap size={14} className={isDistributing ? 'animate-spin' : ''} />
@@ -326,7 +326,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
             <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
               {agentDailyStats.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400 text-xs">
+                  <td colSpan={7} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
                     등록된 활성 상담원이 없습니다. [팀 관리]에서 상담원을 초대하세요.
                   </td>
                 </tr>
@@ -352,7 +352,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
                       {stat.monthlyContracts}건
                     </td>
                     <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300">
+                      <span className="text-xs px-2 py-0.5 rounded font-semibold bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300">
                         {stat.member.uiMode === 'lite_only' ? '간편콜 전용' : '표준 모드'}
                       </span>
                     </td>

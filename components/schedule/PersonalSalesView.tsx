@@ -351,8 +351,8 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
   const getDayNameColor = (day: Date, isSelected: boolean) => {
     if (isSelected) return 'text-white/80';
     const dayOfWeek = day.getDay();
-    if (dayOfWeek === 0) return 'text-red-400/80';
-    if (dayOfWeek === 6) return 'text-blue-400/80';
+    if (dayOfWeek === 0) return 'text-red-600 dark:text-red-400/80';
+    if (dayOfWeek === 6) return 'text-blue-600 dark:text-blue-400/80';
     return 'text-gray-400 dark:text-gray-500';
   };
 
@@ -472,15 +472,15 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
           <span className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{selectedDateStats.total}건</span>
         </div>
         <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
-          <span className="text-xs font-bold text-blue-400 dark:text-blue-500 uppercase">진행 대기</span>
+          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 dark:text-blue-500 uppercase">진행 대기</span>
           <span className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{selectedDateStats.pending}건</span>
         </div>
         <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
-          <span className="text-xs font-bold text-emerald-400 dark:text-emerald-500 uppercase">완료함</span>
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 dark:text-emerald-500 uppercase">완료함</span>
           <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{selectedDateStats.completed}건</span>
         </div>
         <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200 border-l-4 border-red-500/50">
-          <span className="text-xs font-bold text-red-400 dark:text-red-500 uppercase">미처리 지연</span>
+          <span className="text-xs font-bold text-red-600 dark:text-red-400 dark:text-red-500 uppercase">미처리 지연</span>
           <span className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{selectedDateStats.overdue}건</span>
         </div>
       </div>
@@ -538,7 +538,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                     : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'
                 }`}
               >
-                <span className={`text-[10px] font-bold ${getDayNameColor(day, isSelected)}`}>
+                <span className={`text-xs font-bold ${getDayNameColor(day, isSelected)}`}>
                   {format(day, 'E', { locale: ko })}
                 </span>
                 <span className={`text-sm font-bold ${getDayColor(day, isSelected)}`}>
@@ -682,7 +682,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                   }`} />
 
                   {isNext && (
-                    <span className="absolute top-0 left-4 -translate-y-1/2 text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-indigo-600 text-white shadow-sm">
+                    <span className="absolute top-0 left-4 -translate-y-1/2 text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-indigo-600 text-white shadow-sm">
                       Next up
                     </span>
                   )}
@@ -690,7 +690,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                   <div className="p-4 flex items-start gap-3">
                     <button
                       onClick={(e) => handleToggleReminderComplete(e, item.caseData.caseId, item.reminder.id)}
-                      className="mt-1 text-gray-300 hover:text-indigo-500 dark:text-gray-600 dark:hover:text-indigo-400 transition-colors"
+                      className="mt-1 text-gray-300 hover:text-indigo-500 dark:text-gray-600 dark:hover:text-indigo-600 dark:text-indigo-400 transition-colors"
                       title={isCompleted ? '진행 상태로 변경' : '일정 완료 처리'}
                     >
                       {isCompleted ? (
@@ -711,7 +711,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                             {timeStr}
                           </div>
                           
-                          <div className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold border flex items-center gap-1 ${typeColor}`}>
+                          <div className={`text-xs px-1.5 py-0.5 rounded-md font-bold border flex items-center gap-1 ${typeColor}`}>
                             {type}
                           </div>
                         </div>
@@ -731,7 +731,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                           </button>
 
                           <select
-                            className="text-[10px] font-medium bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="text-xs font-medium bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             value={item.caseData.status}
                             onChange={(e) => {
                               e.stopPropagation();
@@ -750,7 +750,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                             if (inbound) {
                               return (
                                 <span 
-                                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1.5 shadow-2xs ${badge.bg}`}
+                                  className={`text-xs font-bold px-2 py-0.5 rounded-md border flex items-center gap-1.5 shadow-2xs ${badge.bg}`}
                                   title={`유입 경로: ${inbound}`}
                                 >
                                   <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
@@ -760,7 +760,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                             }
                             return (
                               <span 
-                                className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700"
+                                className="text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700"
                                 title="유입 경로 정보 없음"
                               >
                                 경로 미지정
@@ -770,7 +770,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
 
                           {item.caseData.caseType && (
                             <span 
-                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40"
+                              className="text-xs font-semibold px-1.5 py-0.5 rounded bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40"
                               title={`사건 유형: ${item.caseData.caseType}`}
                             >
                               {item.caseData.caseType}
@@ -778,7 +778,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                           )}
                         </div>
 
-                        <div className="hidden md:block text-right text-[10px] text-gray-400">
+                        <div className="hidden md:block text-right text-xs text-gray-400">
                           <div>등록: {format(new Date(item.caseData.createdAt || 0), 'MM-dd')}</div>
                           <div>수정: {format(new Date(item.caseData.updatedAt || 0), 'MM-dd')}</div>
                         </div>
@@ -798,7 +798,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                         e.stopPropagation(); 
                         setExpandedCardId(isExpanded ? null : item.reminder.id); 
                       }}
-                      className="w-full py-1.5 flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors rounded-b-2xl"
+                      className="w-full py-1.5 flex items-center justify-center gap-1 text-xs font-bold text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors rounded-b-2xl"
                     >
                       {isExpanded ? (
                         <><ChevronUp size={14} /> 접기</>

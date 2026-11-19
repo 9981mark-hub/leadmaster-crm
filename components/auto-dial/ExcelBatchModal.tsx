@@ -348,7 +348,7 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
                       <thead className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 sticky top-0 z-10 shadow-sm">
                         <tr>
                           <th className="p-3 w-12">
-                            <button onClick={toggleAll} className="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                            <button onClick={toggleAll} className="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400">
                               {allValidSelected ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                             </button>
                           </th>

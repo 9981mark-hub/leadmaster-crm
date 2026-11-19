@@ -930,9 +930,9 @@ export default function CaseList() {
                     ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (
                         <button key={v.k} type="button" title={v.hint}
                             onClick={() => { setQuickView(v.k); setCurrentPage(1); }}
-                            className={`h-8 px-3 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
+                            className={`h-8 px-3 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-white dark:bg-gray-900 text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
                             {v.label}
-                            <span className={`text-xs tabular-nums ${quickView === v.k ? 'opacity-80' : 'text-slate-400'}`}>{v.n.toLocaleString()}</span>
+                            <span className={`text-xs tabular-nums ${quickView === v.k ? 'opacity-80' : 'text-slate-500 dark:text-slate-400'}`}>{v.n.toLocaleString()}</span>
                         </button>
                     ))}
                 </div>
@@ -948,7 +948,7 @@ export default function CaseList() {
 
             {/* 여러 건 선택했을 때 */}
             {selected.size > 0 && (
-                <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white shadow-lg">
+                <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 text-white shadow-lg">
                     <span className="text-sm font-bold tabular-nums">{selected.size}건 선택</span>
                     <select defaultValue="" onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkStatus(v); }}
                         className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="상태 바꾸기">
@@ -996,7 +996,7 @@ export default function CaseList() {
                         </button>
                     )}
                     <button onClick={() => setSelected(new Set())} className="ml-auto h-8 px-3 rounded-lg text-sm text-white/70 hover:text-white">선택 해제</button>
-                    <span className="w-full text-[11px] text-white/50">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
+                    <span className="w-full text-xs text-white/50">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
                 </div>
             )}
 
@@ -1090,7 +1090,7 @@ export default function CaseList() {
                                     <div>
                                         <h3 className="font-extrabold text-sm sm:text-base tracking-tight flex items-center gap-2">
                                             <span>사무장 인계 수임 큐 (Paralegal Handoff Pipeline)</span>
-                                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">
+                                            <span className="px-2 py-0.5 rounded-full text-xs bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">
                                                 전환율 극대화
                                             </span>
                                         </h3>
@@ -1120,7 +1120,7 @@ export default function CaseList() {
                                             } flex items-center justify-between`}
                                         >
                                             <div>
-                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">미확인 인계</span>
+                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">미확인 인계</span>
                                                 <span className="text-lg font-black text-amber-300 mt-0.5 block">{newCount}건</span>
                                             </div>
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold">NEW</span>
@@ -1136,7 +1136,7 @@ export default function CaseList() {
                                             } flex items-center justify-between`}
                                         >
                                             <div>
-                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">사무장 직접 진행</span>
+                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">사무장 직접 진행</span>
                                                 <span className="text-lg font-black text-blue-300 mt-0.5 block">{inProgressCount}건</span>
                                             </div>
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-blue-400/20 text-blue-300 font-bold">진행중</span>
@@ -1152,7 +1152,7 @@ export default function CaseList() {
                                             } flex items-center justify-between`}
                                         >
                                             <div>
-                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">연락안받음 (재시도)</span>
+                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">연락안받음 (재시도)</span>
                                                 <span className="text-lg font-black text-rose-300 mt-0.5 block">{missedCount}건</span>
                                             </div>
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-rose-400/20 text-rose-300 font-bold">집중관리</span>
@@ -1168,7 +1168,7 @@ export default function CaseList() {
                                             className="bg-white/10 dark:bg-black/20 hover:bg-white/15 p-3 rounded-xl border border-white/10 flex items-center justify-between text-left transition-all cursor-pointer"
                                         >
                                             <div>
-                                                <span className="text-[10px] text-indigo-200 uppercase font-semibold block">최종 수임 체결</span>
+                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">최종 수임 체결</span>
                                                 <span className="text-lg font-black text-emerald-300 mt-0.5 block">{contractedCount}건</span>
                                             </div>
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-bold">계약완료</span>
@@ -1235,7 +1235,7 @@ export default function CaseList() {
                                         onClick={() => setDropOffReason(reason)}
                                         className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${dropOffReason === reason
                                                 ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                                                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400'
+                                                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-600 dark:text-red-400'
                                             }`}
                                     >
                                         {reason}

@@ -269,7 +269,7 @@ export default function BulkDistributionSection({
                   onChange={e => setLimitCount(e.target.value)}
                   className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
                 />
-                <span className="text-[11px] text-gray-400 mt-0.5 block">비워두면 미배정 리드 전체를 배분합니다</span>
+                <span className="text-xs text-gray-400 mt-0.5 block">비워두면 미배정 리드 전체를 배분합니다</span>
               </div>
 
               <div>

@@ -170,7 +170,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
             <span className="font-bold text-xs text-gray-900 dark:text-white truncate">
               {agentName} <span className="font-normal text-gray-500 dark:text-gray-400">상담원</span>
             </span>
-            <span className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium shrink-0">
+            <span className="text-xs bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium shrink-0">
               {todayDateStr}
             </span>
           </div>
@@ -179,7 +179,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
         <div className="flex items-center gap-2 shrink-0">
           {/* 축약 모드 요약 칩 */}
           {!expanded && (
-            <div className="flex items-center gap-2 text-[11px] font-bold text-gray-700 dark:text-gray-300">
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300">
               <span className="text-blue-600 dark:text-blue-400">📞 {totalCalls}콜</span>
               <span className="text-emerald-600 dark:text-emerald-400">⚡ 접수 {transferredCount}</span>
               <span className="text-amber-600 dark:text-amber-400">📵 부재 {missedCount}</span>
@@ -204,11 +204,11 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
             {/* 1. 오늘 통화 발신 */}
             <div className="bg-white dark:bg-gray-900/60 rounded-xl p-2.5 border border-blue-100 dark:border-blue-900/40 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-[11px] font-semibold flex items-center gap-1">
+                <span className="text-xs font-semibold flex items-center gap-1">
                   <PhoneCall size={12} className="text-blue-500" />
                   오늘 발신콜
                 </span>
-                <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold">
+                <span className="text-xs font-mono text-blue-600 dark:text-blue-400 font-bold">
                   {connectRate}% 연결
                 </span>
               </div>
@@ -217,7 +217,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                   {totalCalls}
                   <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
                 </span>
-                <span className="text-[10px] text-gray-400">
+                <span className="text-xs text-gray-400">
                   연결 {connectedCalls}건
                 </span>
               </div>
@@ -226,11 +226,11 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
             {/* 2. 사무장 접수 / 텔레그램 전달 (핵심 실적) */}
             <div className="bg-white dark:bg-gray-900/60 rounded-xl p-2.5 border border-emerald-100 dark:border-emerald-900/40 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-[11px] font-semibold flex items-center gap-1">
+                <span className="text-xs font-semibold flex items-center gap-1">
                   <Send size={12} className="text-emerald-500" />
                   사무장 접수
                 </span>
-                <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1 py-0.2 rounded font-bold">
+                <span className="text-xs bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1 py-0.2 rounded font-bold">
                   유효
                 </span>
               </div>
@@ -239,7 +239,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                   {transferredCount}
                   <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
                 </span>
-                <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80">
+                <span className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
                   변호사 방 전달
                 </span>
               </div>
@@ -252,7 +252,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
               title="클릭하여 부재콜 목록 보기"
             >
               <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-[11px] font-semibold flex items-center gap-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                <span className="text-xs font-semibold flex items-center gap-1 group-hover:text-amber-600 dark:group-hover:text-amber-600 dark:text-amber-400 transition-colors">
                   <PhoneMissed size={12} className="text-amber-500" />
                   부재콜 처리
                 </span>
@@ -263,7 +263,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                   {missedCount}
                   <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
                 </span>
-                <span className="text-[10px] text-gray-400">
+                <span className="text-xs text-gray-400">
                   원터치 처리
                 </span>
               </div>
@@ -272,7 +272,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
             {/* 4. 총 통화 시간 & 계약 성과 */}
             <div className="bg-white dark:bg-gray-900/60 rounded-xl p-2.5 border border-purple-100 dark:border-purple-900/40 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-[11px] font-semibold flex items-center gap-1">
+                <span className="text-xs font-semibold flex items-center gap-1">
                   {contractCount > 0 ? (
                     <Trophy size={12} className="text-purple-500" />
                   ) : (
@@ -281,7 +281,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                   {contractCount > 0 ? '계약 체결' : '총 통화 시간'}
                 </span>
                 {contractCount > 0 && (
-                  <span className="text-[10px] text-purple-600 dark:text-purple-400 font-bold">
+                  <span className="text-xs text-purple-600 dark:text-purple-400 font-bold">
                     달성!
                   </span>
                 )}
@@ -293,7 +293,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                       {contractCount}
                       <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
                     </span>
-                    <span className="text-[10px] text-purple-500 font-mono font-bold">
+                    <span className="text-xs text-purple-500 font-mono font-bold">
                       +{estimatedIncentive > 0 ? `${(estimatedIncentive / 10000).toLocaleString()}만` : '축하합니다'}
                     </span>
                   </>
@@ -302,7 +302,7 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
                     <span className="text-sm font-black text-gray-800 dark:text-gray-200 font-mono truncate">
                       {fmtDuration(totalDurationSec)}
                     </span>
-                    <span className="text-[10px] text-gray-400 truncate">
+                    <span className="text-xs text-gray-400 truncate">
                       평균 {fmtDuration(avgDurationSec)}
                     </span>
                   </>

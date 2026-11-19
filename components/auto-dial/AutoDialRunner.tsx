@@ -405,7 +405,7 @@ const AutoDialRunner: React.FC<AutoDialRunnerProps> = ({ batchId, onClose, onCom
       {/* Back button */}
       <button
         onClick={onClose}
-        className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors -mb-2"
+        className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 transition-colors -mb-2"
       >
         <ArrowLeft size={16} />
         자동통화 관리

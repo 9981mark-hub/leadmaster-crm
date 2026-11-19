@@ -368,11 +368,11 @@ export default function LiteCallPage() {
           <div>
             <h1 className="text-base font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-1.5">
               <span>LeadMaster Lite</span>
-              <span className="text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded font-bold">
+              <span className="text-xs bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded font-bold">
                 간편 모드
               </span>
             </h1>
-            <p className="text-[10px] text-gray-400">콜 & 텔레그램 전달 전용</p>
+            <p className="text-xs text-gray-400">콜 & 텔레그램 전달 전용</p>
           </div>
         </div>
 
@@ -446,7 +446,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'all'
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >
@@ -456,7 +456,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('today')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'today'
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >
@@ -466,7 +466,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('new')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'new'
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >
@@ -476,7 +476,7 @@ export default function LiteCallPage() {
               onClick={() => setActiveTab('missed')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'missed'
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
               }`}
             >
@@ -488,7 +488,7 @@ export default function LiteCallPage() {
           {org?.userId && (
             <button
               onClick={() => setOnlyMyLeads(!onlyMyLeads)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors whitespace-nowrap shrink-0 ${
                 onlyMyLeads
                   ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300'
                   : 'border-gray-200 dark:border-gray-700 text-gray-500'
@@ -536,7 +536,7 @@ export default function LiteCallPage() {
                 {/* 1행: 상태 뱃지 & 유입경로 & 등록일 */}
                 <div className="flex items-center justify-between text-xs mb-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
+                    <span className={`px-2 py-0.5 rounded-md font-bold text-xs ${
                       isNew 
                         ? 'bg-red-500 text-white animate-pulse'
                         : isMissed
@@ -547,17 +547,17 @@ export default function LiteCallPage() {
                     </span>
 
                     {c.missedCallCount && c.missedCallCount > 0 ? (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-50 text-rose-600 font-bold border border-rose-200">
+                      <span className="px-1.5 py-0.5 rounded text-xs bg-rose-50 text-rose-600 font-bold border border-rose-200">
                         부재 {c.missedCallCount}회
                       </span>
                     ) : null}
 
-                    <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
                       {c.caseType || '개인회생'}
                     </span>
                   </div>
 
-                  <span className="text-[11px] text-gray-400 font-mono">
+                  <span className="text-xs text-gray-400 font-mono">
                     {c.createdAt ? c.createdAt.split('T')[0] : ''}
                   </span>
                 </div>
@@ -606,7 +606,7 @@ export default function LiteCallPage() {
                   <button
                     type="button"
                     onClick={() => setExpandedCalcCaseId(expandedCalcCaseId === c.caseId ? null : c.caseId)}
-                    className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline"
+                    className="flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline"
                   >
                     <Calculator size={13} className="text-emerald-600" />
                     <span>{expandedCalcCaseId === c.caseId ? '계산기 접기 ▲' : '⚡ 이 고객 탕감 계산 ▼'}</span>
@@ -614,7 +614,7 @@ export default function LiteCallPage() {
                   <button
                     type="button"
                     onClick={() => setSmsTargetCase(c)}
-                    className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                    className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                   >
                     <MessageSquare size={13} />
                     <span>📩 1-Click 문자</span>
@@ -637,7 +637,7 @@ export default function LiteCallPage() {
                   <button
                     type="button"
                     onClick={(e) => handleQuickMissedCall(c, e)}
-                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-[11px] font-bold active:scale-95 transition-all"
+                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold active:scale-95 transition-all"
                     title="부재 카운트 +1 및 상태 '부재'로 자동 갱신"
                   >
                     <PhoneOff size={16} />
@@ -651,7 +651,7 @@ export default function LiteCallPage() {
                       setActiveCase(c);
                       setPostCallOpen(true);
                     }}
-                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold active:scale-95 transition-all"
+                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold active:scale-95 transition-all"
                     title="상담 요약문 확인 및 텔레그램 전달"
                   >
                     <Send size={16} />

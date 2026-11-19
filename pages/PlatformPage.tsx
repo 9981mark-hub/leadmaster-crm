@@ -314,22 +314,22 @@ export default function PlatformPage() {
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">({app.ownerName} 대표)</span>
                     <span className="text-xs font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap">{app.ownerEmail}</span>
                     <span className="text-xs text-gray-400 whitespace-nowrap">| {app.phone}</span>
-                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap font-medium">
+                    <span className="text-xs px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap font-medium">
                       상담원 {app.agentCountTier === '1-5' ? '1~5인' : app.agentCountTier === '6-20' ? '6~20인' : '21인+'} ({app.selectedPlan?.toUpperCase() || 'STARTER'})
                     </span>
                     {app.termsAgreedAt && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 whitespace-nowrap font-semibold" title={`동의 IP: ${app.termsAgreedIp || '확인됨'}`}>
+                      <span className="text-xs px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 whitespace-nowrap font-semibold" title={`동의 IP: ${app.termsAgreedIp || '확인됨'}`}>
                         🛡️ 전자계약 동의 ({app.termsVersion || 'v1.0'})
                       </span>
                     )}
-                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
                       app.paymentStatus === 'paid'
                         ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
                         : 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
                     }`}>
                       {app.paymentStatus === 'paid' ? '💳 입금 확인됨' : '⏳ 입금 대기중'}
                     </span>
-                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
                       app.status === 'pending'
                         ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
                         : app.status === 'approved'
@@ -351,7 +351,7 @@ export default function PlatformPage() {
                       문의/메모: {app.memo}
                     </div>
                   )}
-                  <div className="text-[11px] text-gray-400">
+                  <div className="text-xs text-gray-400">
                     신청일: {new Date(app.createdAt).toLocaleString('ko-KR')}
                     {app.termsAgreedIp && ` • IP: ${app.termsAgreedIp}`}
                     {app.approvedAt && ` • 승인일: ${new Date(app.approvedAt).toLocaleString('ko-KR')}`}
@@ -380,7 +380,7 @@ export default function PlatformPage() {
 
                 {app.status === 'approved' && (
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg">
+                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg">
                       승인 완료
                     </span>
                     <button
@@ -507,7 +507,7 @@ export default function PlatformPage() {
                       <div className="flex items-center gap-2">
                         <span className="font-bold">{o.name}</span>
                         {isHq && (
-                          <span className="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded">
+                          <span className="px-1.5 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded">
                             본사(면제)
                           </span>
                         )}
@@ -515,21 +515,21 @@ export default function PlatformPage() {
                       {/* 권한 요약 칩 표시 */}
                       {!isHq && permissionsMap[o.id] && (
                         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                          <span className={`text-xs px-1.5 py-0.2 rounded font-semibold ${
                             permissionsMap[o.id].settlementEnabled
                               ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                               : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
                           }`}>
                             광고비·정산 {permissionsMap[o.id].settlementEnabled ? 'ON' : 'OFF'}
                           </span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                          <span className={`text-xs px-1.5 py-0.2 rounded font-semibold ${
                             permissionsMap[o.id].autoDialEnabled
                               ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
                               : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
                           }`}>
                             오토콜 {permissionsMap[o.id].autoDialEnabled ? 'ON' : 'OFF'}
                           </span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                          <span className={`text-xs px-1.5 py-0.2 rounded font-semibold ${
                             permissionsMap[o.id].aiTrainingEnabled
                               ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                               : 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through'
@@ -559,7 +559,7 @@ export default function PlatformPage() {
                           >
                             {o.ownerInviteEmail}
                           </div>
-                          <div className="flex items-center gap-1.5 text-[11px] whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
                             {o.ownerInviteAccepted ? (
                               <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold whitespace-nowrap">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
@@ -588,7 +588,7 @@ export default function PlatformPage() {
                           <span className="text-gray-900 dark:text-white">
                             ₩{monthlyBill.toLocaleString()}
                           </span>
-                          <div className="text-[10px] text-gray-400 font-normal whitespace-nowrap">
+                          <div className="text-xs text-gray-400 font-normal whitespace-nowrap">
                             (₩{bill.unitPrice.toLocaleString()}/석 • {bill.tierName})
                           </div>
                         </div>

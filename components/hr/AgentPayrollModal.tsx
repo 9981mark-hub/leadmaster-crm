@@ -146,7 +146,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                     }`}
                                 >
                                     <div className="font-bold text-xs">{opt.label}</div>
-                                    <div className={`text-[10px] mt-0.5 ${salaryType === opt.type ? 'text-indigo-100' : 'text-gray-400'}`}>
+                                    <div className={`text-xs mt-0.5 ${salaryType === opt.type ? 'text-indigo-100' : 'text-gray-400'}`}>
                                         {opt.desc}
                                     </div>
                                 </button>
@@ -159,7 +159,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                         <div className="p-4 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
                             <div>
                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">월 기본급</span>
-                                <span className="text-[11px] text-gray-400">수임 계약과 무관하게 지급되는 고정 급여입니다.</span>
+                                <span className="text-xs text-gray-400">수임 계약과 무관하게 지급되는 고정 급여입니다.</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <input
@@ -183,7 +183,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                     <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200 block">
                                         수임 성공 1건당 고정 인센티브
                                     </span>
-                                    <span className="text-[11px] text-gray-500">계약 1건당 상담원에게 지급할 성과급입니다.</span>
+                                    <span className="text-xs text-gray-500">계약 1건당 상담원에게 지급할 성과급입니다.</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <input
@@ -262,7 +262,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={() => handleDeleteTier(idx)}
-                                                className="text-red-400 hover:text-red-600 p-1"
+                                                className="text-red-600 dark:text-red-400 hover:text-red-600 p-1"
                                             >
                                                 <Trash2 size={13} />
                                             </button>
@@ -276,7 +276,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                     {/* 5. 출근 일비 & 수당 */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-200 dark:border-gray-700">
-                            <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
                                 출근 1일당 일비/식대 (선택)
                             </label>
                             <div className="flex items-center gap-1.5">
@@ -294,7 +294,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                         </div>
 
                         <div className="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-200 dark:border-gray-700">
-                            <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
                                 만근 보너스 / 고정 수당 (선택)
                             </label>
                             <div className="flex items-center gap-1.5">
@@ -329,12 +329,12 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                                     onClick={() => setTaxType(opt.type as any)}
                                     className={`p-2.5 rounded-xl border text-left transition-all ${
                                         taxType === opt.type
-                                            ? 'bg-slate-800 dark:bg-gray-600 text-white border-slate-800'
+                                            ? 'bg-slate-100 dark:bg-slate-800 dark:bg-gray-600 text-white border-slate-200 dark:border-slate-800'
                                             : 'bg-white dark:bg-gray-750 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
                                     }`}
                                 >
                                     <div className="font-bold text-xs">{opt.label}</div>
-                                    <div className={`text-[10px] mt-0.5 ${taxType === opt.type ? 'text-gray-200' : 'text-gray-400'}`}>
+                                    <div className={`text-xs mt-0.5 ${taxType === opt.type ? 'text-gray-200' : 'text-gray-400'}`}>
                                         {opt.desc}
                                     </div>
                                 </button>

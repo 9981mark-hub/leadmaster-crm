@@ -364,7 +364,7 @@ export default function AgentPerformancePanel() {
             <span className="font-extrabold text-indigo-700 dark:text-indigo-300">
               {payoutInfo.payoutDate}
             </span>
-            <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${
+            <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${
               payoutInfo.dDay > 0
                 ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
                 : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
@@ -374,7 +374,7 @@ export default function AgentPerformancePanel() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-[11px]">
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-xs">
           <span className="truncate max-w-[420px]" title={scheduleSentence}>
             📌 <b>지급 규칙</b>: {scheduleSentence}
           </span>
@@ -489,7 +489,7 @@ export default function AgentPerformancePanel() {
                     <div className="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
                       {k.displayName}
                       {k.status === 'disabled' && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-600">중지</span>
+                        <span className="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-600">중지</span>
                       )}
                     </div>
                     <div className="text-xs text-gray-400">{k.email || '이메일 없음'}</div>
@@ -503,7 +503,7 @@ export default function AgentPerformancePanel() {
                     <div className="font-semibold text-gray-800 dark:text-gray-200">
                       {k.totalCalls.toLocaleString()} <span className="text-xs text-gray-400">/</span> {k.connectedCalls.toLocaleString()}
                     </div>
-                    <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                    <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                       {k.connectRate}%
                     </div>
                   </td>
@@ -512,7 +512,7 @@ export default function AgentPerformancePanel() {
                     <div className="font-semibold text-gray-800 dark:text-gray-200">
                       {fmtSec(k.totalDurationSeconds)}
                     </div>
-                    <div className="text-[11px] text-gray-400">
+                    <div className="text-xs text-gray-400">
                       평균 {fmtSec(k.avgDurationSeconds)}
                     </div>
                   </td>
@@ -525,7 +525,7 @@ export default function AgentPerformancePanel() {
                     <div className="font-semibold text-indigo-600 dark:text-indigo-400">
                       {k.transferredCount}건
                     </div>
-                    <div className="text-[11px] text-gray-400">
+                    <div className="text-xs text-gray-400">
                       {k.transferRate}%
                     </div>
                   </td>
@@ -547,7 +547,7 @@ export default function AgentPerformancePanel() {
                     {k.contractBreakdown && k.contractBreakdown.length > 0 && (
                       <button
                         onClick={() => setSelectedAgentBreakdown(k)}
-                        className="text-[11px] text-blue-600 hover:underline mt-0.5 inline-flex items-center gap-0.5"
+                        className="text-xs text-blue-600 hover:underline mt-0.5 inline-flex items-center gap-0.5"
                       >
                         종류별 내역 ({k.contractBreakdown.length})
                       </button>
@@ -690,7 +690,7 @@ export default function AgentPerformancePanel() {
                         {/* 산정 방식 및 금액 */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-200/60 dark:border-gray-700/60">
                           <div>
-                            <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                            <label className="block text-xs font-semibold text-gray-500 mb-1">
                               인센티브 지급 방식
                             </label>
                             <select
@@ -706,7 +706,7 @@ export default function AgentPerformancePanel() {
                           <div>
                             {type.calcType === 'fixed' ? (
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">
                                   건당 인센티브 금액 (원)
                                 </label>
                                 <div className="relative">
@@ -723,7 +723,7 @@ export default function AgentPerformancePanel() {
                               </div>
                             ) : (
                               <div>
-                                <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">
                                   수임료 지급 비율 (%)
                                 </label>
                                 <div className="relative">
@@ -827,7 +827,7 @@ export default function AgentPerformancePanel() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                         {/* 산정 시작/종료일 */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             산정 시작일
                           </label>
                           <select
@@ -845,7 +845,7 @@ export default function AgentPerformancePanel() {
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             산정 종료일
                           </label>
                           <select
@@ -865,7 +865,7 @@ export default function AgentPerformancePanel() {
 
                         {/* 지급 시점 및 지급일 */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             지급 시점
                           </label>
                           <select
@@ -883,7 +883,7 @@ export default function AgentPerformancePanel() {
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             지급 일자
                           </label>
                           <select
@@ -918,7 +918,7 @@ export default function AgentPerformancePanel() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             산정 시작 요일
                           </label>
                           <select
@@ -936,7 +936,7 @@ export default function AgentPerformancePanel() {
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             산정 종료 요일
                           </label>
                           <select
@@ -954,7 +954,7 @@ export default function AgentPerformancePanel() {
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             지급 주차
                           </label>
                           <select
@@ -971,7 +971,7 @@ export default function AgentPerformancePanel() {
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-500 mb-1">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">
                             지급 요일
                           </label>
                           <select
@@ -999,7 +999,7 @@ export default function AgentPerformancePanel() {
                       <div className="text-sm font-extrabold text-blue-700 dark:text-blue-300 mt-1">
                         "{formatPayoutSchedule(draftSettings.payoutSchedule)}"
                       </div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         설정 저장 즉시 모든 대시보드와 성과표에 이번 정산 회차가 동기화됩니다.
                       </div>
                     </div>
@@ -1065,13 +1065,13 @@ export default function AgentPerformancePanel() {
                   <div key={b.typeId} className="p-3 flex justify-between items-center bg-gray-50/50 dark:bg-gray-750">
                     <div>
                       <div className="font-bold text-gray-800 dark:text-gray-200">{b.typeName}</div>
-                      <div className="text-[11px] text-gray-400">수임료 합계: {b.feeRevenueManwon}만원</div>
+                      <div className="text-xs text-gray-400">수임료 합계: {b.feeRevenueManwon}만원</div>
                     </div>
                     <div className="text-right">
                       <div className="font-extrabold text-indigo-600 dark:text-indigo-400 text-sm">
                         ₩{b.incentiveAmount.toLocaleString()}
                       </div>
-                      <div className="text-[11px] text-gray-500">{b.count}건 체결</div>
+                      <div className="text-xs text-gray-500">{b.count}건 체결</div>
                     </div>
                   </div>
                 ))}

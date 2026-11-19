@@ -381,14 +381,14 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                                     return (
                                         <div
                                             key={idx}
-                                            className={`text-[10px] px-1 py-0.5 rounded truncate ${getEventStyle()}`}
+                                            className={`text-xs px-1 py-0.5 rounded truncate ${getEventStyle()}`}
                                         >
                                             {getIcon()} {e.amount ? `${e.amount}만원` : e.label}
                                         </div>
                                     );
                                 })}
                                 {dayEvents.length > 2 && (
-                                    <div className="text-[10px] text-gray-500">+{dayEvents.length - 2}건 더</div>
+                                    <div className="text-xs text-gray-500">+{dayEvents.length - 2}건 더</div>
                                 )}
                             </div>
                         )}

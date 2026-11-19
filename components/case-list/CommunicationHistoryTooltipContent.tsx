@@ -25,11 +25,11 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'CALL_IN': return <PhoneIncoming size={14} className="text-blue-400" />;
-            case 'CALL_OUT': return <PhoneOutgoing size={14} className="text-green-400" />;
-            case 'CALL_MISSED': return <PhoneMissed size={14} className="text-red-400" />;
-            case 'SMS_IN': return <MessageSquare size={14} className="text-blue-400" />;
-            case 'SMS_OUT': return <MessageSquare size={14} className="text-green-400" />;
+            case 'CALL_IN': return <PhoneIncoming size={14} className="text-blue-600 dark:text-blue-400" />;
+            case 'CALL_OUT': return <PhoneOutgoing size={14} className="text-green-600 dark:text-green-400" />;
+            case 'CALL_MISSED': return <PhoneMissed size={14} className="text-red-600 dark:text-red-400" />;
+            case 'SMS_IN': return <MessageSquare size={14} className="text-blue-600 dark:text-blue-400" />;
+            case 'SMS_OUT': return <MessageSquare size={14} className="text-green-600 dark:text-green-400" />;
             default: return <Phone size={14} />;
         }
     };
@@ -61,14 +61,14 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
                             {getIcon(log.type)}
                             <span>{getLabel(log.type)}</span>
                         </div>
-                        <span className="text-gray-400 text-[10px]">
+                        <span className="text-gray-400 text-xs">
                             {format(new Date(log.timestamp), 'MM.dd HH:mm')}
                         </span>
                     </div>
                     
                     
                     {log.duration !== undefined && log.duration > 0 && log.type.startsWith('CALL') && (
-                        <div className="text-gray-300 mt-1 font-medium bg-gray-700/30 inline-block px-1.5 py-0.5 rounded text-[11px]">
+                        <div className="text-gray-300 mt-1 font-medium bg-gray-700/30 inline-block px-1.5 py-0.5 rounded text-xs">
                             ⏱ 통화 시간: {formatDuration(log.duration)}
                         </div>
                     )}
@@ -80,7 +80,7 @@ export default function CommunicationHistoryTooltipContent({ phone }: Props) {
                     )}
                     
                     {log.lineInfo && log.lineInfo !== '기본' && (
-                        <div className="mt-1.5 inline-block px-1.5 py-0.5 bg-gray-700 text-gray-300 rounded text-[9px]">
+                        <div className="mt-1.5 inline-block px-1.5 py-0.5 bg-gray-700 text-gray-300 rounded text-xs">
                             {log.lineInfo}
                         </div>
                     )}

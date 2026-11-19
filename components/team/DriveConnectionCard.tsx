@@ -81,10 +81,10 @@ export default function DriveConnectionCard() {
       <div className="flex flex-wrap items-center gap-2">
         <HardDrive size={16} className="text-emerald-600" />
         <b className="text-sm text-gray-800 dark:text-gray-100">녹음 원본 장기 보관 (회사 구글 드라이브)</b>
-        {ready ? <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">보관 준비됨</span>
-          : st.connected ? <span className="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">폴더를 정하세요</span>
-          : st.status === 'error' ? <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-semibold">다시 연결 필요</span>
-          : <span className="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-semibold">연결 안 됨</span>}
+        {ready ? <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">보관 준비됨</span>
+          : st.connected ? <span className="text-xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">폴더를 정하세요</span>
+          : st.status === 'error' ? <span className="text-xs px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-semibold">다시 연결 필요</span>
+          : <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-semibold">연결 안 됨</span>}
         <button onClick={reload} className="ml-auto text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} /> 새로고침</button>
       </div>
       <p className="text-xs text-gray-500">통화 녹음 원본을 <b>회사 구글 드라이브</b>에 쌓습니다. 파일은 비공개이고, 리드마스터는 자기가 만든 파일과 허용받은 파일만 다룹니다(회사 드라이브의 다른 파일은 못 봄). 자동 삭제는 하지 않습니다.</p>
@@ -121,7 +121,7 @@ export default function DriveConnectionCard() {
           </>
         )}
       </div>
-      {st.connected && !PICKER_API_KEY && <p className="text-[11px] text-gray-400">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
+      {st.connected && !PICKER_API_KEY && <p className="text-xs text-gray-400">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
 
       {imp && (
         <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs text-gray-600 dark:text-gray-300 grid grid-cols-[12rem_1fr] gap-y-0.5">

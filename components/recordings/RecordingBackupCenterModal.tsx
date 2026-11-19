@@ -219,7 +219,7 @@ export default function RecordingBackupCenterModal({
                 <AlertTriangle size={18} />
               </div>
               <div>
-                <div className="text-[11px] text-gray-400 font-medium">30일 이내 만료 예정</div>
+                <div className="text-xs text-gray-400 font-medium">30일 이내 만료 예정</div>
                 <div className="text-base font-bold text-amber-600 dark:text-amber-400">
                   {stats.urgentCount}건 ({fmtBytes(stats.urgentBytes)})
                 </div>
@@ -231,7 +231,7 @@ export default function RecordingBackupCenterModal({
                 <Clock size={18} />
               </div>
               <div>
-                <div className="text-[11px] text-gray-400 font-medium">60일 이내 만료 예정</div>
+                <div className="text-xs text-gray-400 font-medium">60일 이내 만료 예정</div>
                 <div className="text-base font-bold text-gray-800 dark:text-gray-100">
                   {stats.totalCount}건 ({fmtBytes(stats.totalBytes)})
                 </div>
@@ -243,7 +243,7 @@ export default function RecordingBackupCenterModal({
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <div className="text-[11px] text-gray-400 font-medium">AI 요약/대화록 영구 보존</div>
+                <div className="text-xs text-gray-400 font-medium">AI 요약/대화록 영구 보존</div>
                 <div className="text-xs font-semibold text-green-600 dark:text-green-400">
                   파일 삭제 후에도 텍스트 보존
                 </div>
@@ -372,10 +372,10 @@ export default function RecordingBackupCenterModal({
                           <span className="text-xs font-mono text-gray-500">
                             {it.phone}
                           </span>
-                          <span className="text-[11px] text-gray-400">
+                          <span className="text-xs text-gray-400">
                             {it.callStartedAt?.slice(0, 16).replace('T', ' ')} ({fmtDuration(it.durationSec)})
                           </span>
-                          <span className="text-[11px] text-gray-400">
+                          <span className="text-xs text-gray-400">
                             {fmtBytes(it.sizeBytes)}
                           </span>
                         </div>

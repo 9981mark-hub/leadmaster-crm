@@ -191,13 +191,13 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
                 <span>{call.callNumber}차 통화</span>
 
                 {/* Call Date / Time */}
-                <span className={`text-[11px] ${isSelected ? 'text-purple-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                <span className={`text-xs ${isSelected ? 'text-purple-100' : 'text-gray-500 dark:text-gray-400'}`}>
                   {call.formattedDate}
                 </span>
 
                 {/* Duration if available */}
                 {call.durationLabel && (
-                  <span className={`text-[10px] ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>
+                  <span className={`text-xs ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>
                     ({call.durationLabel})
                   </span>
                 )}
@@ -205,7 +205,7 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
                 {/* Latest Badge */}
                 {call.isLatest && (
                   <span
-                    className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    className={`ml-0.5 px-1.5 py-0.2 rounded-full text-xs font-bold ${
                       isSelected
                         ? 'bg-white text-purple-700'
                         : 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-200'
@@ -217,35 +217,35 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
 
                 {/* Manual Source Tag */}
                 {call.source === 'manual' && !call.isLatest && (
-                  <span className={`text-[10px] opacity-75 ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>
+                  <span className={`text-xs opacity-75 ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>
                     수동
                   </span>
                 )}
 
                 {/* Status indicator if not done */}
                 {call.status === 'processing' && (
-                  <span className={`inline-flex items-center gap-0.5 text-[10px] ${isSelected ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400'}`}>
+                  <span className={`inline-flex items-center gap-0.5 text-xs ${isSelected ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400'}`}>
                     <Loader2 size={11} className="animate-spin" />
                     <span>분석중</span>
                   </span>
                 )}
                 {call.status === 'no_audio' && (
-                  <span className={`text-[10px] px-1 py-0.2 rounded ${isSelected ? 'bg-purple-800/60 text-purple-200' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                  <span className={`text-xs px-1 py-0.2 rounded ${isSelected ? 'bg-purple-800/60 text-purple-200' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
                     음성 없음
                   </span>
                 )}
                 {call.status === 'no_summary' && (
-                  <span className={`text-[10px] px-1 py-0.2 rounded ${isSelected ? 'bg-purple-800/60 text-purple-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
+                  <span className={`text-xs px-1 py-0.2 rounded ${isSelected ? 'bg-purple-800/60 text-purple-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
                     요약 미생성
                   </span>
                 )}
                 {call.status === 'skipped' && (
-                  <span className={`text-[10px] px-1 py-0.2 rounded ${isSelected ? 'bg-purple-800/60 text-purple-200' : 'bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                  <span className={`text-xs px-1 py-0.2 rounded ${isSelected ? 'bg-purple-800/60 text-purple-200' : 'bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-gray-400'}`}>
                     요약생략
                   </span>
                 )}
                 {call.status === 'failed' && (
-                  <span className={`inline-flex items-center gap-0.5 text-[10px] ${isSelected ? 'text-red-200' : 'text-red-500'}`}>
+                  <span className={`inline-flex items-center gap-0.5 text-xs ${isSelected ? 'text-red-200' : 'text-red-500'}`}>
                     <AlertCircle size={11} />
                     <span>분석실패</span>
                   </span>

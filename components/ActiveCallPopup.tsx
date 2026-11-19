@@ -268,7 +268,7 @@ const ActiveCallPopup: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold truncate">{callState.customerName}</p>
-                            <p className="text-[11px] text-gray-400">통화 종료</p>
+                            <p className="text-xs text-gray-400">통화 종료</p>
                         </div>
                         <div className="flex items-center gap-1">
                             {callState.caseId && (
@@ -277,7 +277,7 @@ const ActiveCallPopup: React.FC = () => {
                                     className="p-1.5 rounded-lg hover:bg-gray-700 transition-colors"
                                     title="고객 상세"
                                 >
-                                    <ExternalLink size={14} className="text-blue-400" />
+                                    <ExternalLink size={14} className="text-blue-600 dark:text-blue-400" />
                                 </button>
                             )}
                             <button
@@ -359,7 +359,7 @@ const ActiveCallPopup: React.FC = () => {
                             <span>콜백 인입 {matchedCase.missedCallCount ? `(부재중 ${matchedCase.missedCallCount}회)` : ''}</span>
                         </div>
                         {matchedCase.lastMissedCallAt && (
-                            <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-mono">
+                            <span className="text-xs text-amber-600/80 dark:text-amber-400/80 font-mono">
                                 {formatMemoDate(matchedCase.lastMissedCallAt)}
                             </span>
                         )}
@@ -434,7 +434,7 @@ const ActiveCallPopup: React.FC = () => {
                                         {/* 1열: 총 채무액 */}
                                         <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
                                                     총 채무액
                                                 </span>
                                                 <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 block mt-0.5 truncate">
@@ -443,7 +443,7 @@ const ActiveCallPopup: React.FC = () => {
                                             </div>
                                             {debtTotal > 0 && (
                                                 <div className="mt-1">
-                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold ${
                                                         isEligible 
                                                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
                                                             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
@@ -457,7 +457,7 @@ const ActiveCallPopup: React.FC = () => {
                                         {/* 2열: 월 순소득 */}
                                         <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
                                                     월 순소득
                                                 </span>
                                                 <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 block mt-0.5 truncate">
@@ -465,7 +465,7 @@ const ActiveCallPopup: React.FC = () => {
                                                 </span>
                                             </div>
                                             <div className="mt-1 truncate">
-                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                                     {[jobType, insurance === '가입' ? '4대' : insurance === '미가입' ? '미가입' : ''].filter(Boolean).join(' · ') || '직업 미입력'}
                                                 </span>
                                             </div>
@@ -474,7 +474,7 @@ const ActiveCallPopup: React.FC = () => {
                                         {/* 3열: 주거 / 이력 */}
                                         <div className="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-sm flex flex-col justify-between">
                                             <div>
-                                                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
+                                                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight block">
                                                     주거 / 이력
                                                 </span>
                                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block mt-0.5 truncate">
@@ -482,7 +482,7 @@ const ActiveCallPopup: React.FC = () => {
                                                 </span>
                                             </div>
                                             <div className="mt-1 truncate">
-                                                <span className={`text-[10px] font-medium ${historyStr.includes('기각') ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                <span className={`text-xs font-medium ${historyStr.includes('기각') ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
                                                     {historyStr}
                                                 </span>
                                             </div>
@@ -497,7 +497,7 @@ const ActiveCallPopup: React.FC = () => {
                             <div className="flex gap-3">
                                 {/* 유입 경로 */}
                                 <div className="flex-1 bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-xl border border-purple-100 dark:border-purple-800/30 text-center">
-                                    <div className="text-[10px] font-semibold text-purple-400 dark:text-purple-500 mb-0.5 uppercase tracking-wider">
+                                    <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 dark:text-purple-500 mb-0.5 uppercase tracking-wider">
                                         유입 경로
                                     </div>
                                     <p className="text-xs font-bold text-purple-700 dark:text-purple-300 truncate">
@@ -506,7 +506,7 @@ const ActiveCallPopup: React.FC = () => {
                                 </div>
                                 {/* 최초 등록일시 */}
                                 <div className="flex-1 bg-teal-50 dark:bg-teal-900/20 p-2.5 rounded-xl border border-teal-100 dark:border-teal-800/30 text-center">
-                                    <div className="text-[10px] font-semibold text-teal-400 dark:text-teal-500 mb-0.5 uppercase tracking-wider">
+                                    <div className="text-xs font-semibold text-teal-600 dark:text-teal-400 dark:text-teal-500 mb-0.5 uppercase tracking-wider">
                                         최초 등록
                                     </div>
                                     <p className="text-xs font-bold text-teal-700 dark:text-teal-300">
@@ -518,7 +518,7 @@ const ActiveCallPopup: React.FC = () => {
 
                         {parsePreInfo(matchedCase.preInfo).length > 0 && (
                             <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3 text-left">
-                                <div className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider">
+                                <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider">
                                     사전 고객 정보
                                 </div>
                                 <div className="space-y-1 bg-gray-50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800/80">
@@ -537,10 +537,10 @@ const ActiveCallPopup: React.FC = () => {
                             return (
                                 <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3 text-left">
                                     <div className="flex justify-between items-center mb-1.5">
-                                        <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                        <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                                             최근 상담 이력
                                         </span>
-                                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                                        <span className="text-xs text-gray-400 dark:text-gray-500">
                                             {formatMemoDate(latestMemo.createdAt)}
                                         </span>
                                     </div>
@@ -559,12 +559,12 @@ const ActiveCallPopup: React.FC = () => {
                 {matchedCase && (
                     <div className="border-t border-gray-100 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-950/20 px-3.5 py-2.5">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                            <span className="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
                                 <Clock size={12} className="text-amber-600 dark:text-amber-400" />
                                 <span>골든타임 재통화 빠른 예약</span>
                             </span>
                             {quickReminderFeedback && (
-                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold animate-pulse">
+                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold animate-pulse">
                                     {quickReminderFeedback}
                                 </span>
                             )}
@@ -576,7 +576,7 @@ const ActiveCallPopup: React.FC = () => {
                                     type="button"
                                     disabled={isAddingReminder}
                                     onClick={() => handleAddQuickReminder(slot.datetime, slot.label)}
-                                    className="py-1.5 px-1 rounded-lg text-[10px] font-bold bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 shadow-xs transition-all active:scale-95 text-center flex flex-col items-center justify-center"
+                                    className="py-1.5 px-1 rounded-lg text-xs font-bold bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 shadow-xs transition-all active:scale-95 text-center flex flex-col items-center justify-center"
                                 >
                                     <span>{slot.label}</span>
                                     <span className="text-[8px] text-amber-600/70 dark:text-amber-400/70 font-mono">{slot.desc}</span>

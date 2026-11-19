@@ -128,88 +128,88 @@ export default function DbCostSettlementTab({
       {/* 1. 상단 KPI 전광판 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* 총 DB 구매 비용 */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-              <Database className="w-4 h-4 text-rose-400" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Database className="w-4 h-4 text-rose-600 dark:text-rose-400" />
               총 DB 매입 원가
             </span>
-            <span className="text-xs bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded-full font-medium">
               변동 원가 (COGS)
             </span>
           </div>
-          <div className="text-2xl font-black text-rose-400 tracking-tight">
+          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
             ₩{stats.totalCost.toLocaleString()}
           </div>
-          <div className="mt-2 text-xs text-slate-400">
+          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             총 {filteredBatches.length}개 배치 회차 매입분
           </div>
         </div>
 
         {/* 총 유입 리드 건수 */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-sky-400" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               정상 유입 리드 총량
             </span>
-            <span className="text-xs bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full font-medium">
               유효 DB
             </span>
           </div>
           <div className="text-2xl font-black text-white tracking-tight">
-            {stats.totalLeads.toLocaleString()} <span className="text-sm font-normal text-slate-400">건</span>
+            {stats.totalLeads.toLocaleString()} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">건</span>
           </div>
-          <div className="mt-2 text-xs text-slate-400">
-            수임 성공: <strong className="text-indigo-400">{stats.totalContracts}건</strong>
+          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+            수임 성공: <strong className="text-indigo-600 dark:text-indigo-400">{stats.totalContracts}건</strong>
           </div>
         </div>
 
         {/* 평균 리드 단가 (CPL) */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <DollarSign className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               평균 리드 단가 (CPL)
             </span>
             <span className="text-xs bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">
               건당 매입가
             </span>
           </div>
-          <div className="text-2xl font-black text-amber-400 tracking-tight">
+          <div className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
             ₩{stats.avgCpl.toLocaleString()}
           </div>
-          <div className="mt-2 text-xs text-slate-400">
+          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             전체 유입 리드 가중 평균
           </div>
         </div>
 
         {/* 매출 대비 DB 원가율 */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-              <TrendingDown className="w-4 h-4 text-purple-400" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <TrendingDown className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               매출 대비 DB 원가율
             </span>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              stats.costRatio > 40 ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'
+              stats.costRatio > 40 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
             }`}>
               {stats.costRatio <= 30 ? '우수 (≤30%)' : '원가 주의'}
             </span>
           </div>
-          <div className="text-2xl font-black text-purple-400 tracking-tight">
+          <div className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">
             {stats.costRatio}%
           </div>
-          <div className="mt-2 text-xs text-slate-400">
+          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             팀 관리 패널과 100% 실시간 연동
           </div>
         </div>
       </div>
 
       {/* 안내 알림 배너 */}
-      <div className="bg-slate-900/50 border border-indigo-900/40 rounded-xl p-4 flex items-center justify-between text-xs text-indigo-300">
+      <div className="bg-white/50 dark:bg-slate-900/50 border border-indigo-900/40 rounded-xl p-4 flex items-center justify-between text-xs text-indigo-300">
         <div className="flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-indigo-400 shrink-0" />
+          <AlertCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
           <span>
             <strong>팀 관리 연동 안내:</strong> 본 대장의 DB 매입비용 및 단가는 <strong>[팀 관리 - 품질/회차 관리]</strong> 및 <strong>[DB 공급사(Vendor)]</strong> 테이블과 100% 직통 동기화되어 별도의 중복 입력이 불필요합니다.
           </span>
@@ -226,23 +226,23 @@ export default function DbCostSettlementTab({
       </div>
 
       {/* 2. 검색 및 컨트롤 바 */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/60 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="회차명 또는 공급사 검색..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <select
             value={selectedVendor}
             onChange={(e) => setSelectedVendor(e.target.value)}
-            className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">전체 공급사(Vendor)</option>
             {vendors.map(v => (
@@ -261,22 +261,22 @@ export default function DbCostSettlementTab({
       </div>
 
       {/* 3. 회차별 DB 매입 대장 테이블 */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+      <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="bg-slate-950/70 border-b border-slate-800 text-xs font-semibold text-slate-400">
+              <tr className="bg-slate-50 dark:bg-slate-950/70 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 <th className="py-3.5 px-4">회차명 / 등록일시</th>
                 <th className="py-3.5 px-4">공급사 (Vendor)</th>
                 <th className="py-3.5 px-4 text-center">유입 리드수</th>
                 <th className="py-3.5 px-4 text-right">매입 단가 (CPL)</th>
-                <th className="py-3.5 px-4 text-right text-rose-400 font-bold">총 매입비용</th>
+                <th className="py-3.5 px-4 text-right text-rose-600 dark:text-rose-400 font-bold">총 매입비용</th>
                 <th className="py-3.5 px-4 text-center">수임 전환율</th>
                 <th className="py-3.5 px-4 text-right">수임당 획득원가(CAC)</th>
                 <th className="py-3.5 px-4 text-center">관리</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-200">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-slate-200">
               {filteredBatches.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-500">
@@ -285,39 +285,39 @@ export default function DbCostSettlementTab({
                 </tr>
               ) : (
                 filteredBatches.map((b) => (
-                  <tr key={b.batchId} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={b.batchId} className="hover:bg-slate-100/40 dark:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="font-semibold text-white">{b.batchName}</div>
                       <div className="text-xs text-slate-500">{b.createdAt?.slice(0, 10) || '-'}</div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 bg-slate-800 text-slate-300 rounded text-xs border border-slate-700">
+                      <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-xs border border-slate-200 dark:border-slate-700">
                         {b.vendorName || '미지정'}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-sky-400">
+                    <td className="py-3.5 px-4 text-center font-bold text-sky-600 dark:text-sky-400">
                       {b.inserted.toLocaleString()}건
                     </td>
-                    <td className="py-3.5 px-4 text-right text-slate-300">
+                    <td className="py-3.5 px-4 text-right text-slate-600 dark:text-slate-300">
                       ₩{b.unitCost.toLocaleString()}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-extrabold text-rose-400">
+                    <td className="py-3.5 px-4 text-right font-extrabold text-rose-600 dark:text-rose-400">
                       ₩{b.totalCost.toLocaleString()}
                     </td>
                     <td className="py-3.5 px-4 text-center text-xs">
-                      <span className="font-semibold text-emerald-400">{b.contractRate}%</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">{b.contractRate}%</span>
                       <span className="text-slate-500 ml-1">({b.contractedCount}건)</span>
                     </td>
-                    <td className="py-3.5 px-4 text-right text-xs text-slate-300">
+                    <td className="py-3.5 px-4 text-right text-xs text-slate-600 dark:text-slate-300">
                       ₩{b.cac.toLocaleString()}
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => handleOpenEdit(b)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-medium border border-slate-700 transition-colors inline-flex items-center gap-1"
+                        className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-medium border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1"
                         title="단가 및 총비용 수정"
                       >
-                        <Edit3 className="w-3 h-3 text-indigo-400" />
+                        <Edit3 className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                         수정
                       </button>
                     </td>
@@ -332,15 +332,15 @@ export default function DbCostSettlementTab({
       {/* 4. 단가/비용 수정 모달 */}
       {editingBatch && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950">
+          <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Database className="w-4 h-4 text-indigo-400" />
+                <Database className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 DB 매입비용 및 단가 수정
               </h3>
               <button
                 onClick={() => setEditingBatch(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-500 dark:text-slate-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -348,51 +348,51 @@ export default function DbCostSettlementTab({
 
             <div className="p-5 space-y-4 text-sm">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">회차명</label>
-                <div className="text-white font-medium bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">회차명</label>
+                <div className="text-white font-medium bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800">
                   {editingBatch.batchName} ({editingBatch.inserted}건 유입)
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">공급사 (Vendor)</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">공급사 (Vendor)</label>
                 <input
                   type="text"
                   value={editVendorName}
                   onChange={(e) => setEditVendorName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="예: 페이스북 리드, 제휴사A"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">리드 1건당 매입 단가 (원)</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">리드 1건당 매입 단가 (원)</label>
                 <input
                   type="number"
                   value={editUnitCost}
                   onChange={(e) => handleUnitCostChange(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="0"
                 />
-                <p className="text-[11px] text-slate-500 mt-1">단가 입력 시 총 매입비용이 자동 환산됩니다.</p>
+                <p className="text-xs text-slate-500 mt-1">단가 입력 시 총 매입비용이 자동 환산됩니다.</p>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">총 매입 비용 (원)</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">총 매입 비용 (원)</label>
                 <input
                   type="number"
                   value={editTotalCost}
                   onChange={(e) => setEditTotalCost(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-rose-400 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-rose-600 dark:text-rose-400 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                   placeholder="0"
                 />
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-end gap-2">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-end gap-2">
               <button
                 onClick={() => setEditingBatch(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-colors"
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors"
                 disabled={isSaving}
               >
                 취소

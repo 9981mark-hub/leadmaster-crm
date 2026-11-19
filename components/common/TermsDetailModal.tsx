@@ -19,7 +19,7 @@ export default function TermsDetailModal({
 
   return (
     <div 
-      className="fixed inset-0 z-[100] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div 
@@ -34,10 +34,10 @@ export default function TermsDetailModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
                   {term.isRequired ? '필수 동의' : '선택 동의'}
                 </span>
-                <span className="text-xs text-slate-400 font-mono">버전 {CURRENT_TERMS_VERSION}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">버전 {CURRENT_TERMS_VERSION}</span>
               </div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
                 {term.title}
@@ -47,7 +47,7 @@ export default function TermsDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -76,7 +76,7 @@ export default function TermsDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
           >
             닫기
           </button>

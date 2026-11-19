@@ -433,7 +433,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                     const dt = latest.datetime || '';
                                     const [, tp] = dt.includes('T') ? dt.split('T') : dt.split(' ');
                                     return (
-                                        <div className="text-[10px] text-amber-600 mb-2 bg-white rounded px-2 py-1 border border-amber-100">
+                                        <div className="text-xs text-amber-600 mb-2 bg-white rounded px-2 py-1 border border-amber-100">
                                             📋 최근 조건: <span className="font-bold">{tp || '09:00'}</span> · <span className="font-bold">{latest.type || '통화'}</span>
                                             {latest.content && <> · "{latest.content}"</>}
                                         </div>
@@ -452,7 +452,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                                 className="flex flex-col items-center px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-100 hover:border-amber-400 hover:shadow-sm transition-all active:scale-95"
                                             >
                                                 <span>{preset.label}</span>
-                                                <span className="text-[9px] font-normal text-amber-500">{dateLabel}</span>
+                                                <span className="text-xs font-normal text-amber-500">{dateLabel}</span>
                                             </button>
                                         );
                                     })}
@@ -535,7 +535,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                                     <div className="flex items-center gap-2 flex-wrap">
                                                         <CalendarClock size={16} className="text-blue-600 flex-shrink-0" />
                                                         <span className="text-sm font-bold text-gray-800 whitespace-nowrap">{reminder.datetime}</span>
-                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
+                                                        <span className={`text-xs px-1.5 py-0.5 rounded font-bold whitespace-nowrap ${reminder.type === '방문미팅' ? 'bg-purple-100 text-purple-700' :
                                                             reminder.type === '출장미팅' ? 'bg-green-100 text-green-700' :
                                                                 'bg-blue-100 text-blue-700'
                                                             }`}>
@@ -569,13 +569,13 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                                                            <span className="text-xs text-blue-400 font-bold flex-shrink-0">결과:</span>
+                                                            <span className="text-xs text-blue-600 dark:text-blue-400 font-bold flex-shrink-0">결과:</span>
                                                             {['완료', '미연결', '재예약', '취소'].map((status) => (
                                                                 <button
                                                                     key={status}
                                                                     type="button"
                                                                     onClick={() => handleResultStatusClick(reminder.id, status)}
-                                                                    className={`text-[10px] px-2 py-1 rounded border flex-shrink-0 transition-colors ${status === '완료' ? 'border-green-200 text-green-700 hover:bg-green-50' :
+                                                                    className={`text-xs px-2 py-1 rounded border flex-shrink-0 transition-colors ${status === '완료' ? 'border-green-200 text-green-700 hover:bg-green-50' :
                                                                         status === '미연결' ? 'border-red-200 text-red-700 hover:bg-red-50' :
                                                                             status === '재예약' ? 'border-blue-200 text-blue-700 hover:bg-blue-50' :
                                                                                 'border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -642,7 +642,7 @@ export const CaseDetailReminders: React.FC<CaseDetailRemindersProps> = ({
                                 {sortedMemos.map(memo => (
                                     <div key={memo.id} className="bg-white p-3 rounded text-xs shadow-sm border border-yellow-100">
                                         <div className="flex justify-between items-start mb-1">
-                                            <p className="font-bold text-gray-500 text-[10px]">{safeFormat(memo.createdAt || (memo as any).datetime, 'yyyy-MM-dd HH:mm')}</p>
+                                            <p className="font-bold text-gray-500 text-xs">{safeFormat(memo.createdAt || (memo as any).datetime, 'yyyy-MM-dd HH:mm')}</p>
                                             <div className="flex gap-1">
                                                 {editingMemoId === memo.id ? (
                                                     <>

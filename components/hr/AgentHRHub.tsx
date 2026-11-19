@@ -262,14 +262,14 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
             </div>
 
             {/* 실시간 근태 전광판 (Live Attendance Board) */}
-            <div className="bg-slate-900 text-white p-4 md:p-5 rounded-2xl shadow-md border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="bg-white dark:bg-gray-900 text-white p-4 md:p-5 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
                         <Clock size={20} />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-indigo-400 tracking-wider uppercase">실시간 근태 전광판</span>
+                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase">실시간 근태 전광판</span>
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                         </div>
                         <div className="text-sm font-extrabold text-slate-100">
@@ -284,7 +284,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('all')}
                         className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                            statusFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                            statusFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-700'
                         }`}
                     >
                         전체 ({summaryKPI.totalMembers})
@@ -293,7 +293,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('working')}
                         className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'working' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-800 text-emerald-400 hover:bg-slate-700'
+                            statusFilter === 'working' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -303,7 +303,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('away')}
                         className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'away' ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-800 text-amber-400 hover:bg-slate-700'
+                            statusFilter === 'away' ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -313,7 +313,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('meal')}
                         className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'meal' ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-800 text-orange-400 hover:bg-slate-700'
+                            statusFilter === 'meal' ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-orange-600 dark:text-orange-400 hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-orange-400" />
@@ -323,7 +323,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('off')}
                         className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'off' ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                            statusFilter === 'off' ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-slate-500" />
@@ -342,7 +342,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         </span>
                         <span className="text-xs font-semibold text-gray-400">건 계약</span>
                     </div>
-                    <div className="mt-2 text-[11px] text-gray-400">
+                    <div className="mt-2 text-xs text-gray-400">
                         수임료 매출: ₩ {(summaryKPI.totalRevenue / 10000).toLocaleString()}만원
                     </div>
                 </div>
@@ -355,7 +355,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         </span>
                         <span className="text-xs font-bold text-gray-400">만원 (세전)</span>
                     </div>
-                    <div className="mt-2 text-[11px] text-indigo-500 font-semibold">
+                    <div className="mt-2 text-xs text-indigo-500 font-semibold">
                         기본급 + 성과급 + 일비 합산
                     </div>
                 </div>
@@ -368,7 +368,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         </span>
                         <span className="text-xs font-bold text-gray-400">만원</span>
                     </div>
-                    <div className="mt-2 text-[11px] text-emerald-600 font-medium">
+                    <div className="mt-2 text-xs text-emerald-600 font-medium">
                         상담원 실수령액 총합
                     </div>
                 </div>
@@ -381,7 +381,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         </span>
                         <span className="text-xs font-bold text-gray-400">만원</span>
                     </div>
-                    <div className="mt-2 text-[11px] text-gray-400">
+                    <div className="mt-2 text-xs text-gray-400">
                         소득세(3%) + 지방세(0.3%)
                     </div>
                 </div>
@@ -434,12 +434,12 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                                             <div className="font-bold text-gray-900 dark:text-white">
                                                 {item.member.displayName}
                                             </div>
-                                            <div className="text-[11px] text-gray-400">
+                                            <div className="text-xs text-gray-400">
                                                 {item.member.email}
                                             </div>
                                         </td>
                                         <td className="py-3.5 px-3 text-center">
-                                            <span className={`px-2 py-0.5 rounded-full font-bold text-[11px] ${stBadge}`}>
+                                            <span className={`px-2 py-0.5 rounded-full font-bold text-xs ${stBadge}`}>
                                                 {stLabel}
                                             </span>
                                         </td>
@@ -453,7 +453,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                                             ₩ {(item.calc.totalFeeRevenue / 10000).toLocaleString()}만
                                         </td>
                                         <td className="py-3.5 px-4 text-center">
-                                            <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium text-[11px]">
+                                            <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium text-xs">
                                                 {item.calc.profile.salaryType === 'pure_incentive' 
                                                     ? `건당 ${(item.calc.profile.unitIncentive / 10000).toFixed(0)}만` 
                                                     : item.calc.profile.salaryType === 'base_plus_incentive' 

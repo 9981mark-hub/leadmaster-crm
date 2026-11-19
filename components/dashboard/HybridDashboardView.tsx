@@ -147,7 +147,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400/20 border border-amber-300/30 text-amber-300 flex items-center gap-1">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-400/20 border border-amber-300/30 text-amber-300 flex items-center gap-1">
                 <Zap size={13} /> 대표 겸 팀장 올인원 통합 관제
               </span>
               <span className="text-xs text-blue-200">
@@ -239,7 +239,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
               className={`w-full md:w-auto px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm ${
                 unassignedCases.length > 0
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white cursor-pointer hover:shadow'
-                  : 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-gray-500 cursor-not-allowed'
+                  : 'bg-slate-100 dark:bg-gray-700 text-slate-500 dark:text-slate-400 dark:text-gray-500 cursor-not-allowed'
               }`}
             >
               <Zap size={14} className={isDistributing ? 'animate-spin' : ''} />
@@ -292,7 +292,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
             <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
               {activeAgents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                  <td colSpan={6} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
                     등록된 활성 상담원이 없습니다.
                   </td>
                 </tr>
@@ -330,7 +330,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
                         ₩{revenue.toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                        <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
                           가동 중
                         </span>
                       </td>

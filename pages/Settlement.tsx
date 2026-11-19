@@ -1956,7 +1956,7 @@ export default function Settlement() {
                                                 <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
                                                     {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                                                 </div>
-                                                <p className="text-[10px] text-gray-400 mt-1">입금예정</p>
+                                                <p className="text-xs text-gray-400 mt-1">입금예정</p>
                                             </div>
 
                                             {/* Customer Info */}
@@ -2005,19 +2005,19 @@ export default function Settlement() {
                                 <p className="text-sm text-gray-500 font-medium mb-2">{tossAdsWeeklySummary.weekLabel} 성과 지표</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                                        <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
+                                        <p className="text-xs text-gray-500">소진비용 (VAT별도)</p>
                                         <p className="font-bold text-blue-600 text-lg">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                                        <p className="text-[10px] text-gray-500">잠재고객 수</p>
+                                        <p className="text-xs text-gray-500">잠재고객 수</p>
                                         <p className="font-bold text-indigo-600 text-lg">{tossAdsWeeklySummary.totalLeads}명</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                                        <p className="text-[10px] text-gray-500">평균 CPL</p>
+                                        <p className="text-xs text-gray-500">평균 CPL</p>
                                         <p className="font-bold text-purple-600 text-lg">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800/80 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                                        <p className="text-[10px] text-gray-500">총 노출</p>
+                                        <p className="text-xs text-gray-500">총 노출</p>
                                         <p className="font-bold text-gray-700 text-lg">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
                                     </div>
                                 </div>
@@ -2100,7 +2100,7 @@ export default function Settlement() {
                                 {/* Status Grid */}
                                 <div className="grid grid-cols-3 gap-2 text-center">
                                     <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-[10px] text-gray-400 mb-1">수금</p>
+                                        <p className="text-xs text-gray-400 mb-1">수금</p>
                                         {b.collectionInfo?.collectedAt ? (
                                             <span className="text-green-600 text-xs font-medium">✓ 완료</span>
                                         ) : (
@@ -2108,7 +2108,7 @@ export default function Settlement() {
                                         )}
                                     </div>
                                     <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-[10px] text-gray-400 mb-1">파트너 지급</p>
+                                        <p className="text-xs text-gray-400 mb-1">파트너 지급</p>
                                         {payoutCount > 0 ? (
                                             <span className={`text-xs font-medium ${paidPayoutCount === payoutCount ? 'text-green-600' : 'text-yellow-600'}`}>
                                                 {paidPayoutCount}/{payoutCount}건
@@ -2118,7 +2118,7 @@ export default function Settlement() {
                                         )}
                                     </div>
                                     <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-[10px] text-gray-400 mb-1">세금계산서</p>
+                                        <p className="text-xs text-gray-400 mb-1">세금계산서</p>
                                         {b.purchaseInvoice?.receivedAt ? (
                                             <span className="text-purple-600 text-xs font-medium">✓ 수취</span>
                                         ) : (
@@ -2489,19 +2489,19 @@ export default function Settlement() {
                                         <h4 className="font-bold text-gray-800 dark:text-white text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
                                         <div className="flex gap-4 mt-2">
                                             <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
-                                                <p className="text-[10px] text-gray-500">소진비용 (VAT별도)</p>
+                                                <p className="text-xs text-gray-500">소진비용 (VAT별도)</p>
                                                 <p className="font-bold text-blue-600">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
                                             </div>
                                             <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
-                                                <p className="text-[10px] text-gray-500">잠재고객</p>
+                                                <p className="text-xs text-gray-500">잠재고객</p>
                                                 <p className="font-bold text-indigo-600">{tossAdsWeeklySummary.totalLeads}명</p>
                                             </div>
                                             <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden sm:block">
-                                                <p className="text-[10px] text-gray-500">평균 CPL</p>
+                                                <p className="text-xs text-gray-500">평균 CPL</p>
                                                 <p className="font-bold text-purple-600">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
                                             </div>
                                             <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden md:block">
-                                                <p className="text-[10px] text-gray-500">총 노출</p>
+                                                <p className="text-xs text-gray-500">총 노출</p>
                                                 <p className="font-bold text-gray-700">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
                                             </div>
                                         </div>
@@ -2807,7 +2807,7 @@ export default function Settlement() {
                                         bankTransactions.filter(tx => tx.type === 'income' && tx.category !== '이자').reduce((sum, tx) => sum + tx.amount, 0)
                                     ).toLocaleString()}원
                                 </p>
-                                <p className="text-[10px] text-green-500">수수료 + 기타수입</p>
+                                <p className="text-xs text-green-500">수수료 + 기타수입</p>
                             </div>
                             <div className="bg-red-50 p-3 rounded-lg border border-red-100">
                                 <p className="text-xs text-red-600">필요경비</p>
@@ -2817,7 +2817,7 @@ export default function Settlement() {
                                         bankTransactions.filter(tx => tx.type === 'expense' && !['이체', '기타지출'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0)
                                     ).toLocaleString()}원
                                 </p>
-                                <p className="text-[10px] text-red-500">광고비, 사무비 등</p>
+                                <p className="text-xs text-red-500">광고비, 사무비 등</p>
                             </div>
                             <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
                                 <p className="text-xs text-blue-600">소득금액</p>
@@ -2830,7 +2830,7 @@ export default function Settlement() {
                                         return (income - expense).toLocaleString();
                                     })()}원
                                 </p>
-                                <p className="text-[10px] text-blue-500">수입 - 필요경비</p>
+                                <p className="text-xs text-blue-500">수입 - 필요경비</p>
                             </div>
                             <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
                                 <p className="text-xs text-purple-600">예상 종합소득세</p>
@@ -2853,7 +2853,7 @@ export default function Settlement() {
                                         return Math.round(tax).toLocaleString();
                                     })()}원
                                 </p>
-                                <p className="text-[10px] text-purple-500">실제 세금은 다를 수 있음</p>
+                                <p className="text-xs text-purple-500">실제 세금은 다를 수 있음</p>
                             </div>
                         </div>
 
@@ -3065,7 +3065,7 @@ export default function Settlement() {
                                                 <p className="text-sm font-bold text-teal-700 mt-1">
                                                     {q.vatPayable > 0 ? '+' : ''}{q.vatPayable.toLocaleString()}원
                                                 </p>
-                                                <div className="text-[10px] text-gray-400 mt-1">
+                                                <div className="text-xs text-gray-400 mt-1">
                                                     <div>매출세액: {q.outputVat.toLocaleString()}</div>
                                                     <div>매입세액: -{q.inputVat.toLocaleString()}</div>
                                                 </div>
@@ -3764,10 +3764,10 @@ export default function Settlement() {
                                                     {events.length > 0 ? events.map((event, idx) => (
                                                         <div key={idx} className="flex items-center gap-1">
                                                             <span className={`w-1.5 h-1.5 rounded-full ${event.color}`}></span>
-                                                            <span className="text-[10px] text-gray-600 truncate">{event.day}일 {event.name}</span>
+                                                            <span className="text-xs text-gray-600 truncate">{event.day}일 {event.name}</span>
                                                         </div>
                                                     )) : (
-                                                        <div className="text-[10px] text-gray-400">일정 없음</div>
+                                                        <div className="text-xs text-gray-400">일정 없음</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -4164,30 +4164,30 @@ export default function Settlement() {
     return (
         <div className="max-w-7xl mx-auto space-y-6">
             {/* 1. Header (차세대 통합 정산 & 경영 손익 센터 v4.5) */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl backdrop-blur">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-xl backdrop-blur">
                 <div>
                     <h2 className="text-2xl font-black text-white flex items-center gap-2.5">
-                        <DollarSign className="w-7 h-7 text-emerald-400" />
+                        <DollarSign className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
                         통합 정산 & 경영 손익(P&L) 센터
                         <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
                             v4.5 Master
                         </span>
                     </h2>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         거래처별 정산 시기·금액·건수 관제 및 DB구매원가·상담원수당·손익 일괄 분석 (팀 관리 100% 직통)
                     </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-end">
                     {/* 연도/월 선택기 */}
-                    <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-2 py-1 rounded-xl text-xs">
+                    <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-xl text-xs">
                         <select
                             className="bg-transparent text-white font-bold cursor-pointer outline-none"
                             value={year}
                             onChange={e => setYear(Number(e.target.value))}
                         >
                             {Array.from({ length: 13 }, (_, i) => 2024 + i).map(y => (
-                                <option key={y} value={y} className="bg-slate-900 text-white">{y}년</option>
+                                <option key={y} value={y} className="bg-white dark:bg-gray-900 text-white">{y}년</option>
                             ))}
                         </select>
                         <span className="text-slate-600">/</span>
@@ -4196,9 +4196,9 @@ export default function Settlement() {
                             value={month}
                             onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                         >
-                            <option value="all" className="bg-slate-900 text-white">전체 월</option>
+                            <option value="all" className="bg-white dark:bg-gray-900 text-white">전체 월</option>
                             {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                                <option key={m} value={m} className="bg-slate-900 text-white">{m}월</option>
+                                <option key={m} value={m} className="bg-white dark:bg-gray-900 text-white">{m}월</option>
                             ))}
                         </select>
                     </div>
@@ -4206,14 +4206,14 @@ export default function Settlement() {
                     {/* 거래처 셀렉트 박스 */}
                     <div className="relative">
                         <select
-                            className="bg-slate-950 border border-slate-800 pl-8 pr-4 py-1.5 rounded-xl text-xs font-bold text-indigo-300 outline-none cursor-pointer"
+                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 pl-8 pr-4 py-1.5 rounded-xl text-xs font-bold text-indigo-300 outline-none cursor-pointer"
                             value={selectedPartnerId}
                             onChange={e => setSelectedPartnerId(e.target.value)}
                         >
-                            <option value="all" className="bg-slate-900 text-white">전체 거래처 (Total)</option>
-                            {partners.map(p => <option key={p.partnerId} value={p.partnerId} className="bg-slate-900 text-white">{p.name}</option>)}
+                            <option value="all" className="bg-white dark:bg-gray-900 text-white">전체 거래처 (Total)</option>
+                            {partners.map(p => <option key={p.partnerId} value={p.partnerId} className="bg-white dark:bg-gray-900 text-white">{p.name}</option>)}
                         </select>
-                        <Building className="absolute left-2.5 top-2 text-indigo-400" size={14} />
+                        <Building className="absolute left-2.5 top-2 text-indigo-600 dark:text-indigo-400" size={14} />
                     </div>
 
                     {/* 정산 정책 설정 모달 버튼 */}
@@ -4242,7 +4242,7 @@ export default function Settlement() {
                     )}
                     {policySource !== 'saved' && (
                         <span
-                            className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40"
+                            className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40"
                             title={policyMessage || '저장된 정산 정책이 없어 기본값(회사 40% : 상담원 60%)으로 계산합니다.'}
                         >
                             {policySource === 'table_missing' ? '서버 업데이트 필요 · 기본값(저장 안 됨)' : '기본값(저장 안 됨)'}
@@ -4252,62 +4252,62 @@ export default function Settlement() {
             </div>
 
             {/* 2. 최상단 상시 노출: 통합 경영 손익(P&L) 글로벌 KPI 전광판 */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 shadow-md">
-                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-lg">
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white dark:bg-gray-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
                         <span>🏢 거래처 총 수수료 매출</span>
-                        <span className="text-sky-400 font-bold">공급가</span>
+                        <span className="text-sky-700 dark:text-sky-300 font-bold">공급가</span>
                     </div>
-                    <div className="text-lg font-black text-white">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white font-mono tabular-nums">
                         ₩{(integratedPnLSummary?.totalRevenueWon || 0).toLocaleString()}
                     </div>
                     {(integratedPnLSummary?.totalVatWon || 0) > 0 && (
-                        <div className="text-[10px] text-slate-500 mt-0.5">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             부가세 별도 ₩{(integratedPnLSummary?.totalVatWon || 0).toLocaleString()} (매출 아님)
                         </div>
                     )}
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         입금 ₩{(integratedPnLSummary?.collectedRevenueWon || 0).toLocaleString()} / 미수 ₩{(integratedPnLSummary?.outstandingRevenueWon || 0).toLocaleString()}
                     </div>
                 </div>
 
-                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-lg">
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
                         <span>👥 상담원 총 수당</span>
-                        <span className="text-emerald-400 font-bold">인건비</span>
+                        <span className="text-emerald-700 dark:text-emerald-300 font-bold">인건비</span>
                     </div>
-                    <div className="text-lg font-black text-emerald-400">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white font-mono tabular-nums">
                         ₩{(integratedPnLSummary?.totalAgentCommissionWon || 0).toLocaleString()}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         회사 마진 ₩{(integratedPnLSummary?.totalCompanyMarginWon || 0).toLocaleString()} 공제
                     </div>
                 </div>
 
-                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-lg">
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
                         <span>📦 DB 구매 원가</span>
-                        <span className="text-rose-400 font-bold">팀관리 연동</span>
+                        <span className="text-rose-700 dark:text-rose-300 font-bold">팀관리 연동</span>
                     </div>
-                    <div className="text-lg font-black text-rose-400">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white font-mono tabular-nums">
                         ₩{(integratedPnLSummary?.totalDbCostWon || 0).toLocaleString()}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         총 지출 ₩{(integratedPnLSummary?.totalExpensesWon || 0).toLocaleString()} 중 원가
                     </div>
                 </div>
 
-                <div className="p-3 bg-slate-950/70 border border-emerald-900/40 rounded-lg">
-                    <div className="flex items-center justify-between text-[11px] text-emerald-400 font-semibold mb-1">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
                         <span>📊 최종 영업 순이익</span>
-                        <span className="text-emerald-300 font-bold">{integratedPnLSummary?.profitMarginRate || 0}%</span>
+                        <span className={`font-bold ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>{integratedPnLSummary?.profitMarginRate || 0}%</span>
                     </div>
-                    <div className={`text-lg font-black ${
-                        (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    <div className={`text-lg font-bold font-mono tabular-nums ${
+                        (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
                     }`}>
                         ₩{(integratedPnLSummary?.netProfitWon || 0).toLocaleString()}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         실현금흐름: ₩{(integratedPnLSummary?.netCashFlowWon || 0).toLocaleString()}
                     </div>
                 </div>
@@ -4316,7 +4316,7 @@ export default function Settlement() {
             {/* Notification Center */}
             <div className="space-y-2 mb-4">
                 {totalOverdueCount > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between gap-3 animate-pulse">
+                    <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-lg p-3 flex items-center justify-between gap-3">
                         <div className="flex items-start sm:items-center gap-2 text-red-700">
                             <span className="font-bold shrink-0 whitespace-nowrap pt-0.5 sm:pt-0">🚨 긴급</span>
                             <span className="text-[13px] sm:text-sm leading-snug break-keep">현재 30일 이상 장기 미수금 건이 <span className="font-bold underline">{totalOverdueCount}건</span> 있습니다.</span>
@@ -4370,7 +4370,7 @@ export default function Settlement() {
                 <button
                     onClick={() => setActiveTab('overview')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'overview'
-                        ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10'
+                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
@@ -4381,7 +4381,7 @@ export default function Settlement() {
                 <button
                     onClick={() => setActiveTab('agent_commission')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'agent_commission'
-                        ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                        ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
@@ -4392,7 +4392,7 @@ export default function Settlement() {
                 <button
                     onClick={() => setActiveTab('db_cost')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'db_cost'
-                        ? 'border-rose-500 text-rose-400 bg-rose-500/10'
+                        ? 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-500/10'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
@@ -4403,7 +4403,7 @@ export default function Settlement() {
                 <button
                     onClick={() => setActiveTab('integrated_pnl')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'integrated_pnl'
-                        ? 'border-amber-500 text-amber-400 bg-amber-500/10'
+                        ? 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-500/10'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
@@ -4414,7 +4414,7 @@ export default function Settlement() {
                 <button
                     onClick={() => setActiveTab('receivables')}
                     className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'receivables'
-                        ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
+                        ? 'border-slate-200 dark:border-slate-900 dark:border-white text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
@@ -4843,7 +4843,7 @@ export default function Settlement() {
                             </div>
                             <div className="bg-gray-800 text-white rounded-lg p-4 flex justify-between items-center mt-2">
                                 <span className="font-bold">최종 순이익</span>
-                                <span className="text-2xl font-bold text-green-400">{(totalPaidCommission - expenseStats.total).toLocaleString()}만원</span>
+                                <span className="text-2xl font-bold text-green-600 dark:text-green-400">{(totalPaidCommission - expenseStats.total).toLocaleString()}만원</span>
                             </div>
                         </div>
                     )}

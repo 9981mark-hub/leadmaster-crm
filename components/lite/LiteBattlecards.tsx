@@ -96,7 +96,7 @@ export const LiteBattlecards: React.FC<Props> = ({ onCopyScript }) => {
     <div className="space-y-1.5">
       {/* 4개 1-Tap 칩 바 */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-        <span className="text-[10px] font-bold text-gray-400 shrink-0 uppercase tracking-wider pl-1">
+        <span className="text-xs font-bold text-gray-400 shrink-0 uppercase tracking-wider pl-1">
           반론 치트키:
         </span>
         {BATTLECARDS.map(card => {
@@ -132,7 +132,7 @@ export const LiteBattlecards: React.FC<Props> = ({ onCopyScript }) => {
               {/* 카드 헤더 */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${selectedCard.badgeColor}`}>
+                  <span className={`text-xs font-black px-2 py-0.5 rounded-full ${selectedCard.badgeColor}`}>
                     {selectedCard.category} 대응
                   </span>
                   <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
@@ -157,7 +157,7 @@ export const LiteBattlecards: React.FC<Props> = ({ onCopyScript }) => {
               {/* 핵심 체크포인트 3줄 */}
               <div className="space-y-1">
                 {selectedCard.bulletPoints.map((pt, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300">
+                  <div key={idx} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
                     <Check size={12} className="text-blue-500 shrink-0" />
                     <span>{pt}</span>
                   </div>
@@ -168,7 +168,7 @@ export const LiteBattlecards: React.FC<Props> = ({ onCopyScript }) => {
               <div className="flex justify-end pt-1 border-t border-gray-100 dark:border-gray-700">
                 <button
                   onClick={() => handleCopy(selectedCard.counterScript)}
-                  className="flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/40 transition-colors"
+                  className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/40 transition-colors"
                 >
                   {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
                   <span>{copied ? '복사 완료!' : '대본 복사'}</span>

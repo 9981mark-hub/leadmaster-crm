@@ -179,11 +179,11 @@ export default function CompanySignupModal({
   return (
     <>
       <div 
-        className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+        className="fixed inset-0 z-50 bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
         onClick={handleClose}
       >
         <div 
-          className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-slate-100 max-h-[92vh] overflow-y-auto"
+          className="w-full max-w-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-slate-100 max-h-[92vh] overflow-y-auto"
           onClick={e => e.stopPropagation()}
         >
           {step === 2 ? (
@@ -192,14 +192,14 @@ export default function CompanySignupModal({
             /* ═══════════════════════════════════════════════════════════ */
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="text-center space-y-2">
-                <div className="w-16 h-16 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 mb-3 shadow-inner">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-600 dark:text-emerald-400 mb-3 shadow-inner">
                   <CheckCircle2 size={36} />
                 </div>
                 <h3 className="text-xl font-bold text-white tracking-tight">
                   이용 신청 및 전자계약 동의가 완료되었습니다
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  <span className="text-blue-400 font-semibold">{companyName}</span>의 전용 워크스페이스 개설 신청이 접수되었습니다.
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <span className="text-blue-600 dark:text-blue-400 font-semibold">{companyName}</span>의 전용 워크스페이스 개설 신청이 접수되었습니다.
                 </p>
               </div>
 
@@ -210,18 +210,18 @@ export default function CompanySignupModal({
                     <CreditCard size={15} />
                     <span>공식 프로그램 사용료 수납 계좌</span>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                     무통장 / 계좌이체
                   </span>
                 </div>
 
-                <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+                <div className="p-3.5 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
                   <div>
-                    <div className="text-[11px] text-slate-400 font-medium">카카오뱅크</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">카카오뱅크</div>
                     <div className="text-base sm:text-lg font-mono font-black text-white tracking-wider">
                       3333-21-490199
                     </div>
-                    <div className="text-xs text-slate-300">
+                    <div className="text-xs text-slate-600 dark:text-slate-300">
                       예금주: <strong className="text-white">진성훈 (리드마스터)</strong>
                     </div>
                   </div>
@@ -235,20 +235,20 @@ export default function CompanySignupModal({
                   </button>
                 </div>
 
-                <div className="text-[11px] text-amber-300/90 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
+                <div className="text-xs text-amber-300/90 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
                   ⚠️ <b>입금자명 안내:</b> 입금 시 통장 표기명을 <b>[{companyName}_{ownerName || '대표'}]</b>로 입력해 주시면 확인이 신속히 진행됩니다.
                 </div>
               </div>
 
               {/* 세금계산서 발행 정보 입력 폼 */}
-              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-3">
+              <div className="p-4 rounded-2xl bg-slate-50/60 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <FileText size={14} className="text-blue-400" />
+                    <FileText size={14} className="text-blue-600 dark:text-blue-400" />
                     <span>전자세금계산서 발행 정보 (선택 입력)</span>
                   </span>
                   {taxSaved && (
-                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                       <Check size={11} /> 저장 완료
                     </span>
                   )}
@@ -259,17 +259,17 @@ export default function CompanySignupModal({
                     value={businessNumber}
                     onChange={e => { setBusinessNumber(e.target.value); setTaxSaved(false); }}
                     placeholder="사업자등록번호 (예: 123-45-67890)"
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 focus:border-blue-500 text-white outline-none font-mono"
+                    className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none font-mono"
                   />
                   <input
                     type="email"
                     value={taxInvoiceEmail}
                     onChange={e => { setTaxInvoiceEmail(e.target.value); setTaxSaved(false); }}
                     placeholder="계산서 수신 이메일 (미입력 시 구글 메일)"
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 focus:border-blue-500 text-white outline-none font-mono"
+                    className="px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none font-mono"
                   />
                 </div>
-                <p className="text-[11px] text-slate-500 leading-normal">
+                <p className="text-xs text-slate-500 leading-normal">
                   입력해 주신 사업자 정보로 입금 확인 즉시 국세청 전자세금계산서가 발행됩니다.
                 </p>
               </div>
@@ -279,7 +279,7 @@ export default function CompanySignupModal({
                 <button
                   type="button"
                   onClick={handleDownloadInvoiceEstimate}
-                  className="w-full sm:w-1/2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
+                  className="w-full sm:w-1/2 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
                   <Download size={14} />
                   <span>견적서·안내서 다운로드</span>
@@ -300,9 +300,9 @@ export default function CompanySignupModal({
             /* ═══════════════════════════════════════════════════════════ */
             <>
               {/* 모달 상단 헤더 */}
-              <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
                     <Building2 size={20} />
                   </div>
                   <div>
@@ -310,11 +310,11 @@ export default function CompanySignupModal({
                       <h3 className="text-lg font-bold text-white tracking-tight">
                         리드마스터 TM 회사 가입 및 이용 계약
                       </h3>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/20">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/20">
                         {selectedPlan === 'starter' ? '스타터 플랜' : selectedPlan === 'business' ? '비즈니스 플랜' : selectedPlan === 'pro' ? '프로 플랜' : '엔터프라이즈'}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       TM 대표 전용 워크스페이스 개설 및 7일 무료 체험 (Clickwrap 전자 계약)
                     </p>
                   </div>
@@ -322,7 +322,7 @@ export default function CompanySignupModal({
                 <button 
                   type="button"
                   onClick={handleClose}
-                  className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -339,8 +339,8 @@ export default function CompanySignupModal({
                 {/* 1. 회사명 & 대표자명 (2-Grid) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <Building2 size={13} className="text-blue-400" />
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                      <Building2 size={13} className="text-blue-600 dark:text-blue-400" />
                       <span>회사명 / 상호 (필수)</span>
                     </label>
                     <input
@@ -349,12 +349,12 @@ export default function CompanySignupModal({
                       value={companyName}
                       onChange={e => setCompanyName(e.target.value)}
                       placeholder="예: 리드마스터 법률센터"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <Users size={13} className="text-blue-400" />
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                      <Users size={13} className="text-blue-600 dark:text-blue-400" />
                       <span>대표자 성명 (선택)</span>
                     </label>
                     <input
@@ -362,7 +362,7 @@ export default function CompanySignupModal({
                       value={ownerName}
                       onChange={e => setOwnerName(e.target.value)}
                       placeholder="예: 홍길동 대표"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm"
                     />
                   </div>
                 </div>
@@ -370,8 +370,8 @@ export default function CompanySignupModal({
                 {/* 2. 연락처 & 구글 로그인 이메일 (2-Grid) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <Phone size={13} className="text-blue-400" />
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                      <Phone size={13} className="text-blue-600 dark:text-blue-400" />
                       <span>연락처 (필수)</span>
                     </label>
                     <input
@@ -380,16 +380,16 @@ export default function CompanySignupModal({
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
                       placeholder="010-0000-0000"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm font-mono"
                     />
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <Mail size={13} className="text-blue-400" />
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                        <Mail size={13} className="text-blue-600 dark:text-blue-400" />
                         <span>구글 로그인 이메일 (필수)</span>
                       </label>
-                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
                         Google 전용
                       </span>
                     </div>
@@ -399,15 +399,15 @@ export default function CompanySignupModal({
                       value={ownerEmail}
                       onChange={e => setOwnerEmail(e.target.value)}
                       placeholder="example@gmail.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 text-white outline-none text-xs sm:text-sm font-mono"
                     />
                   </div>
                 </div>
 
                 {/* 3. 상담원 인원 규모 선택 */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Users size={13} className="text-blue-400" />
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                    <Users size={13} className="text-blue-600 dark:text-blue-400" />
                     <span>예상 상담원 규모</span>
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -424,7 +424,7 @@ export default function CompanySignupModal({
                         className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                           agentCountTier === tier
                             ? 'bg-blue-600/20 border-blue-500 text-blue-300 shadow-sm'
-                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                            : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-200 dark:border-slate-700'
                         }`}
                       >
                         {tier === '1-5' ? '1 ~ 5명 (스타터)' : tier === '6-20' ? '6 ~ 20명 (비즈니스)' : '21명 이상 (프로)'}
@@ -436,21 +436,21 @@ export default function CompanySignupModal({
                 {/* ═══════════════════════════════════════════════════════════ */}
                 {/* 4. B2B 전자 이용계약 4대 약관 동의 (Clickwrap Agreement) */}
                 {/* ═══════════════════════════════════════════════════════════ */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3 pt-3">
+                <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-3 pt-3">
                   {/* 전체 동의 마스터 체크박스 */}
-                  <label className="flex items-center justify-between pb-3 border-b border-slate-800/80 cursor-pointer group">
+                  <label className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80 cursor-pointer group">
                     <div className="flex items-center gap-2.5">
                       <input
                         type="checkbox"
                         checked={isAllAgreed}
                         onChange={handleToggleAll}
-                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer"
+                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-900 border-slate-200 dark:border-slate-700 cursor-pointer"
                       />
                       <span className="font-bold text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors">
                         전자 이용계약 및 4대 필수 약관에 전체 동의합니다
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono">전자서명법 제3조 준수</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">전자서명법 제3조 준수</span>
                   </label>
 
                   {/* 4대 개별 필수 약관 리스트 */}
@@ -464,10 +464,10 @@ export default function CompanySignupModal({
                               type="checkbox"
                               checked={checked}
                               onChange={() => handleToggleOne(term.id)}
-                              className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer"
+                              className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-900 border-slate-200 dark:border-slate-700 cursor-pointer"
                             />
-                            <span className="text-slate-300 flex items-center gap-1.5">
-                              <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/20">
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/20">
                                 [필수]
                               </span>
                               <span>{term.title}</span>
@@ -476,7 +476,7 @@ export default function CompanySignupModal({
                           <button
                             type="button"
                             onClick={() => setViewingTerm(term)}
-                            className="text-[11px] text-slate-400 hover:text-blue-300 flex items-center gap-0.5 hover:underline transition-colors shrink-0 pl-2"
+                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-blue-300 flex items-center gap-0.5 hover:underline transition-colors shrink-0 pl-2"
                           >
                             <span>전문보기</span>
                             <ChevronRight size={12} />
@@ -486,9 +486,9 @@ export default function CompanySignupModal({
                     })}
                   </div>
 
-                  <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800/60 leading-normal flex items-center justify-between">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800/60 leading-normal flex items-center justify-between">
                     <span>* 체크 시 동의 일시 및 IP({clientIp})가 감사 로그에 영구 저장됩니다.</span>
-                    <span className="font-mono text-slate-400">버전 {CURRENT_TERMS_VERSION}</span>
+                    <span className="font-mono text-slate-500 dark:text-slate-400">버전 {CURRENT_TERMS_VERSION}</span>
                   </div>
                 </div>
 

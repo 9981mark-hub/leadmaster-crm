@@ -83,7 +83,7 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
                             </div>
                         ) : (
                             <div className="mt-4 p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-center border border-gray-200 dark:border-gray-700">
-                                <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                     🔒 데이터 복원은 조직 대표(Owner) 전용 권한입니다.
                                 </p>
                             </div>
@@ -96,7 +96,7 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
                         <div className="text-xs font-bold text-gray-700 dark:text-gray-300">
                             🔄 로컬 캐시 강제 동기화
                         </div>
-                        <p className="text-[11px] text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-400 mt-0.5">
                             PC와 모바일의 케이스 수량이 일치하지 않을 때, 로컬 캐시를 비우고 서버에서 최신 상태를 강제 수신합니다.
                         </p>
                     </div>
@@ -130,7 +130,7 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
                                 🛡️ 대량 유출 방어 모드 (권장)
                             </span>
                             {companyMaskingPolicy === 'masked' && (
-                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-600 text-white">적용중</span>
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-600 text-white">적용중</span>
                             )}
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -151,7 +151,7 @@ export const DataSecurityTab: React.FC<DataSecurityTabProps> = ({
                                 🔓 속도 우선 공개 모드
                             </span>
                             {companyMaskingPolicy === 'unmasked' && (
-                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">적용중</span>
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">적용중</span>
                             )}
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">

@@ -86,7 +86,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                                         <MessageCircle size={14} className="text-blue-500 shrink-0" />
                                         <span className="truncate">{room.name}</span>
                                     </div>
-                                    <div className="text-[11px] text-gray-400 truncate mt-0.5 font-mono">
+                                    <div className="text-xs text-gray-400 truncate mt-0.5 font-mono">
                                         {room.url}
                                     </div>
                                 </div>
@@ -181,7 +181,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                                 {aiUsage.callsCount ?? 0}회 호출됨
                             </span>
                         </div>
-                        <p className="text-[11px] text-purple-700/80 dark:text-purple-300/80">
+                        <p className="text-xs text-purple-700/80 dark:text-purple-300/80">
                             통화 녹취 분석 및 사건 요약, AI OCR 판독에 사용된 실시간 집계입니다.
                         </p>
                     </div>
@@ -207,7 +207,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                             >
                                 <RefreshCw size={12} /> 기본 어휘집으로 초기화
                             </button>
-                            <span className="text-[11px] text-gray-400">
+                            <span className="text-xs text-gray-400">
                                 총 {aiKeywords.split(',').filter(k => k.trim()).length}개 단어 등록됨
                             </span>
                         </div>

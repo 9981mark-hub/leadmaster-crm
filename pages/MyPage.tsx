@@ -350,7 +350,7 @@ export default function MyPage() {
                                 )}
 
                                 {/* 호버 시 사진 변경 오버레이 */}
-                                <div className="absolute inset-0 rounded-2xl bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[11px] font-bold gap-0.5">
+                                <div className="absolute inset-0 rounded-2xl bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs font-bold gap-0.5">
                                     <Camera size={18} className="drop-shadow" />
                                     <span>사진 변경</span>
                                 </div>
@@ -374,7 +374,7 @@ export default function MyPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsAvatarModalOpen(true)}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 transition-colors shadow-2xs"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 transition-colors shadow-2xs"
                                 >
                                     <Camera size={12} /> 대표 사진 설정
                                 </button>
@@ -384,7 +384,7 @@ export default function MyPage() {
                                         onClick={async () => {
                                             await handleSaveAvatar(null);
                                         }}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
                                         title="구글 계정 원래 사진으로 복원"
                                     >
                                         <RotateCcw size={11} /> 구글 복원
@@ -420,7 +420,7 @@ export default function MyPage() {
                                     </span>
                                 )}
 
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-600 dark:bg-gray-750 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-750 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
                                     소속: {myTeamName}
                                 </span>
                             </div>
@@ -446,7 +446,7 @@ export default function MyPage() {
                                         저장
                                     </Button>
                                 </div>
-                                <p className="text-[11px] text-gray-400 mt-1">상담 히스토리, 통화 기록, 정산표에 노출되는 활동명입니다.</p>
+                                <p className="text-xs text-gray-400 mt-1">상담 히스토리, 통화 기록, 정산표에 노출되는 활동명입니다.</p>
                             </div>
 
                             <div>
@@ -468,7 +468,7 @@ export default function MyPage() {
                                         등록
                                     </Button>
                                 </div>
-                                <p className="text-[11px] text-gray-400 mt-1">외부 콜백 연결 및 팀원 간 직통 호전환에 사용됩니다.</p>
+                                <p className="text-xs text-gray-400 mt-1">외부 콜백 연결 및 팀원 간 직통 호전환에 사용됩니다.</p>
                             </div>
 
                             <div>
@@ -511,7 +511,7 @@ export default function MyPage() {
                             <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-750 rounded-xl">
                                 <Globe className="mr-2.5 text-gray-400 shrink-0" size={16} />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] text-gray-400">현재 접속 IP</p>
+                                    <p className="text-xs text-gray-400">현재 접속 IP</p>
                                     <p className="text-xs font-mono font-bold text-gray-800 dark:text-gray-200">{ipAddress}</p>
                                 </div>
                             </div>
@@ -519,8 +519,8 @@ export default function MyPage() {
                             <div className="flex items-center p-2.5 bg-gray-50 dark:bg-gray-750 rounded-xl">
                                 <Monitor className="mr-2.5 text-gray-400 shrink-0" size={16} />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] text-gray-400">접속 브라우저 및 환경</p>
-                                    <p className="text-[11px] font-mono truncate text-gray-700 dark:text-gray-300">{deviceInfo || 'Chrome on Windows'}</p>
+                                    <p className="text-xs text-gray-400">접속 브라우저 및 환경</p>
+                                    <p className="text-xs font-mono truncate text-gray-700 dark:text-gray-300">{deviceInfo || 'Chrome on Windows'}</p>
                                 </div>
                             </div>
                         </div>
@@ -531,7 +531,7 @@ export default function MyPage() {
                                 <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 text-xs font-bold mb-1">
                                     <ShieldAlert size={14} /> 최고 관리자 긴급 보안
                                 </div>
-                                <p className="text-[11px] text-amber-600/90 dark:text-amber-400/90 mb-2.5">
+                                <p className="text-xs text-amber-600/90 dark:text-amber-400/90 mb-2.5">
                                     보안 위협 시 현재 로그인된 모든 기기(PC/모바일)의 세션을 즉시 강제 종료합니다.
                                 </p>
                                 <button
@@ -587,7 +587,7 @@ export default function MyPage() {
                                         <Smartphone size={15} />
                                         <span>스마트폰 앱 연동</span>
                                     </div>
-                                    <p className="text-[11px] text-gray-400 leading-tight">
+                                    <p className="text-xs text-gray-400 leading-tight">
                                         안드로이드 앱을 통해 업무폰으로 자동 발신
                                     </p>
                                 </button>
@@ -605,7 +605,7 @@ export default function MyPage() {
                                         <Headphones size={15} />
                                         <span>PC 헤드셋 웹 다이얼</span>
                                     </div>
-                                    <p className="text-[11px] text-gray-400 leading-tight">
+                                    <p className="text-xs text-gray-400 leading-tight">
                                         PC 브라우저 마이크/헤드셋으로 즉시 통화
                                     </p>
                                 </button>
@@ -623,7 +623,7 @@ export default function MyPage() {
                                         <MousePointer size={15} />
                                         <span>간편 클릭 다이얼</span>
                                     </div>
-                                    <p className="text-[11px] text-gray-400 leading-tight">
+                                    <p className="text-xs text-gray-400 leading-tight">
                                         번호 복사 및 팝업 안내창 수동 확인
                                     </p>
                                 </button>
@@ -636,7 +636,7 @@ export default function MyPage() {
                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                                     <Clock size={14} className="text-blue-600" /> 통화 후 메모 정리 쿨다운 (자동 대기)
                                 </span>
-                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                <p className="text-xs text-gray-400 mt-0.5">
                                     통화가 끝난 직후 다음 콜이 배정되거나 전화가 울리지 않도록 메모를 작성할 휴식 시간입니다.
                                 </p>
                             </div>
@@ -685,7 +685,7 @@ export default function MyPage() {
                                     style={{ width: `${micVolume}%` }}
                                 />
                             </div>
-                            <p className="text-[10px] text-gray-400 mt-1.5">
+                            <p className="text-xs text-gray-400 mt-1.5">
                                 {isTestingMic
                                     ? `마이크 입력 감지 중: ${micVolume}% (정상 감지 시 게이지가 초록색으로 움직입니다)`
                                     : '버튼을 눌러 통화 전 마이크 상태를 점검할 수 있습니다.'}
@@ -746,7 +746,7 @@ export default function MyPage() {
                                     <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
                                         신규 리드 인입 벨소리
                                     </span>
-                                    <p className="text-[11px] text-gray-400">내게 새로운 고객이 배정되었을 때 울릴 사운드입니다.</p>
+                                    <p className="text-xs text-gray-400">내게 새로운 고객이 배정되었을 때 울릴 사운드입니다.</p>
                                 </div>
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
                                     <select
@@ -791,7 +791,7 @@ export default function MyPage() {
                                     <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
                                         브라우저 바탕화면 푸시 알림
                                     </span>
-                                    <p className="text-[11px] text-gray-400">다른 탭이나 다른 프로그램을 보고 있을 때 바탕화면 알림을 띄웁니다.</p>
+                                    <p className="text-xs text-gray-400">다른 탭이나 다른 프로그램을 보고 있을 때 바탕화면 알림을 띄웁니다.</p>
                                 </div>
                                 <button
                                     type="button"
@@ -866,28 +866,28 @@ export default function MyPage() {
                                         <CheckCircle size={16} className="text-amber-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">전사 7대 시스템 완전 통제권</p>
-                                            <p className="text-[11px] text-gray-500">조직 소유자(Owner) 전권 보유</p>
+                                            <p className="text-xs text-gray-500">조직 소유자(Owner) 전권 보유</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-amber-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">거래처 수수료율 및 정산 손익</p>
-                                            <p className="text-[11px] text-gray-500">최고 경영 기밀 완전 열람</p>
+                                            <p className="text-xs text-gray-500">최고 경영 기밀 완전 열람</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-amber-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">긴급 데이터 즉시 파기 및 복원</p>
-                                            <p className="text-[11px] text-gray-500">소유자 전용 최고 보안 권한</p>
+                                            <p className="text-xs text-gray-500">소유자 전용 최고 보안 권한</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-amber-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">관리자 권한 위임 및 회수</p>
-                                            <p className="text-[11px] text-gray-500">전사 관리자 4대 티어 통제</p>
+                                            <p className="text-xs text-gray-500">전사 관리자 4대 티어 통제</p>
                                         </div>
                                     </div>
                                 </>
@@ -897,28 +897,28 @@ export default function MyPage() {
                                         <CheckCircle size={16} className="text-purple-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">전사 팀원 관리 및 인원 초대</p>
-                                            <p className="text-[11px] text-gray-500">총괄 실장 전사 관제 권한</p>
+                                            <p className="text-xs text-gray-500">총괄 실장 전사 관제 권한</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-purple-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">AI 트레이닝 전사 훈련 관제</p>
-                                            <p className="text-[11px] text-gray-500">전사 모의훈련 평가 및 정책 설정</p>
+                                            <p className="text-xs text-gray-500">전사 모의훈련 평가 및 정책 설정</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-purple-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">데이터 백업 파일 다운로드</p>
-                                            <p className="text-[11px] text-gray-500">정기 백업 파일 안전 추출 가능</p>
+                                            <p className="text-xs text-gray-500">정기 백업 파일 안전 추출 가능</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">긴급 데이터 영구 파기</p>
-                                            <p className="text-[11px] text-gray-400">조직 대표(Owner) 전용 제한</p>
+                                            <p className="text-xs text-gray-400">조직 대표(Owner) 전용 제한</p>
                                         </div>
                                     </div>
                                 </>
@@ -928,28 +928,28 @@ export default function MyPage() {
                                         <CheckCircle size={16} className="text-blue-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">소속 팀원 통화 녹취 청취</p>
-                                            <p className="text-[11px] text-gray-500">{myTeamName} 소속 상담원 한정</p>
+                                            <p className="text-xs text-gray-500">{myTeamName} 소속 상담원 한정</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-blue-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">AI 트레이닝 팀원 코칭 피드백</p>
-                                            <p className="text-[11px] text-gray-500">등급(S~F) 및 코멘트 작성</p>
+                                            <p className="text-xs text-gray-500">등급(S~F) 및 코멘트 작성</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-blue-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">공통 업무 설정 안전 열람</p>
-                                            <p className="text-[11px] text-gray-500">상태/주기 뷰어 모드 접근 허용</p>
+                                            <p className="text-xs text-gray-500">상태/주기 뷰어 모드 접근 허용</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">거래처 수수료율 및 경영 손익</p>
-                                            <p className="text-[11px] text-gray-400">경영 기밀 보호 (대표 전용)</p>
+                                            <p className="text-xs text-gray-400">경영 기밀 보호 (대표 전용)</p>
                                         </div>
                                     </div>
                                 </>
@@ -959,28 +959,28 @@ export default function MyPage() {
                                         <CheckCircle size={16} className="text-emerald-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">내 배정 고객 상담 및 콜 관리</p>
-                                            <p className="text-[11px] text-gray-500">배정 리드 100% 접근 및 CTI 발신</p>
+                                            <p className="text-xs text-gray-500">배정 리드 100% 접근 및 CTI 발신</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center gap-2.5">
                                         <CheckCircle size={16} className="text-emerald-600 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">AI 트레이닝 모의 훈련 참여</p>
-                                            <p className="text-[11px] text-gray-500">6대 취약점 훈련 및 내 피드백 열람</p>
+                                            <p className="text-xs text-gray-500">6대 취약점 훈련 및 내 피드백 열람</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">타 팀원 리드 및 녹취 열람</p>
-                                            <p className="text-[11px] text-gray-400">개인정보 보호를 위한 접근 차단</p>
+                                            <p className="text-xs text-gray-400">개인정보 보호를 위한 접근 차단</p>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-2.5 opacity-70">
                                         <Lock size={16} className="text-gray-400 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold text-gray-700 dark:text-gray-300">정산 손익 및 시스템 설정</p>
-                                            <p className="text-[11px] text-gray-400">관리자 전용 메뉴 은닉</p>
+                                            <p className="text-xs text-gray-400">관리자 전용 메뉴 은닉</p>
                                         </div>
                                     </div>
                                 </>
@@ -1004,7 +1004,7 @@ export default function MyPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-gray-200">
-                                    {theme === 'dark' ? <Moon size={16} className="text-purple-400" /> : <Sun size={16} className="text-amber-500" />}
+                                    {theme === 'dark' ? <Moon size={16} className="text-purple-600 dark:text-purple-400" /> : <Sun size={16} className="text-amber-500" />}
                                     <span>컬러 테마</span>
                                 </div>
                                 <Button variant="secondary" size="sm" onClick={toggleTheme}>

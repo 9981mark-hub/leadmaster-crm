@@ -83,7 +83,7 @@ export const ExpenseAddModal: React.FC<ExpenseAddModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -97,7 +97,7 @@ export const ExpenseAddModal: React.FC<ExpenseAddModalProps> = ({
               집행 일자
             </label>
             <div className="relative">
-              <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <input
                 type="date"
                 value={date}
@@ -131,7 +131,7 @@ export const ExpenseAddModal: React.FC<ExpenseAddModalProps> = ({
                 지출 금액 (만원 단위)
               </label>
               {wonAmount > 0 && (
-                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 font-mono">
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 font-mono">
                   ₩{wonAmount.toLocaleString()}원
                 </span>
               )}
@@ -147,7 +147,7 @@ export const ExpenseAddModal: React.FC<ExpenseAddModalProps> = ({
                 required
                 className="w-full px-3 py-2 pr-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-right text-sm font-bold focus:outline-none focus:border-blue-500"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 만원
               </span>
             </div>
@@ -182,7 +182,7 @@ export const ExpenseAddModal: React.FC<ExpenseAddModalProps> = ({
                   className={`py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
                     paymentMethod === m
                       ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold'
-                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-100 dark:bg-slate-800'
                   }`}
                 >
                   {m}
@@ -211,7 +211,7 @@ export const ExpenseAddModal: React.FC<ExpenseAddModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 font-medium transition-colors cursor-pointer"
             >
               취소
             </button>

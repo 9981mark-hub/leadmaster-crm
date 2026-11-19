@@ -17,18 +17,18 @@ import { logAccess } from '../../services/accessLog';
 // --- Shared Helper Components ---
 // Copied from CaseList.tsx
 const SECONDARY_STATUS_COLOR_MAP: Record<string, string> = {
-    '고객취소': 'text-red-400',
-    '진행불가': 'text-red-400',
+    '고객취소': 'text-red-600 dark:text-red-400',
+    '진행불가': 'text-red-600 dark:text-red-400',
     '연락안받음': 'text-orange-500 font-bold',
     '서류보완요청': 'text-amber-500 font-bold',
     '사무장부재': 'text-orange-500 font-bold',
-    '출장예약': 'text-green-400',
-    '방문예약': 'text-blue-400',
-    '고민중': 'text-yellow-400',
-    '계약서작성': 'text-cyan-400',
-    '관리중': 'text-indigo-400',
-    '착수금입금': 'text-emerald-400',
-    '기준비용입금': 'text-emerald-400',
+    '출장예약': 'text-green-600 dark:text-green-400',
+    '방문예약': 'text-blue-600 dark:text-blue-400',
+    '고민중': 'text-yellow-600 dark:text-yellow-400',
+    '계약서작성': 'text-cyan-600 dark:text-cyan-400',
+    '관리중': 'text-indigo-600 dark:text-indigo-400',
+    '착수금입금': 'text-emerald-600 dark:text-emerald-400',
+    '기준비용입금': 'text-emerald-600 dark:text-emerald-400',
 };
 
 // [2026-11-01] 툴팁을 열 때마다 전체 리드를 복사하던 것을, 이미 가진 리드 정보로 바로 그린다
@@ -55,10 +55,10 @@ const StatusHistoryTooltipContent = ({ c }: { c: Case }) => {
                 <>
                     <p className="font-bold text-blue-300 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">1차 상태 변경 이력</p>
                     {logs.map((log, i) => (
-                        <div key={i} className="text-[11px] border-b border-gray-700 last:border-0 pb-1 mb-1">
+                        <div key={i} className="text-xs border-b border-gray-700 last:border-0 pb-1 mb-1">
                             <div className="flex justify-between text-gray-400 mb-0.5">
                                 <span>{log.fromStatus || '신규'} → <span className="text-blue-300">{log.toStatus}</span></span>
-                                <span className="text-[10px]">{log.changedAt?.split('T')[0] || ''}</span>
+                                <span className="text-xs">{log.changedAt?.split('T')[0] || ''}</span>
                             </div>
                             {log.memo && <div className="text-gray-300 pl-1 border-l-2 border-gray-600">{log.memo}</div>}
                         </div>
@@ -70,14 +70,14 @@ const StatusHistoryTooltipContent = ({ c }: { c: Case }) => {
                 <>
                     <p className="font-bold text-purple-300 border-b border-gray-600 pb-1 mt-2">2차 상태 변경 이력</p>
                     {secondaryChanges.map((change, i) => (
-                        <div key={i} className="text-[11px] border-b border-gray-700 last:border-0 pb-1 mb-1">
+                        <div key={i} className="text-xs border-b border-gray-700 last:border-0 pb-1 mb-1">
                             <div className="flex justify-between text-gray-400 mb-0.5">
                                 <span>
                                     <span className={SECONDARY_STATUS_COLOR_MAP[change.from] || 'text-gray-300'}>{change.from}</span>
                                     {' → '}
                                     <span className={SECONDARY_STATUS_COLOR_MAP[change.to] || 'text-purple-300'}>{change.to}</span>
                                 </span>
-                                <span className="text-[10px]">{change.date?.split('T')[0] || ''}</span>
+                                <span className="text-xs">{change.date?.split('T')[0] || ''}</span>
                             </div>
                             {change.memo && <div className="text-gray-300 pl-1 border-l-2 border-purple-600">{change.memo}</div>}
                         </div>
@@ -293,7 +293,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     {/* [NEW] Star Toggle (Mobile) */}
                                     <button
                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
-                                        className={`p-0.5 transition-all active:scale-125 ${c.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-500'}`}
+                                        className={`p-0.5 transition-all active:scale-125 ${c.isStarred ? 'text-amber-600 dark:text-amber-400' : 'text-gray-300 dark:text-gray-500'}`}
                                         title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
                                     >
                                         <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
@@ -340,7 +340,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     transition={{ duration: 0.15 }}
                                                     className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[250px] overflow-y-auto"
                                                 >
-                                                    <div className="px-2 py-1 text-[10px] text-gray-400 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                                    <div className="px-2 py-1 text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                                         <span>상태 변경</span>
                                                         <button
                                                             onClick={() => setOpenDropdownId(null)}
@@ -369,11 +369,11 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             )}
                                         </AnimatePresence>
                                     </div>
-                                    {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
+                                    {c.isNew && <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>}
                                     {c.status === '사무장 접수' && onOpenParalegalModal && (
                                         <button
                                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenParalegalModal(c); }}
-                                            className="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs active:scale-95"
+                                            className="px-2 py-0.5 rounded text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs active:scale-95"
                                         >
                                             <Scale size={11} />
                                             <span>사무장 심사</span>
@@ -385,11 +385,11 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
                             <div className="flex justify-between items-center mt-1">
                                 <div className="flex items-center gap-2">
-                                    <Link to={`/case/${c.caseId}`} onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }} className="font-bold text-lg text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">
+                                    <Link to={`/case/${c.caseId}`} onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }} className="font-bold text-lg text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400">
                                         {getDisplayName(c.customerName, c.caseId)}
                                     </Link>
                                     {c.isArchived && (
-                                        <span className="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full font-medium" title={c.archivedReason || '보관됨'}>
+                                        <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full font-medium" title={c.archivedReason || '보관됨'}>
                                             보관
                                         </span>
                                     )}
@@ -417,7 +417,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={(e) => handleUnmask(e, c.caseId)}
-                                                className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                                 title="마스킹 해제 (열람 기록 남김)"
                                             >
                                                 <Eye size={13} />
@@ -438,7 +438,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 <PhoneMissed size={12} />
                                                 <span>부재 +{c.missedCallCount || 0}</span>
                                             </button>
-                                            <span className="text-[10px] text-gray-500 font-mono">
+                                            <span className="text-xs text-gray-500 font-mono">
                                                 {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
                                             </span>
                                         </div>
@@ -452,7 +452,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                 return o ? <div className="mt-1 w-fit text-xs px-2 py-0.5 rounded bg-red-50 text-red-700 font-semibold dark:bg-red-900/30 dark:text-red-300">지난 일정 {o.datetime.slice(5)}</div> : null;
                             })()}
                             {memberName && (
-                                <div className={`text-[11px] ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>{c.assignedUserId ? `담당 ${memberName(c.assignedUserId) || '?'}` : '미배정'}</div>
+                                <div className={`text-xs ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>{c.assignedUserId ? `담당 ${memberName(c.assignedUserId) || '?'}` : '미배정'}</div>
                             )}
 
                             {/* [Mobile] Reminder Info */}
@@ -476,7 +476,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         {nextReminder.datetime}
                                                     </span>
                                                     {(c.reminders?.length || 0) > 1 && (
-                                                        <span className="text-[10px] text-gray-500 bg-white dark:bg-gray-800 px-1 rounded-full border border-gray-200 dark:border-gray-600">
+                                                        <span className="text-xs text-gray-500 bg-white dark:bg-gray-800 px-1 rounded-full border border-gray-200 dark:border-gray-600">
                                                             +{((c.reminders?.length || 0) - 1)}
                                                         </span>
                                                     )}
@@ -486,7 +486,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 <div className="space-y-2 max-h-60 overflow-y-auto">
                                                     <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
                                                     {c.reminders?.map((reminder, idx) => (
-                                                        <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                        <div key={idx} className="text-xs border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
                                                             <p className="text-gray-300 font-medium">{reminder.datetime}</p>
                                                             {reminder.content && (
                                                                 <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
@@ -526,7 +526,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         .filter(m => !m.content.startsWith('[상태변경]'))
                                                         .slice(0, 5)
                                                         .map((m, i) => (
-                                                            <div key={i} className="text-[11px] leading-relaxed border-b border-gray-700 last:border-0 pb-1">
+                                                            <div key={i} className="text-xs leading-relaxed border-b border-gray-700 last:border-0 pb-1">
                                                                 <span className="text-blue-300 mr-1">[{(m.createdAt || (m as any).datetime)?.split('T')[0]?.split(' ')[0] || ''}]</span>
                                                                 {m.content}
                                                             </div>
@@ -627,7 +627,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <td className={`px-2 ${cellPadding} text-center`}>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
-                                            className={`p-1 rounded-full transition-all hover:scale-110 ${c.isStarred ? 'text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-amber-300 dark:text-gray-600 dark:hover:text-amber-400'}`}
+                                            className={`p-1 rounded-full transition-all hover:scale-110 ${c.isStarred ? 'text-amber-600 dark:text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-amber-300 dark:text-gray-600 dark:hover:text-amber-600 dark:text-amber-400'}`}
                                             title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
                                         >
                                             <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
@@ -636,8 +636,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                     <td className={cellPadding}>
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
-                                            <span className="text-[10px] text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
-                                            <span className="text-[10px] text-gray-400 dark:text-gray-500">{partner?.name}</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
+                                            <span className="text-xs text-gray-400 dark:text-gray-500">{partner?.name}</span>
                                         </div>
                                     </td>
                                     <td className={cellPadding}>
@@ -650,8 +650,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
                                                     {getDisplayName(c.customerName, c.caseId)}
                                                 </span>
-                                                {c.isNew && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
-                                                {c.isArchived && <span className="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
+                                                {c.isNew && <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
+                                                {c.isArchived && <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
                                             </Link>
                                             <HoverCheckTooltip
                                                 desktopAlign="left"
@@ -682,7 +682,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                                 .filter(m => !m.content.startsWith('[상태변경]'))
                                                                 .slice(0, 3)
                                                                 .map((m, i) => (
-                                                                    <div key={i} className="text-[11px] leading-relaxed">
+                                                                    <div key={i} className="text-xs leading-relaxed">
                                                                         <span className="text-blue-300 mr-1">[{(m.createdAt || (m as any).datetime)?.split('T')[0]?.split(' ')[0] || ''}]</span>
                                                                         {m.content}
                                                                     </div>
@@ -697,7 +697,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
                                         {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs" title={warnings.join(', ')}>⚠</span>}
                                         {memberName && (
-                                            <div className={`text-[11px] mt-0.5 ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>
+                                            <div className={`text-xs mt-0.5 ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>
                                                 {c.assignedUserId ? `담당 ${memberName(c.assignedUserId) || '?'}` : '미배정'}
                                             </div>
                                         )}
@@ -709,7 +709,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                         <div className="flex items-center gap-1.5">
                                             <button
                                                 onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
-                                                className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                                                className="hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 hover:underline transition-colors cursor-pointer"
                                             >
                                                 {getDisplayPhone(c.phone, c.caseId)}
                                             </button>
@@ -717,7 +717,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={(e) => handleUnmask(e, c.caseId)}
-                                                    className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                    className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                                     title="마스킹 해제 (열람 기록 남김)"
                                                 >
                                                     <Eye size={12} />
@@ -778,7 +778,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             {c.status === '사무장 접수' && onOpenParalegalModal && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); onOpenParalegalModal(c); }}
-                                                    className="mt-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs transition-all active:scale-95"
+                                                    className="mt-1 px-2 py-0.5 rounded text-xs font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs transition-all active:scale-95"
                                                     title="사무장 사건 심사 & 수임 판정 열기"
                                                 >
                                                     <Scale size={11} />
@@ -796,7 +796,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         transition={{ duration: 0.15 }}
                                                         className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[300px] overflow-y-auto"
                                                     >
-                                                        <div className="px-2 py-1 text-[10px] text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                                        <div className="px-2 py-1 text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700">
                                                             상태 변경
                                                         </div>
                                                         {statuses.map((status) => (
@@ -827,7 +827,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <div className="mt-1 flex items-center gap-1">
                                                 <button
                                                     onClick={(e) => onMissedCall(e, c)}
-                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)
+                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border transition-all ${isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)
                                                         ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
                                                         : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
                                                         }`}
@@ -836,7 +836,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     <PhoneMissed size={10} />
                                                     <span>+{c.missedCallCount || 0}</span>
                                                 </button>
-                                                <span className="text-[10px] text-gray-500 tracking-tight">
+                                                <span className="text-xs text-gray-500 tracking-tight">
                                                     {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
                                                 </span>
                                             </div>
@@ -868,14 +868,14 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                             return <MoreHorizontal size={14} className="text-gray-600" />;
                                                         })()}
                                                         <span className="text-gray-700 dark:text-gray-300 font-medium">{nextReminder.datetime}</span>
-                                                        {(c.reminders?.length || 0) > 1 && <span className="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
+                                                        {(c.reminders?.length || 0) > 1 && <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
                                                     </div>
                                                 }
                                                 content={
                                                     <div className="space-y-2 max-h-60 overflow-y-auto">
                                                         <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
                                                         {c.reminders?.map((reminder, idx) => (
-                                                            <div key={idx} className="text-[11px] border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                            <div key={idx} className="text-xs border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
                                                                 <p className="text-gray-300 font-medium">{reminder.datetime}</p>
                                                                 {reminder.content && (
                                                                     <p className="text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">

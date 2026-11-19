@@ -132,7 +132,7 @@ export const LiteQuickSmsModal: React.FC<Props> = ({
                 <h3 className="font-bold text-gray-900 dark:text-white text-sm">
                   1-Click 안내 문자 발송
                 </h3>
-                <p className="text-[11px] text-gray-500 font-mono">
+                <p className="text-xs text-gray-500 font-mono">
                   {c.customerName} ({c.phone})
                 </p>
               </div>
@@ -167,7 +167,7 @@ export const LiteQuickSmsModal: React.FC<Props> = ({
                           : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
                       }`}
                     >
-                      <span className="text-[10px] text-gray-400">{tpl.badge}</span>
+                      <span className="text-xs text-gray-400">{tpl.badge}</span>
                       <span className="truncate">{tpl.title}</span>
                     </button>
                   );
@@ -184,7 +184,7 @@ export const LiteQuickSmsModal: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="flex items-center gap-1 text-[11px] font-bold text-gray-500 hover:text-blue-600 transition-colors"
+                  className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors"
                 >
                   {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
                   <span>{copied ? '복사됨' : '복사'}</span>

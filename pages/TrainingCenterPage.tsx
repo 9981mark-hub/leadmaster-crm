@@ -1184,7 +1184,7 @@ export default function TrainingCenterPage() {
 
         <div className="flex items-center gap-3">
           <div className="px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/10 text-center">
-            <span className="text-[10px] block text-blue-200">총 훈련 세션</span>
+            <span className="text-xs block text-blue-200">총 훈련 세션</span>
             <span className="text-sm font-extrabold text-white">
               {history.length}회 완주
             </span>
@@ -1244,7 +1244,7 @@ export default function TrainingCenterPage() {
               <h3 className="text-xs font-bold text-gray-900 dark:text-gray-100">
                 훈련 영업 모드:
               </h3>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-colors ${
+              <span className={`text-xs px-2 py-0.5 rounded-full font-bold transition-colors ${
                 trainingMode === 'inbound_lead'
                   ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-300/60'
                   : 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-300/60'
@@ -1252,7 +1252,7 @@ export default function TrainingCenterPage() {
                 {trainingMode === 'inbound_lead' ? '📋 광고신청 리드 모드 (Warm Lead)' : '📞 일반 아웃바운드 (Cold Call)'}
               </span>
             </div>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {trainingMode === 'inbound_lead'
                 ? '인터넷·SNS 광고를 보고 자가진단/상담신청을 남긴 고객에게 신청서를 먼저 확인하고 발신하는 실전 훈련'
                 : '불특정 잠재 고객에게 첫인사와 출처 소명으로 거절을 돌파하는 전통 아웃바운드 훈련'}
@@ -1284,7 +1284,7 @@ export default function TrainingCenterPage() {
           >
             <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
             <span>📋 광고신청 리드</span>
-            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/20 text-white font-extrabold">인바운드</span>
+            <span className="text-xs px-1.5 py-0.2 rounded-full bg-white/20 text-white font-extrabold">인바운드</span>
           </button>
         </div>
       </div>
@@ -1301,7 +1301,7 @@ export default function TrainingCenterPage() {
         >
           <GraduationCap className="w-4 h-4" />
           <span>🌱 신입 온보딩 패스트트랙</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/10 dark:bg-white/20 font-black">
+          <span className="px-1.5 py-0.2 rounded-full text-xs bg-black/10 dark:bg-white/20 font-black">
             3일 완성
           </span>
         </button>
@@ -1411,17 +1411,17 @@ export default function TrainingCenterPage() {
             {/* 상담원 개인 성과 요약 카드 */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50">
-                <div className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">총 모의 훈련</div>
+                <div className="text-xs font-semibold text-purple-600 dark:text-purple-400">총 모의 훈련</div>
                 <div className="text-lg font-black text-purple-950 dark:text-purple-100 mt-1">{mySessions.length}회</div>
               </div>
               <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50">
-                <div className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">최고 평가 점수</div>
+                <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">최고 평가 점수</div>
                 <div className="text-lg font-black text-blue-950 dark:text-blue-100 mt-1">
                   {mySessions.length > 0 ? Math.max(...mySessions.map(s => s.report.totalScore)) : 0}점
                 </div>
               </div>
               <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
-                <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">최근 평가 등급</div>
+                <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">최근 평가 등급</div>
                 <div className="text-lg font-black text-emerald-950 dark:text-emerald-100 mt-1">
                   {mySessions[0]?.adminFeedback?.grade
                     ? `${mySessions[0].adminFeedback.grade}등급`
@@ -1431,7 +1431,7 @@ export default function TrainingCenterPage() {
                 </div>
               </div>
               <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50">
-                <div className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">평균 통화 시간</div>
+                <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">평균 통화 시간</div>
                 <div className="text-lg font-black text-amber-950 dark:text-amber-100 mt-1">
                   {mySessions.length > 0
                     ? `${Math.floor(mySessions.reduce((acc, s) => acc + s.durationSeconds, 0) / mySessions.length / 60)}분 ${Math.round(mySessions.reduce((acc, s) => acc + s.durationSeconds, 0) / mySessions.length % 60)}초`
@@ -1472,7 +1472,7 @@ export default function TrainingCenterPage() {
                           <span className="font-semibold text-gray-800 dark:text-gray-200">
                             {record.personaName || '가상 고객'}
                           </span>
-                          <span className="ml-1.5 px-2 py-0.5 rounded text-[10px] bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                          <span className="ml-1.5 px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
                             {record.categoryTitle || '모의'}
                           </span>
                         </td>
@@ -1497,7 +1497,7 @@ export default function TrainingCenterPage() {
                               {record.adminFeedback.grade}등급
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-[11px]">미평가</span>
+                            <span className="text-gray-400 text-xs">미평가</span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -1619,7 +1619,7 @@ export default function TrainingCenterPage() {
                           {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             {record.teamName || '1팀'}
                           </span>
                         </td>
@@ -1630,7 +1630,7 @@ export default function TrainingCenterPage() {
                           <span className="font-semibold text-gray-800 dark:text-gray-200">
                             {record.personaName || '가상 고객'}
                           </span>
-                          <span className="ml-1.5 px-2 py-0.5 rounded text-[10px] bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                          <span className="ml-1.5 px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
                             {record.categoryTitle || '모의'}
                           </span>
                         </td>
@@ -1655,7 +1655,7 @@ export default function TrainingCenterPage() {
                               {record.adminFeedback.grade}등급
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-[11px]">미평가</span>
+                            <span className="text-gray-400 text-xs">미평가</span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -1708,7 +1708,7 @@ export default function TrainingCenterPage() {
                       </>
                     )}
                   </h2>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                     trainingMode === 'inbound_lead'
                       ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
                       : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
@@ -1716,7 +1716,7 @@ export default function TrainingCenterPage() {
                     {trainingMode === 'inbound_lead' ? '광고 DB 신청건' : '콜드콜 발신건'}
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {trainingMode === 'inbound_lead'
                     ? '인터넷·SNS 광고를 보고 자가진단 신청서를 제출한 고객의 6대 핵심 심리 유형입니다.'
                     : '신입 상담원이 가장 버벅대는 6대 콜드콜 상황을 골라 즉각 실전 연습을 진행합니다.'}
@@ -1741,10 +1741,10 @@ export default function TrainingCenterPage() {
                                 {cat.badge} {cat.title}
                               </span>
                             </div>
-                            <p className="text-[11px] text-purple-900 dark:text-purple-200 font-semibold mb-1">
+                            <p className="text-xs text-purple-900 dark:text-purple-200 font-semibold mb-1">
                               {cat.subtitle}
                             </p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
                               🎯 <strong>골든룰:</strong> {cat.coreGoal}
                             </p>
                           </div>
@@ -1767,10 +1767,10 @@ export default function TrainingCenterPage() {
                                 {cat.badge} {cat.title}
                               </span>
                             </div>
-                            <p className="text-[11px] text-gray-600 dark:text-gray-300 font-medium mb-1">
+                            <p className="text-xs text-gray-600 dark:text-gray-300 font-medium mb-1">
                               {cat.subtitle}
                             </p>
-                            <p className="text-[10px] text-gray-400 leading-snug line-clamp-2">
+                            <p className="text-xs text-gray-400 leading-snug line-clamp-2">
                               🎯 <strong>목표:</strong> {cat.coreGoal}
                             </p>
                           </div>
@@ -1788,7 +1788,7 @@ export default function TrainingCenterPage() {
                     <Dice5 className="w-4 h-4 text-blue-600" />
                     실전 텔레그램 접수 기반 무한 고객 엔진
                   </h2>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold">
                     487건 실전 DB
                   </span>
                 </div>
@@ -1798,9 +1798,9 @@ export default function TrainingCenterPage() {
 
                 {/* 테마 선택 칩 */}
                 <div className="space-y-1.5 pt-1">
-                  <div className="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                  <div className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                     <span>🎯 집중 연습 테마 선택</span>
-                    <span className="text-[10px] font-normal text-gray-400">클릭 즉시 소환</span>
+                    <span className="text-xs font-normal text-gray-400">클릭 즉시 소환</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {INFINITE_THEMES.map(t => {
@@ -1810,7 +1810,7 @@ export default function TrainingCenterPage() {
                           key={t.id}
                           type="button"
                           onClick={() => handleGenerateRandom(t.id)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                             isThemeActive
                               ? 'bg-blue-600 text-white font-bold shadow-sm'
                               : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -1835,7 +1835,7 @@ export default function TrainingCenterPage() {
                         setIsBlindMode(true);
                         setShowCheatSheet(false);
                       }}
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all ${
                         isBlindMode
                           ? 'bg-blue-600 text-white shadow-xs'
                           : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -1847,7 +1847,7 @@ export default function TrainingCenterPage() {
                     <button
                       type="button"
                       onClick={() => setIsBlindMode(false)}
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all ${
                         !isBlindMode
                           ? 'bg-purple-600 text-white shadow-xs'
                           : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -1878,7 +1878,7 @@ export default function TrainingCenterPage() {
                         <span className="font-bold text-blue-950 dark:text-blue-100 text-sm">
                           {selectedPersona.customerName} ({selectedPersona.age}세, {selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'})
                         </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold text-white ${isRevealed ? 'bg-blue-600' : 'bg-emerald-600 animate-pulse'}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-md font-bold text-white ${isRevealed ? 'bg-blue-600' : 'bg-emerald-600 animate-pulse'}`}>
                           {isRevealed ? selectedPersona.badge : '🎯 실전 접수 인입'}
                         </span>
                       </div>
@@ -1919,23 +1919,23 @@ export default function TrainingCenterPage() {
                       {/* 1. 실전 블라인드 모드 (통화 전/중 - 정답 가림) */}
                       {!isRevealed ? (
                         <div className="space-y-2">
-                          <div className="p-2.5 rounded-lg bg-white/80 dark:bg-gray-900/80 border border-blue-200/70 dark:border-blue-900/70 text-[11px] space-y-1">
+                          <div className="p-2.5 rounded-lg bg-white/80 dark:bg-gray-900/80 border border-blue-200/70 dark:border-blue-900/70 text-xs space-y-1">
                             <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
                               <span>📋 <strong>접수 경로:</strong> {selectedPersona.outboundChannelType === 'cold_db' ? '📞 1~2년 전 금융정보 동의 (Cold DB)' : '온라인 무료 진단 신청 인입'}</span>
-                              <span className="font-mono text-[10px]">{selectedPersona.phone}</span>
+                              <span className="font-mono text-xs">{selectedPersona.phone}</span>
                             </div>
                             <div className="text-gray-700 dark:text-gray-200">
                               💬 <strong>접수 메모:</strong> {selectedPersona.outboundChannelType === 'cold_db' ? '"과거 마케팅 동의 고객 (갑작스러운 수신에 당황/출처의심 가능성 높음)"' : '"채무 조정 및 개인회생/파산 가능 여부 확인 요청 (빠른 통화 원함)"'}
                             </div>
                           </div>
 
-                          <div className="p-3 rounded-xl bg-white/70 dark:bg-gray-900/60 border border-dashed border-indigo-300 dark:border-indigo-800 space-y-2 text-[11px]">
-                            <div className="text-[10px] font-extrabold text-indigo-700 dark:text-indigo-300 flex items-center justify-between">
+                          <div className="p-3 rounded-xl bg-white/70 dark:bg-gray-900/60 border border-dashed border-indigo-300 dark:border-indigo-800 space-y-2 text-xs">
+                            <div className="text-xs font-extrabold text-indigo-700 dark:text-indigo-300 flex items-center justify-between">
                               <span className="flex items-center gap-1">
                                 <Lock className="w-3 h-3" />
                                 실전 문진 대상 (통화로 직접 파악 필요)
                               </span>
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 font-bold">
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 font-bold">
                                 정답 가림
                               </span>
                             </div>
@@ -1959,7 +1959,7 @@ export default function TrainingCenterPage() {
                               </div>
                             </div>
 
-                            <div className="pt-1.5 border-t border-indigo-100 dark:border-indigo-950 flex items-center justify-between text-[10px]">
+                            <div className="pt-1.5 border-t border-indigo-100 dark:border-indigo-950 flex items-center justify-between text-xs">
                               <span className="text-gray-400">💡 통화 종료 시 실제 정답이 전격 공개됩니다</span>
                               <button
                                 type="button"
@@ -1972,7 +1972,7 @@ export default function TrainingCenterPage() {
                             </div>
                           </div>
 
-                          <div className="text-[10px] text-blue-700 dark:text-blue-300 pt-0.5 font-semibold">
+                          <div className="text-xs text-blue-700 dark:text-blue-300 pt-0.5 font-semibold">
                             🎯 <strong>훈련 목표:</strong> 7대 필수 문진을 완료하여 적격 여부(회생 vs 파산)를 진단하고 수석 사무장 상담으로 인계하기
                           </div>
                         </div>
@@ -1980,18 +1980,18 @@ export default function TrainingCenterPage() {
                         /* 2. 정답 공개 모드 (통화 종료 후 or 학습 가이드 모드 or 엿보기) */
                         <div className="space-y-2">
                           {callState === 'ended' && (
-                            <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-[11px] flex items-center justify-between shadow-xs">
+                            <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs flex items-center justify-between shadow-xs">
                               <span className="flex items-center gap-1">
                                 🎉 실제 고객 숨겨진 정답 (Ground Truth) 전격 공개!
                               </span>
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/20 font-normal">
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-white/20 font-normal">
                                 문진 대조 채점
                               </span>
                             </div>
                           )}
 
                           {showCheatSheet && callState !== 'ended' && (
-                            <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-[10px] text-amber-800 dark:text-amber-200 flex items-center justify-between">
+                            <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between">
                               <span>👁️ <strong>정답 엿보기 활성화 중</strong> (신입 가이드 모드)</span>
                               <button
                                 type="button"
@@ -2003,7 +2003,7 @@ export default function TrainingCenterPage() {
                             </div>
                           )}
 
-                          <div className="grid grid-cols-1 gap-1 text-[11px] text-gray-700 dark:text-gray-200">
+                          <div className="grid grid-cols-1 gap-1 text-xs text-gray-700 dark:text-gray-200">
                             <div>💼 <strong>직업/소득:</strong> {selectedPersona.job} ({selectedPersona.salary})</div>
                             <div>💳 <strong>채무 현황:</strong> {selectedPersona.debtSummary}</div>
                             <div>🏠 <strong>주거/재산:</strong> {selectedPersona.housing}</div>
@@ -2014,16 +2014,16 @@ export default function TrainingCenterPage() {
 
                           {/* 🎯 1차 추천 법률 제도 후킹 멘트 */}
                           {selectedPersona.groundTruth?.recommendedLegalHook && (
-                            <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-emerald-50/90 to-teal-50/90 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-300 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-200">
+                            <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-emerald-50/90 to-teal-50/90 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-300 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200">
                               <div className="font-extrabold flex items-center justify-between text-emerald-800 dark:text-emerald-300 mb-1">
                                 <span className="flex items-center gap-1">
                                   🎯 <strong>1차 추천 법률 후킹</strong>
                                 </span>
-                                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-200/70 dark:bg-emerald-900/80 font-bold text-emerald-900 dark:text-emerald-100">
+                                <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-200/70 dark:bg-emerald-900/80 font-bold text-emerald-900 dark:text-emerald-100">
                                   분쟁 위험 0% 실무준칙
                                 </span>
                               </div>
-                              <div className="font-medium text-[11px] leading-relaxed text-emerald-950 dark:text-emerald-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-emerald-200/60 dark:border-emerald-900/60">
+                              <div className="font-medium text-xs leading-relaxed text-emerald-950 dark:text-emerald-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-emerald-200/60 dark:border-emerald-900/60">
                                 {selectedPersona.groundTruth.recommendedLegalHook}
                               </div>
                             </div>
@@ -2031,8 +2031,8 @@ export default function TrainingCenterPage() {
 
                           {/* 실전 녹취 기반 추천 방어 화법 배너 */}
                           {selectedPersona.recommendedDefenseScript && (
-                            <div className="p-2.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-[11px] space-y-1">
-                              <div className="flex items-center justify-between text-amber-800 dark:text-amber-200 font-extrabold text-[10px]">
+                            <div className="p-2.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-xs space-y-1">
+                              <div className="flex items-center justify-between text-amber-800 dark:text-amber-200 font-extrabold text-xs">
                                 <span className="flex items-center gap-1">
                                   <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
                                   🛡️ 실전 통화 검증 방어 화법 (녹취 274건 분석)
@@ -2042,11 +2042,11 @@ export default function TrainingCenterPage() {
                                 </span>
                               </div>
                               {selectedPersona.objectionFocus && (
-                                <div className="text-[10px] text-gray-600 dark:text-gray-300">
+                                <div className="text-xs text-gray-600 dark:text-gray-300">
                                   • 고객 핵심 질문/의문: <strong>"{selectedPersona.objectionFocus}"</strong>
                                 </div>
                               )}
-                              <div className="font-medium text-[11px] leading-relaxed text-amber-950 dark:text-amber-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-amber-200/60 dark:border-amber-900/60">
+                              <div className="font-medium text-xs leading-relaxed text-amber-950 dark:text-amber-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-amber-200/60 dark:border-amber-900/60">
                                 💬 "{selectedPersona.recommendedDefenseScript}"
                               </div>
                             </div>
@@ -2058,19 +2058,19 @@ export default function TrainingCenterPage() {
                               <button
                                 type="button"
                                 onClick={() => setShowGroundTruth(!showGroundTruth)}
-                                className="w-full flex items-center justify-between text-[11px] font-bold text-indigo-700 dark:text-indigo-300 hover:underline"
+                                className="w-full flex items-center justify-between text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:underline"
                               >
                                 <span className="flex items-center gap-1">
                                   💡 결론 요구 고객 대응용 가심사 가이드
                                 </span>
-                                <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 font-semibold">
+                                <span className="text-xs px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 font-semibold">
                                   {showGroundTruth ? '▲ 접기' : '▼ 필요시 열기'}
                                 </span>
                               </button>
 
                               {showGroundTruth && (
-                                <div className="mt-2 p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-900 text-[11px] space-y-1.5">
-                                  <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-[10px] text-amber-800 dark:text-amber-200 leading-tight">
+                                <div className="mt-2 p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-900 text-xs space-y-1.5">
+                                  <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-xs text-amber-800 dark:text-amber-200 leading-tight">
                                     ⚠️ <strong>1차 상담 주의:</strong> 확정 금액을 단정하면 2차 상담 시 민원이 발생합니다. "단순 가계산 범위"로만 완충하고 수석 사무장 정밀 상담으로 인계하세요.
                                   </div>
                                   <div className="flex items-center justify-between">
@@ -2079,16 +2079,16 @@ export default function TrainingCenterPage() {
                                       {selectedPersona.groundTruth.suitability}
                                     </span>
                                   </div>
-                                  <div className="text-gray-600 dark:text-gray-300 text-[10px]">
+                                  <div className="text-gray-600 dark:text-gray-300 text-xs">
                                     {selectedPersona.groundTruth.suitabilityReason}
                                   </div>
-                                  <div className="grid grid-cols-2 gap-1 pt-1 text-[10px]">
+                                  <div className="grid grid-cols-2 gap-1 pt-1 text-xs">
                                     <div>• 인정 생계비: <strong>{selectedPersona.groundTruth.recognizedLivingCost.toLocaleString()}원</strong></div>
                                     <div>• 예상 월 변제: <strong>{selectedPersona.groundTruth.expectedMonthlyPayment.toLocaleString()}원</strong></div>
                                     <div>• 변제 기간: <strong>{selectedPersona.groundTruth.expectedRepaymentPeriod}개월</strong></div>
                                     <div>• 예상 탕감률: <strong>약 {selectedPersona.groundTruth.estimatedForgivenessRate}%</strong></div>
                                   </div>
-                                  <div className="text-[10px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
                                     🏛️ {selectedPersona.groundTruth.courtRuleNote}
                                   </div>
                                 </div>
@@ -2096,7 +2096,7 @@ export default function TrainingCenterPage() {
                             </div>
                           )}
 
-                          <div className="text-[10px] text-blue-700 dark:text-blue-300 pt-1 font-semibold">
+                          <div className="text-xs text-blue-700 dark:text-blue-300 pt-1 font-semibold">
                             🎯 <strong>훈련 목표:</strong> {selectedPersona.trainingGoal}
                           </div>
                         </div>
@@ -2135,14 +2135,14 @@ export default function TrainingCenterPage() {
                           <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                             {persona.badge}
                           </span>
-                          <span className="text-[10px] font-mono text-gray-400">
+                          <span className="text-xs font-mono text-gray-400">
                             {persona.speechOptions.gender === 'female' ? '여성 성우' : '남성 성우'}
                           </span>
                         </div>
-                        <p className="text-[11px] text-gray-600 dark:text-gray-300 mb-1">
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">
                           {persona.title}
                         </p>
-                        <p className="text-[10px] text-gray-400 leading-snug line-clamp-2">
+                        <p className="text-xs text-gray-400 leading-snug line-clamp-2">
                           {persona.scenarioDescription}
                         </p>
                       </div>
@@ -2160,7 +2160,7 @@ export default function TrainingCenterPage() {
                   실전 고객 성대 & 통화 음질
                 </span>
                 {colabUrl && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold flex items-center gap-1">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold flex items-center gap-1">
                     🎙️ 2안 CosyVoice 2 복제 음성
                   </span>
                 )}
@@ -2170,10 +2170,10 @@ export default function TrainingCenterPage() {
               {isOwner && (
                 <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex flex-col">
-                    <span className="font-medium text-[11px] flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                    <span className="font-medium text-xs flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
                       📞 전화 수화기 음질 필터 (대표 전용)
                     </span>
-                    <span className="text-[9px] text-gray-400">전사 상담원에게 기본 적용 (300~3400Hz 모사)</span>
+                    <span className="text-xs text-gray-400">전사 상담원에게 기본 적용 (300~3400Hz 모사)</span>
                   </div>
                   <button
                     onClick={async () => {
@@ -2184,7 +2184,7 @@ export default function TrainingCenterPage() {
                       await saveCompanyTrainingConfig({ ...currentCfg, usePhoneFilter: next });
                       setTrainingConfig(prev => ({ ...prev, usePhoneFilter: next }));
                     }}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                    className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
                       isPhoneFilterEnabled
                         ? 'bg-emerald-600 text-white shadow-xs'
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
@@ -2209,14 +2209,14 @@ export default function TrainingCenterPage() {
               {/* 고객 성향별 자동 말속도 안내 */}
               <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex flex-col">
-                  <span className="font-medium text-[11px] flex items-center gap-1">
+                  <span className="font-medium text-xs flex items-center gap-1">
                     ⏱️ 고객 말속도 (성향 맞춤 자동)
                   </span>
-                  <span className="text-[9px] text-gray-400">
+                  <span className="text-xs text-gray-400">
                     고객의 나이·성향에 따라 실전 호흡이 자동 결정됩니다
                   </span>
                 </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                   {(selectedPersona.speechOptions?.rate ?? 1.0).toFixed(2)}x {
                     (selectedPersona.speechOptions?.rate ?? 1.0) < 0.95 ? '(느긋/묵직)' :
                     (selectedPersona.speechOptions?.rate ?? 1.0) > 1.05 ? '(급함/재촉)' : '(표준 호흡)'
@@ -2235,7 +2235,7 @@ export default function TrainingCenterPage() {
                     <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
                     🎭 60인 실전 자연 음성 선택 (분신술)
                   </span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-600 text-white font-semibold">
+                  <span className="px-1.5 py-0.5 rounded text-xs bg-indigo-600 text-white font-semibold">
                     {selectedPersona.speechOptions.characterVoiceId ? `${selectedPersona.speechOptions.characterVoiceId} 적용중` : '60명 풀 열기'}
                   </span>
                 </button>
@@ -2275,15 +2275,15 @@ export default function TrainingCenterPage() {
               <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/70 to-pink-50/50 dark:from-purple-950/40 dark:via-indigo-950/40 dark:to-pink-950/30 border border-purple-200/90 dark:border-purple-800/60 shadow-xs space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-200/60 dark:border-purple-800/40 pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[11px] font-black flex items-center gap-1.5 shadow-2xs">
+                    <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-black flex items-center gap-1.5 shadow-2xs">
                       <FileText className="w-3.5 h-3.5" />
                       온라인 광고 상담신청서 접수건
                     </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold border ${selectedPersona.leadContext.channelBadgeColor}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-md font-bold border ${selectedPersona.leadContext.channelBadgeColor}`}>
                       {selectedPersona.leadContext.channelLabel}
                     </span>
                   </div>
-                  <span className="text-[11px] text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-1">
+                  <span className="text-xs text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
                     접수 시각: {selectedPersona.leadContext.appliedAt}
                   </span>
@@ -2292,26 +2292,26 @@ export default function TrainingCenterPage() {
                 {/* 신청서 팩트 4-Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                   <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">유입 캠페인</span>
-                    <span className="font-bold text-gray-900 dark:text-gray-100 text-[11px] truncate block" title={selectedPersona.leadContext.campaignName}>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">유입 캠페인</span>
+                    <span className="font-bold text-gray-900 dark:text-gray-100 text-xs truncate block" title={selectedPersona.leadContext.campaignName}>
                       {selectedPersona.leadContext.campaignName}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">고객 입력 채무</span>
-                    <span className="font-bold text-rose-600 dark:text-rose-400 text-[11px] block">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">고객 입력 채무</span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400 text-xs block">
                       {selectedPersona.leadContext.declaredDebt}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">연체 상태</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400 text-[11px] block">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">연체 상태</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 text-xs block">
                       {selectedPersona.leadContext.delinquencyStatus}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">직업 및 소득</span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400 text-[11px] block">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">직업 및 소득</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400 text-xs block">
                       {selectedPersona.leadContext.incomeAndJob}
                     </span>
                   </div>
@@ -2319,7 +2319,7 @@ export default function TrainingCenterPage() {
 
                 {/* 고객 남김말 / 고민 메모 */}
                 <div className="p-2.5 rounded-xl bg-white/90 dark:bg-gray-900/90 border border-purple-200/70 dark:border-purple-800/50 text-xs">
-                  <span className="text-[10px] font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1 mb-1">
+                  <span className="text-xs font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1 mb-1">
                     💬 고객 작성 남김말
                   </span>
                   <p className="text-gray-800 dark:text-gray-200 text-xs font-medium italic">
@@ -2411,12 +2411,12 @@ export default function TrainingCenterPage() {
                   </span>
                   <div className="flex items-center gap-2">
                     {callState === 'connected' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200/60">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/60">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         실시간 통화 연결 중
                       </span>
                     ) : (
-                      <span className="text-[11px] text-gray-400">
+                      <span className="text-xs text-gray-400">
                         발신 대기 상태
                       </span>
                     )}
@@ -2428,10 +2428,10 @@ export default function TrainingCenterPage() {
                   <div className="px-3.5 py-2.5 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 border-b border-blue-200/80 dark:border-blue-800/60 flex flex-col gap-1.5 text-xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-black shrink-0">
+                        <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-xs font-black shrink-0">
                           {trainingMode === 'inbound_lead' ? '신청건 첫마디' : '첫마디 미션'}
                         </span>
-                        <span className="text-[10px] font-bold text-blue-900 dark:text-blue-200">
+                        <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
                           {trainingMode === 'inbound_lead'
                             ? `[${selectedPersona.leadContext?.channelLabel || '온라인광고'} 신청건] 신속 회신 오프닝`
                             : `[${trainingConfig.companyName}] 표준 오프닝 가이드`}
@@ -2440,13 +2440,13 @@ export default function TrainingCenterPage() {
                       {(isOwner || trainingPerms.canManageConfig) && (
                         <button
                           onClick={() => setShowConfigModal(true)}
-                          className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                          className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                         >
                           <Settings className="w-3 h-3" /> 스크립트 설정
                         </button>
                       )}
                     </div>
-                    <p className="text-[11px] text-blue-950 dark:text-blue-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                    <p className="text-xs text-blue-950 dark:text-blue-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
                       {trainingMode === 'inbound_lead' ? (
                         <>💬 "안녕하세요, {selectedPersona.customerName} 고객님 맞으실까요? 방금 {selectedPersona.leadContext?.channelLabel || '온라인'}에서 신청 남겨주신 [개인회생 무료 자격진단] 건으로 신속히 도움드리고자 연락드렸습니다."</>
                       ) : (
@@ -2463,14 +2463,14 @@ export default function TrainingCenterPage() {
                       <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                       <div className="flex-1 space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-amber-900 dark:text-amber-200 text-[11px]">
+                          <span className="font-bold text-amber-900 dark:text-amber-200 text-xs">
                             💡 실전 추천 방어 화법 (녹취 검증)
                           </span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-200/80 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold">
+                          <span className="text-xs px-1.5 py-0.2 rounded bg-amber-200/80 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold">
                             {selectedPersona.behaviorType === 'cold_skeptic' ? '출처추궁 돌파' : selectedPersona.behaviorType === 'storyteller' ? '공감 후 전환' : selectedPersona.behaviorType === 'rapid_inquirer' ? '질문 방어' : '완충 브릿지'}
                           </span>
                         </div>
-                        <p className="text-[11px] text-amber-950 dark:text-amber-100 font-medium leading-relaxed">
+                        <p className="text-xs text-amber-950 dark:text-amber-100 font-medium leading-relaxed">
                           💬 "{selectedPersona.recommendedDefenseScript}"
                         </p>
                       </div>
@@ -2493,7 +2493,7 @@ export default function TrainingCenterPage() {
                             <Mic className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                             실시간 자동 통화 모드
                           </span>
-                          <span className="text-[11px] text-emerald-700 dark:text-emerald-300 hidden sm:inline">
+                          <span className="text-xs text-emerald-700 dark:text-emerald-300 hidden sm:inline">
                             (편하게 말씀하세요. 고객이 말하는 중에도 말씀하시면 즉시 듣고 반응합니다)
                           </span>
                         </>
@@ -2504,7 +2504,7 @@ export default function TrainingCenterPage() {
                             <MicOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                             마이크 꺼짐 (음소거)
                           </span>
-                          <span className="text-[11px] text-amber-700 dark:text-amber-300 hidden sm:inline">
+                          <span className="text-xs text-amber-700 dark:text-amber-300 hidden sm:inline">
                             통화 중 음소거 상태입니다. 마이크를 켜시거나 키보드로 입력하세요.
                           </span>
                         </>
@@ -2513,7 +2513,7 @@ export default function TrainingCenterPage() {
                     <button
                       type="button"
                       onClick={() => toggleMicrophone()}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                         isMicActive
                           ? 'bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-100 hover:bg-emerald-300'
                           : 'bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-100 hover:bg-amber-300'
@@ -2530,7 +2530,7 @@ export default function TrainingCenterPage() {
                     <div className="flex items-center gap-2">
                       <Mic className="w-4 h-4 text-blue-600 animate-bounce" />
                       <span className="font-bold">🎙️ 마이크 사전 테스트 중:</span>
-                      <span className="text-[11px] font-medium text-blue-800 dark:text-blue-200">
+                      <span className="text-xs font-medium text-blue-800 dark:text-blue-200">
                         {micTestResult ? `인식 결과: "${micTestResult}"` : '마이크에 대고 "안녕하세요" 등을 말씀해보세요...'}
                       </span>
                     </div>
@@ -2541,7 +2541,7 @@ export default function TrainingCenterPage() {
                         setIsMicTesting(false);
                         setIsMicActive(false);
                       }}
-                      className="px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold"
+                      className="px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
                     >
                       테스트 완료
                     </button>
@@ -2580,11 +2580,11 @@ export default function TrainingCenterPage() {
                         className={`flex flex-col ${msg.speaker === 'agent' ? 'items-end' : 'items-start'}`}
                       >
                         <div className="flex items-center gap-1.5 mb-1 px-1">
-                          <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400">
+                          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                             {msg.speaker === 'agent' ? '나 (상담원)' : `고객 (${selectedPersona.customerName})`}
                           </span>
                           {msg.speaker === 'customer' && msg.emotion && (
-                            <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                            <span className={`inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-full ${
                               msg.emotion === 'angry'
                                 ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-300 dark:border-red-800'
                                 : msg.emotion === 'annoyed'
@@ -2599,7 +2599,7 @@ export default function TrainingCenterPage() {
                               {msg.emotion === 'calm' && '😌 차분/경청'}
                             </span>
                           )}
-                          <span className="text-[10px] text-gray-400">{msg.timestamp}</span>
+                          <span className="text-xs text-gray-400">{msg.timestamp}</span>
                         </div>
                         <div
                           className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-xs relative ${
@@ -2627,7 +2627,7 @@ export default function TrainingCenterPage() {
                   {interimText && (
                     <div className="flex flex-col items-end">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold animate-pulse flex items-center gap-1">
+                        <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold animate-pulse flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
                           🎙️ 상담원 말씀하시는 중...
                         </span>
@@ -2656,7 +2656,7 @@ export default function TrainingCenterPage() {
                       <button
                         type="button"
                         onClick={handleInterruptCustomer}
-                        className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] shadow-sm transition-all"
+                        className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-all"
                       >
                         말 끊고 바로 답하기 🖐️
                       </button>
@@ -2739,7 +2739,7 @@ export default function TrainingCenterPage() {
                   <span className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-400">
                     <ShieldCheck className="w-4 h-4" /> {trainingMode === 'inbound_lead' ? '광고신청건 7대 심층 문진' : '사무장 인계 7대 문진'}
                   </span>
-                  <span className="text-[10px] text-gray-400">
+                  <span className="text-xs text-gray-400">
                     획득: {trainingMode === 'inbound_lead'
                       ? `${Object.values(inboundLiveChecklist).filter(Boolean).length}/7`
                       : `${Object.values(liveChecklist).filter(Boolean).length}/7`}
@@ -2749,7 +2749,7 @@ export default function TrainingCenterPage() {
                 <div className="flex-1 p-3.5 overflow-y-auto space-y-3 text-xs">
                   {/* Live 7 Checkpoints Checklist */}
                   <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
-                    <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-300 block mb-1">
+                    <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 block mb-1">
                       {trainingMode === 'inbound_lead'
                         ? '온라인 신청내역 검증 및 문진 완료 시 체크:'
                         : '통화 중 문진 완료 시 체크하세요:'}
@@ -2779,7 +2779,7 @@ export default function TrainingCenterPage() {
                               setLiveChecklist(prev => ({ ...prev, [item.key]: !checked }));
                             }
                           }}
-                          className={`flex items-start gap-2 p-1.5 rounded-lg cursor-pointer transition-colors text-[11px] ${
+                          className={`flex items-start gap-2 p-1.5 rounded-lg cursor-pointer transition-colors text-xs ${
                             checked
                               ? 'bg-emerald-100/70 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold'
                               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -2805,7 +2805,7 @@ export default function TrainingCenterPage() {
 
                   {/* Real-time Memo Textarea */}
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
                       사무장 전달용 실시간 메모
                     </label>
                     <textarea
@@ -2819,7 +2819,7 @@ export default function TrainingCenterPage() {
 
                   {/* Consultation Result Select */}
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
                       상담 처리 결과 (실습)
                     </label>
                     <select
@@ -2893,7 +2893,7 @@ export default function TrainingCenterPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">마이크 권한 허용 안내</h3>
-                  <p className="text-[11px] text-red-100">AI 실전 롤플레잉 음성 대화를 위해 마이크가 필요합니다</p>
+                  <p className="text-xs text-red-100">AI 실전 롤플레잉 음성 대화를 위해 마이크가 필요합니다</p>
                 </div>
               </div>
               <button
@@ -2919,42 +2919,42 @@ export default function TrainingCenterPage() {
 
                     <div className="space-y-2.5">
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                           1
                         </span>
                         <div className="flex-1">
                           <span className="font-bold text-gray-800 dark:text-gray-200 block">
                             아래 [휴대폰 앱 설정 열기] 버튼 클릭
                           </span>
-                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             버튼을 누르면 LeadMaster 앱 설정 화면으로 바로 이동합니다.
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                           2
                         </span>
                         <div className="flex-1">
                           <span className="font-bold text-gray-800 dark:text-gray-200 block">
                             [권한] → [마이크] 선택
                           </span>
-                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             '권한' 목록에서 '마이크'를 찾아 [앱 사용 중에만 허용]으로 켜주세요.
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                           3
                         </span>
                         <div className="flex-1">
                           <span className="font-bold text-gray-800 dark:text-gray-200 block">
                             설정 완료 후 앱으로 복귀
                           </span>
-                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             뒤로가기로 앱에 돌아와 [새로고침]을 누르시면 즉시 마이크 대화가 가능합니다.
                           </span>
                         </div>
@@ -2985,7 +2985,7 @@ export default function TrainingCenterPage() {
                       </button>
 
                       {/* 구버전 호환 안내 박스 */}
-                      <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                      <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                         💡 <strong>버튼 반응이 없는 경우(구버전):</strong> 스마트폰의 <strong>[설정]</strong> 앱 → <strong>[애플리케이션]</strong> → <strong>[LeadMaster]</strong> → <strong>[권한]</strong> → <strong>[마이크]</strong>를 [앱 사용 중에만 허용]으로 켜주시면 즉시 연결됩니다.
                       </div>
 
@@ -3028,42 +3028,42 @@ export default function TrainingCenterPage() {
 
                     <div className="space-y-2.5">
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                           1
                         </span>
                         <div className="flex-1">
                           <span className="font-bold text-gray-800 dark:text-gray-200 block">
                             브라우저 메뉴 (우측 상단 ⋮ 또는 주소창 설정) 클릭
                           </span>
-                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             크롬/삼성인터넷 브라우저의 메뉴 또는 주소창 옆 설정 아이콘을 누릅니다.
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                           2
                         </span>
                         <div className="flex-1">
                           <span className="font-bold text-gray-800 dark:text-gray-200 block">
                             [설정] → [사이트 설정] → [마이크]
                           </span>
-                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             '차단됨' 목록에서 lmaster.xyz를 찾아 [허용]으로 변경해주세요.
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                           3
                         </span>
                         <div className="flex-1">
                           <span className="font-bold text-gray-800 dark:text-gray-200 block">
                             페이지 새로고침
                           </span>
-                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             설정 변경 후 아래 [새로고침] 버튼을 눌러주세요.
                           </span>
                         </div>
@@ -3100,42 +3100,42 @@ export default function TrainingCenterPage() {
 
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                         1
                       </span>
                       <div className="flex-1">
                         <span className="font-bold text-gray-800 dark:text-gray-200 block">
                           주소창 좌측의 🔒(자물쇠) 또는 설정 아이콘 클릭
                         </span>
-                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           브라우저 주소창 맨 앞의 🔒 자물쇠(또는 튜닝기) 아이콘을 누릅니다.
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                         2
                       </span>
                       <div className="flex-1">
                         <span className="font-bold text-gray-800 dark:text-gray-200 block">
                           [마이크] 항목을 [허용]으로 변경
                         </span>
-                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           마이크 토글을 켜거나 [허용(Allow)] 상태로 변경합니다.
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
-                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                         3
                       </span>
                       <div className="flex-1">
                         <span className="font-bold text-gray-800 dark:text-gray-200 block">
                           페이지 새로고침 (F5) 후 재시도
                         </span>
-                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           설정을 변경한 후 아래 [새로고침] 버튼을 눌러주세요.
                         </span>
                       </div>
@@ -3180,7 +3180,7 @@ export default function TrainingCenterPage() {
                   </span>
                   <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     🎭 1안 Edge-TTS 60인 실전 자연 음성 분신술 풀
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/40">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/40">
                       0원 무제한 · 24kHz 초고음질
                     </span>
                   </h3>
@@ -3269,14 +3269,14 @@ export default function TrainingCenterPage() {
                               ({char.age}세, {char.gender === 'female' ? '여' : '남'})
                             </span>
                           </div>
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${baseVoiceBadge.color}`}>
+                          <span className={`text-xs font-bold px-1.5 py-0.5 rounded border ${baseVoiceBadge.color}`}>
                             {char.baseVoice.includes('InJoon') ? '인준' : char.baseVoice.includes('SunHi') ? '선희' : '현수'}
                           </span>
                         </div>
 
                         {/* Trait & Occupation */}
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300">
-                          <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-[10px]">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+                          <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-xs">
                             {char.traitTag}
                           </span>
                           <span className="text-gray-400">·</span>
@@ -3284,13 +3284,13 @@ export default function TrainingCenterPage() {
                         </div>
 
                         {/* Acoustic Specs (Pitch, Rate) */}
-                        <div className="flex items-center gap-2 text-[10px] font-mono text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-2 text-xs font-mono text-gray-500 dark:text-gray-400">
                           <span>피치: <strong className="text-indigo-600 dark:text-indigo-400">{char.pitch}</strong></span>
                           <span>속도: <strong className="text-indigo-600 dark:text-indigo-400">{char.rateMultiplier.toFixed(2)}x</strong> ({char.rate})</span>
                         </div>
 
                         {/* Sample Intro Quote */}
-                        <div className="p-2 rounded-lg bg-gray-50 dark:bg-gray-900/70 border border-gray-100 dark:border-gray-800 text-[11px] text-gray-700 dark:text-gray-300 italic leading-snug line-clamp-2">
+                        <div className="p-2 rounded-lg bg-gray-50 dark:bg-gray-900/70 border border-gray-100 dark:border-gray-800 text-xs text-gray-700 dark:text-gray-300 italic leading-snug line-clamp-2">
                           "{char.sampleIntro}"
                         </div>
                       </div>

@@ -891,7 +891,7 @@ export default function TelegramSync() {
                             <button
                                 onClick={() => handleReopen(f.id)}
                                 disabled={isActionBusy}
-                                className="w-full px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 bg-gray-100 hover:bg-purple-50 dark:bg-gray-700 dark:hover:bg-purple-900/30 rounded-xl transition flex items-center justify-center gap-1 disabled:opacity-50 border border-gray-200 dark:border-gray-600"
+                                className="w-full px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-600 dark:text-purple-400 bg-gray-100 hover:bg-purple-50 dark:bg-gray-700 dark:hover:bg-purple-900/30 rounded-xl transition flex items-center justify-center gap-1 disabled:opacity-50 border border-gray-200 dark:border-gray-600"
                                 title="승인 또는 무시 처리를 취소하고 다시 승인 대기열로 복구합니다."
                             >
                                 <RotateCcw size={12} />
@@ -1107,7 +1107,7 @@ export default function TelegramSync() {
                                     }`}
                                 >
                                     <span>{tName}</span>
-                                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                                    <span className={`px-1.5 py-0.2 rounded-full text-xs ${
                                         tPending > 0
                                             ? (selectedTeamFilter === tName ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800 font-bold')
                                             : (selectedTeamFilter === tName ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500')
@@ -1121,7 +1121,7 @@ export default function TelegramSync() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedTeamFilter('all')}
-                                className="text-[11px] font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white underline ml-1 cursor-pointer"
+                                className="text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white underline ml-1 cursor-pointer"
                             >
                                 필터 해제
                             </button>
@@ -1388,7 +1388,7 @@ export default function TelegramSync() {
                                 <h3 className="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
                                     <Trash2 className="text-rose-500" size={14} /> 과거 히스토리 데이터 정리
                                 </h3>
-                                <p className="text-[11px] text-gray-400">보관 주기가 지난 텔레그램 수집 데이터를 영구 삭제합니다.</p>
+                                <p className="text-xs text-gray-400">보관 주기가 지난 텔레그램 수집 데이터를 영구 삭제합니다.</p>
                             </div>
                             <div className="flex flex-wrap gap-2 items-center">
                                 <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1.5 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -1402,7 +1402,7 @@ export default function TelegramSync() {
                                     <button 
                                         onClick={() => handleDeleteHistory('date')}
                                         disabled={!deleteDate || isDeleting}
-                                        className="px-2.5 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold text-[11px] rounded-lg transition disabled:opacity-50"
+                                        className="px-2.5 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold text-xs rounded-lg transition disabled:opacity-50"
                                     >
                                         일자 삭제
                                     </button>
@@ -1417,7 +1417,7 @@ export default function TelegramSync() {
                                     <button 
                                         onClick={() => handleDeleteHistory('month')}
                                         disabled={!deleteMonth || isDeleting}
-                                        className="px-2.5 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold text-[11px] rounded-lg transition disabled:opacity-50"
+                                        className="px-2.5 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold text-xs rounded-lg transition disabled:opacity-50"
                                     >
                                         월간 삭제
                                     </button>

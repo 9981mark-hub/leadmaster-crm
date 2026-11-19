@@ -381,7 +381,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
                           <div className="font-bold text-gray-900 dark:text-gray-100 text-sm">
                             {alloc.agentName}
                           </div>
-                          <div className="text-[11px] text-gray-400">
+                          <div className="text-xs text-gray-400">
                             {alloc.agentId}
                           </div>
                         </div>

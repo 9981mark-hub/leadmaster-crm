@@ -57,11 +57,11 @@ export const DashboardModeSwitcher: React.FC<DashboardModeSwitcherProps> = ({
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
             TM 대표 스마트 뷰 전환
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-gray-400 hidden sm:inline">
+          <span className="text-xs text-slate-500 dark:text-gray-400 hidden sm:inline">
             (업무 스타일에 맞춰 경영 지표와 현장 팀장 모드를 자유롭게 전환합니다)
           </span>
         </div>
-        <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
+        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
           선택한 모드가 자동 기억됩니다
         </span>
       </div>
@@ -98,7 +98,7 @@ export const DashboardModeSwitcher: React.FC<DashboardModeSwitcherProps> = ({
                   </span>
                   {mode.badge && (
                     <span
-                      className={`text-[9px] px-1.5 py-0.2 rounded font-semibold whitespace-nowrap ${
+                      className={`text-xs px-1.5 py-0.2 rounded font-semibold whitespace-nowrap ${
                         mode.id === 'hybrid'
                           ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300'
                           : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
@@ -108,7 +108,7 @@ export const DashboardModeSwitcher: React.FC<DashboardModeSwitcherProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 truncate mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-gray-400 truncate mt-0.5">
                   {mode.subLabel}
                 </p>
               </div>

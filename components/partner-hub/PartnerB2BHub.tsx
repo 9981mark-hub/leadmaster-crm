@@ -274,7 +274,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                         </span>
                         <span className="text-xs font-semibold text-gray-500">건</span>
                     </div>
-                    <div className="mt-2 text-[11px] text-gray-400">
+                    <div className="mt-2 text-xs text-gray-400">
                         1차 상담원이 적격 판정 후 사무장에 넘긴 건수
                     </div>
                 </div>
@@ -298,7 +298,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                             {totalKPI.overallSuccessRate}%
                         </span>
                     </div>
-                    <div className="mt-2 text-[11px] text-gray-400">
+                    <div className="mt-2 text-xs text-gray-400">
                         고객 총 수임료: ₩ {(totalKPI.totalContractFee / 10000).toFixed(1)}억원
                     </div>
                 </div>
@@ -317,7 +317,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                         </span>
                         <span className="text-xs font-bold text-gray-500">만원</span>
                     </div>
-                    <div className="mt-2 text-[11px] text-indigo-600/80 dark:text-indigo-400/80 font-semibold">
+                    <div className="mt-2 text-xs text-indigo-600/80 dark:text-indigo-400/80 font-semibold">
                         법률사무소로부터 수령하는 TM사 순수수료
                     </div>
                 </div>
@@ -338,7 +338,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                             미수: {totalKPI.totalUnpaidIncentive.toLocaleString()}만
                         </div>
                     </div>
-                    <div className="mt-2 text-[11px] text-gray-400">
+                    <div className="mt-2 text-xs text-gray-400">
                         {totalKPI.totalUnpaidIncentive > 0 ? '⚠️ 제휴처에 인센티브 정산 청구 필요' : '🎉 모든 인센티브 입금 완료'}
                     </div>
                 </div>
@@ -397,12 +397,12 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                 <div className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-1.5">
                                                     <span>{st.partner.name}</span>
                                                     {st.partner.notes && (
-                                                        <span className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 font-normal">
+                                                        <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 font-normal">
                                                             {st.partner.notes}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
                                                     <span>{st.partner.managerName || '담당자 미지정'}</span>
                                                     {st.partner.contactPhone && <span>• {st.partner.contactPhone}</span>}
                                                     <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
@@ -418,10 +418,10 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                             </td>
                                             <td className="py-3.5 px-4">
                                                 <div className="flex items-center justify-between text-xs mb-1">
-                                                    <span className={`px-2 py-0.5 rounded-full font-bold text-[11px] ${rateColor}`}>
+                                                    <span className={`px-2 py-0.5 rounded-full font-bold text-xs ${rateColor}`}>
                                                         {st.successRate}%
                                                     </span>
-                                                    <span className="text-[10px] text-gray-400">
+                                                    <span className="text-xs text-gray-400">
                                                         {st.contractedCount}/{st.totalHandedOver}
                                                     </span>
                                                 </div>
@@ -443,11 +443,11 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                     입금: {st.paidIncentiveFee.toLocaleString()}만
                                                 </div>
                                                 {st.unpaidIncentiveFee > 0 ? (
-                                                    <div className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                                                    <div className="text-xs font-bold text-rose-600 dark:text-rose-400">
                                                         미수: {st.unpaidIncentiveFee.toLocaleString()}만
                                                     </div>
                                                 ) : (
-                                                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                                                         완납
                                                     </div>
                                                 )}
@@ -479,7 +479,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 space-y-3">
                                                         <div className="flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
                                                             <span>[{st.partner.name}] 수임 완료 사건 및 인센티브 정산 내역 ({st.contractedCount}건)</span>
-                                                            <span className="text-[11px] text-gray-400 font-normal">
+                                                            <span className="text-xs text-gray-400 font-normal">
                                                                 클릭하여 입금 완료/미수를 즉시 토글할 수 있습니다.
                                                             </span>
                                                         </div>
@@ -522,7 +522,7 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                                                                     <button
                                                                                         type="button"
                                                                                         onClick={() => handleToggleIncentiveStatus(c)}
-                                                                                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
+                                                                                        className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                                                                                             isPaid
                                                                                                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200'
                                                                                                 : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-200'

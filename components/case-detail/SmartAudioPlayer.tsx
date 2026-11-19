@@ -186,7 +186,7 @@ export default function SmartAudioPlayer({
           <Clock size={15} className="text-gray-400 shrink-0" />
           <span>보관 기간(1년)이 만료되어 오디오 파일이 자동 정리되었습니다. (대화록/요약은 영구 보존)</span>
         </div>
-        <span className="text-[11px] text-gray-400 font-mono">삭제됨</span>
+        <span className="text-xs text-gray-400 font-mono">삭제됨</span>
       </div>
     );
   }
@@ -282,7 +282,7 @@ export default function SmartAudioPlayer({
                   />
                 )}
               </div>
-              <div className="flex items-center justify-between text-[11px] font-mono text-gray-500 dark:text-gray-400 px-0.5">
+              <div className="flex items-center justify-between text-xs font-mono text-gray-500 dark:text-gray-400 px-0.5">
                 <span>{fmtTime(currentTime)}</span>
                 <span>{fmtTime(duration)}</span>
               </div>
@@ -332,13 +332,13 @@ export default function SmartAudioPlayer({
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-gray-800/60 text-xs">
           {/* 배속 버튼 그룹 */}
           <div className="flex items-center gap-1">
-            <span className="text-[11px] text-gray-400 mr-1">배속:</span>
+            <span className="text-xs text-gray-400 mr-1">배속:</span>
             {SPEED_OPTIONS.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => changeSpeed(s)}
-                className={`px-1.5 py-0.5 rounded text-[11px] font-medium transition-all ${
+                className={`px-1.5 py-0.5 rounded text-xs font-medium transition-all ${
                   speed === s
                     ? 'bg-blue-600 text-white font-bold'
                     : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100'
@@ -354,7 +354,7 @@ export default function SmartAudioPlayer({
             <button
               type="button"
               onClick={toggleLoopA}
-              className={`px-2 py-0.5 rounded text-[11px] font-medium flex items-center gap-1 border transition-all ${
+              className={`px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1 border transition-all ${
                 loopA !== null
                   ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
@@ -368,7 +368,7 @@ export default function SmartAudioPlayer({
               <button
                 type="button"
                 onClick={clearLoop}
-                className="text-[11px] text-gray-400 hover:text-red-500 underline"
+                className="text-xs text-gray-400 hover:text-red-500 underline"
               >
                 해제
               </button>
@@ -378,7 +378,7 @@ export default function SmartAudioPlayer({
           {/* 32kbps AAC 모노 H/W 가속 압축 뱃지 */}
           <div className="flex items-center gap-1">
             <span
-              className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 shadow-2xs"
               title="스마트폰 하드웨어 가속 32kbps AAC 모노 압축 인코딩 적용 (용량 75% 절감)"
             >
               <span>⚡ {rec.bitrateKbps ? `${rec.bitrateKbps}kbps` : '32kbps'} AAC 모노</span>
@@ -389,12 +389,12 @@ export default function SmartAudioPlayer({
           {expInfo && (
             <div className="flex items-center gap-1 ml-auto">
               {expInfo.isUrgent ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
                   <AlertTriangle size={12} className="shrink-0" />
                   <span>만료 D-{expInfo.daysLeft} ({expInfo.expDateStr} 삭제 예정)</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] text-gray-400">
+                <span className="inline-flex items-center gap-1 text-xs text-gray-400">
                   <ShieldCheck size={12} className="text-green-500" />
                   <span>1년 보관 (~{expInfo.expDateStr})</span>
                 </span>

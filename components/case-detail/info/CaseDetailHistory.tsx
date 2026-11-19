@@ -63,10 +63,10 @@ export const CaseDetailHistory: React.FC<CaseDetailHistoryProps> = ({
                             {statusLogs.map(log => (
                                 <li key={log.logId} className="px-2.5 py-1.5 text-xs">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-slate-400 line-through">{log.fromStatus}</span>
-                                        <span className="text-slate-400" aria-hidden>→</span>
+                                        <span className="text-slate-500 dark:text-slate-400 line-through">{log.fromStatus}</span>
+                                        <span className="text-slate-500 dark:text-slate-400" aria-hidden>→</span>
                                         <span className="font-semibold text-blue-700 dark:text-blue-300">{log.toStatus}</span>
-                                        <span className="ml-auto text-[11px] text-slate-400 tabular-nums whitespace-nowrap">{safeFormat(log.changedAt, 'yy.MM.dd HH:mm')}</span>
+                                        <span className="ml-auto text-xs text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">{safeFormat(log.changedAt, 'yy.MM.dd HH:mm')}</span>
                                     </div>
                                     {log.memo && <p className="mt-0.5 text-slate-600 dark:text-gray-400 leading-snug">{log.memo}</p>}
                                 </li>

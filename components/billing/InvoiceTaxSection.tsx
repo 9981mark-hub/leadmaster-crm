@@ -56,7 +56,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
               <span className="text-xs font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
                 <CreditCard size={14} /> 리드마스터 CRM 공식 수납 계좌
               </span>
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
                 무통장 입금
               </span>
             </div>
@@ -84,7 +84,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-amber-200/60 dark:border-amber-900/40 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-amber-200/60 dark:border-amber-900/40 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span>정기 결제일: 매월 10일</span>
             <span className="text-amber-700 dark:text-amber-400 font-semibold">100% 세금계산서 발행 보장</span>
           </div>
@@ -107,35 +107,35 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
 
             <div className="mt-3 space-y-2 text-xs">
               <div className="flex items-center gap-2">
-                <Hash size={13} className="text-slate-400 shrink-0" />
+                <Hash size={13} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">사업자번호:</span>
                 <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
                   {taxInfo.businessNumber || '미등록 (수정 필요)'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Building2 size={13} className="text-slate-400 shrink-0" />
+                <Building2 size={13} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">상호 (법인명):</span>
                 <span className="font-bold text-slate-900 dark:text-slate-100">
                   {taxInfo.companyName}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <User size={13} className="text-slate-400 shrink-0" />
+                <User size={13} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">대표자명:</span>
                 <span className="text-slate-800 dark:text-slate-200">
                   {taxInfo.representativeName}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail size={13} className="text-slate-400 shrink-0" />
+                <Mail size={13} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">계산서 이메일:</span>
                 <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold">
                   {taxInfo.taxInvoiceEmail}
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <MapPin size={13} className="text-slate-400 shrink-0 mt-0.5" />
+                <MapPin size={13} className="text-slate-500 dark:text-slate-400 shrink-0 mt-0.5" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">사업장 주소:</span>
                 <span className="text-slate-700 dark:text-slate-300 truncate">
                   {taxInfo.businessAddress || '미등록'}
@@ -144,7 +144,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span>홈택스 표준 전자세금계산서 연동</span>
             <span className="text-emerald-600 dark:text-emerald-400 font-medium">인증 완료</span>
           </div>
@@ -175,7 +175,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
               {invoices.map(inv => (
-                <tr key={inv.invoiceNumber} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr key={inv.invoiceNumber} className="hover:bg-slate-50 dark:hover:bg-slate-100/50 dark:bg-slate-800/50 transition-colors">
                   <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-200">
                     {inv.invoiceNumber}
                   </td>
@@ -200,7 +200,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
                     {inv.dueDate}
                   </td>
                   <td className="py-2.5 px-3 text-center font-sans">
-                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                       inv.status === 'paid'
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'

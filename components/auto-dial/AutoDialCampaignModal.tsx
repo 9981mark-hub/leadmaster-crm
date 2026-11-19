@@ -479,7 +479,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                   <option value={25}>25초 (여유 대기)</option>
                   <option value={30}>30초</option>
                 </select>
-                <p className="text-[11px] text-gray-400 mt-1">20초 경과 시 자동 부재 처리</p>
+                <p className="text-xs text-gray-400 mt-1">20초 경과 시 자동 부재 처리</p>
               </div>
 
               {/* 휴식 갭 */}
@@ -498,7 +498,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                   <option value={6}>6초</option>
                   <option value={10}>10초</option>
                 </select>
-                <p className="text-[11px] text-gray-400 mt-1">결과 저장 후 다음 발신 대기</p>
+                <p className="text-xs text-gray-400 mt-1">결과 저장 후 다음 발신 대기</p>
               </div>
 
               {/* 후처리 제한시간 */}
@@ -517,7 +517,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                   <option value={15}>15초</option>
                   <option value={20}>20초</option>
                 </select>
-                <p className="text-[11px] text-gray-400 mt-1">통화 종료 후 카운트다운</p>
+                <p className="text-xs text-gray-400 mt-1">통화 종료 후 카운트다운</p>
               </div>
             </div>
 
@@ -535,7 +535,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                     <Smartphone size={13} className="text-indigo-600" />
                     듀얼 SIM 스마트 교차 발신 (SIM1 ↔ SIM2)
                   </span>
-                  <p className="text-[11px] text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     통신사 일일 발신 한도(500콜) 및 스팸 제재를 방어하기 위해 2개 유심으로 번갈아 발신합니다.
                   </p>
                 </div>
@@ -553,7 +553,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                     <Zap size={13} className="text-amber-500" />
                     후처리 제한시간 만료 시 강제 다음 콜 발신
                   </span>
-                  <p className="text-[11px] text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     상담원이 멍때리거나 자리를 비우지 않도록 카운트다운 종료 시 기본값 저장 후 다음 콜로 강제 진행합니다.
                   </p>
                 </div>

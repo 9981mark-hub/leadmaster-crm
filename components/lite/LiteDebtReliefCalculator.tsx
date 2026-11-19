@@ -95,11 +95,11 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
               <span className="font-bold text-xs text-emerald-950 dark:text-emerald-100">
                 3초 탕감율 & 변제금 계산기
               </span>
-              <span className="text-[10px] bg-emerald-200/70 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-extrabold px-1.5 py-0.5 rounded-full">
+              <span className="text-xs bg-emerald-200/70 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-extrabold px-1.5 py-0.5 rounded-full">
                 {reliefRate}% 탕감
               </span>
             </div>
-            <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
               월 변제금: <strong className="text-emerald-900 dark:text-emerald-100">{monthlyPay.toLocaleString()}만 원</strong> (36개월)
             </p>
           </div>
@@ -118,7 +118,7 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
           {/* 입력 필드 그리드 */}
           <div className="grid grid-cols-3 gap-2 bg-white/80 dark:bg-gray-800/80 p-2.5 rounded-xl border border-emerald-100 dark:border-gray-700">
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1">
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">
                 월 순소득 (만 원)
               </label>
               <input
@@ -131,7 +131,7 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1">
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">
                 부양가족 수 (명)
               </label>
               <select
@@ -146,7 +146,7 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1">
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">
                 총 채무액 (만 원)
               </label>
               <input
@@ -162,17 +162,17 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
           {/* 핵심 계산 결과 하이라이트 카드 */}
           <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl p-3 shadow-sm flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-emerald-100 font-medium">예상 탕감 원금</span>
+              <span className="text-xs text-emerald-100 font-medium">예상 탕감 원금</span>
               <div className="text-xl font-extrabold tracking-tight">
                 약 {forgivenDebt.toLocaleString()}만 원 감면
               </div>
-              <p className="text-[10px] text-emerald-200 mt-0.5">
+              <p className="text-xs text-emerald-200 mt-0.5">
                 월 변제금: 약 {monthlyPay.toLocaleString()}만 원 (최저생계비 {livingCost}만 원 공제)
               </p>
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] text-emerald-200 font-bold uppercase tracking-wider">탕감율</span>
+              <span className="text-xs text-emerald-200 font-bold uppercase tracking-wider">탕감율</span>
               <div className="text-2xl font-black text-amber-300">
                 {reliefRate}%
               </div>
@@ -182,7 +182,7 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
           {/* 상담원 추천 멘트 박스 */}
           <div className="bg-white/90 dark:bg-gray-800/90 rounded-xl p-2.5 border border-emerald-200 dark:border-gray-700 text-gray-800 dark:text-gray-200">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+              <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
                 <Sparkles size={12} />
                 고객 통화 안내 모범 멘트
               </span>
@@ -190,7 +190,7 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800"
+                  className="flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800"
                 >
                   {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
                   <span>{copied ? '복사됨' : '복사'}</span>
@@ -199,14 +199,14 @@ export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMem
                   <button
                     type="button"
                     onClick={handleSave}
-                    className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800"
+                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800"
                   >
                     메모 저장
                   </button>
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-relaxed font-sans">
+            <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-sans">
               "고객님, 총 채무 <strong>{totalDebt.toLocaleString()}만 원</strong> 중 법원을 통해 최대 <strong>약 {reliefRate}%({forgivenDebt.toLocaleString()}만 원)</strong> 탕감 가능하시며, 월 <strong>{monthlyPay.toLocaleString()}만 원</strong>씩 36개월 납부하시면 모든 빚이 면책됩니다. 전문 수석 사무장님께 바로 연결해 드릴 테니 잠시만 기다려 주세요."
             </p>
           </div>

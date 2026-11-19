@@ -159,14 +159,14 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all relative ${
                 isActive
                   ? 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow-md border border-gray-200 dark:border-slate-700'
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50'
+                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-100/50 dark:bg-slate-800/50'
               }`}
             >
               <Icon size={14} className={isActive ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400'} />
               <span className="hidden md:inline">{tab.label}</span>
               <span className="md:hidden">{tab.shortLabel}</span>
               {tab.badge && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold border ${tab.badgeColor || 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300'}`}>
+                <span className={`text-xs px-1.5 py-0.5 rounded-md font-bold border ${tab.badgeColor || 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300'}`}>
                   {tab.badge}
                 </span>
               )}
@@ -180,13 +180,13 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
         <span className="text-xs text-gray-500 dark:text-slate-400 font-medium">현재 접속 직급:</span>
         <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
           {isPlatformAdmin ? (
-            <><Crown size={12} className="text-amber-400" /> 플랫폼 최고관리자</>
+            <><Crown size={12} className="text-amber-600 dark:text-amber-400" /> 플랫폼 최고관리자</>
           ) : role === 'owner' ? (
-            <><Crown size={12} className="text-amber-400" /> TM 대표이사</>
+            <><Crown size={12} className="text-amber-600 dark:text-amber-400" /> TM 대표이사</>
           ) : role === 'admin' ? (
-            <><ShieldCheck size={12} className="text-purple-400" /> 총괄 관리자 / 센터장</>
+            <><ShieldCheck size={12} className="text-purple-600 dark:text-purple-400" /> 총괄 관리자 / 센터장</>
           ) : (
-            <><Users size={12} className="text-emerald-400" /> 일반 관리자 / 팀장</>
+            <><Users size={12} className="text-emerald-600 dark:text-emerald-400" /> 일반 관리자 / 팀장</>
           )}
         </span>
       </div>

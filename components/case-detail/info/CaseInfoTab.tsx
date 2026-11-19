@@ -93,15 +93,15 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
                     <button
                         type="button"
                         onClick={() => setRightPanelTab('reminders')}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'reminders' ? 'bg-slate-900 text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'reminders' ? 'bg-white dark:bg-gray-900 text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
                     >
                         <CalendarClock size={13} /> 상담 메모 · 일정
-                        {reminders.length > 0 && <span className={`text-[10px] px-1.5 rounded-full ${rightPanelTab === 'reminders' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>{reminders.length}</span>}
+                        {reminders.length > 0 && <span className={`text-xs px-1.5 rounded-full ${rightPanelTab === 'reminders' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>{reminders.length}</span>}
                     </button>
                     <button
                         type="button"
                         onClick={() => setRightPanelTab('ai')}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'ai' ? 'bg-slate-900 text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'ai' ? 'bg-white dark:bg-gray-900 text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
                     >
                         <Sparkles size={13} /> 녹음 직접 올려 요약
                     </button>

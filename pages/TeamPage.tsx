@@ -773,7 +773,7 @@ export default function TeamPage() {
                       {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500">사용 중지</span>}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
                         {m.teamName || '1팀'}
                       </span>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
@@ -912,7 +912,7 @@ export default function TeamPage() {
                             <button
                               type="button"
                               onClick={() => setPermissionTargetMember(m)}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 transition-colors shrink-0 cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 transition-colors shrink-0 cursor-pointer"
                               title="중간 관리자 권한 및 오픈 스코프 설정"
                             >
                               <ShieldCheck size={12} />
@@ -1017,7 +1017,7 @@ export default function TeamPage() {
                     </div>
                     <div className="flex items-center gap-2 font-mono">
                       <span className="text-gray-500 dark:text-gray-400">사용 중: <strong className="text-gray-900 dark:text-white">{seatStatus.totalOccupied}석</strong> / 최대 {seatStatus.maxSeats}석</span>
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${seatStatus.isLimitReached ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${seatStatus.isLimitReached ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'}`}>
                         {seatStatus.isLimitReached ? '한도 소진' : `잔여 ${seatStatus.remainingSeats}석`}
                       </span>
                     </div>
@@ -1030,7 +1030,7 @@ export default function TeamPage() {
                     />
                   </div>
                   {seatStatus.isLimitReached && (
-                    <div className="text-[11px] text-rose-600 dark:text-rose-400 flex items-center gap-1 pt-0.5">
+                    <div className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1 pt-0.5">
                       <ShieldAlert size={12} className="shrink-0" />
                       <span>보유 라이선스 좌석을 모두 소진하여 추가 초대가 차단되었습니다. 추가 등록을 원하시면 플랫폼 관리자에게 좌석 확장을 요청하세요.</span>
                     </div>

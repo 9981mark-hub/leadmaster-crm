@@ -176,10 +176,10 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                         <h3 className="font-bold text-emerald-700 flex items-center gap-2 text-sm md:text-base">
                             📊 손익계산서 (P&L)
                             {dataSource === 'invoice' && (
-                                <span className="px-1.5 py-0.5 bg-green-100 text-green-600 text-[10px] rounded-full font-normal">실제 세금계산서 기반</span>
+                                <span className="px-1.5 py-0.5 bg-green-100 text-green-600 text-xs rounded-full font-normal">실제 세금계산서 기반</span>
                             )}
                             {dataSource === 'settlement' && (
-                                <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-[10px] rounded-full font-normal">CRM 추정치</span>
+                                <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-xs rounded-full font-normal">CRM 추정치</span>
                             )}
                         </h3>
                         <p className="text-xs text-emerald-500 mt-0.5">{year}년 수익/비용/순이익 현황</p>

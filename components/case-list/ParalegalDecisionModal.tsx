@@ -272,7 +272,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh]"
             >
                 {/* 헤더 */}
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-white dark:from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
                             <Scale size={20} />
@@ -280,7 +280,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         <div>
                             <div className="flex items-center gap-2">
                                 <h3 className="font-extrabold text-base tracking-tight">사무장 사건 심사 & 진행 관리</h3>
-                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
+                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
                                     사무장 전용 관제
                                 </span>
                             </div>
@@ -305,8 +305,8 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-gray-100 text-sm">
                                 <User size={15} className="text-indigo-500" />
                                 <span>{c.customerName}</span>
-                                <span className="text-slate-400 font-normal">({c.phone})</span>
-                                {c.region && <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-[11px]">{c.region}</span>}
+                                <span className="text-slate-500 dark:text-slate-400 font-normal">({c.phone})</span>
+                                {c.region && <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs">{c.region}</span>}
                             </div>
                             <div className="flex items-center gap-2 text-slate-500 dark:text-gray-400">
                                 <span className="font-medium">1차 인계자: <b className="text-slate-700 dark:text-gray-200">{c.managerName || '상담원'}</b></span>
@@ -318,41 +318,41 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         {/* 4분면 핵심 지표 */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3">
                             <div className="bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-slate-200/80 dark:border-gray-700">
-                                <span className="text-[10px] text-slate-400 dark:text-gray-500 font-semibold uppercase block">총 채무액</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 dark:text-gray-500 font-semibold uppercase block">총 채무액</span>
                                 <span className={`text-sm font-extrabold mt-0.5 block ${isEligibleDebt ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-500'}`}>
                                     {totalDebt > 0 ? formatManwon(totalDebt) : '미확인'}
                                 </span>
-                                <span className={`text-[9px] font-bold ${isEligibleDebt ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                <span className={`text-xs font-bold ${isEligibleDebt ? 'text-emerald-500' : 'text-amber-500'}`}>
                                     {isEligibleDebt ? '✓ 1천만 이상 적격' : '⚠️ 채무 미달 위험'}
                                 </span>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-slate-200/80 dark:border-gray-700">
-                                <span className="text-[10px] text-slate-400 dark:text-gray-500 font-semibold uppercase block">월 순소득</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 dark:text-gray-500 font-semibold uppercase block">월 순소득</span>
                                 <span className="text-sm font-extrabold text-slate-800 dark:text-gray-100 mt-0.5 block">
                                     {incomeNet > 0 ? formatManwon(incomeNet) : '미입력'}
                                 </span>
-                                <span className="text-[9px] text-slate-500 dark:text-gray-400 truncate block">
+                                <span className="text-xs text-slate-500 dark:text-gray-400 truncate block">
                                     {c.jobTypes?.join(', ') || '직업 미지정'} {c.insurance4 ? `(${c.insurance4})` : ''}
                                 </span>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-slate-200/80 dark:border-gray-700">
-                                <span className="text-[10px] text-slate-400 dark:text-gray-500 font-semibold uppercase block">주거 / 재산</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 dark:text-gray-500 font-semibold uppercase block">주거 / 재산</span>
                                 <span className="text-xs font-bold text-slate-800 dark:text-gray-200 mt-0.5 block truncate">
                                     {c.housingType || '미입력'} {c.deposit ? `(보${c.deposit}만)` : ''}
                                 </span>
-                                <span className="text-[9px] text-slate-500 dark:text-gray-400 truncate block">
+                                <span className="text-xs text-slate-500 dark:text-gray-400 truncate block">
                                     {c.housingDetail || '상세 미입력'}
                                 </span>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-slate-200/80 dark:border-gray-700">
-                                <span className="text-[10px] text-slate-400 dark:text-gray-500 font-semibold uppercase block">이전 이력</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 dark:text-gray-500 font-semibold uppercase block">이전 이력</span>
                                 <span className={`text-xs font-bold mt-0.5 block truncate ${c.historyType && c.historyType !== '없음' ? 'text-rose-500' : 'text-emerald-600'}`}>
                                     {c.historyType || '이력 없음'}
                                 </span>
-                                <span className="text-[9px] text-slate-500 dark:text-gray-400 block">
+                                <span className="text-xs text-slate-500 dark:text-gray-400 block">
                                     부양가족: {c.childrenCount ? `${c.childrenCount}명` : '0명'}
                                 </span>
                             </div>
@@ -361,7 +361,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                         {/* 1차 상담원 최근 상담 메모 */}
                         {c.specialMemo && c.specialMemo.length > 0 && (
                             <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-gray-700 text-xs">
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-tight block mb-1">
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 dark:text-gray-500 uppercase tracking-tight block mb-1">
                                     1차 상담원 통화 요약 메모
                                 </span>
                                 <p className="text-slate-700 dark:text-gray-300 line-clamp-2 bg-white/70 dark:bg-gray-800/60 p-2 rounded-lg border border-slate-200/60 dark:border-gray-700/60 font-medium">
@@ -445,7 +445,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
+                                <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
                                     사무장 진행 단계 선택 (관리자 설정 2차 상태 목록 연동)
                                 </label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -469,7 +469,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                    <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                         세부 관리 항목 / 3차 상태 (선택)
                                     </label>
                                     <input
@@ -482,7 +482,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                                 </div>
 
                                 <div>
-                                    <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                    <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                         사무장 진행 메모 (선택)
                                     </label>
                                     <input
@@ -510,7 +510,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
+                                <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
                                     골든타임 재통화 약속 시간 (원클릭 등록)
                                 </label>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -527,7 +527,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                                         >
                                             <div className="flex flex-col">
                                                 <span>{slot.label}</span>
-                                                <span className={`text-[10px] font-mono ${selectedReminderSlot?.label === slot.label ? 'text-amber-100' : 'text-slate-400'}`}>
+                                                <span className={`text-xs font-mono ${selectedReminderSlot?.label === slot.label ? 'text-amber-100' : 'text-slate-500 dark:text-slate-400'}`}>
                                                     {slot.datetime.substring(11)}
                                                 </span>
                                             </div>
@@ -538,7 +538,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                     부재 특이사항 비고
                                 </label>
                                 <input
@@ -569,7 +569,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             {/* 제휴 법률사무소 선택 & TM 인센티브 실시간 산출 */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-100 dark:border-emerald-800/60">
                                 <div>
-                                    <label className="text-[11px] font-bold text-slate-700 dark:text-gray-300 mb-1 flex items-center">
+                                    <label className="text-xs font-bold text-slate-700 dark:text-gray-300 mb-1 flex items-center">
                                         <Building2 size={13} className="mr-1 text-emerald-600" /> 수임 체결 법률사무소 / 법무법인
                                     </label>
                                     <select
@@ -587,14 +587,14 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                                 </div>
 
                                 <div className="flex flex-col justify-center bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                    <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center mb-0.5">
+                                    <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center mb-0.5">
                                         <BadgePercent size={12} className="mr-1" /> TM사 예상 수령 인센티브
                                     </span>
                                     <div className="flex items-baseline justify-between">
                                         <span className="text-base font-black text-emerald-700 dark:text-emerald-300">
                                             ₩ {incentiveInfo.amount.toLocaleString()} <span className="text-xs font-semibold">만원</span>
                                         </span>
-                                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">
+                                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">
                                             {incentiveInfo.rateLabel}
                                         </span>
                                     </div>
@@ -603,7 +603,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
-                                    <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                    <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                         사건 종류
                                     </label>
                                     <select
@@ -619,7 +619,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                                 </div>
 
                                 <div>
-                                    <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                    <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                         수임료 (만원)
                                     </label>
                                     <div className="relative">
@@ -635,7 +635,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                                 </div>
 
                                 <div>
-                                    <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                    <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                         계약 체결일
                                     </label>
                                     <input
@@ -648,7 +648,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                     사무장 특이사항 / 계약 비고
                                 </label>
                                 <textarea
@@ -675,7 +675,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
+                                <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1.5 block">
                                     기각 / 진행 불가 사유 (프리셋 선택)
                                 </label>
                                 <div className="space-y-1.5">
@@ -698,7 +698,7 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
+                                <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 mb-1 block">
                                     사무장 불수임 판정 상세 비고 (선택)
                                 </label>
                                 <textarea

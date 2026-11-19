@@ -194,21 +194,21 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 경영 헤더 배너 */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-5 text-white shadow-lg border border-slate-700/60 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-100 via-blue-50 to-slate-100 dark:from-slate-900 dark:via-blue-950 dark:to-slate-900 rounded-2xl p-5 text-slate-900 dark:text-white shadow-lg border border-slate-200 dark:border-slate-700/60 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center gap-1">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 border border-amber-400/40 text-amber-700 dark:text-amber-300 flex items-center gap-1">
                 <Crown size={13} /> TM 대표이사 최고경영 관제
               </span>
-              <span className="text-xs text-slate-300">
+              <span className="text-xs text-slate-600 dark:text-slate-300">
                 {format(new Date(), 'yyyy년 M월', { locale: ko })} 경영 총괄 리포트
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
               <span>전사 손익 & 리드 효율화 총괄 관제판</span>
             </h1>
-            <p className="text-xs text-slate-300 mt-1">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
               DB 구입 비용 대비 실질 영업이익, 대행사별 ROI 품질 평가 및 상담원 1인당 생산성을 조망합니다.
             </p>
           </div>
@@ -272,7 +272,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                 광고 대행사 및 유입경로별 DB 품질 & 전환율 분석
               </h3>
             </div>
-            <span className="text-[11px] text-slate-500 dark:text-gray-400">
+            <span className="text-xs text-slate-500 dark:text-gray-400">
               부재율 60% 이상 시 불량 DB 식별 경고
             </span>
           </div>
@@ -292,7 +292,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
               <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
                 {channelAnalytics.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                    <td colSpan={6} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
                       기록된 유입 채널 데이터가 없습니다.
                     </td>
                   </tr>
@@ -318,11 +318,11 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         {item.isDefective ? (
-                          <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                          <span className="text-xs px-2 py-0.5 rounded font-bold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
                             ⚠️ 불량 의심 (부재율 과다)
                           </span>
                         ) : (
-                          <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                          <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
                             ✓ 우수 채널
                           </span>
                         )}
@@ -343,7 +343,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                 <ShieldAlert size={16} className="text-red-600" />
                 리스크 & 컴플라이언스 관제
               </h3>
-              <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-800">
+              <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-800">
                 보안 정상 가동
               </span>
             </div>
@@ -360,7 +360,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                     {neglectedCases.length}건
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                   구입 후 48시간 동안 첫 전화가 연결되지 않은 자산 손실 위험 리드입니다.
                 </p>
               </div>
@@ -374,7 +374,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                     0건 (안전)
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                   단시간 리드 대량 열람, 비인가 다운로드 및 화면 캡처 시도가 감지되지 않았습니다.
                 </p>
               </div>
@@ -388,7 +388,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                     85%
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                   상담원 모의콜 스크립트 숙지도 평균 88점 (필수 고지사항 누락 방지)
                 </p>
               </div>
@@ -396,7 +396,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-gray-700 flex justify-between items-center text-xs">
-            <span className="text-slate-400">보안 통제 프로필 적용 중</span>
+            <span className="text-slate-500 dark:text-slate-400">보안 통제 프로필 적용 중</span>
             <Link to="/team" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
               보안 권한 설정 →
             </Link>
@@ -434,7 +434,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
             <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
               {agentRankings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400 text-xs">
+                  <td colSpan={7} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
                     등록된 상담원 활동 내역이 없습니다.
                   </td>
                 </tr>
@@ -443,7 +443,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                   <tr key={stat.agent.userId} className="hover:bg-slate-50 dark:hover:bg-gray-700/40 transition-colors">
                     <td className="py-3 px-4 text-center font-bold whitespace-nowrap">
                       {idx === 0 && <span className="text-amber-500 text-sm">🥇 1위</span>}
-                      {idx === 1 && <span className="text-slate-400 text-sm">🥈 2위</span>}
+                      {idx === 1 && <span className="text-slate-500 dark:text-slate-400 text-sm">🥈 2위</span>}
                       {idx === 2 && <span className="text-amber-700 text-sm">🥉 3위</span>}
                       {idx > 2 && <span className="text-slate-500">{idx + 1}위</span>}
                     </td>

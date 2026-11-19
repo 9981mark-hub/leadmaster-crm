@@ -152,7 +152,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white/20 text-white flex items-center gap-1">
                 <Headphones size={13} /> 개인 상담 워크스페이스
               </span>
               <span className="text-xs text-blue-100">
@@ -168,19 +168,19 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
           {/* 당월 예상 인센티브 미니 배지 */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3 flex items-center gap-4 shrink-0">
             <div>
-              <div className="text-[11px] text-blue-100 font-medium flex items-center gap-1">
+              <div className="text-xs text-blue-100 font-medium flex items-center gap-1">
                 <Wallet size={13} className="text-amber-300" /> 이번 달 예상 인센티브
               </div>
               <div className="text-xl font-black text-amber-300 tabular-nums">
                 ₩{estimatedIncentive.toLocaleString()}
               </div>
-              <div className="text-[10px] text-blue-100">
+              <div className="text-xs text-blue-100">
                 1차 인계 {monthlyTransferred}건 · 수임 성사 {monthlyContracted.length}건
               </div>
             </div>
             <div className="h-8 w-px bg-white/20" />
             <div>
-              <div className="text-[11px] text-blue-100 font-medium">오늘 콜 달성률</div>
+              <div className="text-xs text-blue-100 font-medium">오늘 콜 달성률</div>
               <div className="text-lg font-bold text-white tabular-nums">
                 {todayCompletedCalls} / {dailyTarget}콜 ({callProgress}%)
               </div>
@@ -268,7 +268,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
                     <div className="text-xs font-bold text-blue-900 dark:text-blue-100">
                       스마트 오토콜 시작
                     </div>
-                    <div className="text-[11px] text-blue-600 dark:text-blue-300">
+                    <div className="text-xs text-blue-600 dark:text-blue-300">
                       대기 없이 연속 자동 다이얼링
                     </div>
                   </div>
@@ -288,7 +288,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
                     <div className="text-xs font-bold text-indigo-900 dark:text-indigo-100">
                       간편 콜 모드 전환
                     </div>
-                    <div className="text-[11px] text-indigo-600 dark:text-indigo-300">
+                    <div className="text-xs text-indigo-600 dark:text-indigo-300">
                       다이얼패드 + 메모 집중 화면
                     </div>
                   </div>
@@ -314,7 +314,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
                 <Sparkles size={15} className="text-amber-600" />
                 오늘의 AI 통화 코칭 팁
               </span>
-              <span className="text-[10px] bg-amber-200/80 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded font-bold">
+              <span className="text-xs bg-amber-200/80 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded font-bold">
                 성공률 +28% UP
               </span>
             </div>
@@ -350,7 +350,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
 
         <div className="divide-y divide-slate-100 dark:divide-gray-700/60 max-h-[360px] overflow-y-auto">
           {daySchedule.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 dark:text-gray-500 text-xs">
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400 dark:text-gray-500 text-xs">
               오늘 예정된 리마인더 일정이 없습니다. 신규 리드나 골든타임 재통화 큐를 확인하세요!
             </div>
           ) : (
@@ -375,12 +375,12 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
                         >
                           {item.caseData.customerName}
                         </Link>
-                        <span className="text-xs text-slate-400">|</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">|</span>
                         <span className="text-xs text-slate-600 dark:text-gray-400">
                           {item.caseData.phone}
                         </span>
                         {item.caseData.inboundPath && (
-                          <span className="text-[10px] bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 px-1.5 py-0.5 rounded">
+                          <span className="text-xs bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 px-1.5 py-0.5 rounded">
                             {item.caseData.inboundPath}
                           </span>
                         )}

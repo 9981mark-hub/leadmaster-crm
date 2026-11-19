@@ -141,7 +141,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
             </div>
 
             <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-              <GraduationCap className="w-7 h-7 text-emerald-400" />
+              <GraduationCap className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
               <span>{profile.userName} 님의 신입 온보딩 패스</span>
             </h2>
 
@@ -172,14 +172,14 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
             </div>
 
             <div className="space-y-1">
-              <div className="text-[11px] text-indigo-200 font-medium">전체 온보딩 달성률</div>
+              <div className="text-xs text-indigo-200 font-medium">전체 온보딩 달성률</div>
               <div className="text-2xl font-black text-white flex items-baseline gap-1.5">
                 <span>{profile.progressPercent}%</span>
                 <span className="text-xs font-normal text-indigo-300">
                   ({profile.completedCount} / 9 완료)
                 </span>
               </div>
-              <div className="text-[11px]">
+              <div className="text-xs">
                 {profile.isApprovedByAdmin ? (
                   <span className="text-emerald-300 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> 실전 발신 권한 승인 완료
@@ -222,7 +222,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
         {isAdmin && (
           <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-amber-400 text-gray-950 font-black text-[10px]">
+              <span className="px-2 py-0.5 rounded-md bg-amber-400 text-gray-950 font-black text-xs">
                 관리자 컨트롤
               </span>
               <button
@@ -308,7 +308,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                         {/* 상단 뱃지 및 상태 */}
                         <div className="flex items-center justify-between gap-2">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-black ${
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
                               isDone
                                 ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300'
                                 : isInProgress
@@ -360,7 +360,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
 
                         {/* 통과 요건 및 예상 시간 박스 */}
                         <div
-                          className={`p-3 rounded-2xl border text-[11px] space-y-1.5 ${
+                          className={`p-3 rounded-2xl border text-xs space-y-1.5 ${
                             isDone
                               ? 'bg-emerald-100/40 dark:bg-gray-900/90 border-emerald-200/60 dark:border-emerald-900/50 text-gray-800 dark:text-gray-200'
                               : isInProgress
@@ -372,7 +372,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                             <span className="font-bold text-gray-800 dark:text-gray-200">요건:</span>
                             <span className="text-gray-500 dark:text-gray-400 font-medium">{meta.estimatedTime}</span>
                           </div>
-                          <div className="text-[11px] text-indigo-700 dark:text-indigo-300 font-semibold leading-relaxed">
+                          <div className="text-xs text-indigo-700 dark:text-indigo-300 font-semibold leading-relaxed">
                             {meta.requirement}
                           </div>
                           {state?.score !== undefined && (
@@ -387,7 +387,7 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                       <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center gap-2">
                         {isDone ? (
                           <div className="flex items-center justify-between w-full">
-                            <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                               {state.completedAt ? state.completedAt.split('T')[0] : '완료됨'}
                             </span>
                             <button

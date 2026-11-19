@@ -151,7 +151,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 >
                                     <Building size={13} />
                                     <span>{p.name}</span>
-                                    {!p.active && <span className="opacity-60 text-[10px]">(비활성)</span>}
+                                    {!p.active && <span className="opacity-60 text-xs">(비활성)</span>}
                                 </button>
                             ))}
                         </div>
@@ -313,7 +313,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <option key={d} value={d}>매주 {getDayName(d)}요일</option>
                                     ))}
                                 </select>
-                                <p className="text-[11px] text-gray-400 mt-1">한 주간의 정산 대상을 집계 마감하는 요일</p>
+                                <p className="text-xs text-gray-400 mt-1">한 주간의 정산 대상을 집계 마감하는 요일</p>
                             </div>
 
                             <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -331,7 +331,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     <option value={0}>이번 주 (금주 지급)</option>
                                     <option value={1}>다음 주 (차주 지급)</option>
                                 </select>
-                                <p className="text-[11px] text-gray-400 mt-1">마감 주차 기준 지급 발생 주</p>
+                                <p className="text-xs text-gray-400 mt-1">마감 주차 기준 지급 발생 주</p>
                             </div>
 
                             <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -350,7 +350,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <option key={d} value={d}>매주 {getDayName(d)}요일</option>
                                     ))}
                                 </select>
-                                <p className="text-[11px] text-gray-400 mt-1">상담원 및 파트너에게 실지급하는 요일</p>
+                                <p className="text-xs text-gray-400 mt-1">상담원 및 파트너에게 실지급하는 요일</p>
                             </div>
                         </div>
 
@@ -525,7 +525,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                             <span className="font-bold text-xs text-gray-900 dark:text-gray-100">{preset.name}</span>
                                             <span className="text-xs text-gray-500 font-mono">{preset.accountInfo}</span>
                                             {preset.defaultAmount && (
-                                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300 border border-green-200 dark:border-green-800">
+                                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300 border border-green-200 dark:border-green-800">
                                                     기본 {preset.defaultAmount}만원
                                                 </span>
                                             )}
@@ -670,7 +670,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                             </h4>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                                 <div>
-                                    <label className="block text-[11px] text-gray-500 mb-1">최소 수임료 (만원)</label>
+                                    <label className="block text-xs text-gray-500 mb-1">최소 수임료 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0"
@@ -680,7 +680,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] text-gray-500 mb-1">최대 수임료 (만원)</label>
+                                    <label className="block text-xs text-gray-500 mb-1">최대 수임료 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0=무제한"
@@ -690,7 +690,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] text-gray-500 mb-1">지급 수수료 (만원)</label>
+                                    <label className="block text-xs text-gray-500 mb-1">지급 수수료 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0"
@@ -700,7 +700,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] text-gray-500 mb-1">전액지급 기준 (만원)</label>
+                                    <label className="block text-xs text-gray-500 mb-1">전액지급 기준 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0=기본"

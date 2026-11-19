@@ -211,7 +211,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                         </div>
                         <button
                             onClick={() => setUploadResult(null)}
-                            className="text-emerald-400 hover:text-emerald-600"
+                            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-600"
                         >×</button>
                     </div>
                 )}

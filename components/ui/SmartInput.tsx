@@ -129,9 +129,9 @@ export const SmartInput: React.FC<SmartInputProps & { updateOnBlur?: boolean }> 
                     placeholder={placeholder}
                     readOnly={readOnly}
                 />
-                {suffix && <span className={"absolute right-3 text-slate-400 text-xs pointer-events-none " + (compact ? 'top-1/2 -translate-y-1/2' : 'top-2.5')}>{suffix}</span>}
+                {suffix && <span className={"absolute right-3 text-slate-500 dark:text-slate-400 text-xs pointer-events-none " + (compact ? 'top-1/2 -translate-y-1/2' : 'top-2.5')}>{suffix}</span>}
             </div>
-            {showKorean && <div className="text-[11px] text-slate-500 mt-0.5 text-right tabular-nums">{formatKoreanMoney(numeric)}</div>}
+            {showKorean && <div className="text-xs text-slate-500 mt-0.5 text-right tabular-nums">{formatKoreanMoney(numeric)}</div>}
         </div>
     );
 };

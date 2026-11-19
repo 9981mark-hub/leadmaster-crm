@@ -49,7 +49,7 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
             {/* 사전 고객 정보 (웹 리드 수집): 전화 걸기 전에 읽는 것이라 맨 위에 한 덩어리로 */}
             <div className={`mb-3 rounded-xl border px-3 py-2 text-xs ${preInfo.length
                 ? 'border-indigo-100 bg-indigo-50/60 text-slate-800 dark:bg-indigo-950/30 dark:border-indigo-900/40 dark:text-gray-200'
-                : 'border-slate-200 bg-slate-50 text-slate-400 dark:bg-gray-900/30 dark:border-gray-700'}`}>
+                : 'border-slate-200 bg-slate-50 text-slate-500 dark:text-slate-400 dark:bg-gray-900/30 dark:border-gray-700'}`}>
                 <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                     <span className="flex items-center gap-1 font-semibold text-blue-700 dark:text-blue-300 shrink-0">
                         <AlertCircle size={12} aria-hidden /> 사전 고객 정보

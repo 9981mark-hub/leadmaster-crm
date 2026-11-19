@@ -267,8 +267,8 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                         />
                                         <div className="truncate">
                                             <span className={isSelected ? "text-purple-900" : "font-medium text-gray-800"}>{rec.filename}</span>
-                                            <span className="text-gray-400 text-[10px] ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
-                                            {(rec.aiCurrent || rec.aiSummary) && <span className="ml-1 text-[10px] px-1 rounded bg-purple-100 text-purple-700">요약{rec.aiCurrent ? ' 최근' : ''}</span>}
+                                            <span className="text-gray-400 text-xs ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
+                                            {(rec.aiCurrent || rec.aiSummary) && <span className="ml-1 text-xs px-1 rounded bg-purple-100 text-purple-700">요약{rec.aiCurrent ? ' 최근' : ''}</span>}
                                         </div>
                                     </div>
                                     <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-400 hover:text-red-500 ml-2">
@@ -283,7 +283,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* 통화별 AI 요약 (지난 통화 요약이 있을 때만) */}
             {history.length > 1 && (
-                <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+                <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs">
                     <span className="text-gray-500 font-semibold">통화별 요약</span>
                     {history.map(h => {
                         const active = h.current ? !viewing : viewing?.id === h.id;
@@ -325,7 +325,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                     >
                         <ListOrdered size={13} /> 대화록
                         {transcriptLines.length > 0 && (
-                            <span className="ml-1 px-1.5 py-0.2 bg-purple-100 text-purple-700 rounded-full text-[10px]">
+                            <span className="ml-1 px-1.5 py-0.2 bg-purple-100 text-purple-700 rounded-full text-xs">
                                 {transcriptLines.length}
                             </span>
                         )}
@@ -335,7 +335,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                 {activeSubTab === 'transcript' && transcriptLines.length > 0 && (
                     <button
                         onClick={handleCopyTranscript}
-                        className="flex items-center gap-1 text-[11px] text-purple-600 hover:text-purple-800 px-2 py-1 rounded hover:bg-purple-100 transition-colors whitespace-nowrap shrink-0"
+                        className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 px-2 py-1 rounded hover:bg-purple-100 transition-colors whitespace-nowrap shrink-0"
                         title="전체 대화록 복사"
                     >
                         {copiedTranscript ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
@@ -408,18 +408,18 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                         >
                                             <div className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center gap-1.5 font-bold">
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${
+                                                    <span className={`px-1.5 py-0.5 rounded text-xs ${
                                                         isAgent ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
                                                     }`}>
                                                         {isAgent ? '👤 상담원' : '🧑 고객'}
                                                     </span>
                                                     {line.speaker !== '상담원' && line.speaker !== '고객' && (
-                                                        <span className="text-gray-500 font-normal text-[11px]">({line.speaker})</span>
+                                                        <span className="text-gray-500 font-normal text-xs">({line.speaker})</span>
                                                     )}
                                                 </div>
                                                 <button
                                                     onClick={() => handleSeekToTimestamp(line.seconds)}
-                                                    className="flex items-center gap-1 px-1.5 py-0.5 bg-white border border-purple-200 hover:border-purple-400 text-purple-700 hover:bg-purple-50 rounded text-[10px] font-mono transition-colors shadow-2xs cursor-pointer"
+                                                    className="flex items-center gap-1 px-1.5 py-0.5 bg-white border border-purple-200 hover:border-purple-400 text-purple-700 hover:bg-purple-50 rounded text-xs font-mono transition-colors shadow-2xs cursor-pointer"
                                                     title="이 발언 시점으로 이동 재생"
                                                 >
                                                     <PlayCircle size={11} className="text-purple-600" />
@@ -443,7 +443,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             ) : (
                                 <div>
                                     <p className="mb-1">분석된 대화록이 없습니다.</p>
-                                    <p className="text-[11px] text-gray-400">통화 녹음 파일을 업로드하고 [AI 분석 실행]을 누르면 화자분리 대화록이 자동 생성됩니다.</p>
+                                    <p className="text-xs text-gray-400">통화 녹음 파일을 업로드하고 [AI 분석 실행]을 누르면 화자분리 대화록이 자동 생성됩니다.</p>
                                 </div>
                             )}
                         </div>
@@ -505,9 +505,9 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                     >
                                         <div className="flex flex-col">
                                             <span className="font-bold text-sm text-indigo-900 group-hover:text-indigo-700">{room.name}</span>
-                                            <span className="text-[10px] text-indigo-400 mt-0.5 truncate max-w-[200px]">{room.url}</span>
+                                            <span className="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5 truncate max-w-[200px]">{room.url}</span>
                                         </div>
-                                        <Send size={14} className="text-indigo-400 group-hover:text-indigo-600" />
+                                        <Send size={14} className="text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-600" />
                                     </button>
                                 ))}
                             </div>

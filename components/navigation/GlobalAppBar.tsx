@@ -88,7 +88,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="p-1.5 -ml-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors md:hidden"
+              className="p-1.5 -ml-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors md:hidden"
               title="메뉴 열기"
             >
               <Menu size={20} />
@@ -111,7 +111,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={orgName}>
               {orgName}
             </span>
-            <span className={`hidden sm:inline-block shrink-0 px-1.5 py-0.2 rounded text-[10px] font-bold ${
+            <span className={`hidden sm:inline-block shrink-0 px-1.5 py-0.2 rounded text-xs font-bold ${
               org?.role === 'owner' 
                 ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
                 : org?.role === 'admin'
@@ -123,7 +123,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           </div>
 
           {/* Desktop Breadcrumb */}
-          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 min-w-0">
+          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 min-w-0">
             <span>/</span>
             <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">{pageInfo.category}</span>
             <span>›</span>
@@ -136,13 +136,13 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           <button
             type="button"
             onClick={onOpenSearch}
-            className="w-full h-9 px-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-left text-xs text-slate-400 dark:text-slate-400 flex items-center justify-between transition-all shadow-2xs group cursor-pointer"
+            className="w-full h-9 px-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-left text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 flex items-center justify-between transition-all shadow-2xs group cursor-pointer"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Search size={15} className="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 shrink-0 transition-colors" />
+              <Search size={15} className="text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-600 dark:text-blue-400 shrink-0 transition-colors" />
               <span className="truncate">고객명, 전화번호, 메뉴 빠른 검색...</span>
             </div>
-            <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-300 shrink-0 shadow-2xs">
+            <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-mono font-semibold text-slate-500 dark:text-slate-300 shrink-0 shadow-2xs">
               Ctrl K
             </kbd>
           </button>
@@ -154,7 +154,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           {/* Mobile Search Icon Button */}
           <button
             onClick={onOpenSearch}
-            className="sm:hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="sm:hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
             title="빠른 검색"
           >
             <Search size={18} />
@@ -164,7 +164,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setIsNotifOpen(prev => !prev)}
-              className="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
               title="알림 센터"
             >
               <Bell size={18} />
@@ -183,12 +183,12 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm text-slate-900 dark:text-slate-100">알림 센터</span>
                     {pendingTgCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
                         {pendingTgCount}건 대기
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> 실시간 동기화
                   </span>
                 </div>
@@ -207,7 +207,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                             <p className="text-xs font-bold text-blue-900 dark:text-blue-200">
                               텔레그램 실시간 피드백 확인 요청
                             </p>
-                            <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">
+                            <p className="text-xs text-blue-700/80 dark:text-blue-300/80 mt-0.5">
                               {pendingTgCount}건의 피드백이 고객 매칭 대기 중입니다.
                             </p>
                           </div>
@@ -233,12 +233,12 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                       <Sparkles size={16} className="text-amber-500 shrink-0" />
                       <span className="text-xs text-slate-700 dark:text-slate-200 font-medium">최신 사내 공지사항 확인</span>
                     </div>
-                    <ArrowRight size={14} className="text-slate-400" />
+                    <ArrowRight size={14} className="text-slate-500 dark:text-slate-400" />
                   </div>
                 </div>
 
                 <div className="p-2.5 bg-slate-50/80 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700/60 text-center">
-                  <span className="text-[11px] text-slate-400">리드마스터 CRM 멀티테넌트 실시간 관제 센터</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">리드마스터 CRM 멀티테넌트 실시간 관제 센터</span>
                 </div>
               </div>
             )}
@@ -252,10 +252,10 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           {/* Theme Toggle (☀️ / 🌙) */}
           <button
             onClick={toggleTheme}
-            className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
             title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
           >
-            {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-600" />}
+            {theme === 'dark' ? <Sun size={18} className="text-amber-600 dark:text-amber-400" /> : <Moon size={18} className="text-slate-600" />}
           </button>
 
           {/* 👑 플랫폼 호스트 전용 슈퍼 어드민 원클릭 토글 버튼 */}
@@ -287,7 +287,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setIsProfileOpen(prev => !prev)}
-              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors cursor-pointer"
             >
               {user?.picture ? (
                 <img
@@ -304,11 +304,11 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[90px] truncate leading-tight">
                   {user?.name || user?.email?.split('@')[0] || '사용자'}
                 </span>
-                <span className="text-[10px] text-slate-400 leading-tight">
+                <span className="text-xs text-slate-500 dark:text-slate-400 leading-tight">
                   {roleLabel}
                 </span>
               </div>
-              <ChevronDown size={14} className="hidden md:block text-slate-400 shrink-0" />
+              <ChevronDown size={14} className="hidden md:block text-slate-500 dark:text-slate-400 shrink-0" />
             </button>
 
             {/* Profile Dropdown Menu */}
@@ -328,15 +328,15 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{user?.name || '사용자'}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{user?.email}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{user?.email}</p>
                     <div className="mt-1 flex items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
                         {org?.orgLogo && (
                           <img src={org.orgLogo} alt="Logo" className="w-3.5 h-3.5 rounded-xs object-cover" />
                         )}
                         <span className="truncate max-w-[120px]">{orgName}</span>
                       </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                      <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                         {roleLabel}
                       </span>
                     </div>
@@ -349,7 +349,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                     onClick={() => setIsProfileOpen(false)}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors"
                   >
-                    <User size={15} className="text-slate-400" />
+                    <User size={15} className="text-slate-500 dark:text-slate-400" />
                     <span>내 프로필 & 근태 관리</span>
                   </Link>
 
@@ -359,7 +359,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                       onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors"
                     >
-                      <Shield size={15} className="text-slate-400" />
+                      <Shield size={15} className="text-slate-500 dark:text-slate-400" />
                       <span>시스템 환경 설정</span>
                     </Link>
                   )}

@@ -158,7 +158,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-black text-gray-900 dark:text-gray-100">대표 프로필 이미지 설정</h3>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">마이페이지 및 상단 헤더에 노출되는 내 프로필 사진을 변경합니다.</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">마이페이지 및 상단 헤더에 노출되는 내 프로필 사진을 변경합니다.</p>
             </div>
           </div>
           <button
@@ -190,15 +190,15 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
             <div className="mt-3 flex items-center gap-2">
               <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{userName}</span>
               {previewUrl === googlePicture && isGoogleAvailable ? (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                   🌐 구글 계정 원본
                 </span>
               ) : previewUrl && previewUrl !== 'NONE' ? (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                   ✨ 새 대표 이미지 선택됨
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                   🔤 이니셜 기본 아바타
                 </span>
               )}
@@ -281,7 +281,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
                 <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                   클릭하여 사진 파일 선택 또는 여기에 드래그
                 </p>
-                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                   JPG, PNG, WEBP 지원 (자동 정사각형 크롭 & 400x400 압축)
                 </p>
               </div>
@@ -317,10 +317,10 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
                         alt={preset.name}
                         className="w-14 h-14 rounded-xl shadow-xs object-cover mb-2"
                       />
-                      <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate w-full">
+                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate w-full">
                         {preset.name}
                       </span>
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500 truncate w-full mt-0.5">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 truncate w-full mt-0.5">
                         {preset.roleHint}
                       </span>
                     </div>
@@ -352,7 +352,7 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
                   미리보기
                 </button>
               </div>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-xs text-gray-400">
                 웹상에 호스팅된 이미지 링크를 직접 지정하여 대표 이미지로 사용할 수 있습니다.
               </p>
             </div>

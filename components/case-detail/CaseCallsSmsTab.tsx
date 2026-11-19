@@ -98,7 +98,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                 <React.Fragment key={log.id}>
                   {showDateSeparator && (
                     <div className="flex justify-center my-6">
-                      <div className="bg-gray-200/70 text-gray-600 text-[11px] font-semibold px-4 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
+                      <div className="bg-gray-200/70 text-gray-600 text-xs font-semibold px-4 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
                         {dateStr}
                       </div>
                     </div>
@@ -129,9 +129,9 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                                 {isMissed ? '부재중 전화' : isInbound ? '수신 통화' : '발신 통화'}
                               </span>
                               {log.lineInfo === '투넘버' ? (
-                                <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">투넘버</span>
+                                <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">투넘버</span>
                               ) : (
-                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">기본</span>
+                                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">기본</span>
                               )}
                               {!isMissed && log.duration > 0 && (
                                 <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-md text-gray-600 font-medium">
@@ -139,7 +139,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                                 </span>
                               )}
                             </div>
-                            <span className="text-[11px] opacity-60 mt-0.5">
+                            <span className="text-xs opacity-60 mt-0.5">
                               {format(date, 'a h:mm', { locale: ko })}
                             </span>
                             {log.content && (
@@ -156,11 +156,11 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                         {/* 라인 정보 및 시간 (말풍선 바깥쪽 아래) */}
                         <div className={`flex flex-col mb-1 ${isInbound ? 'items-start' : 'items-end'}`}>
                           {log.lineInfo === '투넘버' ? (
-                            <span className="text-[9px] bg-purple-100 text-purple-700 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">투넘버</span>
+                            <span className="text-xs bg-purple-100 text-purple-700 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">투넘버</span>
                           ) : (
-                            <span className="text-[9px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">기본</span>
+                            <span className="text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">기본</span>
                           )}
-                          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                          <span className="text-xs text-gray-400 whitespace-nowrap">
                             {format(date, 'a h:mm', { locale: ko })}
                           </span>
                         </div>

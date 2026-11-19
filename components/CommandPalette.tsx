@@ -170,7 +170,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                 <div className="bg-orange-100 p-1.5 rounded mr-3 text-orange-600"><Zap size={16} /></div>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-medium">상태 빠른 변경</span>
-                                                    <span className="text-[10px] text-gray-400">검색 없이 즉시 사건 상태 업데이트</span>
+                                                    <span className="text-xs text-gray-400">검색 없이 즉시 사건 상태 업데이트</span>
                                                 </div>
                                                 <ChevronRight className="ml-auto w-4 h-4 text-gray-400" />
                                             </Command.Item>
@@ -257,7 +257,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                 )}
 
                             </Command.List>
-                            <div className="border-t border-gray-100 dark:border-gray-700 p-2 px-4 flex justify-between items-center text-[10px] text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+                            <div className="border-t border-gray-100 dark:border-gray-700 p-2 px-4 flex justify-between items-center text-xs text-gray-400 bg-gray-50 dark:bg-gray-900/50">
                                 <span>선택: ↵</span>
                                 <span>이동: ↑↓</span>
                                 <span>뒤로: Bksp</span>

@@ -71,7 +71,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                                     >
                                                         <div className="flex justify-between items-start mb-2">
                                                             <span className="font-bold text-gray-800 dark:text-gray-100">{c.customerName}</span>
-                                                            {c.isNew && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 rounded">NEW</span>}
+                                                            {c.isNew && <span className="text-xs bg-red-100 text-red-600 px-1.5 rounded">NEW</span>}
                                                         </div>
                                                         <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-1">
                                                             <Phone size={12} className="mr-1" /> {c.phone}
@@ -82,7 +82,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                                         </div>
 
                                                         {c.secondaryStatus && (
-                                                            <div className="mt-2 text-[10px] bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 px-2 py-1 rounded text-center truncate">
+                                                            <div className="mt-2 text-xs bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 px-2 py-1 rounded text-center truncate">
                                                                 {c.secondaryStatus}
                                                             </div>
                                                         )}

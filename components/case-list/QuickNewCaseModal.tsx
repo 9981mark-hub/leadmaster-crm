@@ -153,7 +153,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                             <h3 className="text-base font-bold text-gray-900 dark:text-white">
                                 신규 케이스 빠른 등록
                             </h3>
-                            <p className="text-[11px] text-gray-400">
+                            <p className="text-xs text-gray-400">
                                 번호와 이름만 입력하고 즉시 상담을 시작할 수 있습니다.
                             </p>
                         </div>
@@ -188,7 +188,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                                 className={`${fieldClass} text-base tabular-nums ${tried && !phoneOk ? 'border-rose-400' : ''}`}
                             />
                             {tried && !phoneOk && (
-                                <p className="text-[11px] text-rose-500 mt-1">유효한 전화번호를 입력하세요.</p>
+                                <p className="text-xs text-rose-500 mt-1">유효한 전화번호를 입력하세요.</p>
                             )}
                         </div>
 
@@ -205,7 +205,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                                 className={`${fieldClass} text-base ${tried && !nameOk ? 'border-rose-400' : ''}`}
                             />
                             {tried && !nameOk && (
-                                <p className="text-[11px] text-rose-500 mt-1">이름을 입력해주세요.</p>
+                                <p className="text-xs text-rose-500 mt-1">이름을 입력해주세요.</p>
                             )}
                         </div>
                     </div>
@@ -222,11 +222,11 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                                         <Link
                                             to={`/case/${dup.caseId}`}
                                             onClick={onClose}
-                                            className="px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold inline-flex items-center gap-1 text-[11px]"
+                                            className="px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold inline-flex items-center gap-1 text-xs"
                                         >
                                             해당 고객 열기 <ArrowRight size={12} />
                                         </Link>
-                                        <label className="flex items-center gap-1.5 cursor-pointer text-[11px]">
+                                        <label className="flex items-center gap-1.5 cursor-pointer text-xs">
                                             <input
                                                 type="checkbox"
                                                 checked={allowDup}
@@ -319,7 +319,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
 
                 {/* Modal Footer */}
                 <div className="flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-gray-750/70 border-t border-gray-100 dark:border-gray-700">
-                    <span className="text-[11px] text-gray-400 hidden sm:inline">
+                    <span className="text-xs text-gray-400 hidden sm:inline">
                         단축키: Ctrl + Enter = 등록 후 즉시 열기
                     </span>
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

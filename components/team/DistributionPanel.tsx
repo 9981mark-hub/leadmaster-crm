@@ -343,7 +343,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
             <h3 className="font-bold text-sm text-gray-900 dark:text-white">
               실시간 DB 순환 & 교차 셔플 허브
             </h3>
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold">
               다담세일즈형 쾌속 순환
             </span>
           </div>
@@ -452,7 +452,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
                         onClick={() => handleReclaimUntouched(a)}
                         disabled={busy}
                         title="진행 중 상담 건은 건드리지 않고, 손대지 않은 미처리 DB만 회수/재배분합니다"
-                        className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800 transition-colors"
+                        className="px-1.5 py-0.5 text-xs font-bold rounded bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800 transition-colors"
                       >
                         회수
                       </button>

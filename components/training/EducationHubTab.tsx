@@ -130,7 +130,7 @@ const FormattedAiAnswer: React.FC<{
       {conclusion && (
         <div className="bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/90 dark:border-indigo-800/60 rounded-xl p-3.5 shadow-xs">
           <div className="flex items-center gap-1.5 mb-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-600 text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-xs">
               <span>📌</span>
               <span>핵심 결론</span>
             </span>
@@ -145,13 +145,13 @@ const FormattedAiAnswer: React.FC<{
       {script && (
         <div className="bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-800/60 border-l-4 border-l-emerald-500 rounded-r-xl rounded-l-md p-3.5 shadow-xs">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-xs">
               <span>🎯</span>
               <span>고객 통화 실전 멘트</span>
             </span>
             <button
               onClick={() => onCopyText(script.replace(/^["'“”]|["'“”]$/g, '').trim(), '실전 멘트')}
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 bg-white dark:bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/60 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 bg-white dark:bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/60 transition-colors shadow-xs"
               title="실전 멘트만 복사"
             >
               <Copy className="w-3 h-3" />
@@ -170,7 +170,7 @@ const FormattedAiAnswer: React.FC<{
       {note && (
         <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 rounded-xl p-3 shadow-xs">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-600 text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-600 text-white shadow-xs">
               <span>⚠️</span>
               <span>실무 주의 &amp; 인계 팁</span>
             </span>
@@ -508,7 +508,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
         {isEditMode && (
           <div className="mt-4 p-3 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>
                 <strong>관리자 편집 모드 활성화:</strong> 화면의 스크립트, FAQ, 유튜브 영상 및 NotebookLM 링크를 직접 수정할 수 있습니다. 수정을 마치신 후 상단의 <strong>[클라우드 저장]</strong> 버튼을 누르세요.
               </span>
@@ -547,7 +547,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
         >
           <Headphones className="w-4 h-4" />
           <span>🎧 실전 모범 녹취 청취관</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+          <span className="px-1.5 py-0.5 rounded-full text-xs bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
             {materials.recordings.length}선
           </span>
         </button>
@@ -562,7 +562,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
         >
           <Youtube className="w-4 h-4" />
           <span>🎬 추천 유튜브 교육관</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+          <span className="px-1.5 py-0.5 rounded-full text-xs bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
             {materials.videos.length}편
           </span>
         </button>
@@ -577,7 +577,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
         >
           <HelpCircle className="w-4 h-4" />
           <span>❓ 다빈도 FAQ 셀프 검색 센터</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+          <span className="px-1.5 py-0.5 rounded-full text-xs bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
             {materials.faqs.length}건
           </span>
         </button>
@@ -592,7 +592,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
         >
           <GraduationCap className="w-4 h-4" />
           <span>🎓 상담역량 평가시험</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
+          <span className="px-1.5 py-0.5 rounded-full text-xs bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
             초·중·고급 300제
           </span>
         </button>
@@ -761,7 +761,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                       <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-600 text-white font-black text-xs">
                         {field.id}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
                         {field.category}
                       </span>
                     </div>
@@ -776,10 +776,10 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     </p>
 
                     <div className="pt-2 border-t border-gray-200/60 dark:border-gray-800 space-y-1">
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         <strong className="text-gray-700 dark:text-gray-300">예시:</strong> {field.example}
                       </div>
-                      <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                      <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                         💡 {field.tip}
                       </div>
                     </div>
@@ -811,7 +811,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   <Users className="w-4 h-4 text-indigo-500" />
                   <span>1. 2026년 최신 공식 확정 가구원수별 기준 중위소득 및 법정 최저생계비 (중위 60%)</span>
                 </h3>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 self-start sm:self-auto border border-emerald-200 dark:border-emerald-800">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 self-start sm:self-auto border border-emerald-200 dark:border-emerald-800">
                   ✨ 2026년 정부 공식 고시 기준
                 </span>
               </div>
@@ -834,7 +834,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         <td className="p-3 font-semibold whitespace-nowrap">{item.medianIncome2026 || item.medianIncome}</td>
                         <td className="p-3 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap bg-emerald-50/50 dark:bg-emerald-950/20">{item.minLivingCost2026 || item.minLivingCost}</td>
                         <td className="p-3 text-gray-400 whitespace-nowrap line-through">{item.minLivingCost2025 || '2025년 기준'}</td>
-                        <td className="p-3 text-gray-600 dark:text-gray-400 text-[11px] leading-relaxed">
+                        <td className="p-3 text-gray-600 dark:text-gray-400 text-xs leading-relaxed">
                           {item.advice || (item.householdSize === 1
                             ? '월 소득 155만 원 이상 권장 (생계비 인상으로 변제금 부담 경감)'
                             : `부양가족 생계비 인정되어 월 납입 변제금 대폭 축소`)}
@@ -866,7 +866,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     {materials.legalStandards.priorityRepayments.map((item, idx) => (
                       <tr key={idx} className="hover:bg-purple-50/30 dark:hover:bg-purple-950/20">
                         <td className="p-3 font-bold text-purple-600 dark:text-purple-400">{item.region}</td>
-                        <td className="p-3 text-[11px] text-gray-600 dark:text-gray-400 max-w-xs">{item.targetCities}</td>
+                        <td className="p-3 text-xs text-gray-600 dark:text-gray-400 max-w-xs">{item.targetCities}</td>
                         <td className="p-3 font-semibold">{item.maxDeposit}</td>
                         <td className="p-3 font-bold text-emerald-600 dark:text-emerald-400">{item.priorityAmount}</td>
                       </tr>
@@ -901,8 +901,8 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         <td className="p-3 whitespace-nowrap text-indigo-600 dark:text-indigo-400">{s.organ}</td>
                         <td className="p-3 whitespace-nowrap">{s.delinquencyReq}</td>
                         <td className="p-3 font-bold text-rose-600 dark:text-rose-400">{s.reductionRate}</td>
-                        <td className="p-3 text-[11px] text-emerald-700 dark:text-emerald-300 max-w-xs">{s.pros}</td>
-                        <td className="p-3 text-[11px] text-rose-700 dark:text-rose-300 max-w-xs">{s.cons}</td>
+                        <td className="p-3 text-xs text-emerald-700 dark:text-emerald-300 max-w-xs">{s.pros}</td>
+                        <td className="p-3 text-xs text-rose-700 dark:text-rose-300 max-w-xs">{s.cons}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -979,7 +979,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                           </span>
                           <button
                             onClick={() => handleCopyText(st.speech, `${obj.title} Step ${st.step}`)}
-                            className="text-xs text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 font-bold"
+                            className="text-xs text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-bold"
                           >
                             <Copy className="w-3 h-3" />
                             <span>화법 복사</span>
@@ -988,7 +988,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         <div className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200/60 dark:border-gray-700/60 text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-medium whitespace-pre-line">
                           {st.speech}
                         </div>
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                           🎯 <strong>효과 및 심리:</strong> {st.psychology}
                         </div>
                       </div>
@@ -1017,7 +1017,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                       {rule.rule}
                     </div>
-                    <div className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                       {rule.reason}
                     </div>
                   </div>
@@ -1039,11 +1039,11 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   >
                     <div className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center justify-between">
                       <span>{crit.condition}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
                         {crit.action}
                       </span>
                     </div>
-                    <div className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                       {crit.note}
                     </div>
                   </div>
@@ -1099,7 +1099,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                       {rec.highlightTags.map((tag, tIdx) => (
                         <span
                           key={tIdx}
-                          className="text-[10px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                          className="text-xs px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                         >
                           #{tag}
                         </span>
@@ -1169,7 +1169,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     </div>
 
                     <div className="text-right">
-                      <span className="text-sm font-mono font-bold text-emerald-400">
+                      <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
                         {formatTime(playbackTime)}
                       </span>
                       <span className="text-xs font-mono text-gray-400">
@@ -1197,7 +1197,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 <div className="space-y-3 pt-2">
                   <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center justify-between">
                     <span>실시간 대화록 (발화 클릭 시 해당 구간으로 이동)</span>
-                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400">
                       초록색 테두리: 현재 재생 발화
                     </span>
                   </h3>
@@ -1227,7 +1227,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                             >
                               {turn.speaker}
                             </span>
-                            <span className="text-[11px] font-mono text-gray-400">
+                            <span className="text-xs font-mono text-gray-400">
                               {turn.timeLabel}
                             </span>
                           </div>
@@ -1237,7 +1237,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                           </p>
 
                           {turn.coachingTip && (
-                            <div className="pt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                            <div className="pt-1 text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                               <Sparkles className="w-3 h-3 text-emerald-500" />
                               <span>코칭 포인트: {turn.coachingTip}</span>
                             </div>
@@ -1314,7 +1314,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
                         {vid.category}
                       </span>
                       <span className="text-xs font-mono text-gray-400 flex items-center gap-1">
@@ -1365,7 +1365,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   </div>
 
                   <div className="pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                    <div className="text-[11px] text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
+                    <div className="text-xs text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
                       <Lightbulb className="w-3 h-3" />
                       <span>{vid.keyTakeaway}</span>
                     </div>
@@ -1535,7 +1535,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                             )}
 
                             {faq.highlightKeyword && (
-                              <div className="inline-block px-2.5 py-1 rounded-lg bg-purple-100/80 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 text-[11px] font-bold">
+                              <div className="inline-block px-2.5 py-1 rounded-lg bg-purple-100/80 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 text-xs font-bold">
                                 💡 핵심 요약: {faq.highlightKeyword}
                               </div>
                             )}
@@ -1547,7 +1547,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                             {faq.tags.map((t, tidx) => (
                               <span
                                 key={tidx}
-                                className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500"
+                                className="text-xs px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500"
                               >
                                 #{t}
                               </span>
@@ -1557,7 +1557,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleCopyText(faq.answer, `FAQ 답변`)}
-                              className="text-[11px] text-gray-500 hover:text-purple-600 flex items-center gap-1 font-bold"
+                              className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1 font-bold"
                             >
                               <Copy className="w-3 h-3" />
                               <span>답변 복사</span>
@@ -1571,7 +1571,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                                     faqs: materials.faqs.filter((f) => f.id !== faq.id),
                                   })
                                 }
-                                className="text-[11px] text-rose-500 hover:text-rose-700 flex items-center gap-1 font-bold ml-2"
+                                className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-bold ml-2"
                               >
                                 <Trash2 className="w-3 h-3" />
                                 <span>삭제</span>
@@ -1597,7 +1597,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
             <div className="p-5 md:p-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex items-start justify-between gap-4 bg-gradient-to-r from-orange-50/60 via-amber-50/40 to-transparent dark:from-orange-950/20 dark:via-amber-950/10">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[11px] font-black flex items-center gap-1 shadow-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-black flex items-center gap-1 shadow-xs">
                     <Sparkles className="w-3 h-3" />
                     사이트 내 실시간 즉답 모드
                   </span>
@@ -1675,12 +1675,12 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         />
                       )}
 
-                      <div className="flex items-center justify-between pt-1.5 border-t border-black/10 dark:border-white/10 text-[10px] opacity-75">
+                      <div className="flex items-center justify-between pt-1.5 border-t border-black/10 dark:border-white/10 text-xs opacity-75">
                         <span>{msg.timestamp}</span>
                         {!isUser && (
                           <button
                             onClick={() => handleCopyText(msg.content.replace(/\*\*/g, ''), 'AI 전체 답변')}
-                            className="hover:underline flex items-center gap-1 font-bold ml-3 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            className="hover:underline flex items-center gap-1 font-bold ml-3 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400 transition-colors"
                           >
                             <Copy className="w-3 h-3" />
                             <span>전체 답변 복사</span>
@@ -1707,7 +1707,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
 
             {/* Quick Prompts Carousel */}
             <div className="px-5 md:px-6 py-2.5 bg-gray-100/70 dark:bg-gray-800/60 border-t border-gray-200/60 dark:border-gray-800">
-              <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+              <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-amber-500" />
                 <span>추천 질문 (클릭 시 사이트 내 즉시 질문):</span>
               </div>
@@ -1717,7 +1717,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     key={idx}
                     onClick={() => handleSendQuestion(q)}
                     disabled={isAnswering}
-                    className="shrink-0 text-left px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-orange-400 text-[11px] text-gray-700 dark:text-gray-300 font-medium transition-all hover:bg-orange-50/50 dark:hover:bg-orange-950/20 active:scale-95 disabled:opacity-50"
+                    className="shrink-0 text-left px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-orange-400 text-xs text-gray-700 dark:text-gray-300 font-medium transition-all hover:bg-orange-50/50 dark:hover:bg-orange-950/20 active:scale-95 disabled:opacity-50"
                   >
                     💬 {q.length > 30 ? q.slice(0, 30) + '...' : q}
                   </button>
@@ -1753,7 +1753,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
               </form>
 
               {/* Bottom Quick Link: Google Official NotebookLM Website */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-[11px] text-gray-400">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
                   💡 구글 공식 웹사이트에서 더 방대한 서적 원문을 직접 검색하시려면?
                 </span>
@@ -1771,7 +1771,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
               {/* Admin URL Setting (When in edit mode) */}
               {isEditMode && (
                 <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/60 space-y-1.5 mt-2">
-                  <label className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
+                  <label className="text-xs font-bold text-amber-800 dark:text-amber-300">
                     관리자용 공식 공유 노트북 URL 설정 (외부 링크 변경 시):
                   </label>
                   <input

@@ -322,14 +322,14 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                                 onClick={onToggleCompanyMaskingPolicy}
                                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all shadow-sm shrink-0 font-medium text-xs border ${
                                     companyMaskingPolicy === 'masked'
-                                        ? 'bg-slate-900 border-slate-700 text-amber-300 hover:bg-slate-800'
+                                        ? 'bg-white dark:bg-gray-900 border-slate-200 dark:border-slate-700 text-amber-300 hover:bg-slate-100 dark:bg-slate-800'
                                         : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
                                 }`}
                                 title={companyMaskingPolicy === 'masked'
                                     ? "현재 [대량 유출 방어 모드] 활성 (일반 상담원 번호 마스킹). 클릭 시 회사 전체 공개(속도 우선 모드)로 전환합니다."
                                     : "현재 [속도 우선 공개 모드] 활성 (일반 상담원 번호 전체 노출). 클릭 시 대량 유출 방어 모드로 전환합니다."}
                             >
-                                {companyMaskingPolicy === 'masked' ? <ShieldAlert size={15} className="text-amber-400 shrink-0" /> : <Eye size={15} className="text-emerald-500 shrink-0" />}
+                                {companyMaskingPolicy === 'masked' ? <ShieldAlert size={15} className="text-amber-600 dark:text-amber-400 shrink-0" /> : <Eye size={15} className="text-emerald-500 shrink-0" />}
                                 <span>{companyMaskingPolicy === 'masked' ? '목록 마스킹: 방어(ON)' : '목록 마스킹: 해제(OFF)'}</span>
                             </button>
                         )}

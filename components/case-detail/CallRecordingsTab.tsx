@@ -120,10 +120,10 @@ function StructuredDataCards({ e }: { e: ExtractedInfo }) {
 
             {e.debt.creditors.length > 0 && (
               <div className="mt-2 pt-2 border-t border-red-100/60 dark:border-red-900/30">
-                <div className="text-[11px] font-semibold text-gray-500 mb-1">채권사별 내역 ({e.debt.creditors.length}곳)</div>
+                <div className="text-xs font-semibold text-gray-500 mb-1">채권사별 내역 ({e.debt.creditors.length}곳)</div>
                 <div className="space-y-1">
                   {e.debt.creditors.map((cr, i) => (
-                    <div key={i} className="flex justify-between items-center text-[11px] bg-white/70 dark:bg-gray-800/60 px-2 py-1 rounded">
+                    <div key={i} className="flex justify-between items-center text-xs bg-white/70 dark:bg-gray-800/60 px-2 py-1 rounded">
                       <span className="font-medium text-gray-800 dark:text-gray-200">
                         {cr.name || cr.kind} <span className="text-gray-400 font-normal">({cr.kind})</span>
                       </span>
@@ -185,10 +185,10 @@ function StructuredDataCards({ e }: { e: ExtractedInfo }) {
 
             {e.assets.length > 0 && (
               <div className="mt-2 pt-2 border-t border-emerald-100/60 dark:border-emerald-900/30">
-                <div className="text-[11px] font-semibold text-gray-500 mb-1">보유 재산 ({e.assets.length}건)</div>
+                <div className="text-xs font-semibold text-gray-500 mb-1">보유 재산 ({e.assets.length}건)</div>
                 <div className="space-y-1">
                   {e.assets.map((a, i) => (
-                    <div key={i} className="flex justify-between items-center text-[11px] bg-white/70 dark:bg-gray-800/60 px-2 py-1 rounded">
+                    <div key={i} className="flex justify-between items-center text-xs bg-white/70 dark:bg-gray-800/60 px-2 py-1 rounded">
                       <span>{a.type}{a.owner ? ` (${a.owner})` : ''}</span>
                       <span className="font-bold text-gray-900 dark:text-gray-100">
                         {fmtManwon(a.amount_manwon)}{a.loan_manwon ? ` (대출 ${fmtManwon(a.loan_manwon)})` : ''}
@@ -311,11 +311,11 @@ function RecordingDetailDashboard({
                 <span className="font-extrabold text-gray-900 dark:text-white text-sm sm:text-base">
                   {callNumber}차 통화 {isLatest && <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">(최신)</span>}
                 </span>
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${st.cls}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${st.cls}`}>
                   {st.text}
                 </span>
                 {rec.appliedAt && (
-                  <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                     반영완료
                   </span>
                 )}
@@ -396,7 +396,7 @@ function RecordingDetailDashboard({
             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200 dark:border-purple-800/60 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
               <div className="flex flex-wrap items-center gap-2">
                 {rec.extracted.classification?.label && (
-                  <span className="px-2.5 py-1 rounded-lg bg-slate-900 text-white dark:bg-purple-600 font-bold text-xs shadow-xs">
+                  <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-gray-900 text-white dark:bg-purple-600 font-bold text-xs shadow-xs">
                     {rec.extracted.classification.label}
                   </span>
                 )}
@@ -421,7 +421,7 @@ function RecordingDetailDashboard({
                 <span className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-500"></span> 다음 통화에서 확인해야 할 사항 ({rec.extracted.missing_items!.length}건)
                 </span>
-                <span className="text-[11px] text-amber-700 dark:text-amber-400">질문 체크리스트</span>
+                <span className="text-xs text-amber-700 dark:text-amber-400">질문 체크리스트</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {rec.extracted.missing_items!.map(m => (
@@ -504,7 +504,7 @@ function RecordingDetailDashboard({
             </div>
 
             {rec.model && rec.analyzedAt && (
-              <span className="text-[11px] text-gray-400">
+              <span className="text-xs text-gray-400">
                 {fmtWhen(rec.analyzedAt)} AI 정리됨 ({rec.model})
               </span>
             )}
@@ -515,7 +515,7 @@ function RecordingDetailDashboard({
             <div className="bg-slate-50 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-2.5 max-h-96 overflow-y-auto">
               <div className="flex items-center justify-between text-xs font-bold text-gray-500 mb-2">
                 <span>전체 대화록 전사본 ({rec.transcript.length}줄)</span>
-                <span className="text-[11px] text-blue-600 dark:text-blue-400 font-normal">💡 말풍선을 클릭하면 해당 시점으로 즉시 이동합니다</span>
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-normal">💡 말풍선을 클릭하면 해당 시점으로 즉시 이동합니다</span>
               </div>
               {rec.transcript.map((l, i) => {
                 const isCustomer = l.speaker === '고객';
@@ -533,9 +533,9 @@ function RecordingDetailDashboard({
                     }`}
                     title={`${l.t} 시점으로 이동하여 재생`}
                   >
-                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
                       <span className="font-bold text-gray-600 dark:text-gray-300">{l.speaker}</span>
-                      <span className={`tabular-nums px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                      <span className={`tabular-nums px-1.5 py-0.5 rounded text-xs transition-colors ${
                         isActive
                           ? 'bg-blue-600 text-white font-bold'
                           : 'group-hover:bg-slate-200 dark:group-hover:bg-gray-700 text-gray-500 dark:text-gray-400'
@@ -745,7 +745,7 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
                     ({fmtDuration(r.durationSec)})
                   </span>
                   {r.appliedAt && (
-                    <span className={`text-[10px] px-1 py-0.5 rounded font-bold ${
+                    <span className={`text-xs px-1 py-0.5 rounded font-bold ${
                       isSelected ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
                     }`}>
                       반영됨
@@ -764,7 +764,7 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
           {/* PC용 좌측 타임라인 목록 (통화 2건 이상일 때만 표시) */}
           {list.length > 1 && (
             <div className="hidden xl:flex flex-col w-72 shrink-0 border-r border-gray-200 dark:border-gray-700 pr-4 space-y-2 max-h-[750px] overflow-y-auto no-scrollbar">
-              <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 mb-1">
+              <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 mb-1">
                 통화 이력 ({list.length}건)
               </div>
               {list.map((r, idx) => {
@@ -794,12 +794,12 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
                           {isFirst ? `${num}차 통화 (최신)` : `${num}차 통화`}
                         </span>
                       </div>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${st.cls}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${st.cls}`}>
                         {st.text}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-xs">
                       <span>{fmtWhen(r.callStartedAt)}</span>
                       <span>·</span>
                       <span>{fmtDuration(r.durationSec)}</span>
@@ -807,19 +807,19 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
 
                     <div className="flex items-center gap-1 flex-wrap pt-0.5">
                       {r.appliedAt && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 font-medium">
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 font-medium">
                           반영완료
                         </span>
                       )}
                       {r.storageKind === 'gdrive' && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                           드라이브
                         </span>
                       )}
                     </div>
 
                     {(r.summary || r.extracted?.special_notes) && (
-                      <p className="text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed bg-gray-50 dark:bg-gray-900/40 p-1.5 rounded-lg border border-gray-100 dark:border-gray-800">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed bg-gray-50 dark:bg-gray-900/40 p-1.5 rounded-lg border border-gray-100 dark:border-gray-800">
                         {r.summary || r.extracted?.special_notes}
                       </p>
                     )}

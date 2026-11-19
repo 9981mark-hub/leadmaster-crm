@@ -358,7 +358,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
-            <span className="text-xs font-black tracking-widest uppercase text-rose-400">
+            <span className="text-xs font-black tracking-widest uppercase text-rose-600 dark:text-rose-400">
               LIVE AUTO-CALL v4.0
             </span>
           </div>
@@ -376,7 +376,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-3 bg-gray-900 px-4 py-1.5 rounded-xl border border-gray-800 text-xs">
             <span className="text-gray-400">당일 소화율:</span>
-            <span className="font-mono font-bold text-indigo-400">
+            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
               {allocation.completedCount} / {allocation.targetCount}건 ({progressPercent}%)
             </span>
             <div className="w-24 bg-gray-800 h-1.5 rounded-full overflow-hidden">
@@ -393,7 +393,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
             onClick={() => setIsPauseModalOpen(true)}
             className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-gray-700 transition-colors"
           >
-            <Coffee size={14} className="text-amber-400" />
+            <Coffee size={14} className="text-amber-600 dark:text-amber-400" />
             잠시 휴식
           </button>
 
@@ -414,7 +414,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
         {/* 시작 전 대기 화면 */}
         {hudState === 'ready' && (
           <div className="flex-1 flex flex-col items-center justify-center text-center space-y-5 my-auto">
-            <div className="w-20 h-20 rounded-3xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30 shadow-2xl shadow-indigo-500/20">
+            <div className="w-20 h-20 rounded-3xl bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/30 shadow-2xl shadow-indigo-500/20">
               <PhoneCall size={40} className="animate-bounce" />
             </div>
             <div>
@@ -440,7 +440,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
         {/* 일시정지 중 화면 */}
         {hudState === 'paused' && (
           <div className="flex-1 flex flex-col items-center justify-center text-center space-y-5 my-auto">
-            <div className="w-20 h-20 rounded-3xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+            <div className="w-20 h-20 rounded-3xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/30">
               <Coffee size={40} />
             </div>
             <div>
@@ -465,7 +465,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
         {/* 모든 콜 완료 화면 */}
         {hudState === 'completed' && (
           <div className="flex-1 flex flex-col items-center justify-center text-center space-y-5 my-auto">
-            <div className="w-20 h-20 rounded-3xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+            <div className="w-20 h-20 rounded-3xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30">
               <CheckCircle2 size={40} />
             </div>
             <div>
@@ -515,7 +515,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
 
                 {/* 통화 타이머 카운터 */}
                 <div className="font-mono text-2xl font-black text-white flex items-center gap-2">
-                  <Clock size={20} className="text-indigo-400" />
+                  <Clock size={20} className="text-indigo-600 dark:text-indigo-400" />
                   {hudState === 'talking' ? (
                     <span>{String(Math.floor(talkSeconds / 60)).padStart(2, '0')}:{String(talkSeconds % 60).padStart(2, '0')}</span>
                   ) : (
@@ -545,7 +545,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
                 </div>
 
                 <div className="flex flex-col justify-center text-xs text-gray-400 space-y-1 md:text-right">
-                  <div>이전 통화 상태: <span className="font-bold text-amber-400">{currentCase?.status || '신규 접수'}</span></div>
+                  <div>이전 통화 상태: <span className="font-bold text-amber-600 dark:text-amber-400">{currentCase?.status || '신규 접수'}</span></div>
                   <div>최근 부재 차수: <span className="font-bold text-gray-300">{currentQueueItem.attemptCount}차 시도</span></div>
                 </div>
               </div>
@@ -553,7 +553,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               {/* 핵심 맞춤 스크립트 가이드 (가장 중요한 스크린 팝업 영역) */}
               <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-indigo-950/60 to-purple-950/60 border border-indigo-500/30 text-xs">
                 <span className="font-bold text-indigo-300 flex items-center gap-1.5 mb-1.5">
-                  <Volume2 size={14} className="text-indigo-400" />
+                  <Volume2 size={14} className="text-indigo-600 dark:text-indigo-400" />
                   상담 스크립트 가이드
                 </span>
                 <p className="text-gray-200 leading-relaxed font-medium">
@@ -580,7 +580,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
             {hudState === 'wrapup' && (
               <div className="w-full bg-blue-950/60 border border-blue-500/40 rounded-2xl p-4 text-center space-y-2 animate-in fade-in">
                 <div className="flex items-center justify-center gap-2 text-sm font-bold text-blue-300">
-                  <Clock size={16} className="animate-spin text-blue-400" />
+                  <Clock size={16} className="animate-spin text-blue-600 dark:text-blue-400" />
                   <span>
                     후처리 제한시간: <span className="text-xl font-mono text-white font-black">{wrapUpSeconds}</span>초 후 다음 번호로 자동 발신됩니다!
                   </span>
@@ -604,7 +604,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               >
                 <PhoneMissed size={22} />
                 <span className="text-sm font-black">부재 (1차)</span>
-                <span className="text-[11px] text-amber-200">연결 안 됨 / 통화중</span>
+                <span className="text-xs text-amber-200">연결 안 됨 / 통화중</span>
               </button>
 
               {/* 2. 상담 완료 (접수) */}
@@ -615,7 +615,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               >
                 <CheckCircle2 size={22} />
                 <span className="text-sm font-black">상담완료 (접수)</span>
-                <span className="text-[11px] text-emerald-200">접수 완료 / 1차 상담</span>
+                <span className="text-xs text-emerald-200">접수 완료 / 1차 상담</span>
               </button>
 
               {/* 3. 재통화 예약 */}
@@ -626,7 +626,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               >
                 <Clock size={22} />
                 <span className="text-sm font-black">재통화 예약</span>
-                <span className="text-[11px] text-indigo-200">추후 재연락 요청</span>
+                <span className="text-xs text-indigo-200">추후 재연락 요청</span>
               </button>
 
               {/* 4. 거절 / 불가 */}
@@ -637,7 +637,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
               >
                 <PhoneOff size={22} />
                 <span className="text-sm font-black">거절 / 조건불가</span>
-                <span className="text-[11px] text-gray-400">수신거부 / 자격미달</span>
+                <span className="text-xs text-gray-400">수신거부 / 자격미달</span>
               </button>
             </div>
           </div>
@@ -649,7 +649,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-sm border border-gray-700 space-y-4">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Coffee size={18} className="text-amber-400" />
+              <Coffee size={18} className="text-amber-600 dark:text-amber-400" />
               오토콜 잠시 휴식 (이석)
             </h3>
             <p className="text-xs text-gray-400">

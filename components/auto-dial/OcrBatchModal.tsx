@@ -251,7 +251,7 @@ export default function OcrBatchModal({ isOpen, onClose, onCreated }: OcrBatchMo
                   <button
                     type="button"
                     onClick={toggleSelectAll}
-                    className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                    className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400"
                   >
                     {contacts.every(c => c.selected) ? (
                       <CheckSquare className="w-4 h-4" />
