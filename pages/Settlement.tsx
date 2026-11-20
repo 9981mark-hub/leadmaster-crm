@@ -2430,27 +2430,27 @@ export default function Settlement() {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div onClick={() => setActiveExpenseKpiModal('commission')} className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl shadow-sm border border-green-200 cursor-pointer hover:shadow-md transition-all active:scale-95">
-                        <p className="text-sm text-green-700">💵 받은 수수료</p>
-                        <p className="text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
-                        <p className="text-xs text-green-500 mt-1">{year}년 누적</p>
+                    <div onClick={() => setActiveExpenseKpiModal('commission')} className="bg-gradient-to-br from-green-50 to-white dark:from-green-950/30 dark:to-gray-800 p-5 rounded-2xl shadow-sm border border-green-200 dark:border-green-800/60 cursor-pointer hover:shadow-md transition-all active:scale-95">
+                        <p className="text-sm font-bold text-green-700 dark:text-green-300">💵 받은 수수료</p>
+                        <p className="text-2xl font-black text-green-600 dark:text-green-400 font-mono mt-1">{totalPaidCommission.toLocaleString()}만원</p>
+                        <p className="text-xs text-green-600 dark:text-green-400/80 mt-1">{year}년 누적</p>
                     </div>
-                    <div onClick={() => setActiveExpenseKpiModal('expense')} className="bg-gradient-to-br from-red-50 to-white p-5 rounded-xl shadow-sm border border-red-200 cursor-pointer hover:shadow-md transition-all active:scale-95">
-                        <p className="text-sm text-red-700">💸 총 지출</p>
-                        <p className="text-2xl font-bold text-red-600 mt-1">{expenseStats.total.toLocaleString()}만원</p>
-                        <p className="text-xs text-red-500 mt-1">{month === 'all' ? '전체 월' : `${month}월`}: {thisMonthExpenses.toLocaleString()}만원</p>
+                    <div onClick={() => setActiveExpenseKpiModal('expense')} className="bg-gradient-to-br from-red-50 to-white dark:from-red-950/30 dark:to-gray-800 p-5 rounded-2xl shadow-sm border border-red-200 dark:border-red-800/60 cursor-pointer hover:shadow-md transition-all active:scale-95">
+                        <p className="text-sm font-bold text-red-700 dark:text-red-300">💸 총 지출</p>
+                        <p className="text-2xl font-black text-red-600 dark:text-red-400 font-mono mt-1">{expenseStats.total.toLocaleString()}만원</p>
+                        <p className="text-xs text-red-600 dark:text-red-400/80 mt-1">{month === 'all' ? '전체 월' : `${month}월`}: {thisMonthExpenses.toLocaleString()}만원</p>
                     </div>
-                    <div onClick={() => setActiveExpenseKpiModal('ad_ratio')} className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition-all active:scale-95">
-                        <p className="text-sm text-blue-700">📊 광고비 비중</p>
-                        <p className="text-2xl font-bold text-blue-600 mt-1">
+                    <div onClick={() => setActiveExpenseKpiModal('ad_ratio')} className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-gray-800 p-5 rounded-2xl shadow-sm border border-blue-200 dark:border-blue-800/60 cursor-pointer hover:shadow-md transition-all active:scale-95">
+                        <p className="text-sm font-bold text-blue-700 dark:text-blue-300">📊 광고비 비중</p>
+                        <p className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono mt-1">
                             {expenseStats.total > 0 ? Math.round((expenseStats.byCategory['광고비'] / expenseStats.total) * 100) : 0}%
                         </p>
-                        <p className="text-xs text-blue-500 mt-1">{expenseStats.byCategory['광고비'].toLocaleString()}만원</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400/80 mt-1">{expenseStats.byCategory['광고비'].toLocaleString()}만원</p>
                     </div>
-                    <div onClick={() => setActiveExpenseKpiModal('net_profit')} className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-white border-green-200' : 'from-red-50 to-white border-red-200'} p-5 rounded-xl shadow-sm border cursor-pointer hover:shadow-md transition-all active:scale-95`}>
-                        <p className={`text-sm ${netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>💰 순이익</p>
-                        <p className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{netProfit.toLocaleString()}만원</p>
-                        <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>수수료수익 - 지출</p>
+                    <div onClick={() => setActiveExpenseKpiModal('net_profit')} className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-white dark:from-emerald-950/30 dark:to-gray-800 border-green-200 dark:border-emerald-800/60' : 'from-red-50 to-white dark:from-rose-950/30 dark:to-gray-800 border-red-200 dark:border-rose-800/60'} p-5 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md transition-all active:scale-95`}>
+                        <p className={`text-sm font-bold ${netProfit >= 0 ? 'text-green-700 dark:text-emerald-300' : 'text-red-700 dark:text-rose-300'}`}>💰 순이익</p>
+                        <p className={`text-2xl font-black font-mono mt-1 ${netProfit >= 0 ? 'text-green-600 dark:text-emerald-400' : 'text-red-600 dark:text-rose-400'}`}>{netProfit.toLocaleString()}만원</p>
+                        <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-green-600 dark:text-emerald-400/80' : 'text-red-600 dark:text-rose-400/80'}`}>수수료수익 - 지출</p>
                     </div>
                 </div>
 
@@ -2561,10 +2561,10 @@ export default function Settlement() {
                                     {pieData.map((entry, idx) => (
                                         <div key={idx} className="flex items-center justify-between text-sm">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                                                <span>{entry.name}</span>
+                                                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+                                                <span className="text-gray-700 dark:text-gray-200 font-medium">{entry.name}</span>
                                             </div>
-                                            <span className="font-medium">{entry.value.toLocaleString()}만원</span>
+                                            <span className="font-mono font-bold text-gray-900 dark:text-white">{entry.value.toLocaleString()}만원</span>
                                         </div>
                                     ))}
                                 </div>
@@ -2592,23 +2592,28 @@ export default function Settlement() {
                 </div>
 
                 {/* Expense List Table */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-700 dark:text-gray-200">📋 지출 내역</h3>
-                        <span className="text-sm text-gray-500">{expenses.length}건</span>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-750 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                            <FileText size={18} className="text-red-500" />
+                            📋 지출 내역
+                        </h3>
+                        <span className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold font-mono">
+                            총 {expenses.length}건
+                        </span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
+                            <thead className="bg-gray-50 dark:bg-gray-750 text-gray-600 dark:text-gray-300 font-medium border-b border-gray-100 dark:border-gray-750">
                                 <tr>
-                                    <th className="py-3 px-3 text-left">날짜</th>
+                                    <th className="py-3 px-4 text-left">날짜</th>
                                     <th className="py-3 px-3 text-left">카테고리</th>
                                     <th className="py-3 px-3 text-left">내용</th>
-                                    <th className="py-3 px-3 text-right">금액</th>
-                                    <th className="py-3 px-3 text-center">관리</th>
+                                    <th className="py-3 px-4 text-right">금액</th>
+                                    <th className="py-3 px-4 text-center">관리</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
                                 {loadingExpenses ? (
                                     <tr>
                                         <td colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">로딩중...</td>
@@ -2619,33 +2624,36 @@ export default function Settlement() {
                                     </tr>
                                 ) : (
                                     expenses.slice(0, 20).map(exp => (
-                                        <tr key={exp.id} className="border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                            <td className="py-3 px-3 text-gray-600">{exp.date}</td>
-                                            <td className="py-3 px-3">
+                                        <tr key={exp.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-700/50 transition-colors">
+                                            <td className="py-3.5 px-4 font-mono font-medium text-gray-700 dark:text-gray-200">{exp.date}</td>
+                                            <td className="py-3.5 px-3">
                                                 <span
-                                                    className="px-2 py-1 rounded text-xs font-medium text-white"
+                                                    className="px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-xs inline-block"
                                                     style={{ backgroundColor: CATEGORY_COLORS[exp.category] }}
                                                 >
                                                     {exp.category}
                                                 </span>
                                             </td>
-                                            <td className="py-3 px-3 text-gray-800">
+                                            <td className="py-3.5 px-3 text-gray-900 dark:text-gray-100 font-medium">
                                                 {exp.description}
-                                                {exp.memo && <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">({exp.memo})</span>}
+                                                {exp.memo && <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs font-normal">({exp.memo})</span>}
                                             </td>
-                                            <td className="py-3 px-3 text-right font-bold text-red-600">{exp.amount.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-center">
+                                            <td className="py-3.5 px-4 text-right font-mono font-black text-red-600 dark:text-red-400 text-sm">
+                                                {exp.amount.toLocaleString()}만원
+                                            </td>
+                                            <td className="py-3.5 px-4 text-center">
                                                 <button
                                                     onClick={() => openEditExpense(exp)}
-                                                    className="text-blue-600 hover:text-blue-700 mr-2"
+                                                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-bold text-xs mr-3 transition-colors"
                                                 >
                                                     수정
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteExpense(exp.id)}
-                                                    className="text-red-500 hover:text-red-700"
+                                                    className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors inline-flex items-center"
+                                                    title="지출 삭제"
                                                 >
-                                                    <Trash2 size={14} />
+                                                    <Trash2 size={15} />
                                                 </button>
                                             </td>
                                         </tr>
@@ -4448,9 +4456,13 @@ export default function Settlement() {
 
             {/* Year/Month Filter (for report and expenses tabs) */}
             {(activeTab === 'report' || activeTab === 'expenses') && (
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-wrap gap-2.5 items-center p-3 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs">
+                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5 ml-1">
+                        <Calendar size={14} className="text-indigo-500" />
+                        조회 기간:
+                    </span>
                     <select
-                        className="bg-white dark:bg-gray-800 border dark:border-gray-600 p-2 rounded text-lg font-bold cursor-pointer min-w-[100px] dark:text-white"
+                        className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-650 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         value={year}
                         onChange={e => setYear(Number(e.target.value))}
                     >
@@ -4459,11 +4471,11 @@ export default function Settlement() {
                         ))}
                     </select>
                     <select
-                        className="bg-white dark:bg-gray-800 border dark:border-gray-600 p-2 rounded text-lg font-bold cursor-pointer min-w-[100px] dark:text-white"
+                        className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-650 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         value={month}
                         onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                     >
-                        <option value="all">전체 월</option>
+                        <option value="all">전체 월 (연간 합산)</option>
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                             <option key={m} value={m}>{m}월</option>
                         ))}
