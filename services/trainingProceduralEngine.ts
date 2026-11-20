@@ -76,7 +76,7 @@ export const REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS: RealCustomerQuestion[] = [
     id: 'q_credit_03',
     category: 'credit_life',
     questionText: '가족이나 배우자한테 법원에서 우편물 날아가나요? 가족 몰래 해야 하는데요.',
-    recommendedDefense: '모든 법원 송달 서류는 저희 법률사무소로 대리 수령되므로 자택이나 직장으로 우편물이 일절 날아가지 않아 가족 비밀이 100% 보장됩니다.',
+    recommendedDefense: '모든 법원 송달 서류는 담당 대리인 사무실로 대리 수령되므로 자택이나 직장으로 우편물이 일절 날아가지 않아 가족 비밀이 100% 보장됩니다.',
     contextHint: '100% 비밀 보장'
   },
   {
@@ -141,7 +141,7 @@ export const REAL_CUSTOMER_QUESTIONS_AND_OBJECTIONS: RealCustomerQuestion[] = [
     id: 'q_cost_02',
     category: 'cost_rejection',
     questionText: '수임료 먼저 다 냈는데 만약 법원에서 기각되면 어떻게 돼요? 환불해 주나요?',
-    recommendedDefense: '저희 법무법인은 가심사 단계에서 기각될 사건은 아예 수임하지 않으며, 만약 저희 귀책으로 기각 시 수임료 100% 전액 환불 특약을 서면 보증해 드립니다.',
+    recommendedDefense: '저희는 1차 가심사 단계에서 기각될 사건은 아예 진행하지 않으며, 만약 귀책으로 기각 시 수임료 100% 전액 환불 특약을 서면 보증해 드립니다.',
     contextHint: '기각 시 100% 환불 보증'
   },
   {

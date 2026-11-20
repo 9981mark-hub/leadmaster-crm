@@ -147,73 +147,182 @@ export interface TrainingSessionRecord {
 }
 
 // ============================================
-// 회사별·관리자별 맞춤형 훈련 정책 및 스크립트 설정 (Company Training Config)
+// 회사별·관리자별 맞춤형 훈련 정책 및 듀얼 브랜딩 설정 (Company Training Config)
+// 아웃바운드 TM(사칭 방지/지원센터) vs 인바운드 리드(법무법인/광고신청) 분리 지원
 // ============================================
+
+export interface OutboundTrainingConfig {
+  orgName: string;            // 소속 기관/센터명 (예: 채무조정 지원센터, 서민금융 지원본부)
+  roleTitle: string;          // 직책/호칭 (예: 팀장, 수석팀장, 과장)
+  sourceText: string;         // 출처 소명 문구 (예: 온라인 제휴 안심 자가진단 이력)
+  openingScript: string;      // 표준 첫인사 템플릿
+  quickOpeningScript: string; // 10초 바쁜 고객용 퀵 오프닝
+  closingHandoverScript?: string; // 7대 문진 완료 후 제휴 법무법인 사무장 인계 브릿지 멘트
+}
+
+export interface InboundTrainingConfig {
+  companyName: string;        // 공식 법인명 (예: 법무법인 신안)
+  departmentName: string;     // 담당 부서명 (예: 회생파산 종합지원센터)
+  roleTitle: string;          // 직책/호칭 (예: 전담 상담원, 선임 상담관)
+  leadChannelName: string;    // 인입 채널명 (예: 온라인 무료 안심 자가진단)
+  openingScript: string;      // 표준 첫인사 템플릿
+  quickOpeningScript: string; // 10초 퀵 오프닝
+}
+
 export interface CompanyTrainingConfig {
-  companyName: string;          // 회사/법인명 (예: 법무법인 신안)
-  departmentName: string;       // 담당 부서/팀명 (예: 회생파산 전담센터)
-  leadChannelName: string;      // 인입 채널명 (예: 온라인 무료 안심 자가진단)
-  representativePhone: string;  // 공식 대표번호 (예: 02-588-7119)
-  standardOpening: string;      // 정규 첫인사 템플릿
-  quickOpening: string;         // 바쁜 고객용 10초 퀵 오프닝
+  // 📞 1. 아웃바운드 (콜드콜/외부DB) 전용
+  outbound: OutboundTrainingConfig;
+
+  // 📋 2. 인바운드 (광고신청/Warm Lead) 전용
+  inbound: InboundTrainingConfig;
+
+  // 공통 환경 및 컴플라이언스
+  representativePhone: string;  // 공식 대표번호 (예: 1588-4920, 02-588-7119)
   requiredKeywords: string[];   // 필수 포함 키워드 (미언급 시 감점)
   bannedKeywords: string[];     // 엄격 금지어 (과장광고 방지)
   customQuestions: string[];    // 회사별 추가 문진 항목
   usePhoneFilter?: boolean;     // [대표 전용] 전사 스마트폰 수화기 대역 주파수(300~3400Hz) 필터 강제 적용 (기본 true)
+
+  // 레거시 호환 필드 (하위 호환 보장)
+  companyName?: string;
+  departmentName?: string;
+  leadChannelName?: string;
+  standardOpening?: string;
+  quickOpening?: string;
 }
 
 export const PRESETS_CONFIG: Record<string, { label: string; desc: string; config: CompanyTrainingConfig }> = {
-  legal: {
-    label: '🏢 법무법인 회생/파산 전문',
-    desc: '개인회생·파산 법률사무소 표준 (법원 접수, 비밀보장, 수수료 0원)',
+  outbound_agency: {
+    label: '🏢 독립 아웃바운드 TM 대행사 (추천)',
+    desc: '변호사법 사칭 방지! "채무조정 지원센터 OOO 팀장" 표준 + 제휴 DB 출처 소명',
     config: {
-      companyName: '법무법인 신안',
-      departmentName: '회생파산 종합지원센터',
-      leadChannelName: '온라인 무료 안심 자가진단',
+      outbound: {
+        orgName: '채무조정 지원센터',
+        roleTitle: '팀장',
+        sourceText: '온라인 제휴 안심 자가진단 이력',
+        openingScript: '안녕하십니까, {고객명} 고객님! {소속명}의 {상담원명} {직책}입니다. 일전에 안심 금융 조회하셨던 이력 관련하여 정부/법원 채무 감면 혜택 대상자 무료 가심사차 연락드렸습니다. 지금 2분 정도 통화 괜찮으실까요?',
+        quickOpeningScript: '바쁘신 시간 죄송합니다, 고객님! {소속명} {직책}입니다. 감면 적격 조건만 30초 내로 확인해 드리고 편하신 시간대로 다시 연락드리겠습니다!',
+        closingHandoverScript: '고객님, 1차 지원센터 가심사 결과 조건에 적격하셔서, 사건을 전담해 주실 제휴 법원 도산 전문 수석 사무장님께 직통 배정해 드리겠습니다.',
+      },
+      inbound: {
+        companyName: '채무조정 안심접수처',
+        departmentName: '1차 심사과',
+        roleTitle: '전담 상담원',
+        leadChannelName: '온라인 자가진단 신청건',
+        openingScript: '안녕하세요, {고객명} 고객님 맞으실까요? 방금 신청 남겨주신 [{회사명} 개인회생 자격진단] 건으로 신속히 도움드리고자 연락드렸습니다. 지금 통화 가능하실까요?',
+        quickOpeningScript: '안녕하세요, 고객님! 신청하신 무료 진단 건으로 30초만 일정 확인차 연락드렸습니다.',
+      },
+      representativePhone: '1588-4920',
+      requiredKeywords: ['비밀 보장', '취소 수수료 없음', '정부/법원 채무조정'],
+      bannedKeywords: ['100% 무조건 승인', '전액 탕감 보장', '불법 수수료', '작업대출'],
+      customQuestions: ['최근 1년 내 신규 대출 발생 여부', '배우자 명의 재산 유무'],
+      usePhoneFilter: true,
+      companyName: '채무조정 지원센터',
+      departmentName: '상담1팀',
+      leadChannelName: '온라인 제휴 안심 자가진단',
+      standardOpening: '안녕하십니까, {고객명} 고객님! {소속명}의 {상담원명} {직책}입니다. 일전에 안심 금융 조회하셨던 이력 관련하여 정부/법원 채무 감면 혜택 대상자 무료 가심사차 연락드렸습니다. 지금 2분 정도 통화 괜찮으실까요?',
+      quickOpening: '바쁘신 시간 죄송합니다, 고객님! {소속명} {직책}입니다. 감면 적격 조건만 30초 내로 확인해 드리고 편하신 시간대로 다시 연락드리겠습니다!',
+    },
+  },
+  legal: {
+    label: '⚖️ 법무법인 직영 콜센터',
+    desc: '개인회생·파산 법률사무소 표준 (법원 정식 접수, 비밀보장, 광고 신청건)',
+    config: {
+      outbound: {
+        orgName: '법무법인 신안 지원센터',
+        roleTitle: '상담팀장',
+        sourceText: '법무법인 안심 금융조회 제휴망',
+        openingScript: '안녕하십니까, {고객명} 고객님! {소속명}의 {상담원명} {직책}입니다. 일전에 제휴 채널에서 조회해주신 법원 채무 감면 혜택 무료 심사차 연락드렸습니다.',
+        quickOpeningScript: '고객님, 바쁘시죠! {소속명}입니다. 30초만 감면 요건 체크해 드리고 편하신 시간에 다시 연락드리겠습니다.',
+        closingHandoverScript: '고객님, 가심사 결과 개인회생 신청 요건에 충분히 부합하셔서 담당 수석 사무장님께 사건을 즉시 인계해 드리겠습니다.',
+      },
+      inbound: {
+        companyName: '법무법인 신안',
+        departmentName: '회생파산 종합지원센터',
+        roleTitle: '전담 상담원',
+        leadChannelName: '온라인 무료 안심 자가진단',
+        openingScript: '안녕하세요, {고객명} 고객님 맞으실까요? 방금 {인입채널}에서 신청 남겨주신 [{회사명} 개인회생 무료 자격진단] 건으로 신속히 도움드리고자 연락드렸습니다. 지금 2분 정도 통화 괜찮으실까요?',
+        quickOpeningScript: '바쁘신 시간 죄송합니다, 고객님! 방금 신청해주신 {회사명} 무료 자격진단 건으로 30초만 일정 확인차 연락드렸습니다!',
+      },
       representativePhone: '02-588-7119',
-      standardOpening: '안녕하십니까, {고객명} 고객님! {회사명} {부서명}의 {상담원명} 상담원입니다. 일전에 신청해주신 {인입채널} 관련하여 법원 감면 혜택 가심사차 연락드렸습니다. 지금 2분 정도 통화 괜찮으실까요?',
-      quickOpening: '바쁘신 시간 죄송합니다, 고객님! {회사명}입니다. 신청하신 서류 조건만 30초 내로 정리해 드리고 편하신 시간대로 다시 전화드리겠습니다!',
       requiredKeywords: ['비밀 보장', '취소 수수료 없음', '법원 접수'],
       bannedKeywords: ['100% 무조건 승인', '전액 탕감 보장', '불법 수수료'],
       customQuestions: ['최근 1년 내 신규 대출 발생 여부', '배우자 명의 재산 유무'],
       usePhoneFilter: true,
+      companyName: '법무법인 신안',
+      departmentName: '회생파산 종합지원센터',
+      leadChannelName: '온라인 무료 안심 자가진단',
+      standardOpening: '안녕하십니까, {고객명} 고객님! {회사명} {부서명}의 {상담원명} 상담원입니다. 일전에 신청해주신 {인입채널} 관련하여 법원 감면 혜택 가심사차 연락드렸습니다. 지금 2분 정도 통화 괜찮으실까요?',
+      quickOpening: '바쁘신 시간 죄송합니다, 고객님! {회사명}입니다. 신청하신 서류 조건만 30초 내로 정리해 드리고 편하신 시간대로 다시 전화드리겠습니다!',
+    },
+  },
+  hybrid: {
+    label: '🤝 하이브리드 파트너사',
+    desc: '지원센터 1차 스크리닝 후 제휴 법무법인 수석 사무장으로 직통 인계',
+    config: {
+      outbound: {
+        orgName: '서민금융 채무조정 지원본부',
+        roleTitle: '수석팀장',
+        sourceText: '서민금융 안심 자가진단 제휴망',
+        openingScript: '안녕하십니까, {고객명} 고객님! {소속명}의 {상담원명} {직책}입니다. 정부/법원 채무조정 지원 대상자로 매칭되셔서 무료 감면율 가심사차 연락드렸습니다. 지금 2분 정도 통화 괜찮으실까요?',
+        quickOpeningScript: '바쁘신 중 실례합니다! {소속명}입니다. 감면 적격 여부만 30초 확인해 드리고 다시 전화드릴까요?',
+        closingHandoverScript: '고객님, 기본 문진 결과 원금 최대 90% 탕감 대상자로 확인되셨습니다. 서류 접수와 법원 금지명령을 직접 총괄해주실 제휴 법무법인 수석 사무장님 직통으로 바로 연결해 드리겠습니다.',
+      },
+      inbound: {
+        companyName: '제휴 법률지원 상담팀',
+        departmentName: '1차 심사과',
+        roleTitle: '선임상담원',
+        leadChannelName: '포털 안심 무료상담 신청건',
+        openingScript: '안녕하세요, {고객명} 고객님! 남겨주신 [{회사명}] 채무조정 가심사 신청서 확인되어 연락드렸습니다. 지금 통화 가능하신가요?',
+        quickOpeningScript: '고객님, 남겨주신 신청서 확인차 30초만 시간 괜찮으실까요?',
+      },
+      representativePhone: '02-588-7119',
+      requiredKeywords: ['비밀 보장', '취소 수수료 없음', '수석 사무장 배정'],
+      bannedKeywords: ['100% 무조건 승인', '전액 탕감 보장', '선입금 요구'],
+      customQuestions: ['기존 채무 연체 여부', '가족 및 직장 비밀보장 희망 여부'],
+      usePhoneFilter: true,
+      companyName: '서민금융 채무조정 지원본부',
+      departmentName: '제휴상담팀',
+      leadChannelName: '서민금융 안심 자가진단',
+      standardOpening: '안녕하십니까, {고객명} 고객님! {소속명}의 {상담원명} {직책}입니다. 정부/법원 채무조정 지원 대상자로 매칭되셔서 연락드렸습니다.',
+      quickOpening: '고객님, {소속명}입니다. 30초만 감면 적격 확인 후 다시 연락드리겠습니다.',
     },
   },
   loan: {
     label: '💳 서민금융 대환대출 전문',
     desc: '중금리·고금리 대환 및 금융컨설팅 표준 (금감원 등록, 이자 절감)',
     config: {
-      companyName: '서민금융 파트너스',
-      departmentName: '안심대환 상담팀',
-      leadChannelName: '정부지원 안심대환 간편조회',
+      outbound: {
+        orgName: '서민금융 파트너스 지원센터',
+        roleTitle: '과장',
+        sourceText: '금융 마이데이터 제휴 안심조회',
+        openingScript: '안녕하십니까, {고객명} 고객님! {소속명}의 {상담원명} {직책}입니다. 일전에 조회해주신 고금리 대환 및 채무통합 지원 대상자 가심사 결과 안내차 연락드렸습니다.',
+        quickOpeningScript: '고객님, 많이 바쁘신가요? 30초만 대환 한도 확인해 드리고 오후 브레이크 타임에 재연락드릴까요?',
+        closingHandoverScript: '고객님, 1차 진단 결과 이자 절감 및 원금 감면 플랜에 적격하셔서 금융 전문 위원님께 직통 연결해 드리겠습니다.',
+      },
+      inbound: {
+        companyName: '서민금융 파트너스',
+        departmentName: '안심대환 상담팀',
+        roleTitle: '선임상담원',
+        leadChannelName: '정부지원 안심대환 간편조회',
+        openingScript: '안녕하세요, {고객명} 고객님! 일전에 조회해주신 [{회사명} {인입채널}] 신청 건으로 가심사 결과 안내차 연락드렸습니다.',
+        quickOpeningScript: '고객님, 신청해주신 대환 조회 건으로 30초만 확인 연락드렸습니다.',
+      },
       representativePhone: '1588-4920',
-      standardOpening: '안녕하십니까, {고객명} 고객님! {회사명} {부서명}의 {상담원명}입니다. 일전에 조회해주신 {인입채널} 신청 건으로 금리 인하 가심사 결과 안내차 연락드렸습니다.',
-      quickOpening: '고객님, 지금 많이 바쁘신가요? {회사명}입니다! 30초만 대환 한도 확인해 드리고 오후 브레이크 타임에 재연락드릴까요?',
       requiredKeywords: ['대출중개수수료 무료', '정식 등록 법인', '신용점수 영향 없음'],
       bannedKeywords: ['작업대출', '선입금 요구', '무조건 100% 한도'],
       customQuestions: ['기존 대출 금리대 (15% 이상 여부)', '월 소득 대비 상환액'],
       usePhoneFilter: true,
-    },
-  },
-  business: {
-    label: '🏭 소상공인/자영업자 긴급지원',
-    desc: '자영업자 다중채무 및 세금 체납 긴급 분할지원 표준',
-    config: {
-      companyName: '소상공인 기업지원센터',
-      departmentName: '자영업자 재기지원팀',
-      leadChannelName: '사업자 긴급운영자금 자가진단',
-      representativePhone: '02-710-8800',
-      standardOpening: '사장님, 안녕하십니까! {회사명} {부서명}의 {상담원명}입니다. 남겨주신 {인입채널} 건으로 세금 체납 및 거래처 대금 정리 지원방안 안내차 연락드렸습니다.',
-      quickOpening: '사장님, 장사 준비로 많이 바쁘시죠? {회사명}입니다. 통화 가능하신 시간대만 지정해 주시면 그때 다시 연락드리겠습니다!',
-      requiredKeywords: ['세금 분할납부', '신용보증재단 연계', '사업자 등록 유지'],
-      bannedKeywords: ['일수 사채 대출', '통장 대여', '무조건 전액 지원'],
-      customQuestions: ['부가가치세 및 국세 체납액', '직원 4대보험 가입 여부'],
-      usePhoneFilter: true,
+      companyName: '서민금융 파트너스',
+      departmentName: '안심대환 상담팀',
+      leadChannelName: '정부지원 안심대환 간편조회',
+      standardOpening: '안녕하십니까, {고객명} 고객님! {회사명} {부서명}의 {상담원명}입니다. 일전에 조회해주신 {인입채널} 신청 건으로 금리 인하 가심사 결과 안내차 연락드렸습니다.',
+      quickOpening: '고객님, 지금 많이 바쁘신가요? {회사명}입니다! 30초만 대환 한도 확인해 드리고 오후 브레이크 타임에 재연락드릴까요?',
     },
   },
 };
 
-export const DEFAULT_TRAINING_CONFIG: CompanyTrainingConfig = PRESETS_CONFIG.legal.config;
+export const DEFAULT_TRAINING_CONFIG: CompanyTrainingConfig = PRESETS_CONFIG.outbound_agency.config;
 
 const CONFIG_STORAGE_KEY = 'lm_company_training_config';
 
@@ -229,22 +338,53 @@ export const TRAINING_CONFIG_SPEC: StoreKeySpec<Partial<CompanyTrainingConfig>> 
 export const getCompanyTrainingConfig = (): CompanyTrainingConfig => {
   const v = peekOrgStore(TRAINING_CONFIG_SPEC);
   const orgName = loadCachedOrg()?.orgName;
-  const base = { ...DEFAULT_TRAINING_CONFIG };
+  const base: CompanyTrainingConfig = JSON.parse(JSON.stringify(DEFAULT_TRAINING_CONFIG));
   if (orgName && orgName !== '리드마스터 CRM' && orgName !== '리드마스터 본사') {
+    base.inbound.companyName = orgName;
     base.companyName = orgName;
   }
-  return v && typeof v === 'object' ? { ...base, ...v } : base;
+  if (!v || typeof v !== 'object') return base;
+
+  // 하위 호환 및 듀얼 브랜딩 머지
+  const merged: CompanyTrainingConfig = {
+    ...base,
+    ...v,
+    outbound: {
+      ...base.outbound,
+      ...(v.outbound || {}),
+    },
+    inbound: {
+      ...base.inbound,
+      ...(v.inbound || {}),
+    },
+  };
+  return merged;
 };
 
 /** 서버에서 훈련 설정 확인 */
 export const loadCompanyTrainingConfig = async (): Promise<CompanyTrainingConfig> => {
   const v = await loadOrgStore(TRAINING_CONFIG_SPEC);
   const orgName = loadCachedOrg()?.orgName;
-  const base = { ...DEFAULT_TRAINING_CONFIG };
+  const base: CompanyTrainingConfig = JSON.parse(JSON.stringify(DEFAULT_TRAINING_CONFIG));
   if (orgName && orgName !== '리드마스터 CRM' && orgName !== '리드마스터 본사') {
+    base.inbound.companyName = orgName;
     base.companyName = orgName;
   }
-  return v && typeof v === 'object' ? { ...base, ...v } : base;
+  if (!v || typeof v !== 'object') return base;
+
+  const merged: CompanyTrainingConfig = {
+    ...base,
+    ...v,
+    outbound: {
+      ...base.outbound,
+      ...(v.outbound || {}),
+    },
+    inbound: {
+      ...base.inbound,
+      ...(v.inbound || {}),
+    },
+  };
+  return merged;
 };
 
 // 관리자 훈련 설정 저장. 실패하면 한국어 오류 문구를 돌려준다(성공 = null).
@@ -253,18 +393,37 @@ export const saveCompanyTrainingConfig = async (config: CompanyTrainingConfig): 
   return res.ok ? null : res.error;
 };
 
-// 템플릿 변수 동적 치환 함수
+// 템플릿 변수 동적 치환 함수 (아웃바운드 vs 인바운드 모드 완벽 분기)
 export const interpolateOpeningScript = (
   template: string,
   config: CompanyTrainingConfig,
   agentName: string = '상담원',
-  customerName: string = '고객님'
+  customerName: string = '고객님',
+  mode: 'cold_call' | 'inbound_lead' = 'cold_call'
 ): string => {
+  if (!template) return '';
+  const isOutbound = mode === 'cold_call';
+  const orgName = isOutbound
+    ? (config.outbound?.orgName || config.companyName || '채무조정 지원센터')
+    : (config.inbound?.companyName || config.companyName || '법무법인');
+  const roleTitle = isOutbound
+    ? (config.outbound?.roleTitle || '팀장')
+    : (config.inbound?.roleTitle || '상담원');
+  const deptName = isOutbound
+    ? ''
+    : (config.inbound?.departmentName || config.departmentName || '상담센터');
+  const sourceOrChannel = isOutbound
+    ? (config.outbound?.sourceText || '온라인 제휴 안심 자가진단 이력')
+    : (config.inbound?.leadChannelName || config.leadChannelName || '온라인 무료 안심 자가진단');
+
   return template
-    .replace(/\{회사명\}/g, config.companyName || '법무법인')
-    .replace(/\{부서명\}/g, config.departmentName || '상담센터')
+    .replace(/\{소속명\}/g, orgName)
+    .replace(/\{회사명\}/g, orgName)
+    .replace(/\{직책\}/g, roleTitle)
+    .replace(/\{부서명\}/g, deptName)
     .replace(/\{상담원명\}/g, agentName)
-    .replace(/\{인입채널\}/g, config.leadChannelName || '무료 자가진단')
+    .replace(/\{인입채널\}/g, sourceOrChannel)
+    .replace(/\{출처\}/g, sourceOrChannel)
     .replace(/\{대표번호\}/g, config.representativePhone || '대표번호')
     .replace(/\{고객명\}/g, customerName);
 };
@@ -1368,6 +1527,17 @@ export const generateAiCustomerReply = async (
   const behaviorType = persona.behaviorType || (persona.level === 1 ? 'gentle' : persona.level === 2 ? 'bottom_liner' : 'cold_skeptic');
   const outboundChannel = persona.outboundChannelType || 'cold_db';
 
+  const isInbound = !!persona.leadContext || persona.outboundChannelType === 'inbound_ad' || persona.mode === 'inbound_lead';
+  const orgLabel = isInbound
+    ? (config.inbound?.companyName || config.companyName || '법무법인 신안')
+    : (config.outbound?.orgName || '채무조정 지원센터');
+  const roleLabel = isInbound
+    ? (config.inbound?.roleTitle || '전담 상담원')
+    : (config.outbound?.roleTitle || '팀장');
+  const sourceLabel = isInbound
+    ? (persona.leadContext?.channelLabel || config.inbound?.leadChannelName || config.leadChannelName || '온라인 무료 자가진단')
+    : (config.outbound?.sourceText || '온라인 제휴 안심 자가진단 이력');
+
   // 6대 행동 아키타입별 특화 프롬프트 지침 (실전 단답형 호흡 강화)
   let behaviorSpecificGuideline = '';
   if (behaviorType === 'cold_skeptic') {
@@ -1375,7 +1545,7 @@ export const generateAiCustomerReply = async (
 - 당신은 1~2년 전 사이트 가입 시 마케팅 제공 동의를 무심코 눌렀다가 갑자기 낯선 전화를 받은 고객입니다!
 - 본인이 언제 어디서 동의했는지 전혀 기억하지 못하며, 보이스피싱이나 불법 대출 사기로 의심하여 통화 초반에는 극도로 방어적입니다.
 - 통화 서두(1~2턴): 절대로 장황하게 묻지 말고, "어디라고요?", "누구신데요?", "내 번호 어떻게 알았소?" 중 딱 한 마디만 10~20자 내외로 퉁명스럽게 뱉으세요! (한 번에 여러 질문 쏟아붓기 절대 금지)
-- 상담원이 법무법인 소속("${config.companyName}")과 인입 경로("${config.leadChannelName}"), "100% 무료 법원 감면 자격 진단"임을 명확히 증명해야 겨우 [차분]으로 전환되며, 묻지 않은 빚은 절대 먼저 말하지 않습니다!`;
+- 상담원이 소속("${orgLabel} ${roleLabel}")과 인입/제휴 경로("${sourceLabel}"), "100% 무료 법원 감면 자격 진단"임을 명확히 소명해야 겨우 [차분]으로 전환되며, 묻지 않은 빚은 절대 먼저 말하지 않습니다!`;
   } else if (behaviorType === 'rapid_inquirer') {
     behaviorSpecificGuideline = `[당신의 행동 아키타입: ❓ 제도 불신 / 꼬치꼬치 역질문형 (실전 25% 분포)]
 - 당신은 평소 회생이나 파산에 대해 부정적인 소문(신용도 파탄, 직장 통보, 기각 등)을 들어 의심과 불안이 많습니다!
@@ -1519,7 +1689,22 @@ export const evaluateTrainingCall = async (
   const agentTotalChars = agentMessages.reduce((sum, m) => sum + m.text.trim().length, 0);
   const agentTurnCount = agentMessages.length;
 
+  const isInboundLead = persona.mode === 'inbound_lead' || !!persona.leadContext;
+  const currentOrgName = isInboundLead
+    ? (config.inbound?.companyName || config.companyName || '법무법인 신안')
+    : (config.outbound?.orgName || '채무조정 지원센터');
+  const currentRoleTitle = isInboundLead
+    ? (config.inbound?.roleTitle || '전담 상담원')
+    : (config.outbound?.roleTitle || '팀장');
+  const currentSource = isInboundLead
+    ? (persona.leadContext?.channelLabel || config.inbound?.leadChannelName || config.leadChannelName || '온라인 자가진단 신청건')
+    : (config.outbound?.sourceText || '온라인 제휴 안심 자가진단 이력');
+
   if (agentTurnCount <= 1 || agentTotalChars < 20) {
+    const suggested = isInboundLead
+      ? (config.inbound?.openingScript || '안녕하세요 고객님! 신청하신 무료 진단 건으로 연락드렸습니다.')
+      : (config.outbound?.openingScript || '안녕하십니까, 고객님! 채무조정 지원센터 팀장입니다.');
+
     return {
       totalScore: agentTurnCount === 0 ? 0 : 8,
       grade: 'F',
@@ -1533,16 +1718,18 @@ export const evaluateTrainingCall = async (
       summary: `통화가 연결된 후 실질적인 상담 및 소속 고지가 이루어지지 않고 즉시 종료되었습니다. (상담원 발화 ${agentTurnCount}회, 7대 문진 0건 달성)`,
       strengths: agentTurnCount > 0 ? ['통화 연결 후 첫 응대 시도'] : [],
       weaknesses: [
-        '상담 서두에 법무법인 소속 및 인입 목적 미고지 (컴플라이언스 미이행)',
+        isInboundLead
+          ? `상담 서두에 법인 소속(${currentOrgName}) 및 신청 목적 미고지 (컴플라이언스 미이행)`
+          : `상담 서두에 소속(${currentOrgName} ${currentRoleTitle}) 및 DB 출처 미고지 (컴플라이언스 미이행)`,
         '고객과의 실질적인 대화 및 7대 필수 문진 진행 불가',
         '조기 통화 종료로 인한 고객 니즈 파악 실패',
       ],
       coachingTips: [
-        '전화를 걸었을 때는 반드시 소속("' + config.companyName + '")과 인입 목적을 당당히 밝히고 시작하세요.',
+        `전화를 걸었을 때는 반드시 소속("${currentOrgName} ${currentRoleTitle}")과 ${isInboundLead ? '신청 접수 건명을' : '합법적 제휴 출처를'} 당당히 밝히고 시작하세요.`,
         '고객이 "여보세요?"라고 받으면 당황하지 말고 오프닝 10초 스크립트로 주도권을 잡으세요.',
         '고객의 의심이 나오기 전에 "100% 무료 법원 가심사"임을 먼저 밝혀 방어벽을 낮추세요.',
       ],
-      suggestedScript: `안녕하세요 고객님! ${config.companyName} 상담팀입니다. 며칠 전 신청하신 법원 채무 감면 안심 진단 건으로 연락드렸습니다.`,
+      suggestedScript: interpolateOpeningScript(suggested, config, '상담원', persona.customerName, isInboundLead ? 'inbound_lead' : 'cold_call'),
       paralegalCard: {
         jobAndEmployment: false,
         monthlyRealIncome: false,
@@ -1571,14 +1758,12 @@ export const evaluateTrainingCall = async (
     .map(m => `${m.speaker === 'agent' ? '상담원' : '고객'}: ${m.text}`)
     .join('\n');
 
-  const isInboundLead = persona.mode === 'inbound_lead' || !!persona.leadContext;
-
-  const prompt = `당신은 "${config.companyName}" 수석 사무장이자 금융 CRM 상담 품질 평가 감독관(QA 코치)입니다.
+  const prompt = `당신은 "${currentOrgName}" 수석 사무장이자 금융 CRM 상담 품질 평가 감독관(QA 코치)입니다.
 신입 상담원이 가상 고객 "${persona.customerName}"(${persona.age}세, ${persona.job}, 인입유형: ${isInboundLead ? '광고신청 인바운드리드' : '일반 콜드콜'})과 진행한 모의 상담 통화록을 정밀 평가하고 코칭 리포트 및 '사무장 인계 7대 문진 카드'를 JSON으로 작성하세요.
 
 [우리 회사 평가 준수 규칙]
-- 공식 회사명: "${config.companyName}" (상담 서두에 소속을 명확히 밝혔는지 필수 평가)
-- 공식 인입 채널: "${isInboundLead && persona.leadContext ? persona.leadContext.channelLabel : config.leadChannelName}"
+- 공식 소속 및 직책: "${currentOrgName} ${currentRoleTitle}" (${isInboundLead ? '인바운드: 고객이 신청한 법인명과 신청 건명 안내 여부 필수 평가' : '아웃바운드 TM: 변호사법 준수를 위해 법무법인을 사칭하지 않고 설정된 지원센터명/직책 및 합법적 DB 출처를 당당히 고지했는지 평가'})
+- 공식 인입/출처: "${currentSource}"
 - 필수 포함 키워드: [${config.requiredKeywords.join(', ')}] (미언급 시 complianceScore 감점)
 - 엄격 금지어: [${config.bannedKeywords.join(', ')}] (발화 시 complianceScore 대폭 감점 및 weaknesses 지적)
 

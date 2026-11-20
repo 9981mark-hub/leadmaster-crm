@@ -45,6 +45,7 @@ import {
   BookOpen,
   PhoneCall,
   PhoneOff,
+  PhoneForwarded,
   Mic,
   MicOff,
   Volume2,
@@ -2466,8 +2467,8 @@ export default function TrainingCenterPage() {
                         </span>
                         <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
                           {trainingMode === 'inbound_lead'
-                            ? `[${selectedPersona.leadContext?.channelLabel || '온라인광고'} 신청건] 신속 회신 오프닝`
-                            : `[${trainingConfig.companyName}] 표준 오프닝 가이드`}
+                            ? `[${trainingConfig.inbound?.companyName || '법무법인'}] 신청건 신속 리콜 오프닝`
+                            : `[${trainingConfig.outbound?.orgName || '채무조정 지원센터'}] 표준 오프닝 가이드 (${trainingConfig.outbound?.roleTitle || '팀장'})`}
                         </span>
                       </div>
                       {(isOwner || trainingPerms.canManageConfig) && (
@@ -2481,9 +2482,9 @@ export default function TrainingCenterPage() {
                     </div>
                     <p className="text-xs text-blue-950 dark:text-blue-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
                       {trainingMode === 'inbound_lead' ? (
-                        <>💬 "안녕하세요, {selectedPersona.customerName} 고객님 맞으실까요? 방금 {selectedPersona.leadContext?.channelLabel || '온라인'}에서 신청 남겨주신 [개인회생 무료 자격진단] 건으로 신속히 도움드리고자 연락드렸습니다."</>
+                        <>💬 "{interpolateOpeningScript(trainingConfig.inbound?.openingScript || '안녕하세요, {고객명} 고객님 맞으실까요? 방금 {인입채널}에서 신청 남겨주신 [{회사명} 개인회생 무료 자격진단] 건으로 신속히 도움드리고자 연락드렸습니다.', trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName, 'inbound_lead')}"</>
                       ) : (
-                        <>💬 "{interpolateOpeningScript(trainingConfig.standardOpening, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName)}"</>
+                        <>💬 "{interpolateOpeningScript(trainingConfig.outbound?.openingScript || trainingConfig.standardOpening || '', trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName, 'cold_call')}"</>
                       )}
                     </p>
                   </div>
@@ -2826,6 +2827,19 @@ export default function TrainingCenterPage() {
                       );
                     })}
                   </div>
+
+                  {/* 🤝 7대 문진 완료 후 사무장 인계 브릿지 추천 멘트 */}
+                  {trainingMode === 'cold_call' && trainingConfig.outbound?.closingHandoverScript && (
+                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-emerald-900 dark:text-emerald-200 text-xs">
+                        <PhoneForwarded className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>사무장 직통 인계 추천 클로징 화법</span>
+                      </div>
+                      <p className="text-xs text-emerald-950 dark:text-emerald-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
+                        💬 "{interpolateOpeningScript(trainingConfig.outbound.closingHandoverScript, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName, 'cold_call')}"
+                      </p>
+                    </div>
+                  )}
 
                   {/* Real-time Memo Textarea */}
                   <div>
