@@ -70,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { to: '/', icon: LayoutDashboard, label: '통합 대시보드' },
         { to: '/cases', icon: Users, label: '케이스 관리' },
         { to: '/lite', icon: Zap, label: '간편 콜 모드' },
-        { to: '/auto-dial', icon: PhoneCall, label: '스마트 오토콜', platformAdminOnly: true },
+        { to: '/auto-dial', icon: PhoneCall, label: '오토콜 관제 센터', adminOnly: true },
         { to: '/schedule', icon: Calendar, label: '일정 캘린더' },
       ],
     },

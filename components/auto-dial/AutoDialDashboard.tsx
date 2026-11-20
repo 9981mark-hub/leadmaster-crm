@@ -208,28 +208,39 @@ const AutoDialDashboard: React.FC = () => {
               SMART AUTO-DIALER v4.0
             </span>
             <span className="text-xs font-semibold text-indigo-300">
-              010 스마트폰 앱 연동 무사고 몰입형 다이얼러
+              관리자 전용 캠페인 배정 & 실시간 플로어 관제탑
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black flex items-center gap-3">
             <PhoneCall className="w-8 h-8 text-amber-600 dark:text-amber-400" />
-            스마트 오토콜 센터
+            오토콜 관제 센터
           </h1>
           <p className="text-indigo-200 mt-1 text-xs md:text-sm max-w-xl">
-            상담원은 고민 없이 7초 카운트다운과 함께 배당 콜을 연속 소화하고, 관리자는 일일 할당 및 발신 템포를 실시간 통제합니다.
+            상담원별 일일 타깃 DB 할당, 7초 연속 발신 템포 제어, 플로어 실시간 통화 현황을 중앙에서 관제합니다.
           </p>
         </div>
 
         {/* 액션 버튼 그룹 */}
         <div className="flex flex-wrap items-center gap-2.5 relative z-10 shrink-0">
-          {/* 상담원: 오토콜 HUD 시작 버튼 */}
+          {/* 간편 콜 모드로 이동 안내 */}
+          <button
+            type="button"
+            onClick={() => window.location.href = '#/lite'}
+            className="px-4 py-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 rounded-2xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
+            title="상담원 간편 콜 & 오토콜 통합 워크스페이스로 이동"
+          >
+            <Zap size={16} className="text-amber-400" />
+            <span>⚡ 간편콜 워크스페이스</span>
+          </button>
+
+          {/* 상담원: 오토콜 HUD 직접 시작 버튼 */}
           <button
             type="button"
             onClick={() => setViewMode('agent_hud')}
-            className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl text-xs md:text-sm font-black shadow-lg shadow-emerald-950/30 flex items-center gap-2 active:scale-95 transition-all"
+            className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl text-xs md:text-sm font-black shadow-lg shadow-emerald-950/30 flex items-center gap-2 active:scale-95 transition-all cursor-pointer"
           >
             <Headphones size={18} />
-            🎧 나의 오토콜 런타임 시작
+            🎧 나의 오토콜 런타임
           </button>
 
           {/* 관리자: 새 캠페인 생성 모달 버튼 */}
@@ -237,7 +248,7 @@ const AutoDialDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCampaignModalOpen(true)}
-              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs md:text-sm font-bold border border-white/20 backdrop-blur-sm flex items-center gap-2 transition-all"
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs md:text-sm font-bold border border-white/20 backdrop-blur-sm flex items-center gap-2 transition-all cursor-pointer"
             >
               <Plus size={16} />
               + 캠페인 생성 & 일일 배정

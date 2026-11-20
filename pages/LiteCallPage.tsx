@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Phone, PhoneOff, PhoneCall, Sparkles, Search, X, RefreshCw, 
   ChevronLeft, ArrowRight, User, CheckCircle2, Clock, Moon, Sun, 
-  Send, AlertCircle, Building2, Zap, Filter, Calculator, ShieldCheck, MessageSquare
+  Send, AlertCircle, Building2, Zap, Filter, Calculator, ShieldCheck, MessageSquare,
+  Play, Headphones, Layers
 } from 'lucide-react';
 import { LiteDebtReliefCalculator } from '../components/lite/LiteDebtReliefCalculator';
 import { LiteBattlecards } from '../components/lite/LiteBattlecards';
@@ -19,12 +20,18 @@ import { LitePostCallSheet } from '../components/lite/LitePostCallSheet';
 import { LiteTodayPerformanceBar } from '../components/lite/LiteTodayPerformanceBar';
 import { useActiveCall } from '../contexts/ActiveCallContext';
 import { enqueuePendingCall } from '../services/supabase';
+import { AutoDialAgentHUD } from '../components/auto-dial/AutoDialAgentHUD';
+import {
+  fetchMyActiveAllocation,
+  AutoDialAgentAllocation,
+  AutoDialCampaign,
+} from '../services/autoDialV4Service';
 
 type LiteTab = 'all' | 'today' | 'new' | 'missed';
 
 export default function LiteCallPage() {
   const navigate = useNavigate();
-  const { org, isAdmin } = useAuth();
+  const { org, isAdmin, user } = useAuth();
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const { startCall, callState } = useActiveCall();
@@ -44,9 +51,43 @@ export default function LiteCallPage() {
   const [expandedCalcCaseId, setExpandedCalcCaseId] = useState<string | null>(null);
   const [smsTargetCase, setSmsTargetCase] = useState<Case | null>(null);
 
-  // URL ?caseId= 파라미터 처리 (안드로이드 리다이렉트 흡수)
+  // [NEW] 스마트 오토콜 연속 발신 통합 모드 & 배정 데이터
+  const [isAutoDialHudOpen, setIsAutoDialHudOpen] = useState(false);
+  const [myAllocation, setMyAllocation] = useState<{
+    allocation: AutoDialAgentAllocation;
+    campaign: AutoDialCampaign;
+  } | null>(null);
+  const [loadingAllocation, setLoadingAllocation] = useState(false);
+
+  // 내 오토콜 배정 상태 조회
+  const checkMyAllocation = useCallback(async () => {
+    const agentEmail = user?.email || org?.userId;
+    if (!agentEmail) return;
+    try {
+      setLoadingAllocation(true);
+      const active = await fetchMyActiveAllocation(agentEmail);
+      setMyAllocation(active);
+    } catch (e) {
+      console.warn('Failed to fetch autodial allocation:', e);
+    } finally {
+      setLoadingAllocation(false);
+    }
+  }, [user?.email, org?.userId]);
+
+  useEffect(() => {
+    checkMyAllocation();
+  }, [checkMyAllocation]);
+
+  // URL ?caseId= 또는 ?mode=autodial 파라미터 처리 (안드로이드 리다이렉트 흡수)
   const [searchParams, setSearchParams] = useSearchParams();
   const urlCaseId = searchParams.get('caseId');
+  const urlMode = searchParams.get('mode');
+
+  useEffect(() => {
+    if (urlMode === 'autodial') {
+      setIsAutoDialHudOpen(true);
+    }
+  }, [urlMode]);
 
   // 간편 모드 세션 활성 및 안드로이드 플로팅 버튼/라이트모드 자동 제어
   useEffect(() => {
@@ -356,6 +397,21 @@ export default function LiteCallPage() {
     }
   };
 
+  // ── [NEW] 오토콜 연속 발신 몰입형 HUD 모드 ──
+  if (isAutoDialHudOpen) {
+    return (
+      <AutoDialAgentHUD
+        currentUserEmail={user?.email || org?.userId || 'agent'}
+        onExit={() => {
+          setIsAutoDialHudOpen(false);
+          refetchCases();
+          checkMyAllocation();
+        }}
+        cases={cases}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col max-w-2xl mx-auto border-x border-gray-200 dark:border-gray-800 shadow-sm">
       
@@ -377,9 +433,38 @@ export default function LiteCallPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* ── 콜 모드 스위처 (1건 직접 vs 연속 오토콜) ── */}
+          <div className="flex items-center p-0.5 rounded-xl bg-gray-100 dark:bg-gray-700/70 border border-gray-200 dark:border-gray-600 text-xs font-bold">
+            <button
+              onClick={() => setIsAutoDialHudOpen(false)}
+              className="px-2 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-2xs flex items-center gap-1"
+            >
+              <Zap size={12} className="text-amber-500" />
+              <span className="hidden sm:inline">1건</span> 직접
+            </button>
+            <button
+              onClick={() => {
+                if (myAllocation) {
+                  setIsAutoDialHudOpen(true);
+                } else {
+                  showToast('현재 배정된 오토콜 캠페인이 없습니다. 관리자에게 배정을 요청하세요.', 'info');
+                }
+              }}
+              className="px-2 py-1 rounded-lg text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white flex items-center gap-1 transition-colors"
+              title="연속 자동 발신 오토콜 모드"
+            >
+              <Play size={12} className="text-emerald-500" />
+              <span>오토콜</span>
+              {myAllocation && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              )}
+            </button>
+          </div>
+
           <button
             onClick={() => {
               refetchCases();
+              checkMyAllocation();
               setRefetchTrigger(prev => prev + 1);
             }}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -404,10 +489,39 @@ export default function LiteCallPage() {
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
           >
             <ChevronLeft size={14} />
-            <span>일반 모드</span>
+            <span className="hidden sm:inline">일반 모드</span>
           </button>
         </div>
       </header>
+
+      {/* ── [NEW] 스마트 오토콜 연속 발신 런처 스마트 배너 ── */}
+      {myAllocation && (
+        <div className="mx-3.5 my-2.5 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white shadow-md flex items-center justify-between gap-3 border border-indigo-700/50 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30">
+              <Sparkles size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-black text-xs md:text-sm tracking-tight">오늘 배정된 스마트 오토콜</span>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 shadow-2xs">
+                  {Math.max(0, myAllocation.allocation.allocatedCount - myAllocation.allocation.completedCount)}건 대기
+                </span>
+              </div>
+              <p className="text-[11px] text-indigo-200 truncate mt-0.5">
+                {myAllocation.campaign.name} · 7초 연속 자동 발신
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsAutoDialHudOpen(true)}
+            className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl text-xs font-black shadow-md shadow-emerald-950/40 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all cursor-pointer"
+          >
+            <Play size={13} className="fill-white" />
+            <span>오토콜 시작</span>
+          </button>
+        </div>
+      )}
 
       {/* ── 오늘 나의 실적 및 활동 요약 바 (Today's Performance & Activity Bar) ── */}
       <LiteTodayPerformanceBar

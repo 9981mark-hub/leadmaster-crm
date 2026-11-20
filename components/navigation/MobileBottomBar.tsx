@@ -47,7 +47,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
         { to: '/cases', icon: Users, label: '케이스 관리' },
         { to: '/lite', icon: Zap, label: '간편 콜 모드' },
         { to: '/schedule', icon: Calendar, label: '일정 캘린더' },
-        ...(isPlatformAdmin ? [{ to: '/auto-dial', icon: PhoneCall, label: '스마트 오토콜' }] : []),
+        ...(isAdmin ? [{ to: '/auto-dial', icon: PhoneCall, label: '오토콜 관제' }] : []),
       ],
     },
     ...(isAdmin ? [{
