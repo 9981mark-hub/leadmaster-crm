@@ -3254,12 +3254,12 @@ export default function Settlement() {
         )}
 
                 {/* Monthly/Quarterly Income Statement (손익계산서) */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50">
-                        <h3 className="font-bold text-indigo-700 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-indigo-100 dark:border-gray-700 overflow-hidden">
+                    <div className="p-4 border-b border-indigo-100 dark:border-gray-750 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/40">
+                        <h3 className="font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
                             📈 월별 손익계산서
                         </h3>
-                        <p className="text-xs text-indigo-500 mt-1">{year}년 월별 수입/지출/순이익 분석</p>
+                        <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1">{year}년 월별 수입/지출/순이익 분석</p>
                     </div>
                     <div className="p-4">
                         {(() => {
@@ -3309,32 +3309,32 @@ export default function Settlement() {
                                 <>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm">
-                                            <thead className="bg-indigo-50 text-indigo-700">
+                                            <thead className="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-b border-indigo-100 dark:border-indigo-900/60 font-semibold">
                                                 <tr>
-                                                    <th className="py-2 px-2 text-left">월</th>
-                                                    <th className="py-2 px-2 text-right">수입</th>
-                                                    <th className="py-2 px-2 text-right">지출</th>
-                                                    <th className="py-2 px-2 text-right">순이익</th>
+                                                    <th className="py-2.5 px-3 text-left">월</th>
+                                                    <th className="py-2.5 px-3 text-right">수입</th>
+                                                    <th className="py-2.5 px-3 text-right">지출</th>
+                                                    <th className="py-2.5 px-3 text-right">순이익</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
                                                 {monthlyData.filter(m => m.income > 0 || m.expense > 0).map(m => (
-                                                    <tr key={m.month} className="border-b border-gray-100">
-                                                        <td className="py-2 px-2 font-medium">{m.month}월</td>
-                                                        <td className="py-2 px-2 text-right text-green-600">+{m.income.toLocaleString()}</td>
-                                                        <td className="py-2 px-2 text-right text-red-600">-{m.expense.toLocaleString()}</td>
-                                                        <td className={`py-2 px-2 text-right font-bold ${m.profit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                    <tr key={m.month} className="hover:bg-gray-50/70 dark:hover:bg-gray-750 transition-colors">
+                                                        <td className="py-2.5 px-3 font-medium text-gray-900 dark:text-gray-100">{m.month}월</td>
+                                                        <td className="py-2.5 px-3 text-right text-emerald-600 dark:text-emerald-400 font-mono font-bold">+{m.income.toLocaleString()}</td>
+                                                        <td className="py-2.5 px-3 text-right text-rose-600 dark:text-rose-400 font-mono font-bold">-{m.expense.toLocaleString()}</td>
+                                                        <td className={`py-2.5 px-3 text-right font-mono font-black ${m.profit >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                                             {m.profit >= 0 ? '+' : ''}{m.profit.toLocaleString()}
                                                         </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
-                                            <tfoot className="bg-indigo-100 font-bold">
+                                            <tfoot className="bg-indigo-100/80 dark:bg-indigo-950/80 font-bold border-t border-indigo-200 dark:border-indigo-800">
                                                 <tr>
-                                                    <td className="py-2 px-2">연간 합계</td>
-                                                    <td className="py-2 px-2 text-right text-green-700">+{yearTotal.income.toLocaleString()}</td>
-                                                    <td className="py-2 px-2 text-right text-red-700">-{yearTotal.expense.toLocaleString()}</td>
-                                                    <td className={`py-2 px-2 text-right ${yearTotal.profit >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                                                    <td className="py-2.5 px-3 text-gray-900 dark:text-white">연간 합계</td>
+                                                    <td className="py-2.5 px-3 text-right text-emerald-700 dark:text-emerald-300 font-mono font-black">+{yearTotal.income.toLocaleString()}</td>
+                                                    <td className="py-2.5 px-3 text-right text-rose-700 dark:text-rose-300 font-mono font-black">-{yearTotal.expense.toLocaleString()}</td>
+                                                    <td className={`py-2.5 px-3 text-right font-mono font-black ${yearTotal.profit >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-rose-700 dark:text-rose-300'}`}>
                                                         {yearTotal.profit >= 0 ? '+' : ''}{yearTotal.profit.toLocaleString()}
                                                     </td>
                                                 </tr>
@@ -3346,14 +3346,17 @@ export default function Settlement() {
                                     <div className="mt-4 h-48">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={monthlyData.filter(m => m.income > 0 || m.expense > 0)}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="month" tickFormatter={(v) => `${v}월`} />
-                                                <YAxis tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
-                                                <Tooltip formatter={(v: number) => `${v.toLocaleString()}원`} />
-                                                <Legend />
-                                                <Bar dataKey="income" name="수입" fill="#22c55e" />
-                                                <Bar dataKey="expense" name="지출" fill="#ef4444" />
-                                                <Bar dataKey="profit" name="순이익" fill="#3b82f6" />
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#475569" opacity={0.3} vertical={false} />
+                                                <XAxis dataKey="month" tickFormatter={(v) => `${v}월`} stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                                <YAxis tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                                <Tooltip
+                                                    formatter={(v: number) => [`${v.toLocaleString()}원`, '']}
+                                                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.75rem', color: '#fff' }}
+                                                />
+                                                <Legend wrapperStyle={{ paddingTop: 8 }} />
+                                                <Bar dataKey="income" name="수입" fill="#10b981" radius={[3, 3, 0, 0]} />
+                                                <Bar dataKey="expense" name="지출" fill="#f43f5e" radius={[3, 3, 0, 0]} />
+                                                <Bar dataKey="profit" name="순이익" fill="#3b82f6" radius={[3, 3, 0, 0]} />
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </div>
@@ -3364,12 +3367,12 @@ export default function Settlement() {
                 </div>
 
                 {/* Partner Revenue Analysis (거래처별 수익 분석) */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-emerald-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
-                        <h3 className="font-bold text-emerald-700 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-emerald-100 dark:border-gray-700 overflow-hidden">
+                    <div className="p-4 border-b border-emerald-100 dark:border-gray-750 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/40 dark:to-green-950/40">
+                        <h3 className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
                             🏢 거래처별 수익 분석
                         </h3>
-                        <p className="text-xs text-emerald-500 mt-1">{year}년 파트너별 발생 수수료</p>
+                        <p className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">{year}년 파트너별 발생 수수료</p>
                     </div>
                     <div className="p-4">
                         {(() => {
@@ -3404,24 +3407,24 @@ export default function Settlement() {
                                         {/* 테이블 */}
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-sm">
-                                                <thead className="bg-emerald-50 text-emerald-700">
+                                                <thead className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-b border-emerald-100 dark:border-emerald-900/60 font-semibold">
                                                     <tr>
-                                                        <th className="py-2 px-2 text-left">거래처</th>
-                                                        <th className="py-2 px-2 text-right">건수</th>
-                                                        <th className="py-2 px-2 text-right">수수료</th>
-                                                        <th className="py-2 px-2 text-right">비중</th>
+                                                        <th className="py-2.5 px-3 text-left">거래처</th>
+                                                        <th className="py-2.5 px-3 text-right">건수</th>
+                                                        <th className="py-2.5 px-3 text-right">수수료</th>
+                                                        <th className="py-2.5 px-3 text-right">비중</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
                                                     {partnerRevenue.map((p, idx) => (
-                                                        <tr key={p.partner.partnerId} className="border-b border-gray-100">
-                                                            <td className="py-2 px-2 flex items-center gap-2">
-                                                                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                                                        <tr key={p.partner.partnerId} className="hover:bg-gray-50/70 dark:hover:bg-gray-750 transition-colors">
+                                                            <td className="py-2.5 px-3 flex items-center gap-2 text-gray-900 dark:text-gray-100 font-medium">
+                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                                                                 {p.partner.name}
                                                             </td>
-                                                            <td className="py-2 px-2 text-right">{p.caseCount}건</td>
-                                                            <td className="py-2 px-2 text-right font-bold text-emerald-600">{p.totalCommission.toLocaleString()}만원</td>
-                                                            <td className="py-2 px-2 text-right text-gray-500">
+                                                            <td className="py-2.5 px-3 text-right font-mono text-gray-700 dark:text-gray-300">{p.caseCount}건</td>
+                                                            <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{p.totalCommission.toLocaleString()}만원</td>
+                                                            <td className="py-2.5 px-3 text-right font-mono text-gray-500 dark:text-gray-400">
                                                                 {totalRevenue > 0 ? Math.round((p.totalCommission / totalRevenue) * 100) : 0}%
                                                             </td>
                                                         </tr>
@@ -3451,7 +3454,10 @@ export default function Settlement() {
                                                             <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
                                                         ))}
                                                     </Pie>
-                                                    <Tooltip formatter={(v: number) => `${v.toLocaleString()}만원`} />
+                                                    <Tooltip
+                                                        formatter={(v: number) => [`${v.toLocaleString()}만원`, '수수료']}
+                                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.75rem', color: '#fff' }}
+                                                    />
                                                 </PieChart>
                                             </ResponsiveContainer>
                                         </div>
