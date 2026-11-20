@@ -528,3 +528,128 @@ export const generateOfficialInvoiceMarkdown = (
 - 안내 사항: 입금 확인 후 기재하신 이메일(${taxInfo.taxInvoiceEmail || '등록 메일'})로 전자세금계산서(영수)가 24시간 이내에 자동 발행됩니다.
 `;
 };
+
+/** 실시간 결제 승인 내역(트랜잭션) 인터페이스 */
+export interface PaymentTransactionRecord {
+  id: string;
+  transactionDate: string;     // YYYY-MM-DD HH:mm
+  description: string;         // 결제 항목
+  paymentMethod: string;       // 신한 법인카드, 무통장 가상계좌 등
+  cardLast4?: string;
+  supplyPrice: number;
+  vat: number;
+  totalPrice: number;
+  status: 'paid' | 'pending' | 'failed' | 'refunded';
+  approvalNumber: string;      // 승인번호 (예: SH-89210432)
+  taxInvoiceStatus: 'issued' | 'pending' | 'unnecessary';
+  taxInvoiceApproveNo?: string;// 국세청 승인번호
+  receiptUrl?: string;
+  invoice: MonthlyInvoiceRecord;
+}
+
+/** 구독 라이프사이클 감사 히스토리 인터페이스 */
+export interface SubscriptionAuditLogItem {
+  id: string;
+  timestamp: string;           // YYYY-MM-DD HH:mm
+  actionType: 'tier_upgrade' | 'tier_downgrade' | 'seat_expand' | 'seat_shrink' | 'payment_method_change' | 'plan_renew' | 'signup';
+  actionTitle: string;
+  description: string;
+  operator: string;            // 작업자 (예: 진성호 대표, 시스템 자동 갱신)
+  amountWon?: number;
+  details?: string;
+}
+
+/** 청구서 기반 결제 승인 트랜잭션 내역 생성기 */
+export const generatePaymentTransactions = (
+  invoices: MonthlyInvoiceRecord[],
+  taxInfo: OrgTaxInfo
+): PaymentTransactionRecord[] => {
+  return invoices.map((inv, idx) => {
+    const isPaid = inv.status === 'paid';
+    const isCurrent = idx === 0;
+
+    return {
+      id: `TXN-${inv.invoiceNumber}`,
+      transactionDate: isPaid 
+        ? `${inv.paidAt || inv.issueDate} 10:15` 
+        : `${inv.dueDate} 09:00 (예정)`,
+      description: `${inv.billingMonth} ${inv.tierName} (${inv.activeSeats}석 정기결제)`,
+      paymentMethod: isCurrent && !isPaid ? '무통장 입금 대기 (가상계좌)' : '신한 법인카드 (일시불)',
+      cardLast4: '4242',
+      supplyPrice: inv.supplyPrice,
+      vat: inv.vat,
+      totalPrice: inv.totalPrice,
+      status: inv.status,
+      approvalNumber: `APRV-${inv.invoiceNumber.slice(-8)}`,
+      taxInvoiceStatus: isPaid ? 'issued' : 'pending',
+      taxInvoiceApproveNo: isPaid ? `202611${inv.invoiceNumber.slice(-6)}1084` : undefined,
+      invoice: inv,
+    };
+  });
+};
+
+/** 구독 및 좌석 변동 감사 히스토리 로그 생성기 */
+export const generateSubscriptionAuditLogs = (
+  orgCreatedAt?: string,
+  activeSeats: number = 10,
+  tierName: string = '비즈니스 (6 ~ 20인)'
+): SubscriptionAuditLogItem[] => {
+  const baseDate = orgCreatedAt ? new Date(orgCreatedAt) : new Date();
+  const logs: SubscriptionAuditLogItem[] = [];
+
+  // 1. 최신 정기 결제 갱신
+  logs.push({
+    id: 'log-1',
+    timestamp: '2026-11-01 09:00',
+    actionType: 'plan_renew',
+    actionTitle: '정기 구독 자동 갱신',
+    description: `${tierName} ${activeSeats}석 11월분 정기결제가 정상 처리되었습니다.`,
+    operator: '시스템 자동 결제',
+    amountWon: activeSeats * 52000 * 1.1,
+  });
+
+  // 2. 좌석 확장 이력
+  logs.push({
+    id: 'log-2',
+    timestamp: '2026-10-18 14:22',
+    actionType: 'seat_expand',
+    actionTitle: '상담원 라이선스 좌석 확장 (+3석)',
+    description: `기존 12석에서 ${activeSeats}석으로 확장되었습니다. 잔여 13일분 일할 계산 요금이 승인되었습니다.`,
+    operator: '대표이사 진성호',
+    amountWon: 33800,
+    details: '일할 계산: 3석 × ₩52,000 × (13/31일) = ₩65,419 ➔ 볼륨 할인 적용',
+  });
+
+  // 3. 플랜 업그레이드 이력
+  logs.push({
+    id: 'log-3',
+    timestamp: '2026-10-01 10:00',
+    actionType: 'tier_upgrade',
+    actionTitle: '비즈니스 티어로 플랜 업그레이드',
+    description: '스타터(5석)에서 비즈니스(12석) 플랜으로 전환하여 10% 볼륨 우대 단가가 적용되었습니다.',
+    operator: '대표이사 진성호',
+  });
+
+  // 4. 결제 수단 등록
+  logs.push({
+    id: 'log-4',
+    timestamp: '2026-09-15 11:30',
+    actionType: 'payment_method_change',
+    actionTitle: '기본 결제 수단 등록/변경',
+    description: '정기 결제용 기본 카드가 [신한 법인카드 (끝자리 4242)]로 변경되었습니다.',
+    operator: '총괄관리자 김태희',
+  });
+
+  // 5. 최초 서비스 가입
+  logs.push({
+    id: 'log-5',
+    timestamp: '2026-09-01 09:00',
+    actionType: 'signup',
+    actionTitle: '리드마스터 CRM 서비스 신규 가입',
+    description: '14일 무료 체험 프로모션으로 워크스페이스가 생성되었습니다.',
+    operator: '대표이사 진성호',
+  });
+
+  return logs;
+};
+
