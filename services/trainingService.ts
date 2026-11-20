@@ -1348,6 +1348,23 @@ export const generateAiCustomerReply = async (
     return `${tag} ${opening.text}`;
   }
 
+  // ⚡ [체감 0초 티키타카] 2턴 출처/목적 확인 Fast Path:
+  // 상담원이 소속/회사명이나 채무 감면 조회를 밝혔을 때, 고객 성향별 대표 반론 0ms 즉답!
+  if (agentTurnCount === 2) {
+    const isIntro = /(법무법인|법률|회생|채무|감면|조회|탕감|안심|지원|센터|사무소)/.test(lastAgentText);
+    if (isIntro) {
+      if (persona.behaviorType === 'cold_skeptic') {
+        return '[짜증] 근데 제 번호는 도대체 어디서 알고 전화하신 건데요?';
+      } else if (persona.behaviorType === 'bottom_liner') {
+        return '[짜증] 바쁜데 그래서 한 달에 얼마 깎아줄 수 있는 건데요?';
+      } else if (persona.behaviorType === 'despairing') {
+        return '[불안] 하... 저 다 알아봤는데 안 된대요. 끊으세요.';
+      } else if (persona.behaviorType === 'rapid_inquirer') {
+        return '[짜증] 회생하면 직장에 통보가고 신용점수 다 망가지는 거 아니에요?';
+      }
+    }
+  }
+
   const behaviorType = persona.behaviorType || (persona.level === 1 ? 'gentle' : persona.level === 2 ? 'bottom_liner' : 'cold_skeptic');
   const outboundChannel = persona.outboundChannelType || 'cold_db';
 

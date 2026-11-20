@@ -444,6 +444,75 @@ class SpeechService {
     });
   }
 
+  // 다음 문장 오디오 사전 다운로드 & 메모리 캐싱 (0ms 연속 재생을 위한 프리로드)
+  public async preload(text: string, options: SpeechVoiceOptions = {}): Promise<void> {
+    try {
+      const cleanText = text
+        .replace(/[\(\[\{][^\)\]\}]*[\)\]\}]/g, '')
+        .replace(/[\.\.\.~"']/g, ' ')
+        .replace(/^(네|아|예|저|음|여보세요),/g, '$1')
+        .replace(/,\s*,/g, ',')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!cleanText) return;
+
+      const VALID_EDGE_VOICES = ['ko-KR-InJoonNeural', 'ko-KR-SunHiNeural', 'ko-KR-HyunsuMultilingualNeural'];
+      let voice = options.neuralVoice;
+      if (!voice || !VALID_EDGE_VOICES.includes(voice)) {
+        if (options.gender === 'female' || (typeof voice === 'string' && (voice.includes('SunHi') || voice.includes('Neural2-A') || voice.includes('Wavenet-A') || voice.includes('Wavenet-B')))) {
+          voice = 'ko-KR-SunHiNeural';
+        } else if (typeof voice === 'string' && voice.includes('Hyunsu')) {
+          voice = 'ko-KR-HyunsuMultilingualNeural';
+        } else {
+          voice = 'ko-KR-InJoonNeural';
+        }
+      }
+
+      const emotion = options.emotion || this.detectEmotion(cleanText);
+      let rateStr = '+0%';
+      if (options.neuralRate) rateStr = options.neuralRate;
+      else if (options.rate !== undefined) {
+        let r = options.rate;
+        if (emotion === 'angry') r = Math.min(1.25, r * 1.05);
+        else if (emotion === 'annoyed') r = Math.min(1.20, r * 1.03);
+        const pct = Math.round((r - 1.0) * 100);
+        rateStr = `${pct >= 0 ? '+' : ''}${pct}%`;
+      }
+
+      let pitchStr = '+0Hz';
+      if (options.neuralPitch) pitchStr = options.neuralPitch;
+      else if (emotion === 'angry') pitchStr = '+30Hz';
+      else if (emotion === 'annoyed') pitchStr = '+15Hz';
+
+      const cacheKey = `${voice}_${rateStr}_${pitchStr}_${cleanText}`;
+      if (this.ttsAudioCache.has(cacheKey)) return;
+
+      let apiUrl = '/api/edge-tts';
+      if (typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        const isSameHost = origin.includes('vercel.app') || origin.includes('lmaster.xyz') || origin.includes('localhost:3000');
+        apiUrl = isSameHost ? '/api/edge-tts' : 'https://www.lmaster.xyz/api/edge-tts';
+      }
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanText,
+          voice,
+          rate: rateStr,
+          pitch: pitchStr,
+          gender: options.gender || 'male',
+        }),
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const audioUrl = URL.createObjectURL(blob);
+        this.ttsAudioCache.set(cacheKey, audioUrl);
+      }
+    } catch (_) {}
+  }
+
   // 통합 발화 메서드 (항상 가장 고품질의 자연스러운 음성을 최우선 선택)
   public async speak(text: string, options: SpeechVoiceOptions = {}): Promise<{ engine: 'neural' | 'browser'; voiceName: string }> {
     this.stopSpeaking();

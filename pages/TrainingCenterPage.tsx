@@ -797,15 +797,19 @@ export default function TrainingCenterPage() {
         // 1) 완성형 종결 어미 + 문장 확정(isFinal): 280ms (말을 끝마치는 순간 0.28초 만에 턴 전환!)
         // 2) 실시간 인식(interim) 상태에서 종결 어미 감지 시: 400ms (어미 감지 시 대기 대폭 축소)
         // 3) 문장 확정(isFinal) 일반 문장: 450ms
-        // 4) 4글자 미만의 짧은 어절("네", "아니요" 등): 600ms (뒤따르는 본론 문장 대기)
-        // 5) 종결 어미가 없는 일반 중간 어절: 650ms (숨 고름 보장)
-        let delayMs = 650;
+        // 2026 초고속 응답 VAD 튜닝:
+        // 1) 확정 문장(isFinal) + 종결 어미("~인가요?", "~죠?", "~니다"): 220ms (체감 즉각 발화)
+        // 2) 실시간 인식(interim) 상태에서 종결 어미 감지 시: 320ms
+        // 3) 문장 확정(isFinal) 일반 문장: 380ms
+        // 4) 4글자 미만의 짧은 어절("네", "아니요" 등): 550ms
+        // 5) 종결 어미가 없는 일반 중간 어절: 580ms
+        let delayMs = 580;
         if (clean.length < 5) {
-          delayMs = 600;
+          delayMs = 550;
         } else if (isSentenceEnd) {
-          delayMs = isFinal ? 280 : 400;
+          delayMs = isFinal ? 220 : 320;
         } else if (isFinal) {
-          delayMs = 450;
+          delayMs = 380;
         }
 
         silenceTimerRef.current = setTimeout(() => {
@@ -964,13 +968,52 @@ export default function TrainingCenterPage() {
           (window as any).AndroidBridge?.maximizeSpeakerVolume?.();
         } catch (_) {}
         try {
-          const res = await speechService.speak(cleanCustomerText, {
-            ...selectedPersona.speechOptions,
-            rate: selectedPersona.speechOptions?.rate ?? 1.0,
-            pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
-            emotion: parsedEmotion,
-          });
-          console.log(`[AI 가상고객 답변 발화 완료] 엔진: ${res.engine}, 성우: ${res.voiceName}`);
+          // 🚀 [초고속 체감 반응] 첫 문장 분할 즉시 발화 + 뒷문장 백그라운드 프리로드 파이프라인
+          const sentenceParts = cleanCustomerText
+            .split(/(?<=[.!?,\n])\s+/)
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          if (sentenceParts.length > 1 && sentenceParts[0].length >= 3 && sentenceParts[0].length <= 25) {
+            const firstPart = sentenceParts[0];
+            const restPart = sentenceParts.slice(1).join(' ');
+
+            // 1) 뒷 문장 백그라운드 프리로드 즉시 시작
+            speechService.preload(restPart, {
+              ...selectedPersona.speechOptions,
+              rate: selectedPersona.speechOptions?.rate ?? 1.0,
+              pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+              emotion: parsedEmotion,
+            });
+
+            // 2) 첫 문장 즉시 발화 (0.2~0.3초 초고속 시작!)
+            await speechService.speak(firstPart, {
+              ...selectedPersona.speechOptions,
+              rate: selectedPersona.speechOptions?.rate ?? 1.0,
+              pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+              emotion: parsedEmotion,
+            });
+
+            // 3) 첫 문장 발화 직후 이어서 뒷 문장 발화 (캐시 적중 0ms 즉각 재생)
+            if (myTurnId === turnIdRef.current && isCustomerSpeakingRef.current) {
+              const res2 = await speechService.speak(restPart, {
+                ...selectedPersona.speechOptions,
+                rate: selectedPersona.speechOptions?.rate ?? 1.0,
+                pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+                emotion: parsedEmotion,
+              });
+              console.log(`[AI 가상고객 2단계 발화 완료] 성우: ${res2.voiceName}`);
+            }
+          } else {
+            // 단일 문장인 경우 바로 발화
+            const res = await speechService.speak(cleanCustomerText, {
+              ...selectedPersona.speechOptions,
+              rate: selectedPersona.speechOptions?.rate ?? 1.0,
+              pitch: getCalculatedPitch(selectedPersona.speechOptions.pitch),
+              emotion: parsedEmotion,
+            });
+            console.log(`[AI 가상고객 답변 발화 완료] 엔진: ${res.engine}, 성우: ${res.voiceName}`);
+          }
         } finally {
           setIsCustomerSpeaking(false);
           isCustomerSpeakingRef.current = false;

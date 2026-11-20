@@ -6,31 +6,22 @@ import { SpeechVoiceOptions } from './speechService';
 import { getMatchedCharacterVoice60, CHARACTER_VOICE_60, CharacterVoiceProfile } from './characterVoice60';
 
 // ============================================
-// 보건복지부 공식 고시 개인회생 법정 최저생계비 (기준 중위소득의 60%)
-// 법원 개인회생 실무에서는 1원 단위까지 법정 고시 금액을 정확하게 적용합니다.
+// 2026년 보건복지부 공식 고시 개인회생 법정 최저생계비 (기준 중위소득의 60%)
+// 법원 개인회생 실무에서는 1원 단위까지 2026년 법정 고시 금액을 정확하게 적용합니다.
 // ============================================
 
-// 2025년 보건복지부 확정 고시 기준 (현재 법원 실무 기준)
-export const LIVING_COST_2025 = {
-  1: 1435208, // 1인 가구: 1,435,208원 (기준 중위소득 2,392,013원의 60%)
-  2: 2359595, // 2인 가구: 2,359,595원 (기준 중위소득 3,932,658원의 60%)
-  3: 3015212, // 3인 가구: 3,015,212원 (기준 중위소득 5,025,353원의 60%)
-  4: 3658664, // 4인 가구: 3,658,664원 (기준 중위소득 6,097,773원의 60%)
-  5: 4264915, // 5인 가구: 4,264,915원 (기준 중위소득 7,108,192원의 60%)
-  6: 4838883, // 6인 가구: 4,838,883원 (기준 중위소득 8,064,805원의 60%)
-};
-
-// 2026년 개인회생 기준 중위소득 60%
+// 2026년 개인회생 기준 중위소득 60% (법원 공식 실무 기준)
 export const LIVING_COST_2026 = {
-  1: 1538543, // 1인 가구: 1,538,543원 (약 154만 원)
-  2: 2519575, // 2인 가구: 2,519,575원 (약 252만 원)
-  3: 3215422, // 3인 가구: 3,215,422원 (약 322만 원)
-  4: 3896843, // 4인 가구: 3,896,843원 (약 390만 원)
-  5: 4545000, // 5인 가구: 4,545,000원 (약 455만 원)
+  1: 1538543, // 1인 가구: 1,538,543원 (기준 중위소득 2,564,238원의 60%, 약 154만 원)
+  2: 2519575, // 2인 가구: 2,519,575원 (기준 중위소득 4,199,292원의 60%, 약 252만 원)
+  3: 3215422, // 3인 가구: 3,215,422원 (기준 중위소득 5,359,036원의 60%, 약 322만 원)
+  4: 3896843, // 4인 가구: 3,896,843원 (기준 중위소득 6,494,738원의 60%, 약 390만 원)
+  5: 4545000, // 5인 가구: 4,545,000원 (기준 중위소득 7,575,000원의 60%, 약 455만 원)
+  6: 5178806, // 6인 가구: 5,178,806원 (기준 중위소득 8,631,343원의 60%, 약 518만 원)
 };
 
-// 실무 기본 적용: 2025년 공식 확정 고시 기준 (개인회생 변제계획안 표준)
-export const DEFAULT_LIVING_COST = LIVING_COST_2025;
+// 실무 기본 적용: 2026년 공식 확정 고시 기준 (개인회생 변제계획안 최신 표준)
+export const DEFAULT_LIVING_COST = LIVING_COST_2026;
 
 // 법률 정답지 인터페이스 (Ground Truth)
 export interface GroundTruthLegalDiagnosis {
@@ -306,6 +297,9 @@ export const INFINITE_THEMES: InfinitePersonaTheme[] = [
   { id: 'bankruptcy_candidate', name: '파산/면책 적합군', badge: '⚖️ 파산·면책', desc: '고령, 장기 우울증/중증질환 근로불능, 수급자 및 무소득 1순위' },
   { id: 'workout_shift', name: '신복위 실패/갈아타기', badge: '🔄 워크아웃 전환', desc: '신속채무조정 유예 만료, 원금 감면 없는 워크아웃에서 회생 전환' },
   { id: 'busy_context', name: '운전/현장직 바쁜상황', badge: '🚗 운전·현장직', desc: '스피커폰 통화, 건설 현장 소음, 30초 내 용건 정리 및 콜백 요구' },
+  { id: 'spouse_asset_secret', name: '배우자 재산·극비 회생 (가족 비밀 보장)', badge: '🤫 배우자재산·극비', desc: '배우자 명의 아파트 특유재산 방어, 법원 우편물 대리인 송달 100% 비밀 보장 훈련' },
+  { id: 'crypto_youth_short', name: '2030 청년 코인·24개월 단축 특례', badge: '⚡ 청년24개월특례', desc: '만 30세 이하 청년 코인 손실, 서울/수원/부산 회생법원 24개월 단축 특례 후킹' },
+  { id: 'single_parent_support', name: '한부모·다자녀 생계비 인정 (2026 기준)', badge: '👨‍👩‍👧 한부모·다자녀', desc: '미성년 자녀 부양 2026년 법정 생계비(3인 322만/4인 390만) 극대화로 월 변제금 대폭 경감' },
   { id: 'difficult_skeptic', name: '단답/의심/번호추궁', badge: '🛡️ 단답·의심형', desc: '"잘 몰라요", "내 번호 어디서 알았소?", 사기 경계 및 정보 회피' },
 ];
 
@@ -441,6 +435,26 @@ const REAL_DEBTS: DebtSeed[] = [
     specialNote: '조세채권은 탕감 불가 및 18개월 내 우선변제 필수 규정. 통장 압류 해제 및 분할 납부 플랜 수립.',
   },
 
+  // [신설] 배우자 몰래 극비 채무 (배우자 재산 방어 & 비밀 송달 핵심 훈련)
+  {
+    causeType: 'living',
+    originTitle: '배우자 몰래 생활비 카드론 및 주부 소액대출 (4,800만 원)',
+    totalDebt: 48000000,
+    debtSummary: '신한/삼성 카드론 3,200만, 캐피탈 1,600만 (총 4,800만 원)',
+    storyDetail: '남편 월급만으로 생활이 어려워 남편 몰래 카드론을 돌려막다가 한계에 도달함. 남편이나 시댁에 우편물이 갈까 봐 공포에 떨고 있음.',
+    specialNote: '모든 법원 송달 서류를 대리인(법률사무소)으로 100% 송달받아 가족 비밀 보장 확약 및 남편 명의 재산 안전성 설명이 필수.',
+  },
+
+  // [신설] 만 29세 청년 코인 손실 (24개월 단축 특례 대상)
+  {
+    causeType: 'crypto',
+    originTitle: '만 29세 청년 코인 투자 실패 (서울회생법원 24개월 단축 특례 대상)',
+    totalDebt: 58000000,
+    debtSummary: '카카오 비상금 300만, 케이뱅크 2,500만, 토스뱅크 3,000만 (총 5,800만 원)',
+    storyDetail: '첫 직장 입사 후 알트코인 레버리지로 빚을 짐. 급여는 실수령 240만 원인데 원리금만 180만 원이라 정상 생활 불가능.',
+    specialNote: '만 30세 이하 청년 특례 대상(서울/수원/부산 등)으로 36개월 대신 24개월 안팎으로 변제기간을 줄여줄 수 있음을 후킹하는 것이 관건.',
+  },
+
   // 외국인 근로자 케이스
   {
     causeType: 'living',
@@ -565,7 +579,10 @@ const REAL_HOUSINGS: HousingSeed[] = [
   { housingText: '오피스텔 전세 (보증금 1억 2,000만 원 / 은행 전세대출 1억 원 질권설정, 본인 자부담 2,000만)', equityValue: 20000000, isExemptDeposit: false },
   { housingText: '무상거주 (부모님 명의 아파트 동거, 본인 명의 재산 0원)', equityValue: 0, isExemptDeposit: true },
   { housingText: '무상거주 (친구/지인 명의 빌라 동거, 본인 재산 전무)', equityValue: 0, isExemptDeposit: true },
-  { housingText: '배우자 명의 빌라 (시세 3억 원 / 전세보증금 1억 9천 세안고 매매, 본인 재산 없음)', equityValue: 55000000, isExemptDeposit: false }, // 배우자 재산 50% 반영 시 청산가치 약 5,500만
+  { housingText: '배우자 명의 아파트 (시세 3억 5천 / 남편 담보대출 2억, 남편 순수 소득으로 마련한 특유재산)', equityValue: 0, isExemptDeposit: false }, // 특유재산 입증 시 청산가치 0원 방어
+  { housingText: '배우자 명의 빌라 (시세 3억 원 / 전세보증금 1억 9천 세안고 매매, 본인 기여도 50% 의심)', equityValue: 55000000, isExemptDeposit: false }, // 배우자 재산 50% 반영 시 청산가치 약 5,500만
+  { housingText: '배우자 전업주부 + 미성년 자녀 2명 (월세 보증금 3,000만 / 월세 85만, 4인 가구 생계비 인정)', equityValue: 0, isExemptDeposit: true },
+  { housingText: '최근 6개월 전 협의이혼 (재산분할로 아파트 지분 전 배우자 이전, 사해행위 소명 대상)', equityValue: 30000000, isExemptDeposit: false },
   { housingText: '자가 아파트 (KB시세 4억 2천 / 1순위 은행 주택담보대출 3억 2천, 잉여가치 1억)', equityValue: 100000000, isExemptDeposit: false },
   { housingText: '자가 아파트 (시세 5억 원 / 은행 담보대출 3억 8천, 본인 잉여가치 1억 2,000만 원)', equityValue: 120000000, isExemptDeposit: false }, // 재산 초과 케이스용
   { housingText: '고시원 거주 (보증금 없음, 월세 45만 원, 주민등록 최근 재등록)', equityValue: 0, isExemptDeposit: true },
@@ -944,6 +961,16 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
   } else if (themeId === 'despair_resigned') {
     behaviorType = 'despairing';
     candidateTraits = PSYCHOLOGICAL_TRAITS.filter(t => t.traitName.includes('불안') || t.attitudeTag === 'anxious');
+  } else if (themeId === 'spouse_asset_secret') {
+    candidateDebts = REAL_DEBTS.filter(d => d.originTitle.includes('배우자 몰래'));
+    candidateHousings = REAL_HOUSINGS.filter(h => h.housingText.includes('배우자 명의 아파트'));
+    behaviorType = 'rapid_inquirer';
+  } else if (themeId === 'crypto_youth_short') {
+    candidateDebts = REAL_DEBTS.filter(d => d.originTitle.includes('청년 코인'));
+    behaviorType = 'rapid_inquirer';
+  } else if (themeId === 'single_parent_support') {
+    candidateHousings = REAL_HOUSINGS.filter(h => h.housingText.includes('전업주부') || h.housingText.includes('빌라 월세'));
+    behaviorType = 'despairing';
   } else if (themeId === 'small_debt') {
     candidateDebts = REAL_DEBTS.filter(d => d.causeType === 'small_debt');
   } else if (themeId === 'high_debt') {
@@ -1069,12 +1096,34 @@ export const generateInfinitePersona = (themeId: string = 'all'): TrainingPerson
   // 1안 MS Edge-TTS 60인 실전 자연 음성 분신술 엔진에서 최적 성대/호흡 자동 매칭
   const charVoice = getMatchedCharacterVoice60(age, isFemale ? 'female' : 'male', behaviorType);
   const voiceId = charVoice.id;
-  const calculatedRate = charVoice.rateMultiplier;
+  let calculatedRate = charVoice.rateMultiplier;
 
-  // 1안. MS Edge-TTS 클라우드 직결 성우 세팅 (24kHz 초고음질 신경망, 자연 성대 골든 레인지)
+  // 1안. MS Edge-TTS 클라우드 직결 성우 세팅 (고객 성격 및 연령별 말의 속도 & 음높이 물리 튜닝)
   const neuralVoice = charVoice.baseVoice;
-  const neuralPitch = charVoice.pitch;
-  const neuralRate = charVoice.rate;
+  let neuralPitch = charVoice.pitch;
+  let neuralRate = charVoice.rate;
+
+  if (behaviorType === 'bottom_liner') {
+    // ⚡ 결론재촉형: 성격 급하고 빠름 (1.18x 속도, +15Hz)
+    calculatedRate = Math.max(1.15, calculatedRate * 1.15);
+    neuralRate = '+15%';
+    neuralPitch = '+15Hz';
+  } else if (behaviorType === 'despairing') {
+    // 🥀 우울/체념형: 힘없고 느린 한숨 호흡 (0.88x 속도, -20Hz)
+    calculatedRate = Math.min(0.88, calculatedRate * 0.9);
+    neuralRate = '-12%';
+    neuralPitch = '-20Hz';
+  } else if (behaviorType === 'cold_skeptic') {
+    // 🧊 Cold DB 의심형: 굳어있고 단호한 어조 (0.95x 속도, -10Hz)
+    neuralRate = '-5%';
+    neuralPitch = '-10Hz';
+  } else if (age >= 60) {
+    // 👴 어르신 고객: 느리고 투박한 저음 (0.88x 속도, -25Hz)
+    calculatedRate = Math.min(0.9, calculatedRate);
+    neuralRate = '-10%';
+    neuralPitch = isFemale ? '-15Hz' : '-25Hz';
+  }
+
   const pitch = isFemale ? 1.0 : (age >= 60 ? 0.75 : 0.85);
 
   // 행동 아키타입별 발화 지침 생성
