@@ -681,16 +681,6 @@ export default function TrainingCenterPage() {
     showToast('전화 발신을 취소했습니다.', 'info');
   };
 
-  // 고객 말 끊고 즉시 답변하기 (Barge-in 인터럽트)
-  const handleInterruptCustomer = () => {
-    speechService.stopSpeaking();
-    setIsCustomerSpeaking(false);
-    if (callStateRef.current === 'connected') {
-      startCallMicrophone();
-      showToast('고객 발화를 끊고 마이크를 켰습니다. 편하게 말씀하세요!', 'info');
-    }
-  };
-
   // 고객 메시지 다시 듣기 (스피커 아이콘 클릭 시 안전 재생 & 마이크 복원)
   const handleReplayCustomerMessage = async (text: string, emotion?: 'angry' | 'annoyed' | 'anxious' | 'calm') => {
     if (isCustomerSpeaking) return;
@@ -2646,20 +2636,11 @@ export default function TrainingCenterPage() {
                     </div>
                   )}
 
-                  {/* Customer Speaking Status Banner (고객 발화 중 & 즉시 끼어들기) */}
+                  {/* Customer Speaking Status Banner (고객 발화 중 상태 알림) */}
                   {isCustomerSpeaking && (
-                    <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs shadow-xs animate-pulse">
-                      <div className="flex items-center gap-2">
-                        <Volume2 className="w-4 h-4 animate-bounce text-purple-600 dark:text-purple-400" />
-                        <span className="font-bold">고객 말씀 중... (스피커로 크게 들립니다)</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleInterruptCustomer}
-                        className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-all"
-                      >
-                        말 끊고 바로 답하기 🖐️
-                      </button>
+                    <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs shadow-xs animate-pulse">
+                      <Volume2 className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                      <span className="font-bold">고객 말씀 중...</span>
                     </div>
                   )}
 
