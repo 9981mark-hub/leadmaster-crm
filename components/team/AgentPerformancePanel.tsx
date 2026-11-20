@@ -9,11 +9,15 @@ import {
   fetchAgentPerformanceKPI, saveIncentiveSettings, AgentPerformanceKPI,
   IncentiveSettings, DEFAULT_INCENTIVE_SETTINGS, IncentiveContractType,
   PayoutSchedule, formatPayoutSchedule, getCurrentPayoutPeriod,
-  DEFAULT_CONTRACT_TYPES, DEFAULT_PAYOUT_SCHEDULE
+  DEFAULT_CONTRACT_TYPES, DEFAULT_PAYOUT_SCHEDULE, DEFAULT_SLIDING_TIERS,
+  DEFAULT_MANAGER_OVERRIDING, DEFAULT_MILESTONES,
+  fetchAgentCustomIncentives, AgentCustomIncentiveRule
 } from '../../services/performance';
 import { exportToExcel } from '../../utils/xlsxExport';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCases } from '../../services/api';
+import { fetchTeamMembers, TeamMember } from '../../services/team';
+import { AgentCustomIncentiveModal } from './AgentCustomIncentiveModal';
 
 const fmtSec = (sec: number) => {
   if (sec <= 0) return '0초';
@@ -44,8 +48,15 @@ export default function AgentPerformancePanel() {
 
   // 모달 상태
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [activeModalTab, setActiveModalTab] = useState<'types' | 'schedule'>('types');
+  const [activeModalTab, setActiveModalTab] = useState<'types' | 'overriding' | 'sliding' | 'schedule'>('types');
   const [draftSettings, setDraftSettings] = useState<IncentiveSettings>(DEFAULT_INCENTIVE_SETTINGS);
+
+  // 팀 멤버 목록 (관리자 매핑용)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
+  // 상담원 개인별 맞춤 인센티브 모달
+  const [selectedAgentForCustom, setSelectedAgentForCustom] = useState<AgentPerformanceKPI | null>(null);
+  const [customIncentivesMap, setCustomIncentivesMap] = useState<Record<string, AgentCustomIncentiveRule>>({});
 
   // 상세 보기 모달 (특정 상담원의 계약 종류별 인센티브 내역)
   const [selectedAgentBreakdown, setSelectedAgentBreakdown] = useState<AgentPerformanceKPI | null>(null);
@@ -89,9 +100,14 @@ export default function AgentPerformancePanel() {
     setLoading(true);
     try {
       const { startDate, endDate } = getDateRange(period, payoutInfo);
-      const res = await fetchAgentPerformanceKPI(startDate, endDate, allCases);
+      const [res, members] = await Promise.all([
+        fetchAgentPerformanceKPI(startDate, endDate, allCases),
+        fetchTeamMembers().catch(() => []),
+      ]);
       setKpis(res.kpis);
       setSettings(res.settings);
+      setTeamMembers(members);
+      setCustomIncentivesMap(fetchAgentCustomIncentives());
     } catch (e: any) {
       showToast(`성과 데이터 조회 실패: ${e.message}`, 'error');
     } finally {
@@ -217,7 +233,12 @@ export default function AgentPerformancePanel() {
       계약체결: k.contractCount,
       계약전환율: `${k.contractRate}%`,
       총수임료: k.totalFeeRevenue,
-      예상인센티브: k.estimatedIncentive,
+      기본계약수당: k.baseIncentive,
+      고성과구간보너스: k.slidingBonus,
+      마일스톤보너스: k.milestoneBonus,
+      관리자오버라이드수당: k.managerOverridingBonus,
+      최종예상인센티브: k.estimatedIncentive,
+      맞춤단가적용: k.isCustomApplied ? 'Y' : 'N',
       세부계약내역: k.contractBreakdown.map(b => `${b.typeName}: ${b.count}건 (₩${b.incentiveAmount.toLocaleString()})`).join(' / ') || '없음',
       정산규칙: scheduleText,
     }));
@@ -486,8 +507,18 @@ export default function AgentPerformancePanel() {
                   </td>
 
                   <td className="px-4 py-3">
-                    <div className="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
-                      {k.displayName}
+                    <div className="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5 flex-wrap">
+                      <span>{k.displayName}</span>
+                      {k.isCustomApplied && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300" title="개인 맞춤 인센티브 적용 중">
+                          ★ 맞춤단가
+                        </span>
+                      )}
+                      {k.managerOverridingBonus > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300" title="소속 팀원 계약 오버라이딩 수령 중">
+                          👔 팀장 오버라이드
+                        </span>
+                      )}
                       {k.status === 'disabled' && (
                         <span className="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-600">중지</span>
                       )}
@@ -544,14 +575,45 @@ export default function AgentPerformancePanel() {
                     <div className="font-black text-indigo-600 dark:text-indigo-400 text-base">
                       ₩{k.estimatedIncentive.toLocaleString()}
                     </div>
-                    {k.contractBreakdown && k.contractBreakdown.length > 0 && (
+
+                    {/* 세부 보너스 내역 뱃지 */}
+                    <div className="flex flex-col items-end gap-0.5 mt-1 text-[11px]">
+                      {k.slidingBonus > 0 && (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                          구간 보너스 +₩{k.slidingBonus.toLocaleString()}
+                        </span>
+                      )}
+                      {k.milestoneBonus > 0 && (
+                        <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                          마일스톤 +₩{k.milestoneBonus.toLocaleString()}
+                        </span>
+                      )}
+                      {k.managerOverridingBonus > 0 && (
+                        <span className="text-blue-600 dark:text-blue-400 font-bold" title={k.overridingDetails}>
+                          팀장 수당 +₩{k.managerOverridingBonus.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 mt-1.5 flex-wrap">
+                      {k.contractBreakdown && k.contractBreakdown.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAgentBreakdown(k)}
+                          className="text-xs text-blue-600 hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+                        >
+                          종류별 내역 ({k.contractBreakdown.length})
+                        </button>
+                      )}
                       <button
-                        onClick={() => setSelectedAgentBreakdown(k)}
-                        className="text-xs text-blue-600 hover:underline mt-0.5 inline-flex items-center gap-0.5"
+                        type="button"
+                        onClick={() => setSelectedAgentForCustom(k)}
+                        className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 dark:border-slate-600 transition-colors cursor-pointer"
+                        title="이 상담원 맞춤 인센티브 개별 설정"
                       >
-                        종류별 내역 ({k.contractBreakdown.length})
+                        ⚙️ 맞춤설정
                       </button>
-                    )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -588,29 +650,51 @@ export default function AgentPerformancePanel() {
                 </div>
               </div>
 
-              {/* Tab Selector */}
-              <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-xl text-xs font-bold">
+              {/* Tab Selector (4개 탭) */}
+              <div className="flex bg-gray-100 dark:bg-gray-750 p-1 rounded-xl text-xs font-bold gap-1 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('types')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                     activeModalTab === 'types'
                       ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  1. 계약 종류별 인센티브 ({draftSettings.contractTypes.length}/10)
+                  1. 계약별 기본 인센티브
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModalTab('overriding')}
+                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                    activeModalTab === 'overriding'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  2. 👔 관리자 오버라이딩
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModalTab('sliding')}
+                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                    activeModalTab === 'sliding'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  3. 🚀 성과구간 추가보너스
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('schedule')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                     activeModalTab === 'schedule'
                       ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  2. 정산 기간 & 지급일
+                  4. 📅 정산일 & 지급주기
                 </button>
               </div>
             </div>
@@ -748,7 +832,232 @@ export default function AgentPerformancePanel() {
                 </div>
               )}
 
-              {/* TAB 2: 정산 기간 & 지급일 설정 */}
+              {/* TAB 2: 👔 관리자(팀장) 오버라이딩 수당 설정 */}
+              {activeModalTab === 'overriding' && (
+                <div className="space-y-5 text-xs animate-fadeIn">
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                        <Award size={16} className="text-blue-600" /> 관리자(팀장) 오버라이딩(Overriding) 수당 체계
+                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        소속 팀원이 계약을 1건 성사시킬 때마다 담당 관리자(팀장)에게 지급할 관리 수당을 설정합니다.
+                      </p>
+                    </div>
+
+                    <label className="flex items-center gap-2 cursor-pointer font-bold">
+                      <span className="text-xs text-gray-700 dark:text-gray-300">오버라이딩 활성화</span>
+                      <input
+                        type="checkbox"
+                        checked={draftSettings.managerOverriding?.enabled ?? true}
+                        onChange={e => setDraftSettings({
+                          ...draftSettings,
+                          managerOverriding: {
+                            ...(draftSettings.managerOverriding || { type: 'fixed_per_case', amountPerCase: 10000, feeRatePercent: 1.5 }),
+                            enabled: e.target.checked,
+                          },
+                        })}
+                        className="w-4 h-4 text-blue-600 rounded-sm"
+                      />
+                    </label>
+                  </div>
+
+                  {draftSettings.managerOverriding?.enabled && (
+                    <div className="space-y-4">
+                      {/* 방식 선택 */}
+                      <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-3">
+                        <label className="font-bold text-gray-800 dark:text-white block">
+                          팀원 1건당 관리 수당 산정 방식
+                        </label>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <label className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
+                            draftSettings.managerOverriding.type === 'fixed_per_case'
+                              ? 'border-blue-500 bg-white dark:bg-gray-800 ring-2 ring-blue-500/20'
+                              : 'border-gray-200 dark:border-gray-700 bg-gray-100/50 dark:bg-gray-700/50'
+                          }`}>
+                            <input
+                              type="radio"
+                              name="overridingType"
+                              checked={draftSettings.managerOverriding.type === 'fixed_per_case'}
+                              onChange={() => setDraftSettings({
+                                ...draftSettings,
+                                managerOverriding: { ...draftSettings.managerOverriding, type: 'fixed_per_case' },
+                              })}
+                              className="mt-0.5 text-blue-600"
+                            />
+                            <div>
+                              <div className="font-bold text-gray-900 dark:text-white">건당 고정 관리수당 (추천)</div>
+                              <div className="text-[11px] text-gray-500 mt-0.5">
+                                팀원이 계약할 때마다 정액 건당 수당을 팀장에게 자동 적립합니다.
+                              </div>
+                            </div>
+                          </label>
+
+                          <label className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
+                            draftSettings.managerOverriding.type === 'percent_of_fee'
+                              ? 'border-blue-500 bg-white dark:bg-gray-800 ring-2 ring-blue-500/20'
+                              : 'border-gray-200 dark:border-gray-700 bg-gray-100/50 dark:bg-gray-700/50'
+                          }`}>
+                            <input
+                              type="radio"
+                              name="overridingType"
+                              checked={draftSettings.managerOverriding.type === 'percent_of_fee'}
+                              onChange={() => setDraftSettings({
+                                ...draftSettings,
+                                managerOverriding: { ...draftSettings.managerOverriding, type: 'percent_of_fee' },
+                              })}
+                              className="mt-0.5 text-blue-600"
+                            />
+                            <div>
+                              <div className="font-bold text-gray-900 dark:text-white">팀원 수임료의 N% 비례</div>
+                              <div className="text-[11px] text-gray-500 mt-0.5">
+                                팀원이 유치한 계약 수임료 매출의 일정 비율을 팀장에게 적립합니다.
+                              </div>
+                            </div>
+                          </label>
+                        </div>
+
+                        {/* 입력 인풋 */}
+                        <div className="pt-2">
+                          {draftSettings.managerOverriding.type === 'fixed_per_case' ? (
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-700 dark:text-gray-300">소속 팀원 계약 1건당 지급액:</span>
+                              <input
+                                type="number"
+                                step="1000"
+                                value={draftSettings.managerOverriding.amountPerCase}
+                                onChange={e => setDraftSettings({
+                                  ...draftSettings,
+                                  managerOverriding: {
+                                    ...draftSettings.managerOverriding,
+                                    amountPerCase: Math.max(0, parseInt(e.target.value, 10) || 0),
+                                  },
+                                })}
+                                className="w-32 px-3 py-1.5 font-bold font-mono text-right border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                              />
+                              <span className="font-bold text-gray-600 dark:text-gray-400">원 / 건</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-700 dark:text-gray-300">소속 팀원 수임료 매출의:</span>
+                              <input
+                                type="number"
+                                step="0.5"
+                                value={draftSettings.managerOverriding.feeRatePercent}
+                                onChange={e => setDraftSettings({
+                                  ...draftSettings,
+                                  managerOverriding: {
+                                    ...draftSettings.managerOverriding,
+                                    feeRatePercent: Math.max(0, parseFloat(e.target.value) || 0),
+                                  },
+                                })}
+                                className="w-24 px-3 py-1.5 font-bold font-mono text-right border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                              />
+                              <span className="font-bold text-gray-600 dark:text-gray-400">%</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 팀 목표 달성 팀장 보너스 */}
+                      <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-2">
+                        <div className="font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                          <Trophy size={14} className="text-amber-500" /> 팀 목표 초과 달성 보너스 (Team Target Bonus)
+                        </div>
+                        <p className="text-[11px] text-gray-500">
+                          소속 팀원들의 당월 합산 계약이 목표를 초과할 경우 팀장에게 일시금 성과급을 지급합니다.
+                        </p>
+                        <div className="flex items-center gap-2 pt-1 flex-wrap">
+                          <span>소속 팀원 합산</span>
+                          <span className="font-bold text-blue-600">20건</span>
+                          <span>돌파 시:</span>
+                          <strong className="text-slate-900 dark:text-white font-mono">+₩300,000원</strong>
+                          <span className="text-gray-400">/</span>
+                          <span>합산</span>
+                          <span className="font-bold text-blue-600">30건</span>
+                          <span>돌파 시:</span>
+                          <strong className="text-slate-900 dark:text-white font-mono">+₩500,000원</strong>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 3: 🚀 성과 우수 상담원 구간별 추가 인센티브 (슬라이딩 스케일) */}
+              {activeModalTab === 'sliding' && (
+                <div className="space-y-5 text-xs animate-fadeIn">
+                  <div className="pb-3 border-b border-gray-100 dark:border-gray-700">
+                    <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                      <Sparkles size={16} className="text-indigo-600" /> 고성과 상담원 슬라이딩 스케일 & 마일스톤
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      계약 건수가 많아질수록 건당 성과급이 계단식으로 상승하여 에이스 상담원의 동기부여를 극대화합니다.
+                    </p>
+                  </div>
+
+                  {/* 구간별 계단식 단가 인상 테이블 */}
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-750 border-b border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-gray-200">
+                      월간 계약 건수별 건당 추가 지급액 (Sliding Scale)
+                    </div>
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                      {(draftSettings.slidingTiers || DEFAULT_SLIDING_TIERS).map((tier, tIdx) => (
+                        <div key={tIdx} className="p-3 flex items-center justify-between gap-3 hover:bg-gray-50/50 dark:hover:bg-gray-750">
+                          <div>
+                            <div className="font-bold text-gray-900 dark:text-white">
+                              {tier.tierName}
+                            </div>
+                            <div className="text-[11px] text-gray-400">
+                              기준: 당월 {tier.minCases}건 {tier.maxCases ? `~ ${tier.maxCases}건` : '이상'}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-gray-500">건당 추가:</span>
+                            <input
+                              type="number"
+                              step="5000"
+                              value={tier.extraAmountPerCase}
+                              onChange={e => {
+                                const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+                                const updated = [...(draftSettings.slidingTiers || DEFAULT_SLIDING_TIERS)];
+                                updated[tIdx] = { ...updated[tIdx], extraAmountPerCase: val };
+                                setDraftSettings({ ...draftSettings, slidingTiers: updated });
+                              }}
+                              className="w-28 px-2.5 py-1 text-right font-mono font-bold border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            />
+                            <span className="font-bold text-gray-700 dark:text-gray-300">원</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 마일스톤 달성 축하금 */}
+                  <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-2">
+                    <div className="font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                      <Trophy size={14} className="text-amber-500" /> 마일스톤 달성 일시 축하금
+                    </div>
+                    <p className="text-[11px] text-gray-500">
+                      특정 계약 건수를 달성할 때마다 일시금 보너스를 추가 지급합니다.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">당월 10건 최초 돌파:</span>
+                        <strong className="text-blue-600 dark:text-blue-400 font-mono">+₩200,000원</strong>
+                      </div>
+                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">당월 20건 최초 돌파:</span>
+                        <strong className="text-indigo-600 dark:text-indigo-400 font-mono">+₩500,000원</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: 정산 기간 & 지급일 설정 */}
               {activeModalTab === 'schedule' && (
                 <div className="space-y-5">
                   <div>
@@ -1081,21 +1390,69 @@ export default function AgentPerformancePanel() {
               </div>
             </div>
 
+            {/* 보너스 구성 안내 */}
+            {(selectedAgentBreakdown.slidingBonus > 0 || selectedAgentBreakdown.managerOverridingBonus > 0 || selectedAgentBreakdown.milestoneBonus > 0) && (
+              <div className="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl space-y-1.5 text-xs border border-gray-200 dark:border-gray-700">
+                <div className="font-bold text-gray-700 dark:text-gray-200 mb-1">수당 상세 구성</div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">기본 계약 인센티브:</span>
+                  <span className="font-mono font-bold">₩{selectedAgentBreakdown.baseIncentive.toLocaleString()}원</span>
+                </div>
+                {selectedAgentBreakdown.slidingBonus > 0 && (
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                    <span>고성과 구간 추가 보너스:</span>
+                    <span className="font-mono font-bold">+₩{selectedAgentBreakdown.slidingBonus.toLocaleString()}원</span>
+                  </div>
+                )}
+                {selectedAgentBreakdown.milestoneBonus > 0 && (
+                  <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                    <span>마일스톤 달성 축하금:</span>
+                    <span className="font-mono font-bold">+₩{selectedAgentBreakdown.milestoneBonus.toLocaleString()}원</span>
+                  </div>
+                )}
+                {selectedAgentBreakdown.managerOverridingBonus > 0 && (
+                  <div className="flex justify-between text-blue-600 dark:text-blue-400">
+                    <span>관리자 팀원 오버라이딩:</span>
+                    <span className="font-mono font-bold">+₩{selectedAgentBreakdown.managerOverridingBonus.toLocaleString()}원</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="p-3 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl flex justify-between items-center font-bold text-sm">
-              <span className="text-gray-700 dark:text-gray-300">총 인센티브 합계</span>
-              <span className="text-indigo-600 dark:text-indigo-400 text-base">
+              <span className="text-gray-700 dark:text-gray-300">최종 인센티브 합계</span>
+              <span className="text-indigo-600 dark:text-indigo-400 text-base font-black font-mono">
                 ₩{selectedAgentBreakdown.estimatedIncentive.toLocaleString()}
               </span>
             </div>
 
             <button
               onClick={() => setSelectedAgentBreakdown(null)}
-              className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold text-xs"
+              className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold text-xs cursor-pointer"
             >
               닫기
             </button>
           </div>
         </div>
+      )}
+
+      {/* 6. 상담원 개인별 맞춤 인센티브 모달 */}
+      {selectedAgentForCustom && (
+        <AgentCustomIncentiveModal
+          isOpen={Boolean(selectedAgentForCustom)}
+          onClose={() => setSelectedAgentForCustom(null)}
+          agent={{
+            userId: selectedAgentForCustom.userId,
+            displayName: selectedAgentForCustom.displayName,
+            email: selectedAgentForCustom.email,
+            role: selectedAgentForCustom.role,
+          }}
+          contractTypes={settings.contractTypes}
+          teamMembers={teamMembers}
+          initialRule={customIncentivesMap[selectedAgentForCustom.userId]}
+          onSaved={loadData}
+          showToast={showToast}
+        />
       )}
     </div>
   );

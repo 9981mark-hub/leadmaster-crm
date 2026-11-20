@@ -31,9 +31,54 @@ export interface PayoutSchedule {
   weeklyPayoutDay: number;       // 지급 요일 (1: 월 ~ 7: 일, 기본: 5 = 금요일)
 }
 
+/** 1. 관리자(팀장) 오버라이딩 수당 규칙 */
+export interface ManagerOverridingRule {
+  enabled: boolean;
+  type: 'fixed_per_case' | 'percent_of_fee';
+  amountPerCase: number;      // 팀원 계약 1건당 관리수당 (원, 예: 10,000)
+  feeRatePercent: number;     // 팀원 수임료의 비율 (%, 예: 1.5)
+  teamMilestones?: {
+    minTeamCases: number;     // 팀 합산 계약 최소 건수 (예: 20)
+    bonusAmountWon: number;   // 팀 목표 달성 축하금 (예: 300,000)
+  }[];
+}
+
+/** 2. 고성과자 구간별 추가 인센티브 규칙 (슬라이딩 스케일) */
+export interface PerformanceTierRule {
+  minCases: number;
+  maxCases?: number;          // undefined면 이상
+  extraAmountPerCase: number; // 건당 추가 지급액 (원, 예: 20,000, 50,000)
+  tierName: string;
+}
+
+/** 3. 누적 계약 건수별 마일스톤 달성 보너스 */
+export interface MilestoneBonusRule {
+  reachCases: number;         // 10건, 20건 등
+  bonusWon: number;           // 200,000원 등
+}
+
+/** 4. 상담원 개인별 맞춤 인센티브 (유연한 개인별 변동) */
+export interface AgentCustomIncentiveRule {
+  userId: string;
+  useCustom: boolean;         // true: 전사 무시하고 개인 규칙 사용
+  managerUserId?: string;     // 오버라이딩 수당을 수령할 담당 팀장(관리자) ID
+  calcType: 'fixed' | 'percent' | 'hybrid';
+  contractRates: Record<string, {
+    amount?: number;          // 개인별 맞춤 금액 (원)
+    rate?: number;            // 개인별 맞춤 비율 (%)
+  }>;
+  applySlidingBonus: boolean; // 고성과 구간 추가 보너스 참여 여부
+  note?: string;              // 특이사항 메모
+  effectiveMonth?: string;    // 적용 시작월 (YYYY-MM)
+}
+
 export interface IncentiveSettings {
   contractTypes: IncentiveContractType[]; // 최대 10개
   payoutSchedule: PayoutSchedule;
+  managerOverriding: ManagerOverridingRule;
+  slidingTiers: PerformanceTierRule[];
+  milestones: MilestoneBonusRule[];
+  agentOverrides?: Record<string, AgentCustomIncentiveRule>;
 
   // 레거시 호환 필드
   calcType?: 'fixed' | 'percent' | 'tiered';
@@ -61,9 +106,36 @@ export const DEFAULT_PAYOUT_SCHEDULE: PayoutSchedule = {
   weeklyPayoutDay: 5, // 금요일
 };
 
+export const DEFAULT_MANAGER_OVERRIDING: ManagerOverridingRule = {
+  enabled: true,
+  type: 'fixed_per_case',
+  amountPerCase: 10000, // 소속 팀원 계약 1건당 팀장에게 10,000원 오버라이드 지급
+  feeRatePercent: 1.5,
+  teamMilestones: [
+    { minTeamCases: 20, bonusAmountWon: 300000 },
+    { minTeamCases: 30, bonusAmountWon: 500000 },
+  ],
+};
+
+export const DEFAULT_SLIDING_TIERS: PerformanceTierRule[] = [
+  { minCases: 1, maxCases: 5, extraAmountPerCase: 0, tierName: '일반 구간 (1~5건)' },
+  { minCases: 6, maxCases: 10, extraAmountPerCase: 20000, tierName: '우수 구간 (6~10건, 건당 +2만)' },
+  { minCases: 11, maxCases: 20, extraAmountPerCase: 50000, tierName: '최우수 구간 (11~20건, 건당 +5만)' },
+  { minCases: 21, extraAmountPerCase: 70000, tierName: '에이스 구간 (21건+, 건당 +7만)' },
+];
+
+export const DEFAULT_MILESTONES: MilestoneBonusRule[] = [
+  { reachCases: 10, bonusWon: 200000 },
+  { reachCases: 20, bonusWon: 500000 },
+];
+
 export const DEFAULT_INCENTIVE_SETTINGS: IncentiveSettings = {
   contractTypes: DEFAULT_CONTRACT_TYPES,
   payoutSchedule: DEFAULT_PAYOUT_SCHEDULE,
+  managerOverriding: DEFAULT_MANAGER_OVERRIDING,
+  slidingTiers: DEFAULT_SLIDING_TIERS,
+  milestones: DEFAULT_MILESTONES,
+  agentOverrides: {},
   calcType: 'fixed',
   fixedAmount: 50000,
   percentRate: 3.0,
@@ -227,7 +299,16 @@ export interface AgentPerformanceKPI {
   contractRate: number;             // %
   totalFeeRevenue: number;          // 원
 
-  // 산출된 예상 인센티브 및 종류별 세부내역
+  // 산출된 인센티브 상세 구성
+  baseIncentive: number;            // 기본 계약별 인센티브 (원)
+  slidingBonus: number;             // 고성과 구간 추가 보너스 (원)
+  milestoneBonus: number;           // 마일스톤 달성 축하금 (원)
+  managerOverridingBonus: number;   // 관리자 오버라이딩 수당 (소속 팀원 계약분, 원)
+  overridingDetails?: string;       // 오버라이딩 세부 설명
+  isCustomApplied?: boolean;        // 개인 맞춤 규칙 적용 여부
+  assignedManagerName?: string;     // 매핑된 담당 팀장 이름
+
+  // 최종 총 예상 인센티브 (base + sliding + milestone + managerOverriding)
   estimatedIncentive: number;       // 원
   contractBreakdown: ContractBreakdownItem[];
 }
@@ -237,11 +318,49 @@ const need = () => {
   return supabase;
 };
 
+const LOCAL_INCENTIVE_SETTINGS_KEY = 'lm_org_incentive_settings_v2';
+const LOCAL_CUSTOM_INCENTIVES_KEY = 'lm_agent_custom_incentives_v2';
+
+/** 상담원 개인별 맞춤 인센티브 전체 조회 */
+export const fetchAgentCustomIncentives = (): Record<string, AgentCustomIncentiveRule> => {
+  try {
+    const raw = localStorage.getItem(LOCAL_CUSTOM_INCENTIVES_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+/** 상담원 개인별 맞춤 인센티브 저장 */
+export const saveAgentCustomIncentive = async (rule: AgentCustomIncentiveRule): Promise<void> => {
+  try {
+    const map = fetchAgentCustomIncentives();
+    map[rule.userId] = rule;
+    localStorage.setItem(LOCAL_CUSTOM_INCENTIVES_KEY, JSON.stringify(map));
+  } catch (e) {
+    console.warn('[Performance] 개인별 인센티브 저장 실패:', e);
+  }
+};
+
 /** 인센티브 설정 조회 */
 export const fetchIncentiveSettings = async (): Promise<IncentiveSettings> => {
+  let cached: Partial<IncentiveSettings> = {};
+  try {
+    const raw = localStorage.getItem(LOCAL_INCENTIVE_SETTINGS_KEY);
+    if (raw) cached = JSON.parse(raw);
+  } catch {}
+
+  const customOverrides = fetchAgentCustomIncentives();
+
   try {
     const { data, error } = await need().from('org_incentive_settings').select('*').maybeSingle();
-    if (error || !data) return DEFAULT_INCENTIVE_SETTINGS;
+    if (error || !data) {
+      return {
+        ...DEFAULT_INCENTIVE_SETTINGS,
+        ...cached,
+        agentOverrides: customOverrides,
+      };
+    }
 
     const types: IncentiveContractType[] =
       data.contract_types && Array.isArray(data.contract_types) && data.contract_types.length > 0
@@ -254,7 +373,7 @@ export const fetchIncentiveSettings = async (): Promise<IncentiveSettings> => {
             isDefault: !!t.is_default,
             description: t.description || '',
           }))
-        : DEFAULT_CONTRACT_TYPES;
+        : (cached.contractTypes || DEFAULT_CONTRACT_TYPES);
 
     const payout: PayoutSchedule = data.payout_schedule
       ? {
@@ -268,23 +387,38 @@ export const fetchIncentiveSettings = async (): Promise<IncentiveSettings> => {
           weeklyPayoutOffset: Number(data.payout_schedule.weeklyPayoutOffset ?? 1),
           weeklyPayoutDay: Number(data.payout_schedule.weeklyPayoutDay ?? 5),
         }
-      : DEFAULT_PAYOUT_SCHEDULE;
+      : (cached.payoutSchedule || DEFAULT_PAYOUT_SCHEDULE);
 
-    return {
+    const merged: IncentiveSettings = {
       contractTypes: types.slice(0, 10), // 최대 10개 보장
       payoutSchedule: payout,
+      managerOverriding: data.manager_overriding || cached.managerOverriding || DEFAULT_MANAGER_OVERRIDING,
+      slidingTiers: data.sliding_tiers || cached.slidingTiers || DEFAULT_SLIDING_TIERS,
+      milestones: data.milestones || cached.milestones || DEFAULT_MILESTONES,
+      agentOverrides: customOverrides,
       calcType: data.calc_type || 'fixed',
       fixedAmount: Number(data.fixed_amount || 50000),
       percentRate: Number(data.percent_rate || 3.0),
       tieredRules: data.tiered_rules || DEFAULT_INCENTIVE_SETTINGS.tieredRules,
     };
+
+    return merged;
   } catch {
-    return DEFAULT_INCENTIVE_SETTINGS;
+    return {
+      ...DEFAULT_INCENTIVE_SETTINGS,
+      ...cached,
+      agentOverrides: customOverrides,
+    };
   }
 };
 
 /** 인센티브 설정 저장 */
 export const saveIncentiveSettings = async (settings: IncentiveSettings): Promise<void> => {
+  // 로컬 캐시 즉시 업데이트
+  try {
+    localStorage.setItem(LOCAL_INCENTIVE_SETTINGS_KEY, JSON.stringify(settings));
+  } catch {}
+
   // 최대 10개 제한
   const safeTypes = (settings.contractTypes || []).slice(0, 10).map((t, idx) => ({
     id: t.id || `type_${idx + 1}`,
@@ -301,28 +435,35 @@ export const saveIncentiveSettings = async (settings: IncentiveSettings): Promis
     safeTypes[0].is_default = true;
   }
 
-  const { error } = await need().from('org_incentive_settings').upsert({
-    contract_types: safeTypes,
-    payout_schedule: settings.payoutSchedule,
-    calc_type: safeTypes[0]?.calc_type || 'fixed',
-    fixed_amount: safeTypes[0]?.amount || 50000,
-    percent_rate: safeTypes[0]?.rate || 3.0,
-    updated_at: new Date().toISOString(),
-  });
-  if (error) throw error;
+  try {
+    const { error } = await need().from('org_incentive_settings').upsert({
+      contract_types: safeTypes,
+      payout_schedule: settings.payoutSchedule,
+      manager_overriding: settings.managerOverriding,
+      sliding_tiers: settings.slidingTiers,
+      milestones: settings.milestones,
+      calc_type: safeTypes[0]?.calc_type || 'fixed',
+      fixed_amount: safeTypes[0]?.amount || 50000,
+      percent_rate: safeTypes[0]?.rate || 3.0,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) {
+      console.warn('[Performance] DB 저장 경고(로컬 캐시 유지됨):', error.message);
+    }
+  } catch (e) {
+    console.warn('[Performance] DB upsert fallback 로컬 유지:', e);
+  }
 };
-
-/** 단일 케이스의 인센티브 계산 */
+/** 단일 케이스의 인센티브 계산 (개인 맞춤 규칙 우선 적용) */
 export const calculateSingleCaseIncentive = (
   c: { contractFee?: number; contractType?: string; incentiveTypeId?: string },
-  contractTypes: IncentiveContractType[]
-): { amount: number; matchedType: IncentiveContractType } => {
+  contractTypes: IncentiveContractType[],
+  customRule?: AgentCustomIncentiveRule
+): { amount: number; matchedType: IncentiveContractType; isCustom: boolean } => {
   const defaultType = contractTypes.find(t => t.isDefault) || contractTypes[0] || DEFAULT_CONTRACT_TYPES[0];
 
-  // 1. ID 일치 확인
+  // 1. 매칭 계약 종류 탐색
   let matched = contractTypes.find(t => t.id === c.incentiveTypeId);
-
-  // 2. 이름 일치 확인 (예: '개인회생 계약' 또는 '개인회생')
   if (!matched && c.contractType) {
     matched = contractTypes.find(
       t => t.name.toLowerCase() === c.contractType?.toLowerCase() ||
@@ -330,29 +471,83 @@ export const calculateSingleCaseIncentive = (
            (c.contractType || '').includes(t.name)
     );
   }
-
   const targetType = matched || defaultType;
 
-  // 계산 (contractFee는 만원 단위)
+  // 2. 개인 맞춤 인센티브 규칙 적용 여부 확인
+  if (customRule && customRule.useCustom) {
+    const customRate = customRule.contractRates?.[targetType.id];
+    if (customRate) {
+      if (customRule.calcType === 'fixed' && typeof customRate.amount === 'number') {
+        return { amount: customRate.amount, matchedType: targetType, isCustom: true };
+      }
+      if (customRule.calcType === 'percent' && typeof customRate.rate === 'number') {
+        const feeWon = (c.contractFee || 0) * 10000;
+        return { amount: Math.round(feeWon * (customRate.rate / 100)), matchedType: targetType, isCustom: true };
+      }
+      if (customRule.calcType === 'hybrid') {
+        const feeWon = (c.contractFee || 0) * 10000;
+        const fix = customRate.amount || 0;
+        const pct = customRate.rate ? Math.round(feeWon * (customRate.rate / 100)) : 0;
+        return { amount: fix + pct, matchedType: targetType, isCustom: true };
+      }
+    }
+  }
+
+  // 3. 전사 기본 계약 종류별 계산 (contractFee는 만원 단위)
   let amount = 0;
   if (targetType.calcType === 'fixed') {
     amount = targetType.amount;
   } else {
-    // 수임료의 N%
     const feeWon = (c.contractFee || 0) * 10000;
     amount = Math.round(feeWon * (targetType.rate / 100));
   }
 
-  return { amount, matchedType: targetType };
+  return { amount, matchedType: targetType, isCustom: false };
 };
 
-/** 상담원별 실시간 성과 KPI 집계 (계약 종류별 인센티브 정밀 계산 포함) */
+/** 고성과자 구간별 추가 보너스 계산 (Sliding Scale) */
+export const calculateSlidingScaleBonus = (
+  contractsCount: number,
+  tiers: PerformanceTierRule[]
+): { totalBonus: number; activeTierName: string } => {
+  if (contractsCount <= 0 || !tiers || tiers.length === 0) {
+    return { totalBonus: 0, activeTierName: '기본 구간' };
+  }
+
+  // 현재 달성한 최고 티어 탐색
+  const sorted = [...tiers].sort((a, b) => b.minCases - a.minCases);
+  const matched = sorted.find(t => contractsCount >= t.minCases) || sorted[sorted.length - 1];
+
+  const extraPerCase = matched?.extraAmountPerCase || 0;
+  const totalBonus = contractsCount * extraPerCase;
+
+  return { totalBonus, activeTierName: matched?.tierName || '기본 구간' };
+};
+
+/** 마일스톤 달성 보너스 계산 */
+export const calculateMilestonesBonus = (
+  contractsCount: number,
+  milestones: MilestoneBonusRule[]
+): number => {
+  if (contractsCount <= 0 || !milestones) return 0;
+  let bonus = 0;
+  milestones.forEach(m => {
+    if (contractsCount >= m.reachCases) {
+      bonus += m.bonusWon;
+    }
+  });
+  return bonus;
+};
+
+/** 상담원별 실시간 성과 KPI 집계 (개인 맞춤, 관리자 오버라이드, 구간 보너스 통합) */
 export const fetchAgentPerformanceKPI = async (
   startDate?: string,
   endDate?: string,
   allCases: Case[] = []
 ): Promise<{ kpis: AgentPerformanceKPI[]; settings: IncentiveSettings }> => {
   const settings = await fetchIncentiveSettings();
+  const customOverrides = fetchAgentCustomIncentives();
+
   try {
     const { data, error } = await need().rpc('get_agent_performance_kpi', {
       p_start_date: startDate || null,
@@ -375,7 +570,8 @@ export const fetchAgentPerformanceKPI = async (
       return t >= startTs && t <= endTs;
     });
 
-    const kpis: AgentPerformanceKPI[] = (data || []).map((r: any) => {
+    // 1차 집계: 상담원 본인 성과 및 기본 인센티브 산출
+    const rawKpis = (data || []).map((r: any) => {
       const assigned = Number(r.assigned_cases || 0);
       const totalCalls = Number(r.total_calls || 0);
       const connectedCalls = Number(r.connected_calls || 0);
@@ -389,6 +585,10 @@ export const fetchAgentPerformanceKPI = async (
       const avgDuration = connectedCalls > 0 ? Math.round(totalDuration / connectedCalls) : 0;
       const transferRate = assigned > 0 ? Number(((transferred / assigned) * 100).toFixed(1)) : 0;
       const contractRate = assigned > 0 ? Number(((contracts / assigned) * 100).toFixed(2)) : 0;
+
+      // 개인 맞춤 규칙 확인
+      const userCustom = customOverrides[r.user_id];
+      const isCustomApplied = Boolean(userCustom?.useCustom);
 
       // 해당 상담원의 실제 계약 케이스들로 종류별 인센티브 집계
       const agentCases = contractedCases.filter(c => c.assignedUserId === r.user_id);
@@ -404,12 +604,12 @@ export const fetchAgentPerformanceKPI = async (
         });
       });
 
-      let calculatedTotalIncentive = 0;
+      let calculatedBaseIncentive = 0;
 
       if (agentCases.length > 0) {
         agentCases.forEach(c => {
-          const { amount, matchedType } = calculateSingleCaseIncentive(c, settings.contractTypes);
-          calculatedTotalIncentive += amount;
+          const { amount, matchedType } = calculateSingleCaseIncentive(c, settings.contractTypes, userCustom);
+          calculatedBaseIncentive += amount;
 
           const item = breakdownMap.get(matchedType.id);
           if (item) {
@@ -419,18 +619,27 @@ export const fetchAgentPerformanceKPI = async (
           }
         });
       } else if (contracts > 0) {
-        // 클라이언트 케이스 목록에 아직 미반영된 경우 RPC 기본 fallback
         const defType = settings.contractTypes[0] || DEFAULT_CONTRACT_TYPES[0];
         const singleAmount = defType.calcType === 'fixed' ? defType.amount : Math.round(((feeRevenue * 10000) / contracts) * (defType.rate / 100));
-        calculatedTotalIncentive = contracts * singleAmount;
+        calculatedBaseIncentive = contracts * singleAmount;
       }
+
+      // 고성과자 구간 보너스 계산 (개인 맞춤에서 슬라이딩 제외하지 않은 경우)
+      let slidingBonus = 0;
+      if (userCustom ? userCustom.applySlidingBonus : true) {
+        const slidingRes = calculateSlidingScaleBonus(contracts, settings.slidingTiers);
+        slidingBonus = slidingRes.totalBonus;
+      }
+
+      // 마일스톤 달성 보너스 계산
+      const milestoneBonus = calculateMilestonesBonus(contracts, settings.milestones);
 
       return {
         userId: r.user_id,
         displayName: r.display_name,
         email: r.email,
-        role: r.role,
-        status: r.status,
+        role: r.role as 'owner' | 'admin' | 'agent',
+        status: r.status as 'active' | 'disabled',
         assignedCases: assigned,
         totalCalls,
         connectedCalls,
@@ -443,12 +652,68 @@ export const fetchAgentPerformanceKPI = async (
         contractCount: contracts,
         contractRate,
         totalFeeRevenue: feeRevenue,
-        estimatedIncentive: calculatedTotalIncentive,
+        baseIncentive: calculatedBaseIncentive,
+        slidingBonus,
+        milestoneBonus,
+        managerOverridingBonus: 0, // 2차 패스에서 가산
+        isCustomApplied,
         contractBreakdown: Array.from(breakdownMap.values()).filter(b => b.count > 0),
+        estimatedIncentive: calculatedBaseIncentive + slidingBonus + milestoneBonus,
       };
     });
 
-    return { kpis, settings };
+    // 2차 집계: 관리자(팀장) 오버라이딩 수당 배부
+    if (settings.managerOverriding?.enabled) {
+      const overridingRule = settings.managerOverriding;
+
+      // 관리자별 소속 팀원 성과 합산
+      const managerStats: Record<string, { totalTeamCases: number; totalTeamFeeWon: number; teamMembersCount: number }> = {};
+
+      rawKpis.forEach(member => {
+        const custom = customOverrides[member.userId];
+        const mgrId = custom?.managerUserId;
+        if (mgrId) {
+          if (!managerStats[mgrId]) {
+            managerStats[mgrId] = { totalTeamCases: 0, totalTeamFeeWon: 0, teamMembersCount: 0 };
+          }
+          managerStats[mgrId].totalTeamCases += member.contractCount;
+          managerStats[mgrId].totalTeamFeeWon += (member.totalFeeRevenue * 10000);
+          managerStats[mgrId].teamMembersCount += 1;
+        }
+      });
+
+      // 관리자 계정에 오버라이딩 수당 적립
+      rawKpis.forEach(kpi => {
+        const stats = managerStats[kpi.userId];
+        if (stats && stats.totalTeamCases > 0) {
+          let overrideAmount = 0;
+          if (overridingRule.type === 'fixed_per_case') {
+            overrideAmount = stats.totalTeamCases * overridingRule.amountPerCase;
+          } else {
+            overrideAmount = Math.round(stats.totalTeamFeeWon * (overridingRule.feeRatePercent / 100));
+          }
+
+          // 팀 마일스톤 달성 보너스 확인
+          let teamMilestoneBonus = 0;
+          if (overridingRule.teamMilestones) {
+            overridingRule.teamMilestones.forEach(m => {
+              if (stats.totalTeamCases >= m.minTeamCases) {
+                teamMilestoneBonus += m.bonusAmountWon;
+              }
+            });
+          }
+
+          const totalMgrBonus = overrideAmount + teamMilestoneBonus;
+          kpi.managerOverridingBonus = totalMgrBonus;
+          kpi.estimatedIncentive += totalMgrBonus;
+          kpi.overridingDetails = `소속 팀원 ${stats.teamMembersCount}명 합산 ${stats.totalTeamCases}건 계약 오버라이드 (+₩${overrideAmount.toLocaleString()})${
+            teamMilestoneBonus > 0 ? ` + 팀 목표 달성 보너스 (+₩${teamMilestoneBonus.toLocaleString()})` : ''
+          }`;
+        }
+      });
+    }
+
+    return { kpis: rawKpis, settings };
   } catch (e: any) {
     console.error('[Performance] fetchAgentPerformanceKPI exception:', e);
     return { kpis: [], settings };
