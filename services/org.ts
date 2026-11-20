@@ -297,9 +297,62 @@ const CACHE_OWNER_KEY = 'lm_cache_owner';
 export const isAdminRole = (role?: OrgRole | null): boolean => role === 'owner' || role === 'admin';
 
 export const ROLE_LABEL: Record<OrgRole, string> = {
-  owner: '대표',
+  owner: '대표이사',
   admin: '관리자',
   agent: '상담원',
+};
+
+export type StandardRoleKey = 'owner' | 'general_admin' | 'team_admin' | 'agent';
+
+export interface StandardRoleInfo {
+  key: StandardRoleKey;
+  label: string;          // '대표이사' | '총괄 관리자' | '팀장' | '상담원'
+  badgeText: string;      // '👑 대표이사' | '🎖️ 총괄 관리자' | '🛡️ 팀장' | '🎧 상담원'
+  role: OrgRole;          // 'owner' | 'admin' | 'agent'
+  tier?: AdminTier;       // 3 (총괄) | 1 또는 2 (팀장)
+  colorClass: string;
+}
+
+/**
+ * 전사 4대 표준 직급 정보 반환 헬퍼 (대표이사 · 총괄 관리자 · 팀장 · 상담원)
+ */
+export const getStandardRoleInfo = (role?: OrgRole | null, tier?: number | null): StandardRoleInfo => {
+  if (role === 'owner') {
+    return {
+      key: 'owner',
+      label: '대표이사',
+      badgeText: '👑 대표이사',
+      role: 'owner',
+      colorClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800',
+    };
+  }
+  if (role === 'admin') {
+    if (tier === 3) {
+      return {
+        key: 'general_admin',
+        label: '총괄 관리자',
+        badgeText: '🎖️ 총괄 관리자',
+        role: 'admin',
+        tier: 3,
+        colorClass: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+      };
+    }
+    return {
+      key: 'team_admin',
+      label: '팀장',
+      badgeText: '🛡️ 팀장',
+      role: 'admin',
+      tier: (tier as AdminTier) || 1,
+      colorClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
+    };
+  }
+  return {
+    key: 'agent',
+    label: '상담원',
+    badgeText: '🎧 상담원',
+    role: 'agent',
+    colorClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+  };
 };
 
 export const loadCachedOrg = (): OrgInfo | null => {

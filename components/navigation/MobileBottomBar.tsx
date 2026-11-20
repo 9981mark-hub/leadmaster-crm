@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import { ROLE_LABEL } from '../../services/org';
+import { ROLE_LABEL, getStandardRoleInfo } from '../../services/org';
 
 interface MobileBottomBarProps {
   pendingTgCount?: number;
@@ -23,7 +23,8 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const isLiteOnly = !isAdmin && org?.uiMode === 'lite_only';
-  const roleLabel = org?.role ? ROLE_LABEL[org.role] : '상담원';
+  const roleInfo = getStandardRoleInfo(org?.role, org?.adminPermissions?.tier);
+  const roleLabel = roleInfo.label;
 
   // 5대 핵심 엄지존 탭
   const primaryTabs = [
@@ -155,8 +156,11 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
                   <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     전체 메뉴
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {org?.orgName} ({roleLabel})
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                    <span>{org?.orgName}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${roleInfo.colorClass}`}>
+                      {roleInfo.badgeText}
+                    </span>
                   </p>
                 </div>
                 <button

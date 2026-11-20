@@ -8,7 +8,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
-import { ROLE_LABEL } from '../../services/org';
+import { ROLE_LABEL, getStandardRoleInfo } from '../../services/org';
 import { CompanyProfileModal } from './CompanyProfileModal';
 
 interface SidebarProps {
@@ -45,7 +45,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const isOwner = org?.role === 'owner' || isPlatformAdmin || user?.email === (org as any)?.ownerEmail;
   const isLiteOnly = !isAdmin && org?.uiMode === 'lite_only';
-  const roleLabel = org?.role ? ROLE_LABEL[org.role] : '상담원';
+  const roleInfo = getStandardRoleInfo(org?.role, org?.adminPermissions?.tier);
+  const roleLabel = roleInfo.label;
   const orgName = org?.orgName || '리드마스터 CRM';
 
   // TM대표 전용 회사 프로필/로고 설정 모달 상태
@@ -136,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   if (isOwner) setIsCompanyModalOpen(true);
                   else onToggleCollapse();
                 }}
-                title={`${orgName} (${roleLabel})${isOwner ? ' - 클릭하여 설정' : ''}`}
+                title={`${orgName} (${roleInfo.badgeText})${isOwner ? ' - 클릭하여 설정' : ''}`}
               />
             ) : (
               <div 
@@ -145,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   else onToggleCollapse();
                 }}
                 className={`w-7 h-7 rounded-lg bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/50 dark:border-blue-800/50 transition-transform ${isOwner ? 'cursor-pointer hover:scale-105' : ''}`}
-                title={`${orgName} (${roleLabel})${isOwner ? ' - 클릭하여 설정' : ''}`}
+                title={`${orgName} (${roleInfo.badgeText})${isOwner ? ' - 클릭하여 설정' : ''}`}
               >
                 <Building2 size={13} />
               </div>
@@ -212,14 +213,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {isOwner && (
                   <Settings size={12} className="text-slate-500 dark:text-slate-400 opacity-60 group-hover:opacity-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-600 dark:text-indigo-400 transition-all" />
                 )}
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
-                  org?.role === 'owner' 
-                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
-                    : org?.role === 'admin'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
-                    : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                }`}>
-                  {roleLabel}
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold shadow-2xs ${roleInfo.colorClass}`}>
+                  {roleInfo.badgeText}
                 </span>
               </div>
             </div>

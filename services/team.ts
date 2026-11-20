@@ -119,6 +119,7 @@ export const updateTeamMember = async (
     displayName?: string; 
     uiMode?: 'standard' | 'lite_only';
     securityProfile?: MemberSecurityProfile;
+    adminPermissions?: AdminPermissions;
   },
 ): Promise<void> => {
   const { error } = await need().rpc('update_org_member', {
@@ -130,6 +131,10 @@ export const updateTeamMember = async (
     p_security_profile: changes.securityProfile ?? null,
   });
   if (error) fail(error);
+
+  if (changes.adminPermissions) {
+    await updateAdminPermissions(userId, changes.adminPermissions);
+  }
 };
 
 /** 관리자 전용: 상담원 세션 즉시 강제 파기 (Realtime 브로드캐스트 + DB 기록) */

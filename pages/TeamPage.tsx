@@ -9,7 +9,15 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchCases, applyLocalAssignment, refreshLocalAssignments } from '../services/api';
-import { ROLE_LABEL, OrgRole, DEFAULT_TIER1_PERMISSIONS, OWNER_FULL_PERMISSIONS } from '../services/org';
+import {
+  ROLE_LABEL,
+  OrgRole,
+  DEFAULT_TIER1_PERMISSIONS,
+  DEFAULT_TIER3_PERMISSIONS,
+  OWNER_FULL_PERMISSIONS,
+  getStandardRoleInfo,
+  StandardRoleKey
+} from '../services/org';
 import {
   TeamMember, TeamInvite, fetchTeamMembers, updateTeamMember, updateMemberTeam, fetchPendingInvites,
   createInvite, cancelInvite, assignCases, revokeMemberSession, MemberSecurityProfile
@@ -757,27 +765,48 @@ export default function TeamPage() {
         <div className="space-y-6">
           {/* 멤버 목록 */}
           <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
-              <Users size={18} className="text-blue-600" />
-              <h2 className="font-bold text-gray-800 dark:text-white">멤버 {members.length}명</h2>
-              <span className="text-xs text-gray-500 dark:text-gray-400">사용 중 {activeMembers.length}명 · 상담원 {agents.length}명</span>
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Users size={18} className="text-blue-600" />
+                <h2 className="font-bold text-gray-800 dark:text-white">멤버 {members.length}명</h2>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  사용 중 {activeMembers.length}명
+                </span>
+              </div>
+              {/* 4대 표준 직급 분포 현황 뱃지 */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono font-semibold">
+                <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                  👑 대표 {members.filter(m => m.status === 'active' && m.role === 'owner').length}
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                  🎖️ 총괄 {members.filter(m => m.status === 'active' && m.role === 'admin' && m.adminPermissions?.tier === 3).length}
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                  🛡️ 팀장 {members.filter(m => m.status === 'active' && m.role === 'admin' && (m.adminPermissions?.tier || 1) < 3).length}
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  🎧 상담원 {members.filter(m => m.status === 'active' && m.role === 'agent').length}
+                </span>
+              </div>
             </div>
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-700">
-              {members.map(m => (
+              {members.map(m => {
+                const roleInfo = getStandardRoleInfo(m.role, m.adminPermissions?.tier);
+                return (
                 <div key={m.userId} className={`px-4 py-3 space-y-2 ${m.status === 'disabled' ? 'opacity-50' : ''}`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-medium text-gray-800 dark:text-gray-100">{m.displayName}</span>
-                      {m.userId === org.userId && <span className="ml-1 text-xs text-blue-500">(나)</span>}
-                      {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500">사용 중지</span>}
+                      {m.userId === org.userId && <span className="ml-1 text-xs text-blue-500 font-bold">(나)</span>}
+                      {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500 font-semibold">사용 중지</span>}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
                         {m.teamName || '1팀'}
                       </span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                        {ROLE_LABEL[m.role]}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${roleInfo.colorClass}`}>
+                        {roleInfo.badgeText}
                       </span>
                     </div>
                   </div>
@@ -835,7 +864,8 @@ export default function TeamPage() {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
               {!loading && members.length === 0 && (
                 <div className="px-5 py-6 text-center text-gray-500 dark:text-gray-400">멤버 정보를 불러오지 못했습니다.</div>
               )}
@@ -895,28 +925,72 @@ export default function TeamPage() {
                       <td className="px-3 py-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           {canEditRole(m) && m.role !== 'owner' ? (
-                            <select
-                              value={m.role}
-                              disabled={busy}
-                              onChange={e => handleMemberChange(m, { role: e.target.value as OrgRole })}
-                              className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
-                            >
-                              <option value="agent">상담원</option>
-                              <option value="admin">관리자</option>
-                              {org.role === 'owner' && <option value="owner">대표</option>}
-                            </select>
+                            (() => {
+                              const currentRoleKey: StandardRoleKey =
+                                m.role === 'owner'
+                                  ? 'owner'
+                                  : m.role === 'admin' && m.adminPermissions?.tier === 3
+                                  ? 'general_admin'
+                                  : m.role === 'admin'
+                                  ? 'team_admin'
+                                  : 'agent';
+
+                              return (
+                                <select
+                                  value={currentRoleKey}
+                                  disabled={busy}
+                                  onChange={async (e) => {
+                                    const targetKey = e.target.value as StandardRoleKey;
+                                    if (targetKey === 'agent') {
+                                      await handleMemberChange(m, { role: 'agent' });
+                                      showToast(`${m.displayName}님의 역할이 '상담원'으로 변경되었습니다.`, 'success');
+                                    } else if (targetKey === 'team_admin') {
+                                      const nextPerms = m.adminPermissions && m.adminPermissions.tier < 3
+                                        ? m.adminPermissions
+                                        : DEFAULT_TIER1_PERMISSIONS;
+                                      await handleMemberChange(m, { role: 'admin', adminPermissions: nextPerms });
+                                      showToast(`${m.displayName}님의 역할이 '팀장 (중간 관리자)'으로 변경되었습니다.`, 'success');
+                                    } else if (targetKey === 'general_admin') {
+                                      await handleMemberChange(m, { role: 'admin', adminPermissions: DEFAULT_TIER3_PERMISSIONS });
+                                      showToast(`${m.displayName}님의 역할이 '총괄 관리자 (Tier 3 전사 운영)'로 승격되었습니다.`, 'success');
+                                    } else if (targetKey === 'owner') {
+                                      await handleMemberChange(m, { role: 'owner' });
+                                      showToast(`${m.displayName}님의 역할이 '대표이사'로 변경되었습니다.`, 'success');
+                                    }
+                                  }}
+                                  className="text-xs font-bold border border-gray-300 dark:border-gray-600 rounded-lg px-2.5 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-pointer shadow-2xs focus:ring-2 focus:ring-indigo-500"
+                                >
+                                  <option value="agent">🎧 상담원</option>
+                                  <option value="team_admin">🛡️ 팀장 (중간 관리자)</option>
+                                  <option value="general_admin">🎖️ 총괄 관리자 (전사 운영)</option>
+                                  {org.role === 'owner' && <option value="owner">👑 대표이사</option>}
+                                </select>
+                              );
+                            })()
                           ) : (
-                            <span className="text-gray-700 dark:text-gray-200 whitespace-nowrap">{ROLE_LABEL[m.role]}</span>
+                            (() => {
+                              const roleInfo = getStandardRoleInfo(m.role, m.adminPermissions?.tier);
+                              return (
+                                <span className={`text-xs px-2.5 py-1 rounded-lg font-bold whitespace-nowrap shadow-2xs ${roleInfo.colorClass}`}>
+                                  {roleInfo.badgeText}
+                                </span>
+                              );
+                            })()
                           )}
+
                           {isOwner && m.role === 'admin' && (
                             <button
                               type="button"
                               onClick={() => setPermissionTargetMember(m)}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 transition-colors shrink-0 cursor-pointer"
-                              title="중간 관리자 권한 및 오픈 스코프 설정"
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors shrink-0 cursor-pointer shadow-2xs ${
+                                m.adminPermissions?.tier === 3
+                                  ? 'bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                                  : 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                              }`}
+                              title={m.adminPermissions?.tier === 3 ? "총괄 관리자 전사 권한 세부 설정" : "팀장 스코프 권한 세부 설정"}
                             >
                               <ShieldCheck size={12} />
-                              <span>Tier {m.adminPermissions?.tier || 1} 설정</span>
+                              <span>{m.adminPermissions?.tier === 3 ? 'Tier 3 (총괄 권한)' : `Tier ${m.adminPermissions?.tier || 1} 설정`}</span>
                             </button>
                           )}
                         </div>

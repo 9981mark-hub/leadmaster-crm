@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { ROLE_LABEL } from '../../services/org';
+import { ROLE_LABEL, getStandardRoleInfo } from '../../services/org';
 import { AttendanceHeaderWidget } from '../hr/AttendanceHeaderWidget';
 
 interface GlobalAppBarProps {
@@ -75,7 +75,8 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
     pageInfo = { title: '리드마스터 CRM', category: '업무 공간' };
   }
 
-  const roleLabel = org?.role ? ROLE_LABEL[org.role] : '상담원';
+  const roleInfo = getStandardRoleInfo(org?.role, org?.adminPermissions?.tier);
+  const roleLabel = roleInfo.label;
   const orgName = org?.orgName || '리드마스터 CRM';
   const userInitial = user?.name ? user.name.slice(0, 1) : (user?.email?.slice(0, 1).toUpperCase() || 'U');
 
@@ -96,7 +97,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
           )}
 
           {/* Workspace Pill */}
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 max-w-[200px] sm:max-w-xs shrink-0 shadow-2xs">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 max-w-[220px] sm:max-w-xs shrink-0 shadow-2xs">
             {org?.orgLogo ? (
               <img
                 src={org.orgLogo}
@@ -111,14 +112,8 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={orgName}>
               {orgName}
             </span>
-            <span className={`hidden sm:inline-block shrink-0 px-1.5 py-0.2 rounded text-xs font-bold ${
-              org?.role === 'owner' 
-                ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
-                : org?.role === 'admin'
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
-                : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-            }`}>
-              {roleLabel}
+            <span className={`hidden sm:inline-block shrink-0 px-2 py-0.5 rounded-full text-xs font-bold shadow-2xs ${roleInfo.colorClass}`}>
+              {roleInfo.badgeText}
             </span>
           </div>
 
@@ -305,7 +300,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                   {user?.name || user?.email?.split('@')[0] || '사용자'}
                 </span>
                 <span className="text-xs text-slate-500 dark:text-slate-400 leading-tight">
-                  {roleLabel}
+                  {roleInfo.badgeText}
                 </span>
               </div>
               <ChevronDown size={14} className="hidden md:block text-slate-500 dark:text-slate-400 shrink-0" />
@@ -329,15 +324,15 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{user?.name || '사용자'}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{user?.email}</p>
-                    <div className="mt-1 flex items-center gap-1.5">
+                    <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
                         {org?.orgLogo && (
                           <img src={org.orgLogo} alt="Logo" className="w-3.5 h-3.5 rounded-xs object-cover" />
                         )}
                         <span className="truncate max-w-[120px]">{orgName}</span>
                       </span>
-                      <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                        {roleLabel}
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-2xs ${roleInfo.colorClass}`}>
+                        {roleInfo.badgeText}
                       </span>
                     </div>
                   </div>
