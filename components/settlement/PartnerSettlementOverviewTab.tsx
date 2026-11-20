@@ -9,35 +9,47 @@ import React, { useState, useMemo } from 'react';
 import {
   Building, Calendar, Clock, DollarSign, AlertTriangle,
   CheckCircle2, Copy, Check, Download, Search, ChevronRight,
-  Filter, FileText, ArrowUpRight
+  Filter, FileText, ArrowUpRight, PlayCircle
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { PartnerSettlementCardItem, computePartnerSettlementCards } from '../../services/settlementMasterService';
 import { exportToExcel } from '../../utils/xlsxExport';
-import { Partner, Case } from '../../types';
+import { Partner, Case, SettlementBatch } from '../../types';
 import { Collection } from '../../utils/settlement';
+import SettlementPipelineModal from './SettlementPipelineModal';
 
 interface PartnerSettlementOverviewTabProps {
   partnerCards?: PartnerSettlementCardItem[];
   partners?: Partner[];
   cases?: Case[];
   collections?: Collection[];
+  batches?: SettlementBatch[];
   onSelectPartner?: (partnerId: string) => void;
   onOpenPolicyModal?: () => void;
+  onUpdateBatch?: (batchId: string, updates: Partial<SettlementBatch>) => Promise<void>;
+  onGenerateBatch?: (partnerId: string, startDate: Date) => Promise<SettlementBatch | void>;
+  onRefreshBatch?: (batchId: string) => Promise<void>;
 }
 
 export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTabProps> = ({
   partnerCards = [],
-  partners,
-  cases,
+  partners = [],
+  cases = [],
   collections,
+  batches = [],
   onSelectPartner,
   onOpenPolicyModal,
+  onUpdateBatch,
+  onGenerateBatch,
+  onRefreshBatch,
 }) => {
   const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [cycleFilter, setCycleFilter] = useState<'all' | 'weekly' | 'monthly'>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // 파이프라인 모달용 선택 거래처 state
+  const [pipelinePartner, setPipelinePartner] = useState<Partner | null>(null);
 
   // partnerCards가 직접 주어지지 않고 partners/cases가 주어진 경우 자동 계산
   const effectiveCards = useMemo(() => {
@@ -364,36 +376,71 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
               </div>
 
               {/* 하단 액션 버튼 */}
-              <div className="mt-4 flex items-center justify-between gap-2 pt-1">
+              <div className="mt-4 space-y-2 pt-1">
+                {/* 1. 상태 기반 3단계 정산 마감 파이프라인 실행 버튼 */}
                 <button
                   type="button"
-                  onClick={() => handleCopyStatement(card)}
-                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all ${
-                    isCopied
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'bg-gray-50 dark:bg-gray-700/60 hover:bg-gray-100 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
-                  }`}
-                  title="텔레그램/카톡에 붙여넣을 수 있는 정산서 텍스트를 복사합니다."
+                  onClick={() => {
+                    const matched = partners.find(p => p.partnerId === card.partnerId) || ({
+                      partnerId: card.partnerId,
+                      name: card.partnerName,
+                      settlementCycleDisplay: card.settlementCycleDisplay,
+                    } as unknown as Partner);
+                    setPipelinePartner(matched);
+                  }}
+                  className="w-full py-2.5 px-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all hover:shadow"
                 >
-                  {isCopied ? <Check size={13} /> : <Copy size={13} />}
-                  {isCopied ? '복사 완료' : '정산서 텍스트 복사'}
+                  <PlayCircle size={14} className="shrink-0" />
+                  정산 마감 파이프라인 (대사·청구·지급)
                 </button>
 
-                {onSelectPartner && (
+                {/* 2. 보조 액션 (정산서 복사 & 원장 보기) */}
+                <div className="flex items-center justify-between gap-2">
                   <button
                     type="button"
-                    onClick={() => onSelectPartner(card.partnerId)}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-                    title="상세 정산 원장 보기"
+                    onClick={() => handleCopyStatement(card)}
+                    className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all ${
+                      isCopied
+                        ? 'bg-emerald-600 text-white border-emerald-600'
+                        : 'bg-gray-50 dark:bg-gray-700/60 hover:bg-gray-100 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
+                    }`}
+                    title="텔레그램/카톡에 붙여넣을 수 있는 정산서 텍스트를 복사합니다."
                   >
-                    <ArrowUpRight size={16} />
+                    {isCopied ? <Check size={13} /> : <Copy size={13} />}
+                    {isCopied ? '복사 완료' : '정산서 복사'}
                   </button>
-                )}
+
+                  {onSelectPartner && (
+                    <button
+                      type="button"
+                      onClick={() => onSelectPartner(card.partnerId)}
+                      className="px-3 py-1.5 text-gray-600 dark:text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-xl text-xs font-medium border border-gray-200 dark:border-gray-700 transition-colors flex items-center gap-1"
+                      title="상세 정산 원장 보기"
+                    >
+                      <span>원장</span>
+                      <ArrowUpRight size={13} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* 상태 기반 3단계 정산 마감 파이프라인 모달 */}
+      {pipelinePartner && (
+        <SettlementPipelineModal
+          isOpen={Boolean(pipelinePartner)}
+          onClose={() => setPipelinePartner(null)}
+          partner={pipelinePartner}
+          cases={cases}
+          batches={batches}
+          onUpdateBatch={onUpdateBatch || (async () => {})}
+          onGenerateBatch={onGenerateBatch}
+          onRefreshBatch={onRefreshBatch}
+        />
+      )}
     </div>
   );
 };

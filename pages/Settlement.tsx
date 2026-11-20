@@ -4365,8 +4365,9 @@ export default function Settlement() {
                 </div>
             )}
 
-            {/* Tabs */}
+            {/* Tabs - 5대 핵심 도메인 체계로 전면 슬림화 */}
             <div className="flex border-b border-gray-200 dark:border-slate-800 overflow-x-auto gap-1">
+                {/* 1. 거래처별 정산 관제 (3단계 마감 파이프라인 통합 허브) */}
                 <button
                     onClick={() => setActiveTab('overview')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'overview'
@@ -4378,6 +4379,8 @@ export default function Settlement() {
                     🏢 거래처별 정산 관제
                     {!isOwner && !settlementPerms.allowPartnerSettlement && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
+
+                {/* 2. 상담원 수당 대장 */}
                 <button
                     onClick={() => setActiveTab('agent_commission')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'agent_commission'
@@ -4389,6 +4392,8 @@ export default function Settlement() {
                     👥 상담원 수당 대장
                     {!isOwner && !settlementPerms.allowAgentCommission && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
+
+                {/* 3. DB 구매비용 대장 */}
                 <button
                     onClick={() => setActiveTab('db_cost')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'db_cost'
@@ -4400,6 +4405,8 @@ export default function Settlement() {
                     📦 DB 구매비용 대장
                     {!isOwner && !settlementPerms.allowDbCost && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
+
+                {/* 4. 종합 손익 & P&L */}
                 <button
                     onClick={() => setActiveTab('integrated_pnl')}
                     className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'integrated_pnl'
@@ -4408,72 +4415,34 @@ export default function Settlement() {
                         }`}
                 >
                     <TrendingUp className="w-4 h-4" />
-                    📊 종합 손익 & 현금흐름
+                    📈 종합 손익 & P&L
                     {!isOwner && !settlementPerms.allowIntegratedPnL && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
-                <button
-                    onClick={() => setActiveTab('receivables')}
-                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'receivables'
-                        ? 'border-slate-200 dark:border-slate-900 dark:border-white text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
-                >
-                    받을 돈
-                    {!isOwner && !settlementPerms.allowReceivables && <Lock size={12} className="text-amber-500 shrink-0" />}
-                </button>
-                {!isAll && (
-                    <>
-                        <button
-                            onClick={() => setActiveTab('monday')}
-                            className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'monday'
-                                ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                                }`}
-                            title={`1단계: 정산 대상 건 대사 및 확인 (거래처 마감: 매주 ${cutoffDayName}요일)`}
-                        >
-                            📅 1단계: 확인 ({cutoffDayName})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('tuesday')}
-                            className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'tuesday'
-                                ? 'border-yellow-600 dark:border-yellow-500 text-yellow-600 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/40'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                                }`}
-                            title="2단계: 세금계산서 청구 발행 및 입금(수금) 확인"
-                        >
-                            📄 2단계: 청구/수금
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('wednesday')}
-                            className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${activeTab === 'wednesday'
-                                ? 'border-green-600 dark:border-green-500 text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                                }`}
-                            title={`3단계: 수금 확인 및 수당 지급 처리 (지급 요일: 매주 ${payoutDayName}요일)`}
-                        >
-                            💰 3단계: 지급 ({payoutDayName})
-                        </button>
-                    </>
-                )}
-                <button
-                    onClick={() => setActiveTab('report')}
-                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'report'
-                        ? 'border-purple-600 text-purple-600 bg-purple-50'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
-                >
-                    📊 리포트
-                    {!isOwner && <Lock size={12} className="text-amber-500 shrink-0" />}
-                </button>
+
+                {/* 5. 운영 지출 장부 (광고비 일원화) */}
                 <button
                     onClick={() => setActiveTab('expenses')}
-                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'expenses'
-                        ? 'border-red-600 text-red-600 bg-red-50'
+                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'expenses'
+                        ? 'border-red-600 text-red-600 dark:text-red-400 bg-red-500/10'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
-                    💳 운영 지출
+                    <CreditCard className="w-4 h-4" />
+                    💳 운영 지출 장부
                     {!isOwner && <Lock size={12} className="text-amber-500 shrink-0" />}
+                </button>
+
+                {/* 보조: 미수금 원장 */}
+                <button
+                    onClick={() => setActiveTab('receivables')}
+                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ml-auto ${activeTab === 'receivables'
+                        ? 'border-slate-800 dark:border-white text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
+                        : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                        }`}
+                >
+                    <FileText className="w-3.5 h-3.5" />
+                    미수금 원장
+                    {!isOwner && !settlementPerms.allowReceivables && <Lock size={12} className="text-amber-500 shrink-0" />}
                 </button>
             </div>
 
@@ -4515,7 +4484,28 @@ export default function Settlement() {
                         partners={partners}
                         cases={safeCases}
                         collections={collections}
+                        batches={batches}
+                        onSelectPartner={(partnerId) => {
+                            setSelectedPartnerId(partnerId);
+                            setActiveTab('receivables');
+                        }}
                         onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
+                        onUpdateBatch={async (batchId, updates) => {
+                            await updateSettlementBatch(batchId, updates);
+                            setBatches(prev => prev.map(b => b.batchId === batchId ? { ...b, ...updates, updatedAt: new Date().toISOString() } : b));
+                        }}
+                        onGenerateBatch={async (partnerId, startDate) => {
+                            const batch = await generateWeeklyBatch(partnerId, startDate);
+                            setBatches(prev => [batch, ...prev]);
+                            return batch;
+                        }}
+                        onRefreshBatch={async (batchId) => {
+                            const refreshed = await refreshWeeklyBatch(batchId);
+                            if (refreshed) {
+                                setBatches(prev => prev.map(b => b.batchId === batchId ? refreshed : b));
+                                showToast('정산 데이터가 최신 고객 정보로 업데이트되었습니다.', 'success');
+                            }
+                        }}
                     />
                 )
             )}
@@ -4577,9 +4567,6 @@ export default function Settlement() {
                     <ReceivablesTab cases={safeCases} partners={partners} />
                 )
             )}
-            {activeTab === 'monday' && !isAll && renderMondayTab()}
-            {activeTab === 'tuesday' && !isAll && renderTuesdayTab()}
-            {activeTab === 'wednesday' && !isAll && renderWednesdayTab()}
             {activeTab === 'report' && (
                 !isOwner ? (
                     <SettlementLockedView
