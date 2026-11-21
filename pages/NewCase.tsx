@@ -764,7 +764,7 @@ export default function NewCase() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 min-h-[600px] space-y-8">
           <div className="grid md:grid-cols-2 gap-8">
             {renderSectionBasicInfo()}
@@ -835,7 +835,7 @@ export default function NewCase() {
       </div>
 
       {/* 3-Column Cockpit Workspace */}
-      <div className="w-full max-w-[1920px] mx-auto p-4 lg:p-5">
+      <div className="w-full max-w-[1920px] mx-auto">
         <div className="grid grid-cols-12 gap-4 items-start">
 
           {/* ========================================================= */}

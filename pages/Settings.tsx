@@ -684,7 +684,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="max-w-[1600px] mx-auto space-y-6">
             {/* 1. 최상단 헤더 & 빠른 검색바 */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div className="flex items-center gap-3">

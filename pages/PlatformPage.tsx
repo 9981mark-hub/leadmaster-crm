@@ -159,7 +159,7 @@ export default function PlatformPage() {
   const copy = (text: string) => navigator.clipboard.writeText(text).then(() => showToast('복사했습니다.', 'success'));
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12 animate-page-in">
+    <div className="max-w-[1600px] mx-auto space-y-6 pb-12 animate-page-in">
       {/* Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

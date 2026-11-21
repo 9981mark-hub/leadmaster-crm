@@ -90,14 +90,14 @@ export default function SchedulePage() {
 
   if (isLoadingCases) {
     return (
-      <div className="max-w-7xl mx-auto flex justify-center items-center h-64">
+      <div className="max-w-[1600px] mx-auto flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="max-w-[1600px] mx-auto space-y-6 pb-12">
       {/* 1. 상단 직급 맞춤형 뷰 스위처 (Role-Adaptive View Switcher) */}
       <ScheduleRoleViewSwitcher
         role={org?.role}

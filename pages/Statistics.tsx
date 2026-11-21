@@ -1218,7 +1218,7 @@ export default function Statistics() {
     const targetStrokeDashoffset = targetCircumference - (targetPercent / 100) * targetCircumference;
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6 pb-20">
+        <div className="max-w-[1600px] mx-auto space-y-6 pb-20">
             {/* Print styling media query */}
             <style>{`
                 @media print {

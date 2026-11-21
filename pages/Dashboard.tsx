@@ -165,7 +165,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto space-y-6 pt-6">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <CardSkeleton />
           <CardSkeleton />
@@ -182,7 +182,7 @@ export default function Dashboard() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="space-y-6 max-w-7xl mx-auto pb-6"
+      className="space-y-6 max-w-[1600px] mx-auto pb-6"
     >
       {/* 최상단 타이틀 & 동기화 상태 */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

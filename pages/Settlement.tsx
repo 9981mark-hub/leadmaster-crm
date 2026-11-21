@@ -4176,7 +4176,7 @@ export default function Settlement() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-[1600px] mx-auto space-y-6">
             {/* 1. Header (차세대 통합 정산 & 경영 손익 센터 v4.5) */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card text-card-foreground border border-border p-5 sm:p-6 rounded-xl shadow-xs">
                 <div>

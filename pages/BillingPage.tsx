@@ -124,7 +124,7 @@ export const BillingPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-fadeIn pb-16">
+    <div className="max-w-[1600px] mx-auto space-y-8 animate-fadeIn pb-16">
       {/* 1. Global Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div>

@@ -906,7 +906,7 @@ export default function TelegramSync() {
 
     if (isAccessDenied) {
         return (
-            <div className="max-w-7xl mx-auto space-y-6">
+            <div className="max-w-[1600px] mx-auto space-y-6">
                 <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 shrink-0">
                         <Smartphone size={24} />
@@ -926,7 +926,7 @@ export default function TelegramSync() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-[1600px] mx-auto space-y-6">
             
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

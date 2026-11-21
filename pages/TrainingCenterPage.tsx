@@ -1199,7 +1199,7 @@ export default function TrainingCenterPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 pb-12 pt-2">
+    <div className="max-w-[1600px] mx-auto space-y-5 pb-12 pt-2">
       {/* Top Banner */}
       <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">

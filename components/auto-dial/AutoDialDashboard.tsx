@@ -148,7 +148,7 @@ const AutoDialDashboard: React.FC = () => {
   // === 2. Runner View (v1.0 호환) ===
   if (viewMode === 'runner' && activeBatchId) {
     return (
-      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="max-w-[1600px] mx-auto">
         <AutoDialRunner
           batchId={activeBatchId}
           onClose={() => {
@@ -166,7 +166,7 @@ const AutoDialDashboard: React.FC = () => {
   // === 3. Report View (v1.0 호환) ===
   if (viewMode === 'report' && activeBatchId) {
     return (
-      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="max-w-[1600px] mx-auto">
         <AutoDialReport
           batchId={activeBatchId}
           onClose={() => {
@@ -188,7 +188,7 @@ const AutoDialDashboard: React.FC = () => {
   }), { total: 0, connected: 0, noAnswer: 0, busy: 0 });
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-6">
       {/* 1. 상단 타이틀 & 런처 바 */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card text-card-foreground p-5 sm:p-6 rounded-xl border border-border shadow-xs">
         <div>
