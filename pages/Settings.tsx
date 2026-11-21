@@ -586,8 +586,13 @@ export default function SettingsPage() {
         saveTelegramRooms(rooms);
     };
 
-    const handleSaveAiKeywords = () => {
+    const handleSaveAiKeywords = async () => {
         localStorage.setItem('lm_aiKeywords', aiKeywords);
+        try {
+            await saveGlobalSettings({ aiKeywords });
+        } catch (e) {
+            console.warn('Failed to sync aiKeywords to server:', e);
+        }
         showToast('도메인 어휘 보정 키워드가 저장되었습니다.');
     };
 
