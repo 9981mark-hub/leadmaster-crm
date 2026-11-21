@@ -339,7 +339,7 @@ export default function TeamPage() {
       <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto">
         <button
           onClick={() => setActiveTab('hr')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'hr'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -351,7 +351,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('performance')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'performance'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -364,7 +364,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('call_audit')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'call_audit'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -376,7 +376,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('bulk_assign')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'bulk_assign'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -393,7 +393,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('rules')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'rules'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -406,7 +406,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('lifecycle')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'lifecycle'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -419,7 +419,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('quality')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'quality'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -431,7 +431,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('dnc')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'dnc'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -443,7 +443,7 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('members')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${
             activeTab === 'members'
               ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
@@ -454,6 +454,8 @@ export default function TeamPage() {
         </button>
       </div>
 
+      {/* 탭 콘텐츠 영역 (스무스 전환) */}
+      <div key={activeTab} className="animate-tab-in space-y-6">
       {/* 탭 0: 올인원 HR 종합 관제 (근태·활동·실적·급여) */}
       {activeTab === 'hr' && (
         <AgentHRHub members={members} cases={cases} />
@@ -1230,6 +1232,7 @@ export default function TeamPage() {
           <AccessLogPanel orgId={org.orgId} members={members} cases={cases} />
         </div>
       )}
+      </div>
 
       {/* 케이스 페이지와 100% 동일한 통합 [케이스 일괄/간편 등록] 모달 */}
       {showUpload && (

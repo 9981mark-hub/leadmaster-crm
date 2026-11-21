@@ -137,89 +137,89 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
       {/* 1. 상단 총괄 지표 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         {/* 총 청구 수수료 */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between">
-          <span className="text-xs font-semibold text-muted-foreground">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between card-interactive">
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 block mb-1">
             총 청구 수수료 (매출)
           </span>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className="text-2xl font-black text-foreground font-mono tabular-nums">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
               ₩ {(totals.billedWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-muted-foreground font-semibold">만원</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
           </div>
-          <span className="text-xs text-muted-foreground mt-2">
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
             총 {totals.totalCases.toLocaleString()}건 수임 분배
-          </span>
+          </div>
         </div>
 
         {/* 입금 확인액 */}
-        <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-sm flex flex-col justify-between card-interactive">
+          <div className="flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-1">
             <span>입금 확인 (완료)</span>
             <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-200 font-mono tabular-nums">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
               ₩ {(totals.collectedWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">만원</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
           </div>
-          <div className="w-full bg-emerald-200 dark:bg-emerald-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
+          <div className="w-full bg-emerald-100 dark:bg-emerald-900/50 h-1.5 rounded-full mt-2.5 overflow-hidden">
             <div
-              className="bg-emerald-500 h-1.5 rounded-full"
+              className="bg-emerald-500 h-1.5 rounded-full meter-smooth"
               style={{ width: `${collectionRate}%` }}
             />
           </div>
         </div>
 
         {/* 남은 미수금 */}
-        <div className="bg-amber-50/70 dark:bg-amber-950/30 p-5 rounded-2xl border border-amber-200 dark:border-amber-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-300">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-amber-100 dark:border-amber-900/40 shadow-sm flex flex-col justify-between card-interactive">
+          <div className="flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-300 mb-1">
             <span>남은 미수금 (받을 돈)</span>
             <Clock size={15} className="text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className="text-2xl font-black text-amber-700 dark:text-amber-200 font-mono tabular-nums">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono tabular-nums">
               ₩ {(totals.outstandingWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold">만원</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
           </div>
-          <span className="text-xs text-amber-700 dark:text-amber-400 mt-2 font-medium">
+          <div className="mt-2 text-xs text-amber-700 dark:text-amber-400 font-medium">
             7일 내 도래: ₩ {(totals.dueSoonWon / 10000).toLocaleString()} 만원
-          </span>
+          </div>
         </div>
 
         {/* 기한 초과 연체금 */}
-        <div className="bg-rose-50/70 dark:bg-rose-950/30 p-5 rounded-2xl border border-rose-200 dark:border-rose-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-rose-800 dark:text-rose-300">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-rose-100 dark:border-rose-900/40 shadow-sm flex flex-col justify-between card-interactive">
+          <div className="flex items-center justify-between text-xs font-bold text-rose-700 dark:text-rose-300 mb-1">
             <span>입금 기한 지난 연체</span>
             <AlertTriangle size={15} className="text-rose-600 dark:text-rose-400" />
           </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className="text-2xl font-black text-rose-700 dark:text-rose-200 font-mono tabular-nums">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono tabular-nums">
               ₩ {(totals.overdueWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-rose-600 dark:text-rose-400 font-bold">만원</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
           </div>
-          <span className="text-xs text-rose-600 dark:text-rose-400 mt-2 font-semibold">
+          <div className="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">
             {totals.overdueWon > 0 ? '⚠️ 즉시 확인 필요' : '정상 수금 관리중'}
-          </span>
+          </div>
         </div>
 
         {/* 총 파트너 거래처 */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between">
-          <span className="text-xs font-semibold text-muted-foreground">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between card-interactive">
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 block mb-1">
             제휴 법무법인
           </span>
-          <div className="flex items-baseline gap-1.5 mt-2">
+          <div className="flex items-baseline gap-1.5">
             <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono tabular-nums">
               {totals.partnerCount.toLocaleString()}
             </span>
-            <span className="text-xs text-muted-foreground font-semibold">개 사무소</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">개 사무소</span>
           </div>
-          <span className="text-xs text-muted-foreground mt-2">
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
             정산 회수율: {collectionRate}%
-          </span>
+          </div>
         </div>
       </div>
 
@@ -291,7 +291,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
           return (
             <div
               key={card.partnerId}
-              className={`bg-white dark:bg-gray-800 rounded-2xl border p-5 shadow-sm flex flex-col justify-between transition-all hover:shadow-md ${
+              className={`bg-white dark:bg-gray-800 rounded-2xl border p-5 shadow-sm flex flex-col justify-between transition-all hover:shadow-md card-interactive ${
                 card.isOverdue
                   ? 'border-rose-300 dark:border-rose-800/80 ring-1 ring-rose-500/20'
                   : 'border-gray-200 dark:border-gray-700'
@@ -368,7 +368,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                   {/* 수금 진척도 바 */}
                   <div className="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden mt-1">
                     <div
-                      className="bg-indigo-600 h-1.5 rounded-full"
+                      className="bg-indigo-600 h-1.5 rounded-full meter-smooth"
                       style={{ width: `${Math.min(100, progress)}%` }}
                     />
                   </div>

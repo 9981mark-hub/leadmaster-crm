@@ -312,7 +312,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                     <button
                         type="button"
                         onClick={() => setStatusFilter('meal')}
-                        className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
+                        className={`btn-tactile px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
                             statusFilter === 'meal' ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-orange-600 dark:text-orange-400 hover:bg-slate-700'
                         }`}
                     >
@@ -322,7 +322,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                     <button
                         type="button"
                         onClick={() => setStatusFilter('off')}
-                        className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
+                        className={`btn-tactile px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
                             statusFilter === 'off' ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-700'
                         }`}
                     >
@@ -334,7 +334,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
 
             {/* 4대 핵심 요약 카드 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm card-interactive">
                     <span className="text-xs font-bold text-gray-500 block mb-1">당월 수임 계약 총합</span>
                     <div className="flex items-baseline gap-1.5">
                         <span className="text-2xl font-black text-gray-900 dark:text-white">
@@ -347,7 +347,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/40 shadow-sm card-interactive">
                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 block mb-1">당월 총 지급 인센티브</span>
                     <div className="flex items-baseline gap-1.5">
                         <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
@@ -360,7 +360,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-sm card-interactive">
                     <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 block mb-1">실지급액 합계 (세후)</span>
                     <div className="flex items-baseline gap-1.5">
                         <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
@@ -373,7 +373,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-rose-100 dark:border-rose-900/40 shadow-sm card-interactive">
                     <span className="text-xs font-bold text-rose-700 dark:text-rose-300 block mb-1">3.3% 원천징수 세금 총액</span>
                     <div className="flex items-baseline gap-1.5">
                         <span className="text-2xl font-black text-rose-600 dark:text-rose-400">

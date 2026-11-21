@@ -54,7 +54,7 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
     }, [cases]);
 
     return (
-        <div className="h-[350px] w-full bg-card p-5 rounded-xl border border-border shadow-xs transition-colors flex flex-col">
+        <div className="h-[350px] w-full bg-card p-5 rounded-xl border border-border shadow-xs transition-colors flex flex-col card-interactive">
             <h3 className="text-sm font-semibold text-foreground mb-4">월별 신규 접수 추이</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -67,19 +67,32 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                             bottom: 5,
                         }}
                     >
+                        <defs>
+                            <linearGradient id="trendBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={isDark ? '#10B981' : '#059669'} stopOpacity={0.95} />
+                                <stop offset="100%" stopColor={isDark ? '#10B981' : '#059669'} stopOpacity={0.35} />
+                            </linearGradient>
+                        </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#27272A' : '#E2E8F0'} />
                         <XAxis dataKey="name" stroke={isDark ? '#94A3B8' : '#64748B'} tick={{ fontSize: 12 }} />
                         <YAxis stroke={isDark ? '#94A3B8' : '#64748B'} tick={{ fontSize: 12 }} />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: isDark ? '#121215' : '#FFFFFF',
+                                backgroundColor: isDark ? 'rgba(18, 18, 21, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                                 borderColor: isDark ? '#27272A' : '#E2E8F0',
                                 color: isDark ? '#F8FAFC' : '#0F172A',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.15)',
+                                backdropFilter: 'blur(8px)',
                             }}
                         />
-                        <Bar dataKey="건수" fill={isDark ? '#10B981' : '#059669'} radius={[4, 4, 0, 0]} />
+                        <Bar
+                            dataKey="건수"
+                            fill="url(#trendBarGradient)"
+                            radius={[6, 6, 0, 0]}
+                            animationDuration={750}
+                            animationEasing="ease-out"
+                        />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
@@ -103,7 +116,7 @@ export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
     }, [cases]);
 
     return (
-        <div className="h-[350px] w-full bg-card p-5 rounded-xl border border-border shadow-xs transition-colors flex flex-col">
+        <div className="h-[350px] w-full bg-card p-5 rounded-xl border border-border shadow-xs transition-colors flex flex-col card-interactive">
             <h3 className="text-sm font-semibold text-foreground mb-2">진행 상태 분포</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -118,6 +131,8 @@ export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                             dataKey="value"
                             label={({ percent }) => (percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : '')} // Only show % inside if significant
                             labelLine={false}
+                            animationDuration={750}
+                            animationEasing="ease-out"
                         >
                             {data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -125,11 +140,12 @@ export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                         </Pie>
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: isDark ? '#121215' : '#FFFFFF',
+                                backgroundColor: isDark ? 'rgba(18, 18, 21, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                                 borderColor: isDark ? '#27272A' : '#E2E8F0',
                                 color: isDark ? '#F8FAFC' : '#0F172A',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.15)',
+                                backdropFilter: 'blur(8px)',
                             }}
                         />
                         <Legend

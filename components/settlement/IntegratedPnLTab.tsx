@@ -106,7 +106,7 @@ export default function IntegratedPnLTab({
       {/* 1. 상단 경영 손익 하이라이트 전광판 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* 총 매출 */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden card-interactive">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
               <Building className="w-4 h-4 text-sky-600 dark:text-sky-400" />
@@ -129,7 +129,7 @@ export default function IntegratedPnLTab({
         </div>
 
         {/* 총 지출 */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg card-interactive">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
               <CreditCard className="w-4 h-4 text-rose-600 dark:text-rose-400" />
@@ -152,7 +152,7 @@ export default function IntegratedPnLTab({
         </div>
 
         {/* 최종 영업 순이익 */}
-        <div className="bg-gradient-to-br from-emerald-950/70 to-slate-900 border border-emerald-700/50 rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="bg-gradient-to-br from-emerald-950/70 to-slate-900 border border-emerald-700/50 rounded-xl p-5 shadow-lg relative overflow-hidden card-interactive">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
               <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -178,7 +178,7 @@ export default function IntegratedPnLTab({
         </div>
 
         {/* 실제 현금 흐름 (통장 입출금) */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between card-interactive">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
@@ -347,14 +347,16 @@ export default function IntegratedPnLTab({
                     outerRadius={85}
                     paddingAngle={4}
                     dataKey="value"
+                    animationDuration={750}
+                    animationEasing="ease-out"
                   >
                     {costBreakdownData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(val: number) => `₩${val.toLocaleString()}원`}
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#fff' }}
+                    formatter={(val: number) => `₩ ${val.toLocaleString()} 원`}
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)', borderColor: 'rgba(51, 65, 85, 0.8)', borderRadius: '12px', color: '#fff', boxShadow: '0 8px 24px -4px rgba(0,0,0,0.3)' }}
                   />
                   <Legend />
                 </PieChart>
@@ -364,7 +366,7 @@ export default function IntegratedPnLTab({
         </div>
 
         {/* 매출 대 지출 대 순이익 바 차트 */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col card-interactive">
           <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
             <h4 className="text-sm font-bold text-white flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
@@ -380,16 +382,16 @@ export default function IntegratedPnLTab({
                 <XAxis dataKey="name" stroke="#64748b" />
                 <YAxis
                   stroke="#64748b"
-                  tickFormatter={(val) => `₩${Math.round(val / 10000).toLocaleString()}만`}
+                  tickFormatter={(val) => `₩ ${Math.round(val / 10000).toLocaleString()} 만원`}
                 />
                 <Tooltip
-                  formatter={(val: number) => `₩${val.toLocaleString()}원`}
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#fff' }}
+                  formatter={(val: number) => `₩ ${val.toLocaleString()} 원`}
+                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)', borderColor: 'rgba(51, 65, 85, 0.8)', borderRadius: '12px', color: '#fff', boxShadow: '0 8px 24px -4px rgba(0,0,0,0.3)' }}
                 />
                 <Legend />
-                <Bar dataKey="총매출" fill="#38bdf8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="총비용" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="영업순이익" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="총매출" fill="#38bdf8" radius={[6, 6, 0, 0]} animationDuration={750} animationEasing="ease-out" />
+                <Bar dataKey="총비용" fill="#f43f5e" radius={[6, 6, 0, 0]} animationDuration={750} animationEasing="ease-out" />
+                <Bar dataKey="영업순이익" fill="#10b981" radius={[6, 6, 0, 0]} animationDuration={750} animationEasing="ease-out" />
               </BarChart>
             </ResponsiveContainer>
           </div>
