@@ -1174,6 +1174,9 @@ export const processIncomingCase = (c: any): Case => {
 // --- Statuses ---
 export const fetchStatuses = async (): Promise<CaseStatus[]> => {
   if (!isInitialized) await initializeData();
+  if (localStatuses.length === 0) {
+    localStatuses = [...DEFAULT_STATUS_LIST];
+  }
   return [...localStatuses];
 };
 
@@ -1213,6 +1216,9 @@ export const updateStatusOrder = async (newOrder: CaseStatus[]): Promise<CaseSta
 // --- Secondary Statuses (2차 상태) ---
 export const fetchSecondaryStatuses = async (): Promise<string[]> => {
   if (!isInitialized) await initializeData();
+  if (localSecondaryStatuses.length === 0) {
+    localSecondaryStatuses = ['고객취소', '진행불가', '연락안받음', '출장예약', '방문예약', '고민중', '계약서작성', '관리중', '착수금입금', '기준비용입금'];
+  }
   return [...localSecondaryStatuses];
 };
 
@@ -1300,6 +1306,9 @@ export const deleteTertiaryStatus = async (secondaryStatus: string, status: stri
 // --- Inbound Paths ---
 export const fetchInboundPaths = async (): Promise<string[]> => {
   if (!isInitialized) await initializeData();
+  if (localInboundPaths.length === 0) {
+    localInboundPaths = [...MOCK_INBOUND_PATHS];
+  }
   return [...localInboundPaths];
 };
 

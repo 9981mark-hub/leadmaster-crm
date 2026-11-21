@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SettingsCard } from '../SettingsCard';
 import { SettingsRow } from '../SettingsRow';
 import { CaseStatus, MissedCallIntervalTier } from '../../../types';
+import { DEFAULT_STATUS_LIST } from '../../../constants';
 import { User, PhoneCall, ListFilter, Mail, Plus, Trash2, Save, ArrowRight, Layers, Tag, Check, Lock } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 
@@ -126,6 +127,15 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
         setEmailNotificationRecipients(emailNotificationRecipients.filter(e => e !== email));
     };
 
+    // 부재 콜 기준 상태 드롭다운 옵션 (statuses가 비어있어도 DEFAULT_STATUS_LIST로 100% 안전 방어)
+    const statusOptions = React.useMemo(() => {
+        const base = statuses && statuses.length > 0 ? [...statuses] : [...DEFAULT_STATUS_LIST];
+        if (missedCallStatus && !base.includes(missedCallStatus)) {
+            base.unshift(missedCallStatus);
+        }
+        return Array.from(new Set(base));
+    }, [statuses, missedCallStatus]);
+
     return (
         <div className="space-y-6">
             {/* 읽기 전용 뷰어 안내 배너 */}
@@ -175,15 +185,15 @@ export const OperationsSettingsTab: React.FC<OperationsSettingsTabProps> = ({
                 <SettingsRow label="부재 콜 기준 상태" description="케이스가 이 상태일 때만 '부재 확인' 버튼 및 재통화 타이머가 동작합니다.">
                     <select
                         disabled={!canEdit}
-                        className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none disabled:opacity-60"
-                        value={missedCallStatus}
+                        className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none disabled:opacity-60 cursor-pointer"
+                        value={missedCallStatus || statusOptions[0] || '부재'}
                         onChange={e => {
                             setMissedCallStatus(e.target.value);
                             localStorage.setItem('lm_missedStatus', e.target.value);
                             showToast(`부재 기준 상태가 '${e.target.value}'(으)로 변경되었습니다.`);
                         }}
                     >
-                        {statuses.map(s => (
+                        {statusOptions.map(s => (
                             <option key={s} value={s}>{s}</option>
                         ))}
                     </select>

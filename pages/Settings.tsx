@@ -31,6 +31,7 @@ import {
     MissedCallIntervalTier,
     TelegramRoomTarget
 } from '../types';
+import { DEFAULT_STATUS_LIST } from '../constants';
 import {
     Building,
     Building2,
@@ -156,7 +157,16 @@ export default function SettingsPage() {
     const [affectedPathCaseCount, setAffectedPathCaseCount] = useState(0);
 
     // 1st Statuses
-    const [statuses, setStatuses] = useState<CaseStatus[]>([]);
+    const [statuses, setStatuses] = useState<CaseStatus[]>(() => {
+        try {
+            const cached = localStorage.getItem('lm_statuses');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch { }
+        return [...DEFAULT_STATUS_LIST];
+    });
     const [newStatus, setNewStatus] = useState('');
     const [isStatusDeleteModalOpen, setStatusDeleteModalOpen] = useState(false);
     const [statusToDelete, setStatusToDelete] = useState<string | null>(null);
@@ -230,7 +240,7 @@ export default function SettingsPage() {
                 setPartners(pData);
                 setCases(cData);
                 setInboundPaths(pathData);
-                setStatuses(statusData);
+                setStatuses(statusData && statusData.length > 0 ? statusData : [...DEFAULT_STATUS_LIST]);
                 setSecondaryStatuses(secData);
                 setTertiaryStatuses(terData);
 
