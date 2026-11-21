@@ -1219,19 +1219,21 @@ export default function TeamPage() {
       )}
 
       {/* 케이스 페이지와 100% 동일한 통합 [케이스 일괄/간편 등록] 모달 */}
-      <ImportModal
-        isOpen={showUpload}
-        onClose={() => setShowUpload(false)}
-        onSuccess={() => {
-          setShowUpload(false);
-          queryClient.invalidateQueries({ queryKey: ['cases'] });
-          setPanelKey(k => k + 1);
-          reload();
-          showToast('신규 DB 등록이 완료되었습니다. [대용량 리드 배정] 탭에서 상담원에게 즉시 배분하실 수 있습니다.', 'success');
-        }}
-        partners={partners}
-        inboundPaths={inboundPaths}
-      />
+      {showUpload && (
+        <ImportModal
+          isOpen={showUpload}
+          onClose={() => setShowUpload(false)}
+          onSuccess={() => {
+            setShowUpload(false);
+            queryClient.invalidateQueries({ queryKey: ['cases'] });
+            setPanelKey(k => k + 1);
+            reload();
+            showToast('신규 DB 등록이 완료되었습니다. [대용량 리드 배정] 탭에서 상담원에게 즉시 배분하실 수 있습니다.', 'success');
+          }}
+          partners={partners}
+          inboundPaths={inboundPaths}
+        />
+      )}
 
       {/* 상담원 대량 초대 모달 */}
       <BulkInviteModal

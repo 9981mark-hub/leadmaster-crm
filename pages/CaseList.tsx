@@ -1009,7 +1009,7 @@ export default function CaseList() {
             />
 
             {/* 관리자 전용 대량 인입/업로드 모달 (상담원 비노출 & 렌더링 원천 차단) */}
-            {isAdmin && (
+            {isAdmin && isImportModalOpen && (
                 <ImportModal
                     isOpen={isImportModalOpen}
                     onClose={() => setIsImportModalOpen(false)}

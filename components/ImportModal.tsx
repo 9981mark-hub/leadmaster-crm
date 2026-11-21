@@ -42,9 +42,6 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     const [activeTab, setActiveTab] = useState<ImportTab>('excel');
     const [isLoading, setIsLoading] = useState(false);
 
-    // [보안 가드] 관리자가 아니면 대량 등록 모달을 절대 렌더링하지 않음 (상담원 원천 차단)
-    if (!isAdmin || !isOpen) return null;
-
     // [Added] Load all cases for global duplicate check
     const [existingCases, setExistingCases] = useState<Case[]>([]);
 
@@ -193,8 +190,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
         }
     }, [partners, inboundPaths]);
 
-    // Conditional Returns must be AFTER all Hooks
-    if (!isOpen) return null;
+    // [보안 가드 & 닫힘 상태 방어] 모든 Hooks 선언 완료 후 조건부 렌더링 (Rules of Hooks 준수)
+    if (!isAdmin || !isOpen) return null;
 
     // Safety check for critical resources
     if (!partners || !Array.isArray(partners) || !inboundPaths || !Array.isArray(inboundPaths)) {
