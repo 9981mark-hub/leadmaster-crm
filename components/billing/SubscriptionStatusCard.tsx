@@ -150,15 +150,15 @@ export const SubscriptionStatusCard: React.FC<SubscriptionStatusCardProps> = ({
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 당월 CRM 이용료 (청구 예정액)
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                석당 ₩{bill.unitPrice.toLocaleString()}원
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                석당 ₩ {bill.unitPrice.toLocaleString()}원
               </span>
             </div>
 
             <div className="mt-3">
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tabular-nums">
-                  ₩{totalPrice.toLocaleString()}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tabular-nums font-mono">
+                  ₩ {totalPrice.toLocaleString()}
                 </span>
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원 (VAT 포함)</span>
               </div>
@@ -167,11 +167,11 @@ export const SubscriptionStatusCard: React.FC<SubscriptionStatusCardProps> = ({
             <div className="space-y-1.5 mt-3 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex justify-between">
                 <span>공급가액 ({seats}석 기준)</span>
-                <span className="font-mono text-slate-900 dark:text-slate-200">₩{supplyPrice.toLocaleString()}원</span>
+                <span className="font-mono text-slate-900 dark:text-slate-200">₩ {supplyPrice.toLocaleString()}원</span>
               </div>
               <div className="flex justify-between">
                 <span>부가가치세 (10%)</span>
-                <span className="font-mono text-slate-900 dark:text-slate-200">₩{vat.toLocaleString()}원</span>
+                <span className="font-mono text-slate-900 dark:text-slate-200">₩ {vat.toLocaleString()}원</span>
               </div>
             </div>
           </div>

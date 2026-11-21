@@ -195,25 +195,25 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
                     <td className="py-3 px-3 text-center font-bold font-sans">
                       {invoice.activeSeats} 석
                     </td>
-                    <td className="py-3 px-3 text-right text-slate-700 dark:text-slate-300">
-                      ₩{invoice.unitPrice.toLocaleString()}원
+                    <td className="py-3 px-3 text-right text-slate-700 dark:text-slate-300 font-mono">
+                      ₩ {invoice.unitPrice.toLocaleString()}원
                     </td>
-                    <td className="py-3 px-3 text-right font-bold text-slate-900 dark:text-white">
-                      ₩{invoice.supplyPrice.toLocaleString()}원
+                    <td className="py-3 px-3 text-right font-bold text-slate-900 dark:text-white font-mono">
+                      ₩ {invoice.supplyPrice.toLocaleString()}원
                     </td>
                   </tr>
                   <tr className="text-slate-500 bg-slate-50/40 dark:bg-slate-850/40 font-sans">
                     <td className="py-2.5 px-3">안드로이드 스마트 자동콜 무제한 연동</td>
                     <td className="py-2.5 px-3">기본 인프라</td>
                     <td className="py-2.5 px-3 text-center">무제한</td>
-                    <td className="py-2.5 px-3 text-right font-mono">₩0</td>
+                    <td className="py-2.5 px-3 text-right font-mono">₩ 0</td>
                     <td className="py-2.5 px-3 text-right font-mono font-semibold text-emerald-600">포함 (무료)</td>
                   </tr>
                   <tr className="text-slate-500 bg-slate-50/40 dark:bg-slate-850/40 font-sans">
                     <td className="py-2.5 px-3">m4a 통화녹음 1년 무제한 보관 & AI 트레이닝</td>
                     <td className="py-2.5 px-3">기본 인프라</td>
                     <td className="py-2.5 px-3 text-center">표준 제공</td>
-                    <td className="py-2.5 px-3 text-right font-mono">₩0</td>
+                    <td className="py-2.5 px-3 text-right font-mono">₩ 0</td>
                     <td className="py-2.5 px-3 text-right font-mono font-semibold text-emerald-600">포함 (무료)</td>
                   </tr>
                 </tbody>
@@ -223,16 +223,16 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
               <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 space-y-1.5 text-xs">
                 <div className="flex justify-between font-mono">
                   <span className="font-sans text-slate-600 dark:text-slate-400">공급가액</span>
-                  <span className="font-semibold text-slate-900 dark:text-white">₩{invoice.supplyPrice.toLocaleString()} 원</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">₩ {invoice.supplyPrice.toLocaleString()} 원</span>
                 </div>
                 <div className="flex justify-between font-mono">
                   <span className="font-sans text-slate-600 dark:text-slate-400">부가가치세 (VAT 10%)</span>
-                  <span className="text-slate-700 dark:text-slate-300">₩{invoice.vat.toLocaleString()} 원</span>
+                  <span className="text-slate-700 dark:text-slate-300">₩ {invoice.vat.toLocaleString()} 원</span>
                 </div>
                 <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 dark:border-slate-700">
                   <span className="font-bold text-slate-900 dark:text-white text-sm">최종 청구 합계 금액</span>
                   <span className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 font-mono">
-                    ₩{invoice.totalPrice.toLocaleString()} 원
+                    ₩ {invoice.totalPrice.toLocaleString()} 원
                   </span>
                 </div>
               </div>

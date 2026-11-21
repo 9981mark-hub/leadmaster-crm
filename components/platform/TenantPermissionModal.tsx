@@ -328,8 +328,8 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
               <span>요금제 모델 및 맞춤 단가 설정</span>
             </h4>
             <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-              현재 적용: ₩{calculateOrgMonthlyBill(Math.max(1, org.activeMembers), perms).unitPrice.toLocaleString()}/석 
-              (월 ₩{calculateOrgMonthlyBill(Math.max(1, org.activeMembers), perms).totalPrice.toLocaleString()})
+              현재 적용: ₩ {calculateOrgMonthlyBill(Math.max(1, org.activeMembers), perms).unitPrice.toLocaleString()}원/석 
+              (월 ₩ {calculateOrgMonthlyBill(Math.max(1, org.activeMembers), perms).totalPrice.toLocaleString()}원)
             </span>
           </div>
 
@@ -355,7 +355,7 @@ export const TenantPermissionModal: React.FC<TenantPermissionModalProps> = ({
                   />
                 </div>
                 <p className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-1">
-                  1~5인 ₩58,000 ~ 101인+ ₩38,000 자동 할인
+                  1~5인 ₩ 58,000 ~ 101인+ ₩ 38,000 자동 할인
                 </p>
               </label>
 

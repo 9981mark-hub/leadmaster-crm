@@ -4266,65 +4266,87 @@ export default function Settlement() {
             </div>
 
             {/* 2. 최상단 상시 노출: 통합 경영 손익(P&L) 글로벌 KPI 전광판 */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-card p-3 rounded-xl border border-border shadow-xs">
-                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
-                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
-                        <span>거래처 총 수수료 매출</span>
-                        <span className="text-primary font-semibold font-mono text-2xs">공급가</span>
-                    </div>
-                    <div className="text-base font-bold text-foreground font-mono tabular-nums">
-                        ₩{(integratedPnLSummary?.totalRevenueWon || 0).toLocaleString()}
-                    </div>
-                    {(integratedPnLSummary?.totalVatWon || 0) > 0 && (
-                        <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
-                            부가세 별도 ₩{(integratedPnLSummary?.totalVatWon || 0).toLocaleString()}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+                    <div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1.5">
+                            <span>거래처 총 수수료 매출</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary">공급가</span>
                         </div>
-                    )}
-                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
-                        입금 ₩{(integratedPnLSummary?.collectedRevenueWon || 0).toLocaleString()} / 미수 ₩{(integratedPnLSummary?.outstandingRevenueWon || 0).toLocaleString()}
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-foreground font-mono tabular-nums">
+                                ₩ {(integratedPnLSummary?.totalRevenueWon || 0).toLocaleString()}
+                            </span>
+                            <span className="text-xs font-semibold text-muted-foreground">원</span>
+                        </div>
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground font-mono space-y-0.5">
+                        {(integratedPnLSummary?.totalVatWon || 0) > 0 && (
+                            <div>
+                                부가세 별도 ₩ {(integratedPnLSummary?.totalVatWon || 0).toLocaleString()} 원
+                            </div>
+                        )}
+                        <div>
+                            입금 ₩ {(integratedPnLSummary?.collectedRevenueWon || 0).toLocaleString()} 원 / 미수 ₩ {(integratedPnLSummary?.outstandingRevenueWon || 0).toLocaleString()} 원
+                        </div>
                     </div>
                 </div>
 
-                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
-                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
-                        <span>상담원 총 수당</span>
-                        <span className="text-primary font-semibold font-mono text-2xs">인건비</span>
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+                    <div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1.5">
+                            <span>상담원 총 수당</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">인건비</span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+                                ₩ {(integratedPnLSummary?.totalAgentCommissionWon || 0).toLocaleString()}
+                            </span>
+                            <span className="text-xs font-semibold text-muted-foreground">원</span>
+                        </div>
                     </div>
-                    <div className="text-base font-bold text-foreground font-mono tabular-nums">
-                        ₩{(integratedPnLSummary?.totalAgentCommissionWon || 0).toLocaleString()}
-                    </div>
-                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
-                        회사 마진 ₩{(integratedPnLSummary?.totalCompanyMarginWon || 0).toLocaleString()} 공제
-                    </div>
-                </div>
-
-                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
-                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
-                        <span>DB 구매 원가</span>
-                        <span className="text-destructive font-semibold font-mono text-2xs">팀관리</span>
-                    </div>
-                    <div className="text-base font-bold text-foreground font-mono tabular-nums">
-                        ₩{(integratedPnLSummary?.totalDbCostWon || 0).toLocaleString()}
-                    </div>
-                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
-                        총 지출 ₩{(integratedPnLSummary?.totalExpensesWon || 0).toLocaleString()} 중 원가
+                    <div className="mt-2 text-xs text-muted-foreground font-mono">
+                        회사 마진 ₩ {(integratedPnLSummary?.totalCompanyMarginWon || 0).toLocaleString()} 원 공제
                     </div>
                 </div>
 
-                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
-                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
-                        <span>최종 영업 순이익</span>
-                        <span className={`font-mono font-semibold text-2xs ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                            {integratedPnLSummary?.profitMarginRate || 0}%
-                        </span>
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+                    <div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1.5">
+                            <span>DB 구매 원가</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400">팀관리</span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono tabular-nums">
+                                ₩ {(integratedPnLSummary?.totalDbCostWon || 0).toLocaleString()}
+                            </span>
+                            <span className="text-xs font-semibold text-muted-foreground">원</span>
+                        </div>
                     </div>
-                    <div className={`text-base font-bold font-mono tabular-nums ${
-                        (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-destructive'
-                    }`}>
-                        ₩{(integratedPnLSummary?.netProfitWon || 0).toLocaleString()}
+                    <div className="mt-2 text-xs text-muted-foreground font-mono">
+                        총 지출 ₩ {(integratedPnLSummary?.totalExpensesWon || 0).toLocaleString()} 원 중 원가
                     </div>
-                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
-                        실현금흐름: ₩{(integratedPnLSummary?.netCashFlowWon || 0).toLocaleString()}
+                </div>
+
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+                    <div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1.5">
+                            <span>최종 영업 순이익</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                                {integratedPnLSummary?.profitMarginRate || 0}%
+                            </span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className={`text-2xl font-black font-mono tabular-nums ${
+                                (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-destructive'
+                            }`}>
+                                {(integratedPnLSummary?.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs(integratedPnLSummary?.netProfitWon || 0).toLocaleString()}
+                            </span>
+                            <span className="text-xs font-semibold text-muted-foreground">원</span>
+                        </div>
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground font-mono">
+                        실현금흐름: {(integratedPnLSummary?.netCashFlowWon || 0) < 0 ? '-' : ''}₩ {Math.abs(integratedPnLSummary?.netCashFlowWon || 0).toLocaleString()} 원
                     </div>
                 </div>
             </div>

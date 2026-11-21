@@ -173,7 +173,7 @@ export default function PlatformPage() {
             </span>
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
-            고객사별 활성 상담원 과금(₩48,000/인) 현황, 서버 원가 마진율 및 테넌트 라이프사이클을 총괄합니다.
+            고객사별 활성 상담원 과금(₩ 48,000/인) 현황, 서버 원가 마진율 및 테넌트 라이프사이클을 총괄합니다.
           </p>
         </div>
         <button
@@ -220,7 +220,7 @@ export default function PlatformPage() {
             <span className="text-xs text-gray-500 dark:text-gray-400">석 (활성 계정)</span>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            좌석당 단가: <span className="font-semibold text-gray-800 dark:text-gray-200">₩48,000 / 월</span>
+            좌석당 단가: <span className="font-semibold text-gray-800 dark:text-gray-200">₩ 48,000 / 월</span>
           </div>
         </div>
 
@@ -234,7 +234,7 @@ export default function PlatformPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
-              ₩{animatedRevenue.toLocaleString()}
+              ₩ {animatedRevenue.toLocaleString()}
             </span>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -252,14 +252,14 @@ export default function PlatformPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
-              ₩{animatedNetMargin.toLocaleString()}
+              ₩ {animatedNetMargin.toLocaleString()}
             </span>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
               ({billingSummary.marginPercent}%)
             </span>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-mono">
-            <Server size={12} /> Pro 인프라 비용: ₩{billingSummary.estimatedInfraCost.toLocaleString()}/월
+            <Server size={12} /> Pro 인프라 비용: ₩ {billingSummary.estimatedInfraCost.toLocaleString()}/월
           </div>
         </div>
       </div>
@@ -585,11 +585,11 @@ export default function PlatformPage() {
                         <span className="text-gray-500 dark:text-gray-400 text-xs font-normal whitespace-nowrap">본사 운영</span>
                       ) : (
                         <div className="whitespace-nowrap">
-                          <span className="text-gray-900 dark:text-white">
-                            ₩{monthlyBill.toLocaleString()}
+                          <span className="text-gray-900 dark:text-white font-mono">
+                            ₩ {monthlyBill.toLocaleString()} 원
                           </span>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 font-normal whitespace-nowrap">
-                            (₩{bill.unitPrice.toLocaleString()}/석 • {bill.tierName})
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-normal whitespace-nowrap font-mono">
+                            (₩ {bill.unitPrice.toLocaleString()}원/석 • {bill.tierName})
                           </div>
                         </div>
                       )}

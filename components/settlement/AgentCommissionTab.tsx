@@ -125,11 +125,14 @@ export default function AgentCommissionTab({
               인건비성 지출
             </span>
           </div>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight font-mono tabular-nums">
-            ₩{totalStats.totalAgentCommission.toLocaleString()}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight font-mono tabular-nums">
+              ₩ {totalStats.totalAgentCommission.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
           <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            총 {totalStats.totalCases}건 수임 달성 수당
+            총 {totalStats.totalCases.toLocaleString()}건 수임 달성 수당
           </div>
         </div>
 
@@ -144,11 +147,14 @@ export default function AgentCommissionTab({
               회사 몫
             </span>
           </div>
-          <div className="text-2xl font-black text-sky-600 dark:text-sky-400 tracking-tight">
-            ₩{totalStats.totalCompanyMargin.toLocaleString()}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-sky-600 dark:text-sky-400 tracking-tight font-mono tabular-nums">
+              ₩ {totalStats.totalCompanyMargin.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
           <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            총 매출 ₩{totalStats.totalPartnerFee.toLocaleString()} 중 공제
+            총 매출 ₩ {totalStats.totalPartnerFee.toLocaleString()}원 중 공제
           </div>
         </div>
 
@@ -315,14 +321,14 @@ export default function AgentCommissionTab({
                     <td className="py-3.5 px-4 text-center font-bold text-indigo-300">
                       {row.caseCount}건
                     </td>
-                    <td className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300">
-                      ₩{row.totalPartnerFeeWon.toLocaleString()}
+                    <td className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300 font-mono">
+                      ₩ {row.totalPartnerFeeWon.toLocaleString()}
                     </td>
-                    <td className="py-3.5 px-4 text-right text-rose-600 dark:text-rose-400/90 font-medium text-xs">
-                      -₩{row.companyShareWon.toLocaleString()}
+                    <td className="py-3.5 px-4 text-right text-rose-600 dark:text-rose-400/90 font-medium text-xs font-mono">
+                      -₩ {row.companyShareWon.toLocaleString()}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600 dark:text-emerald-400 text-base">
-                      ₩{row.agentShareWon.toLocaleString()}
+                    <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600 dark:text-emerald-400 text-base font-mono">
+                      ₩ {row.agentShareWon.toLocaleString()}
                     </td>
                     <td className="py-3.5 px-4 text-center text-xs">
                       <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded font-medium">
@@ -366,8 +372,8 @@ export default function AgentCommissionTab({
                       총 {selectedAgent.caseCount}건
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    지급 예정 수당: <strong className="text-emerald-600 dark:text-emerald-400">₩{selectedAgent.agentShareWon.toLocaleString()}</strong> (회사 차감 마진: ₩{selectedAgent.companyShareWon.toLocaleString()})
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    지급 예정 수당: <strong className="text-emerald-600 dark:text-emerald-400">₩ {selectedAgent.agentShareWon.toLocaleString()}원</strong> (회사 차감 마진: ₩ {selectedAgent.companyShareWon.toLocaleString()}원)
                   </p>
                 </div>
               </div>
@@ -404,14 +410,14 @@ export default function AgentCommissionTab({
                         {c.contractDate || '-'}
                         {c.earnedAt && <span className="block text-xs text-slate-500">발생 {c.earnedAt}</span>}
                       </span>
-                      <span className="text-right text-slate-600 dark:text-slate-300">
-                        ₩{c.contractFeeWon ? c.contractFeeWon.toLocaleString() : '0'}
+                      <span className="text-right text-slate-600 dark:text-slate-300 font-mono">
+                        ₩ {c.contractFeeWon ? c.contractFeeWon.toLocaleString() : '0'}
                       </span>
-                      <span className="text-right text-slate-600 dark:text-slate-300 font-medium">
-                        ₩{c.partnerFeeWon ? c.partnerFeeWon.toLocaleString() : '0'}
+                      <span className="text-right text-slate-600 dark:text-slate-300 font-medium font-mono">
+                        ₩ {c.partnerFeeWon ? c.partnerFeeWon.toLocaleString() : '0'}
                       </span>
-                      <span className="text-right font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                        ₩{c.agentShareWon ? c.agentShareWon.toLocaleString() : '0'}
+                      <span className="text-right font-bold text-emerald-600 dark:text-emerald-400 text-sm font-mono">
+                        ₩ {c.agentShareWon ? c.agentShareWon.toLocaleString() : '0'}
                       </span>
                     </div>
                   ))}

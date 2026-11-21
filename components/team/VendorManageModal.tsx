@@ -331,10 +331,10 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     {/* 실시간 단가 환산 표시 배너 */}
                     <div className="flex items-center justify-between pt-2 border-t border-indigo-200/60 dark:border-indigo-800/60 text-xs">
                       <span className="text-gray-600 dark:text-gray-300 text-xs">
-                        💡 <strong>{formData.packageLeads.toLocaleString()}건</strong>에 <strong>₩{formData.packagePrice.toLocaleString()}원</strong>
+                        💡 <strong>{formData.packageLeads.toLocaleString()}건</strong>에 <strong>₩ {formData.packagePrice.toLocaleString()}원</strong>
                       </span>
-                      <span className="font-extrabold text-indigo-700 dark:text-indigo-300">
-                        건당 환산 단가: ₩{computedUnitCost.toLocaleString()}원
+                      <span className="font-extrabold text-indigo-700 dark:text-indigo-300 font-mono">
+                        건당 환산 단가: ₩ {computedUnitCost.toLocaleString()}원
                       </span>
                     </div>
                   </div>
@@ -444,12 +444,12 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                           {v.pricingType === 'package' ? (
                             <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                               <Package size={11} />
-                              {(v.packageLeads || 0).toLocaleString()}건 ₩{(v.packagePrice || 0).toLocaleString()}원 (건당 ₩{v.defaultUnitCost.toLocaleString()})
+                              {(v.packageLeads || 0).toLocaleString()}건 ₩ {(v.packagePrice || 0).toLocaleString()}원 (건당 ₩ {v.defaultUnitCost.toLocaleString()}원)
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
                               <Tag size={11} />
-                              건당 CPL ₩{v.defaultUnitCost.toLocaleString()}
+                              건당 CPL ₩ {v.defaultUnitCost.toLocaleString()}원
                             </span>
                           )}
                         </div>
@@ -494,7 +494,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
             <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
               <Sparkles size={16} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
               <span>
-                <strong>팁:</strong> <strong>"3,000건에 50만원"</strong> 같은 대량 구매 거래처는 <strong>[대량 패키지]</strong> 방식을 선택하시면 건당 환산 단가(약 ₩167원)가 자동 산출되어 회차 등록 시 그대로 적용됩니다.
+                <strong>팁:</strong> <strong>"3,000건에 50만원"</strong> 같은 대량 구매 거래처는 <strong>[대량 패키지]</strong> 방식을 선택하시면 건당 환산 단가(약 ₩ 167원)가 자동 산출되어 회차 등록 시 그대로 적용됩니다.
               </span>
             </div>
           </div>

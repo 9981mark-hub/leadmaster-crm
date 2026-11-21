@@ -137,34 +137,34 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
       {/* 1. 상단 총괄 지표 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         {/* 총 청구 수수료 */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between">
+          <span className="text-xs font-semibold text-muted-foreground">
             총 청구 수수료 (매출)
           </span>
-          <div className="mt-2">
-            <span className="text-xl md:text-2xl font-black text-gray-900 dark:text-white font-mono">
-              ₩{(totals.billedWon / 10000).toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-2">
+            <span className="text-2xl font-black text-foreground font-mono tabular-nums">
+              ₩ {(totals.billedWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">만원</span>
+            <span className="text-xs text-muted-foreground font-semibold">만원</span>
           </div>
-          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            총 {totals.totalCases}건 수임 분배
+          <span className="text-xs text-muted-foreground mt-2">
+            총 {totals.totalCases.toLocaleString()}건 수임 분배
           </span>
         </div>
 
         {/* 입금 확인액 */}
-        <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 flex flex-col justify-between">
+        <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800 flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300">
             <span>입금 확인 (완료)</span>
-            <CheckCircle2 size={14} className="text-emerald-600" />
+            <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="mt-2">
-            <span className="text-xl md:text-2xl font-black text-emerald-700 dark:text-emerald-200 font-mono">
-              ₩{(totals.collectedWon / 10000).toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-2">
+            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-200 font-mono tabular-nums">
+              ₩ {(totals.collectedWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-emerald-600 font-bold ml-1">만원</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">만원</span>
           </div>
-          <div className="w-full bg-emerald-200 dark:bg-emerald-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+          <div className="w-full bg-emerald-200 dark:bg-emerald-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
             <div
               className="bg-emerald-500 h-1.5 rounded-full"
               style={{ width: `${collectionRate}%` }}
@@ -173,51 +173,51 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
         </div>
 
         {/* 남은 미수금 */}
-        <div className="bg-amber-50/70 dark:bg-amber-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800 flex flex-col justify-between">
+        <div className="bg-amber-50/70 dark:bg-amber-950/30 p-5 rounded-2xl border border-amber-200 dark:border-amber-800 flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-300">
             <span>남은 미수금 (받을 돈)</span>
-            <Clock size={14} className="text-amber-600" />
+            <Clock size={15} className="text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="mt-2">
-            <span className="text-xl md:text-2xl font-black text-amber-700 dark:text-amber-200 font-mono">
-              ₩{(totals.outstandingWon / 10000).toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-2">
+            <span className="text-2xl font-black text-amber-700 dark:text-amber-200 font-mono tabular-nums">
+              ₩ {(totals.outstandingWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-amber-600 font-bold ml-1">만원</span>
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold">만원</span>
           </div>
-          <span className="text-xs text-amber-700 dark:text-amber-400 mt-1">
-            7일 내 도래: ₩{(totals.dueSoonWon / 10000).toLocaleString()}만
+          <span className="text-xs text-amber-700 dark:text-amber-400 mt-2 font-medium">
+            7일 내 도래: ₩ {(totals.dueSoonWon / 10000).toLocaleString()} 만원
           </span>
         </div>
 
         {/* 기한 초과 연체금 */}
-        <div className="bg-rose-50/70 dark:bg-rose-950/30 p-4 rounded-2xl border border-rose-200 dark:border-rose-800 flex flex-col justify-between">
+        <div className="bg-rose-50/70 dark:bg-rose-950/30 p-5 rounded-2xl border border-rose-200 dark:border-rose-800 flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs font-bold text-rose-800 dark:text-rose-300">
             <span>입금 기한 지난 연체</span>
-            <AlertTriangle size={14} className="text-rose-600" />
+            <AlertTriangle size={15} className="text-rose-600 dark:text-rose-400" />
           </div>
-          <div className="mt-2">
-            <span className="text-xl md:text-2xl font-black text-rose-700 dark:text-rose-200 font-mono">
-              ₩{(totals.overdueWon / 10000).toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-2">
+            <span className="text-2xl font-black text-rose-700 dark:text-rose-200 font-mono tabular-nums">
+              ₩ {(totals.overdueWon / 10000).toLocaleString()}
             </span>
-            <span className="text-xs text-rose-600 font-bold ml-1">만원</span>
+            <span className="text-xs text-rose-600 dark:text-rose-400 font-bold">만원</span>
           </div>
-          <span className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-semibold">
+          <span className="text-xs text-rose-600 dark:text-rose-400 mt-2 font-semibold">
             {totals.overdueWon > 0 ? '⚠️ 즉시 확인 필요' : '정상 수금 관리중'}
           </span>
         </div>
 
         {/* 총 파트너 거래처 */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between">
+          <span className="text-xs font-semibold text-muted-foreground">
             제휴 법무법인
           </span>
-          <div className="mt-2">
-            <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono">
-              {totals.partnerCount}
+          <div className="flex items-baseline gap-1.5 mt-2">
+            <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono tabular-nums">
+              {totals.partnerCount.toLocaleString()}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">개 사무소</span>
+            <span className="text-xs text-muted-foreground font-semibold">개 사무소</span>
           </div>
-          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <span className="text-xs text-muted-foreground mt-2">
             정산 회수율: {collectionRate}%
           </span>
         </div>
@@ -331,28 +331,28 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500">총 수임료 규모:</span>
                     <span className="font-mono font-bold text-gray-900 dark:text-white">
-                      ₩{(card.totalContractFeeWon / 10000).toLocaleString()}만원
+                      ₩ {(card.totalContractFeeWon / 10000).toLocaleString()} 만원
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 font-semibold">청구 수수료액:</span>
                     <span className="font-mono font-black text-indigo-600 dark:text-indigo-400 text-sm">
-                      ₩{(card.billedCommissionWon / 10000).toLocaleString()}만원
+                      ₩ {(card.billedCommissionWon / 10000).toLocaleString()} 만원
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-semibold">
                     <span>입금 확인액:</span>
                     <span className="font-mono font-bold">
-                      ₩{(card.collectedCommissionWon / 10000).toLocaleString()}만원 ({progress}%)
+                      ₩ {(card.collectedCommissionWon / 10000).toLocaleString()} 만원 ({progress}%)
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center text-amber-600 dark:text-amber-400 font-semibold">
                     <span>미수 잔액:</span>
                     <span className="font-mono font-bold">
-                      ₩{(card.outstandingWon / 10000).toLocaleString()}만원
+                      ₩ {(card.outstandingWon / 10000).toLocaleString()} 만원
                     </span>
                   </div>
 
@@ -360,7 +360,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                     <div className="flex justify-between items-center text-rose-600 font-bold bg-rose-50 dark:bg-rose-950/40 p-1.5 rounded-lg">
                       <span>연체 경고:</span>
                       <span className="font-mono">
-                        ₩{(card.overdueWon / 10000).toLocaleString()}만원 연체중
+                        ₩ {(card.overdueWon / 10000).toLocaleString()} 만원 연체중
                       </span>
                     </div>
                   )}

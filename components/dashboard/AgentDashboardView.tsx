@@ -206,8 +206,11 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
               <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
                 <Wallet size={13} strokeWidth={1.75} className="text-amber-500" /> 이번 달 예상 인센티브
               </div>
-              <div className="text-xl font-bold text-foreground tabular-nums mt-0.5">
-                ₩{estimatedIncentive.toLocaleString()}
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-xl font-bold text-foreground tabular-nums font-mono">
+                  ₩ {estimatedIncentive.toLocaleString()}
+                </span>
+                <span className="text-xs font-semibold text-muted-foreground">원</span>
               </div>
               <div className="text-[11px] text-muted-foreground mt-0.5">
                 1차 인계 {monthlyTransferred}건 · 수임 성사 {monthlyContracted.length}건

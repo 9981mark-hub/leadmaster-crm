@@ -141,8 +141,8 @@ export const MarketingRoiSection: React.FC<MarketingRoiSectionProps> = ({
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tabular-nums">
-              ₩{roi.totalContractFeeWon.toLocaleString()}
+            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tabular-nums font-mono">
+              ₩ {roi.totalContractFeeWon.toLocaleString()}
             </span>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">원</span>
           </div>

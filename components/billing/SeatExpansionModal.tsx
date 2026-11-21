@@ -85,15 +85,15 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
                 <div className="font-bold text-slate-800 dark:text-slate-200">스타터 (1~5인)</div>
-                <div className="text-blue-600 dark:text-blue-400 font-bold font-mono">₩58,000/석</div>
+                <div className="text-blue-600 dark:text-blue-400 font-bold font-mono">₩ 58,000 / 석</div>
               </div>
               <div className="p-2.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/20">
                 <div className="font-bold text-slate-800 dark:text-slate-200">비즈니스 (6~20인)</div>
-                <div className="text-blue-600 dark:text-blue-400 font-bold font-mono">₩52,000/석 <span className="text-xs text-emerald-600">(-10%)</span></div>
+                <div className="text-blue-600 dark:text-blue-400 font-bold font-mono">₩ 52,000 / 석 <span className="text-xs text-emerald-600">(-10%)</span></div>
               </div>
               <div className="p-2.5 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-950/20">
                 <div className="font-bold text-slate-800 dark:text-slate-200">프로 (21~50인)</div>
-                <div className="text-purple-600 dark:text-purple-400 font-bold font-mono">₩46,000/석 <span className="text-xs text-emerald-600">(-20%)</span></div>
+                <div className="text-purple-600 dark:text-purple-400 font-bold font-mono">₩ 46,000 / 석 <span className="text-xs text-emerald-600">(-20%)</span></div>
               </div>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">

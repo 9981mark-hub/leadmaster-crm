@@ -190,15 +190,15 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
           title="당월 총 수임/매출"
-          count={`₩${thisRevenue.toLocaleString()}`}
+          count={`₩ ${thisRevenue.toLocaleString()} 원`}
           color="text-emerald-600"
           icon={DollarSign}
           subText={`수임 성사 ${thisMonthContracts.length}건`}
         />
         <KPICard
           title="실질 영업 순마진"
-          count={`₩${netProfit.toLocaleString()}`}
-          color="text-blue-600"
+          count={`${netProfit < 0 ? '-' : ''}₩ ${Math.abs(netProfit).toLocaleString()} 원`}
+          color={netProfit >= 0 ? 'text-blue-600' : 'text-destructive'}
           icon={TrendingUp}
           subText={`마진율 ${profitMargin}% (DB원가 차감)`}
         />
@@ -326,8 +326,8 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
                       <td className="py-3 px-4 text-right font-bold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
                         {transfers}건
                       </td>
-                      <td className="py-3 px-4 text-right font-black text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap">
-                        ₩{revenue.toLocaleString()}
+                      <td className="py-3 px-4 text-right font-black text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap font-mono">
+                        ₩ {revenue.toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">

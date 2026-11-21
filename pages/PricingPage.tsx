@@ -86,7 +86,7 @@ export default function PricingPage() {
       highlight: false,
       features: [
         '프로 전 기능 올인원 포함',
-        '메가 센터(101인+) ₩38,000 추가 인하',
+        '메가 센터(101인+) ₩ 38,000 추가 인하',
         '전담 매니저 핫라인 및 맞춤 인프라',
         '커스텀 계약서 및 감사 로그 영구 보존',
       ],
@@ -217,14 +217,14 @@ export default function PricingPage() {
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
               <div className="text-xs text-slate-500 dark:text-slate-400">1인당 월 단가 (VAT 별도)</div>
               <div className="text-base font-bold font-mono text-white">
-                ₩{effectiveUnitPrice.toLocaleString()} <span className="text-xs text-slate-500 dark:text-slate-400">/ 석</span>
+                ₩ {effectiveUnitPrice.toLocaleString()} <span className="text-xs text-slate-500 dark:text-slate-400">/ 석</span>
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-blue-100/50 dark:bg-blue-950/50 border border-blue-500/50 space-y-1">
               <div className="text-xs text-blue-300 font-semibold">월 총 청구 금액 (VAT 별도)</div>
               <div className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
-                ₩{effectiveMonthlyTotal.toLocaleString()}
+                ₩ {effectiveMonthlyTotal.toLocaleString()}
               </div>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function PricingPage() {
           {monthlySavings > 0 && (
             <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-3 rounded-2xl border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span>💡 개별 솔루션(다이얼러 + 녹음 서버 + AI 분석) 분리 도입 대비:</span>
-              <span className="font-mono font-bold">월 약 ₩{monthlySavings.toLocaleString()}원 이상 절감 효과!</span>
+              <span className="font-mono font-bold">월 약 ₩ {monthlySavings.toLocaleString()}원 이상 절감 효과!</span>
             </div>
           )}
         </div>
@@ -265,7 +265,7 @@ export default function PricingPage() {
 
                   <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
                     <div className="text-2xl sm:text-3xl font-black font-mono text-white">
-                      ₩{displayPrice.toLocaleString()}
+                      ₩ {displayPrice.toLocaleString()}
                       <span className="text-xs text-slate-500 dark:text-slate-400 font-normal"> /월/석</span>
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">부가세(VAT) 별도 • 청구서 발행</div>

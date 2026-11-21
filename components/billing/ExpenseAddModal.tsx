@@ -132,7 +132,7 @@ export const ExpenseAddModal: React.FC<ExpenseAddModalProps> = ({
               </label>
               {wonAmount > 0 && (
                 <span className="text-xs font-bold text-blue-600 dark:text-blue-400 font-mono">
-                  ₩{wonAmount.toLocaleString()}원
+                  ₩ {wonAmount.toLocaleString()}원
                 </span>
               )}
             </div>

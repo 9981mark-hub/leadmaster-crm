@@ -686,7 +686,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                             >
                                 {vendors.map((v) => (
                                     <option key={v.id} value={v.name}>
-                                        {v.name} (단가: ₩{v.defaultUnitCost.toLocaleString()})
+                                        {v.name} (단가: ₩ {v.defaultUnitCost.toLocaleString()}원)
                                     </option>
                                 ))}
                                 <option value="직접 등록/미지정">직접 등록/미지정</option>
@@ -860,10 +860,10 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                             {pricingMode === 'package' && (
                                 <div className="flex items-center justify-between text-xs px-2.5 py-1 rounded-md bg-indigo-100/70 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200 font-medium">
                                     <span>
-                                        📦 대량 패키지 적용: <strong>{pkgLeads.toLocaleString()}건</strong>에 <strong>₩{pkgPrice.toLocaleString()}원</strong>
+                                        📦 대량 패키지 적용: <strong>{pkgLeads.toLocaleString()}건</strong>에 <strong>₩ {pkgPrice.toLocaleString()}원</strong>
                                     </span>
                                     <span className="font-bold text-indigo-700 dark:text-indigo-300">
-                                        👉 1건당 환산 단가: ₩{(pkgLeads > 0 ? Math.round(pkgPrice / pkgLeads) : 0).toLocaleString()}원
+                                        👉 1건당 환산 단가: ₩ {(pkgLeads > 0 ? Math.round(pkgPrice / pkgLeads) : 0).toLocaleString()}원
                                     </span>
                                 </div>
                             )}

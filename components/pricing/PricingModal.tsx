@@ -94,7 +94,7 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
       highlight: false,
       features: [
         '프로 전 기능 올인원 포함',
-        '메가 센터(101인+) ₩38,000 추가 인하',
+        '메가 센터(101인+) ₩ 38,000 추가 인하',
         '전담 매니저 핫라인 및 맞춤 인프라',
         '커스텀 계약서 및 감사 로그 영구 보존',
       ],
@@ -216,14 +216,14 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
               <div className="p-3.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1">
                 <div className="text-xs text-slate-500 dark:text-slate-400">1인당 월 단가 (VAT 별도)</div>
                 <div className="text-sm font-bold font-mono text-white">
-                  ₩{effectiveUnitPrice.toLocaleString()} <span className="text-xs text-slate-500 dark:text-slate-400">/ 석</span>
+                  ₩ {effectiveUnitPrice.toLocaleString()} <span className="text-xs text-slate-500 dark:text-slate-400">/ 석</span>
                 </div>
               </div>
 
               <div className="p-3.5 rounded-xl bg-blue-100/40 dark:bg-blue-950/40 border border-blue-500/40 space-y-1">
                 <div className="text-xs text-blue-300 font-semibold">월 총 사용료 (VAT 별도)</div>
                 <div className="text-lg font-black font-mono text-blue-600 dark:text-blue-400">
-                  ₩{effectiveMonthlyTotal.toLocaleString()}
+                  ₩ {effectiveMonthlyTotal.toLocaleString()}
                 </div>
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
             {monthlySavings > 0 && (
               <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 flex items-center justify-between">
                 <span>💡 개별 다이얼러·녹음·AI 솔루션 분리 도입 대비 월 예상 절감액:</span>
-                <span className="font-mono font-bold">약 ₩{monthlySavings.toLocaleString()}원 절감!</span>
+                <span className="font-mono font-bold">약 ₩ {monthlySavings.toLocaleString()}원 절감!</span>
               </div>
             )}
           </div>
@@ -266,7 +266,7 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
 
                     <div className="pt-1 border-t border-slate-200 dark:border-slate-800">
                       <div className="text-2xl font-black font-mono text-white">
-                        ₩{displayPrice.toLocaleString()}
+                        ₩ {displayPrice.toLocaleString()}
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-normal"> /월/석</span>
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">부가세(VAT) 별도 • 청구서 발행</div>

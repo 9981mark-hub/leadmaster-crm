@@ -139,8 +139,8 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums">
-              ₩{summary.currentMonthWon.toLocaleString()}
+            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums font-mono">
+              ₩ {summary.currentMonthWon.toLocaleString()}
             </span>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">원</span>
           </div>
@@ -176,8 +176,8 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
               {isGrowthPositive ? `+${summary.monthOverMonthGrowthRate}%` : `${summary.monthOverMonthGrowthRate}%`}
             </span>
           </div>
-          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            전월: {summary.prevMonthManwon.toLocaleString()}만원 (₩{summary.prevMonthWon.toLocaleString()}원)
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
+            전월: {summary.prevMonthManwon.toLocaleString()}만원 (₩ {summary.prevMonthWon.toLocaleString()}원)
           </div>
         </div>
 
@@ -212,8 +212,8 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-              ₩{summary.cumulativeTotalWon.toLocaleString()}
+            <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
+              ₩ {summary.cumulativeTotalWon.toLocaleString()}
             </span>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">원</span>
           </div>
@@ -232,8 +232,8 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
               유입 매체별 광고비 지출 비중
             </span>
           </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            당월 기준 (총 ₩{summary.currentMonthWon.toLocaleString()}원)
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+            당월 기준 (총 ₩ {summary.currentMonthWon.toLocaleString()}원)
           </span>
         </div>
 
@@ -278,8 +278,8 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                       {item.percentage}%
                     </span>
                   </div>
-                  <div className="mt-1 text-xs font-extrabold text-slate-900 dark:text-slate-100 tabular-nums">
-                    ₩{item.amountWon.toLocaleString()}
+                  <div className="mt-1 text-xs font-extrabold text-slate-900 dark:text-slate-100 tabular-nums font-mono">
+                    ₩ {item.amountWon.toLocaleString()}
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">
                     {item.amountManwon.toLocaleString()}만원
@@ -359,8 +359,8 @@ export const AdSpendOverviewSection: React.FC<AdSpendOverviewSectionProps> = ({
                         {r.channel}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap text-right font-bold text-slate-900 dark:text-slate-100">
-                      ₩{r.amountWon.toLocaleString()}
+                    <td className="py-2.5 px-3 whitespace-nowrap text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
+                      ₩ {r.amountWon.toLocaleString()}
                     </td>
                     <td className="py-2.5 px-3 whitespace-nowrap text-right text-blue-600 dark:text-blue-400 font-semibold">
                       {r.amountManwon.toLocaleString()}만원

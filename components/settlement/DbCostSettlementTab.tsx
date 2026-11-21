@@ -138,8 +138,11 @@ export default function DbCostSettlementTab({
               변동 원가 (COGS)
             </span>
           </div>
-          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
-            ₩{stats.totalCost.toLocaleString()}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight font-mono tabular-nums">
+              ₩ {stats.totalCost.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
           <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             총 {filteredBatches.length}개 배치 회차 매입분
@@ -176,8 +179,11 @@ export default function DbCostSettlementTab({
               건당 매입가
             </span>
           </div>
-          <div className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
-            ₩{stats.avgCpl.toLocaleString()}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight font-mono tabular-nums">
+              ₩ {stats.avgCpl.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
           <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             전체 유입 리드 가중 평균
@@ -298,18 +304,18 @@ export default function DbCostSettlementTab({
                     <td className="py-3.5 px-4 text-center font-bold text-sky-600 dark:text-sky-400">
                       {b.inserted.toLocaleString()}건
                     </td>
-                    <td className="py-3.5 px-4 text-right text-slate-600 dark:text-slate-300">
-                      ₩{b.unitCost.toLocaleString()}
+                    <td className="py-3.5 px-4 text-right text-slate-600 dark:text-slate-300 font-mono">
+                      ₩ {b.unitCost.toLocaleString()}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-extrabold text-rose-600 dark:text-rose-400">
-                      ₩{b.totalCost.toLocaleString()}
+                    <td className="py-3.5 px-4 text-right font-extrabold text-rose-600 dark:text-rose-400 font-mono">
+                      ₩ {b.totalCost.toLocaleString()}
                     </td>
                     <td className="py-3.5 px-4 text-center text-xs">
                       <span className="font-semibold text-emerald-600 dark:text-emerald-400">{b.contractRate}%</span>
                       <span className="text-slate-500 ml-1">({b.contractedCount}건)</span>
                     </td>
-                    <td className="py-3.5 px-4 text-right text-xs text-slate-600 dark:text-slate-300">
-                      ₩{b.cac.toLocaleString()}
+                    <td className="py-3.5 px-4 text-right text-xs text-slate-600 dark:text-slate-300 font-mono">
+                      ₩ {b.cac.toLocaleString()}
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <button

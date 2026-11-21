@@ -298,13 +298,13 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
                         {tx.paymentMethod}
                       </td>
                       <td className="p-3.5 text-right font-mono font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        ₩{tx.supplyPrice.toLocaleString()}
+                        ₩ {tx.supplyPrice.toLocaleString()}
                       </td>
                       <td className="p-3.5 text-right font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                        ₩{tx.vat.toLocaleString()}
+                        ₩ {tx.vat.toLocaleString()}
                       </td>
                       <td className="p-3.5 text-right font-mono font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
-                        ₩{tx.totalPrice.toLocaleString()}
+                        ₩ {tx.totalPrice.toLocaleString()}
                       </td>
                       <td className="p-3.5 text-center whitespace-nowrap">
                         {isPaid ? (
@@ -449,16 +449,16 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1 text-slate-700 dark:text-slate-300">
                 <div className="flex justify-between">
                   <span>공급가액:</span>
-                  <span className="font-mono">₩{selectedReceipt.supplyPrice.toLocaleString()} 원</span>
+                  <span className="font-mono">₩ {selectedReceipt.supplyPrice.toLocaleString()} 원</span>
                 </div>
                 <div className="flex justify-between text-slate-500">
                   <span>부가가치세 (VAT 10%):</span>
-                  <span className="font-mono">₩{selectedReceipt.vat.toLocaleString()} 원</span>
+                  <span className="font-mono">₩ {selectedReceipt.vat.toLocaleString()} 원</span>
                 </div>
                 <div className="flex justify-between font-black text-sm text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-700">
                   <span>총 결제금액:</span>
                   <span className="font-mono text-base text-blue-600 dark:text-blue-400">
-                    ₩{selectedReceipt.totalPrice.toLocaleString()} 원
+                    ₩ {selectedReceipt.totalPrice.toLocaleString()} 원
                   </span>
                 </div>
               </div>

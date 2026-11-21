@@ -187,14 +187,14 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
                       {inv.activeSeats}석
                     </span>
                   </td>
-                  <td className="py-2.5 px-3 text-right text-slate-700 dark:text-slate-300">
-                    ₩{inv.supplyPrice.toLocaleString()}
+                  <td className="py-2.5 px-3 text-right text-slate-700 dark:text-slate-300 font-mono">
+                    ₩ {inv.supplyPrice.toLocaleString()}
                   </td>
-                  <td className="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400">
-                    ₩{inv.vat.toLocaleString()}
+                  <td className="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400 font-mono">
+                    ₩ {inv.vat.toLocaleString()}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-white">
-                    ₩{inv.totalPrice.toLocaleString()}원
+                  <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-white font-mono">
+                    ₩ {inv.totalPrice.toLocaleString()}원
                   </td>
                   <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
                     {inv.dueDate}

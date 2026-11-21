@@ -228,22 +228,22 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
           title="당월 총 수임/매출액"
-          count={`₩${thisRevenue.toLocaleString()}`}
+          count={`₩ ${thisRevenue.toLocaleString()} 원`}
           color="text-emerald-600 dark:text-emerald-400"
           icon={DollarSign}
           subText={revenueGrowth >= 0 ? `전월 대비 +${revenueGrowth}% 증가` : `전월 대비 ${revenueGrowth}%`}
         />
         <KPICard
           title="DB 구입 원가 합계"
-          count={`₩${totalDbCost.toLocaleString()}`}
+          count={`₩ ${totalDbCost.toLocaleString()} 원`}
           color="text-indigo-600 dark:text-indigo-400"
           icon={Layers}
-          subText={`당월 인입 ${thisMonthLeads.length}건 (건당 ₩3.5만)`}
+          subText={`당월 인입 ${thisMonthLeads.length}건 (건당 ₩ 3.5만원)`}
         />
         <KPICard
           title="실질 영업 순마진"
-          count={`₩${netProfit.toLocaleString()}`}
-          color="text-blue-600 dark:text-blue-400"
+          count={`${netProfit < 0 ? '-' : ''}₩ ${Math.abs(netProfit).toLocaleString()} 원`}
+          color={netProfit >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-destructive'}
           icon={TrendingUp}
           subText={`영업 마진율 ${profitMargin}% (인프라비 차감)`}
         />
@@ -313,8 +313,8 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                       <td className="py-3 px-4 text-right font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
                         {item.transferRate}%
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap">
-                        ₩{item.revenue.toLocaleString()}
+                      <td className="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap font-mono">
+                        ₩ {item.revenue.toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         {item.isDefective ? (
@@ -462,8 +462,8 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                     <td className="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap">
                       {stat.contractedCount}건
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-foreground tabular-nums whitespace-nowrap text-sm">
-                      ₩{stat.totalRevenue.toLocaleString()}
+                    <td className="py-3 px-4 text-right font-bold text-foreground tabular-nums whitespace-nowrap text-sm font-mono">
+                      ₩ {stat.totalRevenue.toLocaleString()}
                     </td>
                   </tr>
                 ))

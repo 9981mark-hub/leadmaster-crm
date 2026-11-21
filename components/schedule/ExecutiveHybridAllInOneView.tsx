@@ -219,12 +219,15 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               {partners.length}개 로펌
             </span>
           </div>
-          <div className="text-xl font-black text-slate-900 dark:text-white">
-            ₩{financialSummary.totalCommissionWon.toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-xl font-black text-slate-900 dark:text-white font-mono tabular-nums">
+              ₩ {financialSummary.totalCommissionWon.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
-            <span>수금 ₩{financialSummary.totalDepositedWon.toLocaleString()}</span>
-            <span className="text-amber-600 dark:text-amber-400 font-medium">미수 ₩{financialSummary.outstandingWon.toLocaleString()}</span>
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between font-mono">
+            <span>수금 ₩ {financialSummary.totalDepositedWon.toLocaleString()}원</span>
+            <span className="text-amber-600 dark:text-amber-400 font-medium">미수 ₩ {financialSummary.outstandingWon.toLocaleString()}원</span>
           </div>
         </div>
 
@@ -239,8 +242,11 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               지급 예정
             </span>
           </div>
-          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">
-            ₩{financialSummary.pendingPayoutWon.toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+              ₩ {financialSummary.pendingPayoutWon.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">원</span>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             정기 수당 지급일 D-Day 카운트다운
@@ -405,8 +411,8 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                           <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-emerald-300 transition-colors">
                             {caseData.customerName || '고객명 미상'}
                           </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
-                            계약금: ₩{totalContract.toLocaleString()}
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                            계약금: ₩ {totalContract.toLocaleString()}원
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
@@ -454,7 +460,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               </div>
               <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
                 <span>예상 수수료:</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">₩{p.commissionWon.toLocaleString()}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold font-mono">₩ {p.commissionWon.toLocaleString()}</span>
               </div>
             </div>
           ))}

@@ -142,7 +142,7 @@ export const SeatCostSimulator: React.FC<SeatCostSimulatorProps> = ({
                 )}
               </div>
               <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                1인당 단가: <strong className="text-slate-900 dark:text-white font-mono text-sm">₩{effectiveUnitPrice.toLocaleString()}</strong> / 월
+                1인당 단가: <strong className="text-slate-900 dark:text-white font-mono text-sm">₩ {effectiveUnitPrice.toLocaleString()}</strong> / 월
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -150,7 +150,7 @@ export const SeatCostSimulator: React.FC<SeatCostSimulatorProps> = ({
               {seats >= 6 && seats <= 20 && '6인 이상부터 10% 볼륨 우대 단가가 자동 적용되어 합리적인 확장이 가능합니다.'}
               {seats >= 21 && seats <= 50 && '21인 이상 중대형 센터용으로 20% 대량 볼륨 할인이 적용됩니다.'}
               {seats >= 51 && seats <= 100 && '51인 이상 대형 법무법인/전문 센터를 위한 28% 파격 우대 구간입니다.'}
-              {seats >= 101 && '101인 이상 대형 센터는 ₩38,000 최저가 보장 혜택이 적용됩니다.'}
+              {seats >= 101 && '101인 이상 대형 센터는 ₩ 38,000 최저가 보장 혜택이 적용됩니다.'}
             </p>
           </div>
         </div>
@@ -169,11 +169,11 @@ export const SeatCostSimulator: React.FC<SeatCostSimulatorProps> = ({
           <div>
             <div className="text-xs text-blue-200">매월 공급가액 ({seats}석)</div>
             <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight mt-0.5">
-              ₩{effectiveMonthlySupply.toLocaleString()}
+              ₩ {effectiveMonthlySupply.toLocaleString()}
               <span className="text-xs font-normal text-blue-200 ml-1">/ 월 (VAT 별도)</span>
             </div>
-            <div className="text-xs text-blue-200/80 mt-1">
-              부가세 포함 최종 청구액: ₩{effectiveTotal.toLocaleString()}
+            <div className="text-xs text-blue-200/80 mt-1 font-mono">
+              부가세 포함 최종 청구액: ₩ {effectiveTotal.toLocaleString()}원
             </div>
           </div>
 
@@ -184,11 +184,11 @@ export const SeatCostSimulator: React.FC<SeatCostSimulatorProps> = ({
             </div>
             <div className="text-xs text-slate-200 leading-snug">
               타사 다이얼러+녹취+AI 개별 도입(인당 12만) 대비<br />
-              매월 <strong className="text-white font-mono font-bold text-sm">₩{monthlySavings.toLocaleString()}원</strong> 절감!
+              매월 <strong className="text-white font-mono font-bold text-sm">₩ {monthlySavings.toLocaleString()}원</strong> 절감!
             </div>
             {isAnnual && (
-              <div className="text-[11px] text-emerald-300 font-semibold pt-1 border-t border-white/10">
-                연간 환산 시 총 ₩{annualSavings.toLocaleString()}원 순수 비용 절감
+              <div className="text-[11px] text-emerald-300 font-semibold pt-1 border-t border-white/10 font-mono">
+                연간 환산 시 총 ₩ {annualSavings.toLocaleString()}원 순수 비용 절감
               </div>
             )}
           </div>

@@ -161,8 +161,8 @@ export default function AiUsageWidget({ className = '' }: Props) {
               </span>
               <span className="text-xs text-indigo-500">실시간 환산</span>
             </div>
-            <div className="text-xl font-black text-gray-900 dark:text-white tabular-nums">
-              약 {data ? `₩${data.todayCostKrw.toLocaleString()}` : '₩0'}
+            <div className="text-xl font-black text-gray-900 dark:text-white tabular-nums font-mono">
+              약 {data ? `₩ ${data.todayCostKrw.toLocaleString()}` : '₩ 0'}
             </div>
           </div>
           <div className="mt-2.5 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-indigo-100/60 dark:border-indigo-900/40 pt-1.5">
@@ -199,8 +199,8 @@ export default function AiUsageWidget({ className = '' }: Props) {
               </span>
               <span className="text-xs font-bold text-emerald-600">누적 청구</span>
             </div>
-            <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 tabular-nums">
-              약 {data ? `₩${data.monthCostKrw.toLocaleString()}` : '₩0'}
+            <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 tabular-nums font-mono">
+              약 {data ? `₩ ${data.monthCostKrw.toLocaleString()}` : '₩ 0'}
             </div>
           </div>
           <div className="mt-2.5 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-emerald-100/60 dark:border-emerald-900/40 pt-1.5">
@@ -276,8 +276,8 @@ export default function AiUsageWidget({ className = '' }: Props) {
                       </div>
                       <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-50 dark:border-gray-700/60">
                         <span>토큰: {((st.inputTokens + st.outputTokens) / 1000).toLocaleString()}k</span>
-                        <span className="font-semibold text-gray-700 dark:text-gray-200">
-                          약 ₩{st.costKrw.toLocaleString()} (${st.costUsd.toFixed(4)})
+                        <span className="font-semibold text-gray-700 dark:text-gray-200 font-mono">
+                          약 ₩ {st.costKrw.toLocaleString()} (${st.costUsd.toFixed(4)})
                         </span>
                       </div>
                     </div>
@@ -323,8 +323,8 @@ export default function AiUsageWidget({ className = '' }: Props) {
 
                       <div className="flex items-center gap-2.5 text-right">
                         <div>
-                          <div className="font-bold text-gray-900 dark:text-white tabular-nums">
-                            약 ₩{log.costKrw}
+                          <div className="font-bold text-gray-900 dark:text-white tabular-nums font-mono">
+                            약 ₩ {log.costKrw}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             ${log.costUsd.toFixed(4)}

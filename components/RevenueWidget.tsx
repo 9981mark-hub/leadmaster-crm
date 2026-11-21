@@ -169,10 +169,12 @@ export default function RevenueWidget({ cases, partners }: RevenueWidgetProps) {
                                 </div>
                             </div>
 
-                            <p className="text-xl md:text-2xl font-bold text-foreground mb-1 tabular-nums">
-                                {kpi.value.toLocaleString()}
-                                <span className="text-xs font-normal text-muted-foreground ml-1">{kpi.unit}</span>
-                            </p>
+                            <div className="flex items-baseline gap-1.5 mb-1.5">
+                                <span className="text-xl md:text-2xl font-black text-foreground font-mono tabular-nums">
+                                    ₩ {kpi.value.toLocaleString()}
+                                </span>
+                                <span className="text-xs font-semibold text-muted-foreground">{kpi.unit}</span>
+                            </div>
 
                             {/* 전월 비교 or subLabel */}
                             <div className="flex items-center gap-1.5 text-xs">

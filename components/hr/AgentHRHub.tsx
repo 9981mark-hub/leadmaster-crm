@@ -343,7 +343,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">건 계약</span>
                     </div>
                     <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        수임료 매출: ₩ {(summaryKPI.totalRevenue / 10000).toLocaleString()}만원
+                        수임료 매출: ₩ {(summaryKPI.totalRevenue / 10000).toLocaleString()} 만원
                     </div>
                 </div>
 

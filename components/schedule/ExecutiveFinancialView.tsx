@@ -184,8 +184,11 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               {partners.length}개 로펌
             </span>
           </div>
-          <div className="text-xl font-black text-slate-900 dark:text-white">
-            ₩{metrics.totalCommissionWon.toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-xl font-black text-slate-900 dark:text-white font-mono tabular-nums">
+              ₩ {metrics.totalCommissionWon.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             체결 수임 사건 누적 수수료
@@ -202,8 +205,11 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               정산 완료
             </span>
           </div>
-          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">
-            ₩{metrics.totalDepositedWon.toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+              ₩ {metrics.totalDepositedWon.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">원</span>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             실제 입금 완료된 계약금 총액
@@ -220,8 +226,11 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               회수 관리
             </span>
           </div>
-          <div className="text-xl font-black text-amber-600 dark:text-amber-400">
-            ₩{metrics.outstandingWon.toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+              ₩ {metrics.outstandingWon.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">원</span>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             분납 약정 및 미입금 잔액
@@ -238,8 +247,11 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               지급 예정
             </span>
           </div>
-          <div className="text-xl font-black text-purple-300">
-            ₩{metrics.pendingPayoutWon.toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-xl font-black text-purple-600 dark:text-purple-300 font-mono tabular-nums">
+              ₩ {metrics.pendingPayoutWon.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-purple-600 dark:text-purple-300">원</span>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             정산 확정 미지급 수당 총액
@@ -284,8 +296,8 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-3">
                       <span>{evt.dateDesc}</span>
                       {evt.amountWon > 0 && (
-                        <span className="font-semibold text-slate-200">
-                          규모: ₩{evt.amountWon.toLocaleString()}
+                        <span className="font-semibold text-slate-200 font-mono">
+                          규모: ₩ {evt.amountWon.toLocaleString()}원
                         </span>
                       )}
                     </div>
@@ -338,13 +350,13 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
                   </div>
                   <div className="flex justify-between">
                     <span>수수료 매출:</span>
-                    <span className="text-sky-300 font-bold">₩{p.commissionWon.toLocaleString()}</span>
+                    <span className="text-sky-300 font-bold font-mono">₩ {p.commissionWon.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>수금 / 미수:</span>
-                    <span>
-                      <span className="text-emerald-600 dark:text-emerald-400">₩{p.depositedWon.toLocaleString()}</span> / 
-                      <span className="text-amber-600 dark:text-amber-400 ml-1">₩{p.outstandingWon.toLocaleString()}</span>
+                    <span className="font-mono">
+                      <span className="text-emerald-600 dark:text-emerald-400">₩ {p.depositedWon.toLocaleString()}</span> / 
+                      <span className="text-amber-600 dark:text-amber-400 ml-1">₩ {p.outstandingWon.toLocaleString()}</span>
                     </span>
                   </div>
                 </div>

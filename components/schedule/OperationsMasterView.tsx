@@ -205,8 +205,8 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
           <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">
             {operationsData.depositPromises.length}건
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            예상 약정액: ₩{operationsData.depositTotalAmount.toLocaleString()}
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
+            예상 약정액: ₩ {operationsData.depositTotalAmount.toLocaleString()}원
           </div>
         </div>
 

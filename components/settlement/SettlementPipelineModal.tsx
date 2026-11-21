@@ -318,7 +318,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
               >
                 {partnerBatches.map(b => (
                   <option key={b.batchId} value={b.batchId}>
-                    {b.weekLabel} ({b.startDate} ~ {b.endDate}) - {b.dealIds.length}건 / ₩{b.totalCommission?.toLocaleString()}만
+                    {b.weekLabel} ({b.startDate} ~ {b.endDate}) - {b.dealIds.length}건 / ₩ {b.totalCommission?.toLocaleString()} 만원
                   </option>
                 ))}
               </select>
@@ -455,15 +455,21 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
                   <span className="text-xs font-semibold text-gray-500">고객 수임료 총액</span>
-                  <p className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono mt-1">
-                    ₩{currentBatch.totalContractFee?.toLocaleString()}만원
-                  </p>
+                  <div className="flex items-baseline gap-1.5 mt-1">
+                    <span className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono tabular-nums">
+                      ₩ {currentBatch.totalContractFee?.toLocaleString()}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-500">만원</span>
+                  </div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
                   <span className="text-xs font-semibold text-gray-500">우리 회사 정산 수수료</span>
-                  <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
-                    ₩{currentBatch.totalCommission?.toLocaleString()}만원
-                  </p>
+                  <div className="flex items-baseline gap-1.5 mt-1">
+                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+                      ₩ {currentBatch.totalCommission?.toLocaleString()}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-500">만원</span>
+                  </div>
                 </div>
               </div>
 
@@ -509,10 +515,10 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                               {d.installmentMonths ? `${d.installmentMonths}회 분납` : '일시납'}
                             </td>
                             <td className="px-3 py-2.5 text-right font-mono text-gray-800 dark:text-gray-200">
-                              ₩{d.contractFee?.toLocaleString()}만원
+                              ₩ {d.contractFee?.toLocaleString()} 만원
                             </td>
                             <td className="px-3 py-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                              ₩{Math.round((d.contractFee || 0) * 0.25).toLocaleString()}만원
+                              ₩ {Math.round((d.contractFee || 0) * 0.25).toLocaleString()} 만원
                             </td>
                             <td className="px-3 py-2.5 text-center text-gray-500">
                               {d.managerName || (d as any).assignedAgent || '-'}
@@ -615,7 +621,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                   <div className="text-xs">
                     <span className="text-gray-500">청구 합계 금액: </span>
                     <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-sm">
-                      ₩{(Number(invoiceForm.supplyAmount) + Number(invoiceForm.vat)).toLocaleString()}만원
+                      ₩ {(Number(invoiceForm.supplyAmount) + Number(invoiceForm.vat)).toLocaleString()} 만원
                     </span>
                     <span className="text-xs text-gray-500 ml-1">(공급가 + VAT)</span>
                   </div>
@@ -665,7 +671,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                         수금 완료 확인됨 ({currentBatch.collectionInfo.collectedAt})
                       </p>
                       <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
-                        입금 확인액: ₩{currentBatch.collectionInfo.amount?.toLocaleString()}만원 ({currentBatch.collectionInfo.memo || '정상 입금'})
+                        입금 확인액: ₩ {currentBatch.collectionInfo.amount?.toLocaleString()} 만원 ({currentBatch.collectionInfo.memo || '정상 입금'})
                       </p>
                     </div>
                     <span className="text-xs font-bold px-2.5 py-1 bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-lg">
@@ -675,7 +681,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                 ) : (
                   <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      법인 계좌에 수수료 <strong>₩{(Number(invoiceForm.supplyAmount) + Number(invoiceForm.vat)).toLocaleString()}만원</strong>이 입금되었는지 확인 후 수금 완료 처리를 진행하세요.
+                      법인 계좌에 수수료 <strong>₩ {(Number(invoiceForm.supplyAmount) + Number(invoiceForm.vat)).toLocaleString()} 만원</strong>이 입금되었는지 확인 후 수금 완료 처리를 진행하세요.
                     </p>
                     <button
                       type="button"
@@ -698,8 +704,8 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                     <Users size={15} className="text-indigo-600" />
                     상담원 및 팀장 수당 분배 대장
                   </h4>
-                  <span className="text-xs text-gray-500">
-                    회차 수금 확정액: ₩{currentBatch.totalCommission?.toLocaleString()}만원
+                  <span className="text-xs text-gray-500 font-mono">
+                    회차 수금 확정액: ₩ {currentBatch.totalCommission?.toLocaleString()} 만원
                   </span>
                 </div>
 
@@ -718,7 +724,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                            ₩{item.amount?.toLocaleString()}만원
+                            ₩ {item.amount?.toLocaleString()} 만원
                           </span>
                           <button
                             type="button"

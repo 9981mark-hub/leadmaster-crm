@@ -116,12 +116,15 @@ export default function IntegratedPnLTab({
               공급가 기준
             </span>
           </div>
-          <div className="text-2xl font-black text-white tracking-tight">
-            ₩{(s.totalRevenueWon || 0).toLocaleString()}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight font-mono tabular-nums">
+              ₩ {(s.totalRevenueWon || 0).toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
-          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>입금: ₩{(s.collectedRevenueWon || 0).toLocaleString()}{(s.totalVatWon || 0) > 0 ? ` · 부가세 ₩${(s.totalVatWon || 0).toLocaleString()} 별도` : ''}</span>
-            <span className="text-amber-600 dark:text-amber-400">미수: ₩{(s.outstandingRevenueWon || 0).toLocaleString()}</span>
+          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between font-mono">
+            <span>입금: ₩ {(s.collectedRevenueWon || 0).toLocaleString()}원{(s.totalVatWon || 0) > 0 ? ` · 부가세 ₩ ${(s.totalVatWon || 0).toLocaleString()}원 별도` : ''}</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold">미수: ₩ {(s.outstandingRevenueWon || 0).toLocaleString()}원</span>
           </div>
         </div>
 
@@ -136,12 +139,15 @@ export default function IntegratedPnLTab({
               원가+수당+고정비
             </span>
           </div>
-          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
-            ₩{(s.totalExpensesWon || 0).toLocaleString()}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight font-mono tabular-nums">
+              ₩ {(s.totalExpensesWon || 0).toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
           </div>
-          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>DB원가: ₩{(s.totalDbCostWon || 0).toLocaleString()}</span>
-            <span>상담원: ₩{(s.totalAgentCommissionWon || 0).toLocaleString()}</span>
+          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between font-mono">
+            <span>DB원가: ₩ {(s.totalDbCostWon || 0).toLocaleString()}원</span>
+            <span>상담원: ₩ {(s.totalAgentCommissionWon || 0).toLocaleString()}원</span>
           </div>
         </div>
 
@@ -158,12 +164,15 @@ export default function IntegratedPnLTab({
               {s.profitMarginRate || 0}% 이익률
             </span>
           </div>
-          <div className={`text-2xl font-black tracking-tight ${
-            (s.netProfitWon || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-          }`}>
-            ₩{(s.netProfitWon || 0).toLocaleString()}
+          <div className="flex items-baseline gap-1.5">
+            <span className={`text-2xl font-black tracking-tight font-mono tabular-nums ${
+              (s.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
+            }`}>
+              {(s.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs(s.netProfitWon || 0).toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-emerald-200/80">원</span>
           </div>
-          <div className="mt-2 text-xs text-emerald-200/80">
+          <div className="mt-2 text-xs text-emerald-200/80 font-mono">
             {periodLabel} 실영업 결산
           </div>
         </div>
@@ -180,13 +189,16 @@ export default function IntegratedPnLTab({
                 통장 기준
               </span>
             </div>
-            <div className={`text-2xl font-black tracking-tight ${
-              (s.netCashFlowWon || 0) >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
-            }`}>
-              ₩{(s.netCashFlowWon || 0).toLocaleString()}
+            <div className="flex items-baseline gap-1.5">
+              <span className={`text-2xl font-black tracking-tight font-mono tabular-nums ${
+                (s.netCashFlowWon || 0) >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
+              }`}>
+                {(s.netCashFlowWon || 0) < 0 ? '-' : ''}₩ {Math.abs(s.netCashFlowWon || 0).toLocaleString()}
+              </span>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
             </div>
-            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              실입금 ₩{(s.cashInflowWon || 0).toLocaleString()} - 실출금 ₩{(s.cashOutflowWon || 0).toLocaleString()}
+            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 font-mono">
+              실입금 ₩ {(s.cashInflowWon || 0).toLocaleString()}원 - 실출금 ₩ {(s.cashOutflowWon || 0).toLocaleString()}원
             </div>
           </div>
         </div>
@@ -222,11 +234,11 @@ export default function IntegratedPnLTab({
               </span>
               <div>
                 <div className="font-bold text-white font-sans">총 수수료 매출 (Gross Revenue)</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">이 기간에 지급 사유가 생긴 거래처 수수료 공급가 (부가세 ₩{(s.totalVatWon || 0).toLocaleString()} 별도 · 청구액 ₩{(s.totalBilledWon || 0).toLocaleString()} · 이 기간 입금 ₩{(s.collectedRevenueWon || 0).toLocaleString()} · 미수 ₩{(s.outstandingRevenueWon || 0).toLocaleString()})</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">이 기간에 지급 사유가 생긴 거래처 수수료 공급가 (부가세 ₩ {(s.totalVatWon || 0).toLocaleString()}원 별도 · 청구액 ₩ {(s.totalBilledWon || 0).toLocaleString()}원 · 이 기간 입금 ₩ {(s.collectedRevenueWon || 0).toLocaleString()}원 · 미수 ₩ {(s.outstandingRevenueWon || 0).toLocaleString()}원)</div>
               </div>
             </div>
-            <div className="text-base font-black text-sky-600 dark:text-sky-400">
-              + ₩{(s.totalRevenueWon || 0).toLocaleString()}
+            <div className="text-base font-black text-sky-600 dark:text-sky-400 font-mono tabular-nums">
+              + ₩ {(s.totalRevenueWon || 0).toLocaleString()} 원
             </div>
           </div>
 
@@ -241,8 +253,8 @@ export default function IntegratedPnLTab({
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">팀 관리 회차/공급사 매입액과 100% 실시간 연동</div>
               </div>
             </div>
-            <div className="text-base font-bold text-rose-600 dark:text-rose-400">
-              - ₩{(s.totalDbCostWon || 0).toLocaleString()}
+            <div className="text-base font-bold text-rose-600 dark:text-rose-400 font-mono tabular-nums">
+              - ₩ {(s.totalDbCostWon || 0).toLocaleString()} 원
             </div>
           </div>
 
@@ -259,8 +271,8 @@ export default function IntegratedPnLTab({
                 </div>
               </div>
             </div>
-            <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
-              - ₩{(s.totalAgentCommissionWon || 0).toLocaleString()}
+            <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+              - ₩ {(s.totalAgentCommissionWon || 0).toLocaleString()} 원
             </div>
           </div>
 
@@ -275,8 +287,8 @@ export default function IntegratedPnLTab({
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">임대료, 통신비, 솔루션비, 식대, 기타 지출 합계</div>
               </div>
             </div>
-            <div className="text-base font-bold text-amber-600 dark:text-amber-400">
-              - ₩{(s.totalFixedCostWon || 0).toLocaleString()}
+            <div className="text-base font-bold text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+              - ₩ {(s.totalFixedCostWon || 0).toLocaleString()} 원
             </div>
           </div>
 
@@ -294,14 +306,14 @@ export default function IntegratedPnLTab({
                   </span>
                 </div>
                 <div className="text-xs text-emerald-300/80 font-sans mt-0.5">
-                  총 매출 ₩{(s.totalRevenueWon || 0).toLocaleString()} - 총 지출 ₩{(s.totalExpensesWon || 0).toLocaleString()}
+                  총 매출 ₩ {(s.totalRevenueWon || 0).toLocaleString()} 원 - 총 지출 ₩ {(s.totalExpensesWon || 0).toLocaleString()} 원
                 </div>
               </div>
             </div>
-            <div className={`text-2xl font-black ${
-              (s.netProfitWon || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+            <div className={`text-2xl font-black font-mono tabular-nums ${
+              (s.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
             }`}>
-              ₩{(s.netProfitWon || 0).toLocaleString()}
+              {(s.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs(s.netProfitWon || 0).toLocaleString()} 원
             </div>
           </div>
         </div>
@@ -316,7 +328,7 @@ export default function IntegratedPnLTab({
               <PieIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               지출 비용 구조 분해 (원가 vs 인건비 vs 운영비)
             </h4>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">총 ₩{(s.totalExpensesWon || 0).toLocaleString()}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">총 ₩ {(s.totalExpensesWon || 0).toLocaleString()} 원</span>
           </div>
 
           {costBreakdownData.length === 0 ? (

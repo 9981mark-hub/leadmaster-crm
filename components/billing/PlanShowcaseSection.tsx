@@ -204,9 +204,9 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
 
                 {/* 가격 영역 */}
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-baseline gap-1.5">
                     <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
-                      ₩{unitPrice.toLocaleString()}
+                      ₩ {unitPrice.toLocaleString()}
                     </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">
                       / 석 / 월
@@ -215,8 +215,8 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
                   <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center justify-between">
                     <span>VAT 별도</span>
                     {isAnnual && (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                        정가 ₩{tier.monthlyUnitPrice.toLocaleString()} 대비 할인
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">
+                        정가 ₩ {tier.monthlyUnitPrice.toLocaleString()} 대비 할인
                       </span>
                     )}
                   </div>
@@ -285,7 +285,7 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
               </span>
             </div>
             <h4 className="text-base sm:text-lg font-bold text-white mt-0.5">
-              메가 센터 (Mega Center) 플랜 — 좌석당 <span className="text-amber-300 font-black font-mono">₩38,000</span> (최대 35% 파격 할인)
+              메가 센터 (Mega Center) 플랜 — 좌석당 <span className="text-amber-300 font-black font-mono">₩ 38,000</span> (최대 35% 파격 할인)
             </h4>
             <p className="text-xs text-slate-300 mt-0.5">
               전담 엔지니어 핫라인, 본사-지사 멀티 워크스페이스 통합 관제, 맞춤형 On-Premise 하이브리드 연동을 무상 지원합니다.

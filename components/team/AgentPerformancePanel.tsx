@@ -442,8 +442,8 @@ export default function AgentPerformancePanel() {
           <div className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400 tabular-nums">
             {totals.totalContracts.toLocaleString()} <span className="text-xs font-medium text-gray-500">건</span>
           </div>
-          <div className="mt-1 text-xs text-gray-500">
-            총 수임료 ₩{totals.totalRevenue.toLocaleString()}
+          <div className="mt-1 text-xs text-gray-500 font-mono">
+            총 수임료 ₩ {totals.totalRevenue.toLocaleString()}원
           </div>
         </div>
 
@@ -452,8 +452,11 @@ export default function AgentPerformancePanel() {
             <span>예상 인센티브 합계</span>
             <DollarSign size={16} className="text-indigo-600" />
           </div>
-          <div className="mt-2 text-2xl font-black text-indigo-600 dark:text-indigo-400 tabular-nums">
-            ₩{totals.totalIncentive.toLocaleString()}
+          <div className="flex items-baseline gap-1.5 mt-2">
+            <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400 tabular-nums font-mono">
+              ₩ {totals.totalIncentive.toLocaleString()}
+            </span>
+            <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">원</span>
           </div>
           <div className="mt-1 text-xs text-indigo-600 dark:text-indigo-300">
             {period === 'payout' ? '이번 회차 지급 예정' : '선택 기간 발생분'}
@@ -567,30 +570,30 @@ export default function AgentPerformancePanel() {
                     </span>
                   </td>
 
-                  <td className="px-3 py-3 text-right tabular-nums font-semibold text-gray-700 dark:text-gray-300">
-                    ₩{k.totalFeeRevenue.toLocaleString()}
+                  <td className="px-3 py-3 text-right tabular-nums font-semibold text-gray-700 dark:text-gray-300 font-mono">
+                    ₩ {k.totalFeeRevenue.toLocaleString()}
                   </td>
 
                   <td className="px-5 py-3 text-right tabular-nums">
-                    <div className="font-black text-indigo-600 dark:text-indigo-400 text-base">
-                      ₩{k.estimatedIncentive.toLocaleString()}
+                    <div className="font-black text-indigo-600 dark:text-indigo-400 text-base font-mono">
+                      ₩ {k.estimatedIncentive.toLocaleString()}
                     </div>
 
                     {/* 세부 보너스 내역 뱃지 */}
-                    <div className="flex flex-col items-end gap-0.5 mt-1 text-[11px]">
+                    <div className="flex flex-col items-end gap-0.5 mt-1 text-[11px] font-mono">
                       {k.slidingBonus > 0 && (
                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                          구간 보너스 +₩{k.slidingBonus.toLocaleString()}
+                          구간 보너스 +₩ {k.slidingBonus.toLocaleString()}
                         </span>
                       )}
                       {k.milestoneBonus > 0 && (
                         <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                          마일스톤 +₩{k.milestoneBonus.toLocaleString()}
+                          마일스톤 +₩ {k.milestoneBonus.toLocaleString()}
                         </span>
                       )}
                       {k.managerOverridingBonus > 0 && (
                         <span className="text-blue-600 dark:text-blue-400 font-bold" title={k.overridingDetails}>
-                          팀장 수당 +₩{k.managerOverridingBonus.toLocaleString()}
+                          팀장 수당 +₩ {k.managerOverridingBonus.toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -972,12 +975,12 @@ export default function AgentPerformancePanel() {
                           <span>소속 팀원 합산</span>
                           <span className="font-bold text-blue-600">20건</span>
                           <span>돌파 시:</span>
-                          <strong className="text-slate-900 dark:text-white font-mono">+₩300,000원</strong>
+                          <strong className="text-slate-900 dark:text-white font-mono">+ ₩ 300,000 원</strong>
                           <span className="text-gray-400">/</span>
                           <span>합산</span>
                           <span className="font-bold text-blue-600">30건</span>
                           <span>돌파 시:</span>
-                          <strong className="text-slate-900 dark:text-white font-mono">+₩500,000원</strong>
+                          <strong className="text-slate-900 dark:text-white font-mono">+ ₩ 500,000 원</strong>
                         </div>
                       </div>
                     </div>
@@ -1046,11 +1049,11 @@ export default function AgentPerformancePanel() {
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center">
                         <span className="font-semibold text-gray-700 dark:text-gray-300">당월 10건 최초 돌파:</span>
-                        <strong className="text-blue-600 dark:text-blue-400 font-mono">+₩200,000원</strong>
+                        <strong className="text-blue-600 dark:text-blue-400 font-mono">+ ₩ 200,000 원</strong>
                       </div>
                       <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center">
                         <span className="font-semibold text-gray-700 dark:text-gray-300">당월 20건 최초 돌파:</span>
-                        <strong className="text-indigo-600 dark:text-indigo-400 font-mono">+₩500,000원</strong>
+                        <strong className="text-indigo-600 dark:text-indigo-400 font-mono">+ ₩ 500,000 원</strong>
                       </div>
                     </div>
                   </div>
@@ -1377,8 +1380,8 @@ export default function AgentPerformancePanel() {
                       <div className="text-xs text-gray-500 dark:text-gray-400">수임료 합계: {b.feeRevenueManwon}만원</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-extrabold text-indigo-600 dark:text-indigo-400 text-sm">
-                        ₩{b.incentiveAmount.toLocaleString()}
+                      <div className="font-extrabold text-indigo-600 dark:text-indigo-400 text-sm font-mono">
+                        ₩ {b.incentiveAmount.toLocaleString()}
                       </div>
                       <div className="text-xs text-gray-500">{b.count}건 체결</div>
                     </div>
@@ -1396,24 +1399,24 @@ export default function AgentPerformancePanel() {
                 <div className="font-bold text-gray-700 dark:text-gray-200 mb-1">수당 상세 구성</div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">기본 계약 인센티브:</span>
-                  <span className="font-mono font-bold">₩{selectedAgentBreakdown.baseIncentive.toLocaleString()}원</span>
+                  <span className="font-mono font-bold">₩ {selectedAgentBreakdown.baseIncentive.toLocaleString()}원</span>
                 </div>
                 {selectedAgentBreakdown.slidingBonus > 0 && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                     <span>고성과 구간 추가 보너스:</span>
-                    <span className="font-mono font-bold">+₩{selectedAgentBreakdown.slidingBonus.toLocaleString()}원</span>
+                    <span className="font-mono font-bold">+₩ {selectedAgentBreakdown.slidingBonus.toLocaleString()}원</span>
                   </div>
                 )}
                 {selectedAgentBreakdown.milestoneBonus > 0 && (
                   <div className="flex justify-between text-amber-600 dark:text-amber-400">
                     <span>마일스톤 달성 축하금:</span>
-                    <span className="font-mono font-bold">+₩{selectedAgentBreakdown.milestoneBonus.toLocaleString()}원</span>
+                    <span className="font-mono font-bold">+₩ {selectedAgentBreakdown.milestoneBonus.toLocaleString()}원</span>
                   </div>
                 )}
                 {selectedAgentBreakdown.managerOverridingBonus > 0 && (
                   <div className="flex justify-between text-blue-600 dark:text-blue-400">
                     <span>관리자 팀원 오버라이딩:</span>
-                    <span className="font-mono font-bold">+₩{selectedAgentBreakdown.managerOverridingBonus.toLocaleString()}원</span>
+                    <span className="font-mono font-bold">+₩ {selectedAgentBreakdown.managerOverridingBonus.toLocaleString()}원</span>
                   </div>
                 )}
               </div>
@@ -1422,7 +1425,7 @@ export default function AgentPerformancePanel() {
             <div className="p-3 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl flex justify-between items-center font-bold text-sm">
               <span className="text-gray-700 dark:text-gray-300">최종 인센티브 합계</span>
               <span className="text-indigo-600 dark:text-indigo-400 text-base font-black font-mono">
-                ₩{selectedAgentBreakdown.estimatedIncentive.toLocaleString()}
+                ₩ {selectedAgentBreakdown.estimatedIncentive.toLocaleString()}
               </span>
             </div>
 

@@ -257,8 +257,8 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                     onChange={e => setPolicy(p => ({ ...p, companyFixedMargin: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-bold font-mono text-gray-900 dark:text-white"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">
-                    ₩{(policy.companyFixedMargin / 10000).toLocaleString()}만원
+                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-500 dark:text-gray-400 font-mono">
+                    ₩ {(policy.companyFixedMargin / 10000).toLocaleString()} 만원
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -280,8 +280,8 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
                     onChange={e => setPolicy(p => ({ ...p, agentFixedIncentive: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-bold font-mono text-gray-900 dark:text-white"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">
-                    ₩{(policy.agentFixedIncentive / 10000).toLocaleString()}만원
+                  <span className="absolute right-3.5 top-2.5 text-xs text-gray-500 dark:text-gray-400 font-mono">
+                    ₩ {(policy.agentFixedIncentive / 10000).toLocaleString()} 만원
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
