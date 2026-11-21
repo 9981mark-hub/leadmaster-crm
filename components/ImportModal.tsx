@@ -773,7 +773,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                 <input
                                                     type="number"
                                                     min="0"
-                                                    step="1000"
+                                                    step="1"
                                                     value={unitCost}
                                                     onChange={(e) => {
                                                         const val = Number(e.target.value);
@@ -794,7 +794,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                 <input
                                                     type="number"
                                                     min="0"
-                                                    step="10000"
+                                                    step="1"
                                                     value={totalCost > 0 ? totalCost : (unitCost > 0 && (
                                                         activeTab === 'excel' ? excelPreview.filter(c => !c.duplicateInfo).length :
                                                         activeTab === 'sheet' ? getSheetFilledRows().length :
@@ -817,7 +817,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                             <input
                                                 type="number"
                                                 min="1"
-                                                step="100"
+                                                step="1"
                                                 value={pkgLeads}
                                                 onChange={(e) => {
                                                     const l = Math.max(1, Number(e.target.value));
@@ -838,7 +838,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                 <input
                                                     type="number"
                                                     min="0"
-                                                    step="10000"
+                                                    step="1"
                                                     value={pkgPrice}
                                                     onChange={(e) => {
                                                         const p = Math.max(0, Number(e.target.value));

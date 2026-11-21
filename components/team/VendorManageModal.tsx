@@ -254,7 +254,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                         <input
                           type="number"
                           min="0"
-                          step="1000"
+                          step="1"
                           placeholder="25000"
                           value={formData.defaultUnitCost}
                           onChange={(e) => setFormData({ ...formData, defaultUnitCost: Number(e.target.value) })}
@@ -300,7 +300,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                           <input
                             type="number"
                             min="1"
-                            step="100"
+                            step="1"
                             placeholder="3000"
                             value={formData.packageLeads}
                             onChange={(e) => setFormData({ ...formData, packageLeads: Math.max(0, Number(e.target.value)) })}
@@ -317,7 +317,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                           <input
                             type="number"
                             min="0"
-                            step="10000"
+                            step="1"
                             placeholder="500000"
                             value={formData.packagePrice}
                             onChange={(e) => setFormData({ ...formData, packagePrice: Math.max(0, Number(e.target.value)) })}
