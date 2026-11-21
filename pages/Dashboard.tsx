@@ -187,26 +187,26 @@ export default function Dashboard() {
       {/* 최상단 타이틀 & 동기화 상태 */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <span>대시보드</span>
             {isOwner && (
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-700">
+              <span className="text-xs px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold border border-amber-500/20">
                 TM 대표 계정
               </span>
             )}
             {isManager && (
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 font-bold border border-indigo-300 dark:border-indigo-700">
+              <span className="text-xs px-2.5 py-0.5 rounded-md bg-primary/10 text-primary font-semibold border border-primary/20">
                 중간 관리자(팀장) 계정
               </span>
             )}
             {!isOwner && !isManager && (
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 font-bold border border-blue-300 dark:border-blue-700">
+              <span className="text-xs px-2.5 py-0.5 rounded-md bg-primary/10 text-primary font-semibold border border-primary/20">
                 상담원 계정
               </span>
             )}
           </h2>
           {(!isOwner || isManager) && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {org?.name ? `${org.name} · ` : ''}
               {isManager ? '실시간 플로어 모니터링 및 리드 관제' : '개인 상담 리마인더 및 인센티브 달성'}
             </p>
@@ -215,10 +215,10 @@ export default function Dashboard() {
 
         {/* 동기화 실패 시 재시도 버튼 */}
         {getSyncStatus().status !== 'ok' && (
-          <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg text-xs text-yellow-800 dark:text-yellow-200">
-            <AlertCircle size={15} />
+          <div className="flex items-center gap-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-300">
+            <AlertCircle size={15} strokeWidth={1.75} />
             <span>동기화 지연</span>
-            <button onClick={() => refreshData()} className="px-2 py-0.5 bg-yellow-600 text-white rounded font-bold hover:bg-yellow-700">
+            <button onClick={() => refreshData()} className="px-2 py-0.5 bg-amber-600 hover:bg-amber-700 text-white rounded font-medium">
               재시도
             </button>
           </div>
@@ -324,16 +324,16 @@ export default function Dashboard() {
       <div className="space-y-3 pt-2">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div className="flex items-center gap-3">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <h3 className="text-sm font-semibold text-foreground">
               영업 추이 및 상태 분포
             </h3>
             {(isAdmin || isOwner) && teamMembers.length > 0 && (
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-gray-500 dark:text-gray-400">조회 대상:</span>
+                <span className="text-muted-foreground">조회 대상:</span>
                 <select
                   value={selectedMemberId}
                   onChange={e => setSelectedMemberId(e.target.value)}
-                  className="h-8 px-2.5 py-1 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="h-8 px-2.5 py-1 text-xs rounded-lg border border-border bg-card text-foreground font-medium shadow-xs focus:outline-none focus:ring-1 focus:ring-ring"
                 >
                   <option value="all">전체 상담원 (전사 통합)</option>
                   <option value="unassigned">미배정 리드</option>
@@ -346,7 +346,7 @@ export default function Dashboard() {
               </div>
             )}
             {!isAdmin && !isOwner && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
+              <span className="text-xs px-2.5 py-1 rounded-md bg-muted text-foreground font-medium border border-border">
                 내 배정 리드 기준
               </span>
             )}
@@ -354,9 +354,9 @@ export default function Dashboard() {
           {(isAdmin || isOwner) && (
             <Link
               to="/statistics"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium flex items-center gap-1 hover:underline"
+              className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
             >
-              📊 상세 통계 센터 바로가기 →
+              상세 통계 센터 바로가기 →
             </Link>
           )}
         </div>
@@ -379,21 +379,21 @@ export default function Dashboard() {
 
       {/* 지연된 리마인더 상세 모달 */}
       {showOverdueModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowOverdueModal(false)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/20 rounded-t-xl">
-              <h3 className="font-bold text-red-800 dark:text-red-300 flex items-center gap-2">
-                <Clock size={20} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs" onClick={() => setShowOverdueModal(false)}>
+          <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-border bg-destructive/10">
+              <h3 className="font-semibold text-destructive flex items-center gap-2 text-sm">
+                <Clock size={16} strokeWidth={1.75} />
                 지연된 리마인더 ({overdueReminders.length}건)
               </h3>
-              <button onClick={() => setShowOverdueModal(false)} className="p-1 hover:bg-red-100 dark:hover:bg-red-800 rounded-full transition-colors">
-                <X size={20} className="text-red-600 dark:text-red-400" />
+              <button onClick={() => setShowOverdueModal(false)} className="p-1 hover:bg-destructive/20 text-destructive rounded-lg transition-colors">
+                <X size={16} strokeWidth={1.75} />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
               {overdueReminders.length === 0 ? (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                <div className="text-center text-muted-foreground text-xs py-8">
                   지연된 리마인더가 없습니다.
                 </div>
               ) : (
@@ -403,25 +403,25 @@ export default function Dashboard() {
                       key={item.reminder.id}
                       to={`/case/${item.caseData.caseId}`}
                       onClick={() => setShowOverdueModal(false)}
-                      className="block p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg border border-gray-100 dark:border-gray-600 hover:border-red-200 transition-all"
+                      className="block p-3 bg-muted/30 hover:bg-muted border border-border rounded-lg transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">|</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{item.caseData.phone}</span>
+                            <span className="font-semibold text-xs text-foreground">{item.caseData.customerName}</span>
+                            <span className="text-xs text-muted-foreground">|</span>
+                            <span className="text-xs text-muted-foreground tabular-nums">{item.caseData.phone}</span>
                           </div>
-                          <div className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">
+                          <div className="text-xs text-destructive mt-1 font-medium tabular-nums">
                             📅 {item.reminder.datetime}
                           </div>
                           {item.reminder.content && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[300px]">
+                            <div className="text-xs text-muted-foreground mt-1 truncate max-w-[300px]">
                               {item.reminder.content}
                             </div>
                           )}
                         </div>
-                        <span className="text-xs bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded font-bold">
+                        <span className="text-xs bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded-md font-semibold">
                           지연
                         </span>
                       </div>
@@ -436,21 +436,21 @@ export default function Dashboard() {
 
       {/* 조치 필요 케이스 상세 모달 */}
       {showWarningModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowWarningModal(false)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20 rounded-t-xl">
-              <h3 className="font-bold text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
-                <AlertCircle size={20} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs" onClick={() => setShowWarningModal(false)}>
+          <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-border bg-amber-500/10">
+              <h3 className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2 text-sm">
+                <AlertCircle size={16} strokeWidth={1.75} />
                 조치 필요 케이스 ({warningCasesWithDetails.length}건)
               </h3>
-              <button onClick={() => setShowWarningModal(false)} className="p-1 hover:bg-yellow-100 dark:hover:bg-yellow-800 rounded-full transition-colors">
-                <X size={20} className="text-yellow-600 dark:text-yellow-400" />
+              <button onClick={() => setShowWarningModal(false)} className="p-1 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg transition-colors">
+                <X size={16} strokeWidth={1.75} />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
               {warningCasesWithDetails.length === 0 ? (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                <div className="text-center text-muted-foreground text-xs py-8">
                   조치가 필요한 케이스가 없습니다.
                 </div>
               ) : (
@@ -460,27 +460,27 @@ export default function Dashboard() {
                       key={item.caseData.caseId}
                       to={`/case/${item.caseData.caseId}`}
                       onClick={() => setShowWarningModal(false)}
-                      className="block p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg border border-gray-100 dark:border-gray-600 hover:border-yellow-200 transition-all"
+                      className="block p-3 bg-muted/30 hover:bg-muted border border-border rounded-lg transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-800 dark:text-white">{item.caseData.customerName}</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">|</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{item.caseData.phone}</span>
+                            <span className="font-semibold text-xs text-foreground">{item.caseData.customerName}</span>
+                            <span className="text-xs text-muted-foreground">|</span>
+                            <span className="text-xs text-muted-foreground tabular-nums">{item.caseData.phone}</span>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <div className="text-xs text-muted-foreground mt-1">
                             {item.caseData.status}
                           </div>
                           <div className="flex flex-wrap gap-1 mt-2">
                             {item.warnings.map((warning, idx) => (
-                              <span key={idx} className="text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-400 px-2 py-0.5 rounded font-medium">
+                              <span key={idx} className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium">
                                 ⚠ {warning}
                               </span>
                             ))}
                           </div>
                         </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">→</span>
+                        <span className="text-xs text-muted-foreground mt-1">→</span>
                       </div>
                     </Link>
                   ))}

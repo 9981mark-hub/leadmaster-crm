@@ -143,21 +143,21 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 웰컴 배너 */}
-      <div className="bg-gradient-to-r from-blue-50 via-indigo-100 to-blue-50 dark:from-blue-900 dark:via-indigo-900 dark:to-slate-900 rounded-2xl p-5 text-slate-900 dark:text-white shadow-lg border border-blue-200 dark:border-transparent relative overflow-hidden">
+      <div className="bg-card rounded-xl p-5 text-foreground shadow-xs border border-border relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-400/20 border border-amber-300/30 text-amber-300 flex items-center gap-1">
-                <Zap size={13} /> 대표 겸 팀장 올인원 통합 관제
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 border border-primary/20 text-primary flex items-center gap-1">
+                <Zap size={13} strokeWidth={1.75} /> 대표 겸 팀장 올인원 통합 관제
               </span>
-              <span className="text-xs text-blue-200">
+              <span className="text-xs text-muted-foreground">
                 {format(new Date(), 'yyyy.MM.dd (E)', { locale: ko })}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
               <span>경영 손익 & 현장 리드 배분 올인원 대시보드</span>
             </h1>
-            <p className="text-xs text-blue-200 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               대표이사의 전사 손익 모니터링과 현장 리드 즉시 배분을 한 화면에서 원스톱으로 처리합니다.
             </p>
           </div>
@@ -165,9 +165,9 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onRefreshCases && onRefreshCases()}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs font-medium text-foreground flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
             >
-              <RefreshCw size={14} /> 새로고침
+              <RefreshCw size={14} strokeWidth={1.75} /> 새로고침
             </button>
           </div>
         </div>

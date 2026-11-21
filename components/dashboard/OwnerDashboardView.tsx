@@ -194,21 +194,21 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 경영 헤더 배너 */}
-      <div className="bg-gradient-to-r from-slate-100 via-blue-50 to-slate-100 dark:from-slate-900 dark:via-blue-950 dark:to-slate-900 rounded-2xl p-5 text-slate-900 dark:text-white shadow-lg border border-slate-200 dark:border-slate-700/60 relative overflow-hidden">
+      <div className="bg-card border border-border rounded-xl p-5 shadow-xs relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 border border-amber-400/40 text-amber-700 dark:text-amber-300 flex items-center gap-1">
-                <Crown size={13} /> TM 대표이사 최고경영 관제
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5">
+                <Crown size={13} strokeWidth={1.75} /> TM 대표이사 최고경영 관제
               </span>
-              <span className="text-xs text-slate-600 dark:text-slate-300">
+              <span className="text-xs text-muted-foreground">
                 {format(new Date(), 'yyyy년 M월', { locale: ko })} 경영 총괄 리포트
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <span>전사 손익 & 리드 효율화 총괄 관제판</span>
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               DB 구입 비용 대비 실질 영업이익, 대행사별 ROI 품질 평가 및 상담원 1인당 생산성을 조망합니다.
             </p>
           </div>
@@ -216,7 +216,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           <div className="flex items-center gap-2">
             <Link
               to="/statistics"
-              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white transition-colors"
+              className="px-3.5 py-2 rounded-lg bg-primary hover:bg-primary/90 text-xs font-semibold text-primary-foreground shadow-xs transition-colors flex items-center gap-1.5"
             >
               상세 정산·통계 분석 →
             </Link>
@@ -229,28 +229,28 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
         <KPICard
           title="당월 총 수임/매출액"
           count={`₩${thisRevenue.toLocaleString()}`}
-          color="text-emerald-600"
+          color="text-emerald-600 dark:text-emerald-400"
           icon={DollarSign}
           subText={revenueGrowth >= 0 ? `전월 대비 +${revenueGrowth}% 증가` : `전월 대비 ${revenueGrowth}%`}
         />
         <KPICard
           title="DB 구입 원가 합계"
           count={`₩${totalDbCost.toLocaleString()}`}
-          color="text-indigo-600"
+          color="text-indigo-600 dark:text-indigo-400"
           icon={Layers}
           subText={`당월 인입 ${thisMonthLeads.length}건 (건당 ₩3.5만)`}
         />
         <KPICard
           title="실질 영업 순마진"
           count={`₩${netProfit.toLocaleString()}`}
-          color="text-blue-600"
+          color="text-blue-600 dark:text-blue-400"
           icon={TrendingUp}
           subText={`영업 마진율 ${profitMargin}% (인프라비 차감)`}
         />
         <KPICard
           title="전사 수임 전환율"
           count={`${conversionRate}%`}
-          color="text-purple-600"
+          color="text-purple-600 dark:text-purple-400"
           icon={BarChart3}
           subText={`수임 ${thisMonthContracts.length}건 / 인입 ${thisMonthLeads.length}건`}
         />
@@ -264,22 +264,22 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
       {/* 3. 유입경로 & 대행사별 DB ROI 품질 분석 + 보안 리스크 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 대행사별 품질 평가 */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-100 dark:border-gray-700 bg-slate-50/70 dark:bg-gray-800/80 flex items-center justify-between">
+        <div className="lg:col-span-2 bg-card rounded-xl border border-border shadow-xs overflow-hidden">
+          <div className="p-4 border-b border-border bg-muted/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 size={16} className="text-blue-600" />
-              <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+              <BarChart3 size={16} strokeWidth={1.75} className="text-primary" />
+              <h3 className="font-semibold text-sm text-foreground">
                 광고 대행사 및 유입경로별 DB 품질 & 전환율 분석
               </h3>
             </div>
-            <span className="text-xs text-slate-500 dark:text-gray-400">
+            <span className="text-xs text-muted-foreground">
               부재율 60% 이상 시 불량 DB 식별 경고
             </span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 dark:bg-gray-700/50 text-slate-500 dark:text-gray-400 font-semibold border-b border-slate-200 dark:border-gray-700">
+              <thead className="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
                 <tr>
                   <th className="py-2.5 px-4 whitespace-nowrap">유입 채널 / 대행사명</th>
                   <th className="py-2.5 px-4 whitespace-nowrap text-right">인입 건수</th>
@@ -289,28 +289,28 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                   <th className="py-2.5 px-4 whitespace-nowrap text-center">품질 판정</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
+              <tbody className="divide-y divide-border">
                 {channelAnalytics.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
                       기록된 유입 채널 데이터가 없습니다.
                     </td>
                   </tr>
                 ) : (
                   channelAnalytics.map((item) => (
-                    <tr key={item.channel} className="hover:bg-slate-50 dark:hover:bg-gray-700/40 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                    <tr key={item.channel} className="hover:bg-muted/40 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-foreground whitespace-nowrap">
                         {item.channel}
                       </td>
-                      <td className="py-3 px-4 text-right font-semibold tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      <td className="py-3 px-4 text-right font-semibold tabular-nums text-foreground whitespace-nowrap">
                         {item.total}건
                       </td>
                       <td className="py-3 px-4 text-right font-semibold tabular-nums whitespace-nowrap">
-                        <span className={item.isDefective ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-gray-400'}>
+                        <span className={item.isDefective ? 'text-destructive font-bold' : 'text-muted-foreground'}>
                           {item.absentRate}%
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
+                      <td className="py-3 px-4 text-right font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
                         {item.transferRate}%
                       </td>
                       <td className="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap">
@@ -318,11 +318,11 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         {item.isDefective ? (
-                          <span className="text-xs px-2 py-0.5 rounded font-bold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                          <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-destructive/10 text-destructive border border-destructive/20">
                             ⚠️ 불량 의심 (부재율 과다)
                           </span>
                         ) : (
-                          <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                          <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-primary/10 text-primary border border-primary/20">
                             ✓ 우수 채널
                           </span>
                         )}
@@ -336,68 +336,68 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
         </div>
 
         {/* 리스크 & 보안 관제 센터 */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-4 shadow-sm flex flex-col justify-between">
+        <div className="bg-card rounded-xl border border-border p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3 border-b border-slate-100 dark:border-gray-700 pb-2">
-              <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <ShieldAlert size={16} className="text-red-600" />
+            <div className="flex items-center justify-between mb-3 border-b border-border pb-3">
+              <h3 className="font-semibold text-sm text-foreground flex items-center gap-1.5">
+                <ShieldAlert size={16} strokeWidth={1.75} className="text-destructive" />
                 리스크 & 컴플라이언스 관제
               </h3>
-              <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-800">
+              <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-primary/10 text-primary border border-primary/20">
                 보안 정상 가동
               </span>
             </div>
 
             <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600">
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/80">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <span className="text-xs font-semibold text-foreground">
                     48시간 장기 방치 리드 (미컨택)
                   </span>
-                  <span className={`text-xs font-bold tabular-nums px-2 py-0.5 rounded ${
-                    neglectedCases.length > 0 ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-700'
+                  <span className={`text-xs font-semibold tabular-nums px-2 py-0.5 rounded-md ${
+                    neglectedCases.length > 0 ? 'bg-destructive/10 text-destructive border border-destructive/20' : 'bg-muted text-muted-foreground'
                   }`}>
                     {neglectedCases.length}건
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   구입 후 48시간 동안 첫 전화가 연결되지 않은 자산 손실 위험 리드입니다.
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600">
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/80">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <span className="text-xs font-semibold text-foreground">
                     4대 보안 위반 이상 탐지
                   </span>
-                  <span className="text-xs font-bold tabular-nums px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                  <span className="text-xs font-semibold tabular-nums px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                     0건 (안전)
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   단시간 리드 대량 열람, 비인가 다운로드 및 화면 캡처 시도가 감지되지 않았습니다.
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600">
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/80">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <span className="text-xs font-semibold text-foreground">
                     AI 트레이닝 전사 이수율
                   </span>
-                  <span className="text-xs font-bold tabular-nums px-2 py-0.5 rounded bg-blue-100 text-blue-700">
+                  <span className="text-xs font-semibold tabular-nums px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                     85%
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   상담원 모의콜 스크립트 숙지도 평균 88점 (필수 고지사항 누락 방지)
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-gray-700 flex justify-between items-center text-xs">
-            <span className="text-slate-500 dark:text-slate-400">보안 통제 프로필 적용 중</span>
-            <Link to="/team" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
+          <div className="mt-4 pt-3 border-t border-border flex justify-between items-center text-xs">
+            <span className="text-muted-foreground">보안 통제 프로필 적용 중</span>
+            <Link to="/team" className="text-primary font-semibold hover:underline">
               보안 권한 설정 →
             </Link>
           </div>
@@ -405,22 +405,22 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
       </div>
 
       {/* 4. 상담원 생산성 랭킹 (명예의 전당) */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-gray-700 bg-slate-50/70 dark:bg-gray-800/80 flex items-center justify-between">
+      <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-border bg-muted/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Award size={18} className="text-amber-500" />
-            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+            <Award size={18} strokeWidth={1.75} className="text-amber-500" />
+            <h3 className="font-semibold text-sm text-foreground">
               상담원 1인당 생산성 랭킹 & 명예의 전당 (Top Performers)
             </h3>
           </div>
-          <span className="text-xs text-slate-500 dark:text-gray-400">
+          <span className="text-xs text-muted-foreground">
             당월 수임 기여액 및 1차 인계 기준 순위
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-gray-700/50 text-slate-500 dark:text-gray-400 font-semibold border-b border-slate-200 dark:border-gray-700">
+            <thead className="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
               <tr>
                 <th className="py-2.5 px-4 whitespace-nowrap text-center">순위</th>
                 <th className="py-2.5 px-4 whitespace-nowrap">상담원명</th>
@@ -431,38 +431,38 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                 <th className="py-2.5 px-4 whitespace-nowrap text-right">당월 수임 매출 기여액</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
+            <tbody className="divide-y divide-border">
               {agentRankings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
+                  <td colSpan={7} className="py-8 text-center text-muted-foreground text-xs">
                     등록된 상담원 활동 내역이 없습니다.
                   </td>
                 </tr>
               ) : (
                 agentRankings.map((stat, idx) => (
-                  <tr key={stat.agent.userId} className="hover:bg-slate-50 dark:hover:bg-gray-700/40 transition-colors">
+                  <tr key={stat.agent.userId} className="hover:bg-muted/40 transition-colors">
                     <td className="py-3 px-4 text-center font-bold whitespace-nowrap">
                       {idx === 0 && <span className="text-amber-500 text-sm">🥇 1위</span>}
-                      {idx === 1 && <span className="text-slate-500 dark:text-slate-400 text-sm">🥈 2위</span>}
-                      {idx === 2 && <span className="text-amber-700 text-sm">🥉 3위</span>}
-                      {idx > 2 && <span className="text-slate-500">{idx + 1}위</span>}
+                      {idx === 1 && <span className="text-muted-foreground text-sm">🥈 2위</span>}
+                      {idx === 2 && <span className="text-amber-700 dark:text-amber-500 text-sm">🥉 3위</span>}
+                      {idx > 2 && <span className="text-muted-foreground">{idx + 1}위</span>}
                     </td>
-                    <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                    <td className="py-3 px-4 font-semibold text-foreground whitespace-nowrap">
                       {stat.agent.displayName}
                     </td>
-                    <td className="py-3 px-4 text-right tabular-nums text-slate-600 dark:text-gray-300 whitespace-nowrap">
+                    <td className="py-3 px-4 text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {stat.totalAssigned}건
                     </td>
-                    <td className="py-3 px-4 text-right tabular-nums text-slate-600 dark:text-gray-300 whitespace-nowrap">
+                    <td className="py-3 px-4 text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {stat.doneCalls}콜
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
+                    <td className="py-3 px-4 text-right font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
                       {stat.transferredCount}건
                     </td>
                     <td className="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap">
                       {stat.contractedCount}건
                     </td>
-                    <td className="py-3 px-4 text-right font-black text-blue-600 dark:text-blue-400 tabular-nums whitespace-nowrap text-sm">
+                    <td className="py-3 px-4 text-right font-bold text-foreground tabular-nums whitespace-nowrap text-sm">
                       ₩{stat.totalRevenue.toLocaleString()}
                     </td>
                   </tr>

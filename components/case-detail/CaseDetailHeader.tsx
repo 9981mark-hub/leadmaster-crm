@@ -138,44 +138,44 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
         });
     };
 
-    const btn = 'h-9 px-3 rounded-lg text-sm font-semibold flex items-center gap-1.5 border transition-colors whitespace-nowrap';
-    const sel = 'h-9 px-2 border rounded-lg text-sm font-semibold outline-none min-w-[120px] bg-white dark:bg-gray-800 dark:text-gray-100';
+    const btn = 'h-9 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 border border-border bg-card text-foreground hover:bg-muted transition-colors whitespace-nowrap shadow-2xs';
+    const sel = 'h-9 px-2.5 border border-border rounded-lg text-xs font-medium outline-none min-w-[120px] bg-card text-foreground shadow-2xs';
 
     return (
-        <div className="sticky top-0 z-20 -mx-1 px-1 pt-1 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur">
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="sticky top-0 z-20 -mx-1 px-1 pt-1 bg-background/95 backdrop-blur-md">
+            <div className="relative bg-card rounded-xl border border-border shadow-xs overflow-hidden">
                 <span className={`absolute left-0 top-0 bottom-0 w-1.5 ${statusBar(c.status)}`} aria-hidden />
                 <div className="pl-4 pr-3 py-3 flex flex-col lg:flex-row lg:items-center gap-3">
                     {/* 누구인지 */}
                     <div className="flex items-start gap-2 min-w-0 flex-1">
                         {onBack && (
-                            <button onClick={onBack} className="mt-0.5 p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-700" aria-label="뒤로"><ArrowLeft size={18} /></button>
+                            <button onClick={onBack} className="mt-0.5 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="뒤로"><ArrowLeft size={16} strokeWidth={1.75} /></button>
                         )}
                         <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">{c.customerName || '이름 없음'}</h1>
-                                <button onClick={call} className="text-base font-semibold tabular-nums text-blue-700 dark:text-blue-300 hover:underline">{c.phone}</button>
+                                <h1 className="text-xl font-bold tracking-tight text-foreground truncate">{c.customerName || '이름 없음'}</h1>
+                                <button onClick={call} className="text-sm font-semibold tabular-nums text-primary hover:underline">{c.phone}</button>
                                 {/* [2026-11-02] 모바일만: 문자 아이콘 → 폰 문자 앱의 이 고객 대화창 (앱은 sms: 주소를 문자 앱으로 넘김) */}
                                 {phoneDigits && (
                                     <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} aria-label="문자 보내기" title="문자 보내기"
-                                        className="md:hidden h-8 w-8 -ml-0.5 rounded-full flex items-center justify-center text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300">
-                                        <MessageSquare size={16} />
+                                        className="md:hidden h-8 w-8 -ml-0.5 rounded-full flex items-center justify-center text-primary bg-primary/10">
+                                        <MessageSquare size={15} strokeWidth={1.75} />
                                     </a>
                                 )}
-                                {c.isNew && <span className="text-xs px-1.5 py-0.5 rounded bg-red-600 text-white font-bold">신규</span>}
+                                {c.isNew && <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground font-semibold">신규</span>}
                             </div>
                             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                                <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 font-medium">{c.caseType || '유형 미정'}</span>
-                                <span className={`px-1.5 py-0.5 rounded font-medium ${partner ? 'bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200' : 'bg-red-50 text-red-700'}`}>{partner?.name || '거래처 미정'}</span>
-                                {c.inboundPath && <span className="text-slate-500 dark:text-slate-400">{c.inboundPath}</span>}
+                                <span className="px-1.5 py-0.5 rounded-md bg-muted text-foreground font-medium border border-border text-[11px]">{c.caseType || '유형 미정'}</span>
+                                <span className={`px-1.5 py-0.5 rounded-md font-medium text-[11px] border ${partner ? 'bg-muted text-foreground border-border' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{partner?.name || '거래처 미정'}</span>
+                                {c.inboundPath && <span className="text-muted-foreground text-[11px]">{c.inboundPath}</span>}
                                 {progress && progress.total > 0 && (
-                                    <span className={`px-1.5 py-0.5 rounded font-medium ${progress.done === progress.total ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}
+                                    <span className={`px-1.5 py-0.5 rounded-md font-medium text-[11px] border ${progress.done === progress.total ? 'bg-primary/10 text-primary border-primary/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'}`}
                                         title={progress.missing.length ? `확인 안 한 항목: ${progress.missing.join(', ')}` : '필수 확인 항목을 모두 입력했습니다'}>
                                         필수 확인 {progress.done}/{progress.total}
                                     </span>
                                 )}
                                 {warnings.map(w => (
-                                    <span key={w} className="px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-medium flex items-center gap-0.5"><AlertTriangle size={11} /> {w}</span>
+                                    <span key={w} className="px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive font-medium border border-destructive/20 text-[11px] flex items-center gap-0.5"><AlertTriangle size={11} strokeWidth={1.75} /> {w}</span>
                                 ))}
                                 <SaveBadge s={saveState} />
                             </div>
@@ -183,69 +183,66 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                     </div>
 
                     {/* 할 일 */}
-                    {/* 모바일(768px 미만)에서는 숨김: 앱 화면에서 고객 정보를 가리지 않게 (2026-11-02) */}
                     <div ref={menuRef} className="hidden md:flex flex-wrap items-center gap-1.5 relative">
-                        <button onClick={call} className={`${btn} bg-white dark:bg-gray-900 text-slate-900 dark:text-white border-slate-200 dark:border-slate-900 hover:bg-slate-100 dark:bg-slate-800`}><Phone size={15} /> 전화</button>
+                        <button onClick={call} className={`${btn} bg-primary text-primary-foreground border-primary hover:bg-primary/90 font-semibold`}><Phone size={14} strokeWidth={1.75} /> 전화</button>
                         {isMobileUA() ? (
-                            <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50`}><MessageSquare size={15} /> 문자</a>
+                            <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={btn}><MessageSquare size={14} strokeWidth={1.75} /> 문자</a>
                         ) : (
                             <button 
                                 onClick={() => {
-                                    console.log('[Button] 문자 클릭, 현재 menu:', menu);
                                     setMenu(menu === 'sms' ? null : 'sms');
                                 }} 
-                                className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}>
-                                <MessageSquare size={15} /> 문자
+                                className={btn}>
+                                <MessageSquare size={14} strokeWidth={1.75} /> 문자
                             </button>
                         )}
                         <button
                             onClick={() => isMissedStatus ? onMissedCallIncrement?.() : onStatusChangeStart(missedCallStatus as CaseStatus)}
-                            className={`${btn} border-orange-200 text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+                            className={`${btn} bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20`}
                             title={isMissedStatus ? `부재 1회 더 기록 (지금 ${c.missedCallCount || 0}회)` : `상태를 '${missedCallStatus}'(으)로`}
                         >
-                            <PhoneMissed size={15} /> 부재{isMissedStatus ? ` ${c.missedCallCount || 0}` : ''}{isMissedStatus && <Plus size={13} />}
+                            <PhoneMissed size={14} strokeWidth={1.75} /> 부재{isMissedStatus ? ` ${c.missedCallCount || 0}` : ''}{isMissedStatus && <Plus size={12} strokeWidth={1.75} />}
                         </button>
                         {onAddCallReminder && (
                             <button 
                                 onClick={() => {
-                                    console.log('[Button] 다음 통화 클릭, 현재 menu:', menu);
                                     setMenu(menu === 'reminder' ? null : 'reminder');
                                 }} 
-                                className={`${btn} border-slate-300 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700`}>
-                                <Clock size={15} /> 다음 통화
+                                className={btn}>
+                                <Clock size={14} strokeWidth={1.75} /> 다음 통화
                             </button>
                         )}
                         {onDeliverClick && (
-                            <button onClick={onDeliverClick} className={`${btn} border-sky-200 text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20`} title="회사 텔레그램 봇으로 변호사 사무실 방에 상담 내용을 보냅니다"><Send size={15} /> 사무실 전달</button>
+                            <button onClick={onDeliverClick} className={`${btn} bg-card text-foreground hover:bg-muted border border-border`} title="회사 텔레그램 봇으로 변호사 사무실 방에 상담 내용을 보냅니다"><Send size={14} strokeWidth={1.75} /> 사무실 전달</button>
                         )}
                         {onOpenPalette && (
-                            <button onClick={onOpenPalette} className="h-9 w-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 hidden md:flex items-center justify-center" title="빠른 이동 (Ctrl+K)"><Command size={16} /></button>
+                            <button onClick={onOpenPalette} className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted hidden md:flex items-center justify-center border border-border transition-colors" title="빠른 이동 (Ctrl+K)"><Command size={15} strokeWidth={1.75} /></button>
                         )}
 
-                        {/* 팝업은 body에 띄운다: 상단 고정 영역(backdrop-blur·overflow-hidden) 안에 있으면 화면 위쪽이 잘린다 */}
+                        {/* 문자 전송 팝업 */}
                         {menu === 'sms' && createPortal(
                             <div ref={popRef}>
-                                <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setMenu(null)} />
+                                <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-xs" onClick={() => setMenu(null)} />
                                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMenu(null)}>
-                                    <div className="w-full max-w-md bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                                    <div className="w-full max-w-md bg-card border border-border rounded-xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
                                         <div className="p-4 space-y-3">
-                                            <div className="flex items-center justify-between text-base font-semibold text-slate-800 dark:text-gray-100">
+                                            <div className="flex items-center justify-between text-sm font-semibold text-foreground">
                                                 <span>{c.customerName}님께 문자 보내기</span>
-                                                <button onClick={() => setMenu(null)} className="text-slate-500 dark:text-slate-400 hover:text-slate-600 p-1" aria-label="닫기"><X size={18} /></button>
+                                                <button onClick={() => setMenu(null)} className="text-muted-foreground hover:text-foreground p-1" aria-label="닫기"><X size={16} strokeWidth={1.75} /></button>
                                             </div>
                                             {smsTemplates.length > 0 && (
                                                 <div className="space-y-1.5">
-                                                    <label className="text-xs font-medium text-slate-600 dark:text-gray-400">템플릿 선택</label>
+                                                    <label className="text-xs font-medium text-muted-foreground">템플릿 선택</label>
                                                     <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                                                         {smsTemplates.map(tmpl => (
                                                             <button
                                                                 key={tmpl.id}
                                                                 onClick={() => setSmsText(tmpl.content)}
-                                                                className="text-left px-3 py-2 text-xs border border-slate-200 dark:border-gray-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 hover:border-blue-400 transition-colors"
+                                                                className="text-left px-3 py-2 text-xs border border-border rounded-lg bg-card hover:bg-muted transition-colors shadow-2xs"
                                                                 title={tmpl.content}
                                                             >
-                                                                <div className="font-medium text-slate-800 dark:text-gray-100 truncate">{tmpl.title}</div>
-                                                                <div className="text-slate-500 dark:text-slate-400 truncate">{tmpl.content.slice(0, 20)}...</div>
+                                                                <div className="font-medium text-foreground truncate">{tmpl.title}</div>
+                                                                <div className="text-muted-foreground truncate">{tmpl.content.slice(0, 20)}...</div>
                                                             </button>
                                                         ))}
                                                     </div>
@@ -253,12 +250,12 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                                             )}
                                             <textarea autoFocus value={smsText} onChange={e => setSmsText(e.target.value)} rows={6}
                                                 onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendSms(); }}
-                                                className="w-full border border-slate-300 dark:border-gray-600 rounded-lg p-3 text-sm dark:bg-gray-900 dark:text-gray-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" 
+                                                className="w-full border border-border rounded-lg p-3 text-xs bg-card text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-ring placeholder:text-muted-foreground" 
                                                 placeholder="내용을 쓰면 상담원 폰(리드마스터 앱)이 보냅니다" />
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs text-slate-500 dark:text-slate-400">{smsText.length}자 · Ctrl+Enter 보내기</span>
-                                                <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-white dark:bg-gray-900 text-slate-900 dark:text-white text-sm font-semibold disabled:opacity-40 hover:bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
-                                                    {sms.isPending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} 보내기
+                                                <span className="text-xs text-muted-foreground tabular-nums">{smsText.length}자 · Ctrl+Enter 보내기</span>
+                                                <button disabled={!smsText.trim() || sms.isPending} onClick={sendSms} className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold disabled:opacity-40 flex items-center gap-1.5 shadow-2xs">
+                                                    {sms.isPending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} strokeWidth={1.75} />} 보내기
                                                 </button>
                                             </div>
                                         </div>
@@ -269,18 +266,18 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         )}
                         {menu === 'reminder' && onAddCallReminder && createPortal(
                             <div ref={popRef}>
-                                <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setMenu(null)} />
+                                <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-xs" onClick={() => setMenu(null)} />
                                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMenu(null)}>
-                                    <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-2xl py-2 overflow-hidden" onClick={e => e.stopPropagation()}>
-                                        <div className="px-4 py-2 text-base font-semibold text-slate-800 dark:text-gray-100 border-b border-slate-100 dark:border-gray-700">다음 통화 예약</div>
+                                    <div className="w-full max-w-sm bg-card border border-border rounded-xl shadow-2xl py-2 overflow-hidden" onClick={e => e.stopPropagation()}>
+                                        <div className="px-4 py-2 text-sm font-semibold text-foreground border-b border-border">다음 통화 예약</div>
                                         {quickSlots().map(s => (
                                             <button key={s.label} onClick={() => { onAddCallReminder(s.at, s.label); setMenu(null); }}
-                                                className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-gray-700 flex justify-between items-center group">
-                                                <span className="text-sm font-medium text-slate-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-600 dark:text-blue-400">{s.label}</span>
-                                                <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">{s.at.slice(5)}</span>
+                                                className="w-full text-left px-4 py-2.5 hover:bg-muted flex justify-between items-center group transition-colors">
+                                                <span className="text-xs font-medium text-foreground group-hover:text-primary">{s.label}</span>
+                                                <span className="text-xs text-muted-foreground tabular-nums">{s.at.slice(5)}</span>
                                             </button>
                                         ))}
-                                        <div className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">다른 시각은 오른쪽 "상담 메모 · 일정" 탭에서 추가하세요</div>
+                                        <div className="px-4 py-2 text-xs text-muted-foreground border-t border-border bg-muted/40">다른 시각은 오른쪽 "상담 메모 · 일정" 탭에서 추가하세요</div>
                                     </div>
                                 </div>
                             </div>,
@@ -292,14 +289,14 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                     <div className="flex flex-wrap items-center gap-1.5">
                         <select
                             aria-label="1차 상태"
-                            className={`${sel} border-slate-300 ${STATUS_COLOR_MAP[c.status] || ''}`}
+                            className={`${sel} border-border bg-card text-foreground`}
                             value={c.status}
                             onChange={(e) => onStatusChangeStart(e.target.value as CaseStatus)}
                         >
                             {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         {c.status === '사무장 접수' && (
-                            <select aria-label="2차 상태" className={`${sel} border-purple-300 text-purple-800`} value={c.secondaryStatus || ''} onChange={(e) => onSecondaryStatusChangeStart(e.target.value || null)}>
+                            <select aria-label="2차 상태" className={`${sel} border-primary/40 text-primary`} value={c.secondaryStatus || ''} onChange={(e) => onSecondaryStatusChangeStart(e.target.value || null)}>
                                 <option value="">2차 상태</option>
                                 {c.secondaryStatus && !secondaryStatuses.includes(c.secondaryStatus) && (
                                     <option value={c.secondaryStatus}>{c.secondaryStatus}</option>
@@ -308,21 +305,21 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             </select>
                         )}
                         {c.status === '사무장 접수' && c.secondaryStatus && availableTertiary.length > 0 && (
-                            <select aria-label="3차 상태" className={`${sel} border-amber-300 text-amber-800`} value={c.tertiaryStatus || ''} onChange={(e) => onTertiaryStatusChangeStart(e.target.value || null)}>
+                            <select aria-label="3차 상태" className={`${sel} border-amber-500/40 text-amber-600 dark:text-amber-400`} value={c.tertiaryStatus || ''} onChange={(e) => onTertiaryStatusChangeStart(e.target.value || null)}>
                                 <option value="">3차 상태</option>
                                 {availableTertiary.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         )}
-                        {/* [2026-11-02] 모바일만: 부재일 때 + → 부재 1회 더 + 마지막 부재 시각 지금으로 */}
+                        {/* 모바일만: 부재일 때 + */}
                         {isMissedStatus && onMissedCallIncrement && (
                             <button type="button" onClick={onMissedCallIncrement}
-                                className="md:hidden h-9 px-2.5 rounded-lg border border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 text-sm font-bold flex items-center gap-1 tabular-nums"
+                                className="md:hidden h-9 px-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center gap-1 tabular-nums"
                                 aria-label={`부재 1회 더 기록 (지금 ${c.missedCallCount || 0}회)`}>
-                                <Plus size={15} /> {c.missedCallCount || 0}회
+                                <Plus size={13} strokeWidth={1.75} /> {c.missedCallCount || 0}회
                             </button>
                         )}
                         {isMissedStatus && c.lastMissedCallAt && (
-                            <span className="text-xs text-orange-600 tabular-nums">마지막 부재 {(() => { const d = new Date(c.lastMissedCallAt!); return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; })()}</span>
+                            <span className="text-xs text-amber-600 dark:text-amber-400 tabular-nums">마지막 부재 {(() => { const d = new Date(c.lastMissedCallAt!); return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; })()}</span>
                         )}
                     </div>
                 </div>

@@ -106,27 +106,17 @@ const AutoDialDashboard: React.FC = () => {
     }
   }, [loading, batches, viewMode]);
 
-  // 캠페인 삭제
-  const handleDeleteCampaign = async (id: string, name: string) => {
-    if (!window.confirm(`정말 '${name}' 캠페인을 삭제하시겠습니까? (상담원 큐도 함께 삭제됩니다)`)) return;
+  const handleDeleteCampaign = async (campaignId: string, name: string) => {
+    if (!window.confirm(`'${name}' 캠페인을 삭제하시겠습니까? 관련 통화 이력과 배정이 해제됩니다.`)) return;
     try {
-      await deleteCampaign(id);
+      await deleteCampaign(campaignId);
       showToast('캠페인이 삭제되었습니다.', 'success');
-      if (activeCampaignId === id) setActiveCampaignId(null);
       loadAllData();
-    } catch (err) {
-      showToast('캠페인 삭제에 실패했습니다.', 'error');
-    }
-  };
-
-  // v1.0 배치 핸들러
-  const handleStatusChange = async (id: string, newStatus: AutoDialBatch['status']) => {
-    try {
-      await updateBatchStatus(id, newStatus);
-      showToast('상태가 변경되었습니다.', 'success');
-      loadAllData();
+      if (activeCampaignId === campaignId) {
+        setActiveCampaignId(null);
+      }
     } catch (error) {
-      showToast('상태 변경에 실패했습니다.', 'error');
+      showToast('캠페인 삭제에 실패했습니다.', 'error');
     }
   };
 
@@ -198,49 +188,49 @@ const AutoDialDashboard: React.FC = () => {
   }), { total: 0, connected: 0, noAnswer: 0, busy: 0 });
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
+    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       {/* 1. 상단 타이틀 & 런처 바 */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white p-6 rounded-3xl shadow-xl shadow-indigo-950/20 relative overflow-hidden">
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-black bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 flex items-center gap-1">
-              <Sparkles size={12} className="text-amber-300" />
-              SMART AUTO-DIALER v4.0
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card text-card-foreground p-5 sm:p-6 rounded-xl border border-border shadow-xs">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-2xs px-2 py-0.5 rounded font-mono font-medium bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+              <Sparkles size={11} strokeWidth={1.75} className="text-primary" />
+              AUTO-DIALER v4.0
             </span>
-            <span className="text-xs font-semibold text-indigo-300">
+            <span className="text-2xs text-muted-foreground font-medium">
               관리자 전용 캠페인 배정 & 실시간 플로어 관제탑
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-black flex items-center gap-3">
-            <PhoneCall className="w-8 h-8 text-amber-600 dark:text-amber-400" />
-            오토콜 관제 센터
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+            <PhoneCall className="w-6 h-6 text-primary" strokeWidth={1.75} />
+            <span>오토콜 관제 센터</span>
           </h1>
-          <p className="text-indigo-200 mt-1 text-xs md:text-sm max-w-xl">
+          <p className="text-muted-foreground mt-0.5 text-xs max-w-xl leading-relaxed">
             상담원별 일일 타깃 DB 할당, 7초 연속 발신 템포 제어, 플로어 실시간 통화 현황을 중앙에서 관제합니다.
           </p>
         </div>
 
         {/* 액션 버튼 그룹 */}
-        <div className="flex flex-wrap items-center gap-2.5 relative z-10 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {/* 간편 콜 모드로 이동 안내 */}
           <button
             type="button"
             onClick={() => window.location.href = '#/lite'}
-            className="px-4 py-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 rounded-2xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
+            className="h-8 px-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             title="상담원 간편 콜 & 오토콜 통합 워크스페이스로 이동"
           >
-            <Zap size={16} className="text-amber-400" />
-            <span>⚡ 간편콜 워크스페이스</span>
+            <Zap size={13} strokeWidth={1.75} className="text-amber-500" />
+            <span>간편콜 워크스페이스</span>
           </button>
 
           {/* 상담원: 오토콜 HUD 직접 시작 버튼 */}
           <button
             type="button"
             onClick={() => setViewMode('agent_hud')}
-            className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl text-xs md:text-sm font-black shadow-lg shadow-emerald-950/30 flex items-center gap-2 active:scale-95 transition-all cursor-pointer"
+            className="h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-medium shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Headphones size={18} />
-            🎧 나의 오토콜 런타임
+            <Headphones size={14} strokeWidth={1.75} />
+            <span>나의 오토콜 런타임</span>
           </button>
 
           {/* 관리자: 새 캠페인 생성 모달 버튼 */}
@@ -248,10 +238,10 @@ const AutoDialDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCampaignModalOpen(true)}
-              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs md:text-sm font-bold border border-white/20 backdrop-blur-sm flex items-center gap-2 transition-all cursor-pointer"
+              className="h-8 px-3 bg-background hover:bg-muted text-foreground rounded-lg text-xs font-medium border border-border shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Plus size={16} />
-              + 캠페인 생성 & 일일 배정
+              <Plus size={13} strokeWidth={1.75} />
+              <span>캠페인 생성</span>
             </button>
           )}
 
@@ -259,65 +249,60 @@ const AutoDialDashboard: React.FC = () => {
             type="button"
             onClick={loadAllData}
             disabled={loading}
-            className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl text-white transition-colors"
+            className="h-8 w-8 flex items-center justify-center bg-background hover:bg-muted rounded-lg text-foreground border border-border transition-colors cursor-pointer"
             title="새로고침"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={13} strokeWidth={1.75} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
-
-        {/* 배경 은은한 광채 효과 */}
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
       </div>
 
-      {/* 2. 메인 네비게이션 탭 (v4.0 캠페인 vs v1.0 레거시 배치) */}
-      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-1">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setMainTab('campaigns_v4')}
-            className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all ${
-              mainTab === 'campaigns_v4'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
-          >
-            <LayoutDashboard size={16} />
-            캠페인 & 플로어 관제 (v4.0)
-            {campaigns.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-white/20 text-white">
-                {campaigns.length}
-              </span>
-            )}
-          </button>
+      {/* 2. 메인 네비게이션 탭 (Shadcn Segmented Control) */}
+      <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => setMainTab('campaigns_v4')}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+            mainTab === 'campaigns_v4'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+          }`}
+        >
+          <LayoutDashboard size={14} strokeWidth={1.75} />
+          <span>캠페인 & 플로어 관제 (v4.0)</span>
+          {campaigns.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground tabular-nums">
+              {campaigns.length}
+            </span>
+          )}
+        </button>
 
-          <button
-            type="button"
-            onClick={() => setMainTab('batches_v1')}
-            className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all ${
-              mainTab === 'batches_v1'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
-          >
-            <FileSpreadsheet size={16} />
-            간편 수동 배치 (v1.0 호환)
-            {batches.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                {batches.length}
-              </span>
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setMainTab('batches_v1')}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+            mainTab === 'batches_v1'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+          }`}
+        >
+          <FileSpreadsheet size={14} strokeWidth={1.75} />
+          <span>간편 수동 배치 (v1.0 호환)</span>
+          {batches.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground tabular-nums">
+              {batches.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* 3-A. v4.0 캠페인 & 플로어 전광판 영역 */}
       {mainTab === 'campaigns_v4' && (
         <div className="space-y-6">
-          {/* 캠페인 셀렉터 바 (캠페인이 여러 개일 경우 탭 전환) */}
+          {/* 캠페인 셀렉터 바 */}
           {campaigns.length > 0 ? (
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 shrink-0">캠페인 선택:</span>
+              <span className="text-2xs font-mono font-medium text-muted-foreground uppercase shrink-0">캠페인:</span>
               {campaigns.map(camp => {
                 const isSelected = activeCampaignId === camp.id;
                 return (
@@ -325,15 +310,15 @@ const AutoDialDashboard: React.FC = () => {
                     key={camp.id}
                     type="button"
                     onClick={() => setActiveCampaignId(camp.id)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold shrink-0 border transition-all flex items-center gap-2 ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 border transition-all flex items-center gap-2 ${
                       isSelected
-                        ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-400 text-indigo-700 dark:text-indigo-300 shadow-sm'
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                        ? 'bg-primary/10 border-primary/40 text-primary font-semibold shadow-2xs'
+                        : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-border/80'
                     }`}
                   >
-                    <span className={`w-2 h-2 rounded-full ${camp.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${camp.status === 'running' ? 'bg-primary animate-pulse' : 'bg-muted-foreground/40'}`} />
                     <span>{camp.name}</span>
-                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
+                    <span className="font-mono text-2xs text-muted-foreground tabular-nums">
                       ({camp.completedLeads}/{camp.totalLeads})
                     </span>
                     {isAdmin && (
@@ -342,7 +327,7 @@ const AutoDialDashboard: React.FC = () => {
                           e.stopPropagation();
                           handleDeleteCampaign(camp.id, camp.name);
                         }}
-                        className="hover:text-red-500 p-0.5"
+                        className="hover:text-destructive p-0.5 rounded text-2xs"
                         title="캠페인 삭제"
                       >
                         ×
@@ -353,21 +338,21 @@ const AutoDialDashboard: React.FC = () => {
               })}
             </div>
           ) : (
-            <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 p-8 space-y-3">
-              <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto">
-                <PhoneCall size={28} />
+            <div className="text-center py-12 bg-card rounded-xl border border-dashed border-border p-8 space-y-3">
+              <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center mx-auto border border-primary/20">
+                <PhoneCall size={22} strokeWidth={1.75} />
               </div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+              <h3 className="text-sm font-semibold text-foreground">
                 등록된 오토콜 캠페인이 없습니다
               </h3>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                상단의 <strong>[+ 캠페인 생성 & 일일 배정]</strong> 버튼을 눌러 오늘 투입할 리드와 상담원별 목표 콜수를 설정하세요.
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                상단의 <strong>[+ 캠페인 생성]</strong> 버튼을 눌러 오늘 투입할 리드와 상담원별 목표 콜수를 설정하세요.
               </p>
               {isAdmin && (
                 <button
                   type="button"
                   onClick={() => setIsCampaignModalOpen(true)}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
+                  className="h-8 px-3.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 shadow-2xs transition-colors"
                 >
                   캠페인 생성하기
                 </button>
@@ -389,139 +374,145 @@ const AutoDialDashboard: React.FC = () => {
       {mainTab === 'batches_v1' && (
         <div className="space-y-6">
           {/* Quick Action Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button 
               onClick={() => setActiveModal('missed')}
-              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-6 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="p-5 text-left rounded-xl bg-card border border-border hover:border-primary/50 shadow-xs transition-all group"
             >
-              <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl transition-all group-hover:bg-white/20"></div>
-              <PhoneMissed className="h-8 w-8 text-white/90 mb-4" />
-              <h3 className="text-lg font-bold text-white mb-1">부재건 자동 수집</h3>
-              <p className="text-blue-100 text-sm line-clamp-2">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mb-3">
+                <PhoneMissed className="h-5 w-5" strokeWidth={1.75} />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground mb-1">부재건 자동 수집</h3>
+              <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2">
                 부재중인 고객을 자동으로 수집하여 재발신 리스트를 생성합니다.
               </p>
-              <div className="mt-4 flex items-center text-xs font-medium text-white/80">
+              <div className="mt-3 flex items-center text-xs font-medium text-primary">
                 <span>새 배치 만들기</span>
-                <Plus className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                <Plus className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
               </div>
             </button>
 
             <button 
               onClick={() => setActiveModal('excel')}
-              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="p-5 text-left rounded-xl bg-card border border-border hover:border-primary/50 shadow-xs transition-all group"
             >
-              <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl transition-all group-hover:bg-white/20"></div>
-              <FileSpreadsheet className="h-8 w-8 text-white/90 mb-4" />
-              <h3 className="text-lg font-bold text-white mb-1">엑셀 업로드</h3>
-              <p className="text-emerald-100 text-sm line-clamp-2">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mb-3">
+                <FileSpreadsheet className="h-5 w-5" strokeWidth={1.75} />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground mb-1">엑셀 업로드</h3>
+              <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2">
                 대량의 연락처를 포함한 엑셀 파일을 업로드하여 통화 리스트를 구성합니다.
               </p>
-              <div className="mt-4 flex items-center text-xs font-medium text-white/80">
+              <div className="mt-3 flex items-center text-xs font-medium text-primary">
                 <span>새 배치 만들기</span>
-                <Plus className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                <Plus className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
               </div>
             </button>
 
             <button 
               onClick={() => setActiveModal('ocr')}
-              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-6 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="p-5 text-left rounded-xl bg-card border border-border hover:border-primary/50 shadow-xs transition-all group"
             >
-              <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl transition-all group-hover:bg-white/20"></div>
-              <Camera className="h-8 w-8 text-white/90 mb-4" />
-              <h3 className="text-lg font-bold text-white mb-1">이미지 OCR</h3>
-              <p className="text-amber-100 text-sm line-clamp-2">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mb-3">
+                <Camera className="h-5 w-5" strokeWidth={1.75} />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground mb-1">이미지 OCR</h3>
+              <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2">
                 명함 등의 이미지를 AI로 스캔하여 연락처를 자동 추출합니다.
               </p>
-              <div className="mt-4 flex items-center text-xs font-medium text-white/80">
+              <div className="mt-3 flex items-center text-xs font-medium text-primary">
                 <span>새 배치 만들기</span>
-                <Plus className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                <Plus className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
               </div>
             </button>
           </div>
 
           {/* Batch Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4">
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                <BarChart3 className="w-5 h-5 md:w-6 md:h-6" />
+            <div className="bg-card text-card-foreground rounded-xl p-4 border border-border shadow-xs flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                <BarChart3 className="w-5 h-5" strokeWidth={1.75} />
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">전체 시도</p>
-                <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{todayStats.total}건</p>
+                <p className="text-2xs font-medium text-muted-foreground">전체 시도</p>
+                <p className="text-lg font-bold text-foreground font-mono tabular-nums">{todayStats.total}건</p>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4">
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
-                <PhoneCall className="w-5 h-5 md:w-6 md:h-6" />
+
+            <div className="bg-card text-card-foreground rounded-xl p-4 border border-border shadow-xs flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                <PhoneCall className="w-5 h-5" strokeWidth={1.75} />
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">연결 성공</p>
-                <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{todayStats.connected}건</p>
+                <p className="text-2xs font-medium text-muted-foreground">연결 성공</p>
+                <p className="text-lg font-bold text-primary font-mono tabular-nums">{todayStats.connected}건</p>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4">
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
-                <PhoneMissed className="w-5 h-5 md:w-6 md:h-6" />
+
+            <div className="bg-card text-card-foreground rounded-xl p-4 border border-border shadow-xs flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shrink-0">
+                <PhoneMissed className="w-5 h-5" strokeWidth={1.75} />
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">부재중</p>
-                <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{todayStats.noAnswer}건</p>
+                <p className="text-2xs font-medium text-muted-foreground">부재중</p>
+                <p className="text-lg font-bold text-amber-500 font-mono tabular-nums">{todayStats.noAnswer}건</p>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4">
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
-                <PhoneOff className="w-5 h-5 md:w-6 md:h-6" />
+
+            <div className="bg-card text-card-foreground rounded-xl p-4 border border-border shadow-xs flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center shrink-0">
+                <PhoneOff className="w-5 h-5" strokeWidth={1.75} />
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">통화중/거절</p>
-                <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{todayStats.busy}건</p>
+                <p className="text-2xs font-medium text-muted-foreground">통화중/거절</p>
+                <p className="text-lg font-bold text-destructive font-mono tabular-nums">{todayStats.busy}건</p>
               </div>
             </div>
           </div>
 
           {/* Batch List Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">최근 배치 목록</h2>
+          <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden flex flex-col">
+            <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">최근 배치 목록</h2>
             </div>
             <div className="overflow-x-auto">
               {batches.length === 0 ? (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-xs">
+                <div className="text-center py-12 text-muted-foreground text-xs">
                   등록된 배치가 없습니다.
                 </div>
               ) : (
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 font-semibold border-b border-gray-100 dark:border-gray-700">
+                  <thead className="bg-muted/60 text-muted-foreground font-medium border-b border-border text-2xs">
                     <tr>
-                      <th className="py-3 px-6">배치명</th>
-                      <th className="py-3 px-4">진행 현황</th>
-                      <th className="py-3 px-4">연결 성공</th>
-                      <th className="py-3 px-4">부재</th>
-                      <th className="py-3 px-6 text-right">관리</th>
+                      <th className="py-2.5 px-5">배치명</th>
+                      <th className="py-2.5 px-4">진행 현황</th>
+                      <th className="py-2.5 px-4">연결 성공</th>
+                      <th className="py-2.5 px-4">부재</th>
+                      <th className="py-2.5 px-5 text-right">관리</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60 font-medium">
+                  <tbody className="divide-y divide-border">
                     {batches.map(batch => (
-                      <tr key={batch.id} className="hover:bg-gray-50/50">
-                        <td className="py-3.5 px-6 font-bold text-gray-900 dark:text-white">
+                      <tr key={batch.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-3 px-5 font-medium text-foreground">
                           {batch.name}
                         </td>
-                        <td className="py-3.5 px-4 font-mono">
+                        <td className="py-3 px-4 font-mono text-muted-foreground tabular-nums">
                           {batch.completedCount} / {batch.totalCount} ({batch.totalCount > 0 ? Math.round((batch.completedCount / batch.totalCount) * 100) : 0}%)
                         </td>
-                        <td className="py-3.5 px-4 text-emerald-600 font-mono font-bold">
+                        <td className="py-3 px-4 text-primary font-mono font-medium tabular-nums">
                           {batch.connectedCount}
                         </td>
-                        <td className="py-3.5 px-4 text-amber-600 font-mono font-bold">
+                        <td className="py-3 px-4 text-amber-500 font-mono font-medium tabular-nums">
                           {batch.noAnswerCount}
                         </td>
-                        <td className="py-3.5 px-6 text-right">
+                        <td className="py-3 px-5 text-right">
                           <button
                             type="button"
                             onClick={() => handleDeleteBatch(batch.id)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={13} strokeWidth={1.75} />
                           </button>
                         </td>
                       </tr>

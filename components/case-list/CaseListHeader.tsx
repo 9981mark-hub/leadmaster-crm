@@ -51,14 +51,14 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     return (
         <div className="space-y-4">
             {newCaseCount > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between animate-fade-in">
+                <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-center justify-between animate-fade-in">
                     <div className="flex items-center gap-3">
-                        <div className="bg-red-100 p-2 rounded-full">
-                            <Sparkles className="text-red-600" size={20} />
+                        <div className="bg-destructive/20 p-2 rounded-lg text-destructive">
+                            <Sparkles size={18} strokeWidth={1.75} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-red-800">새로운 접수 건이 {newCaseCount}건 있습니다!</h3>
-                            <p className="text-sm text-red-600">신규 등록된 케이스를 <br className="block md:hidden" />확인하고 상담을 진행해주세요.</p>
+                            <h3 className="font-semibold text-sm text-foreground">새로운 접수 건이 {newCaseCount}건 있습니다!</h3>
+                            <p className="text-xs text-muted-foreground">신규 등록된 케이스를 확인하고 상담을 진행해주세요.</p>
                         </div>
                     </div>
                     <button
@@ -66,34 +66,30 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             setShowNewOnly(true);
                             onResetPage();
                         }}
-                        className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap md:whitespace-normal"
+                        className="px-3.5 py-1.5 bg-destructive text-destructive-foreground text-xs font-semibold rounded-lg hover:bg-destructive/90 transition-colors shadow-xs whitespace-nowrap"
                     >
-                        <span className="hidden md:inline">확인하기</span>
-                        <span className="md:hidden flex flex-col items-center leading-tight">
-                            <span>확인</span>
-                            <span>하기</span>
-                        </span>
+                        확인하기
                     </button>
                     {showNewOnly && (
                         <button
                             onClick={() => { setShowNewOnly(false); onResetPage(); }}
-                            className="absolute top-2 right-2 text-red-600 dark:text-red-400 hover:text-red-600"
+                            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
                         >
-                            <X size={16} />
+                            <X size={16} strokeWidth={1.75} />
                         </button>
                     )}
                 </div>
             )}
 
             {overdueMissedCallCount > 0 && !showOverdueMissedOnly && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between animate-fade-in">
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between animate-fade-in">
                     <div className="flex items-center gap-3">
-                        <div className="bg-orange-100 p-2 rounded-full">
-                            <Phone className="text-orange-600" size={20} />
+                        <div className="bg-amber-500/20 p-2 rounded-lg text-amber-600 dark:text-amber-400">
+                            <Phone size={18} strokeWidth={1.75} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-orange-800">재통화 필요 {overdueMissedCallCount}건</h3>
-                            <p className="text-sm text-orange-600">구간별 알림 주기가 경과되었습니다.</p>
+                            <h3 className="font-semibold text-sm text-foreground">재통화 필요 {overdueMissedCallCount}건</h3>
+                            <p className="text-xs text-muted-foreground">구간별 알림 주기가 경과되었습니다.</p>
                         </div>
                     </div>
                     <button
@@ -102,7 +98,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             setShowNewOnly(false);
                             onResetPage();
                         }}
-                        className="px-4 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 transition-colors shadow-sm whitespace-nowrap"
+                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-xs whitespace-nowrap"
                     >
                         확인하기
                     </button>
@@ -110,55 +106,55 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
             )}
 
             {updateAvailable && (
-                <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg animate-fade-in shadow-sm cursor-pointer hover:bg-blue-100 transition-colors" onClick={onManualRefresh}>
+                <div className="flex items-center justify-between bg-primary/10 border border-primary/20 p-3.5 rounded-xl animate-fade-in shadow-xs cursor-pointer hover:bg-primary/15 transition-colors" onClick={onManualRefresh}>
                     <div className="flex items-center gap-2">
-                        <div className="bg-blue-100 p-1.5 rounded-full">
-                            <ArrowUpDown className="text-blue-600 animate-bounce" size={16} />
+                        <div className="bg-primary/20 p-1.5 rounded-md text-primary">
+                            <ArrowUpDown size={15} strokeWidth={1.75} className="animate-bounce" />
                         </div>
-                        <span className="text-sm font-bold text-blue-800">
+                        <span className="text-xs font-semibold text-foreground">
                             {newLeadsCount > 0
-                                ? `🔄 새 접수 ${newLeadsCount}건 도착(눌러서 새로고침)`
+                                ? `새 접수 ${newLeadsCount}건 도착 (눌러서 새로고침)`
                                 : '새로운 데이터가 감지되었습니다. (눌러서 새로고침)'}
                         </span>
                     </div>
-                    <button className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm transition-colors">
+                    <button className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg shadow-xs transition-colors">
                         새로고침
                     </button>
                 </div>
             )}
 
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex flex-wrap items-center gap-2">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground flex flex-wrap items-center gap-2">
                     <span className="whitespace-nowrap">케이스 관리</span>
                     {showNewOnly && (
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200 cursor-pointer hover:bg-red-200 whitespace-nowrap" onClick={() => { setShowNewOnly(false); onResetPage(); }}>
+                        <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-md border border-destructive/20 cursor-pointer hover:bg-destructive/20 whitespace-nowrap font-medium" onClick={() => { setShowNewOnly(false); onResetPage(); }}>
                             필터링됨: 신규 접수 건 <span className="ml-1 font-bold">×</span>
                         </span>
                     )}
                     {showOverdueMissedOnly && (
-                        <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full border border-orange-200 cursor-pointer hover:bg-orange-200 whitespace-nowrap" onClick={() => { setShowOverdueMissedOnly(false); onResetPage(); }}>
+                        <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md border border-amber-500/20 cursor-pointer hover:bg-amber-500/20 whitespace-nowrap font-medium" onClick={() => { setShowOverdueMissedOnly(false); onResetPage(); }}>
                             필터링됨: 재통화 필요 <span className="ml-1 font-bold">×</span>
                         </span>
                     )}
                 </h2>
-                <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+                <div className="flex items-center justify-between md:justify-end gap-2.5 w-full md:w-auto">
                     <div className="flex items-center gap-1.5">
-                        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">총 {totalItems}건</span>
+                        <span className="text-xs text-muted-foreground font-medium whitespace-nowrap tabular-nums">총 {totalItems}건</span>
                         {getSyncStatus().status !== 'ok' && (
-                            <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full border border-red-200 flex items-center gap-1 whitespace-nowrap" title="서버 동기화 실패 - 재로그인 필요">
-                                <AlertTriangle size={12} />
+                            <span className="text-xs bg-destructive/10 text-destructive px-1.5 py-0.5 rounded-md border border-destructive/20 flex items-center gap-1 whitespace-nowrap font-medium" title="서버 동기화 실패 - 재로그인 필요">
+                                <AlertTriangle size={12} strokeWidth={1.75} />
                                 동기화 필요
                             </span>
                         )}
                         {totalPages > 1 && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-normal whitespace-nowrap">({currentPage}/{totalPages}p)</span>
+                            <span className="text-xs text-muted-foreground font-normal whitespace-nowrap tabular-nums">({currentPage}/{totalPages}p)</span>
                         )}
                     </div>
                     {onToggleDensity && (
                         <button
                             type="button"
                             onClick={onToggleDensity}
-                            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-2xs transition-colors whitespace-nowrap"
+                            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-foreground text-xs font-medium hover:bg-muted shadow-xs transition-colors whitespace-nowrap"
                             title={density === 'compact' ? '표준 보기로 전환' : '컴팩트(압축) 보기로 전환'}
                         >
                             <span>{density === 'compact' ? '표준 뷰' : '압축 뷰'}</span>
@@ -168,26 +164,26 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                         <button
                             type="button"
                             onClick={onOpenNewCaseModal}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs active:scale-95 transition-all whitespace-nowrap"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg shadow-xs active:scale-95 transition-all whitespace-nowrap"
                             title="새 고객 케이스 빠른 등록 (Alt+N)"
                         >
-                            <Plus size={14} />
+                            <Plus size={14} strokeWidth={1.75} />
                             <span>신규 등록</span>
                         </button>
                     )}
                     <Link
                         to="/lite"
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all whitespace-nowrap"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-card hover:bg-muted border border-border text-foreground text-xs font-medium rounded-lg shadow-xs active:scale-95 transition-all whitespace-nowrap"
                         title="재택/이동 중 모바일 스마트폰 간편 콜 모드"
                     >
-                        <Zap size={13} className="fill-white" />
+                        <Zap size={13} strokeWidth={1.75} className="text-amber-500" />
                         <span>간편 모드</span>
                     </Link>
 
                     {canExport && (
                         <button
                             onClick={onExportClick}
-                            className="px-3 py-1.5 bg-green-600 text-white text-sm font-bold rounded hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap"
+                            className="px-3 py-1.5 bg-card hover:bg-muted border border-border text-foreground text-xs font-medium rounded-lg shadow-xs transition-colors whitespace-nowrap"
                         >
                             데이터 내보내기
                         </button>

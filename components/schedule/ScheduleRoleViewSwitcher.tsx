@@ -132,11 +132,11 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
     return (
       <div className="flex items-center justify-between pb-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50 flex items-center gap-1.5">
-            <Phone size={13} />
-            전문 상담원 개인 영업 일정 모드
+          <span className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5">
+            <Phone size={13} strokeWidth={1.75} />
+            <span>전문 상담원 개인 영업 일정 모드</span>
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-2xs text-muted-foreground">
             나에게 배정된 고객과의 1:1 상담 및 미팅에 100% 집중합니다.
           </span>
         </div>
@@ -145,9 +145,9 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
   }
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-slate-900/80 border border-gray-200 dark:border-slate-800/80 backdrop-blur-md">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-1 rounded-lg bg-muted/70 border border-border/60">
       {/* 탭 버튼 목록 */}
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeMode === tab.id;
@@ -156,17 +156,17 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
             <button
               key={tab.id}
               onClick={() => onChangeMode(tab.id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all relative ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow-md border border-gray-200 dark:border-slate-700'
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-100/50 dark:bg-slate-800/50'
+                  ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
               }`}
             >
-              <Icon size={14} className={isActive ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'} />
+              <Icon size={14} strokeWidth={1.75} className={isActive ? 'text-primary' : 'text-muted-foreground'} />
               <span className="hidden md:inline">{tab.label}</span>
               <span className="md:hidden">{tab.shortLabel}</span>
               {tab.badge && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-md font-bold border ${tab.badgeColor || 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300'}`}>
+                <span className="text-2xs font-mono px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
                   {tab.badge}
                 </span>
               )}
@@ -176,17 +176,17 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
       </div>
 
       {/* 우측 직급 식별 배지 */}
-      <div className="hidden lg:flex items-center gap-2 px-3 py-1">
-        <span className="text-xs text-gray-500 dark:text-slate-400 font-medium">현재 접속 직급:</span>
-        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+      <div className="hidden lg:flex items-center gap-2 px-2 py-0.5">
+        <span className="text-2xs text-muted-foreground font-mono">접속 권한:</span>
+        <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
           {isPlatformAdmin ? (
-            <><Crown size={12} className="text-amber-600 dark:text-amber-400" /> 플랫폼 최고관리자</>
+            <><Crown size={12} strokeWidth={1.75} className="text-amber-500" /> 최고관리자</>
           ) : role === 'owner' ? (
-            <><Crown size={12} className="text-amber-600 dark:text-amber-400" /> TM 대표이사</>
+            <><Crown size={12} strokeWidth={1.75} className="text-amber-500" /> TM 대표이사</>
           ) : role === 'admin' ? (
-            <><ShieldCheck size={12} className="text-purple-600 dark:text-purple-400" /> 총괄 관리자 / 센터장</>
+            <><ShieldCheck size={12} strokeWidth={1.75} className="text-primary" /> 센터장/총괄</>
           ) : (
-            <><Users size={12} className="text-emerald-600 dark:text-emerald-400" /> 일반 관리자 / 팀장</>
+            <><Users size={12} strokeWidth={1.75} className="text-primary" /> 관리자/팀장</>
           )}
         </span>
       </div>

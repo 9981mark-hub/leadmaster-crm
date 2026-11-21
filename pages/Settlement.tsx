@@ -4178,41 +4178,41 @@ export default function Settlement() {
     return (
         <div className="max-w-7xl mx-auto space-y-6">
             {/* 1. Header (차세대 통합 정산 & 경영 손익 센터 v4.5) */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-xl backdrop-blur">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card text-card-foreground border border-border p-5 sm:p-6 rounded-xl shadow-xs">
                 <div>
-                    <h2 className="text-2xl font-black text-white flex items-center gap-2.5">
-                        <DollarSign className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
-                        통합 정산 & 경영 손익(P&L) 센터
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+                        <DollarSign className="w-6 h-6 text-primary" strokeWidth={1.75} />
+                        <span>통합 정산 & 경영 손익(P&L) 센터</span>
+                        <span className="text-2xs px-2 py-0.5 rounded font-mono font-medium bg-primary/10 text-primary border border-primary/20">
                             v4.5 Master
                         </span>
                     </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                         거래처별 정산 시기·금액·건수 관제 및 DB구매원가·상담원수당·손익 일괄 분석 (팀 관리 100% 직통)
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-end">
+                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
                     {/* 연도/월 선택기 */}
-                    <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-xl text-xs">
+                    <div className="flex items-center gap-1.5 bg-background border border-input px-2.5 py-1 rounded-lg text-xs">
                         <select
-                            className="bg-transparent text-white font-bold cursor-pointer outline-none"
+                            className="bg-transparent text-foreground font-semibold cursor-pointer outline-none"
                             value={year}
                             onChange={e => setYear(Number(e.target.value))}
                         >
                             {Array.from({ length: 13 }, (_, i) => 2024 + i).map(y => (
-                                <option key={y} value={y} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">{y}년</option>
+                                <option key={y} value={y} className="bg-popover text-popover-foreground">{y}년</option>
                             ))}
                         </select>
-                        <span className="text-slate-600">/</span>
+                        <span className="text-muted-foreground">/</span>
                         <select
-                            className="bg-transparent text-white font-bold cursor-pointer outline-none"
+                            className="bg-transparent text-foreground font-semibold cursor-pointer outline-none"
                             value={month}
                             onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                         >
-                            <option value="all" className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">전체 월</option>
+                            <option value="all" className="bg-popover text-popover-foreground">전체 월</option>
                             {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                                <option key={m} value={m} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">{m}월</option>
+                                <option key={m} value={m} className="bg-popover text-popover-foreground">{m}월</option>
                             ))}
                         </select>
                     </div>
@@ -4220,108 +4220,110 @@ export default function Settlement() {
                     {/* 거래처 셀렉트 박스 */}
                     <div className="relative">
                         <select
-                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 pl-8 pr-4 py-1.5 rounded-xl text-xs font-bold text-indigo-300 outline-none cursor-pointer"
+                            className="bg-background border border-input pl-8 pr-3 py-1 text-xs font-semibold text-foreground rounded-lg outline-none cursor-pointer focus:ring-1 focus:ring-ring h-8"
                             value={selectedPartnerId}
                             onChange={e => setSelectedPartnerId(e.target.value)}
                         >
-                            <option value="all" className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">전체 거래처 (Total)</option>
-                            {partners.map(p => <option key={p.partnerId} value={p.partnerId} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">{p.name}</option>)}
+                            <option value="all" className="bg-popover text-popover-foreground">전체 거래처 (Total)</option>
+                            {partners.map(p => <option key={p.partnerId} value={p.partnerId} className="bg-popover text-popover-foreground">{p.name}</option>)}
                         </select>
-                        <Building className="absolute left-2.5 top-2 text-indigo-600 dark:text-indigo-400" size={14} />
+                        <Building className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={13} strokeWidth={1.75} />
                     </div>
 
                     {/* 정산 정책 설정 모달 버튼 */}
                     <button
                         onClick={() => setIsPolicyModalOpen(true)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all shadow-md"
+                        className="inline-flex items-center gap-1.5 h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-lg transition-colors shadow-2xs"
                     >
-                        <Settings className="w-3.5 h-3.5" />
-                        정산 정책 및 분배 설정
+                        <Settings className="w-3.5 h-3.5" strokeWidth={1.75} />
+                        <span>정산 정책 설정</span>
                     </button>
                     {/* [HOST 격리] 플랫폼 최고관리자 전용 세무 뷰 토글 */}
                     {isPlatformAdmin && (
                         <button
                             type="button"
                             onClick={() => setShowHostTaxTools(!showHostTaxTools)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm border ${
+                            className={`inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg transition-colors border ${
                                 showHostTaxTools
-                                    ? 'bg-amber-500 text-white border-amber-600 shadow-amber-500/20'
-                                    : 'bg-amber-100/40 dark:bg-amber-950/40 text-amber-300 border-amber-700/50 hover:bg-amber-900/40'
+                                    ? 'bg-amber-500 text-white border-amber-600'
+                                    : 'bg-muted text-muted-foreground border-border hover:text-foreground'
                             }`}
                             title="TM 대표/실무자에게는 숨겨진 개인용 세무·은행대사·부가세 도구를 열람합니다."
                         >
-                            <Lock size={12} />
-                            {showHostTaxTools ? '👑 호스트 세무도구 숨김' : '👑 호스트 세무도구 열기'}
+                            <Lock size={12} strokeWidth={1.75} />
+                            <span>{showHostTaxTools ? '호스트 세무도구 숨김' : '호스트 세무도구 열기'}</span>
                         </button>
                     )}
                     {policySource !== 'saved' && (
                         <span
-                            className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40"
+                            className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20"
                             title={policyMessage || '저장된 정산 정책이 없어 기본값(회사 40% : 상담원 60%)으로 계산합니다.'}
                         >
-                            {policySource === 'table_missing' ? '서버 업데이트 필요 · 기본값(저장 안 됨)' : '기본값(저장 안 됨)'}
+                            {policySource === 'table_missing' ? '서버 업데이트 필요' : '기본 정책 적용중'}
                         </span>
                     )}
                 </div>
             </div>
 
             {/* 2. 최상단 상시 노출: 통합 경영 손익(P&L) 글로벌 KPI 전광판 */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white dark:bg-gray-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
-                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                        <span>🏢 거래처 총 수수료 매출</span>
-                        <span className="text-sky-700 dark:text-sky-300 font-bold">공급가</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-card p-3 rounded-xl border border-border shadow-xs">
+                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
+                        <span>거래처 총 수수료 매출</span>
+                        <span className="text-primary font-semibold font-mono text-2xs">공급가</span>
                     </div>
-                    <div className="text-lg font-bold text-slate-900 dark:text-white font-mono tabular-nums">
+                    <div className="text-base font-bold text-foreground font-mono tabular-nums">
                         ₩{(integratedPnLSummary?.totalRevenueWon || 0).toLocaleString()}
                     </div>
                     {(integratedPnLSummary?.totalVatWon || 0) > 0 && (
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            부가세 별도 ₩{(integratedPnLSummary?.totalVatWon || 0).toLocaleString()} (매출 아님)
+                        <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
+                            부가세 별도 ₩{(integratedPnLSummary?.totalVatWon || 0).toLocaleString()}
                         </div>
                     )}
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
                         입금 ₩{(integratedPnLSummary?.collectedRevenueWon || 0).toLocaleString()} / 미수 ₩{(integratedPnLSummary?.outstandingRevenueWon || 0).toLocaleString()}
                     </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
-                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                        <span>👥 상담원 총 수당</span>
-                        <span className="text-emerald-700 dark:text-emerald-300 font-bold">인건비</span>
+                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
+                        <span>상담원 총 수당</span>
+                        <span className="text-primary font-semibold font-mono text-2xs">인건비</span>
                     </div>
-                    <div className="text-lg font-bold text-slate-900 dark:text-white font-mono tabular-nums">
+                    <div className="text-base font-bold text-foreground font-mono tabular-nums">
                         ₩{(integratedPnLSummary?.totalAgentCommissionWon || 0).toLocaleString()}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
                         회사 마진 ₩{(integratedPnLSummary?.totalCompanyMarginWon || 0).toLocaleString()} 공제
                     </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
-                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                        <span>📦 DB 구매 원가</span>
-                        <span className="text-rose-700 dark:text-rose-300 font-bold">팀관리 연동</span>
+                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
+                        <span>DB 구매 원가</span>
+                        <span className="text-destructive font-semibold font-mono text-2xs">팀관리</span>
                     </div>
-                    <div className="text-lg font-bold text-slate-900 dark:text-white font-mono tabular-nums">
+                    <div className="text-base font-bold text-foreground font-mono tabular-nums">
                         ₩{(integratedPnLSummary?.totalDbCostWon || 0).toLocaleString()}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
                         총 지출 ₩{(integratedPnLSummary?.totalExpensesWon || 0).toLocaleString()} 중 원가
                     </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg">
-                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                        <span>📊 최종 영업 순이익</span>
-                        <span className={`font-bold ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>{integratedPnLSummary?.profitMarginRate || 0}%</span>
+                <div className="p-3 bg-muted/20 border border-border/80 rounded-lg">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-medium mb-1">
+                        <span>최종 영업 순이익</span>
+                        <span className={`font-mono font-semibold text-2xs ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                            {integratedPnLSummary?.profitMarginRate || 0}%
+                        </span>
                     </div>
-                    <div className={`text-lg font-bold font-mono tabular-nums ${
-                        (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
+                    <div className={`text-base font-bold font-mono tabular-nums ${
+                        (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-destructive'
                     }`}>
                         ₩{(integratedPnLSummary?.netProfitWon || 0).toLocaleString()}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-2xs text-muted-foreground mt-0.5 font-mono">
                         실현금흐름: ₩{(integratedPnLSummary?.netCashFlowWon || 0).toLocaleString()}
                     </div>
                 </div>
@@ -4330,133 +4332,139 @@ export default function Settlement() {
             {/* Notification Center */}
             <div className="space-y-2 mb-4">
                 {totalOverdueCount > 0 && (
-                    <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-lg p-3 flex items-center justify-between gap-3">
-                        <div className="flex items-start sm:items-center gap-2 text-red-700">
-                            <span className="font-bold shrink-0 whitespace-nowrap pt-0.5 sm:pt-0">🚨 긴급</span>
-                            <span className="text-[13px] sm:text-sm leading-snug break-keep">현재 30일 이상 장기 미수금 건이 <span className="font-bold underline">{totalOverdueCount}건</span> 있습니다.</span>
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center justify-between gap-3 text-destructive">
+                        <div className="flex items-start sm:items-center gap-2">
+                            <span className="font-semibold text-xs shrink-0 whitespace-nowrap">🚨 긴급</span>
+                            <span className="text-xs leading-snug">현재 30일 이상 장기 미수금 건이 <span className="font-bold underline">{totalOverdueCount}건</span> 있습니다.</span>
                         </div>
                         <button
                             onClick={() => { setActiveTab('report'); }}
-                            className="shrink-0 flex flex-col items-center justify-center text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-md font-bold hover:bg-red-200 leading-tight gap-0.5"
+                            className="shrink-0 text-2xs bg-destructive/15 text-destructive px-2.5 py-1 rounded font-medium hover:bg-destructive/25 transition-colors"
                         >
-                            <span>확인</span>
-                            <span>하기</span>
+                            확인하기
                         </button>
                     </div>
                 )}
                 {weeklyTaskAlert && (
-                    <div className={`border rounded-lg p-3 flex items-center gap-2 ${weeklyTaskAlert.type === 'warning' ? 'bg-orange-50 border-orange-200 text-orange-800' : 'bg-blue-50 border-blue-200 text-blue-800'
-                        }`}>
+                    <div className={`border rounded-lg p-3 flex items-center gap-2 text-xs ${
+                        weeklyTaskAlert.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-primary/10 border-primary/20 text-primary'
+                    }`}>
                         <span>{weeklyTaskAlert.type === 'warning' ? '⚠️' : 'ℹ️'}</span>
-                        <span className="text-sm font-medium">{weeklyTaskAlert.msg}</span>
+                        <span className="font-medium">{weeklyTaskAlert.msg}</span>
                     </div>
                 )}
             </div>
 
             {/* Week Navigator (for settlement tabs) */}
             {activeTab !== 'report' && activeTab !== 'receivables' && activeTab !== 'overview' && activeTab !== 'agent_commission' && activeTab !== 'db_cost' && activeTab !== 'integrated_pnl' && !isAll && (
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
+                <div className="bg-card text-card-foreground p-3 sm:p-4 rounded-xl border border-border shadow-xs flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                        <button onClick={goToPrevWeek} className="p-2 hover:bg-gray-100 rounded">
-                            <ChevronLeft size={20} />
+                        <button onClick={goToPrevWeek} className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors">
+                            <ChevronLeft size={16} strokeWidth={1.75} />
                         </button>
-                        <div className="text-center min-w-[200px]">
-                            <p className="font-bold text-lg text-gray-800 dark:text-white">{weekLabel}</p>
-                            <p className="text-sm text-gray-500">
+                        <div className="text-center min-w-[180px]">
+                            <p className="font-semibold text-sm text-foreground">{weekLabel}</p>
+                            <p className="text-2xs text-muted-foreground font-mono">
                                 {selectedWeekStart.toLocaleDateString('ko-KR')} ~ {getWeekSunday(selectedWeekStart).toLocaleDateString('ko-KR')}
                             </p>
                         </div>
-                        <button onClick={goToNextWeek} className="p-2 hover:bg-gray-100 rounded">
-                            <ChevronRight size={20} />
+                        <button onClick={goToNextWeek} className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors">
+                            <ChevronRight size={16} strokeWidth={1.75} />
                         </button>
                     </div>
                     <button
                         onClick={goToThisWeek}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                        className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
                         이번 주로 이동
                     </button>
                 </div>
             )}
 
-            {/* Tabs - 5대 핵심 도메인 체계로 전면 슬림화 */}
-            <div className="flex border-b border-gray-200 dark:border-slate-800 overflow-x-auto gap-1">
-                {/* 1. 거래처별 정산 관제 (3단계 마감 파이프라인 통합 허브) */}
+            {/* Tabs - Shadcn Segmented Control */}
+            <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto">
+                {/* 1. 거래처별 정산 관제 */}
                 <button
                     onClick={() => setActiveTab('overview')}
-                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'overview'
-                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
+                    className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition-all flex items-center gap-1.5 ${
+                        activeTab === 'overview'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+                    }`}
                 >
-                    <Building className="w-4 h-4" />
-                    🏢 거래처별 정산 관제
-                    {!isOwner && !settlementPerms.allowPartnerSettlement && <Lock size={12} className="text-amber-500 shrink-0" />}
+                    <Building className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                    <span>거래처별 정산 관제</span>
+                    {!isOwner && !settlementPerms.allowPartnerSettlement && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
                 </button>
 
                 {/* 2. 상담원 수당 대장 */}
                 <button
                     onClick={() => setActiveTab('agent_commission')}
-                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'agent_commission'
-                        ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
+                    className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition-all flex items-center gap-1.5 ${
+                        activeTab === 'agent_commission'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+                    }`}
                 >
-                    <Users className="w-4 h-4" />
-                    👥 상담원 수당 대장
-                    {!isOwner && !settlementPerms.allowAgentCommission && <Lock size={12} className="text-amber-500 shrink-0" />}
+                    <Users className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                    <span>상담원 수당 대장</span>
+                    {!isOwner && !settlementPerms.allowAgentCommission && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
                 </button>
 
                 {/* 3. DB 구매비용 대장 */}
                 <button
                     onClick={() => setActiveTab('db_cost')}
-                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'db_cost'
-                        ? 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-500/10'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
+                    className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition-all flex items-center gap-1.5 ${
+                        activeTab === 'db_cost'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+                    }`}
                 >
-                    <Database className="w-4 h-4" />
-                    📦 DB 구매비용 대장
-                    {!isOwner && !settlementPerms.allowDbCost && <Lock size={12} className="text-amber-500 shrink-0" />}
+                    <Database className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                    <span>DB 구매비용 대장</span>
+                    {!isOwner && !settlementPerms.allowDbCost && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
                 </button>
 
                 {/* 4. 종합 손익 & P&L */}
                 <button
                     onClick={() => setActiveTab('integrated_pnl')}
-                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'integrated_pnl'
-                        ? 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-500/10'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
+                    className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition-all flex items-center gap-1.5 ${
+                        activeTab === 'integrated_pnl'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+                    }`}
                 >
-                    <TrendingUp className="w-4 h-4" />
-                    📈 종합 손익 & P&L
-                    {!isOwner && !settlementPerms.allowIntegratedPnL && <Lock size={12} className="text-amber-500 shrink-0" />}
+                    <TrendingUp className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                    <span>종합 손익 & P&L</span>
+                    {!isOwner && !settlementPerms.allowIntegratedPnL && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
                 </button>
 
-                {/* 5. 운영 지출 장부 (광고비 일원화) */}
+                {/* 5. 운영 지출 장부 */}
                 <button
                     onClick={() => setActiveTab('expenses')}
-                    className={`px-5 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'expenses'
-                        ? 'border-red-600 text-red-600 dark:text-red-400 bg-red-500/10'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        }`}
+                    className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition-all flex items-center gap-1.5 ${
+                        activeTab === 'expenses'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+                    }`}
                 >
-                    <CreditCard className="w-4 h-4" />
-                    💳 운영 지출 장부
-                    {!isOwner && <Lock size={12} className="text-amber-500 shrink-0" />}
+                    <CreditCard className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                    <span>운영 지출 장부</span>
+                    {!isOwner && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
                 </button>
 
                 {/* 보조: 미수금 원장 */}
                 <button
                     onClick={() => setActiveTab('receivables')}
-                    className={`px-4 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ml-auto ${activeTab === 'receivables'
-                        ? 'border-slate-800 dark:border-white text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
-                        : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                        }`}
+                    className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition-all flex items-center gap-1.5 ml-auto ${
+                        activeTab === 'receivables'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
+                    }`}
                 >
-                    <FileText className="w-3.5 h-3.5" />
-                    미수금 원장
-                    {!isOwner && !settlementPerms.allowReceivables && <Lock size={12} className="text-amber-500 shrink-0" />}
+                    <FileText className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.75} />
+                    <span>미수금 원장</span>
+                    {!isOwner && !settlementPerms.allowReceivables && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
                 </button>
             </div>
 

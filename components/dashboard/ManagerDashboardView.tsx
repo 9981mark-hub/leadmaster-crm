@@ -167,21 +167,21 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 관리자 헤더 & 배너 */}
-      <div className="bg-gradient-to-r from-indigo-50 via-blue-100 to-indigo-50 dark:from-slate-800 dark:via-indigo-950 dark:to-blue-900 rounded-2xl p-5 text-slate-900 dark:text-white shadow-lg border border-indigo-200 dark:border-transparent relative overflow-hidden">
+      <div className="bg-card border border-border rounded-xl p-5 shadow-xs relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 flex items-center gap-1">
-                <ShieldCheck size={13} /> 현장 플로어 관제 센터
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5">
+                <ShieldCheck size={13} strokeWidth={1.75} /> 현장 플로어 관제 센터
               </span>
-              <span className="text-xs text-indigo-200/80">
+              <span className="text-xs text-muted-foreground">
                 {format(new Date(), 'yyyy.MM.dd')} 실시간 상황판
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <span>TM 실시간 플로어 & 리드 분배 현황판</span>
             </h1>
-            <p className="text-xs text-indigo-200/90 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               상담원 가동 현황, 당일 인입 리드 배정 및 사무장 인계 파이프라인 정체를 통합 지휘합니다.
             </p>
           </div>
@@ -189,13 +189,13 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onRefreshCases && onRefreshCases()}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-card hover:bg-muted border border-border text-xs font-medium text-foreground flex items-center gap-1.5 transition-colors shadow-xs"
             >
-              <RefreshCw size={14} /> 현황 새로고침
+              <RefreshCw size={13} strokeWidth={1.75} /> 현황 새로고침
             </button>
             <Link
               to="/cases"
-              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white transition-colors"
+              className="px-3.5 py-2 rounded-lg bg-primary hover:bg-primary/90 text-xs font-semibold text-primary-foreground shadow-xs transition-colors flex items-center gap-1.5"
             >
               케이스 관리로 이동 →
             </Link>
@@ -205,12 +205,12 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
 
       {/* 성공 피드백 알림 */}
       {distributeSuccessMsg && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-bold flex items-center justify-between animate-fade-in">
+        <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl text-primary text-xs font-semibold flex items-center justify-between animate-fade-in">
           <span className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-emerald-600" />
+            <CheckCircle2 size={16} strokeWidth={1.75} />
             {distributeSuccessMsg}
           </span>
-          <button onClick={() => setDistributeSuccessMsg(null)} className="text-emerald-600 hover:text-emerald-900">
+          <button onClick={() => setDistributeSuccessMsg(null)} className="text-primary hover:opacity-75 transition-opacity">
             ✕
           </button>
         </div>
@@ -221,21 +221,21 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
         <KPICard
           title="활성 상담원 현황"
           count={`${activeAgents.length}명`}
-          color="text-indigo-600"
+          color="text-indigo-600 dark:text-indigo-400"
           icon={Users}
           subText={`전체 멤버 ${teamMembers.length}명 중`}
         />
         <KPICard
           title="오늘 인입된 신규 리드"
           count={`${todayCases.length}건`}
-          color="text-blue-600"
+          color="text-blue-600 dark:text-blue-400"
           icon={PhoneCall}
           subText={`총 누적 리드 ${activeCases.length}건`}
         />
         <KPICard
           title="미배정 대기 리드"
           count={`${unassignedCases.length}건`}
-          color="text-amber-600"
+          color="text-amber-600 dark:text-amber-400"
           icon={Zap}
           subText="상담원 배정 즉시 필요"
           pulseGlow={unassignedCases.length > 0}
@@ -244,7 +244,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
           <KPICard
             title="골든타임/지연 방치 건"
             count={`${goldenTimeCases.length + overdueRemindersCount}건`}
-            color="text-red-600"
+            color="text-destructive"
             icon={Flame}
             subText={`골든타임 ${goldenTimeCases.length} · 지연 ${overdueRemindersCount}`}
             pulseGlow={goldenTimeCases.length + overdueRemindersCount > 0}
@@ -253,15 +253,15 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
       </div>
 
       {/* 당일 리드 빠른 배분 액션 패널 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 dark:border-gray-700 shadow-sm">
+      <div className="bg-card rounded-xl p-5 border border-border shadow-xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <Zap size={16} className="text-amber-500" />
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Zap size={16} strokeWidth={1.75} className="text-amber-500" />
               당일 리드 실시간 자동 분배 센터
             </h3>
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
-              현재 미배정된 리드 <strong>{unassignedCases.length}건</strong>을 활성 상태인 상담원들에게 공평하게 1초 만에 자동 분배합니다.
+            <p className="text-xs text-muted-foreground mt-1">
+              현재 미배정된 리드 <strong className="text-foreground">{unassignedCases.length}건</strong>을 활성 상태인 상담원들에게 공평하게 1초 만에 자동 분배합니다.
             </p>
           </div>
 
@@ -269,18 +269,18 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
             <button
               onClick={handleQuickDistribute}
               disabled={isDistributing || unassignedCases.length === 0}
-              className={`w-full md:w-auto px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm ${
+              className={`w-full md:w-auto px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs ${
                 unassignedCases.length > 0
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white cursor-pointer hover:shadow'
-                  : 'bg-slate-100 dark:bg-gray-700 text-slate-500 dark:text-slate-400 dark:text-gray-500 cursor-not-allowed'
+                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer'
+                  : 'bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-60'
               }`}
             >
-              <Zap size={14} className={isDistributing ? 'animate-spin' : ''} />
+              <Zap size={14} strokeWidth={1.75} className={isDistributing ? 'animate-spin' : ''} />
               {isDistributing ? '자동 배분 처리 중...' : `활성 상담원 균등 즉시 배분 (${unassignedCases.length}건)`}
             </button>
             <Link
               to="/cases"
-              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-700 text-xs text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 whitespace-nowrap transition-colors"
+              className="px-3 py-2 rounded-lg border border-border text-xs text-foreground hover:bg-muted whitespace-nowrap transition-colors"
             >
               수동 배정 →
             </Link>
@@ -294,17 +294,17 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
       </div>
 
       {/* 상담원별 일일 성과 현황판 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-gray-700 bg-slate-50/70 dark:bg-gray-800/80 flex items-center justify-between">
+      <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-border bg-muted/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users size={16} className="text-blue-600" />
-            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+            <Users size={16} strokeWidth={1.75} className="text-primary" />
+            <h3 className="font-semibold text-sm text-foreground">
               팀원별 실시간 콜 및 인계 현황표 ({activeAgents.length}명)
             </h3>
           </div>
           <Link
             to="/team"
-            className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+            className="text-xs text-primary font-semibold hover:underline"
           >
             팀 관리 상세 →
           </Link>
@@ -312,7 +312,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-gray-700/50 text-slate-500 dark:text-gray-400 font-semibold border-b border-slate-200 dark:border-gray-700">
+            <thead className="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
               <tr>
                 <th className="py-2.5 px-4 whitespace-nowrap">상담원명</th>
                 <th className="py-2.5 px-4 whitespace-nowrap">역할</th>
@@ -323,36 +323,36 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
                 <th className="py-2.5 px-4 whitespace-nowrap text-center">작업 모드</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
+            <tbody className="divide-y divide-border">
               {agentDailyStats.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
+                  <td colSpan={7} className="py-8 text-center text-muted-foreground text-xs">
                     등록된 활성 상담원이 없습니다. [팀 관리]에서 상담원을 초대하세요.
                   </td>
                 </tr>
               ) : (
                 agentDailyStats.map((stat) => (
-                  <tr key={stat.member.userId} className="hover:bg-slate-50 dark:hover:bg-gray-700/40 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                  <tr key={stat.member.userId} className="hover:bg-muted/40 transition-colors">
+                    <td className="py-3 px-4 font-semibold text-foreground whitespace-nowrap">
                       {stat.member.displayName}
                     </td>
-                    <td className="py-3 px-4 text-slate-500 dark:text-gray-400 whitespace-nowrap">
+                    <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">
                       {stat.member.role === 'admin' ? '팀장' : '상담원'}
                     </td>
-                    <td className="py-3 px-4 text-right font-semibold text-slate-700 dark:text-slate-300 tabular-nums whitespace-nowrap">
+                    <td className="py-3 px-4 text-right font-semibold text-foreground tabular-nums whitespace-nowrap">
                       {stat.totalAssigned}건
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-blue-600 dark:text-blue-400 tabular-nums whitespace-nowrap">
+                    <td className="py-3 px-4 text-right font-semibold text-blue-600 dark:text-blue-400 tabular-nums whitespace-nowrap">
                       {stat.todayDoneCalls}콜
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
+                    <td className="py-3 px-4 text-right font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
                       {stat.monthlyTransfers}건
                     </td>
                     <td className="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap">
                       {stat.monthlyContracts}건
                     </td>
                     <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <span className="text-xs px-2 py-0.5 rounded font-semibold bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300">
+                      <span className="text-xs px-2 py-0.5 rounded-md font-medium bg-muted text-muted-foreground border border-border">
                         {stat.member.uiMode === 'lite_only' ? '간편콜 전용' : '표준 모드'}
                       </span>
                     </td>

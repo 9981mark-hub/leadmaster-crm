@@ -20,7 +20,7 @@ interface ChartProps {
     isDark: boolean;
 }
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#6B7280'];
+const COLORS = ['#059669', '#3B82F6', '#8B5CF6', '#F59E0B', '#EC4899', '#64748B'];
 
 export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
     const data = useMemo(() => {
@@ -54,8 +54,8 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
     }, [cases]);
 
     return (
-        <div className="h-[350px] w-full bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors flex flex-col">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">월별 신규 접수 추이</h3>
+        <div className="h-[350px] w-full bg-card p-5 rounded-xl border border-border shadow-xs transition-colors flex flex-col">
+            <h3 className="text-sm font-semibold text-foreground mb-4">월별 신규 접수 추이</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -67,17 +67,19 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                             bottom: 5,
                         }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
-                        <XAxis dataKey="name" stroke={isDark ? '#9CA3AF' : '#6B7280'} tick={{ fontSize: 12 }} />
-                        <YAxis stroke={isDark ? '#9CA3AF' : '#6B7280'} tick={{ fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#27272A' : '#E2E8F0'} />
+                        <XAxis dataKey="name" stroke={isDark ? '#94A3B8' : '#64748B'} tick={{ fontSize: 12 }} />
+                        <YAxis stroke={isDark ? '#94A3B8' : '#64748B'} tick={{ fontSize: 12 }} />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                                borderColor: isDark ? '#374151' : '#E5E7EB',
-                                color: isDark ? '#F3F4F6' : '#111827'
+                                backgroundColor: isDark ? '#121215' : '#FFFFFF',
+                                borderColor: isDark ? '#27272A' : '#E2E8F0',
+                                color: isDark ? '#F8FAFC' : '#0F172A',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                             }}
                         />
-                        <Bar dataKey="건수" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="건수" fill={isDark ? '#10B981' : '#059669'} radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
@@ -101,8 +103,8 @@ export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
     }, [cases]);
 
     return (
-        <div className="h-[350px] w-full bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors flex flex-col">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">진행 상태 분포</h3>
+        <div className="h-[350px] w-full bg-card p-5 rounded-xl border border-border shadow-xs transition-colors flex flex-col">
+            <h3 className="text-sm font-semibold text-foreground mb-2">진행 상태 분포</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -123,9 +125,11 @@ export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                         </Pie>
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                                borderColor: isDark ? '#374151' : '#E5E7EB',
-                                color: isDark ? '#F3F4F6' : '#111827'
+                                backgroundColor: isDark ? '#121215' : '#FFFFFF',
+                                borderColor: isDark ? '#27272A' : '#E2E8F0',
+                                color: isDark ? '#F8FAFC' : '#0F172A',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                             }}
                         />
                         <Legend
@@ -133,7 +137,7 @@ export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                             verticalAlign="middle"
                             align="right"
                             wrapperStyle={{
-                                color: isDark ? '#D1D5DB' : '#374151',
+                                color: isDark ? '#94A3B8' : '#64748B',
                                 fontSize: '12px'
                             }}
                         />

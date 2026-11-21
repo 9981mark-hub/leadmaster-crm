@@ -47,18 +47,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 // KPI Card Component with Delta support
 const KPICard = ({ title, value, subValue, icon: Icon, color, deltaComponent }: any) => (
-    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel hover:scale-[1.02] transition-transform duration-300">
+    <div className="bg-card text-card-foreground p-4 rounded-xl shadow-xs border border-border transition-all">
         <div className="flex items-center justify-between">
             <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{title}</p>
-                <div className="flex items-baseline flex-wrap">
-                    <p className={`text-2xl font-bold ${color}`}>{value}</p>
+                <p className="text-2xs font-medium text-muted-foreground mb-1">{title}</p>
+                <div className="flex items-baseline flex-wrap gap-1.5">
+                    <p className="text-xl font-bold font-mono text-foreground tabular-nums">{value}</p>
                     {deltaComponent}
                 </div>
-                {subValue && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subValue}</p>}
+                {subValue && <p className="text-2xs text-muted-foreground mt-0.5">{subValue}</p>}
             </div>
-            <div className={`p-3 rounded-full bg-opacity-10 ${color.replace('text-', 'bg-')}`}>
-                <Icon className={color} size={24} />
+            <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                <Icon size={18} strokeWidth={1.75} />
             </div>
         </div>
     </div>
@@ -1247,30 +1247,34 @@ export default function Statistics() {
             `}</style>
 
             {/* Header */}
-            <div className="flex items-center justify-between no-print">
+            <div className="flex items-center justify-between no-print pb-2 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <Link to="/" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        <ChevronLeft size={24} />
+                    <Link to="/" className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors">
+                        <ChevronLeft size={20} strokeWidth={1.75} />
                     </Link>
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">📊 상세 통계</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <BarChart3 size={22} strokeWidth={1.75} className="text-primary" />
+                        <span>상세 통계 분석</span>
+                    </h1>
                 </div>
                 <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-gray-700 dark:text-gray-300"
+                    className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg shadow-2xs transition-colors cursor-pointer"
                 >
-                    <Printer size={14} /> 보고서 인쇄 / PDF 출력
+                    <Printer size={13} strokeWidth={1.75} />
+                    <span>보고서 인쇄 / PDF 출력</span>
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel no-print">
-                <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <Filter size={16} className="text-gray-500 dark:text-gray-400" />
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">필터:</span>
+            <div className="bg-card text-card-foreground p-3.5 rounded-xl border border-border shadow-xs no-print">
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <Filter size={13} strokeWidth={1.75} className="text-primary" />
+                        <span>필터:</span>
                     </div>
 
-                    <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+                    <div className="flex items-center gap-0.5 bg-muted/70 p-0.5 rounded-md border border-border/60">
                         {[
                             { key: '1w', label: '1주' },
                             { key: '1m', label: '1개월' },
@@ -1282,9 +1286,9 @@ export default function Statistics() {
                             <button
                                 key={p.key}
                                 onClick={() => setPeriodFilter(p.key as any)}
-                                className={`px-3 py-1 text-xs rounded-md transition-colors ${periodFilter === p.key
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                className={`px-2.5 py-1 text-xs font-medium rounded transition-all ${periodFilter === p.key
+                                    ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                                    : 'text-muted-foreground hover:text-foreground'
                                     }`}
                             >
                                 {p.label}
@@ -1295,7 +1299,7 @@ export default function Statistics() {
                     <select
                         value={partnerFilter}
                         onChange={e => setPartnerFilter(e.target.value)}
-                        className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-700 glass-input"
+                        className="h-8 px-2.5 text-xs font-medium bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring cursor-pointer"
                     >
                         <option value="all">모든 거래처</option>
                         {partners.map(p => (
@@ -1306,7 +1310,7 @@ export default function Statistics() {
                     <select
                         value={pathFilter}
                         onChange={e => setPathFilter(e.target.value)}
-                        className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-700 glass-input"
+                        className="h-8 px-2.5 text-xs font-medium bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring cursor-pointer"
                     >
                         <option value="all">모든 유입경로</option>
                         {inboundPaths.map(p => (
@@ -1314,19 +1318,19 @@ export default function Statistics() {
                         ))}
                     </select>
 
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                    <span className="text-2xs font-mono text-muted-foreground tabular-nums ml-auto">
                         총 {filteredCases.length}건 조회됨
                     </span>
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700 pb-1.5 no-print">
+            {/* Navigation Tabs (Shadcn Segmented Control) */}
+            <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto no-print">
                 {[
-                    { id: 'overview', label: '📈 종합 분석', icon: BarChart3 },
-                    { id: 'marketing', label: '💰 마케팅/ROI', icon: DollarSign },
-                    { id: 'partners', label: '🏢 제휴처 B2B 실적·인센티브', icon: Building },
-                    { id: 'dropoffs', label: '⚠️ 이탈 분석', icon: AlertTriangle }
+                    { id: 'overview', label: '종합 분석', icon: BarChart3 },
+                    { id: 'marketing', label: '마케팅/ROI', icon: DollarSign },
+                    { id: 'partners', label: '제휴처 B2B 실적·인센티브', icon: Building },
+                    { id: 'dropoffs', label: '이탈 분석', icon: AlertTriangle }
                 ].map(tab => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -1334,13 +1338,13 @@ export default function Statistics() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${isActive
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${isActive
+                                ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                                 }`}
                         >
-                            <Icon size={15} />
-                            {tab.label}
+                            <Icon size={13} strokeWidth={1.75} className={isActive ? 'text-primary' : 'text-muted-foreground'} />
+                            <span>{tab.label}</span>
                         </button>
                     );
                 })}

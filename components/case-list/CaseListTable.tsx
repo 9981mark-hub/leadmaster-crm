@@ -280,23 +280,23 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 min-h-[500px] flex flex-col">
+        <div className="bg-card rounded-xl shadow-xs border border-border min-h-[500px] flex flex-col overflow-hidden">
             {/* Mobile View (Cards) */}
-            <div className="md:hidden space-y-4 p-4">
+            <div className="md:hidden space-y-3 p-4">
                 {cases.map((c, index) => {
                     const partner = partners.find(p => p.partnerId === c.partnerId);
                     const warnings = getCaseWarnings(c, partner);
                     return (
-                        <div key={c.caseId} className={`bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg flex flex-col gap-2 relative ${c.isStarred ? 'ring-1 ring-amber-300 dark:ring-amber-500/50' : ''}`}>
+                        <div key={c.caseId} className={`bg-card border border-border p-4 rounded-xl flex flex-col gap-2 relative shadow-2xs ${c.isStarred ? 'ring-1 ring-amber-500/30' : ''}`}>
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-2 relative">
-                                    {/* [NEW] Star Toggle (Mobile) */}
+                                    {/* Star Toggle (Mobile) */}
                                     <button
                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
-                                        className={`p-0.5 transition-all active:scale-125 ${c.isStarred ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-300 dark:text-gray-500'}`}
+                                        className={`p-0.5 transition-all active:scale-125 ${c.isStarred ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}
                                         title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
                                     >
-                                        <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
+                                        <Star size={16} strokeWidth={1.75} fill={c.isStarred ? 'currentColor' : 'none'} />
                                     </button>
                                     {/* [NEW] Mobile Status with Long Press to Change */}
                                     <div
@@ -580,16 +580,16 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
             </div>
 
             {/* Desktop View (Table) */}
-            <div className="hidden md:block flex-1">
-                <table className={`w-full ${textScale} text-left text-slate-600 dark:text-slate-300 table-fixed`}>
-                    <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 uppercase font-semibold text-xs border-b border-slate-200 dark:border-slate-700">
+            <div className="hidden md:block flex-1 overflow-x-auto">
+                <table className={`w-full ${textScale} text-left text-muted-foreground table-fixed`}>
+                    <thead className="bg-muted/50 text-muted-foreground uppercase font-semibold text-xs border-b border-border">
                         <tr>
                             {selectable && (
                                 <th className={`pl-3 pr-1 ${headerPadding} w-[3%] text-center`}>
                                     <input type="checkbox" aria-label="이 쪽 모두 선택" checked={allOnPage} onChange={() => onToggleSelectAll?.(pageIds, !allOnPage)} />
                                 </th>
                             )}
-                            <th className={`px-2 ${headerPadding} w-[3%] text-center whitespace-nowrap`}><Star size={14} className="inline text-gray-500 dark:text-gray-400" /></th>
+                            <th className={`px-2 ${headerPadding} w-[3%] text-center whitespace-nowrap`}><Star size={14} strokeWidth={1.75} className="inline text-muted-foreground" /></th>
                             <th className={`px-3 md:px-4 ${headerPadding} w-[14%] whitespace-nowrap`}>유형/경로/거래처</th>
                             <th className={`px-3 md:px-4 ${headerPadding} w-[11%] whitespace-nowrap`}>고객명</th>
                             <th className={`px-3 md:px-4 ${headerPadding} w-[12%] whitespace-nowrap`}>연락처</th>
@@ -604,7 +604,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                             )}
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-border">
                         {cases.map((c, index) => {
                             const partner = partners.find(p => p.partnerId === c.partnerId);
                             const warnings = getCaseWarnings(c, partner);
@@ -616,28 +616,28 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                             return (
                                 <tr
                                     key={c.caseId}
-                                    className={`border-b border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700/60 transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : c.isStarred ? 'bg-amber-50/40 dark:bg-amber-900/10' : ''}`}
+                                    className={`hover:bg-muted/40 transition-colors ${isSelected ? 'bg-primary/5' : c.isStarred ? 'bg-amber-500/5' : ''}`}
                                 >
                                     {selectable && (
                                         <td className={`pl-3 pr-1 ${cellPadding} text-center`}>
                                             <input type="checkbox" aria-label={`${c.customerName} 선택`} checked={isSelected} onChange={() => onToggleSelect?.(c.caseId)} />
                                         </td>
                                     )}
-                                    {/* [NEW] Star Column */}
+                                    {/* Star Column */}
                                     <td className={`px-2 ${cellPadding} text-center`}>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
-                                            className={`p-1 rounded-full transition-all hover:scale-110 ${c.isStarred ? 'text-amber-600 dark:text-amber-400 hover:text-amber-500' : 'text-gray-600 dark:text-gray-300 hover:text-amber-300 dark:text-gray-600 dark:hover:text-amber-600 dark:text-amber-400'}`}
+                                            className={`p-1 rounded-md transition-all hover:scale-110 ${c.isStarred ? 'text-amber-500' : 'text-muted-foreground/60 hover:text-amber-500'}`}
                                             title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
                                         >
-                                            <Star size={16} fill={c.isStarred ? 'currentColor' : 'none'} />
+                                            <Star size={15} strokeWidth={1.75} fill={c.isStarred ? 'currentColor' : 'none'} />
                                         </button>
                                     </td>
                                     <td className={cellPadding}>
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.caseType}</span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">{c.inboundPath}</span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{partner?.name}</span>
+                                            <span className="text-xs font-semibold text-foreground">{c.caseType}</span>
+                                            <span className="text-[11px] text-muted-foreground">{c.inboundPath}</span>
+                                            <span className="text-[11px] text-muted-foreground/75">{partner?.name}</span>
                                         </div>
                                     </td>
                                     <td className={cellPadding}>

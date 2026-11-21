@@ -57,17 +57,18 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
             <SettingsCard
                 title="거래처 관리"
                 description="등록된 거래처를 선택하거나 새 거래처를 등록하세요."
-                icon={<Building size={18} />}
+                icon={<Building size={18} strokeWidth={1.75} />}
                 headerAction={
                     <button
                         onClick={onOpenAddModal}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-xs transition-colors"
+                        className="inline-flex items-center gap-1.5 h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-medium shadow-2xs transition-colors"
                     >
-                        <Plus size={16} /> 새 거래처 추가
+                        <Plus size={13} strokeWidth={1.75} />
+                        <span>새 거래처 추가</span>
                     </button>
                 }
             >
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <div className="text-center py-12 text-xs text-muted-foreground">
                     등록된 거래처가 없거나 선택되지 않았습니다.
                 </div>
             </SettingsCard>
@@ -84,49 +85,45 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
             showToast('이미 등록된 입금자명입니다.', 'error');
             return;
         }
-        setEditingPartner({
-            ...editingPartner,
-            depositNames: [...current, newDepositName.trim()]
-        });
+        setEditingPartner({ ...editingPartner, depositNames: [...current, newDepositName.trim()] });
         setNewDepositName('');
+        showToast('입금자명 키워드가 추가되었습니다.');
     };
 
     const handleRemoveDepositName = (name: string) => {
         const current = editingPartner.depositNames || [];
-        setEditingPartner({
-            ...editingPartner,
-            depositNames: current.filter(n => n !== name)
-        });
+        setEditingPartner({ ...editingPartner, depositNames: current.filter(n => n !== name) });
+        showToast('입금자명 키워드가 삭제되었습니다.');
     };
 
-    // 정산 지급 파트너 프리셋 핸들러
+    // 정산 파트너 프리셋 추가/삭제 핸들러
     const handleAddPreset = () => {
         if (!newPresetName.trim() || !newPresetAccount.trim()) {
-            showToast('파트너명과 계좌 정보를 입력해주세요.', 'error');
+            showToast('파트너명과 계좌정보는 필수입니다.', 'error');
             return;
         }
+        const current = editingPartner.payoutPartnerPresets || [];
         const newPreset = {
-            id: `preset-${Date.now()}`,
+            id: `preset_${Date.now()}`,
             name: newPresetName.trim(),
             accountInfo: newPresetAccount.trim(),
             defaultAmount: newPresetAmount !== '' ? Number(newPresetAmount) : undefined
         };
-        const currentPresets = editingPartner.payoutPartnerPresets || [];
         setEditingPartner({
             ...editingPartner,
-            payoutPartnerPresets: [...currentPresets, newPreset]
+            payoutPartnerPresets: [...current, newPreset]
         });
         setNewPresetName('');
         setNewPresetAccount('');
         setNewPresetAmount('');
-        showToast('정산 지급 파트너 프리셋이 추가되었습니다.');
+        showToast('정산 파트너 프리셋이 추가되었습니다.');
     };
 
     const handleDeletePreset = (id: string) => {
-        const currentPresets = editingPartner.payoutPartnerPresets || [];
+        const current = editingPartner.payoutPartnerPresets || [];
         setEditingPartner({
             ...editingPartner,
-            payoutPartnerPresets: currentPresets.filter(p => p.id !== id)
+            payoutPartnerPresets: current.filter(p => p.id !== id)
         });
         showToast('프리셋이 삭제되었습니다.');
     };
@@ -134,24 +131,24 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
     return (
         <div className="space-y-6">
             {/* 1. 상단 거래처 선택 바 */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-                        <span className="text-xs font-bold text-gray-500 uppercase shrink-0">거래처 선택:</span>
-                        <div className="flex items-center gap-2">
+            <div className="bg-card text-card-foreground p-3.5 sm:p-4 rounded-xl border border-border shadow-xs">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                        <span className="text-2xs font-mono font-medium text-muted-foreground uppercase shrink-0">거래처 선택:</span>
+                        <div className="flex items-center gap-1.5">
                             {partners.map(p => (
                                 <button
                                     key={p.partnerId}
                                     onClick={() => setSelectedPartnerId(p.partnerId)}
-                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 flex items-center gap-1.5 ${
                                         selectedPartnerId === p.partnerId
-                                            ? 'bg-blue-600 text-white shadow-xs'
-                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                            ? 'bg-primary text-primary-foreground shadow-2xs font-semibold'
+                                            : 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    <Building size={13} />
+                                    <Building size={13} strokeWidth={1.75} />
                                     <span>{p.name}</span>
-                                    {!p.active && <span className="opacity-60 text-xs">(비활성)</span>}
+                                    {!p.active && <span className="opacity-60 text-2xs">(비활성)</span>}
                                 </button>
                             ))}
                         </div>
@@ -159,62 +156,68 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                         <button
                             onClick={onOpenAddModal}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 rounded-xl transition-colors"
+                            className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
                         >
-                            <Plus size={14} /> 새 거래처
+                            <Plus size={13} strokeWidth={1.75} />
+                            <span>새 거래처</span>
                         </button>
                         <button
                             onClick={onSavePartner}
                             disabled={isSaving}
-                            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 h-8 px-3.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg shadow-2xs transition-colors disabled:opacity-50"
                         >
-                            <Save size={14} /> {isSaving ? '저장 중...' : '거래처 설정 저장'}
+                            <Save size={13} strokeWidth={1.75} />
+                            <span>{isSaving ? '저장 중...' : '거래처 설정 저장'}</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* 2. 서브 탭 네비게이션 */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700 space-x-2 sm:space-x-4 overflow-x-auto">
+            {/* 2. 서브 탭 네비게이션 (Shadcn Segmented Control) */}
+            <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto">
                 <button
                     onClick={() => setSubTab('basic')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                         subTab === 'basic'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                            : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                     }`}
                 >
-                    <Calendar size={16} /> 1. 기본 정보 & 정산 일정
+                    <Calendar size={13} strokeWidth={1.75} />
+                    <span>1. 기본 정보 & 정산 일정</span>
                 </button>
                 <button
                     onClick={() => setSubTab('commission')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                         subTab === 'commission'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                            : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                     }`}
                 >
-                    <DollarSign size={16} /> 2. 수수료 분배 규칙 ({editingPartner.commissionRules?.length || 0})
+                    <DollarSign size={13} strokeWidth={1.75} />
+                    <span>2. 수수료 분배 규칙 ({editingPartner.commissionRules?.length || 0})</span>
                 </button>
                 <button
                     onClick={() => setSubTab('forms')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                         subTab === 'forms'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                            : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                     }`}
                 >
-                    <FileText size={16} /> 3. 서식 & 알림 템플릿
+                    <FileText size={13} strokeWidth={1.75} />
+                    <span>3. 서식 & 알림 템플릿</span>
                 </button>
                 <button
                     onClick={() => setSubTab('ai')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                         subTab === 'ai'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                            : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+                            ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                     }`}
                 >
-                    <Sparkles size={16} /> 4. AI 요약 & 분류 가이드
+                    <Sparkles size={13} strokeWidth={1.75} />
+                    <span>4. AI 요약 & 분류 가이드</span>
                 </button>
             </div>
 
@@ -226,11 +229,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="거래처 기본 정보"
                         description="거래처 상호명, 배정 담당자 및 활성 상태를 관리합니다."
-                        icon={<Building size={18} />}
+                        icon={<Building size={18} strokeWidth={1.75} />}
                         headerAction={
                             <button
                                 onClick={onDeletePartner}
-                                className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 font-bold px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-100/30 dark:bg-rose-950/30 transition-colors"
+                                className="text-2xs text-destructive hover:text-destructive/80 font-medium px-2.5 py-1 rounded-md border border-destructive/30 hover:bg-destructive/10 transition-colors"
                             >
                                 거래처 삭제
                             </button>
@@ -239,7 +242,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                         <SettingsRow label="거래처명" required description="시스템 전반에 표기되는 정식 상호명입니다.">
                             <input
                                 type="text"
-                                className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-gray-900 dark:text-white"
+                                className="w-full sm:max-w-md h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring"
                                 value={editingPartner.name}
                                 onChange={e => setEditingPartner({ ...editingPartner, name: e.target.value })}
                             />
@@ -253,8 +256,8 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     checked={editingPartner.active}
                                     onChange={e => setEditingPartner({ ...editingPartner, active: e.target.checked })}
                                 />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <div className="w-10 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-primary-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                                <span className="ml-3 text-xs font-medium text-foreground">
                                     {editingPartner.active ? '정상 사용 중' : '사용 중단 (비활성)'}
                                 </span>
                             </label>
@@ -264,7 +267,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                             <input
                                 type="text"
                                 placeholder="예: 김실장"
-                                className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-gray-900 dark:text-white"
+                                className="w-full sm:max-w-md h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                                 value={editingPartner.managerName || ''}
                                 onChange={e => setEditingPartner({ ...editingPartner, managerName: e.target.value })}
                             />
@@ -274,7 +277,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                             <input
                                 type="text"
                                 placeholder="예: 010-1234-5678"
-                                className="w-full sm:max-w-md p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-gray-900 dark:text-white"
+                                className="w-full sm:max-w-md h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                                 value={editingPartner.contactPhone || ''}
                                 onChange={e => setEditingPartner({ ...editingPartner, contactPhone: e.target.value })}
                             />
@@ -284,7 +287,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                             <textarea
                                 rows={2}
                                 placeholder="거래처 특이사항을 입력하세요."
-                                className="w-full p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-gray-900 dark:text-white"
+                                className="w-full p-2.5 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground leading-relaxed"
                                 value={editingPartner.notes || ''}
                                 onChange={e => setEditingPartner({ ...editingPartner, notes: e.target.value })}
                             />
@@ -294,15 +297,15 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="정산 주기 및 일정 정책"
                         description="거래처와의 정산 마감 요일, 세금계산서 청구 및 수수료 지급 시기를 설정합니다."
-                        icon={<Calendar size={18} />}
+                        icon={<Calendar size={18} strokeWidth={1.75} />}
                     >
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-                            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
-                                <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5">
+                            <div className="p-3.5 bg-muted/30 rounded-xl border border-border">
+                                <label className="block text-2xs font-semibold text-foreground mb-1.5">
                                     1. 정산 마감 요일 (1단계)
                                 </label>
                                 <select
-                                    className="w-full p-2 text-sm font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
+                                    className="w-full h-8 px-2.5 text-xs font-semibold bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring"
                                     value={editingPartner.settlementConfig.cutoffDay}
                                     onChange={e => setEditingPartner({
                                         ...editingPartner,
@@ -313,33 +316,34 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <option key={d} value={d}>매주 {getDayName(d)}요일</option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">한 주간의 정산 대상을 집계 마감하는 요일</p>
+                                <p className="text-2xs text-muted-foreground mt-1">한 주간의 정산 대상을 집계 마감하는 요일</p>
                             </div>
 
-                            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
-                                <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5">
+                            <div className="p-3.5 bg-muted/30 rounded-xl border border-border">
+                                <label className="block text-2xs font-semibold text-foreground mb-1.5">
                                     2. 수당 지급 주차 (3단계)
                                 </label>
                                 <select
-                                    className="w-full p-2 text-sm font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
+                                    className="w-full h-8 px-2.5 text-xs font-semibold bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring"
                                     value={editingPartner.settlementConfig.payoutWeekDelay}
                                     onChange={e => setEditingPartner({
                                         ...editingPartner,
                                         settlementConfig: { ...editingPartner.settlementConfig, payoutWeekDelay: Number(e.target.value) }
                                     })}
                                 >
-                                    <option value={0}>이번 주 (금주 지급)</option>
-                                    <option value={1}>다음 주 (차주 지급)</option>
+                                    <option value={0}>마감 당주</option>
+                                    <option value={1}>마감 익주 (+1주)</option>
+                                    <option value={2}>마감 다다음주 (+2주)</option>
                                 </select>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">마감 주차 기준 지급 발생 주</p>
+                                <p className="text-2xs text-muted-foreground mt-1">입금 확인 후 수당이 정산되는 시점</p>
                             </div>
 
-                            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
-                                <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5">
+                            <div className="p-3.5 bg-muted/30 rounded-xl border border-border">
+                                <label className="block text-2xs font-semibold text-foreground mb-1.5">
                                     3. 수당 지급 요일 (3단계)
                                 </label>
                                 <select
-                                    className="w-full p-2 text-sm font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
+                                    className="w-full h-8 px-2.5 text-xs font-semibold bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring"
                                     value={editingPartner.settlementConfig.payoutDay}
                                     onChange={e => setEditingPartner({
                                         ...editingPartner,
@@ -350,82 +354,56 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <option key={d} value={d}>매주 {getDayName(d)}요일</option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">상담원 및 파트너에게 실지급하는 요일</p>
+                                <p className="text-2xs text-muted-foreground mt-1">상담원/팀장에게 수당을 송금하는 요일</p>
                             </div>
                         </div>
 
-                        <SettingsRow label="분할 지급 인정 비율" description="입금 차수별 수당 인정 정책입니다.">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="p-3 bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-200 dark:border-gray-600 flex items-center justify-between">
-                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">착수금 인정 비율:</span>
-                                    <div className="flex items-center gap-1">
-                                        <input
-                                            type="number"
-                                            className="w-16 p-1.5 text-right font-bold text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
-                                            value={editingPartner.settlementConfig.downPaymentPercentage}
-                                            onChange={e => setEditingPartner({
-                                                ...editingPartner,
-                                                settlementConfig: { ...editingPartner.settlementConfig, downPaymentPercentage: Number(e.target.value) }
-                                            })}
-                                        />
-                                        <span className="text-xs font-bold">%</span>
-                                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <SettingsRow label="착수금 비율 (기본 10%)" description="고객이 1차 입금해야 하는 기본 계약 착수금입니다.">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        className="w-20 h-9 px-3 text-xs font-mono font-semibold text-right bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring tabular-nums"
+                                        value={editingPartner.settlementConfig.downPaymentPercentage}
+                                        onChange={e => setEditingPartner({
+                                            ...editingPartner,
+                                            settlementConfig: { ...editingPartner.settlementConfig, downPaymentPercentage: Number(e.target.value) }
+                                        })}
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
                                 </div>
-                                <div className="p-3 bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-200 dark:border-gray-600 flex items-center justify-between">
-                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">1차 분납 인정 비율:</span>
-                                    <div className="flex items-center gap-1">
-                                        <input
-                                            type="number"
-                                            className="w-16 p-1.5 text-right font-bold text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none"
-                                            value={editingPartner.settlementConfig.firstPayoutPercentage}
-                                            onChange={e => setEditingPartner({
-                                                ...editingPartner,
-                                                settlementConfig: { ...editingPartner.settlementConfig, firstPayoutPercentage: Number(e.target.value) }
-                                            })}
-                                        />
-                                        <span className="text-xs font-bold">%</span>
-                                    </div>
+                            </SettingsRow>
+
+                            <SettingsRow label="1차 수당 지급 비율 (기본 50%)" description="착수금 입금 확인 시 우선 선지급할 수당 비율입니다.">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        className="w-20 h-9 px-3 text-xs font-mono font-semibold text-right bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring tabular-nums"
+                                        value={editingPartner.settlementConfig.firstPayoutPercentage}
+                                        onChange={e => setEditingPartner({
+                                            ...editingPartner,
+                                            settlementConfig: { ...editingPartner.settlementConfig, firstPayoutPercentage: Number(e.target.value) }
+                                        })}
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
                                 </div>
-                            </div>
-                        </SettingsRow>
-
-                        <SettingsRow label="부가세(VAT) 계산 정책" description="거래처 정산서 및 수수료 계산 시 부가세 적용 방식입니다.">
-                            <select
-                                className="w-full sm:max-w-xs p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
-                                value={editingPartner.vatMode || 'separate'}
-                                onChange={e => setEditingPartner({ ...editingPartner, vatMode: e.target.value as any })}
-                            >
-                                <option value="separate">별도 (+10% 가산 청구 - 권장)</option>
-                                <option value="included">포함 (수임료 내 부가세 포함)</option>
-                                <option value="none">없음 (면세 또는 부가세 미적용)</option>
-                            </select>
-                        </SettingsRow>
-
-                        <SettingsRow label="수금 기한 (지급일 계산용)" description="세금계산서 청구 후 거래처로부터 입금받기로 약정된 일수입니다.">
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    className="w-20 p-2 text-sm text-right font-bold bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
-                                    value={editingPartner.paymentTermDays ?? 7}
-                                    onChange={e => setEditingPartner({ ...editingPartner, paymentTermDays: Number(e.target.value) })}
-                                />
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">일 이내</span>
-                            </div>
-                        </SettingsRow>
+                            </SettingsRow>
+                        </div>
                     </SettingsCard>
 
+                    {/* 은행 계좌 정보 */}
                     <SettingsCard
-                        title="입금 계좌 및 통장 거래내역 매칭"
-                        description="거래처 정산서 안내에 표시될 수금 계좌와 은행 거래내역 자동 매칭 키워드를 설정합니다."
-                        icon={<DollarSign size={18} />}
+                        title="거래처 입금 계좌 정보 (세금계산서 청구용)"
+                        description="거래처가 우리 회사로 수임료 수수료를 송금할 때 입금받을 통장 계좌 정보입니다."
+                        icon={<DollarSign size={18} strokeWidth={1.75} />}
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">은행명</label>
+                                <label className="block text-2xs font-medium text-muted-foreground mb-1">은행명</label>
                                 <input
                                     type="text"
-                                    placeholder="예: 카카오뱅크"
-                                    className="w-full p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                    placeholder="예: 국민은행"
+                                    className="w-full h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                                     value={editingPartner.bankInfo?.bankName || ''}
                                     onChange={e => setEditingPartner({
                                         ...editingPartner,
@@ -434,11 +412,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">계좌번호</label>
+                                <label className="block text-2xs font-medium text-muted-foreground mb-1">계좌번호</label>
                                 <input
                                     type="text"
                                     placeholder="예: 3333-xx-xxxx"
-                                    className="w-full p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                    className="w-full h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground font-mono"
                                     value={editingPartner.bankInfo?.accountNumber || ''}
                                     onChange={e => setEditingPartner({
                                         ...editingPartner,
@@ -447,11 +425,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">예금주</label>
+                                <label className="block text-2xs font-medium text-muted-foreground mb-1">예금주</label>
                                 <input
                                     type="text"
                                     placeholder="예: 주식회사 리드마스터"
-                                    className="w-full p-2.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                    className="w-full h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                                     value={editingPartner.bankInfo?.accountHolder || ''}
                                     onChange={e => setEditingPartner({
                                         ...editingPartner,
@@ -470,27 +448,27 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     {(editingPartner.depositNames || []).map((name, i) => (
                                         <span
                                             key={i}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-full text-xs font-bold"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted/60 text-foreground border border-border rounded-md text-xs font-medium"
                                         >
-                                            {name}
+                                            <span>{name}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveDepositName(name)}
-                                                className="hover:text-rose-500"
+                                                className="text-muted-foreground hover:text-destructive transition-colors ml-0.5"
                                             >
-                                                <Trash2 size={12} />
+                                                <Trash2 size={12} strokeWidth={1.75} />
                                             </button>
                                         </span>
                                     ))}
                                     {(editingPartner.depositNames || []).length === 0 && (
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">등록된 매칭 키워드가 없습니다.</span>
+                                        <span className="text-xs text-muted-foreground">등록된 매칭 키워드가 없습니다.</span>
                                     )}
                                 </div>
                                 <div className="flex gap-2 max-w-sm">
                                     <input
                                         type="text"
                                         placeholder="예: 안철형, 명율법률"
-                                        className="flex-1 p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                        className="flex-1 h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                                         value={newDepositName}
                                         onChange={e => setNewDepositName(e.target.value)}
                                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddDepositName(); } }}
@@ -498,7 +476,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     <button
                                         type="button"
                                         onClick={handleAddDepositName}
-                                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-xs font-bold rounded-xl"
+                                        className="h-9 px-3.5 bg-muted hover:bg-muted/80 text-foreground border border-border text-xs font-medium rounded-lg transition-colors"
                                     >
                                         추가
                                     </button>
@@ -511,7 +489,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="정산 파트너 프리셋 (수수료 지급처 계좌 목록)"
                         description="3단계 수당 지급 처리 시 빠르게 선택할 수 있는 협력 변호사/팀장의 계좌 및 기본 지급액 프리셋입니다."
-                        icon={<Users size={18} />}
+                        icon={<Users size={18} strokeWidth={1.75} />}
                     >
                         <div className="space-y-4">
                             {/* 프리셋 목록 */}
@@ -519,13 +497,13 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 {(editingPartner.payoutPartnerPresets || []).map(preset => (
                                     <div
                                         key={preset.id}
-                                        className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-200 dark:border-gray-700"
+                                        className="flex items-center justify-between p-3 bg-muted/20 rounded-xl border border-border"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <span className="font-bold text-xs text-gray-900 dark:text-gray-100">{preset.name}</span>
-                                            <span className="text-xs text-gray-500 font-mono">{preset.accountInfo}</span>
+                                            <span className="font-semibold text-xs text-foreground">{preset.name}</span>
+                                            <span className="text-2xs text-muted-foreground font-mono">{preset.accountInfo}</span>
                                             {preset.defaultAmount && (
-                                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300 border border-green-200 dark:border-green-800">
+                                                <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                                                     기본 {preset.defaultAmount}만원
                                                 </span>
                                             )}
@@ -533,44 +511,44 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => handleDeletePreset(preset.id)}
-                                            className="text-gray-500 dark:text-gray-400 hover:text-rose-500 p-1 transition-colors"
+                                            className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
                                             title="프리셋 삭제"
                                         >
-                                            <Trash2 size={14} />
+                                            <Trash2 size={13} strokeWidth={1.75} />
                                         </button>
                                     </div>
                                 ))}
                                 {(editingPartner.payoutPartnerPresets || []).length === 0 && (
-                                    <div className="text-center py-6 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                                    <div className="text-center py-6 text-xs text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border">
                                         등록된 지급처 프리셋이 없습니다. 아래에서 추가하세요.
                                     </div>
                                 )}
                             </div>
 
                             {/* 신규 프리셋 등록 폼 */}
-                            <div className="p-4 bg-gray-50/70 dark:bg-gray-750/70 rounded-xl border border-gray-200 dark:border-gray-700">
-                                <h4 className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase mb-3">
+                            <div className="p-4 bg-muted/40 rounded-xl border border-border">
+                                <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
                                     + 새 지급 파트너 프리셋 등록
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                                     <input
                                         type="text"
                                         placeholder="파트너명 (예: 안철형 변호사)"
-                                        className="p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none font-bold"
+                                        className="h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring font-medium"
                                         value={newPresetName}
                                         onChange={e => setNewPresetName(e.target.value)}
                                     />
                                     <input
                                         type="text"
-                                        placeholder="은행 및 계좌번호 (예: 국민 123-45-6789)"
-                                        className="p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                        placeholder="은행 및 계좌번호 (국민 123-45-6789)"
+                                        className="h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring font-mono"
                                         value={newPresetAccount}
                                         onChange={e => setNewPresetAccount(e.target.value)}
                                     />
                                     <input
                                         type="number"
                                         placeholder="기본 지급액 (만원, 선택사항)"
-                                        className="p-2 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                        className="h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={newPresetAmount}
                                         onChange={e => setNewPresetAmount(e.target.value === '' ? '' : Number(e.target.value))}
                                     />
@@ -579,7 +557,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     <button
                                         type="button"
                                         onClick={handleAddPreset}
-                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                                        className="h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-lg shadow-2xs transition-colors"
                                     >
                                         프리셋 추가
                                     </button>
@@ -592,7 +570,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="거래처 전용 텔레그램 연동 방 (사건 전달 · 피드백 자동수집)"
                         description="이 거래처(변호사 사무실)의 전용 텔레그램 방입니다. 리드 상세의 [텔레그램 전달]은 이 방으로 전송되고, 이 방에서 수신된 피드백은 해당 거래처 고객과 자동 매칭됩니다."
-                        icon={<MessageCircle size={18} />}
+                        icon={<MessageCircle size={18} strokeWidth={1.75} />}
                     >
                         <TelegramChatPicker
                             value={editingPartner.telegramChatId || ''}
@@ -608,7 +586,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="기본 수수료 지급 방식"
                         description="거래처 전체에 기본 적용할 수수료 모델을 선택합니다."
-                        icon={<DollarSign size={18} />}
+                        icon={<DollarSign size={18} strokeWidth={1.75} />}
                     >
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             {[
@@ -619,14 +597,14 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                     key={opt.type}
                                     type="button"
                                     onClick={() => setEditingPartner({ ...editingPartner, incentiveType: opt.type as any })}
-                                    className={`p-4 rounded-xl text-left border-2 transition-all ${
+                                    className={`p-4 rounded-xl text-left border transition-all ${
                                         (editingPartner.incentiveType || 'rate') === opt.type
-                                            ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/30'
-                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                                            ? 'border-primary bg-primary/5 shadow-2xs'
+                                            : 'border-border bg-muted/20 hover:border-primary/40'
                                     }`}
                                 >
-                                    <div className="font-bold text-sm text-gray-900 dark:text-white">{opt.label}</div>
-                                    <div className="text-xs text-gray-500 mt-1">{opt.desc}</div>
+                                    <div className="font-semibold text-xs text-foreground">{opt.label}</div>
+                                    <div className="text-2xs text-muted-foreground mt-0.5">{opt.desc}</div>
                                 </button>
                             ))}
                         </div>
@@ -636,11 +614,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="number"
-                                        className="w-24 p-2.5 text-sm font-bold text-right bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                        className="w-24 h-9 px-3 text-xs font-mono font-semibold text-right bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={editingPartner.incentiveRate ?? 30}
                                         onChange={e => setEditingPartner({ ...editingPartner, incentiveRate: Number(e.target.value) })}
                                     />
-                                    <span className="text-sm font-bold">%</span>
+                                    <span className="text-xs text-muted-foreground">%</span>
                                 </div>
                             </SettingsRow>
                         ) : (
@@ -648,11 +626,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="number"
-                                        className="w-28 p-2.5 text-sm font-bold text-right bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                        className="w-28 h-9 px-3 text-xs font-mono font-semibold text-right bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={editingPartner.incentiveFixedAmount ?? 50}
                                         onChange={e => setEditingPartner({ ...editingPartner, incentiveFixedAmount: Number(e.target.value) })}
                                     />
-                                    <span className="text-sm font-bold">만원</span>
+                                    <span className="text-xs text-muted-foreground">만원</span>
                                 </div>
                             </SettingsRow>
                         )}
@@ -661,50 +639,50 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="수임료 구간별 수수료 규칙 (Tier Rules)"
                         description="수임료 금액 구간에 따라 차등 수수료 및 전액 지급 기준을 세부 정의합니다."
-                        icon={<FileText size={18} />}
+                        icon={<FileText size={18} strokeWidth={1.75} />}
                     >
                         {/* 룰 추가 폼 */}
-                        <div className="p-4 bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-200 dark:border-gray-600 mb-6">
-                            <h4 className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase mb-3">
+                        <div className="p-4 bg-muted/40 rounded-xl border border-border mb-6">
+                            <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
                                 + 신규 구간 규칙 추가
                             </h4>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">최소 수임료 (만원)</label>
+                                    <label className="block text-2xs font-medium text-muted-foreground mb-1">최소 수임료 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0"
-                                        className="w-full p-2 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none font-bold"
+                                        className="w-full h-8 px-2.5 text-xs font-mono font-semibold bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={newRule.minFee || ''}
                                         onChange={e => setNewRule({ ...newRule, minFee: Number(e.target.value) })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">최대 수임료 (만원)</label>
+                                    <label className="block text-2xs font-medium text-muted-foreground mb-1">최대 수임료 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0=무제한"
-                                        className="w-full p-2 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none font-bold"
+                                        className="w-full h-8 px-2.5 text-xs font-mono font-semibold bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={newRule.maxFee || ''}
                                         onChange={e => setNewRule({ ...newRule, maxFee: Number(e.target.value) })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">지급 수수료 (만원)</label>
+                                    <label className="block text-2xs font-medium text-muted-foreground mb-1">지급 수수료 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0"
-                                        className="w-full p-2 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none font-bold text-blue-600"
+                                        className="w-full h-8 px-2.5 text-xs font-mono font-semibold text-primary bg-background border border-input rounded-md outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={newRule.commission || ''}
                                         onChange={e => setNewRule({ ...newRule, commission: Number(e.target.value) })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">전액지급 기준 (만원)</label>
+                                    <label className="block text-2xs font-medium text-muted-foreground mb-1">전액지급 기준 (만원)</label>
                                     <input
                                         type="number"
                                         placeholder="0=기본"
-                                        className="w-full p-2 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none font-bold"
+                                        className="w-full h-8 px-2.5 text-xs font-mono font-semibold bg-background text-foreground border border-input rounded-md outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={newRule.fullPayoutThreshold || ''}
                                         onChange={e => setNewRule({ ...newRule, fullPayoutThreshold: Number(e.target.value) })}
                                     />
@@ -714,7 +692,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 <button
                                     type="button"
                                     onClick={onAddRule}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs transition-colors"
+                                    className="h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-lg shadow-2xs transition-colors"
                                 >
                                     규칙 등록
                                 </button>
@@ -722,9 +700,9 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                         </div>
 
                         {/* 룰 테이블 */}
-                        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                        <div className="overflow-x-auto rounded-xl border border-border">
                             <table className="w-full text-xs text-left">
-                                <thead className="bg-gray-50 dark:bg-gray-750 text-gray-600 dark:text-gray-300 font-bold border-b border-gray-200 dark:border-gray-700">
+                                <thead className="bg-muted/60 text-muted-foreground font-medium border-b border-border text-2xs">
                                     <tr>
                                         <th className="p-3">수임료 구간</th>
                                         <th className="p-3">수수료 (수당)</th>
@@ -733,33 +711,33 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         <th className="p-3 text-right">관리</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                                <tbody className="divide-y divide-border">
                                     {(editingPartner.commissionRules || []).map(r => (
-                                        <tr key={r.ruleId} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30">
-                                            <td className="p-3 font-medium">
+                                        <tr key={r.ruleId} className="hover:bg-muted/40 transition-colors">
+                                            <td className="p-3 font-medium text-foreground">
                                                 {r.minFee.toLocaleString()}만원 ~ {r.maxFee ? `${r.maxFee.toLocaleString()}만원` : '무제한'}
                                             </td>
-                                            <td className="p-3 font-bold text-blue-600 dark:text-blue-400">
+                                            <td className="p-3 font-semibold text-primary font-mono tabular-nums">
                                                 {r.commission.toLocaleString()}만원
                                             </td>
-                                            <td className="p-3 text-gray-500">
+                                            <td className="p-3 text-muted-foreground">
                                                 {r.fullPayoutThreshold ? `${r.fullPayoutThreshold.toLocaleString()}만원 이상 입금 시` : '기본 정책'}
                                             </td>
-                                            <td className="p-3 text-center font-mono">{r.priority}</td>
+                                            <td className="p-3 text-center font-mono text-muted-foreground">{r.priority}</td>
                                             <td className="p-3 text-right">
                                                 <button
                                                     onClick={() => onDeleteRule(r.ruleId)}
-                                                    className="text-gray-500 dark:text-gray-400 hover:text-rose-500 p-1 transition-colors"
+                                                    className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
                                                     title="규칙 삭제"
                                                 >
-                                                    <Trash2 size={14} />
+                                                    <Trash2 size={13} strokeWidth={1.75} />
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
                                     {(editingPartner.commissionRules || []).length === 0 && (
                                         <tr>
-                                            <td colSpan={5} className="p-6 text-center text-gray-500 dark:text-gray-400">
+                                            <td colSpan={5} className="p-6 text-center text-xs text-muted-foreground">
                                                 등록된 구간 규칙이 없습니다. 기본 수수료 정책이 적용됩니다.
                                             </td>
                                         </tr>
@@ -777,7 +755,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="신규 케이스 접수 폼 필드 설정"
                         description="해당 거래처 케이스 등록 시 화면에 표시할 입력 항목을 선택합니다."
-                        icon={<FileText size={18} />}
+                        icon={<FileText size={18} strokeWidth={1.75} />}
                     >
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                             {AVAILABLE_FIELDS_CONFIG.map(f => {
@@ -787,17 +765,17 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         key={f.key}
                                         className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
                                             isChecked
-                                                ? 'bg-blue-50/50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-200'
-                                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                                                ? 'bg-primary/10 border-primary/40 text-primary'
+                                                : 'bg-muted/20 border-border text-muted-foreground hover:border-primary/30'
                                         }`}
                                     >
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500"
+                                            className="w-4 h-4 rounded text-primary border-input focus:ring-ring"
                                             checked={isChecked}
                                             onChange={() => toggleField(f.key)}
                                         />
-                                        <span className="text-xs font-semibold">{f.label}</span>
+                                        <span className="text-xs font-medium">{f.label}</span>
                                     </label>
                                 );
                             })}
@@ -807,16 +785,16 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="카카오톡 정산 알림 메시지 템플릿"
                         description="세금계산서 발행 완료 및 수수료 정산 요청 시 거래처에 보낼 기본 메시지 템플릿입니다."
-                        icon={<MessageCircle size={18} />}
+                        icon={<MessageCircle size={18} strokeWidth={1.75} />}
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-xs font-semibold text-foreground mb-2">
                                     1. 세금계산서 청구 발행 완료 안내
                                 </label>
                                 <textarea
                                     rows={8}
-                                    className="w-full p-3 text-xs font-mono bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                    className="w-full p-3 text-xs font-mono bg-background text-foreground border border-input rounded-xl outline-none focus:ring-1 focus:ring-ring leading-relaxed placeholder:text-muted-foreground"
                                     value={editingPartner.kakaoTemplates?.invoiceNotice || ''}
                                     placeholder="발행 완료 안내 카톡 문구를 입력하세요."
                                     onChange={e => setEditingPartner({
@@ -826,12 +804,12 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-xs font-semibold text-foreground mb-2">
                                     2. 파트너 세금계산서 역발행 요청 문구
                                 </label>
                                 <textarea
                                     rows={8}
-                                    className="w-full p-3 text-xs font-mono bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                                    className="w-full p-3 text-xs font-mono bg-background text-foreground border border-input rounded-xl outline-none focus:ring-1 focus:ring-ring leading-relaxed placeholder:text-muted-foreground"
                                     value={editingPartner.kakaoTemplates?.payoutRequest || ''}
                                     placeholder="수수료 요청 카톡 문구를 입력하세요."
                                     onChange={e => setEditingPartner({
@@ -846,11 +824,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="상담 요약 전송 서식 템플릿 (카톡 전달용)"
                         description="카카오톡이나 텔레그램으로 상담 요약본을 전달할 때 사용할 양식입니다. 치환 변수: {{clientName}}, {{phone}}, {{summary}} 등"
-                        icon={<FileText size={18} />}
+                        icon={<FileText size={18} strokeWidth={1.75} />}
                     >
                         <textarea
                             rows={6}
-                            className="w-full p-3 text-xs font-mono bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                            className="w-full p-3 text-xs font-mono bg-background text-foreground border border-input rounded-xl outline-none focus:ring-1 focus:ring-ring leading-relaxed"
                             value={editingPartner.summaryTemplate || DEFAULT_SUMMARY_TEMPLATE}
                             onChange={e => setEditingPartner({ ...editingPartner, summaryTemplate: e.target.value })}
                         />
@@ -864,11 +842,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="AI 상담 통화 요약 프롬프트"
                         description="Gemini AI가 통화 녹취록을 분석하여 구조화된 사건 개요를 작성할 때 사용할 기본 프롬프트입니다."
-                        icon={<Sparkles size={18} />}
+                        icon={<Sparkles size={18} strokeWidth={1.75} />}
                     >
                         <textarea
                             rows={8}
-                            className="w-full p-3 text-xs font-mono bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                            className="w-full p-3 text-xs font-mono bg-background text-foreground border border-input rounded-xl outline-none focus:ring-1 focus:ring-ring leading-relaxed"
                             value={editingPartner.aiPromptTemplate || DEFAULT_AI_PROMPT}
                             onChange={e => setEditingPartner({ ...editingPartner, aiPromptTemplate: e.target.value })}
                         />
@@ -877,7 +855,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="상담 필수 확인 체크리스트"
                         description="AI가 통화 녹취에서 반드시 확인되었는지 체크할 핵심 요건 목록입니다."
-                        icon={<Sparkles size={18} />}
+                        icon={<Sparkles size={18} strokeWidth={1.75} />}
                     >
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                             {CHECK_ITEMS.map(item => {
@@ -888,13 +866,13 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         key={item.key}
                                         className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
                                             isChecked
-                                                ? 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-300 dark:border-purple-700 text-purple-900 dark:text-purple-200'
-                                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60'
+                                                ? 'bg-primary/10 border-primary/40 text-primary'
+                                                : 'bg-muted/20 border-border text-muted-foreground opacity-60'
                                         }`}
                                     >
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 rounded text-purple-600 border-gray-300 focus:ring-purple-500"
+                                            className="w-4 h-4 rounded text-primary border-input focus:ring-ring"
                                             checked={isChecked}
                                             onChange={() => {
                                                 const updated = isChecked
@@ -903,7 +881,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                                 setEditingPartner({ ...editingPartner, checkItems: updated });
                                             }}
                                         />
-                                        <span className="text-xs font-bold text-gray-900 dark:text-gray-100">{item.label}</span>
+                                        <span className="text-xs font-semibold text-foreground">{item.label}</span>
                                     </label>
                                 );
                             })}
@@ -913,11 +891,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="진행 가능성 AI 분류 기준 가이드"
                         description="AI가 상담 건의 수임 가능성을 A(유력), B(보통), C(불가)로 자동 판정하는 세부 기준입니다."
-                        icon={<Sparkles size={18} />}
+                        icon={<Sparkles size={18} strokeWidth={1.75} />}
                     >
                         <textarea
                             rows={8}
-                            className="w-full p-3 text-xs font-mono bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                            className="w-full p-3 text-xs font-mono bg-background text-foreground border border-input rounded-xl outline-none focus:ring-1 focus:ring-ring leading-relaxed placeholder:text-muted-foreground"
                             value={editingPartner.aiClassificationGuide || ''}
                             placeholder="분류 기준을 입력하세요."
                             onChange={e => setEditingPartner({ ...editingPartner, aiClassificationGuide: e.target.value })}
@@ -927,11 +905,11 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                     <SettingsCard
                         title="AI 영수증/서류 OCR 인식 프롬프트"
                         description="수임료 입금증, 계약서 사진 등 서류를 OCR로 자동 판독할 때 사용할 프롬프트입니다."
-                        icon={<Sparkles size={18} />}
+                        icon={<Sparkles size={18} strokeWidth={1.75} />}
                     >
                         <textarea
                             rows={6}
-                            className="w-full p-3 text-xs font-mono bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl outline-none"
+                            className="w-full p-3 text-xs font-mono bg-background text-foreground border border-input rounded-xl outline-none focus:ring-1 focus:ring-ring leading-relaxed"
                             value={editingPartner.ocrPromptTemplate || DEFAULT_OCR_PROMPT}
                             onChange={e => setEditingPartner({ ...editingPartner, ocrPromptTemplate: e.target.value })}
                         />

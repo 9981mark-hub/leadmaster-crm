@@ -298,86 +298,94 @@ export default function TeamPage() {
   return (
     <div className="max-w-[1600px] mx-auto space-y-6">
       {/* 상단 헤더 */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <UserCog size={26} className="text-blue-600" /> 팀 관리 & 콜센터 운영
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+            <UserCog size={22} strokeWidth={1.75} className="text-primary" />
+            <span>팀 관리 & 콜센터 운영</span>
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {org.orgName} · 상담원 성과/콜 분석, 인센티브, 15,000건 스마트 대량 배정, DB 회차 품질 관리
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             to="/training"
-            className="px-3 py-2 text-sm font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 flex items-center gap-1.5 shadow-xs transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-foreground bg-muted hover:bg-muted/80 border border-border rounded-lg shadow-2xs transition-colors"
           >
-            <GraduationCap size={16} /> 신입 트레이닝 센터
+            <GraduationCap size={13} strokeWidth={1.75} />
+            <span>신입 트레이닝 센터</span>
           </Link>
           <button
             onClick={() => setShowUpload(true)}
-            className="px-3.5 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm flex items-center gap-1.5 transition-all"
+            className="inline-flex items-center gap-1.5 h-8 px-3.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg shadow-2xs transition-colors cursor-pointer"
             title="케이스 일괄/간편 등록 (엑셀 대량 업로드, AI 영수증/신청서 OCR, 시트 입력, 간편 수기 등록)"
           >
-            <FileUp size={16} /> 신규 DB 일괄/간편 등록
+            <FileUp size={13} strokeWidth={1.75} />
+            <span>신규 DB 등록</span>
           </button>
           <button
             onClick={reload}
             disabled={loading || busy}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+            className="h-8 w-8 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-colors disabled:opacity-50 cursor-pointer"
+            title="새로고침"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> 새로고침
+            <RefreshCw size={13} strokeWidth={1.75} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
-      {/* 8대 전문 탭 네비게이션 */}
-      <div className="flex items-center gap-1 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-x-auto border border-gray-200 dark:border-gray-700">
+      {/* 8대 전문 탭 네비게이션 (Shadcn Segmented Control) */}
+      <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto">
         <button
           onClick={() => setActiveTab('hr')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'hr'
-              ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <Users size={16} /> 👥 직원 HR 종합 관제 (근태·급여)
+          <Users size={13} strokeWidth={1.75} className="text-primary" />
+          <span>직원 HR 종합 관제</span>
         </button>
 
         <button
           onClick={() => setActiveTab('performance')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'performance'
-              ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <Award size={16} /> 팀원 성과 · 인센티브
-          {!isOwner && !myTeamPerms.canViewPerformance && <Lock size={12} className="text-amber-500 shrink-0" />}
+          <Award size={13} strokeWidth={1.75} />
+          <span>팀원 성과 · 인센티브</span>
+          {!isOwner && !myTeamPerms.canViewPerformance && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
         </button>
 
         <button
           onClick={() => setActiveTab('call_audit')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'call_audit'
-              ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <PhoneCall size={16} /> 콜 활동 · AI 요약
+          <PhoneCall size={13} strokeWidth={1.75} />
+          <span>콜 활동 · AI 요약</span>
         </button>
 
         <button
           onClick={() => setActiveTab('bulk_assign')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'bulk_assign'
-              ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <Shuffle size={16} /> 대용량 리드 배정
+          <Shuffle size={13} strokeWidth={1.75} />
+          <span>대용량 리드 배정</span>
           {unassignedCount > 0 && (
-            <span className="px-1.5 py-0.5 text-xs font-bold rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+            <span className="px-1.5 py-0.2 text-2xs font-mono font-medium rounded bg-destructive/10 text-destructive border border-destructive/20 tabular-nums">
               {unassignedCount > 999 ? '999+' : unassignedCount}
             </span>
           )}
@@ -385,59 +393,64 @@ export default function TeamPage() {
 
         <button
           onClick={() => setActiveTab('rules')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'rules'
-              ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <SlidersHorizontal size={16} /> 배분 규칙 · 로테이션
-          {!isOwner && !myTeamPerms.canModifyRules && <Lock size={12} className="text-amber-500 shrink-0" />}
+          <SlidersHorizontal size={13} strokeWidth={1.75} />
+          <span>배분 규칙 · 로테이션</span>
+          {!isOwner && !myTeamPerms.canModifyRules && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
         </button>
 
         <button
           onClick={() => setActiveTab('lifecycle')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'lifecycle'
-              ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <Archive size={16} /> DB 수명주기 · 보관
-          {!isOwner && !myTeamPerms.canModifyRules && <Lock size={12} className="text-amber-500 shrink-0" />}
+          <Archive size={13} strokeWidth={1.75} />
+          <span>DB 수명주기 · 보관</span>
+          {!isOwner && !myTeamPerms.canModifyRules && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
         </button>
 
         <button
           onClick={() => setActiveTab('quality')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'quality'
-              ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <Layers size={16} /> 회차별 DB 품질
+          <Layers size={13} strokeWidth={1.75} />
+          <span>회차별 DB 품질</span>
         </button>
 
         <button
           onClick={() => setActiveTab('dnc')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'dnc'
-              ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <ShieldAlert size={16} /> 수신거부 (DNC)
+          <ShieldAlert size={13} strokeWidth={1.75} />
+          <span>수신거부 (DNC)</span>
         </button>
 
         <button
           onClick={() => setActiveTab('members')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
             activeTab === 'members'
-              ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
           }`}
         >
-          <Users size={16} /> 멤버 & 환경설정
+          <Users size={13} strokeWidth={1.75} />
+          <span>멤버 & 설정</span>
         </button>
       </div>
 

@@ -50,15 +50,15 @@ export const DashboardModeSwitcher: React.FC<DashboardModeSwitcherProps> = ({
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-2 border border-slate-200 dark:border-gray-700 shadow-sm">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-2 py-1.5 border-b border-slate-100 dark:border-gray-700/60 mb-2">
+    <div className="bg-card rounded-xl p-2.5 border border-border shadow-xs">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-1.5 py-1 border-b border-border mb-2.5">
         <div className="flex items-center gap-2">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+          <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+          <span className="text-xs font-semibold text-foreground">
             TM 대표 스마트 뷰 전환
           </span>
         </div>
-        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
+        <span className="text-[11px] text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full">
           선택한 모드가 자동 기억됩니다
         </span>
       </div>
@@ -75,37 +75,37 @@ export const DashboardModeSwitcher: React.FC<DashboardModeSwitcherProps> = ({
               onClick={() => onChange(mode.id)}
               className={`relative flex items-center gap-2.5 p-2.5 rounded-lg text-left transition-all border ${
                 isActive
-                  ? 'bg-blue-50 dark:bg-blue-900/40 border-blue-300 dark:border-blue-600 shadow-sm text-blue-900 dark:text-blue-100 ring-1 ring-blue-500/20'
-                  : 'bg-slate-50/70 dark:bg-gray-800/60 hover:bg-slate-100 dark:hover:bg-gray-700/50 border-slate-200/80 dark:border-gray-700 text-slate-700 dark:text-gray-300'
+                  ? 'bg-primary/10 border-primary/40 shadow-xs text-foreground ring-1 ring-primary/20'
+                  : 'bg-muted/30 hover:bg-muted border-border text-muted-foreground hover:text-foreground'
               }`}
             >
               <div
-                className={`p-1.5 rounded-md shrink-0 ${
+                className={`p-1.5 rounded-md shrink-0 transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-gray-700 text-slate-600 dark:text-gray-400 shadow-xs'
+                    ? 'bg-primary text-primary-foreground shadow-2xs'
+                    : 'bg-card text-muted-foreground border border-border'
                 }`}
               >
-                <Icon size={16} />
+                <Icon size={16} strokeWidth={1.75} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-xs font-bold truncate ${isActive ? 'text-blue-700 dark:text-blue-300' : ''}`}>
+                  <span className={`text-xs font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
                     {mode.label}
                   </span>
                   {mode.badge && (
                     <span
-                      className={`text-xs px-1.5 py-0.2 rounded font-semibold whitespace-nowrap ${
+                      className={`text-[10px] px-1.5 py-0.5 rounded-md font-semibold whitespace-nowrap ${
                         mode.id === 'hybrid'
-                          ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300'
-                          : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
+                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                          : 'bg-primary/10 text-primary'
                       }`}
                     >
                       {mode.badge}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 truncate mt-0.5">
+                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                   {mode.subLabel}
                 </p>
               </div>

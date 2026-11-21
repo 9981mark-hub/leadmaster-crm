@@ -920,7 +920,7 @@ export default function CaseList() {
 
             {/* 빠른 보기 + 담당자 */}
             <div className="flex flex-wrap items-center gap-2">
-                <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
+                <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-card border border-border shadow-2xs">
                     {([
                         { k: 'all', label: '전체', n: viewCounts.all },
                         { k: 'today', label: '오늘 할 일', n: viewCounts.today, hint: '오늘까지 잡힌 일정 · 신규 · 다시 걸 부재' },
@@ -930,15 +930,15 @@ export default function CaseList() {
                     ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (
                         <button key={v.k} type="button" title={v.hint}
                             onClick={() => { setQuickView(v.k); setCurrentPage(1); }}
-                            className={`h-8 px-3 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-white dark:bg-gray-900 text-slate-900 dark:text-white dark:bg-white dark:text-slate-900 font-bold' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
+                            className={`h-8 px-3 rounded-lg text-xs flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-primary/10 text-primary font-semibold border border-primary/20' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
                             {v.label}
-                            <span className={`text-xs tabular-nums ${quickView === v.k ? 'opacity-80' : 'text-slate-500 dark:text-slate-400'}`}>{v.n.toLocaleString()}</span>
+                            <span className={`text-[11px] tabular-nums ${quickView === v.k ? 'text-primary font-bold' : 'text-muted-foreground'}`}>{v.n.toLocaleString()}</span>
                         </button>
                     ))}
                 </div>
                 {showAssignee && (
                     <select value={assigneeFilter} onChange={e => { setAssigneeFilter(e.target.value); setCurrentPage(1); }}
-                        className="h-10 px-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-slate-700 dark:text-gray-200" aria-label="담당자">
+                        className="h-10 px-3 rounded-xl border border-border bg-card text-xs text-foreground shadow-2xs" aria-label="담당자">
                         <option value="">모든 담당자</option>
                         <option value="__none__">미배정</option>
                         {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId}>{m.displayName}</option>)}
@@ -948,55 +948,55 @@ export default function CaseList() {
 
             {/* 여러 건 선택했을 때 */}
             {selected.size > 0 && (
-                <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 text-slate-900 dark:text-white shadow-lg">
-                    <span className="text-sm font-bold tabular-nums">{selected.size}건 선택</span>
+                <div className="sticky top-2 z-30 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border text-foreground shadow-lg">
+                    <span className="text-xs font-bold tabular-nums text-foreground">{selected.size}건 선택</span>
                     <select defaultValue="" onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkStatus(v); }}
-                        className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="상태 바꾸기">
-                        <option value="" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">상태 바꾸기…</option>
-                        {statuses.filter(s => s !== '휴지통' && !DROP_OFF_STATUSES.includes(s)).map(s => <option key={s} value={s} className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">{s}</option>)}
+                        className="h-8 px-2.5 rounded-lg bg-card text-xs text-foreground border border-border shadow-2xs" aria-label="상태 바꾸기">
+                        <option value="" className="bg-card text-foreground">상태 바꾸기…</option>
+                        {statuses.filter(s => s !== '휴지통' && !DROP_OFF_STATUSES.includes(s)).map(s => <option key={s} value={s} className="bg-card text-foreground">{s}</option>)}
                     </select>
                     {isAdmin && members.length > 0 && (
                         <>
                             <select defaultValue="" disabled={bulkBusy} onChange={e => { const v = e.target.value; e.target.value = ''; if (v) bulkAssign(v); }}
-                                className="h-8 px-2 rounded-lg bg-white/10 text-sm text-white border border-white/20" aria-label="담당 배정">
-                                <option value="" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">담당 배정…</option>
-                                {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId} className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">{m.displayName}</option>)}
-                                <option value="__none__" className="bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100">배정 풀기</option>
+                                className="h-8 px-2.5 rounded-lg bg-card text-xs text-foreground border border-border shadow-2xs" aria-label="담당 배정">
+                                <option value="" className="bg-card text-foreground">담당 배정…</option>
+                                {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId} className="bg-card text-foreground">{m.displayName}</option>)}
+                                <option value="__none__" className="bg-card text-foreground">배정 풀기</option>
                             </select>
                             <button
                                 type="button"
                                 onClick={bulkDistributeEvenly}
                                 disabled={bulkBusy}
-                                className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium flex items-center gap-1 shadow-xs transition-colors"
+                                className="h-8 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1 shadow-2xs transition-colors"
                                 title="선택한 리드를 활성 상담원들에게 균등하게 1건씩 순번 배분합니다"
                             >
                                 👥 상담원 균등 나눠주기
                             </button>
                         </>
                     )}
-                    {isAdmin && <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-sm">엑셀로</button>}
+                    {isAdmin && <button onClick={bulkExport} className="h-8 px-3 rounded-lg bg-card hover:bg-muted border border-border text-xs text-foreground font-medium shadow-2xs">엑셀로</button>}
                     {isAdmin && viewMode === 'active' && (
-                        <button onClick={bulkArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium shadow-sm">
+                        <button onClick={bulkArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-semibold shadow-2xs">
                             📦 선택 보관함 이동 (상담원 숨김)
                         </button>
                     )}
                     {isAdmin && viewMode === 'archived' && (
                         <>
-                            <button onClick={bulkRestoreFromArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium">
+                            <button onClick={bulkRestoreFromArchive} disabled={bulkBusy} className="h-8 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold">
                                 ✨ 활성 리드로 복원
                             </button>
-                            <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-red-600/80 hover:bg-red-600 text-sm font-medium">
+                            <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs font-semibold">
                                 🗑 선택 휴지통으로
                             </button>
                         </>
                     )}
                     {viewMode === 'trash' && (
-                        <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-red-600/80 hover:bg-red-600 text-sm font-medium">
+                        <button onClick={bulkTrash} className="h-8 px-3 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs font-semibold">
                             🗑 선택 영구 삭제
                         </button>
                     )}
-                    <button onClick={() => setSelected(new Set())} className="ml-auto h-8 px-3 rounded-lg text-sm text-white/70 hover:text-white">선택 해제</button>
-                    <span className="w-full text-xs text-white/50">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
+                    <button onClick={() => setSelected(new Set())} className="ml-auto h-8 px-3 rounded-lg text-xs text-muted-foreground hover:text-foreground">선택 해제</button>
+                    <span className="w-full text-[11px] text-muted-foreground">고객취소·진행불가는 이탈 사유가 필요해 한 건씩 바꿉니다.</span>
                 </div>
             )}
 

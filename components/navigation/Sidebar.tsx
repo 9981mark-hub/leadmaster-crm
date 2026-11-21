@@ -113,12 +113,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside 
-      className={`hidden md:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 z-30 select-none ${
+      className={`hidden md:flex flex-col bg-card text-card-foreground border-r border-border transition-all duration-200 z-30 select-none ${
         collapsed ? 'w-[72px]' : 'w-64'
       }`}
     >
       {/* 1. Header: Workspace Brand Card & Logo */}
-      <div className={`border-b border-slate-200/80 dark:border-slate-800/80 ${collapsed ? 'p-3 flex flex-col items-center gap-2' : 'p-4'}`}>
+      <div className={`border-b border-border ${collapsed ? 'p-3 flex flex-col items-center gap-2' : 'p-4'}`}>
         {collapsed ? (
           <>
             <img 
@@ -184,10 +184,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => {
                 if (isOwner) setIsCompanyModalOpen(true);
               }}
-              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 shadow-2xs transition-all ${
+              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-colors ${
                 isOwner 
-                  ? 'cursor-pointer group bg-slate-50 hover:bg-indigo-50/70 border-slate-200/80 hover:border-indigo-300 dark:bg-slate-800/60 dark:hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700/60 dark:hover:border-indigo-700/80' 
-                  : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60'
+                  ? 'cursor-pointer group bg-muted/40 hover:bg-muted/80 border-border' 
+                  : 'bg-muted/20 border-border'
               }`}
               title={isOwner ? '클릭하여 회사명 및 대표 사진/로고 설정 (대표 전용)' : orgName}
             >
@@ -196,22 +196,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <img
                     src={org.orgLogo}
                     alt={orgName}
-                    className="w-6 h-6 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
+                    className="w-6 h-6 rounded-lg object-cover border border-border shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
                   />
                 ) : (
-                  <div className="w-6 h-6 rounded-lg bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:bg-indigo-600/20 transition-colors">
-                    <Building2 size={13} />
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <Building2 size={13} strokeWidth={1.75} />
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-600 dark:text-indigo-400 transition-colors" title={orgName}>
+                  <p className="text-xs font-bold text-foreground truncate leading-tight group-hover:text-primary transition-colors" title={orgName}>
                     {orgName}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 {isOwner && (
-                  <Settings size={12} className="text-slate-500 dark:text-slate-400 opacity-60 group-hover:opacity-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-600 dark:text-indigo-400 transition-all" />
+                  <Settings size={12} strokeWidth={1.75} className="text-muted-foreground opacity-60 group-hover:opacity-100 group-hover:text-primary transition-all" />
                 )}
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold shadow-2xs ${roleInfo.colorClass}`}>
                   {roleInfo.badgeText}
@@ -279,13 +279,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <div key={group.id} className="space-y-1">
               {!collapsed ? (
-                <div className="px-2 pt-1 pb-1">
-                  <p className="text-xs font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 dark:text-slate-500">
+                <div className="px-2 pt-2 pb-1">
+                  <p className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
                     {group.label}
                   </p>
                 </div>
               ) : (
-                <div className="my-1.5 mx-2 border-t border-slate-200 dark:border-slate-800" />
+                <div className="my-1.5 mx-2 border-t border-border" />
               )}
 
               {visibleItems.map(item => {
@@ -299,26 +299,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     title={collapsed ? item.label : undefined}
                     className={`relative flex items-center transition-all duration-150 group ${
                       collapsed 
-                        ? 'p-2.5 justify-center rounded-xl' 
-                        : 'px-3 py-2 rounded-xl justify-between'
+                        ? 'p-2.5 justify-center rounded-lg' 
+                        : 'px-3 py-2 rounded-lg justify-between'
                     } ${
                       active
-                        ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold shadow-2xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-100/60 dark:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100 font-medium'
+                        ? 'bg-primary/10 text-primary font-semibold shadow-2xs'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground font-medium'
                     }`}
                   >
                     {/* Active accent bar */}
                     {active && !collapsed && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-600 dark:bg-blue-400 rounded-r-full" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />
                     )}
 
                     <div className={`flex items-center ${collapsed ? '' : 'gap-2.5 min-w-0'}`}>
                       <Icon 
                         size={18} 
+                        strokeWidth={1.75}
                         className={`shrink-0 transition-colors ${
                           active 
-                            ? 'text-blue-600 dark:text-blue-400' 
-                            : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-600 dark:text-slate-300'
+                            ? 'text-primary' 
+                            : 'text-muted-foreground group-hover:text-foreground'
                         }`} 
                       />
                       {!collapsed && (
@@ -328,7 +329,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Badge */}
                     {item.badge && !collapsed && (
-                      <span className="bg-rose-500 text-white text-xs font-bold px-1.5 py-0.2 rounded-full animate-pulse shadow-2xs">
+                      <span className="bg-rose-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full animate-pulse shadow-2xs">
                         {item.badge}
                       </span>
                     )}
@@ -344,14 +345,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* 3. Footer: Version & Status */}
-      <div className={`border-t border-slate-200/80 dark:border-slate-800/80 ${collapsed ? 'p-2 flex justify-center' : 'p-3 flex items-center justify-between'}`}>
+      <div className={`border-t border-border ${collapsed ? 'p-2 flex justify-center' : 'p-3 flex items-center justify-between'}`}>
         {!collapsed ? (
-          <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 font-medium">
+          <div className="flex items-center justify-between w-full text-xs text-muted-foreground font-medium">
             <span>LeadMaster SaaS</span>
             <span className="font-mono">v3.80</span>
           </div>
         ) : (
-          <span className="text-xs font-mono text-slate-500 dark:text-slate-400">v3.8</span>
+          <span className="text-xs font-mono text-muted-foreground">v3.8</span>
         )}
       </div>
 

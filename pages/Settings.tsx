@@ -686,38 +686,38 @@ export default function SettingsPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
             {/* 1. 최상단 헤더 & 빠른 검색바 */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-gray-200/80 dark:border-gray-700/80">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
-                        <Sliders size={22} />
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-2xs">
+                        <Sliders size={20} strokeWidth={1.75} />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
+                            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                                 시스템 설정
                             </h1>
                             {isOwner ? (
-                                <span className="px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-md">
+                                <span className="px-2 py-0.5 text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/25 rounded">
                                     대표 최고 관리자
                                 </span>
                             ) : (
-                                <span className="px-2 py-0.5 text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-md">
+                                <span className="px-2 py-0.5 text-2xs font-mono font-medium bg-muted text-muted-foreground border border-border rounded">
                                     권한 위임 관리자
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                             거래처별 정산 정책, 상담 상태 체계, 텔레그램 연동 및 데이터 백업을 통합 관리합니다.
                         </p>
                     </div>
                 </div>
 
                 <div className="w-full md:w-72 relative">
-                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+                    <Search size={14} strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                         type="text"
-                        placeholder="설정 항목 검색 (예: 부재콜, 정산, 텔레그램)"
-                        className="w-full pl-9 pr-3 py-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20"
+                        placeholder="설정 항목 검색 (부재콜, 정산, 텔레그램)"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring focus:border-ring placeholder:text-muted-foreground transition-colors"
                         value={searchQuery}
                         onChange={e => {
                             const q = e.target.value;
@@ -737,26 +737,26 @@ export default function SettingsPage() {
             </div>
 
             {/* 🏢 회사(워크스페이스) 프로필 배너 (TM 대표 전용 설정 연동) */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 dark:from-indigo-950/40 dark:via-blue-950/30 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center gap-3 min-w-0">
                     {org?.orgLogo ? (
                         <img
                             src={org.orgLogo}
                             alt={orgName}
-                            className="w-11 h-11 rounded-2xl object-cover border-2 border-white dark:border-gray-700 shadow-xs shrink-0"
+                            className="w-10 h-10 rounded-lg object-cover border border-border shadow-2xs shrink-0"
                         />
                     ) : (
-                        <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
-                            <Building2 size={22} />
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-lg shadow-2xs shrink-0">
+                            <Building2 size={20} strokeWidth={1.75} />
                         </div>
                     )}
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <h2 className="text-base font-black text-gray-900 dark:text-gray-100 truncate">
+                            <h2 className="text-sm font-semibold text-foreground truncate">
                                 {orgName}
                             </h2>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                        <p className="text-2xs text-muted-foreground mt-0.5 truncate">
                             사이드바, 글로벌 헤더, 통화 스크립트에 공통 적용되는 우리 회사 공식 상호 및 대표 로고입니다.
                         </p>
                     </div>
@@ -765,36 +765,38 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     <Link
                         to="/billing"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs transition-colors cursor-pointer"
                     >
-                        <CreditCard size={14} /> 빌링 & 광고비 센터
+                        <CreditCard size={13} strokeWidth={1.75} />
+                        <span>빌링 & 광고비 센터</span>
                     </Link>
                     {isOwner && (
                         <button
                             type="button"
                             onClick={() => setIsCompanyModalOpen(true)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-750 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs transition-colors shrink-0 cursor-pointer"
+                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-medium bg-background text-foreground hover:bg-muted border border-border shadow-2xs transition-colors shrink-0 cursor-pointer"
                         >
-                            <Building2 size={14} /> 회사명 · 대표 사진 설정
+                            <Building2 size={13} strokeWidth={1.75} />
+                            <span>회사명 · 대표 사진 설정</span>
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* 2. 대분류 4대 탭 바 */}
-            <div className="bg-gray-100/80 dark:bg-gray-800/80 p-1.5 rounded-2xl flex items-center space-x-1 overflow-x-auto shadow-inner">
+            {/* 2. 대분류 4대 탭 바 (Shadcn Segmented Control) */}
+            <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto">
                 {showPartnersTab && (
                     <button
                         onClick={() => setActiveTab('partners')}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                             activeTab === 'partners'
-                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                                ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                         }`}
                     >
-                        <Building size={16} />
+                        <Building size={14} strokeWidth={1.75} />
                         <span>1. 거래처 맞춤 관리</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300">
+                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground tabular-nums">
                             {partners.length}개
                         </span>
                     </button>
@@ -803,15 +805,15 @@ export default function SettingsPage() {
                 {showOperationsTab && (
                     <button
                         onClick={() => setActiveTab('operations')}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                             activeTab === 'operations'
-                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                                ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                         }`}
                     >
-                        <Sliders size={16} />
+                        <Sliders size={14} strokeWidth={1.75} />
                         <span>2. 공통 업무 설정</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground">
                             {isOwner || settingsPerms.allowOperations ? '편집 가능' : '안전 열람'}
                         </span>
                     </button>
@@ -820,15 +822,15 @@ export default function SettingsPage() {
                 {showIntegrationsTab && (
                     <button
                         onClick={() => setActiveTab('integrations')}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                             activeTab === 'integrations'
-                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                                ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                         }`}
                     >
-                        <MessageCircle size={16} />
+                        <MessageCircle size={14} strokeWidth={1.75} />
                         <span>3. 외부 연동 & AI</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300">
+                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-primary/10 text-primary">
                             텔레그램/AI
                         </span>
                     </button>
@@ -837,15 +839,15 @@ export default function SettingsPage() {
                 {showDataSecurityTab && (
                     <button
                         onClick={() => setActiveTab('data_security')}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 ${
                             activeTab === 'data_security'
-                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow-xs'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                                ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                         }`}
                     >
-                        <Shield size={16} />
+                        <Shield size={14} strokeWidth={1.75} />
                         <span>4. 데이터 & 보안</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
+                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground">
                             {isOwner ? '전권 관리' : '백업 다운로드'}
                         </span>
                     </button>

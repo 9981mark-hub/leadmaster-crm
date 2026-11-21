@@ -70,16 +70,16 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     };
 
     return (
-        <div className="flex flex-col xl:flex-row justify-start items-start xl:items-center gap-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex flex-col xl:flex-row justify-start items-start xl:items-center gap-2 bg-card p-3 rounded-xl shadow-xs border border-border">
             {/* [Row 1] Search + Mobile Upload Action */}
             <div className="flex w-full xl:w-auto gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={18} />
+                    <Search className="absolute left-3 top-2.5 text-muted-foreground" size={16} strokeWidth={1.75} />
                     <input
                         type="text"
-                        placeholder="이름·번호·메모·문자 내용"
+                        placeholder="이름·번호·메모·문자 검색"
                         aria-label="검색"
-                        className="pl-10 pr-10 py-2 border border-slate-300 rounded-lg text-sm w-full xl:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                        className="pl-9 pr-9 py-2 border border-border rounded-lg text-xs w-full xl:w-64 focus:outline-none focus:ring-1 focus:ring-ring bg-card text-foreground placeholder:text-muted-foreground"
                         value={search}
                         onChange={withReset(setSearch)}
                     />
@@ -87,9 +87,9 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         <button
                             type="button"
                             onClick={() => { setSearch(''); onResetPage(); }}
-                            className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300"
+                            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
                         >
-                            <XCircle size={18} />
+                            <XCircle size={16} strokeWidth={1.75} />
                         </button>
                     )}
                 </div>
@@ -97,46 +97,46 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 <button
                     type="button"
                     onClick={() => { setShowStarredOnly(!showStarredOnly); onResetPage(); }}
-                    className={`flex items-center justify-center p-2 border rounded-lg transition-colors shadow-sm shrink-0 ${showStarredOnly ? 'bg-amber-50 border-amber-300 text-amber-500' : 'bg-white border-gray-200 text-gray-500 dark:text-gray-400 hover:bg-gray-50'}`}
+                    className={`flex items-center justify-center p-2 border rounded-lg transition-colors shadow-2xs shrink-0 ${showStarredOnly ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-card border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
                     title="중요 표시된 항목만 보기"
                 >
-                    <Star size={18} fill={showStarredOnly ? 'currentColor' : 'none'} />
+                    <Star size={16} strokeWidth={1.75} fill={showStarredOnly ? 'currentColor' : 'none'} />
                 </button>
-                {/* Cloud Upload Button (Mobile Only) - 관리자 전용 대량 등록 (상담원 완전 은닉) */}
+                {/* Cloud Upload Button (Mobile Only) */}
                 {canImport && onOpenImportModal && <button
                     type="button"
                     onClick={(e) => {
                         e.preventDefault();
                         onOpenImportModal?.();
                     }}
-                    className="xl:hidden flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
+                    className="xl:hidden flex items-center justify-center p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-2xs shrink-0"
                     title="케이스 대량/일괄 등록 (관리자 전용)"
                 >
-                    <Upload size={18} />
+                    <Upload size={16} strokeWidth={1.75} />
                 </button>}
             </div>
 
-            <div className="flex flex-wrap gap-1 w-full xl:w-auto items-center">
+            <div className="flex flex-wrap gap-1.5 w-full xl:w-auto items-center">
                 {/* Date Filter */}
-                <div className="flex items-center bg-gray-50 border rounded-lg p-1 dark:bg-gray-700 dark:border-gray-600">
+                <div className="flex items-center bg-muted/40 border border-border rounded-lg p-1 text-xs">
                     <input
                         type="date"
-                        className="bg-transparent text-sm p-1 outline-none text-gray-600 dark:text-white"
+                        className="bg-transparent text-xs p-1 outline-none text-foreground"
                         value={dateFilterStart}
                         onChange={withReset(setDateFilterStart)}
                     />
-                    <span className="text-gray-500 dark:text-gray-400 mx-1">~</span>
+                    <span className="text-muted-foreground mx-1">~</span>
                     <input
                         type="date"
-                        className="bg-transparent text-sm p-1 outline-none text-gray-600 dark:text-white"
+                        className="bg-transparent text-xs p-1 outline-none text-foreground"
                         value={dateFilterEnd}
                         onChange={withReset(setDateFilterEnd)}
                     />
                 </div>
                 <div className="relative flex-1 min-w-[100px]">
-                    <Building className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" size={16} />
+                    <Building className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
                     <select
-                        className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
+                        className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none shadow-2xs"
                         value={partnerFilter}
                         onChange={withReset(setPartnerFilter)}
                     >
@@ -146,9 +146,9 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 </div>
 
                 <div className="relative flex-1 min-w-[100px]">
-                    <Filter className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" size={16} />
+                    <Filter className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
                     <select
-                        className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none"
+                        className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none shadow-2xs"
                         value={inboundPathFilter}
                         onChange={withReset(setInboundPathFilter)}
                     >
@@ -157,17 +157,17 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     </select>
                 </div>
 
-                {/* [Row 4 Mobile] Status + Sort + Trash - Refactored for better grouping */}
-                <div className="flex flex-wrap w-full xl:w-auto gap-1">
+                {/* Status + Sort + Actions */}
+                <div className="flex flex-wrap w-full xl:w-auto gap-1.5">
 
                     {/* Group 1: Status & Settings */}
-                    <div className="flex flex-1 xl:contents min-w-[200px] gap-1">
+                    <div className="flex flex-1 xl:contents min-w-[200px] gap-1.5">
                         {/* Multi-Status Filter Dropdown */}
                         <div className="relative flex-1 min-w-[100px]">
                             <button
                                 type="button"
                                 onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                                className="w-full border p-2 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left flex items-center justify-between"
+                                className="w-full border border-border p-2 rounded-lg text-xs bg-card text-foreground text-left flex items-center justify-between shadow-2xs"
                             >
                                 <span className="truncate">
                                     {statusFilters.length === 0
@@ -176,7 +176,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                                             ? statusFilters[0]
                                             : `${statusFilters[0]} 외 ${statusFilters.length - 1}개`}
                                 </span>
-                                <ChevronDown size={16} className={`ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown size={14} strokeWidth={1.75} className={`ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {isStatusDropdownOpen && (
                                 <>
@@ -184,16 +184,16 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                                         className="fixed inset-0 z-40"
                                         onClick={() => setIsStatusDropdownOpen(false)}
                                     />
-                                    <div className="absolute top-full left-0 mt-1 w-full min-w-[160px] bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                                    <div className="absolute top-full left-0 mt-1 w-full min-w-[160px] bg-card border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                                         <button
                                             type="button"
                                             onClick={() => { setStatusFilters([]); onResetPage(); }}
-                                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.length === 0 ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
+                                            className={`w-full px-3 py-2 text-left text-xs hover:bg-muted flex items-center gap-2 ${statusFilters.length === 0 ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'}`}
                                         >
-                                            {statusFilters.length === 0 && <Check size={14} />}
-                                            <span className={statusFilters.length === 0 ? 'font-medium' : ''}>전체 상태</span>
+                                            {statusFilters.length === 0 && <Check size={12} strokeWidth={1.75} />}
+                                            <span>전체 상태</span>
                                         </button>
-                                        <div className="border-t dark:border-gray-600" />
+                                        <div className="border-t border-border" />
                                         {statuses.map(s => (
                                             <button
                                                 type="button"
@@ -206,21 +206,21 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                                                     );
                                                     onResetPage();
                                                 }}
-                                                className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 ${statusFilters.includes(s) ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''}`}
+                                                className={`w-full px-3 py-2 text-left text-xs hover:bg-muted flex items-center gap-2 ${statusFilters.includes(s) ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'}`}
                                             >
-                                                <div className={`w-4 h-4 border rounded flex items-center justify-center ${statusFilters.includes(s) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'}`}>
-                                                    {statusFilters.includes(s) && <Check size={12} />}
+                                                <div className={`w-3.5 h-3.5 border rounded flex items-center justify-center ${statusFilters.includes(s) ? 'bg-primary border-primary text-primary-foreground' : 'border-border'}`}>
+                                                    {statusFilters.includes(s) && <Check size={10} strokeWidth={2} />}
                                                 </div>
                                                 <span>{s}</span>
                                             </button>
                                         ))}
                                         {statusFilters.length > 0 && (
                                             <>
-                                                <div className="border-t dark:border-gray-600" />
+                                                <div className="border-t border-border" />
                                                 <button
                                                     type="button"
                                                     onClick={() => { setStatusFilters([]); onResetPage(); setIsStatusDropdownOpen(false); }}
-                                                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                    className="w-full px-3 py-2 text-left text-xs text-destructive hover:bg-destructive/10"
                                                 >
                                                     ✕ 필터 초기화
                                                 </button>
@@ -233,17 +233,17 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
 
                         <button
                             onClick={onOpenStatusVisibilityModal}
-                            className="p-2 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm"
+                            className="p-2 bg-card text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-muted transition-colors shadow-2xs"
                             title="상태 보기 설정"
                         >
-                            <Settings size={18} />
+                            <Settings size={16} strokeWidth={1.75} />
                         </button>
 
-                        {/* [NEW] 2차/3차 상태 필터 (사무장 접수 선택 시) */}
+                        {/* 2차/3차 상태 필터 */}
                         {statusFilters.includes('사무장 접수') && (
                             <>
                                 <select
-                                    className="border p-2 rounded-lg text-sm bg-purple-50 border-purple-300 text-purple-800 min-w-[100px]"
+                                    className="border border-border p-2 rounded-lg text-xs bg-card text-foreground min-w-[100px] shadow-2xs"
                                     value={secondaryStatusFilter}
                                     onChange={(e) => { setSecondaryStatusFilter(e.target.value); setTertiaryStatusFilter(''); onResetPage(); }}
                                 >
@@ -252,7 +252,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                                 </select>
                                 {secondaryStatusFilter && (tertiaryStatuses[secondaryStatusFilter] || []).length > 0 && (
                                     <select
-                                        className="border p-2 rounded-lg text-sm bg-amber-50 border-amber-300 text-amber-800 min-w-[100px]"
+                                        className="border border-border p-2 rounded-lg text-xs bg-card text-foreground min-w-[100px] shadow-2xs"
                                         value={tertiaryStatusFilter}
                                         onChange={(e) => { setTertiaryStatusFilter(e.target.value); onResetPage(); }}
                                     >
@@ -265,11 +265,11 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     </div>
 
                     {/* Group 2: Sort, Actions, Trash */}
-                    <div className="flex flex-1 xl:contents min-w-[200px] gap-1 mt-1 xl:mt-0">
+                    <div className="flex flex-1 xl:contents min-w-[200px] gap-1.5 mt-1 xl:mt-0">
                         <div className="relative flex-1 min-w-[120px]">
-                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" size={16} />
+                            <ArrowUpDown className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
                             <select
-                                className="w-full border p-2 pl-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none text-ellipsis"
+                                className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none text-ellipsis shadow-2xs"
                                 value={sortOrder}
                                 onChange={(e) => setSortOrder(e.target.value)}
                             >
@@ -284,84 +284,83 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             </select>
                         </div>
 
-                        {/* 케이스 대량/일괄 등록 (관리자 전용, 상담원 완전 은닉) */}
+                        {/* 대량 업로드 버튼 */}
                         {canImport && onOpenImportModal && <button
                             type="button"
                             onClick={(e) => {
                                 e.preventDefault();
                                 onOpenImportModal();
                             }}
-                            className="hidden xl:flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0"
+                            className="hidden xl:flex items-center justify-center p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-2xs shrink-0"
                             title="케이스 대량/일괄 등록 (관리자 전용)"
                         >
-                            <Upload size={18} />
+                            <Upload size={16} strokeWidth={1.75} />
                         </button>}
 
-                        <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex items-center gap-1">
+                        <div className="bg-muted p-1 rounded-lg border border-border flex items-center gap-1 shadow-2xs">
                             <button
                                 onClick={() => setLayoutMode('list')}
-                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600'}`}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-card shadow-2xs text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
                                 title="리스트 보기"
                             >
-                                <LayoutList size={16} />
+                                <LayoutList size={15} strokeWidth={1.75} />
                             </button>
                             <button
                                 onClick={() => setLayoutMode('kanban')}
-                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600'}`}
+                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-card shadow-2xs text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
                                 title="칸반 보드 보기"
                             >
-                                <LayoutGrid size={16} />
+                                <LayoutGrid size={15} strokeWidth={1.75} />
                             </button>
                         </div>
 
-
-                        {/* [대표/총괄 관리자 전용] 리드 목록 대량 유출 방어(마스킹) 정책 선택 토글 */}
+                        {/* 리드 목록 대량 유출 방어(마스킹) 정책 선택 토글 */}
                         {onToggleCompanyMaskingPolicy && (
                             <button
                                 type="button"
                                 onClick={onToggleCompanyMaskingPolicy}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all shadow-sm shrink-0 font-medium text-xs border ${
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all shadow-2xs shrink-0 font-medium text-xs border ${
                                     companyMaskingPolicy === 'masked'
-                                        ? 'bg-white dark:bg-gray-900 border-slate-200 dark:border-slate-700 text-amber-300 hover:bg-slate-100 dark:bg-slate-800'
-                                        : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
+                                        ? 'bg-card border-border text-foreground hover:bg-muted'
+                                        : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/15'
                                 }`}
                                 title={companyMaskingPolicy === 'masked'
                                     ? "현재 [대량 유출 방어 모드] 활성 (일반 상담원 번호 마스킹). 클릭 시 회사 전체 공개(속도 우선 모드)로 전환합니다."
                                     : "현재 [속도 우선 공개 모드] 활성 (일반 상담원 번호 전체 노출). 클릭 시 대량 유출 방어 모드로 전환합니다."}
                             >
-                                {companyMaskingPolicy === 'masked' ? <ShieldAlert size={15} className="text-amber-600 dark:text-amber-400 shrink-0" /> : <Eye size={15} className="text-emerald-500 shrink-0" />}
-                                <span>{companyMaskingPolicy === 'masked' ? '목록 마스킹: 방어(ON)' : '목록 마스킹: 해제(OFF)'}</span>
+                                {companyMaskingPolicy === 'masked' ? <ShieldAlert size={14} strokeWidth={1.75} className="text-amber-500" /> : <Eye size={14} strokeWidth={1.75} className="text-primary" />}
+                                <span>{companyMaskingPolicy === 'masked' ? '마스킹: 방어' : '마스킹: 해제'}</span>
                             </button>
                         )}
 
-                        {/* 보관함 버튼: 평소 활성 상태에서는 이 버튼만 노출되며, 1차로 누르면 보관함 및 삭제 관리 영역 활성화 */}
+                        {/* 보관함 버튼 */}
                         {canManageArchive && (
                             <button
                                 onClick={() => setViewMode(viewMode === 'archived' ? 'active' : 'archived')}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all shadow-sm shrink-0 font-medium text-xs ${
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all shadow-2xs shrink-0 font-medium text-xs border ${
                                     viewMode === 'archived'
-                                        ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-300'
-                                        : 'bg-white dark:bg-gray-700 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'
+                                        ? 'bg-primary text-primary-foreground border-primary'
+                                        : 'bg-card border-border text-foreground hover:bg-muted'
                                 }`}
                                 title={viewMode === 'archived' ? '활성 리드로 돌아가기' : '보관함 (상담원 숨김 DB 및 삭제 관리) 보기'}
                             >
-                                {viewMode === 'archived' ? <ChevronLeft size={16} /> : <Archive size={16} />}
+                                {viewMode === 'archived' ? <ChevronLeft size={14} strokeWidth={1.75} /> : <Archive size={14} strokeWidth={1.75} />}
                                 <span>{viewMode === 'archived' ? '활성 리드로' : '보관함'}</span>
                             </button>
                         )}
 
-                        {/* 휴지통 버튼: 평소(active)에는 노출하지 않고, 보관함(archived)이나 휴지통(trash) 모드에서만 활성화 */}
+                        {/* 휴지통 버튼 */}
                         {viewMode !== 'active' && (
                             <button
                                 onClick={() => setViewMode(viewMode === 'trash' ? 'archived' : 'trash')}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors shadow-sm shrink-0 text-xs font-medium ${
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors shadow-2xs shrink-0 text-xs font-medium border ${
                                     viewMode === 'trash'
-                                        ? 'bg-red-600 text-white hover:bg-red-700'
-                                        : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-950/30'
+                                        ? 'bg-destructive text-destructive-foreground border-destructive'
+                                        : 'bg-card border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10'
                                 }`}
                                 title={viewMode === 'trash' ? "보관함으로 돌아가기" : "휴지통 보기"}
                             >
-                                {viewMode === 'trash' ? <ChevronLeft size={16} /> : <Trash2 size={16} />}
+                                {viewMode === 'trash' ? <ChevronLeft size={14} strokeWidth={1.75} /> : <Trash2 size={14} strokeWidth={1.75} />}
                                 <span>{viewMode === 'trash' ? '보관함으로' : '휴지통'}</span>
                             </button>
                         )}
@@ -371,16 +370,16 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
 
             {/* Archive Banner */}
             {viewMode === 'archived' && (
-                <div className="bg-purple-50 dark:bg-purple-950/40 border-l-4 border-purple-500 p-4 mb-4 rounded-r-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="bg-primary/10 border border-primary/20 p-4 mb-3 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                            <Archive className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        <div className="flex-shrink-0 text-primary">
+                            <Archive size={20} strokeWidth={1.75} />
                         </div>
                         <div className="ml-3">
-                            <p className="text-sm text-purple-800 dark:text-purple-200 font-bold">
+                            <p className="text-sm text-foreground font-semibold">
                                 📦 보관함 모드 (상담원 시야에서 숨김 처리된 DB & 삭제 관리)
                             </p>
-                            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                                 상담원에게는 노출되지 않는 데이터입니다. 목록 우측의 액션 버튼을 통해 안전하게 활성 리드로 복원하거나 휴지통으로 삭제할 수 있습니다.
                             </p>
                         </div>
@@ -389,9 +388,9 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         <button
                             type="button"
                             onClick={() => setViewMode('trash')}
-                            className="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5 shadow-sm"
+                            className="px-3 py-1.5 text-xs font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted flex items-center gap-1.5 shadow-2xs"
                         >
-                            <Trash2 size={14} className="text-red-500" />
+                            <Trash2 size={13} strokeWidth={1.75} className="text-destructive" />
                             <span>휴지통 보기</span>
                         </button>
                     </div>
@@ -400,19 +399,17 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
 
             {/* Recycle Bin Banner */}
             {viewMode === 'trash' && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-lg">
-                    <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                            <Trash2 className="h-5 w-5 text-red-500" />
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-red-700 font-bold">
-                                휴지통 모드입니다.
-                            </p>
-                            <p className="text-xs text-red-600 mt-1">
-                                삭제된 케이스는 30일 후 자동으로 완전히 삭제됩니다. 복구하거나 영구 삭제할 수 있습니다.
-                            </p>
-                        </div>
+                <div className="bg-destructive/10 border border-destructive/20 p-4 mb-3 rounded-xl flex items-center">
+                    <div className="flex-shrink-0 text-destructive">
+                        <Trash2 size={20} strokeWidth={1.75} />
+                    </div>
+                    <div className="ml-3">
+                        <p className="text-sm text-destructive font-semibold">
+                            휴지통 모드입니다.
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            삭제된 케이스는 30일 후 자동으로 완전히 삭제됩니다. 복구하거나 영구 삭제할 수 있습니다.
+                        </p>
                     </div>
                 </div>
             )}

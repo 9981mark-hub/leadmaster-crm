@@ -37,24 +37,24 @@ export const KPICard: React.FC<KPICardProps> = ({
       transition={{ duration: 0.15 }}
       onClick={onClick}
       className={cn(
-        'p-4 sm:p-5 rounded-2xl bg-white/95 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs hover:shadow-md transition-all flex items-center justify-between h-full relative overflow-hidden group',
-        onClick && 'cursor-pointer hover:border-blue-400 dark:hover:border-blue-600',
-        pulseGlow && 'animate-pulse-glow border-amber-300 dark:border-amber-500',
+        'p-4 sm:p-5 rounded-xl bg-card text-card-foreground border border-border shadow-xs hover:border-primary/40 hover:shadow-sm transition-all flex items-center justify-between h-full relative overflow-hidden group',
+        onClick && 'cursor-pointer',
+        pulseGlow && 'animate-pulse-glow border-amber-500/50',
         className,
       )}
     >
       <div className="min-w-0 pr-3">
-        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 truncate">{title}</p>
-        <p className={cn('text-2xl sm:text-3xl font-extrabold tracking-tight font-mono tabular-nums leading-none', color)}>
+        <p className="text-xs font-semibold text-muted-foreground mb-1.5 truncate">{title}</p>
+        <p className={cn('text-2xl sm:text-3xl font-bold tracking-tight font-mono tabular-nums leading-none', color || 'text-foreground')}>
           {displayValue}
         </p>
-        {subText && <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1.5 truncate font-medium">{subText}</p>}
+        {subText && <p className="text-xs text-muted-foreground mt-1.5 truncate font-normal">{subText}</p>}
       </div>
       <div className={cn(
         'w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105',
-        'bg-slate-100 dark:bg-slate-700/60 shadow-2xs',
+        'bg-muted/60 border border-border/80 shadow-2xs',
       )}>
-        <Icon size={22} className={color} />
+        <Icon size={20} strokeWidth={1.75} className={color || 'text-foreground'} />
       </div>
     </motion.div>
   );

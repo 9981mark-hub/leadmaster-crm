@@ -138,10 +138,10 @@ export default function RevenueWidget({ cases, partners }: RevenueWidgetProps) {
 
     return (
         <div className="space-y-2">
-            <div className="flex justify-between items-center">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                    💰 매출 현황
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex justify-between items-center mb-1">
+                <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                    <span>매출 및 정산 현황</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">
                         ({format(now, 'yyyy년 M월', { locale: ko })})
                     </span>
                 </h3>
@@ -159,44 +159,41 @@ export default function RevenueWidget({ cases, partners }: RevenueWidgetProps) {
                             key={kpi.label}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1, duration: 0.3 }}
-                            className="glass-panel rounded-xl p-4 relative overflow-hidden group hover:shadow-md transition-shadow"
+                            transition={{ delay: idx * 0.05, duration: 0.2 }}
+                            className="bg-card border border-border rounded-xl p-4 relative overflow-hidden group hover:border-primary/40 transition-all shadow-xs"
                         >
-                            {/* Gradient accent */}
-                            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${kpi.bgGradient} opacity-80`} />
-
                             <div className="flex items-start justify-between mb-2">
-                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{kpi.label}</p>
-                                <div className={`p-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 ${kpi.color}`}>
-                                    <Icon size={16} />
+                                <p className="text-xs text-muted-foreground font-medium">{kpi.label}</p>
+                                <div className={`p-1.5 rounded-lg bg-muted text-foreground`}>
+                                    <Icon size={15} strokeWidth={1.75} />
                                 </div>
                             </div>
 
-                            <p className={`text-xl md:text-2xl font-bold ${kpi.color} mb-1`}>
+                            <p className="text-xl md:text-2xl font-bold text-foreground mb-1 tabular-nums">
                                 {kpi.value.toLocaleString()}
-                                <span className="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">{kpi.unit}</span>
+                                <span className="text-xs font-normal text-muted-foreground ml-1">{kpi.unit}</span>
                             </p>
 
                             {/* 전월 비교 or subLabel */}
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1.5 text-xs">
                                 {change && change.direction !== 'same' ? (
-                                    <span className={`text-xs font-bold flex items-center gap-0.5 ${change.direction === 'up'
-                                            ? 'text-green-500'
-                                            : 'text-red-500'
+                                    <span className={`font-semibold flex items-center gap-0.5 tabular-nums ${change.direction === 'up'
+                                            ? 'text-emerald-600 dark:text-emerald-400'
+                                            : 'text-destructive'
                                         }`}>
-                                        {change.direction === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                        {change.direction === 'up' ? '↑' : '↓'} {change.pct}%
-                                        <span className="text-gray-500 dark:text-gray-400 font-normal ml-1">전월비</span>
+                                        {change.direction === 'up' ? <TrendingUp size={12} strokeWidth={1.75} /> : <TrendingDown size={12} strokeWidth={1.75} />}
+                                        {change.direction === 'up' ? '+' : '-'}{change.pct}%
+                                        <span className="text-muted-foreground font-normal ml-0.5">전월비</span>
                                     </span>
                                 ) : change ? (
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-0.5">
-                                        <Minus size={12} /> 전월 동일
+                                    <span className="text-muted-foreground flex items-center gap-0.5">
+                                        <Minus size={12} strokeWidth={1.75} /> 전월 동일
                                     </span>
                                 ) : null}
                                 {kpi.subLabel && (
-                                    <span className={`text-xs ${kpi.label === '미수금 현황' && kpi.value > 0
-                                        ? 'text-amber-500 font-bold'
-                                        : 'text-gray-500 dark:text-gray-400'
+                                    <span className={`text-[11px] ${kpi.label === '미수금 현황' && kpi.value > 0
+                                        ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                                        : 'text-muted-foreground'
                                         }`}>
                                         {kpi.subValue || ''} {kpi.subLabel}
                                     </span>
