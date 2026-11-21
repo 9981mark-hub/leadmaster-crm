@@ -32,6 +32,7 @@ interface AgentDashboardViewProps {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   userName?: string;
+  isOwner?: boolean;
 }
 
 export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
@@ -41,6 +42,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
   selectedDate,
   onSelectDate,
   userName = '상담원',
+  isOwner = false,
 }) => {
   const activeCases = useMemo(
     () => myCases.filter((c) => c.status !== '휴지통' && !c.deletedAt),
@@ -144,6 +146,40 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
       );
   }, [allRemindersWithCase, selectedDateStr]);
 
+  const greetingTitle = useMemo(() => {
+    // 1. 대표 직급이거나 userName이 '대표'인 경우
+    if (isOwner) {
+      if (!userName || userName === '대표' || userName === '상담원') {
+        return '대표님';
+      }
+      if (userName.endsWith('대표') || userName.endsWith('대표님')) {
+        return userName.endsWith('님') ? userName : `${userName}님`;
+      }
+      return `${userName} 대표님`;
+    }
+
+    // 2. 일반 상담원 분기
+    if (!userName || userName === '상담원') {
+      return '상담원님';
+    }
+    if (userName === '대표') {
+      return '대표님';
+    }
+    if (userName.endsWith('대표') || userName.endsWith('대표님')) {
+      return userName.endsWith('님') ? userName : `${userName}님`;
+    }
+    if (userName.endsWith('상담원') || userName.endsWith('상담원님')) {
+      return userName.endsWith('님') ? userName : `${userName}님`;
+    }
+    if (userName.endsWith('팀장') || userName.endsWith('팀장님')) {
+      return userName.endsWith('님') ? userName : `${userName}님`;
+    }
+    if (userName.endsWith('님')) {
+      return userName;
+    }
+    return `${userName} 상담원님`;
+  }, [userName, isOwner]);
+
   return (
     <div className="space-y-6">
       {/* 상단 웰컴 & 인센티브 현황 바 */}
@@ -160,7 +196,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-              <span>반갑습니다, {userName} 상담원님!</span>
+              <span>반갑습니다, {greetingTitle}!</span>
               <span className="text-base font-normal text-blue-100">오늘도 목표 달성을 응원합니다.</span>
             </h1>
           </div>

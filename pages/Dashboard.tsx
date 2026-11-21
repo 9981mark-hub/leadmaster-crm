@@ -270,6 +270,7 @@ export default function Dashboard() {
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
                 userName={org?.displayName || user?.displayName || '대표'}
+                isOwner={true}
               />
             );
           }
@@ -311,6 +312,7 @@ export default function Dashboard() {
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
             userName={org?.displayName || user?.displayName || '상담원'}
+            isOwner={false}
           />
         );
       })()}
