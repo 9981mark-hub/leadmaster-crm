@@ -413,33 +413,33 @@ export default function LiteCallPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col max-w-2xl mx-auto border-x border-gray-200 dark:border-gray-800 shadow-sm">
+    <div className="min-h-screen bg-background text-foreground flex flex-col max-w-2xl mx-auto border-x border-border">
       
       {/* ── Top Header ── */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-sm">
-            <Zap size={18} className="fill-white" />
+      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+            <Zap size={16} strokeWidth={1.75} className="fill-current" />
           </div>
           <div>
-            <h1 className="text-base font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-1.5">
+            <h1 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5">
               <span>LeadMaster Lite</span>
-              <span className="text-xs bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded font-bold">
+              <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1.5 py-0.2 rounded font-semibold">
                 간편 모드
               </span>
             </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">콜 & 텔레그램 전달 전용</p>
+            <p className="text-[11px] text-muted-foreground">콜 & 텔레그램 전달 전용</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {/* ── 콜 모드 스위처 (1건 직접 vs 연속 오토콜) ── */}
-          <div className="flex items-center p-0.5 rounded-xl bg-gray-100 dark:bg-gray-700/70 border border-gray-200 dark:border-gray-600 text-xs font-bold">
+          <div className="flex items-center p-0.5 rounded-lg bg-muted/60 border border-border text-xs font-semibold">
             <button
               onClick={() => setIsAutoDialHudOpen(false)}
-              className="px-2 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-2xs flex items-center gap-1"
+              className="px-2 py-1 rounded-md bg-card text-foreground shadow-2xs flex items-center gap-1"
             >
-              <Zap size={12} className="text-amber-500" />
+              <Zap size={12} strokeWidth={1.75} className="text-primary" />
               <span className="hidden sm:inline">1건</span> 직접
             </button>
             <button
@@ -450,13 +450,13 @@ export default function LiteCallPage() {
                   showToast('현재 배정된 오토콜 캠페인이 없습니다. 관리자에게 배정을 요청하세요.', 'info');
                 }
               }}
-              className="px-2 py-1 rounded-lg text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white flex items-center gap-1 transition-colors"
+              className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               title="연속 자동 발신 오토콜 모드"
             >
-              <Play size={12} className="text-emerald-500" />
+              <Play size={12} strokeWidth={1.75} className="text-primary" />
               <span>오토콜</span>
               {myAllocation && (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               )}
             </button>
           </div>
@@ -467,18 +467,18 @@ export default function LiteCallPage() {
               checkMyAllocation();
               setRefetchTrigger(prev => prev + 1);
             }}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             title="새로고침"
           >
-            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={15} strokeWidth={1.75} className={isLoading ? 'animate-spin' : ''} />
           </button>
           
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             title="테마 전환"
           >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === 'dark' ? <Sun size={15} strokeWidth={1.75} className="text-amber-400" /> : <Moon size={15} strokeWidth={1.75} />}
           </button>
 
           <button
@@ -486,9 +486,9 @@ export default function LiteCallPage() {
               sessionStorage.removeItem('lm_lite_mode_active');
               navigate('/cases');
             }}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+            className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={14} strokeWidth={1.75} />
             <span className="hidden sm:inline">일반 모드</span>
           </button>
         </div>
@@ -496,28 +496,28 @@ export default function LiteCallPage() {
 
       {/* ── [NEW] 스마트 오토콜 연속 발신 런처 스마트 배너 ── */}
       {myAllocation && (
-        <div className="mx-3.5 my-2.5 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white shadow-md flex items-center justify-between gap-3 border border-indigo-700/50 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="mx-3.5 my-2.5 p-3.5 rounded-xl bg-card text-card-foreground shadow-xs flex items-center justify-between gap-3 border border-border animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30">
-              <Sparkles size={18} />
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+              <Sparkles size={16} strokeWidth={1.75} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-black text-xs md:text-sm tracking-tight">오늘 배정된 스마트 오토콜</span>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 shadow-2xs">
+                <span className="font-semibold text-xs md:text-sm tracking-tight text-foreground">오늘 배정된 스마트 오토콜</span>
+                <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-primary/10 text-primary border border-primary/20">
                   {Math.max(0, myAllocation.allocation.allocatedCount - myAllocation.allocation.completedCount)}건 대기
                 </span>
               </div>
-              <p className="text-[11px] text-indigo-200 truncate mt-0.5">
+              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                 {myAllocation.campaign.name} · 7초 연속 자동 발신
               </p>
             </div>
           </div>
           <button
             onClick={() => setIsAutoDialHudOpen(true)}
-            className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl text-xs font-black shadow-md shadow-emerald-950/40 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all cursor-pointer"
+            className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 shrink-0 active:scale-95 transition-all cursor-pointer"
           >
-            <Play size={13} className="fill-white" />
+            <Play size={12} strokeWidth={1.75} className="fill-current" />
             <span>오토콜 시작</span>
           </button>
         </div>
@@ -531,24 +531,24 @@ export default function LiteCallPage() {
       />
 
       {/* ── Search & Filter Controls ── */}
-      <div className="p-3.5 space-y-2.5 bg-white dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-800">
+      <div className="p-3.5 space-y-2.5 bg-card border-b border-border">
         
         {/* Search Input */}
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+          <Search size={15} strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="고객명 또는 전화번호 검색..."
-            className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-amber-500/50"
+            className="w-full pl-9 pr-8 py-2 text-xs rounded-lg border border-border bg-muted/40 text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/40 transition-all"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-600 p-0.5"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
             >
-              <X size={14} />
+              <X size={14} strokeWidth={1.75} />
             </button>
           )}
         </div>
@@ -558,40 +558,40 @@ export default function LiteCallPage() {
           <div className="flex gap-1.5">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'all'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
               전체 {tabCounts.all}
             </button>
             <button
               onClick={() => setActiveTab('today')}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'today'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
               오늘 할 일 {tabCounts.today}
             </button>
             <button
               onClick={() => setActiveTab('new')}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'new'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
               신규 {tabCounts.new}
             </button>
             <button
               onClick={() => setActiveTab('missed')}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'missed'
-                  ? 'bg-white dark:bg-gray-900 dark:bg-white text-slate-900 dark:text-white dark:text-slate-900 shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
               부재콜 {tabCounts.missed}
@@ -602,10 +602,10 @@ export default function LiteCallPage() {
           {org?.userId && (
             <button
               onClick={() => setOnlyMyLeads(!onlyMyLeads)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors whitespace-nowrap shrink-0 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors whitespace-nowrap shrink-0 ${
                 onlyMyLeads
-                  ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300'
-                  : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                  ? 'bg-primary/10 border-primary/20 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               {onlyMyLeads ? '내 담당만' : '전체 리드'}
@@ -641,37 +641,33 @@ export default function LiteCallPage() {
             return (
               <div
                 key={c.caseId}
-                className={`bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border transition-all ${
-                  isNew
-                    ? 'border-red-300 dark:border-red-800 ring-1 ring-red-400/30'
-                    : 'border-gray-200/90 dark:border-gray-700'
-                }`}
+                className="bg-card text-card-foreground rounded-xl p-4 shadow-xs border border-border transition-all"
               >
                 {/* 1행: 상태 뱃지 & 유입경로 & 등록일 */}
                 <div className="flex items-center justify-between text-xs mb-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded-md font-bold text-xs ${
+                    <span className={`px-2 py-0.5 rounded-md font-semibold text-xs border ${
                       isNew 
-                        ? 'bg-red-500 text-white animate-pulse'
+                        ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                         : isMissed
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                          : 'bg-primary/10 text-primary border-primary/20'
                     }`}>
                       {c.status}
                     </span>
 
                     {c.missedCallCount && c.missedCallCount > 0 ? (
-                      <span className="px-1.5 py-0.5 rounded text-xs bg-rose-50 text-rose-600 font-bold border border-rose-200">
+                      <span className="px-1.5 py-0.5 rounded text-xs bg-rose-500/10 text-rose-500 font-semibold border border-rose-500/20">
                         부재 {c.missedCallCount}회
                       </span>
                     ) : null}
 
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    <span className="text-xs font-semibold text-muted-foreground">
                       {c.caseType || '개인회생'}
                     </span>
                   </div>
 
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                  <span className="text-xs text-muted-foreground font-mono">
                     {c.createdAt ? c.createdAt.split('T')[0] : ''}
                   </span>
                 </div>
@@ -679,30 +675,30 @@ export default function LiteCallPage() {
                 {/* 2행: 고객명 & 프로필 & 전화번호 */}
                 <div className="flex items-baseline justify-between mb-2">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                       <span>{c.customerName}</span>
                       {c.gender && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
+                        <span className="text-xs text-muted-foreground font-normal">
                           ({c.birth ? `${c.birth}년생` : ''} {c.gender})
                         </span>
                       )}
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                       {c.region && <span>📍 {c.region}</span>}
                       <span>유입: {c.inboundPath || '기타'}</span>
                       {partner && <span>로펌: {partner.name}</span>}
                     </p>
                   </div>
 
-                  <span className="text-base font-bold font-mono text-gray-800 dark:text-gray-200">
+                  <span className="text-base font-bold font-mono tabular-nums text-foreground">
                     {c.phone}
                   </span>
                 </div>
 
                 {/* 3행: 사전 정보 또는 최근 메모 미리보기 */}
                 {c.preInfo && (
-                  <div className="bg-gray-50 dark:bg-gray-900/60 p-2.5 rounded-xl text-xs text-gray-600 dark:text-gray-300 mb-3 border border-gray-100 dark:border-gray-800 line-clamp-2">
-                    <span className="font-bold text-blue-600 dark:text-blue-400 mr-1">[사전정보]</span>
+                  <div className="bg-muted/40 p-2.5 rounded-lg text-xs text-muted-foreground mb-3 border border-border line-clamp-2">
+                    <span className="font-semibold text-primary mr-1">[사전정보]</span>
                     {c.preInfo}
                   </div>
                 )}
@@ -716,21 +712,21 @@ export default function LiteCallPage() {
                 )}
 
                 {/* 카드 빠른 보조 툴 (3초 탕감 계산 / 1-Click 문자) */}
-                <div className="flex items-center justify-between text-xs pt-1 pb-2 border-t border-gray-100 dark:border-gray-700/60 mb-1">
+                <div className="flex items-center justify-between text-xs pt-1 pb-2 border-t border-border mb-1">
                   <button
                     type="button"
                     onClick={() => setExpandedCalcCaseId(expandedCalcCaseId === c.caseId ? null : c.caseId)}
-                    className="flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline"
+                    className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
                   >
-                    <Calculator size={13} className="text-emerald-600" />
+                    <Calculator size={13} strokeWidth={1.75} className="text-primary" />
                     <span>{expandedCalcCaseId === c.caseId ? '계산기 접기 ▲' : '⚡ 이 고객 탕감 계산 ▼'}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setSmsTargetCase(c)}
-                    className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                    className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
                   >
-                    <MessageSquare size={13} />
+                    <MessageSquare size={13} strokeWidth={1.75} />
                     <span>📩 1-Click 문자</span>
                   </button>
                 </div>
@@ -741,9 +737,9 @@ export default function LiteCallPage() {
                   <button
                     type="button"
                     onClick={() => handleDial(c)}
-                    className="col-span-8 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md active:scale-95 transition-all"
+                    className="col-span-8 flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-xs active:scale-[0.98] transition-all"
                   >
-                    <Phone size={17} className="fill-white" />
+                    <Phone size={16} strokeWidth={1.75} className="fill-current" />
                     <span>전화 걸기 ({c.phone.slice(-4)})</span>
                   </button>
 
@@ -751,10 +747,10 @@ export default function LiteCallPage() {
                   <button
                     type="button"
                     onClick={(e) => handleQuickMissedCall(c, e)}
-                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold active:scale-95 transition-all"
+                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-lg bg-muted/40 hover:bg-muted text-foreground border border-border text-xs font-semibold active:scale-[0.98] transition-all"
                     title="부재 카운트 +1 및 상태 '부재'로 자동 갱신"
                   >
-                    <PhoneOff size={16} />
+                    <PhoneOff size={15} strokeWidth={1.75} className="text-muted-foreground" />
                     <span className="mt-0.5">부재</span>
                   </button>
 
@@ -765,10 +761,10 @@ export default function LiteCallPage() {
                       setActiveCase(c);
                       setPostCallOpen(true);
                     }}
-                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold active:scale-95 transition-all"
+                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-lg bg-muted/40 hover:bg-muted text-foreground border border-border text-xs font-semibold active:scale-[0.98] transition-all"
                     title="상담 요약문 확인 및 텔레그램 전달"
                   >
-                    <Send size={16} />
+                    <Send size={15} strokeWidth={1.75} className="text-muted-foreground" />
                     <span className="mt-0.5">전달</span>
                   </button>
 

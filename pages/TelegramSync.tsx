@@ -931,31 +931,31 @@ export default function TelegramSync() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200 dark:shadow-none shrink-0">
-                        <Smartphone size={24} />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-xs">
+                        <Smartphone size={20} strokeWidth={1.75} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                             텔레그램 연동 관제 센터
                             {isOwner ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
                                     👑 대표 전사 관제
                                 </span>
                             ) : canViewAll ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800 flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
                                     🎖️ 총괄 실장 관제
                                 </span>
                             ) : isTeamScope ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-foreground border border-border flex items-center gap-1">
                                     👔 {myTeam} 플로어 관제
                                 </span>
                             ) : (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
                                     🎧 내 리드 알림 모드
                                 </span>
                             )}
                         </h1>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                             {isAgent 
                                 ? '법률사무소에서 보내온 내 담당 고객의 출장/내방 일정 및 현장 피드백 실시간 확인'
                                 : isTeamScope
@@ -969,9 +969,9 @@ export default function TelegramSync() {
                 <div className="flex items-center gap-2.5">
                     {/* Bot Live Indicator (관리자 및 대표만) */}
                     {(canViewAll || isTeamScope) && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs">
-                            <span className={`w-2 h-2 rounded-full ${botStatus?.webhookConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                            <span className="font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-card text-xs">
+                            <span className={`w-2 h-2 rounded-full ${botStatus?.webhookConnected ? 'bg-primary animate-pulse' : 'bg-amber-500'}`} />
+                            <span className="font-semibold text-foreground">
                                 {botStatus?.webhookConnected ? (botStatus.botUsername ? `@${botStatus.botUsername}` : '봇 정상 수신') : '웹훅 미연결'}
                             </span>
                         </div>
@@ -981,9 +981,9 @@ export default function TelegramSync() {
                     {(isOwner || tgPerms.canManageRules) && (
                         <button
                             onClick={() => setIsRuleModalOpen(true)}
-                            className="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                         >
-                            <Settings2 size={15} className="text-purple-600" />
+                            <Settings2 size={14} strokeWidth={1.75} className="text-muted-foreground" />
                             <span>자동화 룰 설정</span>
                         </button>
                     )}
@@ -992,96 +992,96 @@ export default function TelegramSync() {
                     {isOwner && (
                         <Link
                             to="/team"
-                            className="px-3 py-2 rounded-xl text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1.5 shadow-2xs"
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition flex items-center gap-1.5 shadow-xs"
                             title="팀 관리에서 중간 관리자에게 텔레그램 관제 권한을 양도/위임할 수 있습니다."
                         >
-                            <ShieldCheck size={14} />
-                            <span>관제 권한 위임 관리</span>
+                            <ShieldCheck size={14} strokeWidth={1.75} className="text-primary" />
+                            <span>관제 권한 위임</span>
                         </Link>
                     )}
 
                     <button
                         onClick={loadData}
                         disabled={isLoading}
-                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+                        className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted border border-border transition cursor-pointer"
                         title="새로고침"
                     >
-                        <RefreshCw size={17} className={isLoading ? 'animate-spin' : ''} />
+                        <RefreshCw size={15} strokeWidth={1.75} className={isLoading ? 'animate-spin' : ''} />
                     </button>
                 </div>
             </div>
 
             {/* Top 4 KPI Metrics Header */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
+                <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {isAgent ? '내 고객 오늘 피드백' : isTeamScope ? `${myTeam} 오늘 피드백` : '오늘 전사 피드백'}
                         </span>
-                        <MessageSquare size={17} className="text-blue-500" />
+                        <MessageSquare size={16} strokeWidth={1.75} className="text-muted-foreground" />
                     </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-gray-900 dark:text-white">{todayFeedbacksCount}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건</span>
+                    <div className="mt-2 flex items-baseline gap-1.5">
+                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">{todayFeedbacksCount}</span>
+                        <span className="text-xs text-muted-foreground font-medium">건</span>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
+                <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {isAgent ? '캘린더 연동 완료' : isTeamScope ? `${myTeam} 오토 반영률` : '오토파일럿 자동 반영'}
                         </span>
-                        <Zap size={17} className="text-purple-500" />
+                        <Zap size={16} strokeWidth={1.75} className="text-primary" />
                     </div>
-                    <div className="mt-2 flex items-baseline gap-2">
+                    <div className="mt-2 flex items-baseline gap-1.5">
                         {isAgent ? (
                             <>
-                                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{calendarAddedCount}</span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건 완료</span>
+                                <span className="text-2xl font-bold font-mono tabular-nums text-foreground">{calendarAddedCount}</span>
+                                <span className="text-xs text-muted-foreground font-medium">건 완료</span>
                             </>
                         ) : (
                             <>
-                                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{autoAppliedRate}%</span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{autoAppliedCount}건 처리</span>
+                                <span className="text-2xl font-bold font-mono tabular-nums text-foreground">{autoAppliedRate}%</span>
+                                <span className="text-xs text-muted-foreground font-mono font-medium">{autoAppliedCount}건 처리</span>
                             </>
                         )}
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
+                <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {isAgent ? '내 승인 대기' : isTeamScope ? `${myTeam} 승인 대기` : '전사 승인 대기'}
                         </span>
-                        <Clock size={17} className="text-amber-500" />
+                        <Clock size={16} strokeWidth={1.75} className="text-muted-foreground" />
                     </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{roleFilteredPending.length}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건</span>
+                    <div className="mt-2 flex items-baseline gap-1.5">
+                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">{roleFilteredPending.length}</span>
+                        <span className="text-xs text-muted-foreground font-medium">건</span>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
+                <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {isAgent ? '내 고객 긴급 재케어' : isTeamScope ? `${myTeam} 긴급 재케어 요망` : '1차 TM 재케어 요망'}
                         </span>
-                        <AlertTriangle size={17} className={careNeededCount > 0 ? "text-rose-500 animate-pulse" : "text-gray-600 dark:text-gray-300"} />
+                        <AlertTriangle size={16} strokeWidth={1.75} className={careNeededCount > 0 ? "text-rose-500 animate-pulse" : "text-muted-foreground"} />
                     </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className={`text-2xl font-black ${careNeededCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-900 dark:text-white'}`}>
+                    <div className="mt-2 flex items-baseline gap-1.5">
+                        <span className={`text-2xl font-bold font-mono tabular-nums ${careNeededCount > 0 ? 'text-rose-500' : 'text-foreground'}`}>
                             {careNeededCount}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">건 긴급</span>
+                        <span className="text-xs text-muted-foreground font-medium">건 긴급</span>
                     </div>
                 </div>
             </div>
 
             {/* 전사 총괄 뷰: 팀별 텔레그램 관제 현황 미니 바 */}
             {canViewAll && allTeams.length > 1 && (
-                <div className="bg-slate-50 dark:bg-gray-800/60 p-3 rounded-2xl border border-slate-200/80 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-gray-300">
-                        <Users size={15} className="text-indigo-600" />
+                <div className="bg-muted/40 p-3 rounded-xl border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 font-semibold text-foreground">
+                        <Users size={14} strokeWidth={1.75} className="text-primary" />
                         <span>팀별 실시간 관제 현황:</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -1100,17 +1100,17 @@ export default function TelegramSync() {
                                     key={tName}
                                     type="button"
                                     onClick={() => setSelectedTeamFilter(prev => prev === tName ? 'all' : tName)}
-                                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer ${
+                                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all border flex items-center gap-1.5 cursor-pointer ${
                                         selectedTeamFilter === tName
-                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                                            : 'bg-white dark:bg-gray-700 text-slate-700 dark:text-gray-200 border-slate-200 dark:border-gray-600 hover:border-indigo-400'
+                                            ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                            : 'bg-card text-foreground border-border hover:bg-muted'
                                     }`}
                                 >
                                     <span>{tName}</span>
-                                    <span className={`px-1.5 py-0.2 rounded-full text-xs ${
+                                    <span className={`px-1.5 py-0.2 rounded-full text-xs font-mono ${
                                         tPending > 0
-                                            ? (selectedTeamFilter === tName ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800 font-bold')
-                                            : (selectedTeamFilter === tName ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500')
+                                            ? (selectedTeamFilter === tName ? 'bg-primary-foreground/20 text-primary-foreground font-bold' : 'bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20')
+                                            : (selectedTeamFilter === tName ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')
                                     }`}>
                                         대기 {tPending}건
                                     </span>
@@ -1121,7 +1121,7 @@ export default function TelegramSync() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedTeamFilter('all')}
-                                className="text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white underline ml-1 cursor-pointer"
+                                className="text-xs font-semibold text-muted-foreground hover:text-foreground underline ml-1 cursor-pointer"
                             >
                                 필터 해제
                             </button>
@@ -1132,13 +1132,13 @@ export default function TelegramSync() {
 
             {/* Agent Role Mode Notice Banner */}
             {isAgent && (
-                <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
+                <div className="bg-primary/10 border border-primary/20 p-3 rounded-xl flex items-center justify-between text-xs text-primary">
                     <div className="flex items-center gap-2">
-                        <User size={15} className="text-emerald-600" />
+                        <User size={14} strokeWidth={1.75} className="text-primary" />
                         <span><b>상담원 전용 모드:</b> 본인이 등록했거나 배정받은 고객 리드의 실시간 현장 피드백만 표시됩니다.</span>
                     </div>
                     {careNeededCount > 0 && (
-                        <span className="px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 animate-pulse">
+                        <span className="px-2 py-0.5 rounded-full font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 animate-pulse">
                             재케어 요청 {careNeededCount}건
                         </span>
                     )}
@@ -1146,49 +1146,49 @@ export default function TelegramSync() {
             )}
 
             {/* Tabs */}
-            <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-px">
+            <div className="flex items-center gap-1.5 p-1 bg-muted/60 border border-border rounded-xl w-fit">
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`px-6 py-3 font-bold text-sm flex items-center gap-2 rounded-t-xl transition ${
+                    className={`px-4 py-2 font-semibold text-xs flex items-center gap-2 rounded-lg transition-all ${
                         activeTab === 'pending' 
-                        ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-t border-x border-gray-200 dark:border-gray-700 shadow-[0_4px_0_0_white] dark:shadow-[0_4px_0_0_#1f2937]' 
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/40'
+                        ? 'bg-card text-foreground shadow-xs border border-border' 
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
-                    <Clock size={17} />
+                    <Clock size={14} strokeWidth={1.75} />
                     <span>승인 대기</span>
                     {roleFilteredPending.length > 0 && (
-                        <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                        <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.2 rounded-full text-xs font-bold font-mono">
                             {roleFilteredPending.length}
                         </span>
                     )}
                 </button>
                 <button
                     onClick={() => setActiveTab('history')}
-                    className={`px-6 py-3 font-bold text-sm flex items-center gap-2 rounded-t-xl transition ${
+                    className={`px-4 py-2 font-semibold text-xs flex items-center gap-2 rounded-lg transition-all ${
                         activeTab === 'history' 
-                        ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-t border-x border-gray-200 dark:border-gray-700 shadow-[0_4px_0_0_white] dark:shadow-[0_4px_0_0_#1f2937]' 
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/40'
+                        ? 'bg-card text-foreground shadow-xs border border-border' 
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
-                    <History size={17} />
+                    <History size={14} strokeWidth={1.75} />
                     <span>히스토리 (전체)</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">({roleFilteredHistory.length})</span>
+                    <span className="text-xs text-muted-foreground font-mono">({roleFilteredHistory.length})</span>
                 </button>
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 space-y-3">
+            <div className="bg-card p-4 rounded-xl shadow-xs border border-border space-y-3">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2.5">
                         {/* 1. Partner Filter (Admin / Manager only) */}
                         {!isAgent && (
-                            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1 rounded-xl border border-gray-200 dark:border-gray-600 text-xs">
-                                <Building2 size={14} className="text-gray-500 ml-1.5" />
+                            <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-lg border border-border text-xs">
+                                <Building2 size={14} strokeWidth={1.75} className="text-muted-foreground ml-1.5" />
                                 <select
                                     value={selectedPartnerId}
                                     onChange={(e) => setSelectedPartnerId(e.target.value)}
-                                    className="bg-transparent border-none text-xs font-bold text-gray-800 dark:text-gray-200 outline-none pr-3"
+                                    className="bg-transparent border-none text-xs font-semibold text-foreground outline-none pr-3"
                                 >
                                     <option value="all">전체 법률사무소 ({partners.length}개소)</option>
                                     {partners.map(p => (
@@ -1200,15 +1200,15 @@ export default function TelegramSync() {
 
                         {/* 2. Team Filter */}
                         {canViewAll ? (
-                            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1 rounded-xl border border-gray-200 dark:border-gray-600 text-xs">
-                                <Users size={14} className="text-indigo-600 ml-1.5" />
+                            <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-lg border border-border text-xs">
+                                <Users size={14} strokeWidth={1.75} className="text-primary ml-1.5" />
                                 <select
                                     value={selectedTeamFilter}
                                     onChange={(e) => {
                                         setSelectedTeamFilter(e.target.value);
                                         setSelectedAgentId('all');
                                     }}
-                                    className="bg-transparent border-none text-xs font-bold text-gray-800 dark:text-gray-200 outline-none pr-3"
+                                    className="bg-transparent border-none text-xs font-semibold text-foreground outline-none pr-3"
                                 >
                                     <option value="all">전체 팀 ({allTeams.length}개 팀)</option>
                                     {allTeams.map(tName => (
@@ -1217,25 +1217,25 @@ export default function TelegramSync() {
                                 </select>
                             </div>
                         ) : isTeamScope ? (
-                            <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800 text-xs text-blue-700 dark:text-blue-300 font-bold">
-                                <Users size={14} />
+                            <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-lg border border-border text-xs text-foreground font-semibold">
+                                <Users size={14} strokeWidth={1.75} />
                                 <span>{myTeam} 고정</span>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 font-bold">
-                                <User size={14} />
+                            <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                                <User size={14} strokeWidth={1.75} />
                                 <span>내 담당 리드</span>
                             </div>
                         )}
 
                         {/* 3. Agent Filter */}
                         {!isAgent && (
-                            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1 rounded-xl border border-gray-200 dark:border-gray-600 text-xs">
-                                <User size={14} className="text-gray-500 ml-1.5" />
+                            <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-lg border border-border text-xs">
+                                <User size={14} strokeWidth={1.75} className="text-muted-foreground ml-1.5" />
                                 <select
                                     value={selectedAgentId}
                                     onChange={(e) => setSelectedAgentId(e.target.value)}
-                                    className="bg-transparent border-none text-xs font-bold text-gray-800 dark:text-gray-200 outline-none pr-3"
+                                    className="bg-transparent border-none text-xs font-semibold text-foreground outline-none pr-3"
                                 >
                                     <option value="all">
                                         {isTeamScope ? `${myTeam} 전체 상담원` : '전체 담당 상담원'}
@@ -1248,31 +1248,31 @@ export default function TelegramSync() {
                         )}
 
                         {/* 4. Search Query Input */}
-                        <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-600 text-xs min-w-[200px]">
-                            <Search size={14} className="text-gray-500 dark:text-gray-400" />
+                        <div className="flex items-center gap-1.5 bg-muted/40 px-2.5 py-1.5 rounded-lg border border-border text-xs min-w-[200px]">
+                            <Search size={14} strokeWidth={1.75} className="text-muted-foreground" />
                             <input
                                 type="text"
                                 placeholder={isAgent ? "내 고객명, 번호, 메모 검색..." : "고객명, 번호, 본문 검색..."}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-transparent border-none outline-none text-xs text-gray-800 dark:text-white placeholder-gray-400 w-full"
+                                className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground w-full"
                             />
                             {searchQuery && (
-                                <button onClick={() => setSearchQuery('')} className="text-gray-500 dark:text-gray-400 hover:text-gray-600">
-                                    <X size={13} />
+                                <button onClick={() => setSearchQuery('')} className="text-muted-foreground hover:text-foreground">
+                                    <X size={13} strokeWidth={1.75} />
                                 </button>
                             )}
                         </div>
                     </div>
 
                     {/* Filter result count */}
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium shrink-0">
-                        필터 검색: <b>{activeTab === 'pending' ? filteredPending.length : filteredHistory.length}</b>건
+                    <span className="text-xs text-muted-foreground font-mono shrink-0">
+                        필터 검색: <b className="text-foreground">{activeTab === 'pending' ? filteredPending.length : filteredHistory.length}</b>건
                     </span>
                 </div>
 
                 {/* Quick Type Filter Chips */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-gray-100 dark:border-gray-700/60">
+                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border">
                     {[
                         { id: 'all', label: '전체 보기' },
                         { id: 'schedule', label: '📅 출장·내방 예약' },
@@ -1285,10 +1285,10 @@ export default function TelegramSync() {
                         <button
                             key={chip.id}
                             onClick={() => setSelectedTypeFilter(chip.id as FeedbackTypeFilter)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition border ${
                                 selectedTypeFilter === chip.id
-                                    ? 'bg-blue-600 text-white shadow-2xs'
-                                    : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                    ? 'bg-primary/10 text-primary border-primary/20'
+                                    : 'bg-muted/40 text-muted-foreground hover:text-foreground border-transparent'
                             }`}
                         >
                             {chip.label}
@@ -1299,20 +1299,20 @@ export default function TelegramSync() {
 
             {/* Tab 1: Pending Feedbacks with Bulk Toolbar */}
             {activeTab === 'pending' && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="bg-card text-card-foreground rounded-xl shadow-xs border border-border overflow-hidden">
                     
                     {/* Bulk Action Toolbar (대표 또는 일괄 승인 권한 위임받은 관리자) */}
                     {(isOwner || tgPerms.canBulkApprove) ? (
-                        <div className="p-4 border-b border-gray-100 dark:border-gray-700/80 bg-gray-50/70 dark:bg-gray-800/80 flex flex-wrap items-center justify-between gap-3">
+                        <div className="p-3.5 border-b border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={toggleSelectAll}
-                                    className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:text-purple-600 transition cursor-pointer"
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary transition cursor-pointer"
                                 >
                                     {selectedIds.size > 0 && selectedIds.size === filteredPending.length ? (
-                                        <CheckSquare size={17} className="text-purple-600" />
+                                        <CheckSquare size={16} strokeWidth={1.75} className="text-primary" />
                                     ) : (
-                                        <Square size={17} />
+                                        <Square size={16} strokeWidth={1.75} className="text-muted-foreground" />
                                     )}
                                     <span>전체 선택 ({selectedIds.size}/{filteredPending.length})</span>
                                 </button>
@@ -1322,16 +1322,16 @@ export default function TelegramSync() {
                                         <button
                                             onClick={handleBulkConfirmSelected}
                                             disabled={isActionBusy}
-                                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs disabled:opacity-50 cursor-pointer"
+                                            className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-xs disabled:opacity-50 cursor-pointer"
                                         >
-                                            <Check size={13} /> 선택 승인 ({selectedIds.size}건)
+                                            <Check size={13} strokeWidth={1.75} /> 선택 승인 ({selectedIds.size}건)
                                         </button>
                                         <button
                                             onClick={handleBulkDismissSelected}
                                             disabled={isActionBusy}
-                                            className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 rounded-lg text-xs font-medium transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                                            className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg text-xs font-semibold transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                                         >
-                                            <X size={13} /> 선택 무시
+                                            <X size={13} strokeWidth={1.75} /> 선택 무시
                                         </button>
                                     </div>
                                 )}
@@ -1341,17 +1341,17 @@ export default function TelegramSync() {
                             <button
                                 onClick={handleConfirmAllMatched}
                                 disabled={isActionBusy || filteredPending.filter(f => f.matchedCaseId).length === 0}
-                                className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs disabled:opacity-40 cursor-pointer"
+                                className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-xs disabled:opacity-40 cursor-pointer"
                             >
-                                <Zap size={14} className="text-amber-300" />
+                                <Zap size={14} strokeWidth={1.75} className="fill-current" />
                                 <span>AI 추천대로 전체 일괄 저장·승인</span>
                             </button>
                         </div>
                     ) : (
-                        <div className="p-3.5 border-b border-gray-100 dark:border-gray-700/80 bg-gray-50/70 dark:bg-gray-800/80 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
-                            <span>승인 대기 피드백: <b>{filteredPending.length}</b>건</span>
+                        <div className="p-3.5 border-b border-border bg-muted/40 flex items-center justify-between text-xs text-muted-foreground font-medium">
+                            <span>승인 대기 피드백: <b className="text-foreground font-mono">{filteredPending.length}</b>건</span>
                             {isAgent && (
-                                <span className="text-emerald-700 dark:text-emerald-300">
+                                <span className="text-primary font-semibold">
                                     각 카드의 <strong>[일정 즉시 저장]</strong> 버튼으로 내 캘린더에 바로 연동할 수 있습니다.
                                 </span>
                             )}

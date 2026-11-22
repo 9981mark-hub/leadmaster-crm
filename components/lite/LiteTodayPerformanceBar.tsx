@@ -155,22 +155,22 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
   }, []);
 
   return (
-    <div className="bg-gradient-to-b from-amber-500/10 via-white to-white dark:from-amber-950/20 dark:via-gray-800/90 dark:to-gray-800 border-b border-gray-200/80 dark:border-gray-700/80 transition-all select-none">
+    <div className="bg-card border-b border-border text-card-foreground transition-all select-none">
       
       {/* ── Top Bar Header (접기/펼치기 제어) ── */}
       <div 
         onClick={toggleExpanded}
-        className="px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+        className="px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
-            <User size={14} />
+          <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
+            <User size={13} strokeWidth={1.75} />
           </div>
           <div className="flex items-center gap-2 truncate">
-            <span className="font-bold text-xs text-gray-900 dark:text-white truncate">
-              {agentName} <span className="font-normal text-gray-500 dark:text-gray-400">상담원</span>
+            <span className="font-bold text-xs text-foreground truncate">
+              {agentName} <span className="font-normal text-muted-foreground">상담원</span>
             </span>
-            <span className="text-xs bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium shrink-0">
+            <span className="text-[11px] bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded-full font-medium shrink-0 font-mono">
               {todayDateStr}
             </span>
           </div>
@@ -179,19 +179,19 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
         <div className="flex items-center gap-2 shrink-0">
           {/* 축약 모드 요약 칩 */}
           {!expanded && (
-            <div className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300">
-              <span className="text-blue-600 dark:text-blue-400">📞 {totalCalls}콜</span>
-              <span className="text-emerald-600 dark:text-emerald-400">⚡ 접수 {transferredCount}</span>
-              <span className="text-amber-600 dark:text-amber-400">📵 부재 {missedCount}</span>
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground font-mono">
+              <span className="text-foreground">📞 {totalCalls}콜</span>
+              <span className="text-primary">⚡ 접수 {transferredCount}</span>
+              <span className="text-amber-500">📵 부재 {missedCount}</span>
             </div>
           )}
 
           <button 
             type="button"
-            className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             title={expanded ? '간략히 접기' : '상세 펼치기'}
           >
-            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {expanded ? <ChevronUp size={15} strokeWidth={1.75} /> : <ChevronDown size={15} strokeWidth={1.75} />}
           </button>
         </div>
       </div>
@@ -202,44 +202,44 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             
             {/* 1. 오늘 통화 발신 */}
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-2.5 border border-blue-100 dark:border-blue-900/40 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-xs font-semibold flex items-center gap-1">
-                  <PhoneCall size={12} className="text-blue-500" />
+            <div className="bg-muted/30 rounded-lg p-2.5 border border-border shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-[11px] font-semibold flex items-center gap-1">
+                  <PhoneCall size={12} strokeWidth={1.75} className="text-primary" />
                   오늘 발신콜
                 </span>
-                <span className="text-xs font-mono text-blue-600 dark:text-blue-400 font-bold">
+                <span className="text-[11px] font-mono text-primary font-semibold">
                   {connectRate}% 연결
                 </span>
               </div>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-lg font-black text-gray-900 dark:text-white font-mono">
+                <span className="text-base font-bold text-foreground font-mono tabular-nums">
                   {totalCalls}
-                  <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
+                  <span className="text-xs font-normal text-muted-foreground ml-0.5">건</span>
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-[11px] text-muted-foreground font-mono">
                   연결 {connectedCalls}건
                 </span>
               </div>
             </div>
 
             {/* 2. 사무장 접수 / 텔레그램 전달 (핵심 실적) */}
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-2.5 border border-emerald-100 dark:border-emerald-900/40 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-xs font-semibold flex items-center gap-1">
-                  <Send size={12} className="text-emerald-500" />
+            <div className="bg-muted/30 rounded-lg p-2.5 border border-border shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-[11px] font-semibold flex items-center gap-1">
+                  <Send size={12} strokeWidth={1.75} className="text-primary" />
                   사무장 접수
                 </span>
-                <span className="text-xs bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1 py-0.2 rounded font-bold">
+                <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-semibold">
                   유효
                 </span>
               </div>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                <span className="text-base font-bold text-primary font-mono tabular-nums">
                   {transferredCount}
-                  <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
+                  <span className="text-xs font-normal text-muted-foreground ml-0.5">건</span>
                 </span>
-                <span className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
+                <span className="text-[11px] text-primary/80 font-medium">
                   변호사 방 전달
                 </span>
               </div>
@@ -248,40 +248,40 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
             {/* 3. 부재콜 처리 (원터치 +1) */}
             <div 
               onClick={() => onSelectTab?.('missed')}
-              className="bg-white dark:bg-gray-900/60 rounded-xl p-2.5 border border-amber-100 dark:border-amber-900/40 shadow-xs flex flex-col justify-between cursor-pointer hover:border-amber-300 dark:hover:border-amber-700 transition-colors group"
+              className="bg-muted/30 rounded-lg p-2.5 border border-border shadow-xs flex flex-col justify-between cursor-pointer hover:border-muted-foreground/30 transition-colors group"
               title="클릭하여 부재콜 목록 보기"
             >
-              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-xs font-semibold flex items-center gap-1 group-hover:text-amber-600 dark:group-hover:text-amber-600 dark:text-amber-400 transition-colors">
-                  <PhoneMissed size={12} className="text-amber-500" />
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-[11px] font-semibold flex items-center gap-1 group-hover:text-foreground transition-colors">
+                  <PhoneMissed size={12} strokeWidth={1.75} className="text-amber-500" />
                   부재콜 처리
                 </span>
-                <ArrowUpRight size={11} className="text-gray-500 dark:text-gray-400 group-hover:text-amber-500 transition-colors" />
+                <ArrowUpRight size={11} strokeWidth={1.75} className="text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">
+                <span className="text-base font-bold text-amber-500 font-mono tabular-nums">
                   {missedCount}
-                  <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
+                  <span className="text-xs font-normal text-muted-foreground ml-0.5">건</span>
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-[11px] text-muted-foreground">
                   원터치 처리
                 </span>
               </div>
             </div>
 
             {/* 4. 총 통화 시간 & 계약 성과 */}
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-2.5 border border-purple-100 dark:border-purple-900/40 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                <span className="text-xs font-semibold flex items-center gap-1">
+            <div className="bg-muted/30 rounded-lg p-2.5 border border-border shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-[11px] font-semibold flex items-center gap-1">
                   {contractCount > 0 ? (
-                    <Trophy size={12} className="text-purple-500" />
+                    <Trophy size={12} strokeWidth={1.75} className="text-primary" />
                   ) : (
-                    <Clock size={12} className="text-purple-500" />
+                    <Clock size={12} strokeWidth={1.75} className="text-muted-foreground" />
                   )}
                   {contractCount > 0 ? '계약 체결' : '총 통화 시간'}
                 </span>
                 {contractCount > 0 && (
-                  <span className="text-xs text-purple-600 dark:text-purple-400 font-bold">
+                  <span className="text-[11px] text-primary font-semibold">
                     달성!
                   </span>
                 )}
@@ -289,20 +289,20 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
               <div className="mt-1 flex items-baseline justify-between">
                 {contractCount > 0 ? (
                   <>
-                    <span className="text-lg font-black text-purple-600 dark:text-purple-400 font-mono">
+                    <span className="text-base font-bold text-primary font-mono tabular-nums">
                       {contractCount}
-                      <span className="text-xs font-normal text-gray-500 ml-0.5">건</span>
+                      <span className="text-xs font-normal text-muted-foreground ml-0.5">건</span>
                     </span>
-                    <span className="text-xs text-purple-500 font-mono font-bold">
+                    <span className="text-[11px] text-primary font-mono font-semibold">
                       +{estimatedIncentive > 0 ? `${(estimatedIncentive / 10000).toLocaleString()}만` : '축하합니다'}
                     </span>
                   </>
                 ) : (
                   <>
-                    <span className="text-sm font-black text-gray-800 dark:text-gray-200 font-mono truncate">
+                    <span className="text-sm font-bold text-foreground font-mono truncate tabular-nums">
                       {fmtDuration(totalDurationSec)}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <span className="text-[11px] text-muted-foreground truncate font-mono">
                       평균 {fmtDuration(avgDurationSec)}
                     </span>
                   </>

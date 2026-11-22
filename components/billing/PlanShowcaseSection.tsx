@@ -123,14 +123,14 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
         </div>
 
         {/* 연간 / 월간 세그먼트 토글 (ChatGPT & Notion 스타일) */}
-        <div className="flex items-center self-start md:self-auto bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center self-start md:self-auto bg-muted/60 p-1 rounded-xl border border-border">
           <button
             type="button"
             onClick={() => setIsAnnual(false)}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               !isAnnual
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-card text-foreground shadow-2xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             월간 결제
@@ -140,13 +140,13 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
             onClick={() => setIsAnnual(true)}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               isAnnual
-                ? 'bg-blue-600 text-white shadow-2xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <span>연간 결제</span>
             <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-              isAnnual ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+              isAnnual ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/10 text-primary'
             }`}>
               17% 할인 (2개월 무료)
             </span>
@@ -163,26 +163,26 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
           return (
             <div
               key={tier.id}
-              className={`relative rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 ${
+              className={`relative rounded-xl p-5 flex flex-col justify-between transition-all duration-200 bg-card text-card-foreground ${
                 tier.popular
-                  ? 'bg-white dark:bg-slate-900 border-2 border-blue-600 shadow-md ring-4 ring-blue-500/10'
+                  ? 'border-2 border-primary shadow-xs ring-1 ring-primary/20'
                   : isCurrent
-                  ? 'bg-white dark:bg-slate-900 border-2 border-emerald-500 shadow-sm'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700'
+                  ? 'border-2 border-primary/70 shadow-xs'
+                  : 'border border-border shadow-xs hover:border-primary/40'
               }`}
             >
               {/* 상단 뱃지 (가장 인기 or 현재 이용 중) */}
               {tier.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="px-3 py-0.5 rounded-full bg-blue-600 text-white text-[11px] font-bold tracking-wide shadow-xs flex items-center gap-1">
-                    <Sparkles size={11} /> 가장 인기 있는 플랜
+                  <span className="px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold tracking-wide shadow-xs flex items-center gap-1">
+                    <Sparkles size={11} strokeWidth={1.75} /> 가장 인기 있는 플랜
                   </span>
                 </div>
               )}
               {isCurrent && !tier.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="px-3 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-bold tracking-wide shadow-xs flex items-center gap-1">
-                    <CheckCircle2 size={11} /> 현재 이용 중
+                  <span className="px-3 py-0.5 rounded-full bg-muted text-foreground border border-border text-[11px] font-semibold tracking-wide shadow-xs flex items-center gap-1">
+                    <CheckCircle2 size={11} strokeWidth={1.75} /> 현재 이용 중
                   </span>
                 </div>
               )}

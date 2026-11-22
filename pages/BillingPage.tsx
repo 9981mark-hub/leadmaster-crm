@@ -128,20 +128,20 @@ export const BillingPage: React.FC = () => {
       {/* 1. Global Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground mb-1">
             <span>정산 / 경영</span>
-            <ChevronRight size={12} className="text-slate-500 dark:text-slate-400" />
-            <span className="text-slate-800 dark:text-slate-200">구독 & 플랜 관제 센터</span>
+            <ChevronRight size={12} className="text-muted-foreground" />
+            <span className="text-foreground">구독 & 플랜 관제 센터</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shrink-0">
-              <CreditCard size={20} />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-xs shrink-0">
+              <CreditCard size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 구독 & 플랜 관제 센터 (Plans & Billing)
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                 조직 규모에 최적화된 리드마스터 요금제를 선택하고, 좌석 라이선스 및 결제 영수증을 통합 관리합니다.
               </p>
             </div>
@@ -152,42 +152,42 @@ export const BillingPage: React.FC = () => {
         <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
           <button
             onClick={() => setActiveInvoiceForModal(invoices[0])}
-            className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-2 text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
           >
-            <FileText size={14} className="text-blue-600 dark:text-blue-400" /> 당월 청구서 보기
+            <FileText size={14} strokeWidth={1.75} className="text-primary" /> 당월 청구서 보기
           </button>
           <button
             onClick={() => setIsTaxInfoModalOpen(true)}
-            className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-2 text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
           >
-            <Building2 size={14} className="text-slate-600 dark:text-slate-400" /> 세금계산서 설정
+            <Building2 size={14} strokeWidth={1.75} className="text-muted-foreground" /> 세금계산서 설정
           </button>
           <button
             onClick={loadData}
-            className="p-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl transition-colors shadow-2xs cursor-pointer"
+            className="p-2 text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs cursor-pointer"
             title="데이터 새로고침"
           >
-            <RefreshCw size={15} />
+            <RefreshCw size={15} strokeWidth={1.75} />
           </button>
         </div>
       </div>
 
       {/* 2. 광고비 도메인 분리 안내 배너 (정산 손익센터 지출 목록 안내) */}
-      <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 dark:from-slate-850 dark:via-blue-950/30 dark:to-slate-900 border border-blue-200/80 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+      <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2.5">
           <span className="text-base shrink-0">💡</span>
-          <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-            <strong className="text-blue-700 dark:text-blue-400 font-bold">마케팅 광고비 및 지출 장부 안내:</strong> 페이스북, 네이버, 토스애즈 등 외부 광고비 집행 내역과 종합 마케팅 ROAS는 회계 원칙에 따라 
-            <strong className="text-slate-900 dark:text-white"> [정산 손익센터 &gt; 지출 목록]</strong>에서 통합 관리됩니다.
+          <div className="text-xs text-muted-foreground leading-relaxed">
+            <strong className="text-foreground font-semibold">마케팅 광고비 및 지출 장부 안내:</strong> 페이스북, 네이버, 토스애즈 등 외부 광고비 집행 내역과 종합 마케팅 ROAS는 회계 원칙에 따라 
+            <strong className="text-foreground font-semibold"> [정산 손익센터 &gt; 지출 목록]</strong>에서 통합 관리됩니다.
           </div>
         </div>
 
         <Link
           to="/settlement?tab=expenses"
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shrink-0 shadow-2xs"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-colors shrink-0 shadow-xs"
         >
           <span>정산 손익센터 지출목록 바로가기</span>
-          <ArrowUpRight size={13} />
+          <ArrowUpRight size={13} strokeWidth={1.75} />
         </Link>
       </div>
 
@@ -229,47 +229,47 @@ export const BillingPage: React.FC = () => {
       />
 
       {/* 8. [Zone 6] 자주 묻는 질문 (FAQ) & 신뢰 보장 */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-sm">
-        <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-          <HelpCircle size={18} className="text-blue-600 dark:text-blue-400" />
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">
+      <div className="bg-card text-card-foreground rounded-xl border border-border p-6 space-y-4 shadow-xs">
+        <div className="flex items-center gap-2 border-b border-border pb-3">
+          <HelpCircle size={18} strokeWidth={1.75} className="text-primary" />
+          <h3 className="text-base font-semibold text-foreground">
             구독 및 결제 관련 자주 묻는 질문 (FAQ)
           </h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 space-y-1">
-            <h4 className="font-bold text-slate-800 dark:text-slate-200">
+          <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1">
+            <h4 className="font-semibold text-foreground">
               Q. 중도에 인원이 늘어나면 요금은 어떻게 계산되나요?
             </h4>
-            <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               월 중간에 상담원을 추가하시면, 해당 월의 잔여 일수만큼만 <strong>일할 계산(Pro-rata)</strong>되어 다음 결제 시 합산되거나 즉시 결제됩니다. 미사용 일수에 대한 불합리한 과금이 발생하지 않습니다.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 space-y-1">
-            <h4 className="font-bold text-slate-800 dark:text-slate-200">
+          <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1">
+            <h4 className="font-semibold text-foreground">
               Q. 별도의 종이 서면 계약서를 날인해야 하나요?
             </h4>
-            <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               아닙니다. 전자서명법 제3조에 부합하는 웹 전자 이용계약(Clickwrap) 동의를 통해 서면 날인과 100% 동일한 정식 법적 효력이 발생합니다. 엔터프라이즈는 커스텀 서면 날인도 지원합니다.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 space-y-1">
-            <h4 className="font-bold text-slate-800 dark:text-slate-200">
+          <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1">
+            <h4 className="font-semibold text-foreground">
               Q. 전자세금계산서는 언제 발행되나요?
             </h4>
-            <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               카드 자동 결제 또는 무통장 입금 확인 즉시, 등록해주신 세금계산서 수신 이메일로 국세청 정식 전자세금계산서(영수)가 24시간 이내에 자동 발행됩니다.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 space-y-1">
-            <h4 className="font-bold text-slate-800 dark:text-slate-200">
+          <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1">
+            <h4 className="font-semibold text-foreground">
               Q. 구독을 해지하면 기존 통화 녹음과 DB는 어떻게 되나요?
             </h4>
-            <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               해지 후에도 30일간 <strong>D-30 백업 센터</strong>를 통해 기존 모든 통화 녹음 파일(32kbps 압축 AAC)과 고객 상담 DB를 원클릭 일괄 다운로드하실 수 있도록 안전하게 보관됩니다.
             </p>
           </div>

@@ -125,71 +125,69 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
   return (
     <div className="space-y-6">
       {/* 1. 상단 대형 브리핑 카드 */}
-      <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 text-white shadow-xl relative overflow-hidden border border-indigo-700/50">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="p-6 md:p-7 rounded-xl bg-card border border-border text-card-foreground shadow-xs relative overflow-hidden">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-emerald-400 text-gray-950 text-xs font-black tracking-wider uppercase flex items-center gap-1 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 fill-gray-950" />
+              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-semibold flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" strokeWidth={1.75} />
                 ONBOARDING FAST-TRACK
               </span>
-              <span className="text-xs text-indigo-300 font-medium">
+              <span className="text-xs text-muted-foreground font-medium">
                 신입 상담원 3일 완성 무인 교육 파이프라인
               </span>
             </div>
 
-            <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-              <GraduationCap className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+              <GraduationCap className="w-6 h-6 text-primary" strokeWidth={1.75} />
               <span>{profile.userName} 님의 신입 온보딩 패스</span>
             </h2>
 
-            <p className="text-xs md:text-sm text-indigo-200/80 max-w-2xl leading-relaxed">
-              사무장이나 대표님의 도움 없이도 시스템의 안내에 따라 <strong>9개 퀘스트</strong>를 완주하시면
-              상담역량 평가를 거쳐 <strong>실전 인입 콜 투입 권한</strong>이 자동으로 부여됩니다.
+            <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+              사무장이나 대표님의 도움 없이도 시스템의 안내에 따라 <strong className="text-foreground">9개 퀘스트</strong>를 완주하시면
+              상담역량 평가를 거쳐 <strong className="text-foreground">실전 인입 콜 투입 권한</strong>이 자동으로 부여됩니다.
             </p>
           </div>
 
           {/* 우측 진행률 & 상태 카드 */}
-          <div className="flex items-center gap-4 p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0 w-full md:w-auto">
+          <div className="flex items-center gap-4 p-4 sm:p-5 rounded-xl bg-muted/30 border border-border shrink-0 w-full md:w-auto">
             <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+              className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                 profile.isApprovedByAdmin
-                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                   : profile.isCompleted
-                  ? 'bg-amber-400 text-gray-950 shadow-lg shadow-amber-400/30'
-                  : 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                  : 'bg-primary/10 text-primary border border-primary/20'
               }`}
             >
               {profile.isApprovedByAdmin ? (
-                <ShieldCheck className="w-7 h-7" />
+                <ShieldCheck className="w-6 h-6" strokeWidth={1.75} />
               ) : profile.isCompleted ? (
-                <Trophy className="w-7 h-7" />
+                <Trophy className="w-6 h-6" strokeWidth={1.75} />
               ) : (
-                <Award className="w-7 h-7" />
+                <Award className="w-6 h-6" strokeWidth={1.75} />
               )}
             </div>
 
             <div className="space-y-1">
-              <div className="text-xs text-indigo-200 font-medium">전체 온보딩 달성률</div>
-              <div className="text-2xl font-black text-white flex items-baseline gap-1.5">
+              <div className="text-xs text-muted-foreground font-medium">전체 온보딩 달성률</div>
+              <div className="text-2xl font-bold text-foreground font-mono flex items-baseline gap-1.5">
                 <span>{profile.progressPercent}%</span>
-                <span className="text-xs font-normal text-indigo-300">
+                <span className="text-xs font-normal text-muted-foreground">
                   ({profile.completedCount} / 9 완료)
                 </span>
               </div>
               <div className="text-xs">
                 {profile.isApprovedByAdmin ? (
-                  <span className="text-emerald-300 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> 실전 발신 권한 승인 완료
+                  <span className="text-emerald-500 font-semibold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.75} /> 실전 발신 권한 승인 완료
                   </span>
                 ) : profile.isCompleted ? (
-                  <span className="text-amber-300 font-bold animate-pulse">
+                  <span className="text-amber-500 font-semibold animate-pulse">
                     ⏳ 9단계 완주 · 관리자 승인 대기 중
                   </span>
                 ) : (
-                  <span className="text-gray-600 dark:text-gray-300">
+                  <span className="text-muted-foreground">
                     현재 Step {ONBOARDING_STEP_METAS.find((m) => m.id === profile.currentStepId)?.order || 1} 진행 중
                   </span>
                 )}
@@ -199,19 +197,19 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
         </div>
 
         {/* 대형 프로그레스 바 */}
-        <div className="mt-6 pt-5 border-t border-indigo-200/60 dark:border-indigo-800/60 space-y-2">
-          <div className="flex items-center justify-between text-xs text-indigo-200">
+        <div className="mt-6 pt-5 border-t border-border space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Phase 1. 기초 이론 체화 (1~3단계)</span>
             <span>Phase 2. 지식 검증 및 시험 (4~6단계)</span>
             <span>Phase 3. AI 실전 시뮬레이션 (7~9단계)</span>
           </div>
 
-          <div className="h-3 w-full bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/10">
+          <div className="h-2 w-full bg-muted rounded-full overflow-hidden p-0">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 profile.isApprovedByAdmin
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                  : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500'
+                  ? 'bg-emerald-500'
+                  : 'bg-primary'
               }`}
               style={{ width: `${Math.max(5, profile.progressPercent)}%` }}
             />
@@ -220,16 +218,16 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
 
         {/* 관리자 툴바 (관리자일 때만 노출) */}
         {isAdmin && (
-          <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="mt-5 pt-4 border-t border-border flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-amber-400 text-gray-950 font-black text-xs">
+              <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20 font-semibold text-xs">
                 관리자 컨트롤
               </span>
               <button
                 onClick={() => setIsAdminModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border hover:bg-muted text-foreground font-semibold transition-all shadow-xs"
               >
-                <Users className="w-3.5 h-3.5" />
+                <Users className="w-3.5 h-3.5" strokeWidth={1.75} />
                 <span>👥 전사 신입 온보딩 관제 보드 열기</span>
               </button>
             </div>
@@ -237,17 +235,17 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleAdminCompleteAll}
-                className="px-3 py-1.5 rounded-xl bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 border border-indigo-400/30 font-bold transition-all"
+                className="px-3 py-1.5 rounded-lg bg-card border border-border hover:bg-muted text-foreground font-semibold transition-all shadow-xs"
                 title="테스트용으로 9단계를 모두 즉시 완료 처리합니다"
               >
                 9단계 일괄 완료 (시연/테스트)
               </button>
               <button
                 onClick={handleReset}
-                className="p-1.5 rounded-xl text-rose-300 hover:text-white hover:bg-rose-500/20 transition-all"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all border border-border"
                 title="온보딩 기록 초기화"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.75} />
               </button>
             </div>
           </div>
@@ -268,18 +266,20 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center text-white ${
-                      phaseCompleted ? 'bg-emerald-600' : 'bg-indigo-600'
+                    className={`w-6 h-6 rounded-md text-xs font-bold flex items-center justify-center ${
+                      phaseCompleted
+                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        : 'bg-muted text-muted-foreground border border-border'
                     }`}
                   >
                     P{phaseNum}
                   </span>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-foreground">
                     {phaseTitle}
                   </h3>
                 </div>
 
-                <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                <span className="text-xs text-muted-foreground font-mono">
                   {phaseMetas.filter((m) => profile.steps[m.id]?.status === 'completed').length} /{' '}
                   {phaseMetas.length}개 완료
                 </span>
@@ -296,24 +296,24 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                   return (
                     <div
                       key={meta.id}
-                      className={`p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between ${
+                      className={`p-4 sm:p-5 rounded-xl border transition-all duration-200 flex flex-col justify-between ${
                         isDone
-                          ? 'bg-emerald-50/60 dark:bg-emerald-950/25 border-emerald-300 dark:border-emerald-700/60 shadow-sm'
+                          ? 'bg-card border-border shadow-xs'
                           : isInProgress
-                          ? 'bg-white dark:bg-gray-800 border-indigo-500 dark:border-indigo-400 shadow-md ring-2 ring-indigo-500/20'
-                          : 'bg-gray-50/90 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 shadow-xs'
+                          ? 'bg-card border-primary ring-1 ring-primary/20 shadow-xs'
+                          : 'bg-muted/30 border-border opacity-70'
                       }`}
                     >
                       <div className="space-y-3">
                         {/* 상단 뱃지 및 상태 */}
                         <div className="flex items-center justify-between gap-2">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
+                            className={`px-2 py-0.5 rounded-md text-xs font-semibold border ${
                               isDone
-                                ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300'
+                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                                 : isInProgress
-                                ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 animate-pulse'
-                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-transparent dark:border-gray-600'
+                                ? 'bg-primary/10 text-primary border-primary/20'
+                                : 'bg-muted text-muted-foreground border-border'
                             }`}
                           >
                             Step {meta.order}
@@ -321,16 +321,16 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
 
                           <div className="flex items-center gap-1 text-xs">
                             {isDone ? (
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                                <CheckCircle2 className="w-4 h-4" /> 완료됨
+                              <span className="text-emerald-500 font-semibold flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.75} /> 완료됨
                               </span>
                             ) : isInProgress ? (
-                              <span className="text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1">
-                                <Zap className="w-3.5 h-3.5" /> 진행 중
+                              <span className="text-primary font-semibold flex items-center gap-1">
+                                <Zap className="w-3.5 h-3.5" strokeWidth={1.75} /> 진행 중
                               </span>
                             ) : (
-                              <span className="text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
-                                <Lock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 dark:text-gray-500" /> 잠김
+                              <span className="text-muted-foreground font-medium flex items-center gap-1">
+                                <Lock className="w-3.5 h-3.5" strokeWidth={1.75} /> 잠김
                               </span>
                             )}
                           </div>
@@ -338,45 +338,25 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
 
                         {/* 제목 및 설명 */}
                         <div>
-                          <h4
-                            className={`text-sm font-bold leading-snug ${
-                              isLocked
-                                ? 'text-gray-800 dark:text-gray-100'
-                                : 'text-gray-900 dark:text-white'
-                            }`}
-                          >
+                          <h4 className="text-sm font-semibold text-foreground leading-snug">
                             {meta.title}
                           </h4>
-                          <p
-                            className={`mt-1 text-xs leading-relaxed ${
-                              isLocked
-                                ? 'text-gray-600 dark:text-gray-300'
-                                : 'text-gray-700 dark:text-gray-200'
-                            }`}
-                          >
+                          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                             {meta.desc}
                           </p>
                         </div>
 
                         {/* 통과 요건 및 예상 시간 박스 */}
-                        <div
-                          className={`p-3 rounded-2xl border text-xs space-y-1.5 ${
-                            isDone
-                              ? 'bg-emerald-100/40 dark:bg-gray-900/90 border-emerald-200/60 dark:border-emerald-900/50 text-gray-800 dark:text-gray-200'
-                              : isInProgress
-                              ? 'bg-indigo-50/70 dark:bg-gray-900/90 border-indigo-100 dark:border-indigo-900/60 text-gray-800 dark:text-gray-200'
-                              : 'bg-gray-100/70 dark:bg-gray-900/90 border-gray-200/70 dark:border-gray-700/70 text-gray-700 dark:text-gray-200'
-                          }`}
-                        >
+                        <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-gray-800 dark:text-gray-200">요건:</span>
-                            <span className="text-gray-500 dark:text-gray-400 font-medium">{meta.estimatedTime}</span>
+                            <span className="font-semibold text-foreground">요건:</span>
+                            <span className="text-muted-foreground font-mono">{meta.estimatedTime}</span>
                           </div>
-                          <div className="text-xs text-indigo-700 dark:text-indigo-300 font-semibold leading-relaxed">
+                          <div className="text-xs text-foreground font-medium leading-relaxed">
                             {meta.requirement}
                           </div>
                           {state?.score !== undefined && (
-                            <div className="text-emerald-600 dark:text-emerald-400 font-bold pt-0.5">
+                            <div className="text-primary font-semibold font-mono pt-0.5">
                               획득 점수: {state.score}점
                             </div>
                           )}
@@ -384,40 +364,40 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
                       </div>
 
                       {/* 하단 버튼 바 */}
-                      <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center gap-2">
+                      <div className="mt-4 pt-3 border-t border-border flex items-center gap-2">
                         {isDone ? (
                           <div className="flex items-center justify-between w-full">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            <span className="text-xs text-muted-foreground font-mono">
                               {state.completedAt ? state.completedAt.split('T')[0] : '완료됨'}
                             </span>
                             <button
                               onClick={() => handleActionClick(meta)}
-                              className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-0.5"
+                              className="text-xs text-primary hover:underline font-semibold flex items-center gap-0.5"
                             >
                               <span>다시보기</span>
-                              <ArrowRight className="w-3 h-3" />
+                              <ArrowRight className="w-3 h-3" strokeWidth={1.75} />
                             </button>
                           </div>
                         ) : isInProgress ? (
                           <div className="flex items-center gap-1.5 w-full">
                             <button
                               onClick={() => handleActionClick(meta)}
-                              className="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                              className="flex-1 py-2 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5"
                             >
-                              <Play className="w-3.5 h-3.5 fill-white" />
+                              <Play className="w-3.5 h-3.5 fill-current" strokeWidth={1.75} />
                               <span>{meta.actionLabel}</span>
                             </button>
                             <button
                               onClick={() => handleCompleteStep(meta.id)}
-                              className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-bold transition-all border border-gray-200 dark:border-gray-600"
+                              className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold transition-all border border-border"
                               title="학습 완료 처리"
                             >
-                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500" strokeWidth={1.75} />
                             </button>
                           </div>
                         ) : (
-                          <div className="w-full py-2.5 px-3 rounded-xl bg-gray-100/80 dark:bg-gray-900/70 border border-gray-200/60 dark:border-gray-700/60 text-center text-xs text-gray-600 dark:text-gray-300 font-medium flex items-center justify-center gap-1.5">
-                            <Lock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 dark:text-gray-400" />
+                          <div className="w-full py-2 px-3 rounded-lg bg-muted/30 border border-border text-center text-xs text-muted-foreground font-medium flex items-center justify-center gap-1.5">
+                            <Lock className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.75} />
                             <span>이전 단계 완료 후 오픈</span>
                           </div>
                         )}

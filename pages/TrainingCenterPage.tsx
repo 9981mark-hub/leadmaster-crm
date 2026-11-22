@@ -1201,25 +1201,25 @@ export default function TrainingCenterPage() {
   return (
     <div className="max-w-[1600px] mx-auto space-y-5 pb-12 pt-2">
       {/* Top Banner */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-5 rounded-xl bg-card border border-border shadow-xs text-foreground flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-yellow-300">
-            <GraduationCap className="w-8 h-8" />
+          <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+            <GraduationCap className="w-6 h-6" strokeWidth={1.75} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight">신입 상담원 AI 트레이닝 & 사무장 인계 문진 센터</h1>
+              <h1 className="text-xl font-bold tracking-tight text-foreground">신입 상담원 AI 트레이닝 & 사무장 인계 문진 센터</h1>
             </div>
-            <p className="text-xs text-blue-100/80 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               무제한 실전 고객 생성 · 6대 취약 유형별 타깃 훈련 · 사무장 인계 7대 문진 채점 · 관리자 코칭 허브
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/10 text-center">
-            <span className="text-xs block text-blue-200">총 훈련 세션</span>
-            <span className="text-sm font-extrabold text-white">
+          <div className="px-3 py-1.5 rounded-lg bg-muted/50 border border-border text-center">
+            <span className="text-[11px] block text-muted-foreground">총 훈련 세션</span>
+            <span className="text-sm font-bold text-foreground font-mono">
               {history.length}회 완주
             </span>
           </div>
@@ -1231,15 +1231,15 @@ export default function TrainingCenterPage() {
               setColabTestMsg('');
               setShowCosyVoiceModal(true);
             }}
-            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all border shadow-sm ${
+            className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all border shadow-xs ${
               colabUrl
-                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400/50 hover:bg-emerald-500/35'
-                : 'bg-white/10 text-slate-200 border-white/20 hover:bg-white/20'
+                ? 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20'
+                : 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground'
             }`}
             title="Google Colab에 띄운 CosyVoice 2 복제 음성 서버와 실시간 연동"
           >
-            <span className={`w-2.5 h-2.5 rounded-full ${colabUrl ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
-            <Server className="w-3.5 h-3.5" />
+            <span className={`w-2 h-2 rounded-full ${colabUrl ? 'bg-primary animate-pulse' : 'bg-muted-foreground'}`} />
+            <Server className="w-3.5 h-3.5" strokeWidth={1.75} />
             <span>{colabUrl ? 'CosyVoice 2 연결됨' : '복제 음성 연동'}</span>
           </button>
 
@@ -1254,39 +1254,35 @@ export default function TrainingCenterPage() {
                   });
                 }
               }}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+              className="p-2 rounded-lg bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               title="훈련 기록 초기화"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4" strokeWidth={1.75} />
             </button>
           )}
         </div>
       </div>
 
       {/* 🚀 영업 환경 모드 전환 스위치 (아웃바운드 콜드콜 vs 광고신청 인바운드 리드) */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700 shadow-xs">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-card border border-border shadow-xs">
         <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs ${
-            trainingMode === 'inbound_lead'
-              ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
-              : 'bg-blue-600 text-white'
-          }`}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 bg-primary/10 text-primary border border-primary/20">
             {trainingMode === 'inbound_lead' ? '광고' : '발신'}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xs font-bold text-gray-900 dark:text-gray-100">
+              <h3 className="text-xs font-semibold text-foreground">
                 훈련 영업 모드:
               </h3>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold transition-colors ${
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold transition-colors ${
                 trainingMode === 'inbound_lead'
-                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-300/60'
-                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-300/60'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-muted text-muted-foreground border border-border'
               }`}>
                 {trainingMode === 'inbound_lead' ? '📋 광고신청 리드 모드 (Warm Lead)' : '📞 일반 아웃바운드 (Cold Call)'}
               </span>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {trainingMode === 'inbound_lead'
                 ? '인터넷·SNS 광고를 보고 자가진단/상담신청을 남긴 고객에게 신청서를 먼저 확인하고 발신하는 실전 훈련'
                 : '불특정 잠재 고객에게 첫인사와 출처 소명으로 거절을 돌파하는 전통 아웃바운드 훈련'}
@@ -1295,61 +1291,61 @@ export default function TrainingCenterPage() {
         </div>
 
         {/* 세그먼트 전환 스위치 */}
-        <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/80 shrink-0 self-stretch sm:self-auto">
+        <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-xl border border-border shrink-0 self-stretch sm:self-auto">
           <button
             onClick={() => handleToggleTrainingMode('cold_call')}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               trainingMode === 'cold_call'
-                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                ? 'bg-card text-foreground shadow-2xs font-bold'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <PhoneCall className="w-3.5 h-3.5" />
+            <PhoneCall className="w-3.5 h-3.5" strokeWidth={1.75} />
             <span>📞 일반 콜드콜</span>
           </button>
 
           <button
             onClick={() => handleToggleTrainingMode('inbound_lead')}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               trainingMode === 'inbound_lead'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-300'
+                ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+            <Sparkles className="w-3.5 h-3.5" strokeWidth={1.75} />
             <span>📋 광고신청 리드</span>
-            <span className="text-xs px-1.5 py-0.2 rounded-full bg-white/20 text-white font-extrabold">인바운드</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-primary-foreground/20 text-primary-foreground font-semibold">인바운드</span>
           </button>
         </div>
       </div>
 
       {/* Mode Navigation Tabs */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 overflow-x-auto">
+      <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-card border border-border overflow-x-auto shadow-xs">
         <button
           onClick={() => setActiveTab('onboarding')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'onboarding'
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
-              : 'text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60'
+              ? 'bg-primary/10 text-primary border border-primary/20'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
         >
-          <GraduationCap className="w-4 h-4" />
+          <GraduationCap className="w-4 h-4" strokeWidth={1.75} />
           <span>🌱 신입 온보딩 패스트트랙</span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-black/10 dark:bg-white/20 font-black">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-primary/20 text-primary font-semibold">
             3일 완성
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('clinic')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'clinic'
-              ? 'bg-white dark:bg-gray-900 text-purple-600 dark:text-purple-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+              ? 'bg-primary/10 text-primary border border-primary/20'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
         >
-          <Target className="w-4 h-4 text-purple-500" />
-          🎯 6대 취약점 집중 클리닉
+          <Target className="w-4 h-4" strokeWidth={1.75} />
+          <span>🎯 6대 취약점 집중 클리닉</span>
         </button>
 
         <button
@@ -1357,64 +1353,64 @@ export default function TrainingCenterPage() {
             setActiveTab('random');
             handleGenerateRandom();
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'random'
-              ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+              ? 'bg-primary/10 text-primary border border-primary/20'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
         >
-          <Dice5 className="w-4 h-4 text-blue-500" />
-          🎲 무규칙 실전 고객 생성
+          <Dice5 className="w-4 h-4" strokeWidth={1.75} />
+          <span>🎲 무규칙 실전 고객 생성</span>
         </button>
 
         <button
           onClick={() => setActiveTab('standard')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'standard'
-              ? 'bg-white dark:bg-gray-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+              ? 'bg-primary/10 text-primary border border-primary/20'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
         >
-          <Layers className="w-4 h-4 text-emerald-500" />
-          📋 기본 4단계 정규 코스
+          <Layers className="w-4 h-4" strokeWidth={1.75} />
+          <span>📋 기본 4단계 정규 코스</span>
         </button>
 
         <button
           onClick={() => setActiveTab('education')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'education'
-              ? 'bg-white dark:bg-gray-900 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-indigo-500/30'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+              ? 'bg-primary/10 text-primary border border-primary/20'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
         >
-          <BookOpen className="w-4 h-4 text-indigo-500" />
-          📚 실전 교육자료 & 모범 녹취 허브
+          <BookOpen className="w-4 h-4" strokeWidth={1.75} />
+          <span>📚 실전 교육자료 & 모범 녹취 허브</span>
         </button>
 
         {isAgent ? (
           <button
             onClick={() => setActiveTab('admin')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ml-auto ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ml-auto ${
               activeTab === 'admin'
-                ? 'bg-purple-600 text-white shadow-sm'
-                : 'text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
             }`}
           >
-            <GraduationCap className="w-4 h-4" />
-            🎓 내 훈련 기록 & 코칭 피드백 ({mySessions.length})
+            <GraduationCap className="w-4 h-4" strokeWidth={1.75} />
+            <span>🎓 내 훈련 기록 & 코칭 피드백 ({mySessions.length})</span>
           </button>
         ) : (
           (isOwner || trainingPerms.allowAccess) && (
             <button
               onClick={() => setActiveTab('admin')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ml-auto ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ml-auto ${
                 activeTab === 'admin'
-                  ? 'bg-amber-500 text-white shadow-sm'
-                  : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-100/40 dark:bg-amber-950/40'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
-              <UserCheck className="w-4 h-4" />
-              👔 {canViewAll ? '전사 코칭 허브' : `${myTeam} 코칭 허브`} ({adminSessions.length})
+              <UserCheck className="w-4 h-4" strokeWidth={1.75} />
+              <span>👔 {canViewAll ? '전사 코칭 허브' : `${myTeam} 코칭 허브`} ({adminSessions.length})</span>
             </button>
           )
         )}
