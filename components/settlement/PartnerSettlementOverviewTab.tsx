@@ -396,7 +396,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                     } as unknown as Partner);
                     setPipelinePartner(matched);
                   }}
-                  className="w-full py-2.5 px-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all hover:shadow"
+                  className="w-full py-2.5 px-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   <PlayCircle size={14} className="shrink-0" />
                   정산 마감 파이프라인 (대사·청구·지급)
@@ -407,10 +407,10 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                   <button
                     type="button"
                     onClick={() => handleCopyStatement(card)}
-                    className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all ${
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                       isCopied
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-gray-50 dark:bg-gray-700/60 hover:bg-gray-100 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
+                        ? 'bg-primary text-primary-foreground border-transparent'
+                        : 'bg-card border-border hover:bg-muted text-foreground'
                     }`}
                     title="텔레그램/카톡에 붙여넣을 수 있는 정산서 텍스트를 복사합니다."
                   >

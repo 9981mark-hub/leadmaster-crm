@@ -176,16 +176,16 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
               <div className="grid grid-cols-2 gap-2 mt-4">
                 <button
                   onClick={() => onDial(c)}
-                  className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl shadow-sm hover:shadow transition-all active:scale-[0.98]"
+                  className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 px-3 rounded-lg shadow-xs transition-colors cursor-pointer"
                 >
-                  <Phone size={16} />
+                  <Phone size={16} strokeWidth={1.75} />
                   <span>스마트폰 전화 걸기</span>
                 </button>
                 <button
                   onClick={() => navigate(`/lite?caseId=${c.caseId}`)}
-                  className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-3 rounded-xl shadow-sm hover:shadow transition-all active:scale-[0.98]"
+                  className="flex items-center justify-center gap-2 bg-card border border-border hover:bg-muted text-foreground font-semibold py-2.5 px-3 rounded-lg shadow-xs transition-colors cursor-pointer"
                 >
-                  <Zap size={16} />
+                  <Zap size={16} strokeWidth={1.75} className="text-primary" />
                   <span>간편 콜 모드</span>
                 </button>
               </div>
@@ -195,18 +195,18 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
             <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
               
               {/* 기본 프로필 그리드 */}
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3.5 border border-gray-100 dark:border-gray-800 space-y-2.5">
-                <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <div className="bg-card rounded-xl p-3.5 border border-border space-y-2.5 shadow-xs">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   기본 인적사항
                 </h4>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">출생 / 성별:</span>{' '}
-                    <span className="font-semibold text-gray-800 dark:text-gray-200">{c.birth || '-'}년 / {c.gender || '-'}</span>
+                    <span className="text-muted-foreground">출생 / 성별:</span>{' '}
+                    <span className="font-semibold text-foreground">{c.birth || '-'}년 / {c.gender || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">거주지역:</span>{' '}
-                    <span className="font-semibold text-gray-800 dark:text-gray-200">{c.region || '-'}</span>
+                    <span className="text-muted-foreground">거주지역:</span>{' '}
+                    <span className="font-semibold text-foreground">{c.region || '-'}</span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">결혼 / 자녀:</span>{' '}
@@ -276,22 +276,22 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
 
               {/* AI 요약본 (있는 경우) */}
               {c.aiSummary && (
-                <div className="bg-indigo-50/60 dark:bg-indigo-950/40 rounded-xl p-3.5 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
-                    <Sparkles size={14} />
+                <div className="bg-card rounded-xl p-3.5 border border-border space-y-2 shadow-xs">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                    <Sparkles size={14} strokeWidth={1.75} />
                     <span>AI 상담 분석 요약</span>
                   </div>
-                  <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">
+                  <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">
                     {c.aiSummary}
                   </p>
                 </div>
               )}
 
               {/* 최근 상담 메모 & 빠른 메모 작성 */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-3.5 border border-gray-200 dark:border-gray-700 space-y-3">
+              <div className="bg-card rounded-xl p-3.5 border border-border space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <FileText size={14} className="text-gray-500" />
+                  <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <FileText size={14} strokeWidth={1.75} className="text-muted-foreground" />
                     <span>상담 특이사항 메모 ({c.specialMemo?.length || 0})</span>
                   </h4>
                 </div>
@@ -300,15 +300,15 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                 <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                   {c.specialMemo && c.specialMemo.length > 0 ? (
                     [...c.specialMemo].reverse().slice(0, 5).map((m, idx) => (
-                      <div key={m.id || idx} className="text-xs p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600">
-                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                      <div key={m.id || idx} className="text-xs p-2 bg-muted/40 rounded-lg border border-border">
+                        <div className="flex justify-between text-xs text-muted-foreground mb-0.5 font-mono">
                           <span>{safeFormat(m.createdAt, 'yyyy-MM-dd HH:mm')}</span>
                         </div>
-                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{m.content}</p>
+                        <p className="text-foreground whitespace-pre-wrap">{m.content}</p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 py-2 text-center">등록된 메모가 없습니다.</p>
+                    <p className="text-xs text-muted-foreground py-2 text-center">등록된 메모가 없습니다.</p>
                   )}
                 </div>
 

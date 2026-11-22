@@ -446,46 +446,45 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
   return (
     <div className="space-y-6 pb-12">
       {/* 1. Header Banner & Quick Action Buttons */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 p-6 md:p-8 text-white shadow-xl">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-xl bg-card border border-border p-5 md:p-6 text-foreground shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-indigo-200 border border-white/15">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <div className="space-y-1.5 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5" strokeWidth={1.75} />
               신입 상담원 실전 역량 마스터 허브
             </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
               <span>📚 실전 교육자료 · 모범 녹취 · FAQ 허브</span>
             </h1>
-            <p className="text-sm text-indigo-100/90 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               1차 표준 스크립트, 15대 필수 인계 서식, 2025 법정 기준표, 거절 극복 화법부터 모범 녹취 청취 및 다빈도 FAQ까지 스스로 학습하고 완벽히 숙달하세요.
             </p>
           </div>
 
           {/* Action Hub: NotebookLM & Admin CMS Toggle */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {/* NotebookLM 법률 AI 사수 버튼 */}
             <button
               onClick={() => setShowNotebookModal(true)}
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-gray-950 font-bold text-xs md:text-sm hover:from-amber-300 hover:to-orange-400 transition-all shadow-lg shadow-orange-500/25 active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-card border border-border hover:bg-muted text-foreground font-semibold text-xs shadow-xs transition-colors cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-gray-950 fill-gray-950" />
-              <span>🤖 NotebookLM 법률 AI 사수</span>
-              <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+              <Sparkles className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+              <span>NotebookLM 법률 AI 사수</span>
+              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
 
             {/* 관리자 CMS 편집 모드 토글 (관리자만 노출) */}
             {isAdmin && (
-              <div className="flex items-center gap-2 bg-black/30 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
+              <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg border border-border">
                 <button
                   onClick={() => setIsEditMode(!isEditMode)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                     isEditMode
-                      ? 'bg-amber-500 text-gray-950 shadow-md'
-                      : 'text-gray-200 hover:text-white hover:bg-white/10'
+                      ? 'bg-primary text-primary-foreground shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
+                  <Edit3 className="w-3.5 h-3.5" strokeWidth={1.75} />
                   <span>{isEditMode ? '편집 모드 ON' : '관리자 편집'}</span>
                 </button>
 
@@ -493,9 +492,9 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   <button
                     onClick={handleSaveToCloud}
                     disabled={isSaving}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-all shadow-md active:scale-95 disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
                   >
-                    <Save className="w-3.5 h-3.5" />
+                    <Save className="w-3.5 h-3.5" strokeWidth={1.75} />
                     <span>{isSaving ? '저장 중...' : '클라우드 저장'}</span>
                   </button>
                 )}
@@ -506,16 +505,16 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
 
         {/* Edit mode active banner */}
         {isEditMode && (
-          <div className="mt-4 p-3 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs flex items-center justify-between">
+          <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-foreground text-xs flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" strokeWidth={1.75} />
               <span>
                 <strong>관리자 편집 모드 활성화:</strong> 화면의 스크립트, FAQ, 유튜브 영상 및 NotebookLM 링크를 직접 수정할 수 있습니다. 수정을 마치신 후 상단의 <strong>[클라우드 저장]</strong> 버튼을 누르세요.
               </span>
             </div>
             <button
               onClick={handleResetDefaults}
-              className="text-xs text-rose-300 hover:text-rose-100 underline ml-4 shrink-0"
+              className="text-xs text-destructive hover:underline ml-4 shrink-0"
             >
               기본값으로 초기화
             </button>
@@ -1071,14 +1070,14 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   <button
                     key={rec.id}
                     onClick={() => handleSelectRecording(rec)}
-                    className={`w-full text-left p-4 rounded-2xl border transition-all space-y-2 ${
+                    className={`w-full text-left p-4 rounded-xl border transition-all space-y-2 cursor-pointer ${
                       isSelected
-                        ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 shadow-sm ring-1 ring-emerald-500'
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-emerald-300'
+                        ? 'bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20'
+                        : 'bg-card border-border hover:bg-muted/50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                         {rec.grade}
                       </span>
                       <span className="text-xs font-mono text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -1453,10 +1452,10 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 <button
                   key={cat.id}
                   onClick={() => setFaqCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     faqCategory === cat.id
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-card border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                 >
                   {cat.label}
@@ -1468,7 +1467,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
           {/* FAQ Accordion List */}
           <div className="space-y-3">
             {filteredFaqs.length === 0 ? (
-              <div className="p-12 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700">
+              <div className="p-12 text-center text-muted-foreground bg-card rounded-xl border border-border">
                 검색된 질문이 없습니다. 다른 키워드로 검색해 보세요.
               </div>
             ) : (
@@ -1478,18 +1477,18 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 return (
                   <div
                     key={faq.id}
-                    className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs overflow-hidden transition-all"
+                    className="rounded-xl bg-card border border-border shadow-xs overflow-hidden transition-all"
                   >
                     <button
                       onClick={() => toggleFaq(faq.id)}
-                      className="w-full text-left p-4 md:p-5 flex items-start justify-between gap-3 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-all"
+                      className="w-full text-left p-4 md:p-5 flex items-start justify-between gap-3 hover:bg-muted/40 transition-all cursor-pointer"
                     >
                       <div className="space-y-1.5 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-black text-xs flex items-center justify-center shrink-0">
+                          <span className="w-5 h-5 rounded-md bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center shrink-0">
                             Q
                           </span>
-                          <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                          <span className="text-xs font-semibold text-primary">
                             {faq.category === 'eligibility'
                               ? '자격/제도'
                               : faq.category === 'objection'
@@ -1499,20 +1498,20 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                               : '이관규정'}
                           </span>
                         </div>
-                        <h3 className="text-sm font-black text-gray-900 dark:text-white leading-snug">
+                        <h3 className="text-sm font-semibold text-foreground leading-snug">
                           {faq.question}
                         </h3>
                       </div>
 
-                      <div className="p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                      <div className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
                         {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                       </div>
                     </button>
 
                     {isOpen && (
-                      <div className="px-5 pb-5 pt-1 border-t border-gray-100 dark:border-gray-700/60 bg-purple-50/20 dark:bg-purple-950/10 space-y-3">
+                      <div className="px-5 pb-5 pt-1 border-t border-border bg-muted/20 space-y-3">
                         <div className="flex items-start gap-2.5 pt-2">
-                          <span className="w-5 h-5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="w-5 h-5 rounded-md bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                             A
                           </span>
                           <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-medium space-y-2 flex-1">

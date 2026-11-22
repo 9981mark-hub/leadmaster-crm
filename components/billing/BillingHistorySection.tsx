@@ -74,84 +74,84 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors space-y-0">
+    <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden transition-colors space-y-0">
       {/* 1. Header */}
-      <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 bg-gradient-to-r from-slate-50 via-blue-50/20 to-white dark:from-slate-800/50 dark:via-slate-850 dark:to-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 border-b border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 flex items-center gap-1">
-              <History size={12} /> 결제 관리 & 히스토리
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+              <History size={12} strokeWidth={1.75} /> 결제 관리 & 히스토리
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-muted-foreground">
               구독료 납부 내역과 플랜 라이프사이클 변동 기록을 통합 관제합니다.
             </span>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-1">
+          <h3 className="text-lg sm:text-xl font-bold text-foreground mt-1 tracking-tight">
             결제 수단, 청구 영수증 및 구독 히스토리
           </h3>
         </div>
 
         {/* Sub-tab Switcher Buttons */}
-        <div className="flex items-center self-start sm:self-auto bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center self-start sm:self-auto bg-muted/60 p-1 rounded-lg border border-border">
           <button
             type="button"
             onClick={() => setActiveTab('transactions')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'transactions'
-                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-background text-foreground shadow-2xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Receipt size={14} />
+            <Receipt size={14} strokeWidth={1.75} />
             <span>결제 승인 내역 & 영수증</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('audit_log')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'audit_log'
-                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-background text-foreground shadow-2xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <History size={14} />
+            <History size={14} strokeWidth={1.75} />
             <span>구독 & 좌석 변동 감사 로그</span>
           </button>
         </div>
       </div>
 
       {/* 2. Top Summary Cards: Registered Payment Card & Tax Invoice Info */}
-      <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-slate-50/50 dark:bg-slate-850/30">
+      <div className="p-5 sm:p-6 border-b border-border grid grid-cols-1 lg:grid-cols-2 gap-6 bg-muted/20">
         {/* Left: Registered Card & Bank Account */}
-        <div className="p-5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between shadow-2xs">
+        <div className="p-5 rounded-xl bg-card border border-border flex flex-col justify-between shadow-2xs">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <CreditCard size={15} className="text-blue-600 dark:text-blue-400" />
+              <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <CreditCard size={15} strokeWidth={1.75} className="text-primary" />
                 기본 정기 결제 수단
               </span>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                 자동 승인 활성
               </span>
             </div>
 
             <div className="mt-3 flex items-center gap-3">
-              <div className="w-12 h-8 rounded-md bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-2xs">
+              <div className="w-12 h-8 rounded-md bg-muted text-foreground border border-border flex items-center justify-center font-bold text-xs tracking-wider shadow-2xs font-mono">
                 CARD
               </div>
               <div>
-                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="text-sm font-semibold text-foreground">
                   신한 법인카드 (끝자리 4242)
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  다음 정기 결제 예정일: <strong className="text-slate-800 dark:text-slate-200">2026년 12월 1일</strong>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  다음 정기 결제 예정일: <strong className="text-foreground">2026년 12월 1일</strong>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
               <span>무통장 납부용 공식 계좌:</span>
-              <div className="flex items-center gap-1.5 font-mono font-semibold text-slate-700 dark:text-slate-300">
+              <div className="flex items-center gap-1.5 font-mono font-semibold text-foreground">
                 <span>카카오뱅크 3333-21-490199</span>
                 <button
                   onClick={handleCopyAccount}
@@ -323,7 +323,7 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
                             <button
                               type="button"
                               onClick={() => setSelectedReceipt(tx)}
-                              className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/40 hover:text-blue-600 font-semibold text-[11px] border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                              className="px-2.5 py-1 rounded-md bg-card border border-border text-foreground hover:bg-muted font-medium text-[11px] transition-colors cursor-pointer"
                               title="신용카드 매출전표 영수증 보기"
                             >
                               🧾 전표
@@ -332,14 +332,14 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
                           <button
                             type="button"
                             onClick={() => onOpenInvoiceModal(tx.invoice)}
-                            className="px-2 py-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 font-semibold text-[11px] border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer"
+                            className="px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-medium text-[11px] transition-colors cursor-pointer"
                             title="공식 청구서 인보이스 보기"
                           >
                             📄 청구서
                           </button>
                           {isPaid && tx.taxInvoiceApproveNo && (
                             <span 
-                              className="px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] border border-emerald-200 dark:border-emerald-800 cursor-default"
+                              className="px-2.5 py-1 rounded-md bg-muted text-muted-foreground border border-border font-medium text-[11px] cursor-default"
                               title={`국세청 승인번호: ${tx.taxInvoiceApproveNo}`}
                             >
                               🏛️ 세금계산서

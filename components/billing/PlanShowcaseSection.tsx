@@ -106,18 +106,18 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center gap-1">
-              <Sparkles size={12} />
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+              <Sparkles size={12} strokeWidth={1.75} />
               플랜 업그레이드 & 요금 안내
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-muted-foreground">
               걱정 없이 언제든지 위약금 없이 플랜을 변경하거나 해지할 수 있습니다.
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-1">
             조직 규모에 최적화된 리드마스터 맞춤 플랜
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             전화 다이얼러, 통화 녹음 백업, AI 채무 진단, 롤플레잉까지 모든 기능이 기본 포함되어 있습니다.
           </p>
         </div>
@@ -190,32 +190,32 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
               <div>
                 {/* 플랜 이름 & 대상 규모 */}
                 <div className="flex items-center justify-between gap-2 mt-1">
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     {tier.name}
                   </h3>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
                     {tier.seats}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 min-h-[32px] leading-relaxed">
+                <p className="text-xs text-muted-foreground mt-1 min-h-[32px] leading-relaxed">
                   {tier.description}
                 </p>
 
                 {/* 가격 영역 */}
-                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div className="mt-4 pt-3 border-t border-border">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+                    <span className="text-2xl sm:text-3xl font-bold text-foreground font-mono tabular-nums">
                       ₩ {unitPrice.toLocaleString()}
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-muted-foreground">
                       / 석 / 월
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center justify-between">
+                  <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center justify-between">
                     <span>VAT 별도</span>
                     {isAnnual && (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">
+                      <span className="text-primary font-semibold font-mono">
                         정가 ₩ {tier.monthlyUnitPrice.toLocaleString()} 대비 할인
                       </span>
                     )}
@@ -228,37 +228,37 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
                     <button
                       type="button"
                       disabled
-                      className="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold border border-slate-200 dark:border-slate-700 cursor-default flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 px-3 rounded-xl bg-muted text-muted-foreground text-xs font-semibold border border-border cursor-default flex items-center justify-center gap-1.5"
                     >
-                      <CheckCircle2 size={14} className="text-emerald-500" />
+                      <CheckCircle2 size={14} className="text-primary" />
                       현재 이용 중인 플랜
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => onSelectPlan(tier.id)}
-                      className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`w-full py-2.5 px-3 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer ${
                         tier.popular
-                          ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
-                          : 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white'
+                          ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                          : 'bg-card border border-border text-foreground hover:bg-muted'
                       }`}
                     >
                       <span>{tier.id === 'enterprise' ? '도입 문의하기' : `${tier.name.split(' ')[0]}로 변경`}</span>
-                      <ArrowRight size={13} />
+                      <ArrowRight size={13} strokeWidth={1.75} />
                     </button>
                   )}
                 </div>
 
-                {/* 기능 목록 불릿 (ChatGPT/Notion 스타일) */}
-                <div className="mt-5 space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                {/* 기능 목록 불릿 */}
+                <div className="mt-5 space-y-2.5 pt-4 border-t border-border">
+                  <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                     포함된 핵심 기능
                   </div>
                   <ul className="space-y-2">
                     {tier.features.map((feature, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 leading-snug">
-                        <Check size={14} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                        <span>{feature}</span>
+                      <li key={fIdx} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
+                        <Check size={14} className="text-primary shrink-0 mt-0.5" strokeWidth={2} />
+                        <span className="text-foreground">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -270,24 +270,24 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
       </div>
 
       {/* 3. 메가 센터 (101인 이상) 대형 프랜차이즈 전용 배너 */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 border border-indigo-900/50">
+      <div className="p-5 rounded-xl bg-card border border-border text-foreground shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0 border border-blue-400/30">
-            <Building2 size={22} />
+          <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+            <Building2 size={22} strokeWidth={1.75} />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/30 text-blue-200 border border-blue-400/40">
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                 101인 이상 대형 연합체 / 프랜차이즈 전용
               </span>
-              <span className="text-xs text-blue-200/80">
+              <span className="text-xs text-muted-foreground">
                 전국 최고 볼륨 우대 단가
               </span>
             </div>
-            <h4 className="text-base sm:text-lg font-bold text-white mt-0.5">
-              메가 센터 (Mega Center) 플랜 — 좌석당 <span className="text-amber-300 font-black font-mono">₩ 38,000</span> (최대 35% 파격 할인)
+            <h4 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+              메가 센터 (Mega Center) 플랜 — 좌석당 <span className="text-primary font-bold font-mono tabular-nums">₩ 38,000</span> (최대 35% 우대 할인)
             </h4>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               전담 엔지니어 핫라인, 본사-지사 멀티 워크스페이스 통합 관제, 맞춤형 On-Premise 하이브리드 연동을 무상 지원합니다.
             </p>
           </div>
@@ -296,10 +296,10 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
         <button
           type="button"
           onClick={() => onSelectPlan('mega')}
-          className="px-4 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs shrink-0 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 self-start md:self-auto"
+          className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shrink-0 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 self-start md:self-auto"
         >
           <span>메가센터 전담팀 문의</span>
-          <ChevronRight size={14} />
+          <ChevronRight size={14} strokeWidth={1.75} />
         </button>
       </div>
     </div>

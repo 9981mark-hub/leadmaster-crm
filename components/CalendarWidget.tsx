@@ -632,57 +632,57 @@ export default function CalendarWidget({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => toggleFilter('reminder')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.reminder 
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 ring-1 ring-blue-400/30' 
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition-colors ${filters.reminder 
+                ? 'bg-primary/10 text-primary border border-primary/30' 
+                : 'bg-muted/50 border border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
             >
               📞 리마인더
             </button>
             <button
               onClick={() => toggleFilter('settlement')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.settlement 
-                ? 'bg-green-100 text-green-700 dark:bg-emerald-900/40 dark:text-emerald-300 ring-1 ring-emerald-400/30' 
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition-colors ${filters.settlement 
+                ? 'bg-primary/10 text-primary border border-primary/30' 
+                : 'bg-muted/50 border border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
             >
               💰 정산
             </button>
             <button
               onClick={() => toggleFilter('tax')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.tax 
-                ? 'bg-red-100 text-red-700 dark:bg-rose-900/40 dark:text-rose-300 ring-1 ring-rose-400/30' 
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition-colors ${filters.tax 
+                ? 'bg-primary/10 text-primary border border-primary/30' 
+                : 'bg-muted/50 border border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
             >
               📅 세금
             </button>
             <button
               onClick={() => toggleFilter('memo')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.memo 
-                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 ring-1 ring-purple-400/30' 
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition-colors ${filters.memo 
+                ? 'bg-primary/10 text-primary border border-primary/30' 
+                : 'bg-muted/50 border border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
             >
               📝 메모
             </button>
             <button
               onClick={() => toggleFilter('holiday')}
-              className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${filters.holiday 
-                ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 ring-1 ring-rose-400/30' 
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-650'}`}
+              className={`px-3 py-1 text-xs rounded-lg font-semibold transition-colors ${filters.holiday 
+                ? 'bg-destructive/10 text-destructive border border-destructive/30' 
+                : 'bg-muted/50 border border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
             >
               🎌 공휴일
             </button>
             <div className="flex-1" />
             <button
               onClick={() => handleAddMemo(new Date())}
-              className="px-3 py-1 text-xs rounded-full font-medium bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 shadow-xs transition-colors"
+              className="px-3 py-1 text-xs rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
             >
-              <Plus size={12} /> 메모 추가
+              <Plus size={12} strokeWidth={1.75} /> 메모 추가
             </button>
             <button
               onClick={handleExport}
-              className="px-3 py-1 text-xs rounded-full font-medium bg-gray-600 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600 flex items-center gap-1 shadow-xs transition-colors"
+              className="px-3 py-1 text-xs rounded-lg font-semibold bg-card border border-border text-foreground hover:bg-muted flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
               title="ICS 파일로 내보내기"
             >
-              <Download size={12} /> 내보내기
+              <Download size={12} strokeWidth={1.75} /> 내보내기
             </button>
           </div>
         )}

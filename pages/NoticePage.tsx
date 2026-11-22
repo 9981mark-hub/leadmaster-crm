@@ -417,36 +417,36 @@ export const NoticePage: React.FC = () => {
   return (
     <div className="max-w-[1600px] mx-auto space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
-              <Bell size={22} />
+            <span className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+              <Bell size={20} strokeWidth={1.75} />
             </span>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">공지사항 & 업무 지시</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">공지사항 & 업무 지시</h1>
             {isPlatformAdmin ? (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-xs">
-                <Crown size={13} className="text-amber-300" /> LeadMaster 총괄 운영자 모드
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                <Crown size={13} className="text-primary" /> LeadMaster 총괄 운영자 모드
               </span>
             ) : isOwner ? (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-xs">
-                <Crown size={13} className="text-amber-200" /> 최고경영 총괄 모드
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-muted text-foreground border border-border">
+                <Crown size={13} className="text-primary" /> 최고경영 총괄 모드
               </span>
             ) : canViewAll ? (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-xs">
-                <ShieldCheck size={13} className="text-sky-300" /> 총괄 운영 관리 모드 (전사)
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-muted text-muted-foreground border border-border">
+                <ShieldCheck size={13} strokeWidth={1.75} /> 총괄 운영 관리 모드 (전사)
               </span>
             ) : isTeamScope ? (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-xs">
-                <Users size={13} className="text-teal-200" /> {myTeam} 플로어 지휘 모드
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-muted text-muted-foreground border border-border">
+                <Users size={13} strokeWidth={1.75} /> {myTeam} 플로어 지휘 모드
               </span>
             ) : (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-gray-600">
-                <UserCheck size={13} className="text-emerald-500" /> 내 공지 및 업무함 ({myTeam})
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-muted text-muted-foreground border border-border">
+                <UserCheck size={13} strokeWidth={1.75} /> 내 공지 및 업무함 ({myTeam})
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {isPlatformAdmin
               ? '전체 입점 고객사 대표·관리자 및 전사 사용자 대상 멀티테넌트 플랫폼 공지 송출 관제'
               : isOwner
@@ -464,18 +464,18 @@ export const NoticePage: React.FC = () => {
           {isAdmin && (isOwner || noticePerms.canCreateNotice) && (
             <button
               onClick={() => setShowCreateNoticeModal(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs transition-colors shadow-xs cursor-pointer"
             >
-              <Plus size={16} /> {isPlatformAdmin ? '플랫폼 공지 송출' : isTeamScope ? `${myTeam} 공지 작성` : '새 공지 작성'}
+              <Plus size={15} strokeWidth={1.75} /> {isPlatformAdmin ? '플랫폼 공지 송출' : isTeamScope ? `${myTeam} 공지 작성` : '새 공지 작성'}
             </button>
           )}
 
           {isAdmin && (isOwner || noticePerms.canIssueDirective) && (
             <button
               onClick={() => setShowCreateDirectiveModal(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-card border border-border hover:bg-muted text-foreground font-semibold text-xs transition-colors shadow-xs cursor-pointer"
             >
-              <Send size={16} /> {isTeamScope ? '팀원 업무 지시 하달' : '업무 지시 하달'}
+              <Send size={14} strokeWidth={1.75} className="text-primary" /> {isTeamScope ? '팀원 업무 지시 하달' : '업무 지시 하달'}
             </button>
           )}
 
@@ -562,10 +562,10 @@ export const NoticePage: React.FC = () => {
               <button
                 key={f.id}
                 onClick={() => setNoticeFilter(f.id)}
-                className={`px-3 py-1.5 rounded-full font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
                   noticeFilter === f.id
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'bg-card border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
                 {f.label}
@@ -575,9 +575,9 @@ export const NoticePage: React.FC = () => {
 
           {/* Notice Card List */}
           {loadingNotices ? (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">공지사항을 불러오는 중...</div>
+            <div className="text-center py-12 text-muted-foreground">공지사항을 불러오는 중...</div>
           ) : filteredNotices.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-16 bg-card rounded-xl border border-border text-muted-foreground">
               등록된 공지사항이 없습니다.
             </div>
           ) : (
@@ -587,13 +587,7 @@ export const NoticePage: React.FC = () => {
                 return (
                   <div
                     key={notice.id}
-                    className={`p-5 rounded-xl border transition-all bg-white dark:bg-gray-800 shadow-sm ${
-                      notice.is_platform_notice
-                        ? 'border-purple-300 dark:border-purple-600/80 ring-1 ring-purple-400/20'
-                        : notice.is_pinned
-                        ? 'border-blue-400 dark:border-blue-600 ring-1 ring-blue-400/30'
-                        : 'border-gray-200 dark:border-gray-700'
-                    }`}
+                    className="p-5 rounded-xl border border-border transition-all bg-card shadow-xs"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="space-y-1.5 flex-1">

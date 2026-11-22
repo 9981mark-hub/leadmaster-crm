@@ -1420,19 +1420,19 @@ export default function TrainingCenterPage() {
       {activeTab === 'admin' ? (
         isAgent ? (
           /* 🎓 일반 상담원 전용: 내 훈련 기록 및 팀장 코칭 피드백 뷰 */
-          <div className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-900/60 shadow-sm space-y-5">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="p-5 sm:p-6 rounded-xl bg-card border border-border shadow-xs space-y-5">
+            <div className="flex items-center justify-between pb-4 border-b border-border">
               <div>
-                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-purple-600" />
+                <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-primary" strokeWidth={1.75} />
                   나의 AI 모의 훈련 이력 & 팀장 코칭 피드백
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   내가 연습한 실전 모의 통화 기록과 관리자(팀장)님이 남겨주신 평가 등급(S~F) 및 실전 조언을 확인하세요.
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800">
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 font-mono">
                   내 훈련 세션 총 {mySessions.length}건 완료
                 </span>
               </div>
@@ -1440,19 +1440,19 @@ export default function TrainingCenterPage() {
 
             {/* 상담원 개인 성과 요약 카드 */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50">
-                <div className="text-xs font-semibold text-purple-600 dark:text-purple-400">총 모의 훈련</div>
-                <div className="text-lg font-black text-purple-950 dark:text-purple-100 mt-1">{mySessions.length}회</div>
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border">
+                <div className="text-xs font-medium text-muted-foreground">총 모의 훈련</div>
+                <div className="text-lg font-bold text-foreground font-mono tabular-nums mt-1">{mySessions.length}회</div>
               </div>
-              <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50">
-                <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">최고 평가 점수</div>
-                <div className="text-lg font-black text-blue-950 dark:text-blue-100 mt-1">
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border">
+                <div className="text-xs font-medium text-muted-foreground">최고 평가 점수</div>
+                <div className="text-lg font-bold text-foreground font-mono tabular-nums mt-1">
                   {mySessions.length > 0 ? Math.max(...mySessions.map(s => s.report.totalScore)) : 0}점
                 </div>
               </div>
-              <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
-                <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">최근 평가 등급</div>
-                <div className="text-lg font-black text-emerald-950 dark:text-emerald-100 mt-1">
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border">
+                <div className="text-xs font-medium text-muted-foreground">최근 평가 등급</div>
+                <div className="text-lg font-bold text-primary font-mono tabular-nums mt-1">
                   {mySessions[0]?.adminFeedback?.grade
                     ? `${mySessions[0].adminFeedback.grade}등급`
                     : mySessions[0]
@@ -1460,9 +1460,9 @@ export default function TrainingCenterPage() {
                     : '-'}
                 </div>
               </div>
-              <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50">
-                <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">평균 통화 시간</div>
-                <div className="text-lg font-black text-amber-950 dark:text-amber-100 mt-1">
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border">
+                <div className="text-xs font-medium text-muted-foreground">평균 통화 시간</div>
+                <div className="text-lg font-bold text-foreground font-mono tabular-nums mt-1">
                   {mySessions.length > 0
                     ? `${Math.floor(mySessions.reduce((acc, s) => acc + s.durationSeconds, 0) / mySessions.length / 60)}분 ${Math.round(mySessions.reduce((acc, s) => acc + s.durationSeconds, 0) / mySessions.length % 60)}초`
                     : '0초'}
@@ -1471,10 +1471,10 @@ export default function TrainingCenterPage() {
             </div>
 
             {mySessions.length === 0 ? (
-              <div className="py-16 text-center text-gray-500 dark:text-gray-400 space-y-2">
-                <GraduationCap className="w-12 h-12 mx-auto stroke-1 text-purple-300 dark:text-purple-600" />
-                <p className="text-sm font-semibold">아직 완료된 모의 훈련 세션이 없습니다.</p>
-                <p className="text-xs text-gray-500">
+              <div className="py-16 text-center text-muted-foreground space-y-2">
+                <GraduationCap className="w-12 h-12 mx-auto stroke-1 text-muted-foreground/40" />
+                <p className="text-sm font-semibold text-foreground">아직 완료된 모의 훈련 세션이 없습니다.</p>
+                <p className="text-xs text-muted-foreground">
                   상단의 🎯 6대 취약점 클리닉이나 🎲 무규칙 고객을 선택하여 실전 모의 통화를 시작해 보세요!
                 </p>
               </div>
@@ -1482,7 +1482,7 @@ export default function TrainingCenterPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 text-gray-500 font-bold">
+                    <tr className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
                       <th className="py-3 px-4">훈련 일시</th>
                       <th className="py-3 px-4">연습 고객 페르소나 (유형)</th>
                       <th className="py-3 px-4">통화 시간</th>
@@ -1492,42 +1492,36 @@ export default function TrainingCenterPage() {
                       <th className="py-3 px-4 text-right">피드백 & 녹취 확인</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-border">
                     {mySessions.map(record => (
-                      <tr key={record.sessionId} className="hover:bg-purple-50/40 dark:hover:bg-purple-950/20 transition-colors">
-                        <td className="py-3 px-4 text-gray-500 font-mono">
+                      <tr key={record.sessionId} className="hover:bg-muted/40 transition-colors">
+                        <td className="py-3 px-4 text-muted-foreground font-mono">
                           {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          <span className="font-semibold text-foreground">
                             {record.personaName || '가상 고객'}
                           </span>
-                          <span className="ml-1.5 px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                          <span className="ml-1.5 px-2 py-0.5 rounded text-xs bg-muted text-muted-foreground border border-border">
                             {record.categoryTitle || '모의'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 px-4 text-muted-foreground font-mono">
                           {Math.floor(record.durationSeconds / 60)}분 {record.durationSeconds % 60}초 ({record.totalTurns}턴)
                         </td>
-                        <td className="py-3 px-4 font-extrabold text-blue-600 dark:text-blue-400">
+                        <td className="py-3 px-4 font-bold text-foreground font-mono tabular-nums">
                           {record.report.totalScore}점
                         </td>
-                        <td className="py-3 px-4 font-bold text-indigo-600 dark:text-indigo-400">
+                        <td className="py-3 px-4 font-semibold text-primary font-mono tabular-nums">
                           {record.report.paralegalCard ? `${record.report.paralegalCard.handoffScore}점` : '-'}
                         </td>
                         <td className="py-3 px-4">
                           {record.adminFeedback ? (
-                            <span className={`px-2 py-0.5 rounded font-black text-xs ${
-                              record.adminFeedback.grade === 'S' ? 'bg-amber-100 text-amber-800' :
-                              record.adminFeedback.grade === 'A' ? 'bg-emerald-100 text-emerald-800' :
-                              record.adminFeedback.grade === 'B' ? 'bg-blue-100 text-blue-800' :
-                              record.adminFeedback.grade === 'C' ? 'bg-orange-100 text-orange-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
+                            <span className="px-2 py-0.5 rounded font-bold text-xs bg-primary/10 text-primary border border-primary/20">
                               {record.adminFeedback.grade}등급
                             </span>
                           ) : (
-                            <span className="text-gray-500 dark:text-gray-400 text-xs">미평가</span>
+                            <span className="text-muted-foreground text-xs">미평가</span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -1538,7 +1532,7 @@ export default function TrainingCenterPage() {
                               setCurrentSessionRecord(record);
                               setShowModal(true);
                             }}
-                            className="px-3 py-1 text-xs font-semibold rounded-lg bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/60 dark:hover:bg-purple-900 text-purple-800 dark:text-purple-200 transition-colors"
+                            className="px-3 py-1 text-xs font-semibold rounded-lg bg-card hover:bg-muted text-foreground border border-border transition-colors shadow-2xs"
                           >
                             📋 피드백 & 녹취 확인
                           </button>
@@ -1738,15 +1732,15 @@ export default function TrainingCenterPage() {
                       </>
                     )}
                   </h2>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                     trainingMode === 'inbound_lead'
-                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                      ? 'bg-primary/10 text-primary border border-primary/20'
+                      : 'bg-muted text-muted-foreground border border-border'
                   }`}>
                     {trainingMode === 'inbound_lead' ? '광고 DB 신청건' : '콜드콜 발신건'}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {trainingMode === 'inbound_lead'
                     ? '인터넷·SNS 광고를 보고 자가진단 신청서를 제출한 고객의 6대 핵심 심리 유형입니다.'
                     : '신입 상담원이 가장 버벅대는 6대 콜드콜 상황을 골라 즉각 실전 연습을 진행합니다.'}
@@ -1762,19 +1756,19 @@ export default function TrainingCenterPage() {
                             onClick={() => handleSelectInboundCategory(cat.id)}
                             className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
                               isSelected
-                                ? 'bg-purple-50/90 dark:bg-purple-950/50 border-purple-400 dark:border-purple-600 shadow-xs ring-1 ring-purple-400'
-                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-purple-300'
+                                ? 'bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20 text-foreground'
+                                : 'bg-card border-border hover:bg-muted/50 text-foreground'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                              <span className="font-bold text-foreground flex items-center gap-1.5">
                                 {cat.badge} {cat.title}
                               </span>
                             </div>
-                            <p className="text-xs text-purple-900 dark:text-purple-200 font-semibold mb-1">
+                            <p className="text-xs text-primary font-medium mb-1">
                               {cat.subtitle}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
+                            <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
                               🎯 <strong>골든룰:</strong> {cat.coreGoal}
                             </p>
                           </div>
@@ -1788,19 +1782,19 @@ export default function TrainingCenterPage() {
                             onClick={() => handleSelectCategory(cat.id)}
                             className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
                               isSelected
-                                ? 'bg-purple-50/80 dark:bg-purple-950/40 border-purple-400 dark:border-purple-600 shadow-sm ring-1 ring-purple-400'
-                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-purple-300'
+                                ? 'bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20 text-foreground'
+                                : 'bg-card border-border hover:bg-muted/50 text-foreground'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                              <span className="font-bold text-foreground flex items-center gap-1.5">
                                 {cat.badge} {cat.title}
                               </span>
                             </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 font-medium mb-1">
+                            <p className="text-xs text-foreground font-medium mb-1">
                               {cat.subtitle}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
+                            <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
                               🎯 <strong>목표:</strong> {cat.coreGoal}
                             </p>
                           </div>
@@ -1812,25 +1806,25 @@ export default function TrainingCenterPage() {
 
             {activeTab === 'random' && (
               /* 🎲 실전 텔레그램 접수 DB 기반 무한 AI 고객 생성 뷰 */
-              <div className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm space-y-3">
+              <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                    <Dice5 className="w-4 h-4 text-blue-600" />
+                  <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <Dice5 className="w-4 h-4 text-primary" strokeWidth={1.75} />
                     실전 텔레그램 접수 기반 무한 고객 엔진
                   </h2>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-mono font-semibold">
                     487건 실전 DB
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   실제 접수된 직업, 채무, 주거, 부양가족, 특이상황과 2026 회생·파산 법률 알고리즘을 결합하여 매번 완전히 새로운 실전 고객을 즉시 소환합니다.
                 </p>
 
                 {/* 테마 선택 칩 */}
                 <div className="space-y-1.5 pt-1">
-                  <div className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                  <div className="text-xs font-semibold text-foreground flex items-center justify-between">
                     <span>🎯 집중 연습 테마 선택</span>
-                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">클릭 즉시 소환</span>
+                    <span className="text-xs font-normal text-muted-foreground">클릭 즉시 소환</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {INFINITE_THEMES.map(t => {
@@ -1842,8 +1836,8 @@ export default function TrainingCenterPage() {
                           onClick={() => handleGenerateRandom(t.id)}
                           className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                             isThemeActive
-                              ? 'bg-blue-600 text-white font-bold shadow-sm'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                              ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                              : 'bg-muted/60 text-muted-foreground hover:text-foreground border border-border'
                           }`}
                         >
                           {t.badge}
@@ -1854,21 +1848,21 @@ export default function TrainingCenterPage() {
                 </div>
 
                 {/* 모의 상담 모드 토글 (실전 블라인드 vs 학습 가이드) */}
-                <div className="flex items-center justify-between p-2 rounded-xl bg-gray-100/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 text-xs">
-                  <span className="font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-muted/40 border border-border text-xs">
+                  <span className="font-semibold text-foreground flex items-center gap-1">
                     모의 통화 모드:
                   </span>
-                  <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-1 bg-card p-0.5 rounded-lg border border-border">
                     <button
                       type="button"
                       onClick={() => {
                         setIsBlindMode(true);
                         setShowCheatSheet(false);
                       }}
-                      className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
                         isBlindMode
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300'
+                          ? 'bg-primary text-primary-foreground shadow-xs'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <Lock className="w-3 h-3" />
@@ -1877,10 +1871,10 @@ export default function TrainingCenterPage() {
                     <button
                       type="button"
                       onClick={() => setIsBlindMode(false)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
                         !isBlindMode
-                          ? 'bg-purple-600 text-white shadow-xs'
-                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300'
+                          ? 'bg-primary text-primary-foreground shadow-xs'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <Eye className="w-3 h-3" />
@@ -2183,14 +2177,14 @@ export default function TrainingCenterPage() {
             )}
 
             {/* 실전 음성 엔진 및 수화기 필터 설정 박스 */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 space-y-2 text-xs shadow-xs">
-              <div className="flex items-center justify-between font-bold text-gray-800 dark:text-gray-200">
+            <div className="p-3.5 rounded-xl bg-card border border-border space-y-2 text-xs shadow-xs">
+              <div className="flex items-center justify-between font-semibold text-foreground">
                 <span className="flex items-center gap-1.5">
-                  <Volume2 className="w-3.5 h-3.5 text-blue-500" />
+                  <Volume2 className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
                   실전 고객 성대 & 통화 음질
                 </span>
                 {colabUrl && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold flex items-center gap-1">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold flex items-center gap-1">
                     🎙️ 2안 CosyVoice 2 복제 음성
                   </span>
                 )}
@@ -2198,12 +2192,12 @@ export default function TrainingCenterPage() {
 
               {/* Telephone Filter Toggle (상담원은 기본 ON 고정 숨김, 대표만 전사 설정 제어) */}
               {isOwner && (
-                <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between text-muted-foreground pt-1.5 border-t border-border">
                   <div className="flex flex-col">
-                    <span className="font-medium text-xs flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                    <span className="font-semibold text-xs flex items-center gap-1 text-foreground">
                       📞 전화 수화기 음질 필터 (대표 전용)
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">전사 상담원에게 기본 적용 (300~3400Hz 모사)</span>
+                    <span className="text-xs text-muted-foreground">전사 상담원에게 기본 적용 (300~3400Hz 모사)</span>
                   </div>
                   <button
                     onClick={async () => {
@@ -2214,10 +2208,10 @@ export default function TrainingCenterPage() {
                       await saveCompanyTrainingConfig({ ...currentCfg, usePhoneFilter: next });
                       setTrainingConfig(prev => ({ ...prev, usePhoneFilter: next }));
                     }}
-                    className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
+                    className={`px-2 py-0.5 rounded text-xs font-semibold transition-all ${
                       isPhoneFilterEnabled
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                        ? 'bg-primary text-primary-foreground shadow-xs'
+                        : 'bg-muted text-muted-foreground border border-border'
                     }`}
                   >
                     {isPhoneFilterEnabled ? '전사 필터 ON' : '필터 OFF'}
@@ -2226,27 +2220,27 @@ export default function TrainingCenterPage() {
               )}
 
               {/* TTS Mute Toggle */}
-              <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-muted-foreground pt-1.5 border-t border-border">
                 <span>AI 음성 발화 (TTS)</span>
                 <button
                   onClick={() => setIsTtsEnabled(!isTtsEnabled)}
-                  className={`p-1 rounded-lg ${isTtsEnabled ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-gray-200 text-gray-500'}`}
+                  className={`p-1 rounded-lg ${isTtsEnabled ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground'}`}
                 >
                   {isTtsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                 </button>
               </div>
 
               {/* 고객 성향별 자동 말속도 안내 */}
-              <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 pt-1.5 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-muted-foreground pt-1.5 border-t border-border">
                 <div className="flex flex-col">
-                  <span className="font-medium text-xs flex items-center gap-1">
+                  <span className="font-semibold text-xs flex items-center gap-1 text-foreground">
                     ⏱️ 고객 말속도 (성향 맞춤 자동)
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     고객의 나이·성향에 따라 실전 호흡이 자동 결정됩니다
                   </span>
                 </div>
-                <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                <span className="px-2 py-0.5 rounded text-xs font-semibold font-mono bg-muted text-foreground border border-border">
                   {(selectedPersona.speechOptions?.rate ?? 1.0).toFixed(2)}x {
                     (selectedPersona.speechOptions?.rate ?? 1.0) < 0.95 ? '(느긋/묵직)' :
                     (selectedPersona.speechOptions?.rate ?? 1.0) > 1.05 ? '(급함/재촉)' : '(표준 호흡)'
@@ -2333,26 +2327,26 @@ export default function TrainingCenterPage() {
                       {selectedPersona.leadContext.declaredDebt}
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">연체 상태</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400 text-xs block">
+                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border">
+                    <span className="text-xs text-muted-foreground block font-medium">연체 상태</span>
+                    <span className="font-bold text-amber-500 text-xs block">
                       {selectedPersona.leadContext.delinquencyStatus}
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">직업 및 소득</span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400 text-xs block">
+                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border">
+                    <span className="text-xs text-muted-foreground block font-medium">직업 및 소득</span>
+                    <span className="font-bold text-foreground text-xs block">
                       {selectedPersona.leadContext.incomeAndJob}
                     </span>
                   </div>
                 </div>
 
                 {/* 고객 남김말 / 고민 메모 */}
-                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-gray-900/90 border border-purple-200/70 dark:border-purple-800/50 text-xs">
-                  <span className="text-xs font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1 mb-1">
+                <div className="p-2.5 rounded-xl bg-muted/40 border border-border text-xs">
+                  <span className="text-xs font-semibold text-primary flex items-center gap-1 mb-1">
                     💬 고객 작성 남김말
                   </span>
-                  <p className="text-gray-800 dark:text-gray-200 text-xs font-medium italic">
+                  <p className="text-foreground text-xs font-medium italic">
                     "{selectedPersona.leadContext.inquiryNote}"
                   </p>
                 </div>
@@ -2360,20 +2354,20 @@ export default function TrainingCenterPage() {
             )}
 
             {/* Active Call Header Controller */}
-            <div className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="p-4 rounded-xl bg-card border border-border shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className={`w-3 h-3 rounded-full ${
-                  callState === 'connected' ? 'bg-emerald-500 animate-ping' :
+                  callState === 'connected' ? 'bg-primary animate-ping' :
                   callState === 'calling' ? 'bg-amber-500 animate-pulse' :
-                  callState === 'evaluating' ? 'bg-purple-500 animate-spin' :
-                  'bg-gray-300 dark:bg-gray-600'
+                  callState === 'evaluating' ? 'bg-primary animate-spin' :
+                  'bg-muted'
                 }`} />
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                    <h3 className="text-base font-bold text-foreground">
                       {selectedPersona.customerName}
                     </h3>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {selectedPersona.phone}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-medium">

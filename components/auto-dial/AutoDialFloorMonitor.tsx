@@ -190,21 +190,21 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
             type="button"
             onClick={handleRecycleMissed}
             disabled={isRecycling}
-            className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-50"
+            className="px-3.5 py-2 bg-card border border-border hover:bg-muted text-foreground rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
             title="당일 부재 건을 SIM 교차 설정으로 다시 큐에 투입합니다."
           >
-            <Moon size={14} />
-            {isRecycling ? '재투입 처리중...' : '🌙 골든타임 부재 재투입'}
+            <Moon size={14} className="text-amber-500" />
+            {isRecycling ? '재투입 처리중...' : '골든타임 부재 재투입'}
           </button>
 
           {/* 캠페인 시작 / 일시정지 */}
           <button
             type="button"
             onClick={handleToggleCampaignStatus}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
               campaign?.status === 'running'
-                ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
-                : 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-sm'
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
+                : 'bg-primary text-primary-foreground border-transparent hover:bg-primary/90'
             }`}
           >
             {campaign?.status === 'running' ? (
@@ -245,75 +245,75 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
       {/* 2. 라이브 플로어 KPI 카운터 카드 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* 통화중 */}
-        <div className="bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-3.5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300">
-            <span>🟢 통화중</span>
-            <PhoneCall size={14} className="animate-pulse text-emerald-600" />
+        <div className="bg-card border border-border p-3.5 rounded-xl shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> 통화중</span>
+            <PhoneCall size={14} className="text-primary" />
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-200 font-mono">
+            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
               {talkingCount}
             </span>
-            <span className="text-xs text-emerald-600 font-medium">명</span>
+            <span className="text-xs text-muted-foreground font-medium">명</span>
           </div>
         </div>
 
         {/* 신호/링중 */}
-        <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3.5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-300">
-            <span>🟡 신호대기 (링)</span>
-            <Phone size={14} className="text-amber-600" />
+        <div className="bg-card border border-border p-3.5 rounded-xl shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> 신호대기 (링)</span>
+            <Phone size={14} className="text-amber-500" />
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-amber-700 dark:text-amber-200 font-mono">
+            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
               {ringingCount}
             </span>
-            <span className="text-xs text-amber-600 font-medium">명</span>
+            <span className="text-xs text-muted-foreground font-medium">명</span>
           </div>
         </div>
 
         {/* 후처리 */}
-        <div className="bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3.5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-blue-800 dark:text-blue-300">
-            <span>🔵 후처리 (카운트)</span>
-            <Clock size={14} className="text-blue-600" />
+        <div className="bg-card border border-border p-3.5 rounded-xl shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /> 후처리 (카운트)</span>
+            <Clock size={14} className="text-muted-foreground" />
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-blue-700 dark:text-blue-200 font-mono">
+            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
               {wrapupCount}
             </span>
-            <span className="text-xs text-blue-600 font-medium">명</span>
+            <span className="text-xs text-muted-foreground font-medium">명</span>
           </div>
         </div>
 
         {/* 휴식/일시정지 */}
-        <div className="bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 p-3.5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-rose-800 dark:text-rose-300">
-            <span>🔴 일시정지 (휴식)</span>
-            <Pause size={14} className="text-rose-600" />
+        <div className="bg-card border border-border p-3.5 rounded-xl shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> 일시정지 (휴식)</span>
+            <Pause size={14} className="text-rose-500" />
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-black text-rose-700 dark:text-rose-200 font-mono">
+            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
               {pausedCount}
             </span>
-            <span className="text-xs text-rose-600 font-medium">명</span>
+            <span className="text-xs text-muted-foreground font-medium">명</span>
           </div>
         </div>
 
         {/* 총 진행 진척도 */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3.5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-gray-700 dark:text-gray-300">
+        <div className="bg-card border border-border p-3.5 rounded-xl shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>당일 콜 소화율</span>
-            <span className="text-indigo-600 font-mono">{overallProgress}%</span>
+            <span className="text-primary font-mono tabular-nums font-semibold">{overallProgress}%</span>
           </div>
           <div className="mt-2">
-            <span className="text-lg font-black text-gray-900 dark:text-white font-mono">
+            <span className="text-lg font-bold text-foreground font-mono tabular-nums">
               {totalCompletedLeads}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono"> / {totalAssignedLeads}</span>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mt-1.5 overflow-hidden">
+            <span className="text-xs text-muted-foreground font-mono tabular-nums"> / {totalAssignedLeads}</span>
+            <div className="w-full bg-muted h-1.5 rounded-full mt-1.5 overflow-hidden">
               <div
-                className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
+                className="bg-primary h-1.5 rounded-full transition-all duration-500"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
@@ -321,35 +321,35 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
         </div>
 
         {/* 연결률 */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3.5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-bold text-gray-700 dark:text-gray-300">
+        <div className="bg-card border border-border p-3.5 rounded-xl shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>통화 연결률</span>
-            <span className="text-emerald-600 font-mono">{overallConnectRate}%</span>
+            <span className="text-primary font-mono tabular-nums font-semibold">{overallConnectRate}%</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-lg font-black text-emerald-600 font-mono">
+            <span className="text-lg font-bold text-foreground font-mono tabular-nums">
               {totalConnectedLeads}건
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">부재 {totalNoAnswerLeads}</span>
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">부재 {totalNoAnswerLeads}</span>
           </div>
         </div>
       </div>
 
       {/* 3. 전체 상담원 실시간 라이브 보드 (Floor Table) */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/40">
-          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-2">
-            <Users size={15} className="text-indigo-600" />
+      <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-muted/40">
+          <span className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-2">
+            <Users size={15} className="text-primary" />
             상담원별 실시간 콜 상태 및 소화 현황 ({allocations.length}명)
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-muted-foreground">
             상태 뱃지 클릭 시 세션 리셋 가능
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50 dark:bg-gray-900/80 text-gray-500 dark:text-gray-400 font-semibold border-b border-gray-100 dark:border-gray-700">
+            <thead className="bg-muted/50 text-muted-foreground font-mono text-2xs uppercase tracking-wider border-b border-border">
               <tr>
                 <th className="py-3 px-6">상담원</th>
                 <th className="py-3 px-4">실시간 상태</th>

@@ -385,11 +385,11 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
                             <div className="flex justify-between items-center mt-1">
                                 <div className="flex items-center gap-2">
-                                    <Link to={`/case/${c.caseId}`} onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }} className="font-bold text-lg text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400">
+                                    <Link to={`/case/${c.caseId}`} onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }} className="font-semibold text-lg text-foreground hover:text-primary">
                                         {getDisplayName(c.customerName, c.caseId)}
                                     </Link>
                                     {c.isArchived && (
-                                        <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full font-medium" title={c.archivedReason || '보관됨'}>
+                                        <span className="text-[10px] bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded-md font-medium" title={c.archivedReason || '보관됨'}>
                                             보관
                                         </span>
                                     )}
@@ -645,13 +645,13 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                             <Link
                                                 to={`/case/${c.caseId}`}
                                                 onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }}
-                                                className="font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                                className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1"
                                             >
                                                 <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
                                                     {getDisplayName(c.customerName, c.caseId)}
                                                 </span>
-                                                {c.isNew && <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse flex-shrink-0">NEW</span>}
-                                                {c.isArchived && <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
+                                                {c.isNew && <span className="text-[10px] font-semibold bg-destructive/15 text-destructive border border-destructive/30 px-1.5 py-0.5 rounded-md flex-shrink-0">NEW</span>}
+                                                {c.isArchived && <span className="text-[10px] bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded-md flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
                                             </Link>
                                             <HoverCheckTooltip
                                                 desktopAlign="left"
