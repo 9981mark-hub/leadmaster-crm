@@ -86,21 +86,21 @@ export default function DncManagementPanel() {
   });
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
       {/* Header */}
-      <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-red-600 text-white shadow-sm">
-            <PhoneOff size={20} />
+          <div className="p-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 shadow-2xs">
+            <PhoneOff size={18} strokeWidth={1.75} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               수신거부 / 통화거부 (DNC) 블랙리스트 관리
-              <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 font-semibold">
+              <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">
                 총 {list.length}건 차단 중
               </span>
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               통화를 원치 않는 고객을 격리하고, 신규 엑셀 DB 업로드 시 자동으로 배정에서 사전 제외합니다.
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function DncManagementPanel() {
           <button
             onClick={handleRunRotation}
             disabled={rotating}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-200 hover:bg-indigo-100 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md bg-muted text-foreground border border-border hover:bg-muted/80 transition-colors shadow-2xs"
             title="48시간 이상 경과한 부재 리드를 타 상담원에게 자동 토스"
           >
             <ArrowRightLeft size={13} className={rotating ? 'animate-spin' : ''} />
@@ -119,24 +119,24 @@ export default function DncManagementPanel() {
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs transition-colors"
           >
-            <Plus size={14} />
+            <Plus size={13} strokeWidth={1.75} />
             DNC 번호 추가
           </button>
 
           <button
             onClick={loadData}
             disabled={loading}
-            className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="p-1 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
       {/* Filter bar */}
-      <div className="p-4 bg-gray-50/70 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700 flex flex-wrap gap-3 items-center">
+      <div className="p-3 bg-muted/30 border-b border-border flex flex-wrap gap-2.5 items-center">
         <div className="relative flex-1 min-w-[240px]">
           <Search size={15} className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" />
           <input

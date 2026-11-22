@@ -136,37 +136,37 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 상단 헤더 배너 */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-sky-100 to-sky-50 dark:from-slate-900 dark:via-sky-950 dark:to-slate-900 border border-sky-200 dark:border-sky-900/40 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-600 dark:text-sky-400 shadow-inner">
-            <Building size={22} />
+      <div className="p-4 rounded-xl bg-card border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <Building size={20} strokeWidth={1.75} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-100/80 dark:bg-sky-950/80 px-2.5 py-0.5 rounded-full border border-sky-200/60 dark:border-sky-800/60">
+              <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
                 TM 대표 전용 · 경영 & 자금 전용 뷰
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{todayFormatted}</span>
+              <span className="text-2xs text-muted-foreground font-mono">{todayFormatted}</span>
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">
+            <h3 className="text-sm font-semibold text-foreground mt-1">
               제휴 로펌 수임료 청구, 상담원 인센티브, DB 원가 및 고정비 거시 캘린더
             </h3>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/settlement"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-lg transition-all shadow-xs"
           >
-            <Building size={14} />
+            <Building size={13} strokeWidth={1.75} />
             정산·손익 센터 →
           </Link>
           <Link
             to="/billing"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground text-xs font-medium rounded-lg border border-border transition-all shadow-xs"
           >
-            <CreditCard size={14} />
+            <CreditCard size={13} strokeWidth={1.75} />
             빌링 센터 →
           </Link>
         </div>
@@ -174,129 +174,129 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
 
       {/* 1단: 자금 4대 핵심 지표 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
-            <span className="flex items-center gap-1.5">
-              <DollarSign size={14} className="text-sky-600 dark:text-sky-400" />
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1">
+            <span className="flex items-center gap-1.5 text-foreground">
+              <DollarSign size={14} strokeWidth={1.75} className="text-primary" />
               로펌 수수료 총매출
             </span>
-            <span className="text-xs text-sky-600 dark:text-sky-400 font-bold bg-sky-100 dark:bg-sky-950 px-2 py-0.5 rounded border border-sky-200/50 dark:border-sky-800/50">
+            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
               {partners.length}개 로펌
             </span>
           </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-slate-900 dark:text-white font-mono tabular-nums">
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
               ₩ {metrics.totalCommissionWon.toLocaleString()}
             </span>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
+            <span className="text-xs text-muted-foreground">원</span>
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-2 font-mono">
             체결 수임 사건 누적 수수료
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1">
+            <span className="flex items-center gap-1.5 text-foreground">
+              <CheckCircle2 size={14} strokeWidth={1.75} className="text-primary" />
               수금 완료 금액
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50">
+            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
               정산 완료
             </span>
           </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums">
               ₩ {metrics.totalDepositedWon.toLocaleString()}
             </span>
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">원</span>
+            <span className="text-xs text-primary font-medium">원</span>
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-2 font-mono">
             실제 입금 완료된 계약금 총액
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
-            <span className="flex items-center gap-1.5">
-              <AlertCircle size={14} className="text-amber-600 dark:text-amber-400" />
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1">
+            <span className="flex items-center gap-1.5 text-foreground">
+              <AlertCircle size={14} strokeWidth={1.75} className="text-amber-500" />
               미수금 잔액
             </span>
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/50">
+            <span className="text-2xs font-mono font-medium text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
               회수 관리
             </span>
           </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-2xl font-semibold tracking-tight text-amber-500 font-mono tabular-nums">
               ₩ {metrics.outstandingWon.toLocaleString()}
             </span>
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">원</span>
+            <span className="text-xs text-amber-500 font-medium">원</span>
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-2 font-mono">
             분납 약정 및 미입금 잔액
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
-            <span className="flex items-center gap-1.5">
-              <Users size={14} className="text-purple-600 dark:text-purple-400" />
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1">
+            <span className="flex items-center gap-1.5 text-foreground">
+              <Users size={14} strokeWidth={1.75} className="text-primary" />
               상담원 인센티브 대기
             </span>
-            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/50">
+            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
               지급 예정
             </span>
           </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-purple-600 dark:text-purple-300 font-mono tabular-nums">
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
               ₩ {metrics.pendingPayoutWon.toLocaleString()}
             </span>
-            <span className="text-xs font-semibold text-purple-600 dark:text-purple-300">원</span>
+            <span className="text-xs text-muted-foreground">원</span>
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-2 font-mono">
             정산 확정 미지급 수당 총액
           </div>
         </div>
       </div>
 
       {/* 2단: 이달의 주요 자금 D-Day 캘린더 타임라인 */}
-      <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="bg-card border border-border rounded-xl p-5 shadow-xs">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <Calendar size={18} className="text-sky-600 dark:text-sky-400" />
+            <Calendar size={18} strokeWidth={1.75} className="text-primary" />
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">이번 달 핵심 자금 집행 & 수금 D-Day 타임라인</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">대표가 반드시 사전에 대비해야 할 주간/월간 자금 일정입니다.</p>
+              <h4 className="text-sm font-semibold text-foreground">이번 달 핵심 자금 집행 & 수금 D-Day 타임라인</h4>
+              <p className="text-xs text-muted-foreground">대표가 반드시 사전에 대비해야 할 주간/월간 자금 일정입니다.</p>
             </div>
           </div>
-          <span className="text-xs text-sky-600 dark:text-sky-400 bg-sky-100/80 dark:bg-sky-950/80 px-2.5 py-1 rounded-full border border-sky-200/50 dark:border-sky-800/50 font-bold">
+          <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20">
             정기 집행 스케줄
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {financialEvents.map(evt => {
             const Icon = evt.icon;
             return (
               <div 
                 key={evt.id}
-                className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-200 dark:border-slate-700 transition-all flex items-center justify-between"
+                className="p-3.5 rounded-lg bg-muted/40 border border-border hover:border-primary/40 transition-all flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${evt.color}`}>
-                    <Icon size={18} />
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center border bg-muted text-foreground border-border">
+                    <Icon size={16} strokeWidth={1.75} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">{evt.title}</span>
-                      <span className="text-xs px-2 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      <span className="text-xs font-semibold text-foreground">{evt.title}</span>
+                      <span className="text-2xs font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
                         {evt.category}
                       </span>
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-3">
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 font-mono">
                       <span>{evt.dateDesc}</span>
                       {evt.amountWon > 0 && (
-                        <span className="font-semibold text-slate-200 font-mono">
+                        <span className="font-semibold text-foreground tabular-nums">
                           규모: ₩ {evt.amountWon.toLocaleString()}원
                         </span>
                       )}
@@ -305,7 +305,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
                 </div>
 
                 <div className="text-right">
-                  <span className="inline-block px-2.5 py-1 rounded-lg text-xs font-extrabold bg-sky-500/20 text-sky-300 border border-sky-500/40">
+                  <span className="inline-block px-2 py-0.5 rounded text-2xs font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
                     D-{evt.dDay}
                   </span>
                 </div>
@@ -316,56 +316,56 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
       </div>
 
       {/* 3단: N개 제휴 법률사무소별 정산 정책 & 대사 카드 */}
-      <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="bg-card border border-border rounded-xl p-5 shadow-xs">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <Building size={18} className="text-indigo-600 dark:text-indigo-400" />
+            <Building size={18} strokeWidth={1.75} className="text-primary" />
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">제휴 법률사무소별 계약 대사 & 정산 정책 현황</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">제휴처별 독립 수수료율 및 주간 정산 마감 주기</p>
+              <h4 className="text-sm font-semibold text-foreground">제휴 법률사무소별 계약 대사 & 정산 정책 현황</h4>
+              <p className="text-xs text-muted-foreground">제휴처별 독립 수수료율 및 주간 정산 마감 주기</p>
             </div>
           </div>
           <Link
             to="/settlement"
-            className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-bold"
+            className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
           >
             정산 세부 대사 열기 <ChevronRight size={14} />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {metrics.partnerBreakdown.map(p => (
-            <div key={p.partnerId} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between">
+            <div key={p.partnerId} className="p-3.5 rounded-lg bg-muted/40 border border-border flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-slate-900 dark:text-white">{p.name}</span>
-                  <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-100/80 dark:bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-200/40 dark:border-indigo-800/40">
+                  <span className="font-semibold text-sm text-foreground">{p.name}</span>
+                  <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
                     {p.caseCount}건 유치
                   </span>
                 </div>
-                <div className="mt-3 space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+                <div className="mt-2.5 space-y-1 text-xs text-muted-foreground font-mono">
                   <div className="flex justify-between">
                     <span>정산 주기:</span>
-                    <span className="text-slate-200 font-medium">{p.cutoffLabel} → {p.payoutLabel}</span>
+                    <span className="text-foreground font-medium">{p.cutoffLabel} → {p.payoutLabel}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>수수료 매출:</span>
-                    <span className="text-sky-300 font-bold font-mono">₩ {p.commissionWon.toLocaleString()}</span>
+                    <span className="text-foreground font-semibold tabular-nums">₩ {p.commissionWon.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>수금 / 미수:</span>
-                    <span className="font-mono">
-                      <span className="text-emerald-600 dark:text-emerald-400">₩ {p.depositedWon.toLocaleString()}</span> / 
-                      <span className="text-amber-600 dark:text-amber-400 ml-1">₩ {p.outstandingWon.toLocaleString()}</span>
+                    <span className="tabular-nums">
+                      <span className="text-primary font-medium">₩ {p.depositedWon.toLocaleString()}</span> / 
+                      <span className="text-amber-500 ml-1 font-medium">₩ {p.outstandingWon.toLocaleString()}</span>
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-200/80 dark:border-slate-800/80 flex justify-end">
+              <div className="mt-3 pt-2.5 border-t border-border flex justify-end">
                 <button
                   onClick={() => navigate('/settlement')}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-semibold"
+                  className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
                 >
                   제휴처 청구서 확인 <ArrowUpRight size={12} />
                 </button>

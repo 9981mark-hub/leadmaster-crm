@@ -1071,24 +1071,24 @@ export default function MyPage() {
 
                             {/* 대표 전용 긴급 원격 전체 로그아웃 */}
                             {isOwner && (
-                                <div className="mb-3 p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
-                                    <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 text-xs font-bold mb-1">
-                                        <ShieldAlert size={14} /> 최고 관리자 긴급 보안 통제
+                                <div className="mb-3 p-3 bg-muted/40 rounded-xl border border-border">
+                                    <div className="flex items-center gap-1.5 text-foreground text-xs font-semibold mb-1">
+                                        <ShieldAlert size={14} className="text-muted-foreground" /> 최고 관리자 긴급 보안 통제
                                     </div>
-                                    <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mb-2 leading-relaxed">
+                                    <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
                                         보안 위협 시 모든 기기의 세션을 즉시 강제 종료합니다.
                                     </p>
                                     <button
                                         type="button"
                                         onClick={handleEmergencyForceLogoutAll}
-                                        className="btn-tactile w-full py-1.5 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold shadow-2xs transition-colors"
+                                        className="btn-tactile w-full py-1.5 px-3 bg-card border border-border text-foreground hover:bg-muted rounded-lg text-xs font-medium shadow-xs transition-colors"
                                     >
                                         다른 모든 기기 강제 세션 해제
                                     </button>
                                 </div>
                             )}
 
-                            <Button variant="danger" size="md" onClick={handleLogout} className="btn-tactile w-full">
+                            <Button variant="outline" size="md" onClick={handleLogout} className="btn-tactile w-full text-destructive hover:bg-destructive/10 border-destructive/20">
                                 <LogOut size={15} /> 안전하게 로그아웃
                             </Button>
                         </Card>
@@ -1097,7 +1097,7 @@ export default function MyPage() {
                         {isOwner && (
                             <Card className="card-interactive">
                                 <h3 className="text-sm font-bold text-foreground mb-1.5 flex items-center gap-2">
-                                    <Users size={16} className="text-purple-600 dark:text-purple-400" /> 관리자 허용 Google 계정
+                                    <Users size={16} className="text-primary" /> 관리자 허용 Google 계정
                                 </h3>
                                 <p className="text-xs text-muted-foreground mb-3">
                                     관리자로 로그인할 수 있는 Google 계정을 관리합니다.

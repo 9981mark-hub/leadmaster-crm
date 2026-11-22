@@ -276,18 +276,18 @@ export default function AgentPerformancePanel() {
   const scheduleSentence = formatPayoutSchedule(settings.payoutSchedule);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden space-y-0">
+    <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden space-y-0">
       {/* 1. Header */}
-      <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-md">
-            <Trophy size={22} />
+          <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+            <Trophy size={20} strokeWidth={1.75} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               팀원 활동 성과 & 다원화 인센티브 대시보드
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               계약 종류별 차등 성과급 산정 및 회사 맞춤 지급일 스케줄 관리
             </p>
           </div>
@@ -295,46 +295,46 @@ export default function AgentPerformancePanel() {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* 기간 선택 토글 */}
-          <div className="bg-gray-100 dark:bg-gray-700/60 p-1 rounded-xl flex text-xs font-semibold">
+          <div className="bg-muted/60 p-0.5 rounded-lg border border-border/80 flex text-2xs font-mono">
             <button
               onClick={() => setPeriod('payout')}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
                 period === 'payout'
-                  ? 'bg-blue-600 text-white shadow-sm font-bold'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                  ? 'bg-background text-foreground shadow-2xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Sparkles size={13} />
+              <Sparkles size={12} strokeWidth={1.75} />
               이번 정산 회차
             </button>
             <button
               onClick={() => setPeriod('month')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                period === 'month' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs font-bold' : 'text-gray-600 dark:text-gray-300'
+              className={`px-2.5 py-1 rounded-md transition-all ${
+                period === 'month' ? 'bg-background text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               이번 달
             </button>
             <button
               onClick={() => setPeriod('week')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                period === 'week' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs font-bold' : 'text-gray-600 dark:text-gray-300'
+              className={`px-2.5 py-1 rounded-md transition-all ${
+                period === 'week' ? 'bg-background text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               이번 주
             </button>
             <button
               onClick={() => setPeriod('today')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                period === 'today' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs font-bold' : 'text-gray-600 dark:text-gray-300'
+              className={`px-2.5 py-1 rounded-md transition-all ${
+                period === 'today' ? 'bg-background text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               오늘
             </button>
             <button
               onClick={() => setPeriod('last30')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                period === 'last30' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs font-bold' : 'text-gray-600 dark:text-gray-300'
+              className={`px-2.5 py-1 rounded-md transition-all ${
+                period === 'last30' ? 'bg-background text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               최근 30일
@@ -343,122 +343,122 @@ export default function AgentPerformancePanel() {
 
           <button
             onClick={openSettingsModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md border border-border bg-muted/50 text-foreground hover:bg-muted transition-colors shadow-2xs"
           >
-            <Settings size={14} />
+            <Settings size={13} strokeWidth={1.75} />
             인센티브 & 지급일 설정
           </button>
 
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs transition-colors"
           >
-            <Download size={14} />
+            <Download size={13} strokeWidth={1.75} />
             정산 엑셀
           </button>
 
           <button
             onClick={loadData}
             disabled={loading}
-            className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="p-1 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             title="새로고침"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
       {/* 2. 회사 맞춤 인센티브 정산 회차 & 지급일 정보 배너 */}
-      <div className="px-5 py-3.5 bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-purple-50/40 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/20 border-b border-blue-100 dark:border-blue-900/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 font-bold text-blue-900 dark:text-blue-200">
-            <Calendar size={15} className="text-blue-600 dark:text-blue-400" />
+          <div className="flex items-center gap-1.5 font-medium text-foreground">
+            <Calendar size={14} strokeWidth={1.75} className="text-primary" />
             <span>현재 정산 회차:</span>
-            <span className="px-2 py-0.5 rounded-md bg-white dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-extrabold">
+            <span className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/20">
               {payoutInfo.label} ({payoutInfo.startDate.slice(5, 10)} ~ {payoutInfo.endDate.slice(5, 10)})
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-indigo-900 dark:text-indigo-200">
-            <DollarSign size={15} className="text-indigo-600 dark:text-indigo-400" />
+          <div className="flex items-center gap-1.5 text-foreground font-mono">
+            <DollarSign size={14} strokeWidth={1.75} className="text-primary" />
             <span>지급 예정일:</span>
-            <span className="font-extrabold text-indigo-700 dark:text-indigo-300">
+            <span className="font-semibold text-foreground">
               {payoutInfo.payoutDate}
             </span>
-            <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${
+            <span className={`px-1.5 py-0.5 rounded text-2xs font-mono font-medium border ${
               payoutInfo.dDay > 0
-                ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                ? 'bg-destructive/10 text-destructive border-destructive/20'
+                : 'bg-primary/10 text-primary border border-primary/20'
             }`}>
               {payoutInfo.dDay > 0 ? `D-${payoutInfo.dDay}` : payoutInfo.dDay === 0 ? 'D-Day (오늘)' : '정산 완료'}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-xs">
+        <div className="flex items-center gap-2 text-muted-foreground text-2xs font-mono">
           <span className="truncate max-w-[420px]" title={scheduleSentence}>
             📌 <b>지급 규칙</b>: {scheduleSentence}
           </span>
-          <span className="text-gray-500 dark:text-gray-400">·</span>
-          <span className="text-blue-600 dark:text-blue-400 font-semibold">
+          <span>·</span>
+          <span className="text-primary font-medium">
             계약 종류 {settings.contractTypes.length}개 적용 중
           </span>
         </div>
       </div>
 
       {/* 3. 상단 4대 핵심 요약 카드 */}
-      <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-800/40">
-        <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700 shadow-2xs">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-xs font-semibold">
+      <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 border-b border-border bg-card">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>총 발신 / 연결 콜</span>
-            <PhoneCall size={16} className="text-blue-500" />
+            <PhoneCall size={15} strokeWidth={1.75} className="text-primary" />
           </div>
-          <div className="mt-2 text-2xl font-black text-gray-800 dark:text-white tabular-nums">
-            {totals.totalCalls.toLocaleString()} <span className="text-xs font-medium text-gray-500">콜</span>
+          <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums font-mono">
+            {totals.totalCalls.toLocaleString()} <span className="text-xs font-medium text-muted-foreground">콜</span>
           </div>
-          <div className="mt-1 text-xs text-blue-600 font-semibold">
+          <div className="mt-1 text-2xs text-primary font-mono font-medium">
             연결 {totals.totalConnected.toLocaleString()}건 ({totals.overallConnectRate}%)
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700 shadow-2xs">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-xs font-semibold">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>총 통화 시간</span>
-            <Clock size={16} className="text-emerald-500" />
+            <Clock size={15} strokeWidth={1.75} className="text-primary" />
           </div>
-          <div className="mt-2 text-2xl font-black text-gray-800 dark:text-white tabular-nums">
+          <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums font-mono">
             {fmtSec(totals.totalDuration)}
           </div>
-          <div className="mt-1 text-xs text-gray-500">
+          <div className="mt-1 text-2xs text-muted-foreground font-mono">
             콜당 평균 {fmtSec(totals.overallAvgDuration)}
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700 shadow-2xs">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-xs font-semibold">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>계약 완료 건수</span>
-            <Award size={16} className="text-purple-500" />
+            <Award size={15} strokeWidth={1.75} className="text-primary" />
           </div>
-          <div className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400 tabular-nums">
-            {totals.totalContracts.toLocaleString()} <span className="text-xs font-medium text-gray-500">건</span>
+          <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums font-mono">
+            {totals.totalContracts.toLocaleString()} <span className="text-xs font-medium text-muted-foreground">건</span>
           </div>
-          <div className="mt-1 text-xs text-gray-500 font-mono">
+          <div className="mt-1 text-2xs text-muted-foreground font-mono tabular-nums">
             총 수임료 ₩ {totals.totalRevenue.toLocaleString()}원
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
-          <div className="flex items-center justify-between text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-primary text-xs font-medium">
             <span>예상 인센티브 합계</span>
-            <DollarSign size={16} className="text-indigo-600" />
+            <DollarSign size={15} strokeWidth={1.75} className="text-primary" />
           </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400 tabular-nums font-mono">
+          <div className="flex items-baseline gap-1 mt-2">
+            <span className="text-2xl font-semibold tracking-tight text-primary tabular-nums font-mono">
               ₩ {totals.totalIncentive.toLocaleString()}
             </span>
-            <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">원</span>
+            <span className="text-xs text-primary font-medium">원</span>
           </div>
-          <div className="mt-1 text-xs text-indigo-600 dark:text-indigo-300">
+          <div className="mt-1 text-2xs text-muted-foreground font-mono">
             {period === 'payout' ? '이번 회차 지급 예정' : '선택 기간 발생분'}
           </div>
         </div>
@@ -467,21 +467,21 @@ export default function AgentPerformancePanel() {
       {/* 4. 팀원 랭킹 및 세부 활동 테이블 */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs border-b border-gray-200 dark:border-gray-700">
+          <thead className="bg-muted/40 text-muted-foreground text-2xs font-mono border-b border-border">
             <tr>
-              <th className="text-center px-4 py-3 w-12">순위</th>
-              <th className="text-left px-4 py-3">팀원명 / 역할</th>
-              <th className="text-right px-3 py-3">담당 리드</th>
-              <th className="text-right px-3 py-3">발신 / 연결 (연결률)</th>
-              <th className="text-right px-3 py-3">총 통화시간 (평균)</th>
-              <th className="text-right px-3 py-3">재통화 예약</th>
-              <th className="text-right px-3 py-3">사무장 전달 (전달률)</th>
-              <th className="text-right px-3 py-3">계약 체결</th>
-              <th className="text-right px-3 py-3">수임료 매출</th>
-              <th className="text-right px-5 py-3">인센티브(성과급)</th>
+              <th className="text-center px-4 py-2.5 w-12">순위</th>
+              <th className="text-left px-4 py-2.5">팀원명 / 역할</th>
+              <th className="text-right px-3 py-2.5">담당 리드</th>
+              <th className="text-right px-3 py-2.5">발신 / 연결 (연결률)</th>
+              <th className="text-right px-3 py-2.5">총 통화시간 (평균)</th>
+              <th className="text-right px-3 py-2.5">재통화 예약</th>
+              <th className="text-right px-3 py-2.5">사무장 전달 (전달률)</th>
+              <th className="text-right px-3 py-2.5">계약 체결</th>
+              <th className="text-right px-3 py-2.5">수임료 매출</th>
+              <th className="text-right px-5 py-2.5">인센티브(성과급)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody className="divide-y divide-border">
             {kpis.map((k, idx) => {
               const isTop = idx === 0 && k.contractCount > 0;
               return (

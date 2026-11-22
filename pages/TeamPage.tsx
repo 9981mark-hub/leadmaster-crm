@@ -638,7 +638,7 @@ export default function TeamPage() {
                     <th className="text-left px-3 py-2">담당</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                <tbody className="divide-y divide-border">
                   {visibleCases.map(c => (
                     <tr
                       key={c.caseId}
@@ -686,7 +686,7 @@ export default function TeamPage() {
             </div>
             <div className="max-h-72 overflow-y-auto">
               <table className="w-full text-xs">
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                <tbody className="divide-y divide-border">
                   {logs.map(l => {
                     const cs = liveCases.find(c => c.caseId === l.caseId);
                     return (
@@ -779,27 +779,27 @@ export default function TeamPage() {
       {activeTab === 'members' && (
         <div className="space-y-6">
           {/* 멤버 목록 */}
-          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
+          <section className="bg-card rounded-xl border border-border shadow-xs">
+            <div className="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Users size={18} className="text-blue-600" />
-                <h2 className="font-bold text-gray-800 dark:text-white">멤버 {members.length}명</h2>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <Users size={16} strokeWidth={1.75} className="text-primary" />
+                <h2 className="font-semibold text-sm text-foreground">멤버 {members.length}명</h2>
+                <span className="text-2xs font-mono text-muted-foreground">
                   사용 중 {activeMembers.length}명
                 </span>
               </div>
               {/* 4대 표준 직급 분포 현황 뱃지 */}
-              <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono font-semibold">
-                <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+              <div className="flex flex-wrap items-center gap-1 text-2xs font-mono">
+                <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-medium">
                   👑 대표 {members.filter(m => m.status === 'active' && m.role === 'owner').length}
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                <span className="px-2 py-0.5 rounded bg-muted text-foreground border border-border font-medium">
                   🎖️ 총괄 {members.filter(m => m.status === 'active' && m.role === 'admin' && m.adminPermissions?.tier === 3).length}
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                <span className="px-2 py-0.5 rounded bg-muted text-foreground border border-border font-medium">
                   🛡️ 팀장 {members.filter(m => m.status === 'active' && m.role === 'admin' && (m.adminPermissions?.tier || 1) < 3).length}
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
                   🎧 상담원 {members.filter(m => m.status === 'active' && m.role === 'agent').length}
                 </span>
               </div>
@@ -889,7 +889,7 @@ export default function TeamPage() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm min-w-[920px]">
-                <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs select-none">
+                <thead className="bg-muted/40 text-muted-foreground text-2xs font-mono border-b border-border select-none">
                   <tr>
                     <th className="text-left px-5 py-2.5 whitespace-nowrap min-w-[140px]">이름</th>
                     <th className="text-left px-3 py-2.5 whitespace-nowrap min-w-[90px]">소속 팀</th>
@@ -902,7 +902,7 @@ export default function TeamPage() {
                     <th className="text-right px-5 py-2.5 whitespace-nowrap min-w-[120px]">관리</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                <tbody className="divide-y divide-border">
                   {members.map(m => (
                     <tr key={m.userId} className={m.status === 'disabled' ? 'opacity-50' : ''}>
                       <td className="px-5 py-2.5 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">

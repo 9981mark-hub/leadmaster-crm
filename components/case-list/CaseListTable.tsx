@@ -739,8 +739,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     >
                                                         {c.status === '사무장 접수' && c.secondaryStatus ? (
                                                             // 2차/3차 상태: 세로 스택 뱃지
-                                                            <span className="inline-flex flex-col px-2 py-1 rounded text-xs bg-gradient-to-r from-green-50 to-purple-50 border border-purple-200 max-w-[120px]">
-                                                                <span className="text-green-700 font-medium whitespace-nowrap">✓사무장</span>
+                                                            <span className="inline-flex flex-col px-2 py-0.5 rounded text-xs bg-muted/50 border border-border max-w-[120px]">
+                                                                <span className="text-primary font-medium whitespace-nowrap">✓사무장</span>
                                                                 <span className="flex items-center gap-0.5 mt-0.5">
                                                                     <span className={`font-medium truncate ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
                                                                         c.secondaryStatus === '연락안받음' ? 'text-orange-600' :

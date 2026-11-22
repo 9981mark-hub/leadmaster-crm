@@ -185,76 +185,76 @@ export default function PlatformPage() {
       </div>
 
       {/* 4대 핵심 재무 & 인프라 KPI 카드 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* KPI 1: 유료 고객사 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-blue-500/30 transition-all">
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">유료 고객사</span>
-            <div className="p-2 bg-blue-50 dark:bg-blue-950/40 rounded-xl text-blue-600 dark:text-blue-400">
-              <Building2 size={18} />
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">유료 고객사</span>
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
+              <Building2 size={16} strokeWidth={1.75} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
               {animatedActiveOrgs}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono tabular-nums">/ 총 {billingSummary.totalOrgs}개사</span>
+            <span className="text-2xs text-muted-foreground font-mono tabular-nums">/ 총 {billingSummary.totalOrgs}개사</span>
           </div>
-          <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+          <div className="mt-2 text-2xs text-primary font-mono font-medium flex items-center gap-1">
             <CheckCircle2 size={13} /> {billingSummary.activeOrgs > 0 ? '정상 서비스 가동 중' : '첫 고객사 유치 대기'}
           </div>
         </div>
 
         {/* KPI 2: 과금 상담원 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-indigo-500/30 transition-all">
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">과금 상담원 (합계)</span>
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl text-indigo-600 dark:text-indigo-400">
-              <Users size={18} />
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">과금 상담원 (합계)</span>
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
+              <Users size={16} strokeWidth={1.75} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
               {animatedTotalSeats}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">석 (활성 계정)</span>
+            <span className="text-2xs text-muted-foreground font-mono">석 (활성 계정)</span>
           </div>
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            좌석당 단가: <span className="font-semibold text-gray-800 dark:text-gray-200">₩ 48,000 / 월</span>
+          <div className="mt-2 text-2xs text-muted-foreground font-mono">
+            좌석당 단가: <span className="font-semibold text-foreground">₩ 48,000 / 월</span>
           </div>
         </div>
 
         {/* KPI 3: 당월 총 예상 매출 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-emerald-500/30 transition-all">
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">당월 총 예상 매출</span>
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-emerald-600 dark:text-emerald-400">
-              <DollarSign size={18} />
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">당월 총 예상 매출</span>
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
+              <DollarSign size={16} strokeWidth={1.75} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums">
               ₩ {animatedRevenue.toLocaleString()}
             </span>
           </div>
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          <div className="mt-2 text-2xs text-muted-foreground font-mono">
             VAT 별도 공급가액 기준
           </div>
         </div>
 
         {/* KPI 4: 인프라 원가 & 순마진 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xs hover:border-amber-500/30 transition-all">
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">인프라 원가 & 순마진</span>
-            <div className="p-2 bg-amber-50 dark:bg-amber-950/40 rounded-xl text-amber-600 dark:text-amber-400">
-              <TrendingUp size={18} />
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">인프라 원가 & 순마진</span>
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
+              <TrendingUp size={16} strokeWidth={1.75} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
               ₩ {animatedNetMargin.toLocaleString()}
             </span>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+            <span className="text-2xs font-semibold text-primary font-mono tabular-nums">
               ({billingSummary.marginPercent}%)
             </span>
           </div>
@@ -265,7 +265,7 @@ export default function PlatformPage() {
       </div>
 
       {/* 🏢 1. 신규 TM 회사 가입 신청 대기열 (옵션 A 실시간 승인 체계) */}
-      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 p-5 space-y-4 shadow-xs">
+      <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -400,7 +400,7 @@ export default function PlatformPage() {
       </section>
 
       {/* 새 고객 회사 등록 폼 (TM 표준 프리셋 원클릭 지원) */}
-      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 p-5 space-y-4 shadow-xs">
+      <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Plus size={18} className="text-blue-600 dark:text-blue-400" /> 신규 고객 회사 등록 (테넌트 생성)
@@ -466,23 +466,23 @@ export default function PlatformPage() {
       </section>
 
       {/* 고객 회사 목록 및 실시간 과금 테이블 */}
-      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 overflow-hidden shadow-xs">
-        <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 flex items-center justify-between">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+      <section className="bg-card rounded-xl border border-border overflow-hidden shadow-xs">
+        <div className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
+          <h3 className="font-semibold text-foreground text-xs flex items-center gap-2">
             <span>고객사 테넌트 목록 및 월간 청구 현황</span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+            <span className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/20">
               {orgs.length}
             </span>
           </h3>
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 inline-flex items-center gap-1.5 shadow-2xs">
-            <FileText size={12} className="text-blue-500 dark:text-blue-400 shrink-0" />
+          <span className="text-2xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border inline-flex items-center gap-1.5 shadow-2xs">
+            <FileText size={12} className="text-primary shrink-0" />
             청구서 복사 버튼으로 정산용 공식 마크다운 서식을 바로 추출할 수 있습니다.
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[1150px]">
-            <thead className="bg-gray-50/90 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 text-left border-b border-gray-200/80 dark:border-gray-700 text-xs select-none">
+            <thead className="bg-muted/40 text-muted-foreground text-left border-b border-border text-2xs font-mono select-none">
               <tr>
                 <th className="p-3.5 whitespace-nowrap min-w-[180px]">회사명</th>
                 <th className="p-3.5 whitespace-nowrap min-w-[105px]">상태</th>
@@ -495,7 +495,7 @@ export default function PlatformPage() {
                 <th className="p-3.5 text-right whitespace-nowrap min-w-[280px]">액션</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody className="divide-y divide-border">
               {orgs.map(o => {
                 const isHq = o.id === HQ_ORG_ID || o.slug === 'hq';
                 const bill = calculateOrgMonthlyBill(Math.max(1, o.activeMembers), permissionsMap[o.id]);

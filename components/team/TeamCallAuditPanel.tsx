@@ -110,20 +110,20 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
     <div className="space-y-6">
       
       {/* 1. 상단 안내 및 필터 컨트롤 바 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 md:p-5 space-y-4">
+      <div className="bg-card rounded-xl border border-border shadow-xs p-4 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-              <PhoneCall size={20} />
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+              <PhoneCall size={18} strokeWidth={1.75} />
             </span>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                 콜 활동 · AI 요약 및 대화록 모니터링
-                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300">
+                <span className="px-2 py-0.5 text-2xs font-mono font-medium rounded bg-primary/10 text-primary border border-primary/20">
                   실시간
                 </span>
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 직원들의 금일 통화 중 의미 있는 실전 상담을 선별하고 AI 요약문과 녹음 원본을 즉시 청취·검토합니다.
               </p>
             </div>
@@ -133,54 +133,54 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
             <button
               onClick={loadData}
               disabled={loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md border border-border bg-muted/50 text-foreground hover:bg-muted transition-colors disabled:opacity-50"
             >
-              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> 새로고침
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> 새로고침
             </button>
           </div>
         </div>
 
         {/* 필터 툴바 */}
-        <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border">
           
           {/* 일자 프리셋 버튼 */}
-          <div className="flex items-center bg-gray-100 dark:bg-gray-700 p-0.5 rounded-lg text-xs font-medium">
+          <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/80 text-2xs font-mono">
             <button
               onClick={() => setFilter(f => ({ ...f, preset: 'today' }))}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2.5 py-1 rounded-md transition-all ${
                 filter.preset === 'today'
-                  ? 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                  ? 'bg-background text-foreground shadow-2xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               오늘
             </button>
             <button
               onClick={() => setFilter(f => ({ ...f, preset: 'yesterday' }))}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2.5 py-1 rounded-md transition-all ${
                 filter.preset === 'yesterday'
-                  ? 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                  ? 'bg-background text-foreground shadow-2xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               어제
             </button>
             <button
               onClick={() => setFilter(f => ({ ...f, preset: 'week' }))}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2.5 py-1 rounded-md transition-all ${
                 filter.preset === 'week'
-                  ? 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                  ? 'bg-background text-foreground shadow-2xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               이번 주
             </button>
             <button
               onClick={() => setFilter(f => ({ ...f, preset: 'custom' }))}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2.5 py-1 rounded-md transition-all ${
                 filter.preset === 'custom'
-                  ? 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                  ? 'bg-background text-foreground shadow-2xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               날짜 지정
@@ -193,7 +193,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
               type="date"
               value={customDateInput}
               onChange={e => setCustomDateInput(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200"
+              className="px-2.5 py-1 text-xs bg-background border border-border rounded-lg text-foreground outline-none"
             />
           )}
 
@@ -201,7 +201,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
           <select
             value={filter.userId}
             onChange={e => setFilter(f => ({ ...f, userId: e.target.value }))}
-            className="px-3 py-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200"
+            className="px-2.5 py-1 text-xs bg-background border border-border rounded-lg text-foreground outline-none"
           >
             <option value="all">전체 직원</option>
             {teamMembers.map(m => (
@@ -215,7 +215,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
           <select
             value={filter.auditType}
             onChange={e => setFilter(f => ({ ...f, auditType: e.target.value as CallAuditType }))}
-            className="px-3 py-1.5 text-xs bg-white dark:bg-gray-700 border border-purple-300 dark:border-purple-600 text-purple-900 dark:text-purple-200 font-semibold rounded-lg"
+            className="px-2.5 py-1 text-xs bg-background border border-border text-foreground font-medium rounded-lg outline-none"
           >
             <option value="meaningful_only">⭐ 의미있는 상담만 (추천)</option>
             <option value="deep">💬 심층 상담 (채무/소득 확인)</option>
@@ -229,7 +229,7 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
           <select
             value={filter.minDurationSec}
             onChange={e => setFilter(f => ({ ...f, minDurationSec: Number(e.target.value) }))}
-            className="px-3 py-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200"
+            className="px-2.5 py-1 text-xs bg-background border border-border rounded-lg text-foreground outline-none"
           >
             <option value={0}>통화시간 전체</option>
             <option value={30}>30초 이상</option>
@@ -239,13 +239,13 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
 
           {/* 검색창 */}
           <div className="relative flex-1 min-w-[180px]">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               placeholder="고객명, 연락처, 요약 키워드 검색..."
               value={filter.searchKeyword}
               onChange={e => setFilter(f => ({ ...f, searchKeyword: e.target.value }))}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="w-full pl-8 pr-3 py-1 text-xs bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -253,59 +253,59 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
       </div>
 
       {/* 2. KPI 요약 카드 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-1">
-            <span className="text-xs font-medium">총 통화 건수</span>
-            <PhoneCall size={16} className="text-blue-600" />
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
+          <div className="flex items-center justify-between text-muted-foreground mb-1">
+            <span className="text-2xs font-mono font-medium">총 통화 건수</span>
+            <PhoneCall size={15} strokeWidth={1.75} className="text-primary" />
           </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {stats.totalCalls.toLocaleString()} <span className="text-xs font-normal text-gray-500 dark:text-gray-400">건</span>
+          <div className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+            {stats.totalCalls.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">건</span>
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-1 font-mono">
             선택 기간 내 발생한 전체 콜
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-purple-200 dark:border-purple-800 shadow-xs">
-          <div className="flex items-center justify-between text-purple-700 dark:text-purple-300 mb-1">
-            <span className="text-xs font-bold">의미있는 실전 상담</span>
-            <Sparkles size={16} className="text-purple-600" />
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
+          <div className="flex items-center justify-between text-primary mb-1">
+            <span className="text-2xs font-mono font-medium">의미있는 실전 상담</span>
+            <Sparkles size={15} strokeWidth={1.75} className="text-primary" />
           </div>
-          <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-            {stats.meaningfulCalls.toLocaleString()} <span className="text-xs font-normal text-gray-500 dark:text-gray-400">건</span>
-            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300">
+          <div className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums">
+            {stats.meaningfulCalls.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">건</span>
+            <span className="ml-2 text-2xs font-mono font-medium px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
               {stats.meaningfulRate}%
             </span>
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-1 font-mono">
             심층 상담 및 일정 약속 체결
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-1">
-            <span className="text-xs font-medium">재통화 · 일정 약속</span>
-            <Calendar size={16} className="text-amber-600" />
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
+          <div className="flex items-center justify-between text-muted-foreground mb-1">
+            <span className="text-2xs font-mono font-medium">재통화 · 일정 약속</span>
+            <Calendar size={15} strokeWidth={1.75} className="text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {stats.appointmentCalls.toLocaleString()} <span className="text-xs font-normal text-gray-500 dark:text-gray-400">건</span>
+          <div className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+            {stats.appointmentCalls.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">건</span>
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-2 font-mono">
             서류 안내 및 2차 통화 예약
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-1">
-            <span className="text-xs font-medium">평균 통화 시간</span>
-            <Clock size={16} className="text-emerald-600" />
+        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
+          <div className="flex items-center justify-between text-muted-foreground mb-1">
+            <span className="text-2xs font-mono font-medium">평균 통화 시간</span>
+            <Clock size={15} strokeWidth={1.75} className="text-primary" />
           </div>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
             {fmtDuration(stats.avgDurationSec)}
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <div className="text-2xs text-muted-foreground mt-2 font-mono">
             총 {fmtDuration(stats.totalDurationSec)}
           </div>
         </div>
@@ -313,19 +313,19 @@ export default function TeamCallAuditPanel({ members: initialMembers }: TeamCall
       </div>
 
       {/* 3. 통화 목록 테이블 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
         
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+            <h3 className="font-semibold text-foreground text-xs">
               통화 모니터링 목록
             </h3>
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <span className="text-2xs font-mono text-muted-foreground">
               (총 {items.length}건)
             </span>
           </div>
           {filter.auditType === 'meaningful_only' && (
-            <span className="text-xs text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-md">
+            <span className="text-2xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
               단순 부재나 1초 오발신 등 무의미한 통화는 자동으로 제외되어 있습니다.
             </span>
           )}

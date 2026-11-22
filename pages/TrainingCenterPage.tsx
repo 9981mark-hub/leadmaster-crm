@@ -1892,7 +1892,7 @@ export default function TrainingCenterPage() {
                 <button
                   type="button"
                   onClick={() => handleGenerateRandom()}
-                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                 >
                   <Dice5 className="w-4 h-4" />
                   🎲 새로운 실전 고객 1초 소환하기
@@ -1903,12 +1903,12 @@ export default function TrainingCenterPage() {
                   const isRevealed = !isBlindMode || callState === 'ended' || showCheatSheet;
 
                   return (
-                    <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-xs space-y-2">
+                    <div className="p-3.5 rounded-xl bg-card border border-border text-xs space-y-2 shadow-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-blue-950 dark:text-blue-100 text-sm">
+                        <span className="font-semibold text-foreground text-sm">
                           {selectedPersona.customerName} ({selectedPersona.age}세, {selectedPersona.speechOptions.gender === 'female' ? '여성' : '남성'})
                         </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-md font-bold text-white ${isRevealed ? 'bg-blue-600' : 'bg-emerald-600 animate-pulse'}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-md font-semibold ${isRevealed ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-primary text-primary-foreground animate-pulse'}`}>
                           {isRevealed ? selectedPersona.badge : '🎯 실전 접수 인입'}
                         </span>
                       </div>
@@ -2010,50 +2010,50 @@ export default function TrainingCenterPage() {
                         /* 2. 정답 공개 모드 (통화 종료 후 or 학습 가이드 모드 or 엿보기) */
                         <div className="space-y-2">
                           {callState === 'ended' && (
-                            <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs flex items-center justify-between shadow-xs">
+                            <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-primary font-semibold text-xs flex items-center justify-between shadow-xs">
                               <span className="flex items-center gap-1">
                                 🎉 실제 고객 숨겨진 정답 (Ground Truth) 전격 공개!
                               </span>
-                              <span className="text-xs px-1.5 py-0.5 rounded bg-white/20 font-normal">
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-primary/20 font-medium">
                                 문진 대조 채점
                               </span>
                             </div>
                           )}
 
                           {showCheatSheet && callState !== 'ended' && (
-                            <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between">
+                            <div className="p-2 rounded-lg bg-muted/40 border border-border text-xs text-foreground flex items-center justify-between">
                               <span>👁️ <strong>정답 엿보기 활성화 중</strong> (신입 가이드 모드)</span>
                               <button
                                 type="button"
                                 onClick={() => setShowCheatSheet(false)}
-                                className="text-amber-900 dark:text-amber-100 font-bold hover:underline flex items-center gap-0.5"
+                                className="text-primary font-semibold hover:underline flex items-center gap-0.5"
                               >
                                 <EyeOff className="w-3 h-3" /> 다시 가리기
                               </button>
                             </div>
                           )}
 
-                          <div className="grid grid-cols-1 gap-1 text-xs text-gray-700 dark:text-gray-200">
-                            <div>💼 <strong>직업/소득:</strong> {selectedPersona.job} ({selectedPersona.salary})</div>
-                            <div>💳 <strong>채무 현황:</strong> {selectedPersona.debtSummary}</div>
-                            <div>🏠 <strong>주거/재산:</strong> {selectedPersona.housing}</div>
-                            <div className="text-gray-600 dark:text-gray-300 pt-1 border-t border-blue-200/50 dark:border-blue-800/50">
-                              📖 <strong>배경 사연:</strong> {selectedPersona.scenarioDescription}
+                          <div className="grid grid-cols-1 gap-1 text-xs text-muted-foreground">
+                            <div>💼 <strong className="text-foreground">직업/소득:</strong> {selectedPersona.job} ({selectedPersona.salary})</div>
+                            <div>💳 <strong className="text-foreground">채무 현황:</strong> {selectedPersona.debtSummary}</div>
+                            <div>🏠 <strong className="text-foreground">주거/재산:</strong> {selectedPersona.housing}</div>
+                            <div className="text-muted-foreground pt-1 border-t border-border">
+                              📖 <strong className="text-foreground">배경 사연:</strong> {selectedPersona.scenarioDescription}
                             </div>
                           </div>
 
                           {/* 🎯 1차 추천 법률 제도 후킹 멘트 */}
                           {selectedPersona.groundTruth?.recommendedLegalHook && (
-                            <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-emerald-50/90 to-teal-50/90 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-300 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200">
-                              <div className="font-extrabold flex items-center justify-between text-emerald-800 dark:text-emerald-300 mb-1">
+                            <div className="mt-2 p-2.5 rounded-lg bg-card border border-border text-xs text-foreground shadow-xs">
+                              <div className="font-semibold flex items-center justify-between text-foreground mb-1">
                                 <span className="flex items-center gap-1">
                                   🎯 <strong>1차 추천 법률 후킹</strong>
                                 </span>
-                                <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-200/70 dark:bg-emerald-900/80 font-bold text-emerald-900 dark:text-emerald-100">
+                                <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 font-medium">
                                   분쟁 위험 0% 실무준칙
                                 </span>
                               </div>
-                              <div className="font-medium text-xs leading-relaxed text-emerald-950 dark:text-emerald-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-emerald-200/60 dark:border-emerald-900/60">
+                              <div className="font-medium text-xs leading-relaxed text-foreground bg-muted/40 p-2 rounded-lg border border-border">
                                 {selectedPersona.groundTruth.recommendedLegalHook}
                               </div>
                             </div>
@@ -2061,22 +2061,22 @@ export default function TrainingCenterPage() {
 
                           {/* 실전 녹취 기반 추천 방어 화법 배너 */}
                           {selectedPersona.recommendedDefenseScript && (
-                            <div className="p-2.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-xs space-y-1">
-                              <div className="flex items-center justify-between text-amber-800 dark:text-amber-200 font-extrabold text-xs">
+                            <div className="p-2.5 rounded-lg bg-card border border-border text-xs space-y-1.5 shadow-xs">
+                              <div className="flex items-center justify-between text-foreground font-semibold text-xs">
                                 <span className="flex items-center gap-1">
-                                  <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+                                  <Lightbulb className="w-3.5 h-3.5 text-primary" />
                                   🛡️ 실전 통화 검증 방어 화법 (녹취 274건 분석)
                                 </span>
-                                <span className="px-1.5 py-0.2 rounded bg-amber-200/80 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold">
+                                <span className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-medium text-[11px]">
                                   {selectedPersona.behaviorType === 'cold_skeptic' ? '출처추궁 돌파' : selectedPersona.behaviorType === 'storyteller' ? '공감 후 전환' : selectedPersona.behaviorType === 'rapid_inquirer' ? '역질문 방어' : '완충 브릿지'}
                                 </span>
                               </div>
                               {selectedPersona.objectionFocus && (
-                                <div className="text-xs text-gray-600 dark:text-gray-300">
-                                  • 고객 핵심 질문/의문: <strong>"{selectedPersona.objectionFocus}"</strong>
+                                <div className="text-xs text-muted-foreground">
+                                  • 고객 핵심 질문/의문: <strong className="text-foreground">"{selectedPersona.objectionFocus}"</strong>
                                 </div>
                               )}
-                              <div className="font-medium text-xs leading-relaxed text-amber-950 dark:text-amber-100 bg-white/70 dark:bg-gray-900/70 p-1.5 rounded border border-amber-200/60 dark:border-amber-900/60">
+                              <div className="font-medium text-xs leading-relaxed text-foreground bg-muted/40 p-2 rounded-lg border border-border">
                                 💬 "{selectedPersona.recommendedDefenseScript}"
                               </div>
                             </div>
@@ -2290,7 +2290,7 @@ export default function TrainingCenterPage() {
                     showToast(`⚠️ [${result.voiceName} (브라우저 임시 백업)] ${selectedPersona.customerName} 발화 완료 (새로고침 시 1안 초고음질 성우 적용)`, 'warning');
                   }
                 }}
-                className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-500/20"
+                className="w-full py-2 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 <Volume2 className="w-3.5 h-3.5" />
                 🔊 {selectedPersona.speechOptions.characterVoiceId ? `[${selectedPersona.speechOptions.characterVoiceId}] ` : ''}{selectedPersona.customerName} ({selectedPersona.speechOptions.gender === 'female' ? '선희 성우' : selectedPersona.age < 40 ? '현수 성우' : '인준 성우'}) 1초 미리듣기
@@ -2302,18 +2302,18 @@ export default function TrainingCenterPage() {
           <div className="lg:col-span-8 space-y-4">
             {/* 📋 고객 온라인 상담신청서 프리뷰 카드 (광고신청 인바운드 리드 모드 전용) */}
             {trainingMode === 'inbound_lead' && selectedPersona.leadContext && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/70 to-pink-50/50 dark:from-purple-950/40 dark:via-indigo-950/40 dark:to-pink-950/30 border border-purple-200/90 dark:border-purple-800/60 shadow-xs space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-200/60 dark:border-purple-800/40 pb-2.5">
+              <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-black flex items-center gap-1.5 shadow-2xs">
+                    <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-semibold flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5" />
                       온라인 광고 상담신청서 접수건
                     </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-md font-bold border ${selectedPersona.leadContext.channelBadgeColor}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-md font-semibold border ${selectedPersona.leadContext.channelBadgeColor}`}>
                       {selectedPersona.leadContext.channelLabel}
                     </span>
                   </div>
-                  <span className="text-xs text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
                     접수 시각: {selectedPersona.leadContext.appliedAt}
                   </span>
@@ -2321,13 +2321,13 @@ export default function TrainingCenterPage() {
 
                 {/* 신청서 팩트 4-Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
-                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">유입 캠페인</span>
-                    <span className="font-bold text-gray-900 dark:text-gray-100 text-xs truncate block" title={selectedPersona.leadContext.campaignName}>
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border">
+                    <span className="text-xs text-muted-foreground block font-medium">유입 캠페인</span>
+                    <span className="font-semibold text-foreground text-xs truncate block" title={selectedPersona.leadContext.campaignName}>
                       {selectedPersona.leadContext.campaignName}
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-purple-100 dark:border-purple-900/50">
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border">
                     <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">고객 입력 채무</span>
                     <span className="font-bold text-rose-600 dark:text-rose-400 text-xs block">
                       {selectedPersona.leadContext.declaredDebt}
@@ -2405,7 +2405,7 @@ export default function TrainingCenterPage() {
                 {callState === 'idle' || callState === 'ended' ? (
                   <button
                     onClick={handleStartCall}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs transition-all active:scale-[0.98]"
                   >
                     <PhoneCall className="w-4 h-4" />
                     {trainingMode === 'inbound_lead' ? '📞 신청 고객 발신 시작' : '📞 아웃바운드 발신 시작'}
@@ -2413,7 +2413,7 @@ export default function TrainingCenterPage() {
                 ) : callState === 'calling' ? (
                   <button
                     onClick={handleCancelCalling}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-md shadow-amber-500/20 transition-all animate-pulse"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 shadow-xs transition-all animate-pulse"
                   >
                     <PhoneOff className="w-4 h-4" />
                     발신 신호음 취소
@@ -2421,7 +2421,7 @@ export default function TrainingCenterPage() {
                 ) : callState === 'connected' ? (
                   <button
                     onClick={handleEndCall}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 shadow-md shadow-red-500/20 transition-all hover:scale-[1.02]"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-destructive-foreground bg-destructive hover:bg-destructive/90 shadow-xs transition-all active:scale-[0.98]"
                   >
                     <PhoneOff className="w-4 h-4" />
                     통화 종료 & 사무장 인계 채점
@@ -2433,20 +2433,20 @@ export default function TrainingCenterPage() {
             {/* Split Screen: Transcript / Live Paralegal Checklist & Sandbox */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               {/* Live Chat & Transcript (7 Cols) */}
-              <div className="md:col-span-7 flex flex-col h-[520px] rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs overflow-hidden">
-                <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <PhoneCall className="w-3.5 h-3.5 text-blue-500" />
+              <div className="md:col-span-7 flex flex-col h-[520px] rounded-xl bg-card border border-border shadow-xs overflow-hidden">
+                <div className="px-4 py-2.5 bg-muted/40 border-b border-border flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground flex items-center gap-1.5">
+                    <PhoneCall className="w-3.5 h-3.5 text-primary" />
                     {trainingMode === 'inbound_lead' ? '실시간 상담신청 고객 통화 대화록' : '실시간 아웃바운드 통화 대화록'}
                   </span>
                   <div className="flex items-center gap-2">
                     {callState === 'connected' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/60">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                         실시간 통화 연결 중
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-muted-foreground">
                         발신 대기 상태
                       </span>
                     )}
@@ -2455,13 +2455,13 @@ export default function TrainingCenterPage() {
 
                 {/* 📢 아웃바운드 / 인바운드 상담신청 첫 인사 가이드 배너 */}
                 {callState === 'connected' && (
-                  <div className="px-3.5 py-2.5 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 border-b border-blue-200/80 dark:border-blue-800/60 flex flex-col gap-1.5 text-xs">
+                  <div className="px-3.5 py-2.5 bg-card border-b border-border flex flex-col gap-1.5 text-xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-xs font-black shrink-0">
+                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-semibold shrink-0">
                           {trainingMode === 'inbound_lead' ? '신청건 첫마디' : '첫마디 미션'}
                         </span>
-                        <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                        <span className="text-xs font-semibold text-foreground">
                           {trainingMode === 'inbound_lead'
                             ? `[${trainingConfig.inbound?.companyName || '법무법인'}] 신청건 신속 리콜 오프닝`
                             : `[${trainingConfig.outbound?.orgName || '채무조정 지원센터'}] 표준 오프닝 가이드 (${trainingConfig.outbound?.roleTitle || '팀장'})`}
@@ -2470,7 +2470,7 @@ export default function TrainingCenterPage() {
                       {(isOwner || trainingPerms.canManageConfig) && (
                         <button
                           onClick={() => setShowConfigModal(true)}
-                          className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                          className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
                         >
                           <Settings className="w-3 h-3" /> 스크립트 설정
                         </button>

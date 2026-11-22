@@ -227,60 +227,60 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
 
   const toggleIn = (list: string[], v: string) => list.includes(v) ? list.filter(x => x !== v) : [...list, v];
   const numOrNull = (v: string) => { const n = parseInt(v, 10); return Number.isFinite(n) && n > 0 ? n : null; };
-  const input = 'border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 text-sm dark:bg-gray-700 dark:text-white';
+  const input = 'border border-border rounded-lg px-2 py-1 text-xs bg-background text-foreground outline-none focus:ring-1 focus:ring-primary';
 
   if (notReady) {
     return (
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm px-5 py-4 flex items-center gap-2 text-sm text-gray-500">
-        <Settings2 size={18} className="text-gray-500 dark:text-gray-400" />
-        <b className="text-gray-700 dark:text-gray-200">리드 배분 규칙</b> 서버 업데이트 후 사용할 수 있습니다.
-        <button onClick={reload} className="ml-auto text-xs flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 다시 확인</button>
+      <section className="bg-card rounded-xl border border-border shadow-xs px-4 py-3 flex items-center gap-2 text-xs text-muted-foreground">
+        <Settings2 size={16} className="text-muted-foreground" />
+        <b className="text-foreground">리드 배분 규칙</b> 서버 업데이트 후 사용할 수 있습니다.
+        <button onClick={reload} className="ml-auto text-2xs font-mono flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 다시 확인</button>
       </section>
     );
   }
 
   return (
-    <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
-        <Settings2 size={18} className="text-blue-600" />
-        <h2 className="font-bold text-gray-800 dark:text-white">리드 배분 규칙</h2>
-        <span className="text-xs text-gray-500 dark:text-gray-400">새 리드를 누구에게 줄지, 손대지 않은 리드를 언제 회수할지</span>
-        <button onClick={reload} className="ml-auto text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
+    <section className="bg-card rounded-xl border border-border shadow-xs">
+      <div className="px-4 py-3 border-b border-border flex flex-wrap items-center gap-2">
+        <Settings2 size={16} strokeWidth={1.75} className="text-primary" />
+        <h2 className="font-semibold text-sm text-foreground">리드 배분 규칙</h2>
+        <span className="text-2xs text-muted-foreground font-mono">새 리드를 누구에게 줄지, 손대지 않은 리드를 언제 회수할지</span>
+        <button onClick={reload} className="ml-auto text-2xs font-mono text-muted-foreground hover:text-foreground flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
       </div>
 
-      <div className="p-5 grid lg:grid-cols-2 gap-5">
+      <div className="p-4 grid lg:grid-cols-2 gap-4">
         {/* 자동 배분 */}
         <div className="space-y-3">
-          <label className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
+          <label className="flex items-center gap-2 font-medium text-xs text-foreground">
             <input type="checkbox" checked={s.autoAssign} onChange={e => setS({ ...s, autoAssign: e.target.checked })} />
             새 리드 자동 배분
           </label>
-          <p className="text-xs text-gray-500 -mt-2">켜면 광고·랜딩·직접 등록으로 들어온 리드가 바로 상담원에게 갑니다. 끄면 미배정으로 들어오고 관리자가 나눠줍니다. (상담원이 직접 등록한 리드는 항상 본인 담당)</p>
+          <p className="text-2xs text-muted-foreground -mt-2">켜면 광고·랜딩·직접 등록으로 들어온 리드가 바로 상담원에게 갑니다. 끄면 미배정으로 들어오고 관리자가 나눠줍니다. (상담원이 직접 등록한 리드는 항상 본인 담당)</p>
           <div className={`space-y-2 ${s.autoAssign ? '' : 'opacity-50'}`}>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="w-28 text-gray-600 dark:text-gray-300">나누는 방식</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="w-24 text-muted-foreground font-mono">나누는 방식</span>
               <select value={s.method} onChange={e => setS({ ...s, method: e.target.value as DistributionMethod })} className={input}>
                 {(Object.keys(METHOD_LABEL) as DistributionMethod[]).map(m => <option key={m} value={m}>{METHOD_LABEL[m]}</option>)}
               </select>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="w-28 text-gray-600 dark:text-gray-300">1인 하루 상한</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="w-24 text-muted-foreground font-mono">1인 하루 상한</span>
               <input type="number" min={1} value={s.defaultDailyCap ?? ''} placeholder="제한 없음"
-                onChange={e => setS({ ...s, defaultDailyCap: numOrNull(e.target.value) })} className={`${input} w-28`} />
-              <span className="text-xs text-gray-500 dark:text-gray-400">건 (상담원별로 따로 정할 수도 있음)</span>
+                onChange={e => setS({ ...s, defaultDailyCap: numOrNull(e.target.value) })} className={`${input} w-24`} />
+              <span className="text-2xs text-muted-foreground font-mono">건 (상담원별 개별 설정 가능)</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="w-28 text-gray-600 dark:text-gray-300">1인 진행 중 상한</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="w-24 text-muted-foreground font-mono">1인 진행 중 상한</span>
               <input type="number" min={1} value={s.maxOpenPerAgent ?? ''} placeholder="제한 없음"
-                onChange={e => setS({ ...s, maxOpenPerAgent: numOrNull(e.target.value) })} className={`${input} w-28`} />
-              <span className="text-xs text-gray-500 dark:text-gray-400">건이 넘으면 그 사람은 건너뜀</span>
+                onChange={e => setS({ ...s, maxOpenPerAgent: numOrNull(e.target.value) })} className={`${input} w-24`} />
+              <span className="text-2xs text-muted-foreground font-mono">건 초과 시 건너뜀</span>
             </div>
           </div>
-          <div className="text-sm">
-            <div className="text-gray-600 dark:text-gray-300 mb-1">"끝난 리드"로 보는 상태 <span className="text-xs text-gray-500 dark:text-gray-400">(진행 중 건수·균형 배분·회수에서 뺌)</span></div>
+          <div className="text-xs">
+            <div className="text-muted-foreground font-mono mb-1">"끝난 리드"로 보는 상태 <span className="text-2xs text-muted-foreground">(진행 중 건수·균형 배분·회수에서 뺌)</span></div>
             <div className="flex flex-wrap gap-1.5">
               {allStatuses.map(st => (
-                <label key={st} className={`text-xs px-2 py-1 rounded border cursor-pointer ${s.closedStatuses.includes(st) ? 'bg-gray-700 text-white border-gray-700' : 'border-gray-300 text-gray-600'}`}>
+                <label key={st} className={`text-2xs font-mono px-2 py-0.5 rounded border cursor-pointer ${s.closedStatuses.includes(st) ? 'bg-primary text-primary-foreground border-primary font-medium' : 'border-border bg-muted/40 text-muted-foreground'}`}>
                   <input type="checkbox" className="hidden" checked={s.closedStatuses.includes(st)} onChange={() => setS({ ...s, closedStatuses: toggleIn(s.closedStatuses, st) })} />
                   {st}
                 </label>
@@ -291,30 +291,30 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
 
         {/* 자동 회수 */}
         <div className="space-y-3">
-          <label className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
+          <label className="flex items-center gap-2 font-medium text-xs text-foreground">
             <input type="checkbox" checked={s.autoReclaim} onChange={e => setS({ ...s, autoReclaim: e.target.checked })} />
             손대지 않은 리드 자동 회수
           </label>
-          <p className="text-xs text-gray-500 -mt-2">배정받고 정한 시간 동안 <b>상태가 그대로이고 그 번호로 통화·문자 기록이 없는</b> 리드를 회수합니다. 10분마다 확인합니다.</p>
+          <p className="text-2xs text-muted-foreground -mt-2">배정받고 정한 시간 동안 <b>상태가 그대로이고 그 번호로 통화·문자 기록이 없는</b> 리드를 회수합니다. 10분마다 확인합니다.</p>
           <div className={`space-y-2 ${s.autoReclaim ? '' : 'opacity-50'}`}>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="w-28 text-gray-600 dark:text-gray-300">회수 기준 시간</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="w-24 text-muted-foreground font-mono">회수 기준 시간</span>
               <input type="number" min={10} step={10} value={s.reclaimAfterMinutes}
-                onChange={e => setS({ ...s, reclaimAfterMinutes: parseInt(e.target.value, 10) || 60 })} className={`${input} w-24`} />
-              <span className="text-xs text-gray-500 dark:text-gray-400">분 ({(s.reclaimAfterMinutes / 60).toFixed(1)}시간)</span>
+                onChange={e => setS({ ...s, reclaimAfterMinutes: parseInt(e.target.value, 10) || 60 })} className={`${input} w-20`} />
+              <span className="text-2xs text-muted-foreground font-mono">분 ({(s.reclaimAfterMinutes / 60).toFixed(1)}시간)</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="w-28 text-gray-600 dark:text-gray-300">회수한 리드는</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="w-24 text-muted-foreground font-mono">회수한 리드는</span>
               <select value={s.reclaimAction} onChange={e => setS({ ...s, reclaimAction: e.target.value as any })} className={input}>
                 <option value="reassign">다른 상담원에게 바로 다시 배분</option>
                 <option value="unassign">미배정으로 (관리자가 다시 나눔)</option>
               </select>
             </div>
-            <div className="text-sm">
-              <div className="text-gray-600 dark:text-gray-300 mb-1">회수 대상 상태</div>
+            <div className="text-xs">
+              <div className="text-muted-foreground font-mono mb-1">회수 대상 상태</div>
               <div className="flex flex-wrap gap-1.5">
                 {allStatuses.filter(st => !s.closedStatuses.includes(st)).map(st => (
-                  <label key={st} className={`text-xs px-2 py-1 rounded border cursor-pointer ${s.reclaimStatuses.includes(st) ? 'bg-orange-500 text-white border-orange-500' : 'border-gray-300 text-gray-600'}`}>
+                  <label key={st} className={`text-2xs font-mono px-2 py-0.5 rounded border cursor-pointer ${s.reclaimStatuses.includes(st) ? 'bg-amber-500/10 text-amber-500 border-amber-500/30 font-medium' : 'border-border bg-muted/40 text-muted-foreground'}`}>
                     <input type="checkbox" className="hidden" checked={s.reclaimStatuses.includes(st)} onChange={() => setS({ ...s, reclaimStatuses: toggleIn(s.reclaimStatuses, st) })} />
                     {st}
                   </label>
@@ -322,25 +322,25 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
               </div>
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+          <label className="flex items-center gap-2 text-xs text-foreground">
             <input type="checkbox" checked={s.reclaimOnDisable} onChange={e => setS({ ...s, reclaimOnDisable: e.target.checked })} />
             멤버를 사용 중지하면 그 사람의 진행 중 리드를 미배정으로 회수
           </label>
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-2">
             <button onClick={save} disabled={busy || !dirty}
-              className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-40 flex items-center gap-1">
-              <Save size={14} /> 규칙 저장
+              className="px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-40 flex items-center gap-1.5 shadow-2xs">
+              <Save size={13} strokeWidth={1.75} /> 규칙 저장
             </button>
           </div>
         </div>
       </div>
 
       {/* ⚡ 실시간 DB 순환 & 스마트 액션 허브 (다담세일즈형) */}
-      <div className="p-5 border-t border-gray-100 dark:border-gray-700 bg-gradient-to-r from-slate-50 via-blue-50/40 to-indigo-50/30 dark:from-gray-900/40 dark:via-gray-800/60 dark:to-gray-900/40 space-y-3">
+      <div className="p-4 border-t border-border bg-card space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
-            <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+            <Zap className="w-4 h-4 text-primary fill-primary" />
+            <h3 className="font-semibold text-xs text-foreground">
               실시간 DB 순환 & 교차 셔플 허브
             </h3>
             <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold">
@@ -352,19 +352,19 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
           </span>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-3">
           {/* Action 1: 장기 미처리 DB 즉시 회수 */}
-          <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs flex flex-col justify-between gap-3">
+          <div className="p-3.5 rounded-lg bg-muted/40 border border-border shadow-2xs flex flex-col justify-between gap-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-orange-500" /> 장기 미처리 DB 즉시 회수
+                <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" /> 장기 미처리 DB 즉시 회수
                 </span>
-                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${reclaimableCount > 0 ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 animate-pulse' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-2xs font-mono font-medium px-2 py-0.5 rounded border ${reclaimableCount > 0 ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-muted text-muted-foreground border-border'}`}>
                   {reclaimableCount}건 대상
                 </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+              <p className="text-2xs text-muted-foreground leading-relaxed">
                 배정 후 <b>{(s.reclaimAfterMinutes / 60).toFixed(1)}시간</b> 동안 통화나 문자 기록이 없는 미컨택 DB를 지금 즉시 회수하여 활성 상담원들에게 균등 재배분하거나 미배정으로 전환합니다.
               </p>
             </div>
@@ -372,7 +372,7 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
               type="button"
               onClick={handleInstantAutoReclaim}
               disabled={isReclaiming || busy || reclaimableCount === 0}
-              className="w-full py-2 px-3 rounded-lg text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-98"
+              className="w-full py-1.5 px-3 rounded-md text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-98"
             >
               <Zap className="w-3.5 h-3.5" />
               {isReclaiming ? '회수 및 재배분 진행 중...' : `미처리 DB ${reclaimableCount}건 즉시 회수 실행`}
@@ -380,17 +380,17 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
           </div>
 
           {/* Action 2: 부재중 DB 상담원 교차 셔플 */}
-          <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs flex flex-col justify-between gap-3">
+          <div className="p-3.5 rounded-lg bg-muted/40 border border-border shadow-2xs flex flex-col justify-between gap-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
-                  <Shuffle className="w-4 h-4 text-blue-500" /> 부재중 DB 상담원 교차 셔플
+                <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Shuffle className="w-3.5 h-3.5 text-primary" /> 부재중 DB 상담원 교차 셔플
                 </span>
-                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${missedCount > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-2xs font-mono font-medium px-2 py-0.5 rounded border ${missedCount > 0 ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'}`}>
                   부재 {minMissedInput}회+ {missedCount}건
                 </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+              <p className="text-2xs text-muted-foreground leading-relaxed">
                 동일 상담원이 여러 번 걸어도 안 받는 DB를 <b>다른 상담원에게 교차 재배분</b>합니다. 목소리와 발신 번호가 바뀌어 고객이 전화를 받을 확률이 높아집니다.
               </p>
             </div>
@@ -398,9 +398,9 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
               type="button"
               onClick={() => setShowShuffleModal(true)}
               disabled={isShuffling || busy || missedCount === 0}
-              className="w-full py-2 px-3 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-98"
+              className="w-full py-1.5 px-3 rounded-md text-xs font-medium text-foreground bg-muted hover:bg-muted/80 border border-border disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-98"
             >
-              <Shuffle className="w-3.5 h-3.5" />
+              <Shuffle className="w-3.5 h-3.5 text-primary" />
               부재중 DB 교차 셔플 설정 & 실행
             </button>
           </div>
@@ -408,9 +408,9 @@ export default function DistributionPanel({ orgId, statuses, onChanged }: Props)
       </div>
 
       {/* 상담원별 현황 */}
-      <div className="border-t border-gray-100 dark:border-gray-700 overflow-x-auto">
+      <div className="border-t border-border overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs">
+          <thead className="bg-muted/40 text-muted-foreground text-2xs font-mono border-b border-border">
             <tr>
               <th className="text-left px-5 py-2">상담원</th>
               <th className="px-2 py-2">자동 배분 받기</th>

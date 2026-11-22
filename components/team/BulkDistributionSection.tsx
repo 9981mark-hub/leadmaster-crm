@@ -116,60 +116,60 @@ export default function BulkDistributionSection({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
       {/* Header */}
-      <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-gray-800 dark:to-gray-800">
+      <div className="p-4 border-b border-border bg-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-blue-600 text-white shadow-sm">
-              <Zap size={20} />
+            <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+              <Zap size={18} strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                 대용량 리드 스마트 자동 분배
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-semibold">
+                <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                   50인 · 15,000건+ 최적화
                 </span>
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 체크박스를 일일이 찍지 않고, 미배정 대량 DB를 상담원들에게 초고속(1초) 1/N 균등 또는 쿼터별로 일괄 배분합니다.
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5 ${
+            className={`px-2.5 py-1 text-2xs font-mono font-medium rounded-md border transition-colors flex items-center gap-1.5 ${
               showFilters
-                ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-gray-700 dark:text-blue-300'
-                : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50'
+                ? 'bg-primary/10 border-primary/30 text-primary'
+                : 'bg-muted/50 border-border text-muted-foreground hover:text-foreground hover:bg-muted'
             }`}
           >
-            <Filter size={14} />
+            <Filter size={13} strokeWidth={1.75} />
             조건부 필터 (유입경로/회차/상담원 선택)
           </button>
         </div>
 
         {/* 3대 핵심 현황 KPI 카드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          <div className="bg-white dark:bg-gray-700/60 p-3.5 rounded-xl border border-gray-200/80 dark:border-gray-600 shadow-xs">
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">배분 대기 (미배정)</span>
-            <div className="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
-              {unassignedCount.toLocaleString()} <span className="text-xs font-normal text-gray-500">건</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+          <div className="bg-muted/40 p-3 rounded-lg border border-border">
+            <span className="text-2xs font-mono font-medium text-muted-foreground">배분 대기 (미배정)</span>
+            <div className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums mt-0.5">
+              {unassignedCount.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">건</span>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-700/60 p-3.5 rounded-xl border border-gray-200/80 dark:border-gray-600 shadow-xs">
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">배분 대상 활동 상담원</span>
-            <div className="text-2xl font-extrabold text-gray-800 dark:text-white mt-0.5 flex items-baseline gap-1.5">
+          <div className="bg-muted/40 p-3 rounded-lg border border-border">
+            <span className="text-2xs font-mono font-medium text-muted-foreground">배분 대상 활동 상담원</span>
+            <div className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums mt-0.5 flex items-baseline gap-1.5">
               <span>{targetUserCount}</span>
-              <span className="text-xs font-normal text-gray-500 dark:text-gray-400">/ 총 {activeAgents.length}명</span>
+              <span className="text-xs font-normal text-muted-foreground">/ 총 {activeAgents.length}명</span>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-700/60 p-3.5 rounded-xl border border-gray-200/80 dark:border-gray-600 shadow-xs">
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">1인당 예상 균등 배분량</span>
-            <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
-              약 {estimatedPerAgent.toLocaleString()} <span className="text-xs font-normal text-gray-500">건{remainder > 0 ? ` (+잔여 ${remainder}건 순번)` : ''}</span>
+          <div className="bg-muted/40 p-3 rounded-lg border border-border">
+            <span className="text-2xs font-mono font-medium text-muted-foreground">1인당 예상 균등 배분량</span>
+            <div className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums mt-0.5">
+              약 {estimatedPerAgent.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">건{remainder > 0 ? ` (+잔여 ${remainder}건 순번)` : ''}</span>
             </div>
           </div>
         </div>
@@ -352,26 +352,26 @@ export default function BulkDistributionSection({
           <button
             onClick={handleRunBulkDistribute}
             disabled={distributing || unassignedCount <= 0 || targetUserCount === 0}
-            className={`w-full py-4 px-6 rounded-xl font-bold text-white shadow-md transition-all flex items-center justify-center gap-3 text-base ${
+            className={`w-full py-3.5 px-6 rounded-xl font-semibold text-primary-foreground shadow-xs transition-all flex items-center justify-center gap-2.5 text-sm ${
               distributing || unassignedCount <= 0 || targetUserCount === 0
-                ? 'bg-gray-400 cursor-not-allowed opacity-60'
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99]'
+                ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'
+                : 'bg-primary hover:bg-primary/90 active:scale-[0.99]'
             }`}
           >
             {distributing ? (
               <>
-                <Loader2 className="animate-spin" size={22} />
+                <Loader2 className="animate-spin" size={18} />
                 <span>서버에서 대량 리드 배분을 고속 처리하고 있습니다...</span>
               </>
             ) : (
               <>
-                <Zap size={22} className="text-amber-300 fill-amber-300" />
+                <Zap size={18} className="fill-primary-foreground text-primary-foreground" />
                 <span>
                   {mode === 'round_robin' && `[원클릭 배분] 활동 상담원 ${targetUserCount}명에게 각 약 ${estimatedPerAgent}건씩 균등 분배 실행`}
                   {mode === 'quota' && `[원클릭 배분] 활동 상담원 ${targetUserCount}명에게 각 ${quotaPerAgent}건씩 채우기 실행`}
                   {mode === 'balanced' && `[원클릭 배분] 진행 중 리드 적은 상담원 우선 균형 배분 실행`}
                 </span>
-                <ArrowRight size={18} />
+                <ArrowRight size={16} />
               </>
             )}
           </button>

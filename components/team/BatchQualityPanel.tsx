@@ -206,21 +206,21 @@ export default function BatchQualityPanel() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden space-y-0">
+    <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden space-y-0">
       {/* 1. Header */}
-      <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-md">
-            <Building2 size={22} />
+          <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+            <Building2 size={18} strokeWidth={1.75} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               DB 거래처별 성과 분석 & 회차 품질 관제 본부
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 font-bold border border-emerald-300 dark:border-emerald-700">
+              <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                 ROI / ROAS 실시간 추적
               </span>
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               어느 DB 공급 거래처에서 얼마를 주고 구매했을 때 실제 얼마의 수임 매출과 순수익을 거두었는지 한눈에 파악하고 비교합니다.
             </p>
           </div>
@@ -230,109 +230,109 @@ export default function BatchQualityPanel() {
           <button
             type="button"
             onClick={() => setIsVendorModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md bg-muted text-foreground border border-border hover:bg-muted/80 transition-colors shadow-2xs"
           >
-            <Building2 size={14} />
+            <Building2 size={13} strokeWidth={1.75} />
             DB 거래처 관리
           </button>
           <button
             type="button"
             onClick={handleRetroactiveBatch}
             disabled={isRetroactiveLoading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors shadow-2xs"
             title="기존에 등록된 과거 DB들을 유입경로/월별로 묶어 즉시 회차화합니다."
           >
-            <Sparkles size={14} className={isRetroactiveLoading ? 'animate-spin' : ''} />
+            <Sparkles size={13} className={isRetroactiveLoading ? 'animate-spin' : ''} />
             기존 DB 자동 묶기
           </button>
           <button
             onClick={loadData}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
             새로고침
           </button>
         </div>
       </div>
 
       {/* 2. 상단 4대 경영 KPI 요약 배너 */}
-      <div className="p-5 bg-gradient-to-r from-gray-50 via-slate-50 to-emerald-50/40 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950/20 border-b border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="p-4 bg-card border-b border-border">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* KPI 1: 총 DB 투자 비용 */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-xs relative overflow-hidden">
-            <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-xs">
-              <span className="font-semibold">총 DB 투자 비용</span>
-              <DollarSign size={16} className="text-blue-500" />
+          <div className="bg-card p-4 rounded-xl border border-border shadow-xs relative overflow-hidden">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
+              <span className="font-medium text-2xs font-mono">총 DB 투자 비용</span>
+              <DollarSign size={15} strokeWidth={1.75} className="text-primary" />
             </div>
-            <div className="flex items-baseline gap-1.5 mt-1">
-              <span className="text-xl font-bold text-gray-900 dark:text-white tabular-nums font-mono">
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums font-mono">
                 ₩ {totals.totalCost.toLocaleString()}
               </span>
-              <span className="text-xs text-gray-500 font-semibold">원</span>
+              <span className="text-xs text-muted-foreground font-mono">원</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1.5 pt-1.5 border-t border-gray-100 dark:border-gray-700/60">
+            <div className="flex items-center justify-between text-2xs text-muted-foreground mt-2 pt-2 border-t border-border font-mono">
               <span>총 {totals.totalInserted.toLocaleString()}건 매입</span>
-              <span className="font-medium text-blue-600 dark:text-blue-400 font-mono">평균 CPL ₩ {totals.avgCpl.toLocaleString()}원</span>
+              <span className="font-medium text-primary">평균 CPL ₩ {totals.avgCpl.toLocaleString()}원</span>
             </div>
           </div>
 
           {/* KPI 2: 총 수임료 회수 매출 */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-xs relative overflow-hidden">
-            <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-xs">
-              <span className="font-semibold">총 수임료 회수 매출</span>
-              <Award size={16} className="text-emerald-500" />
+          <div className="bg-card p-4 rounded-xl border border-border shadow-xs relative overflow-hidden">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
+              <span className="font-medium text-2xs font-mono">총 수임료 회수 매출</span>
+              <Award size={15} strokeWidth={1.75} className="text-primary" />
             </div>
-            <div className="flex items-baseline gap-1.5 mt-1">
-              <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-2xl font-semibold tracking-tight text-primary tabular-nums font-mono">
                 ₩ {totals.totalRevenue.toLocaleString()}
               </span>
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">원</span>
+              <span className="text-xs text-primary font-medium">원</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1.5 pt-1.5 border-t border-gray-100 dark:border-gray-700/60">
+            <div className="flex items-center justify-between text-2xs text-muted-foreground mt-2 pt-2 border-t border-border font-mono">
               <span>최종 계약 {totals.totalContracted.toLocaleString()}건</span>
-              <span className="font-medium text-emerald-600 dark:text-emerald-400">전환율 {totals.overallContractRate}%</span>
+              <span className="font-medium text-primary">전환율 {totals.overallContractRate}%</span>
             </div>
           </div>
 
           {/* KPI 3: 순수익 (Gross Profit) */}
-          <div className={`bg-white dark:bg-gray-800 p-4 rounded-xl border shadow-xs relative overflow-hidden ${
+          <div className={`p-4 rounded-xl border shadow-xs relative overflow-hidden ${
             totals.grossProfit >= 0
-              ? 'border-emerald-300 dark:border-emerald-800 ring-1 ring-emerald-400/20'
-              : 'border-red-300 dark:border-red-800 ring-1 ring-red-400/20'
+              ? 'bg-card border-border'
+              : 'bg-destructive/5 border-destructive/20'
           }`}>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-600 dark:text-gray-300">순수익 (매출 - 매입비)</span>
-              <TrendingUp size={16} className={totals.grossProfit >= 0 ? 'text-emerald-500' : 'text-red-500'} />
+              <span className="font-medium text-2xs font-mono text-muted-foreground">순수익 (매출 - 매입비)</span>
+              <TrendingUp size={15} strokeWidth={1.75} className={totals.grossProfit >= 0 ? 'text-primary' : 'text-destructive'} />
             </div>
-            <div className={`flex items-baseline gap-1.5 mt-1 ${
-              totals.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+            <div className={`flex items-baseline gap-1 mt-1 ${
+              totals.grossProfit >= 0 ? 'text-primary' : 'text-destructive'
             }`}>
-              <span className="text-xl font-bold tabular-nums font-mono">
+              <span className="text-2xl font-semibold tracking-tight tabular-nums font-mono">
                 {totals.grossProfit >= 0 ? '+' : '-'}₩ {Math.abs(totals.grossProfit).toLocaleString()}
               </span>
-              <span className="text-xs font-semibold">원</span>
+              <span className="text-xs font-mono">원</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1.5 pt-1.5 border-t border-gray-100 dark:border-gray-700/60">
-              <span className={`font-semibold ${totals.grossProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <div className="flex items-center justify-between text-2xs text-muted-foreground mt-2 pt-2 border-t border-border font-mono">
+              <span className={`font-medium ${totals.grossProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
                 {totals.grossProfit >= 0 ? '🟢 흑자 창출 중' : '🔴 적자 주의/점검'}
               </span>
-              <span className="font-mono">1건당 가치 ₩ {totals.overallRevenuePerLead.toLocaleString()}원</span>
+              <span className="tabular-nums">1건당 ₩ {totals.overallRevenuePerLead.toLocaleString()}원</span>
             </div>
           </div>
 
           {/* KPI 4: 종합 ROAS & 고객 획득 비용 (CAC) */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-xs relative overflow-hidden">
-            <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-xs">
-              <span className="font-semibold">종합 ROAS (광고비 회수율)</span>
-              <BadgePercent size={16} className="text-purple-500" />
+          <div className="bg-card p-4 rounded-xl border border-border shadow-xs relative overflow-hidden">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
+              <span className="font-medium text-2xs font-mono">종합 ROAS (광고비 회수율)</span>
+              <BadgePercent size={15} strokeWidth={1.75} className="text-primary" />
             </div>
-            <div className="text-xl font-bold text-purple-600 dark:text-purple-400 mt-1 tabular-nums">
+            <div className="text-2xl font-semibold tracking-tight text-primary mt-1 tabular-nums font-mono">
               {totals.roas}%
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1.5 pt-1.5 border-t border-gray-100 dark:border-gray-700/60">
+            <div className="flex items-center justify-between text-2xs text-muted-foreground mt-2 pt-2 border-t border-border font-mono">
               <span>계약 1건 획득비용(CAC)</span>
-              <span className="font-semibold text-gray-800 dark:text-gray-200 font-mono">₩ {totals.cac.toLocaleString()}원</span>
+              <span className="font-medium text-foreground tabular-nums">₩ {totals.cac.toLocaleString()}원</span>
             </div>
           </div>
         </div>

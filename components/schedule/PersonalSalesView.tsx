@@ -467,52 +467,54 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
 
       {/* 2. 오늘의 지표 위젯 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
-          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase">전체 일정</span>
-          <span className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{selectedDateStats.total}건</span>
+        <div className="p-4 bg-card border border-border rounded-xl shadow-xs flex flex-col justify-between">
+          <span className="text-2xs font-mono font-medium text-muted-foreground uppercase">전체 일정</span>
+          <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums mt-1">{selectedDateStats.total}건</span>
         </div>
-        <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
-          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 dark:text-blue-500 uppercase">진행 대기</span>
-          <span className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{selectedDateStats.pending}건</span>
+        <div className="p-4 bg-card border border-border rounded-xl shadow-xs flex flex-col justify-between">
+          <span className="text-2xs font-mono font-medium text-primary uppercase">진행 대기</span>
+          <span className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums mt-1">{selectedDateStats.pending}건</span>
         </div>
-        <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 dark:text-emerald-500 uppercase">완료함</span>
-          <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{selectedDateStats.completed}건</span>
+        <div className="p-4 bg-card border border-border rounded-xl shadow-xs flex flex-col justify-between">
+          <span className="text-2xs font-mono font-medium text-muted-foreground uppercase">완료함</span>
+          <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums mt-1">{selectedDateStats.completed}건</span>
         </div>
-        <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200 border-l-4 border-red-500/50">
-          <span className="text-xs font-bold text-red-600 dark:text-red-400 dark:text-red-500 uppercase">미처리 지연</span>
-          <span className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{selectedDateStats.overdue}건</span>
+        <div className={`p-4 rounded-xl shadow-xs flex flex-col justify-between border ${
+          selectedDateStats.overdue > 0 ? 'bg-destructive/5 border-destructive/20' : 'bg-card border-border'
+        }`}>
+          <span className={`text-2xs font-mono font-medium uppercase ${selectedDateStats.overdue > 0 ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>미처리 지연</span>
+          <span className={`text-2xl font-semibold tracking-tight font-mono tabular-nums mt-1 ${selectedDateStats.overdue > 0 ? 'text-destructive' : 'text-foreground'}`}>{selectedDateStats.overdue}건</span>
         </div>
       </div>
 
       {/* 3. 주간 수평 캘린더 리본 */}
-      <div className="glass-panel p-3 bg-white/50 dark:bg-gray-800/50 rounded-2xl flex flex-col gap-3">
+      <div className="p-3 bg-card border border-border rounded-xl shadow-xs flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <button 
             onClick={handlePrevWeek}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-300"
+            className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
             title="이전 주"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
           </button>
           
-          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+          <span className="text-xs font-semibold text-foreground font-mono">
             {format(weekStart, 'yyyy년 M월')}
           </span>
 
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleGoToday}
-              className="px-2.5 py-1 text-xs font-bold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
+              className="px-2.5 py-1 text-2xs font-mono font-medium bg-muted text-foreground border border-border rounded-md hover:bg-muted/80 transition-colors"
             >
               오늘
             </button>
             <button 
               onClick={handleNextWeek}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-300"
+              className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               title="다음 주"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>
@@ -532,28 +534,28 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                   onSelectDate(day);
                   setCurrentPage(1);
                 }}
-                className={`py-2 px-1 rounded-xl flex flex-col items-center gap-1 transition-all relative ${
+                className={`py-2 px-1 rounded-lg flex flex-col items-center gap-1 transition-all relative ${
                   isSelected 
-                    ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-100 dark:shadow-none' 
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                    ? 'bg-primary text-primary-foreground shadow-2xs font-semibold' 
+                    : 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <span className={`text-xs font-bold ${getDayNameColor(day, isSelected)}`}>
+                <span className={`text-2xs font-mono ${getDayNameColor(day, isSelected)}`}>
                   {format(day, 'E', { locale: ko })}
                 </span>
-                <span className={`text-sm font-bold ${getDayColor(day, isSelected)}`}>
+                <span className={`text-sm font-semibold font-mono ${getDayColor(day, isSelected)}`}>
                   {format(day, 'd')}
                 </span>
                 
                 {reminderCount > 0 && (
                   <span className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${
-                    isSelected ? 'bg-white' : 'bg-indigo-500'
+                    isSelected ? 'bg-primary-foreground' : 'bg-primary'
                   }`} />
                 )}
 
                 {isTodayDay && (
                   <span className={`absolute bottom-1 w-3 h-0.5 rounded-full ${
-                    isSelected ? 'bg-white/80' : 'bg-indigo-500'
+                    isSelected ? 'bg-primary-foreground/80' : 'bg-primary'
                   }`} />
                 )}
               </button>
@@ -563,9 +565,9 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
       </div>
 
       {/* 4. 검색창 및 필터 패널 */}
-      <div className="glass-panel p-4 bg-white/40 dark:bg-gray-800/40 rounded-2xl space-y-3">
+      <div className="p-4 bg-card border border-border rounded-xl shadow-xs space-y-3">
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-3 text-gray-500 dark:text-gray-400" />
+          <Search size={15} className="absolute left-3 top-2.5 text-muted-foreground" />
           <input
             type="text"
             placeholder="고객명, 연락처, 유입경로 또는 메모 내용으로 검색..."
@@ -574,7 +576,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-md text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full pl-9 pr-4 py-1.5 border border-border rounded-lg bg-background text-xs text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
 
@@ -582,24 +584,15 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
           <div className="flex flex-wrap gap-1.5">
             {ALL_TYPES.map(type => {
               const isActive = selectedTypes.includes(type);
-              let typeColor = 'hover:border-gray-400 dark:hover:border-gray-500';
-              if (isActive) {
-                if (type === '통화') typeColor = 'bg-blue-500 border-blue-500 text-white';
-                else if (type === '출장미팅') typeColor = 'bg-green-500 border-green-500 text-white';
-                else if (type === '방문미팅') typeColor = 'bg-purple-500 border-purple-500 text-white';
-                else if (type === '입금') typeColor = 'bg-emerald-500 border-emerald-500 text-white';
-                else if (type === '문자') typeColor = 'bg-cyan-500 border-cyan-500 text-white';
-                else typeColor = 'bg-gray-600 border-gray-600 text-white';
-              }
               return (
                 <button
                   key={type}
                   onClick={() => toggleTypeFilter(type)}
-                  className={`px-2.5 py-1 text-xs rounded-full border transition-all ${
-                    !isActive 
-                      ? 'bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' 
-                      : ''
-                  } ${typeColor}`}
+                  className={`px-2.5 py-0.5 text-2xs font-mono rounded-md border transition-all ${
+                    isActive 
+                      ? 'bg-primary text-primary-foreground border-primary font-medium shadow-2xs' 
+                      : 'bg-muted/50 border-border text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
                 >
                   {type}
                 </button>
@@ -607,7 +600,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
             })}
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer self-end sm:self-center select-none text-xs font-semibold text-gray-600 dark:text-gray-400">
+          <label className="flex items-center gap-2 cursor-pointer self-end sm:self-center select-none text-2xs font-mono text-muted-foreground">
             <input
               type="checkbox"
               checked={showCompleted}
@@ -615,7 +608,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
               className="sr-only peer"
             />
             <span>완료된 일정 포함</span>
-            <div className="relative w-7 h-4 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="relative w-7 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
           </label>
         </div>
       </div>
@@ -665,24 +658,24 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  className={`group relative glass-panel bg-white/70 dark:bg-gray-800/70 hover:shadow-lg transition-all rounded-2xl border ${
+                  className={`group relative bg-card hover:shadow-xs transition-all rounded-xl border ${
                     isCompleted 
-                      ? 'opacity-65 grayscale-[30%] border-gray-100 dark:border-gray-800' 
+                      ? 'opacity-60 grayscale-[30%] border-border/60' 
                       : isNext 
-                        ? 'border-indigo-400 shadow-md shadow-indigo-50/50 dark:shadow-none ring-2 ring-indigo-500/10' 
-                        : 'border-transparent hover:border-indigo-300 dark:hover:border-indigo-200 dark:border-indigo-800'
+                        ? 'border-primary/60 ring-1 ring-primary/20' 
+                        : 'border-border hover:border-primary/40'
                   }`}
                 >
-                  <span className={`hidden sm:block absolute -left-[28px] top-6 w-4.5 h-4.5 rounded-full border-2 bg-white dark:bg-gray-800 transition-all ${
+                  <span className={`hidden sm:block absolute -left-[28px] top-6 w-3.5 h-3.5 rounded-full border bg-card transition-all ${
                     isCompleted 
-                      ? 'border-gray-300 dark:border-gray-700' 
+                      ? 'border-border' 
                       : isNext 
-                        ? 'border-indigo-500 ring-4 ring-indigo-500/10 scale-110' 
-                        : 'border-indigo-300 dark:border-indigo-700 group-hover:border-indigo-500'
+                        ? 'border-primary ring-2 ring-primary/20 scale-110' 
+                        : 'border-border group-hover:border-primary'
                   }`} />
 
                   {isNext && (
-                    <span className="absolute top-0 left-4 -translate-y-1/2 text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-indigo-600 text-white shadow-sm">
+                    <span className="absolute top-0 left-4 -translate-y-1/2 text-2xs font-mono font-medium tracking-wider uppercase px-2 py-0.5 rounded bg-primary text-primary-foreground shadow-2xs">
                       Next up
                     </span>
                   )}
@@ -690,35 +683,35 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
                   <div className="p-4 flex items-start gap-3">
                     <button
                       onClick={(e) => handleToggleReminderComplete(e, item.caseData.caseId, item.reminder.id)}
-                      className="mt-1 text-gray-600 dark:text-gray-300 hover:text-indigo-500 dark:text-gray-600 dark:hover:text-indigo-600 dark:text-indigo-400 transition-colors"
+                      className="mt-1 text-muted-foreground hover:text-primary transition-colors"
                       title={isCompleted ? '진행 상태로 변경' : '일정 완료 처리'}
                     >
                       {isCompleted ? (
-                        <CheckSquare className="text-indigo-500 dark:text-indigo-400" size={19} />
+                        <CheckSquare className="text-primary" size={18} />
                       ) : (
-                        <Square size={19} />
+                        <Square size={18} />
                       )}
                     </button>
 
                     <div 
                       className="flex-1 min-w-0 cursor-pointer"
-                      onClick={() => navigate(`/case/${item.caseData.caseId}`)}
+                      onClick={() => navigate(`/cases/${item.caseData.caseId}`)}
                     >
                       <div className="flex flex-col md:flex-row md:items-center gap-3">
                         <div className="flex items-center gap-3 md:w-32 flex-shrink-0">
-                          <div className="font-mono text-base font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                            <Clock size={15} className="text-gray-500 dark:text-gray-400" />
+                          <div className="font-mono text-sm font-semibold text-foreground flex items-center gap-1.5 tabular-nums">
+                            <Clock size={14} className="text-muted-foreground" />
                             {timeStr}
                           </div>
                           
-                          <div className={`text-xs px-1.5 py-0.5 rounded-md font-bold border flex items-center gap-1 ${typeColor}`}>
+                          <div className="text-2xs font-mono font-medium px-1.5 py-0.5 rounded border bg-muted text-foreground border-border flex items-center gap-1">
                             {type}
                           </div>
                         </div>
 
                         <div className="flex-1 flex flex-wrap items-center gap-2">
-                          <span className={`font-bold text-base text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors ${
-                            isCompleted ? 'line-through text-gray-500 dark:text-gray-400 dark:text-gray-500' : ''
+                          <span className={`font-semibold text-sm text-foreground group-hover:text-primary transition-colors ${
+                            isCompleted ? 'line-through text-muted-foreground' : ''
                           }`}>
                             {item.caseData.customerName}
                           </span>

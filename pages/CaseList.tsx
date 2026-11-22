@@ -1257,13 +1257,13 @@ export default function CaseList() {
                         <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setIsDropOffModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                className="px-4 py-2 bg-card border border-border text-foreground hover:bg-muted rounded-lg text-xs font-semibold transition-colors"
                             >
                                 취소
                             </button>
                             <button
                                 onClick={confirmDropOffStatusChange}
-                                className="px-4 py-2 bg-red-600 rounded text-white font-medium hover:bg-red-700"
+                                className="px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs font-semibold transition-colors shadow-xs"
                             >
                                 변경하기
                             </button>
