@@ -1081,20 +1081,20 @@ export default function CaseList() {
                     onTouchEnd={handleTouchEnd}
                 >
                     {quickView === 'paralegal' && (
-                        <div className="mb-4 bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-indigo-700/40">
-                            <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5 pb-3 border-b border-indigo-700/50">
+                        <div className="mb-4 bg-card rounded-xl p-4 sm:p-5 border border-border shadow-xs">
+                            <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5 pb-3 border-b border-border">
                                 <div className="flex items-center gap-2.5">
-                                    <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
-                                        <Scale size={18} />
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                                        <Scale size={16} strokeWidth={1.75} />
                                     </div>
                                     <div>
-                                        <h3 className="font-extrabold text-sm sm:text-base tracking-tight flex items-center gap-2">
+                                        <h3 className="font-semibold text-sm sm:text-base tracking-tight text-foreground flex items-center gap-2">
                                             <span>사무장 인계 수임 큐 (Paralegal Handoff Pipeline)</span>
-                                            <span className="px-2 py-0.5 rounded-full text-xs bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">
+                                            <span className="px-2 py-0.5 rounded-full text-[11px] bg-primary/10 text-primary border border-primary/20 font-semibold">
                                                 전환율 극대화
                                             </span>
                                         </h3>
-                                        <p className="text-xs text-indigo-200/80 mt-0.5">
+                                        <p className="text-xs text-muted-foreground mt-0.5">
                                             1차 상담원이 7대 문진을 마친 사건들입니다. [사무장 심사] 버튼을 눌러 수임 계약 체결, 서류 보완 요청, 또는 기각 판정을 처리하세요.
                                         </p>
                                     </div>
@@ -1115,15 +1115,15 @@ export default function CaseList() {
                                             onClick={() => setSecondaryStatusFilter(prev => prev === '__none__' ? '' : '__none__')}
                                             className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                                                 secondaryStatusFilter === '__none__'
-                                                    ? 'bg-amber-500/30 border-amber-400 ring-2 ring-amber-400/50 shadow-md'
-                                                    : 'bg-white/10 dark:bg-black/20 hover:bg-white/15 border-white/10'
+                                                    ? 'bg-primary/10 border-primary text-foreground shadow-xs'
+                                                    : 'bg-muted/30 hover:bg-muted border-border text-foreground'
                                             } flex items-center justify-between`}
                                         >
                                             <div>
-                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">미확인 인계</span>
-                                                <span className="text-lg font-black text-amber-300 mt-0.5 block">{newCount}건</span>
+                                                <span className="text-xs text-muted-foreground font-medium block">미확인 인계</span>
+                                                <span className="text-lg font-bold font-mono tabular-nums text-foreground mt-0.5 block">{newCount}건</span>
                                             </div>
-                                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold">NEW</span>
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30">NEW</span>
                                         </button>
 
                                         <button
@@ -1131,15 +1131,15 @@ export default function CaseList() {
                                             onClick={() => setSecondaryStatusFilter(prev => prev === '__in_progress__' ? '' : '__in_progress__')}
                                             className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                                                 secondaryStatusFilter === '__in_progress__'
-                                                    ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400/50 shadow-md'
-                                                    : 'bg-white/10 dark:bg-black/20 hover:bg-white/15 border-white/10'
+                                                    ? 'bg-primary/10 border-primary text-foreground shadow-xs'
+                                                    : 'bg-muted/30 hover:bg-muted border-border text-foreground'
                                             } flex items-center justify-between`}
                                         >
                                             <div>
-                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">사무장 직접 진행</span>
-                                                <span className="text-lg font-black text-blue-300 mt-0.5 block">{inProgressCount}건</span>
+                                                <span className="text-xs text-muted-foreground font-medium block">사무장 직접 진행</span>
+                                                <span className="text-lg font-bold font-mono tabular-nums text-foreground mt-0.5 block">{inProgressCount}건</span>
                                             </div>
-                                            <span className="text-xs px-1.5 py-0.5 rounded bg-blue-400/20 text-blue-300 font-bold">진행중</span>
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-primary/15 text-primary border border-primary/30">진행중</span>
                                         </button>
 
                                         <button
@@ -1147,15 +1147,15 @@ export default function CaseList() {
                                             onClick={() => setSecondaryStatusFilter(prev => prev === '연락안받음' ? '' : '연락안받음')}
                                             className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                                                 secondaryStatusFilter === '연락안받음'
-                                                    ? 'bg-rose-500/30 border-rose-400 ring-2 ring-rose-400/50 shadow-md'
-                                                    : 'bg-white/10 dark:bg-black/20 hover:bg-white/15 border-white/10'
+                                                    ? 'bg-amber-500/10 border-amber-500/40 text-foreground shadow-xs'
+                                                    : 'bg-muted/30 hover:bg-muted border-border text-foreground'
                                             } flex items-center justify-between`}
                                         >
                                             <div>
-                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">연락안받음 (재시도)</span>
-                                                <span className="text-lg font-black text-rose-300 mt-0.5 block">{missedCount}건</span>
+                                                <span className="text-xs text-muted-foreground font-medium block">연락안받음 (재시도)</span>
+                                                <span className="text-lg font-bold font-mono tabular-nums text-foreground mt-0.5 block">{missedCount}건</span>
                                             </div>
-                                            <span className="text-xs px-1.5 py-0.5 rounded bg-rose-400/20 text-rose-300 font-bold">집중관리</span>
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30">집중관리</span>
                                         </button>
 
                                         <button
@@ -1165,13 +1165,13 @@ export default function CaseList() {
                                                 setStatusFilters(['계약 완료']);
                                                 setSecondaryStatusFilter('');
                                             }}
-                                            className="bg-white/10 dark:bg-black/20 hover:bg-white/15 p-3 rounded-xl border border-white/10 flex items-center justify-between text-left transition-all cursor-pointer"
+                                            className="bg-muted/30 hover:bg-muted p-3 rounded-xl border border-border flex items-center justify-between text-left transition-all cursor-pointer"
                                         >
                                             <div>
-                                                <span className="text-xs text-indigo-200 uppercase font-semibold block">최종 수임 체결</span>
-                                                <span className="text-lg font-black text-emerald-300 mt-0.5 block">{contractedCount}건</span>
+                                                <span className="text-xs text-muted-foreground font-medium block">최종 수임 체결</span>
+                                                <span className="text-lg font-bold font-mono tabular-nums text-foreground mt-0.5 block">{contractedCount}건</span>
                                             </div>
-                                            <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-bold">계약완료</span>
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">계약완료</span>
                                         </button>
                                     </div>
                                 );
@@ -1216,26 +1216,28 @@ export default function CaseList() {
 
             {/* [NEW] 이탈 사유 모달 (빠른 상태 변경 시) */}
             {isDropOffModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-[440px] shadow-xl border-t-4 border-red-500">
-                        <h3 className="text-lg font-bold mb-4 text-red-700 dark:text-red-400">⚠ 상담 중단 확인</h3>
-                        <p className="mb-4 text-gray-700 dark:text-gray-200">
-                            상태를 <span className="font-bold text-blue-600 dark:text-blue-400">{dropOffOldStatus}</span>에서{' '}
-                            <span className="font-bold text-red-600 dark:text-red-400">{dropOffNewStatus}</span>(으)로 변경하시겠습니까?
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+                    <div className="bg-card border border-border rounded-xl p-6 w-full max-w-[440px] shadow-xl text-card-foreground">
+                        <h3 className="text-base font-semibold mb-3 text-destructive flex items-center gap-2">
+                            <span>⚠ 상담 중단 확인</span>
+                        </h3>
+                        <p className="mb-4 text-xs text-muted-foreground leading-relaxed">
+                            상태를 <span className="font-semibold text-foreground underline">{dropOffOldStatus}</span>에서{' '}
+                            <span className="font-semibold text-destructive underline">{dropOffNewStatus}</span>(으)로 변경하시겠습니까?
                         </p>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                이탈 사유 <span className="text-red-500">*필수</span>
+                            <label className="block text-xs font-semibold text-foreground mb-2">
+                                이탈 사유 <span className="text-destructive">*필수</span>
                             </label>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-1.5">
                                 {DROP_OFF_REASONS.map(reason => (
                                     <button
                                         key={reason}
                                         type="button"
                                         onClick={() => setDropOffReason(reason)}
-                                        className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${dropOffReason === reason
-                                                ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                                                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-600 dark:text-red-400'
+                                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${dropOffReason === reason
+                                                ? 'bg-destructive text-destructive-foreground border-destructive shadow-xs'
+                                                : 'bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border'
                                             }`}
                                     >
                                         {reason}

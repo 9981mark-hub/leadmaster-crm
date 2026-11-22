@@ -51,9 +51,9 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
     return (
         <div className="space-y-4">
             {newCaseCount > 0 && (
-                <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-center justify-between animate-fade-in">
+                <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-xs animate-fade-in relative">
                     <div className="flex items-center gap-3">
-                        <div className="bg-destructive/20 p-2 rounded-lg text-destructive">
+                        <div className="bg-primary/10 border border-primary/20 p-2 rounded-lg text-primary">
                             <Sparkles size={18} strokeWidth={1.75} />
                         </div>
                         <div>
@@ -66,7 +66,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             setShowNewOnly(true);
                             onResetPage();
                         }}
-                        className="px-3.5 py-1.5 bg-destructive text-destructive-foreground text-xs font-semibold rounded-lg hover:bg-destructive/90 transition-colors shadow-xs whitespace-nowrap"
+                        className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg transition-colors shadow-xs whitespace-nowrap"
                     >
                         확인하기
                     </button>
@@ -82,9 +82,9 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
             )}
 
             {overdueMissedCallCount > 0 && !showOverdueMissedOnly && (
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between animate-fade-in">
+                <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-xs animate-fade-in">
                     <div className="flex items-center gap-3">
-                        <div className="bg-amber-500/20 p-2 rounded-lg text-amber-600 dark:text-amber-400">
+                        <div className="bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg text-amber-600 dark:text-amber-400">
                             <Phone size={18} strokeWidth={1.75} />
                         </div>
                         <div>
@@ -98,7 +98,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             setShowNewOnly(false);
                             onResetPage();
                         }}
-                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-xs whitespace-nowrap"
+                        className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg transition-colors shadow-xs whitespace-nowrap"
                     >
                         확인하기
                     </button>

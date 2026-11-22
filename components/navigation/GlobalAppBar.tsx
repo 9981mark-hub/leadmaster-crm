@@ -250,7 +250,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
             className="p-2 text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg transition-colors"
             title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
           >
-            {theme === 'dark' ? <Sun size={18} strokeWidth={1.75} className="text-amber-400" /> : <Moon size={18} strokeWidth={1.75} className="text-slate-600" />}
+            {theme === 'dark' ? <Sun size={18} strokeWidth={1.75} className="text-amber-400" /> : <Moon size={18} strokeWidth={1.75} className="text-muted-foreground" />}
           </button>
 
           {/* 👑 플랫폼 호스트 전용 슈퍼 어드민 원클릭 토글 버튼 */}

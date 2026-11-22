@@ -220,15 +220,15 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
       </div>
 
       {/* 중단 1: 당일 리드 빠른 배분 액션 패널 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 dark:border-gray-700 shadow-sm">
+      <div className="bg-card rounded-xl p-5 border border-border shadow-xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <Zap size={16} className="text-amber-500" />
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Zap size={16} strokeWidth={1.75} className="text-amber-500" />
               당일 리드 실시간 자동 분배 패널
             </h3>
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
-              현재 미배정 상태인 리드 <strong>{unassignedCases.length}건</strong>을 활성 상담원 <strong>{activeAgents.length}명</strong>에게 균등하게 즉시 분배합니다.
+            <p className="text-xs text-muted-foreground mt-1">
+              현재 미배정 상태인 리드 <strong className="text-foreground">{unassignedCases.length}건</strong>을 활성 상담원 <strong className="text-foreground">{activeAgents.length}명</strong>에게 균등하게 즉시 분배합니다.
             </p>
           </div>
 
@@ -236,18 +236,18 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
             <button
               onClick={handleQuickDistribute}
               disabled={isDistributing || unassignedCases.length === 0}
-              className={`w-full md:w-auto px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm ${
+              className={`w-full md:w-auto px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs ${
                 unassignedCases.length > 0
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white cursor-pointer hover:shadow'
-                  : 'bg-slate-100 dark:bg-gray-700 text-slate-500 dark:text-slate-400 dark:text-gray-500 cursor-not-allowed'
+                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer'
+                  : 'bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-60'
               }`}
             >
-              <Zap size={14} className={isDistributing ? 'animate-spin' : ''} />
+              <Zap size={14} strokeWidth={1.75} className={isDistributing ? 'animate-spin' : ''} />
               {isDistributing ? '자동 배분 처리 중...' : `활성 상담원 균등 즉시 배분 (${unassignedCases.length}건)`}
             </button>
             <Link
               to="/cases"
-              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-700 text-xs text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 whitespace-nowrap transition-colors"
+              className="px-3 py-2 rounded-lg border border-border text-xs text-foreground hover:bg-muted whitespace-nowrap transition-colors"
             >
               상세 관리 →
             </Link>
@@ -261,17 +261,17 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
       </div>
 
       {/* 하단: 팀원별 현황 & 상담원 생산성 보드 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-gray-700 bg-slate-50/70 dark:bg-gray-800/80 flex items-center justify-between">
+      <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-border bg-muted/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users size={16} className="text-blue-600" />
-            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+            <Users size={16} strokeWidth={1.75} className="text-primary" />
+            <h3 className="font-semibold text-sm text-foreground">
               상담원별 실시간 실적 현황 ({activeAgents.length}명)
             </h3>
           </div>
           <Link
             to="/team"
-            className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+            className="text-xs text-primary font-semibold hover:underline"
           >
             팀 관리로 이동 →
           </Link>
@@ -279,7 +279,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-gray-700/50 text-slate-500 dark:text-gray-400 font-semibold border-b border-slate-200 dark:border-gray-700">
+            <thead className="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
               <tr>
                 <th className="py-2.5 px-4 whitespace-nowrap">상담원명</th>
                 <th className="py-2.5 px-4 whitespace-nowrap text-right">보유 배정 리드</th>
@@ -289,10 +289,10 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
                 <th className="py-2.5 px-4 whitespace-nowrap text-center">상태</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60">
+            <tbody className="divide-y divide-border">
               {activeAgents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs">
+                  <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
                     등록된 활성 상담원이 없습니다.
                   </td>
                 </tr>
@@ -313,11 +313,11 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
                     .reduce((sum, c) => sum + (c.contractFee || 0), 0);
 
                   return (
-                    <tr key={agent.userId} className="hover:bg-slate-50 dark:hover:bg-gray-700/40 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                    <tr key={agent.userId} className="hover:bg-muted/40 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-foreground whitespace-nowrap">
                         {agent.displayName}
                       </td>
-                      <td className="py-3 px-4 text-right font-semibold text-slate-700 dark:text-slate-300 tabular-nums whitespace-nowrap">
+                      <td className="py-3 px-4 text-right font-semibold text-foreground tabular-nums whitespace-nowrap">
                         {totalAssigned}건
                       </td>
                       <td className="py-3 px-4 text-right font-bold text-blue-600 dark:text-blue-400 tabular-nums whitespace-nowrap">
@@ -330,7 +330,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
                         ₩ {revenue.toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                           가동 중
                         </span>
                       </td>

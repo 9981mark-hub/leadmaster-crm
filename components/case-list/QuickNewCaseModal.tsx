@@ -142,27 +142,27 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in"
             onKeyDown={onKeyDown}
         >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-card text-card-foreground rounded-2xl max-w-lg w-full shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Modal Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700/80 bg-gray-50/50 dark:bg-gray-750/50">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/40">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300 flex items-center justify-center font-bold">
-                            <Plus size={18} />
+                        <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold">
+                            <Plus size={18} strokeWidth={1.75} />
                         </div>
                         <div>
-                            <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                            <h3 className="text-base font-bold text-foreground">
                                 신규 케이스 빠른 등록
                             </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-xs text-muted-foreground">
                                 번호와 이름만 입력하고 즉시 상담을 시작할 수 있습니다.
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
-                        <X size={18} />
+                        <X size={18} strokeWidth={1.75} />
                     </button>
                 </div>
 
@@ -318,8 +318,8 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                 </div>
 
                 {/* Modal Footer */}
-                <div className="flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-gray-750/70 border-t border-gray-100 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
+                <div className="flex items-center justify-between px-6 py-4 bg-muted/40 border-t border-border">
+                    <span className="text-xs text-muted-foreground hidden sm:inline">
                         단축키: Ctrl + Enter = 등록 후 즉시 열기
                     </span>
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -327,7 +327,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                             type="button"
                             onClick={() => submit('another')}
                             disabled={saving}
-                            className="px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-bold text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                            className="px-3.5 py-2.5 rounded-xl border border-border text-foreground font-semibold text-xs hover:bg-muted transition-colors disabled:opacity-50"
                         >
                             + 등록 후 계속 입력
                         </button>
@@ -335,9 +335,9 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                             type="button"
                             onClick={() => submit('open')}
                             disabled={saving}
-                            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                            className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
-                            {saving ? <Loader2 size={14} className="animate-spin" /> : <PhoneCall size={14} />}
+                            {saving ? <Loader2 size={14} className="animate-spin" /> : <PhoneCall size={14} strokeWidth={1.75} />}
                             등록하고 상담 시작
                         </button>
                     </div>

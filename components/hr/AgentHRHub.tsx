@@ -219,13 +219,13 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
     return (
         <div className="space-y-6">
             {/* 상단 전광판 & 필터 바 */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="bg-card text-card-foreground p-5 rounded-xl shadow-xs border border-border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
-                    <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                        <Users className="text-indigo-600 dark:text-indigo-400" size={24} />
+                    <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <Users className="text-primary" size={22} strokeWidth={1.75} />
                         <span>상담직원 올인원 HR 종합 관제 (flex.team형)</span>
                     </h2>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                         근태(출퇴근·이석)부터 콜 활동, 수임 실적, 건당 인센티브 및 3.3% 세무 급여 정산까지 하나로 연결됩니다.
                     </p>
                 </div>
@@ -334,64 +334,64 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
 
             {/* 4대 핵심 요약 카드 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm card-interactive">
-                    <span className="text-xs font-bold text-gray-500 block mb-1">당월 수임 계약 총합</span>
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">당월 수임 계약 총합</span>
                     <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black text-gray-900 dark:text-white">
+                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
                             {summaryKPI.totalContracts.toLocaleString()}
                         </span>
-                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">건 계약</span>
+                        <span className="text-xs font-semibold text-muted-foreground">건 계약</span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
                         수임료 매출: ₩ {(summaryKPI.totalRevenue / 10000).toLocaleString()} 만원
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/40 shadow-sm card-interactive">
-                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 block mb-1">당월 총 지급 인센티브</span>
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">당월 총 지급 인센티브</span>
                     <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
                             ₩ {(summaryKPI.totalGrossPay / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원 (세전)</span>
+                        <span className="text-xs font-semibold text-muted-foreground">만원 (세전)</span>
                     </div>
-                    <div className="mt-2 text-xs text-indigo-500 font-semibold">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
                         기본급 + 성과급 + 일비 합산
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-sm card-interactive">
-                    <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 block mb-1">실지급액 합계 (세후)</span>
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">실지급액 합계 (세후)</span>
                     <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                        <span className="text-2xl font-bold font-mono tabular-nums text-primary">
                             ₩ {(summaryKPI.totalNetPay / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
+                        <span className="text-xs font-semibold text-muted-foreground">만원</span>
                     </div>
-                    <div className="mt-2 text-xs text-emerald-600 font-medium">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
                         상담원 실수령액 총합
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-rose-100 dark:border-rose-900/40 shadow-sm card-interactive">
-                    <span className="text-xs font-bold text-rose-700 dark:text-rose-300 block mb-1">3.3% 원천징수 세금 총액</span>
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">3.3% 원천징수 세금 총액</span>
                     <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
                             ₩ {(summaryKPI.totalTax / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
+                        <span className="text-xs font-semibold text-muted-foreground">만원</span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
                         소득세(3%) + 지방세(0.3%)
                     </div>
                 </div>
             </div>
 
             {/* 종합 실적 & 급여 매트릭스 그리드 테이블 */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+            <div className="bg-card text-card-foreground rounded-xl shadow-xs border border-border overflow-hidden">
+                <div className="p-5 border-b border-border flex justify-between items-center bg-muted/40">
                     <div>
-                        <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                             <span>👥 {selectedMonth} 상담원별 근태·실적·급여 통합 명세</span>
                             <span className="text-xs px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-normal">
                                 {agentCalculations.length}명

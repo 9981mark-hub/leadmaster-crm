@@ -141,31 +141,33 @@ export const ParalegalPipelineWidget: React.FC<ParalegalPipelineWidgetProps> = (
                         </p>
                     </div>
 
-                    {/* 카드 3: 🚨 연락안받음 방치 경보 (핵심) */}
+                    {/* 카드 3: 연락안받음 방치 경보 */}
                     <div 
                         onClick={() => handleGoToParalegalQueue('연락안받음')}
-                        className={`p-4 rounded-xl border cursor-pointer transition-all hover:shadow-2xs group ${
+                        className={`bg-muted/30 p-4 rounded-xl border cursor-pointer transition-all hover:shadow-2xs group ${
                             missedCases.length > 0 
-                                ? 'bg-amber-500/10 border-amber-500/30' 
-                                : 'bg-muted/30 border-border'
+                                ? 'border-amber-500/40 hover:border-amber-500/60' 
+                                : 'border-border hover:border-primary/40'
                         }`}
                     >
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                                <PhoneMissed size={14} strokeWidth={1.75} className="text-amber-600 dark:text-amber-400" />
+                            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                                <PhoneMissed size={14} strokeWidth={1.75} className={missedCases.length > 0 ? "text-amber-500" : "text-muted-foreground"} />
                                 <span>3. 연락안받음 (부재)</span>
                             </span>
                             {missedCases.length > 0 && (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30">
                                     집중재시도
                                 </span>
                             )}
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold font-mono tabular-nums text-amber-600 dark:text-amber-400">{missedCases.length}건</span>
-                            <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">재통화 필요</span>
+                            <span className="text-2xl font-bold font-mono tabular-nums text-foreground">{missedCases.length}건</span>
+                            <span className={`text-[11px] font-semibold ${missedCases.length > 0 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                {missedCases.length > 0 ? '재통화 필요' : '정상 통화'}
+                            </span>
                         </div>
-                        <p className="text-xs text-amber-600/80 dark:text-amber-400/80 mt-1 flex items-center gap-1 font-normal">
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 font-normal">
                             <span>클릭 시 해당 리드만 모아보기</span>
                             <ChevronRight size={12} strokeWidth={1.75} className="group-hover:translate-x-0.5 transition-transform" />
                         </p>
@@ -174,20 +176,22 @@ export const ParalegalPipelineWidget: React.FC<ParalegalPipelineWidgetProps> = (
                     {/* 카드 4: 이번달 최종 수임 체결 실적 */}
                     <div 
                         onClick={() => navigate('/cases')}
-                        className="bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/30 hover:border-emerald-500/50 cursor-pointer transition-all hover:shadow-2xs group"
+                        className="bg-muted/30 p-4 rounded-xl border border-border hover:border-primary/40 cursor-pointer transition-all hover:shadow-2xs group"
                     >
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">4. 당월 수임 완료</span>
-                            <CheckCircle2 size={14} strokeWidth={1.75} className="text-emerald-600 dark:text-emerald-400" />
+                            <span className="text-xs font-semibold text-muted-foreground">4. 당월 수임 완료</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 flex items-center gap-1">
+                                <CheckCircle2 size={11} strokeWidth={1.75} /> 수임 달성
+                            </span>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400">{contractedCases.length}건</span>
-                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            <span className="text-2xl font-bold font-mono tabular-nums text-foreground">{contractedCases.length}건</span>
+                            <span className="text-xs font-semibold text-muted-foreground">
                                 {formatManwon(totalContractFee)}
                             </span>
                         </div>
-                        <div className="mt-1 flex items-center justify-between text-xs text-emerald-600/80 dark:text-emerald-400/80 font-normal">
-                            <span>인계 전환율: <b className="font-semibold">{conversionRate}%</b></span>
+                        <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground font-normal">
+                            <span>인계 전환율: <b className="font-semibold text-foreground">{conversionRate}%</b></span>
                             <ChevronRight size={12} strokeWidth={1.75} className="group-hover:translate-x-0.5 transition-transform" />
                         </div>
                     </div>

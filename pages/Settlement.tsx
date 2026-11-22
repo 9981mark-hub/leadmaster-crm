@@ -4267,20 +4267,20 @@ export default function Settlement() {
 
             {/* 2. 최상단 상시 노출: 통합 경영 손익(P&L) 글로벌 KPI 전광판 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between hover:border-gray-200 dark:hover:border-gray-600 transition-all card-interactive">
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
                     <div>
-                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
                             <span>거래처 총 수수료 매출</span>
-                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">공급가</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary border border-primary/20">공급가</span>
                         </div>
                         <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-black text-gray-900 dark:text-white font-mono tabular-nums">
+                            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
                                 ₩ {((integratedPnLSummary?.totalRevenueWon || 0) / 10000).toLocaleString()}
                             </span>
-                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
+                            <span className="text-xs font-semibold text-muted-foreground">만원</span>
                         </div>
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium space-y-0.5">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal space-y-0.5">
                         {(integratedPnLSummary?.totalVatWon || 0) > 0 && (
                             <div>
                                 부가세 별도 ₩ {((integratedPnLSummary?.totalVatWon || 0) / 10000).toLocaleString()} 만원
@@ -4292,60 +4292,60 @@ export default function Settlement() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-sm flex flex-col justify-between hover:border-emerald-200 dark:hover:border-emerald-800 transition-all card-interactive">
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
                     <div>
-                        <div className="flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300 font-bold mb-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
                             <span>상담원 총 수당</span>
-                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">인건비</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border">인건비</span>
                         </div>
                         <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+                            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
                                 ₩ {((integratedPnLSummary?.totalAgentCommissionWon || 0) / 10000).toLocaleString()}
                             </span>
-                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
+                            <span className="text-xs font-semibold text-muted-foreground">만원</span>
                         </div>
                     </div>
-                    <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
                         회사 마진 ₩ {((integratedPnLSummary?.totalCompanyMarginWon || 0) / 10000).toLocaleString()} 만원 공제
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-rose-100 dark:border-rose-900/40 shadow-sm flex flex-col justify-between hover:border-rose-200 dark:hover:border-rose-800 transition-all card-interactive">
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
                     <div>
-                        <div className="flex items-center justify-between text-xs text-rose-700 dark:text-rose-300 font-bold mb-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
                             <span>DB 구매 원가</span>
-                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400">팀관리</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border">팀관리</span>
                         </div>
                         <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono tabular-nums">
+                            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
                                 ₩ {((integratedPnLSummary?.totalDbCostWon || 0) / 10000).toLocaleString()}
                             </span>
-                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
+                            <span className="text-xs font-semibold text-muted-foreground">만원</span>
                         </div>
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
                         총 지출 ₩ {((integratedPnLSummary?.totalExpensesWon || 0) / 10000).toLocaleString()} 만원 중 원가
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between hover:border-gray-200 dark:hover:border-gray-600 transition-all card-interactive">
+                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
                     <div>
-                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
                             <span>최종 영업 순이익</span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-destructive/10 text-destructive border border-destructive/20'}`}>
                                 {integratedPnLSummary?.profitMarginRate || 0}%
                             </span>
                         </div>
                         <div className="flex items-baseline gap-1.5">
-                            <span className={`text-2xl font-black font-mono tabular-nums ${
+                            <span className={`text-2xl font-bold font-mono tabular-nums ${
                                 (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-destructive'
                             }`}>
                                 {(integratedPnLSummary?.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs((integratedPnLSummary?.netProfitWon || 0) / 10000).toLocaleString()}
                             </span>
-                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">만원</span>
+                            <span className="text-xs font-semibold text-muted-foreground">만원</span>
                         </div>
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
                         실현금흐름: {(integratedPnLSummary?.netCashFlowWon || 0) < 0 ? '-' : ''}₩ {Math.abs((integratedPnLSummary?.netCashFlowWon || 0) / 10000).toLocaleString()} 만원
                     </div>
                 </div>

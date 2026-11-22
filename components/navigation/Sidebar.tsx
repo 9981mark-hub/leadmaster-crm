@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <img
                 src={org.orgLogo}
                 alt={orgName}
-                className="w-7 h-7 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer hover:scale-105 transition-transform"
+                className="w-7 h-7 rounded-lg object-cover border border-border shadow-2xs cursor-pointer hover:scale-105 transition-transform"
                 onClick={() => {
                   if (isOwner) setIsCompanyModalOpen(true);
                   else onToggleCollapse();
@@ -145,18 +145,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   if (isOwner) setIsCompanyModalOpen(true);
                   else onToggleCollapse();
                 }}
-                className={`w-7 h-7 rounded-lg bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/50 dark:border-blue-800/50 transition-transform ${isOwner ? 'cursor-pointer hover:scale-105' : ''}`}
+                className={`w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 transition-transform ${isOwner ? 'cursor-pointer hover:scale-105' : ''}`}
                 title={`${orgName} (${roleInfo.badgeText})${isOwner ? ' - 클릭하여 설정' : ''}`}
               >
-                <Building2 size={13} />
+                <Building2 size={13} strokeWidth={1.75} />
               </div>
             )}
             <button 
               onClick={onToggleCollapse}
-              className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors"
+              className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               title="사이드바 펼치기"
             >
-              <ChevronsRight size={16} />
+              <ChevronsRight size={16} strokeWidth={1.75} />
             </button>
           </>
         ) : (
@@ -172,10 +172,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </Link>
               <button 
                 onClick={onToggleCollapse} 
-                className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 transition-colors shrink-0" 
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0" 
                 title="사이드바 접기"
               >
-                <ChevronsLeft size={17} />
+                <ChevronsLeft size={17} strokeWidth={1.75} />
               </button>
             </div>
 

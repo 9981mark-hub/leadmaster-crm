@@ -338,13 +338,13 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                     animate={{ opacity: 1, y: 0 }}
                                                     exit={{ opacity: 0, y: -5 }}
                                                     transition={{ duration: 0.15 }}
-                                                    className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[250px] overflow-y-auto"
+                                                    className="absolute z-50 top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px] max-h-[250px] overflow-y-auto"
                                                 >
-                                                    <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                                    <div className="px-2 py-1 text-xs text-muted-foreground border-b border-border flex justify-between items-center">
                                                         <span>상태 변경</span>
                                                         <button
                                                             onClick={() => setOpenDropdownId(null)}
-                                                            className="text-gray-500 hover:text-gray-700"
+                                                            className="text-muted-foreground hover:text-foreground"
                                                         >✕</button>
                                                     </div>
                                                     {statuses.map((status) => (
@@ -476,7 +476,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         {nextReminder.datetime}
                                                     </span>
                                                     {(c.reminders?.length || 0) > 1 && (
-                                                        <span className="text-xs text-gray-500 bg-white dark:bg-gray-800 px-1 rounded-full border border-gray-200 dark:border-gray-600">
+                                                        <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full border border-border">
                                                             +{((c.reminders?.length || 0) - 1)}
                                                         </span>
                                                     )}
@@ -794,9 +794,9 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         animate={{ opacity: 1, y: 0 }}
                                                         exit={{ opacity: 0, y: -5 }}
                                                         transition={{ duration: 0.15 }}
-                                                        className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[300px] overflow-y-auto"
+                                                        className="absolute z-50 top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px] max-h-[300px] overflow-y-auto"
                                                     >
-                                                        <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                                        <div className="px-2 py-1 text-xs text-muted-foreground border-b border-border">
                                                             상태 변경
                                                         </div>
                                                         {statuses.map((status) => (
@@ -809,12 +809,12 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                                     }
                                                                     setOpenDropdownId(null);
                                                                 }}
-                                                                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 ${status === c.status ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-700 dark:text-gray-300'
+                                                                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-muted transition-colors flex items-center gap-2 ${status === c.status ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
                                                                     }`}
                                                             >
-                                                                <span className={`w-2 h-2 rounded-full ${STATUS_COLOR_MAP[status]?.split(' ')[0] || 'bg-gray-300'}`}></span>
+                                                                <span className={`w-2 h-2 rounded-full ${STATUS_COLOR_MAP[status]?.split(' ')[0] || 'bg-muted-foreground'}`}></span>
                                                                 {status}
-                                                                {status === c.status && <span className="ml-auto text-blue-500">✓</span>}
+                                                                {status === c.status && <span className="ml-auto text-primary">✓</span>}
                                                             </button>
                                                         ))}
                                                     </motion.div>

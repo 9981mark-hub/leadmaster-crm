@@ -182,7 +182,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-[100dvh] bg-background text-foreground overflow-hidden font-sans">
       {/* 1. Desktop Grouped Sidebar */}
       <Sidebar 
         collapsed={sidebarCollapsed} 
@@ -304,8 +304,8 @@ const ProtectedRoutes = () => {
     return (
       <ErrorBoundary>
         <Suspense fallback={
-          <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
-            <Loader2 className="animate-spin text-amber-500" size={32} />
+          <div className="flex h-screen items-center justify-center bg-background">
+            <Loader2 className="animate-spin text-primary" size={32} />
           </div>
         }>
           <LiteCallPage />
@@ -390,8 +390,8 @@ export default function App() {
                 <ReminderProvider>
                   <ActiveCallProvider>
                     <Suspense fallback={
-                      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
-                        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                      <div className="flex h-screen items-center justify-center bg-background">
+                        <Loader2 className="w-12 h-12 animate-spin text-primary" />
                       </div>
                     }>
                       <Routes>

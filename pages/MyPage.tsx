@@ -551,17 +551,17 @@ export default function MyPage() {
                                     onClick={() => updatePref({ callMethod: 'android_bridge' })}
                                     className={`btn-tactile w-full p-3 rounded-xl border text-left transition-all ${
                                         prefs.callMethod === 'android_bridge'
-                                            ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/20'
+                                            ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20'
                                             : 'border-border bg-card hover:bg-muted/50 text-foreground'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 font-bold text-xs">
-                                            <Smartphone size={15} className="text-blue-600 dark:text-blue-400" />
+                                            <Smartphone size={15} strokeWidth={1.75} className="text-primary" />
                                             <span>스마트폰 앱 연동 (추천)</span>
                                         </div>
                                         {prefs.callMethod === 'android_bridge' && (
-                                            <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-600 text-white">선택됨</span>
+                                            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground">선택됨</span>
                                         )}
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
@@ -574,17 +574,17 @@ export default function MyPage() {
                                     onClick={() => updatePref({ callMethod: 'webrtc' })}
                                     className={`btn-tactile w-full p-3 rounded-xl border text-left transition-all ${
                                         prefs.callMethod === 'webrtc'
-                                            ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/20'
+                                            ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20'
                                             : 'border-border bg-card hover:bg-muted/50 text-foreground'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 font-bold text-xs">
-                                            <Headphones size={15} className="text-indigo-600 dark:text-indigo-400" />
+                                            <Headphones size={15} strokeWidth={1.75} className="text-primary" />
                                             <span>PC 헤드셋 웹 다이얼</span>
                                         </div>
                                         {prefs.callMethod === 'webrtc' && (
-                                            <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-600 text-white">선택됨</span>
+                                            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground">선택됨</span>
                                         )}
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
@@ -597,17 +597,17 @@ export default function MyPage() {
                                     onClick={() => updatePref({ callMethod: 'click_dial' })}
                                     className={`btn-tactile w-full p-3 rounded-xl border text-left transition-all ${
                                         prefs.callMethod === 'click_dial'
-                                            ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/20'
+                                            ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20'
                                             : 'border-border bg-card hover:bg-muted/50 text-foreground'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 font-bold text-xs">
-                                            <MousePointer size={15} className="text-gray-500" />
+                                            <MousePointer size={15} strokeWidth={1.75} className="text-muted-foreground" />
                                             <span>간편 클릭 다이얼</span>
                                         </div>
                                         {prefs.callMethod === 'click_dial' && (
-                                            <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-600 text-white">선택됨</span>
+                                            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground">선택됨</span>
                                         )}
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
@@ -804,33 +804,33 @@ export default function MyPage() {
 
                                 {/* 관리자 전용 맞춤 관제 알림 */}
                                 {isAdmin && (
-                                    <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-xl space-y-2.5">
-                                        <div className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-                                            <AlertCircle size={14} /> 관리자 맞춤 관제 알림
+                                    <div className="p-3 bg-muted/40 border border-border rounded-xl space-y-2.5">
+                                        <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                            <AlertCircle size={14} strokeWidth={1.75} className="text-primary" /> 관리자 맞춤 관제 알림
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs text-foreground">
+                                            <span className="text-xs text-muted-foreground">
                                                 배정 후 10분 지체 시 즉시 알림
                                             </span>
                                             <button
                                                 type="button"
                                                 onClick={() => updatePref({ notifyUnanswered: !prefs.notifyUnanswered })}
-                                                className={`btn-tactile px-2.5 py-1 rounded-lg text-xs font-bold ${
-                                                    prefs.notifyUnanswered ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'
+                                                className={`btn-tactile px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                                                    prefs.notifyUnanswered ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground border border-border'
                                                 }`}
                                             >
                                                 {prefs.notifyUnanswered ? 'ON' : 'OFF'}
                                             </button>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs text-foreground">
+                                            <span className="text-xs text-muted-foreground">
                                                 부재콜 3회 누적 시 주의 알림
                                             </span>
                                             <button
                                                 type="button"
                                                 onClick={() => updatePref({ notifyAbsenceLimit: !prefs.notifyAbsenceLimit })}
-                                                className={`btn-tactile px-2.5 py-1 rounded-lg text-xs font-bold ${
-                                                    prefs.notifyAbsenceLimit ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'
+                                                className={`btn-tactile px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                                                    prefs.notifyAbsenceLimit ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground border border-border'
                                                 }`}
                                             >
                                                 {prefs.notifyAbsenceLimit ? 'ON' : 'OFF'}
