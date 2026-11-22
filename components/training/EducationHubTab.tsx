@@ -118,7 +118,7 @@ const FormattedAiAnswer: React.FC<{
 
   if (!isStructured) {
     return (
-      <div className="text-xs md:text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line font-medium">
+      <div className="text-xs md:text-sm text-foreground leading-relaxed whitespace-pre-line font-medium">
         {clean}
       </div>
     );
@@ -128,14 +128,14 @@ const FormattedAiAnswer: React.FC<{
     <div className="space-y-3 pt-0.5">
       {/* 1. 핵심 결론 카드 */}
       {conclusion && (
-        <div className="bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/90 dark:border-indigo-800/60 rounded-xl p-3.5 shadow-xs">
+        <div className="bg-card border border-border rounded-xl p-3.5 shadow-2xs">
           <div className="flex items-center gap-1.5 mb-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               <span>📌</span>
               <span>핵심 결론</span>
             </span>
           </div>
-          <p className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-line pl-0.5">
+          <p className="text-xs md:text-sm font-medium text-foreground leading-relaxed whitespace-pre-line pl-0.5">
             {conclusion}
           </p>
         </div>
@@ -143,23 +143,23 @@ const FormattedAiAnswer: React.FC<{
 
       {/* 2. 고객 통화 실전 멘트 카드 */}
       {script && (
-        <div className="bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-800/60 border-l-4 border-l-emerald-500 rounded-r-xl rounded-l-md p-3.5 shadow-xs">
+        <div className="bg-muted/30 border border-border rounded-xl p-3.5 shadow-2xs">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-primary text-primary-foreground shadow-2xs">
               <span>🎯</span>
               <span>고객 통화 실전 멘트</span>
             </span>
             <button
               onClick={() => onCopyText(script.replace(/^["'“”]|["'“”]$/g, '').trim(), '실전 멘트')}
-              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 bg-white dark:bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/60 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground bg-card px-2 py-0.5 rounded-md border border-border hover:bg-muted transition-colors shadow-2xs"
               title="실전 멘트만 복사"
             >
               <Copy className="w-3 h-3" />
               <span>멘트만 복사</span>
             </button>
           </div>
-          <div className="bg-white/95 dark:bg-gray-900/80 rounded-lg p-3 border border-emerald-100 dark:border-emerald-900/50">
-            <p className="text-xs md:text-sm font-medium text-emerald-950 dark:text-emerald-100 leading-relaxed font-sans">
+          <div className="bg-card rounded-lg p-3 border border-border">
+            <p className="text-xs md:text-sm font-medium text-foreground leading-relaxed font-sans">
               {script}
             </p>
           </div>
@@ -168,14 +168,14 @@ const FormattedAiAnswer: React.FC<{
 
       {/* 3. 실무 주의 & 인계 팁 카드 */}
       {note && (
-        <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 rounded-xl p-3 shadow-xs">
+        <div className="bg-muted/20 border border-border rounded-xl p-3 shadow-2xs">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-600 text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-secondary text-secondary-foreground border border-border">
               <span>⚠️</span>
               <span>실무 주의 &amp; 인계 팁</span>
             </span>
           </div>
-          <p className="text-xs md:text-sm font-medium text-amber-950 dark:text-amber-200 leading-relaxed pl-0.5">
+          <p className="text-xs md:text-sm font-medium text-muted-foreground leading-relaxed pl-0.5">
             {note}
           </p>
         </div>
@@ -1590,30 +1590,30 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
 
       {/* 7. NotebookLM Direct In-App AI Q&A Modal */}
       {showNotebookModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-3xl rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-3xl rounded-2xl bg-card border border-border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-foreground">
             {/* Modal Header */}
-            <div className="p-5 md:p-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex items-start justify-between gap-4 bg-gradient-to-r from-orange-50/60 via-amber-50/40 to-transparent dark:from-orange-950/20 dark:via-amber-950/10">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-black flex items-center gap-1 shadow-xs">
+            <div className="p-5 md:p-6 pb-4 border-b border-border flex items-start justify-between gap-4 bg-muted/40">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
                     사이트 내 실시간 즉답 모드
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-muted-foreground">
                     2025 법정 기준표 & 교육자료(PDF 3종) 연동
                   </span>
                 </div>
-                <h2 className="text-lg md:text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-orange-500" />
+                <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
+                  <Bot className="w-5 h-5 text-primary" />
                   <span>AI 법률 사수 실시간 Q&A (NotebookLM 내장 엔진)</span>
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   새 창으로 나갈 필요 없이, 질문을 입력하거나 아래 추천 질문을 클릭하면 1초 만에 법률 및 화법 답변을 받으실 수 있습니다.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() =>
                     setChatMessages([
@@ -1626,14 +1626,14 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     ])
                   }
                   title="대화 초기화"
-                  className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all text-xs flex items-center gap-1 font-bold"
+                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-xs flex items-center gap-1 font-medium"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span className="hidden sm:inline">초기화</span>
                 </button>
                 <button
                   onClick={() => setShowNotebookModal(false)}
-                  className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1643,7 +1643,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
             {/* Chat Message Stream */}
             <div
               ref={chatScrollRef}
-              className="flex-1 p-5 md:p-6 overflow-y-auto space-y-4 bg-gray-50/70 dark:bg-gray-950/40 min-h-[300px] max-h-[420px]"
+              className="flex-1 p-5 md:p-6 overflow-y-auto space-y-4 bg-muted/10 min-h-[300px] max-h-[420px]"
             >
               {chatMessages.map((msg) => {
                 const isUser = msg.role === 'user';
@@ -1653,16 +1653,16 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
                   >
                     {!isUser && (
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-2xs">
                         <Bot className="w-4 h-4" />
                       </div>
                     )}
 
                     <div
-                      className={`max-w-[88%] md:max-w-[85%] rounded-2xl p-4 text-xs md:text-sm leading-relaxed space-y-2.5 shadow-xs ${
+                      className={`max-w-[88%] md:max-w-[85%] rounded-2xl p-4 text-xs md:text-sm leading-relaxed space-y-2.5 shadow-2xs ${
                         isUser
-                          ? 'bg-indigo-600 text-white rounded-tr-none font-medium'
-                          : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200/90 dark:border-gray-700/80 rounded-tl-none font-medium shadow-sm'
+                          ? 'bg-primary text-primary-foreground rounded-tr-none font-medium'
+                          : 'bg-card text-foreground border border-border rounded-tl-none font-medium'
                       }`}
                     >
                       {isUser ? (
@@ -1674,12 +1674,12 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         />
                       )}
 
-                      <div className="flex items-center justify-between pt-1.5 border-t border-black/10 dark:border-white/10 text-xs opacity-75">
-                        <span>{msg.timestamp}</span>
+                      <div className="flex items-center justify-between pt-1.5 border-t border-border/60 text-xs opacity-75">
+                        <span className="font-mono text-muted-foreground">{msg.timestamp}</span>
                         {!isUser && (
                           <button
                             onClick={() => handleCopyText(msg.content.replace(/\*\*/g, ''), 'AI 전체 답변')}
-                            className="hover:underline flex items-center gap-1 font-bold ml-3 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400 transition-colors"
+                            className="hover:underline flex items-center gap-1 font-medium ml-3 text-muted-foreground hover:text-foreground transition-colors"
                           >
                             <Copy className="w-3 h-3" />
                             <span>전체 답변 복사</span>
@@ -1693,11 +1693,11 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
 
               {isAnswering && (
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center shrink-0 animate-pulse">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 animate-pulse">
                     <Bot className="w-4 h-4" />
                   </div>
-                  <div className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-tl-none text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-orange-500 animate-spin" />
+                  <div className="p-4 rounded-2xl bg-card border border-border rounded-tl-none text-xs text-muted-foreground flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-primary animate-spin" />
                     <span>2025/2026년 법정 기준표와 실무준칙을 정밀 검색하여 최적의 답변을 작성하고 있습니다...</span>
                   </div>
                 </div>
@@ -1705,9 +1705,9 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
             </div>
 
             {/* Quick Prompts Carousel */}
-            <div className="px-5 md:px-6 py-2.5 bg-gray-100/70 dark:bg-gray-800/60 border-t border-gray-200/60 dark:border-gray-800">
-              <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-500" />
+            <div className="px-5 md:px-6 py-2.5 bg-muted/30 border-t border-border">
+              <div className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-primary" />
                 <span>추천 질문 (클릭 시 사이트 내 즉시 질문):</span>
               </div>
               <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
@@ -1716,7 +1716,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     key={idx}
                     onClick={() => handleSendQuestion(q)}
                     disabled={isAnswering}
-                    className="shrink-0 text-left px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-orange-400 text-xs text-gray-700 dark:text-gray-300 font-medium transition-all hover:bg-orange-50/50 dark:hover:bg-orange-950/20 active:scale-95 disabled:opacity-50"
+                    className="shrink-0 text-left px-3 py-1.5 rounded-lg bg-card border border-border hover:border-primary/40 text-xs text-foreground font-medium transition-colors hover:bg-muted active:scale-95 disabled:opacity-50 shadow-2xs"
                   >
                     💬 {q.length > 30 ? q.slice(0, 30) + '...' : q}
                   </button>
@@ -1725,7 +1725,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
             </div>
 
             {/* Input Bar */}
-            <div className="p-4 md:p-5 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 space-y-3">
+            <div className="p-4 md:p-5 border-t border-border bg-card space-y-3">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -1739,20 +1739,20 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="법률 요건이나 화법을 질문하세요 (예: 알바도 회생 되나요? 빚 1,500만 원인데...)"
                   disabled={isAnswering}
-                  className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs md:text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-card border border-border text-xs md:text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   disabled={!chatInput.trim() || isAnswering}
-                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-gray-950 font-bold text-xs md:text-sm hover:from-orange-400 hover:to-amber-400 transition-all shadow-md active:scale-95 disabled:opacity-40 flex items-center gap-1.5 shrink-0"
+                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs md:text-sm transition-colors shadow-2xs active:scale-95 disabled:opacity-40 flex items-center gap-1.5 shrink-0"
                 >
-                  <Send className="w-4 h-4 fill-gray-950" />
+                  <Send className="w-4 h-4 fill-primary-foreground" />
                   <span>질문하기</span>
                 </button>
               </form>
 
               {/* Bottom Quick Link: Google Official NotebookLM Website */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   💡 구글 공식 웹사이트에서 더 방대한 서적 원문을 직접 검색하시려면?
                 </span>
@@ -1760,7 +1760,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   href={materials.notebookLm.sharedUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-orange-600 dark:text-orange-400 font-bold hover:underline inline-flex items-center gap-1 self-start sm:self-auto"
+                  className="text-primary font-medium hover:underline inline-flex items-center gap-1 self-start sm:self-auto"
                 >
                   <span>구글 공식 NotebookLM 새 창 열기</span>
                   <ExternalLink className="w-3 h-3" />

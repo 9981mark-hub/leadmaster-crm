@@ -94,7 +94,7 @@ export const Choice: React.FC<{
                             type="button"
                             aria-pressed={selected}
                             onClick={() => onPick(opt)}
-                            className={`h-9 ${size} rounded-lg border text-xs font-medium whitespace-nowrap transition-colors shadow-2xs ${selected ? onCls : 'bg-card text-foreground border-border hover:bg-muted'}`}
+                            className={`h-9 ${size} rounded-lg border text-xs font-medium whitespace-nowrap transition-all shadow-2xs active:scale-[0.98] ${selected ? onCls : 'bg-card text-muted-foreground hover:text-foreground border-border hover:bg-muted'}`}
                         >
                             {render ? render(opt) : opt}
                         </button>

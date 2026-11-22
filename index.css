@@ -32,8 +32,8 @@
   --card-foreground: 0 0% 98%;
   --popover: 240 10% 7.5%;            /* #18181b (모달/드롭다운) */
   --popover-foreground: 0 0% 98%;
-  --primary: 158 64% 52%;             /* #10b981 (선명한 네온 에메랄드) */
-  --primary-foreground: 240 10% 3.9%;
+  --primary: 160 84% 39%;             /* #059669 (신뢰의 딥 에메랄드 - 눈부심 없는 B2B 표준) */
+  --primary-foreground: 0 0% 100%;    /* #ffffff (고대비 화이트 텍스트) */
   --secondary: 240 3.7% 15.9%;        /* #27272a (Zinc 800) */
   --secondary-foreground: 0 0% 98%;
   --muted: 240 3.7% 15.9%;

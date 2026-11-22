@@ -99,7 +99,7 @@ ${data.specialMemo || '없음'}`;
             {!isExpanded && (
                 <div
                     onClick={toggleExpanded}
-                    className="px-4 py-2 text-xs text-muted-foreground flex items-center justify-between cursor-pointer hover:bg-muted/30 gap-2 flex-wrap bg-card"
+                    className="px-4 py-2.5 text-xs text-muted-foreground flex items-center justify-between cursor-pointer hover:bg-muted/30 gap-2 flex-wrap bg-card"
                 >
                     <div className="flex items-center gap-2 flex-wrap font-medium">
                         <span className="font-semibold text-foreground">{data.customerName}</span>
@@ -111,7 +111,7 @@ ${data.specialMemo || '없음'}`;
                         <span>주거: <b className="text-foreground">{data.housingType}</b></span>
                         <span className="text-muted-foreground">({data.depositRent})</span>
                         <span className="text-border">|</span>
-                        <span>신용대출: <b className="text-rose-500 font-bold">{data.creditLoan}</b></span>
+                        <span>신용대출: <b className="text-foreground font-mono font-semibold">{data.creditLoan}</b></span>
                         <span className="text-muted-foreground">({data.loanMonthlyPay})</span>
                     </div>
                     <span className="text-xs text-primary font-semibold shrink-0 hover:underline">
@@ -173,18 +173,18 @@ ${data.specialMemo || '없음'}`;
                         </div>
                         <div className="space-y-2 text-xs">
                             <div className="bg-card p-2.5 rounded-lg border border-border">
-                                <span className="text-slate-500 dark:text-slate-400 text-xs block mb-0.5">월 세후소득 (실급여)</span>
-                                <div className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
+                                <span className="text-muted-foreground text-xs block mb-0.5">월 세후소득 (실급여)</span>
+                                <div className="font-semibold text-primary font-mono text-sm">
                                     {data.income}
                                 </div>
                             </div>
                             <div className="flex justify-between items-center py-0.5">
-                                <span className="text-slate-500 dark:text-slate-400 text-xs">거주 형태</span>
-                                <span className="font-bold text-slate-200 bg-slate-700/60 px-2 py-0.5 rounded border border-slate-600/60">{data.housingType}</span>
+                                <span className="text-muted-foreground text-xs">거주 형태</span>
+                                <span className="font-medium text-foreground bg-muted px-2 py-0.5 rounded border border-border">{data.housingType}</span>
                             </div>
                             <div className="py-0.5">
-                                <span className="text-slate-500 dark:text-slate-400 text-xs block mb-1">보증금, 월세</span>
-                                <p className="text-slate-200 font-medium leading-snug bg-slate-50/60 dark:bg-slate-950/60 p-2 rounded border border-slate-200/80 dark:border-slate-700/80 text-xs">
+                                <span className="text-muted-foreground text-xs block mb-1">보증금, 월세</span>
+                                <p className="text-foreground font-medium leading-snug bg-card p-2 rounded-lg border border-border text-xs">
                                     {data.depositRent}
                                 </p>
                             </div>
@@ -200,7 +200,7 @@ ${data.specialMemo || '없음'}`;
                         <div className="space-y-1.5 text-xs">
                             <div>
                                 <span className="text-muted-foreground text-xs block mb-0.5">신용 대출</span>
-                                <p className="font-semibold text-rose-500 leading-snug bg-card p-2 rounded border border-border text-xs">
+                                <p className="font-semibold text-foreground font-mono leading-snug bg-card p-2 rounded-lg border border-border text-xs">
                                     {data.creditLoan}
                                 </p>
                             </div>
@@ -210,11 +210,11 @@ ${data.specialMemo || '없음'}`;
                             </div>
                             <div className="flex justify-between items-center py-0.5">
                                 <span className="text-muted-foreground text-xs">월 대출납입금</span>
-                                <span className="font-semibold text-amber-500">{data.loanMonthlyPay}</span>
+                                <span className="font-semibold text-foreground font-mono">{data.loanMonthlyPay}</span>
                             </div>
                             <div>
                                 <span className="text-muted-foreground text-xs block mb-0.5">보유 자산</span>
-                                <p className="text-foreground font-medium leading-snug bg-card p-2 rounded border border-border text-xs">
+                                <p className="text-foreground font-medium leading-snug bg-card p-2 rounded-lg border border-border text-xs">
                                     {data.assets}
                                 </p>
                             </div>

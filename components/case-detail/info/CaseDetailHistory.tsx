@@ -45,7 +45,7 @@ export const CaseDetailHistory: React.FC<CaseDetailHistoryProps> = ({
                         <label htmlFor={memoId} className={LABEL}>이력 상세</label>
                         <textarea
                             id={memoId}
-                            className="w-full px-2.5 py-2 border border-slate-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 h-16 leading-snug"
+                            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground h-16 leading-snug"
                             value={localMemo}
                             onChange={e => setLocalMemo(e.target.value)}
                             onBlur={handleBlur}
@@ -55,20 +55,20 @@ export const CaseDetailHistory: React.FC<CaseDetailHistoryProps> = ({
                 )}
 
                 {statusLogs.length > 0 && (
-                    <div className="pt-3 border-t border-slate-100 dark:border-gray-700">
+                    <div className="pt-3 border-t border-border">
                         <div className={LABEL}>
-                            <CalendarClock size={13} className="text-blue-600" aria-hidden /> 상태 변경 기록
+                            <CalendarClock size={13} className="text-primary" aria-hidden /> 상태 변경 기록
                         </div>
-                        <ul className="max-h-40 overflow-y-auto divide-y divide-slate-100 dark:divide-gray-700 rounded-lg border border-slate-200 dark:border-gray-700">
+                        <ul className="max-h-40 overflow-y-auto divide-y divide-border rounded-lg border border-border bg-card">
                             {statusLogs.map(log => (
-                                <li key={log.logId} className="px-2.5 py-1.5 text-xs">
+                                <li key={log.logId} className="px-3 py-2 text-xs">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-slate-500 dark:text-slate-400 line-through">{log.fromStatus}</span>
-                                        <span className="text-slate-500 dark:text-slate-400" aria-hidden>→</span>
-                                        <span className="font-semibold text-blue-700 dark:text-blue-300">{log.toStatus}</span>
-                                        <span className="ml-auto text-xs text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">{safeFormat(log.changedAt, 'yy.MM.dd HH:mm')}</span>
+                                        <span className="text-muted-foreground line-through">{log.fromStatus}</span>
+                                        <span className="text-muted-foreground" aria-hidden>→</span>
+                                        <span className="font-semibold text-primary">{log.toStatus}</span>
+                                        <span className="ml-auto text-xs text-muted-foreground font-mono tabular-nums whitespace-nowrap">{safeFormat(log.changedAt, 'yy.MM.dd HH:mm')}</span>
                                     </div>
-                                    {log.memo && <p className="mt-0.5 text-slate-600 dark:text-gray-400 leading-snug">{log.memo}</p>}
+                                    {log.memo && <p className="mt-0.5 text-muted-foreground leading-snug">{log.memo}</p>}
                                 </li>
                             ))}
                         </ul>

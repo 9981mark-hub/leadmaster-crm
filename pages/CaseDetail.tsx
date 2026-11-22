@@ -760,22 +760,22 @@ export default function CaseDetail() {
 
                 {/* Primary Status Modal */}
                 {isPrimaryStatusModalOpen && pendingPrimaryStatus !== null && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className={`bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[440px] mx-3 shadow-xl border-t-4 ${isDropOffStatus ? 'border-red-500' : 'border-blue-500'}`}>
-                            <h3 className={`text-lg font-bold mb-4 ${isDropOffStatus ? 'text-red-700' : 'text-blue-700'}`}>
+                    <div className="fixed inset-0 bg-background/80 backdrop-blur-xs flex items-center justify-center z-50">
+                        <div className="bg-card text-foreground rounded-xl p-6 w-full max-w-[440px] mx-3 shadow-xl border border-border">
+                            <h3 className={`text-lg font-bold mb-4 ${isDropOffStatus ? 'text-destructive' : 'text-foreground'}`}>
                                 {isDropOffStatus ? '⚠ 상담 중단 확인' : '상태 변경 확인'}
                             </h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-200">
-                                상태를 <span className="font-bold text-blue-600 dark:text-blue-400">{c.status}</span>에서{' '}
-                                <span className={`font-bold ${isDropOffStatus ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>{pendingPrimaryStatus}</span>
+                            <p className="mb-4 text-muted-foreground text-sm">
+                                상태를 <span className="font-semibold text-foreground">{c.status}</span>에서{' '}
+                                <span className={`font-semibold ${isDropOffStatus ? 'text-destructive' : 'text-primary'}`}>{pendingPrimaryStatus}</span>
                                 (으)로 변경하시겠습니까?
                             </p>
 
                             {/* [NEW] 이탈 사유 카테고리 선택 (고객취소/진행불가 시에만 표시) */}
                             {isDropOffStatus && (
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        이탈 사유 <span className="text-red-500">*필수</span>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        이탈 사유 <span className="text-destructive">*필수</span>
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         {DROP_OFF_REASONS.map(reason => (
@@ -783,9 +783,9 @@ export default function CaseDetail() {
                                                 key={reason}
                                                 type="button"
                                                 onClick={() => setSelectedDropOffReason(reason)}
-                                                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${selectedDropOffReason === reason
-                                                        ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                                                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-600 dark:hover:text-red-600 dark:text-red-400'
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedDropOffReason === reason
+                                                        ? 'bg-destructive text-destructive-foreground border-destructive shadow-2xs'
+                                                        : 'bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted'
                                                     }`}
                                             >
                                                 {reason}
@@ -796,14 +796,11 @@ export default function CaseDetail() {
                             )}
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-foreground mb-1">
                                     {isDropOffStatus ? '상세 메모 (선택)' : '변경 사유 (선택)'}
                                 </label>
                                 <textarea
-                                    className={`w-full p-2 border rounded resize-none h-20 focus:ring-2 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 ${isDropOffStatus
-                                            ? 'border-red-200 dark:border-red-900/50 focus:ring-red-500'
-                                            : 'border-blue-200 dark:border-blue-900/50 focus:ring-blue-500'
-                                        }`}
+                                    className="w-full p-2.5 border border-border rounded-lg resize-none h-20 outline-none bg-card text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary text-sm"
                                     placeholder={isDropOffStatus
                                         ? '추가 메모를 입력하세요... (예: 상담 3회 진행 후 비용 문제로 포기)'
                                         : '상태 변경 사유를 입력하세요... (예: 부재중, 상담 완료 등)'
@@ -815,15 +812,15 @@ export default function CaseDetail() {
                             <div className="flex justify-end gap-2">
                                 <button
                                     onClick={() => { setIsPrimaryStatusModalOpen(false); setPendingPrimaryStatus(null); setSelectedDropOffReason(''); }}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    className="px-4 py-2 bg-muted text-muted-foreground hover:text-foreground rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={confirmPrimaryStatusChange}
-                                    className={`px-4 py-2 rounded text-white font-medium ${isDropOffStatus
-                                            ? 'bg-red-600 hover:bg-red-700'
-                                            : 'bg-blue-600 hover:bg-blue-700'
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isDropOffStatus
+                                            ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                                            : 'bg-primary text-primary-foreground hover:bg-primary/90'
                                         }`}
                                 >
                                     변경하기
@@ -835,16 +832,16 @@ export default function CaseDetail() {
 
                 {/* Secondary Status Modal */}
                 {isSecondaryStatusModalOpen && pendingSecondaryStatus !== null && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border-t-4 border-purple-500">
-                            <h3 className="text-lg font-bold mb-4 text-purple-700">2차 상태 변경 확인</h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-200">
-                                2차 상태를 <span className="font-bold text-purple-600 dark:text-purple-400">{c.secondaryStatus || '없음'}</span>에서 <span className="font-bold text-purple-600 dark:text-purple-400">{pendingSecondaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
+                    <div className="fixed inset-0 bg-background/80 backdrop-blur-xs flex items-center justify-center z-50">
+                        <div className="bg-card text-foreground rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border border-border">
+                            <h3 className="text-lg font-bold mb-4 text-foreground">2차 상태 변경 확인</h3>
+                            <p className="mb-4 text-muted-foreground text-sm">
+                                2차 상태를 <span className="font-semibold text-foreground">{c.secondaryStatus || '없음'}</span>에서 <span className="font-semibold text-primary">{pendingSecondaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
                             </p>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">변경 사유 / 메모</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">변경 사유 / 메모</label>
                                 <textarea
-                                    className="w-full p-2 border border-purple-200 dark:border-purple-900/50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded resize-none h-24 focus:ring-2 focus:ring-purple-500 outline-none"
+                                    className="w-full p-2.5 border border-border bg-card text-foreground placeholder:text-muted-foreground rounded-lg resize-none h-24 focus:ring-1 focus:ring-primary focus:border-primary outline-none text-sm"
                                     placeholder="상태 변경 사유를 입력하세요..."
                                     value={secondaryStatusChangeReason}
                                     onChange={e => setSecondaryStatusChangeReason(e.target.value)}
@@ -853,13 +850,13 @@ export default function CaseDetail() {
                             <div className="flex justify-end gap-2">
                                 <button
                                     onClick={() => { setIsSecondaryStatusModalOpen(false); setPendingSecondaryStatus(null); }}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    className="px-4 py-2 bg-muted text-muted-foreground hover:text-foreground rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={confirmSecondaryStatusChange}
-                                    className="px-4 py-2 bg-purple-600 rounded text-white font-medium hover:bg-purple-700"
+                                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm"
                                 >
                                     변경하기
                                 </button>
@@ -870,16 +867,16 @@ export default function CaseDetail() {
 
                 {/* Tertiary Status Modal */}
                 {isTertiaryStatusModalOpen && pendingTertiaryStatus !== null && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border-t-4 border-amber-500">
-                            <h3 className="text-lg font-bold mb-4 text-amber-700">3차 상태 변경 확인</h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-200">
-                                3차 상태를 <span className="font-bold text-amber-600 dark:text-amber-400">{c.tertiaryStatus || '없음'}</span>에서 <span className="font-bold text-amber-600 dark:text-amber-400">{pendingTertiaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
+                    <div className="fixed inset-0 bg-background/80 backdrop-blur-xs flex items-center justify-center z-50">
+                        <div className="bg-card text-foreground rounded-xl p-6 w-full max-w-[400px] mx-3 shadow-xl border border-border">
+                            <h3 className="text-lg font-bold mb-4 text-foreground">3차 상태 변경 확인</h3>
+                            <p className="mb-4 text-muted-foreground text-sm">
+                                3차 상태를 <span className="font-semibold text-foreground">{c.tertiaryStatus || '없음'}</span>에서 <span className="font-semibold text-primary">{pendingTertiaryStatus || '없음'}</span>(으)로 변경하시겠습니까?
                             </p>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">변경 사유 / 메모</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">변경 사유 / 메모</label>
                                 <textarea
-                                    className="w-full p-2 border border-amber-200 dark:border-amber-900/50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded resize-none h-24 focus:ring-2 focus:ring-amber-500 outline-none"
+                                    className="w-full p-2.5 border border-border bg-card text-foreground placeholder:text-muted-foreground rounded-lg resize-none h-24 focus:ring-1 focus:ring-primary focus:border-primary outline-none text-sm"
                                     placeholder="상태 변경 사유를 입력하세요..."
                                     value={tertiaryStatusChangeReason}
                                     onChange={e => setTertiaryStatusChangeReason(e.target.value)}
@@ -888,13 +885,13 @@ export default function CaseDetail() {
                             <div className="flex justify-end gap-2">
                                 <button
                                     onClick={() => { setIsTertiaryStatusModalOpen(false); setPendingTertiaryStatus(null); }}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    className="px-4 py-2 bg-muted text-muted-foreground hover:text-foreground rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={confirmTertiaryStatusChange}
-                                    className="px-4 py-2 bg-amber-600 rounded text-white font-medium hover:bg-amber-700"
+                                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm"
                                 >
                                     변경하기
                                 </button>
@@ -904,7 +901,7 @@ export default function CaseDetail() {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-1 border-b border-slate-200 dark:border-gray-700 px-1 overflow-x-auto no-scrollbar">
+                <div className="flex gap-1 border-b border-border px-1 overflow-x-auto no-scrollbar">
                     {[
                         { id: 'info', label: '상담 정보' },
                         { id: 'recordings', label: '통화 녹음·AI' },
@@ -916,14 +913,14 @@ export default function CaseDetail() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={"px-4 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors " + (activeTab === tab.id ? 'border-slate-200 dark:border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-gray-200 font-medium')}
+                            className={"px-4 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors " + (activeTab === tab.id ? 'border-primary text-foreground font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground font-medium')}
                         >
                             {tab.label}
                         </button>
                     ))}
                 </div>
 
-                <div className={activeTab === 'info' || activeTab === 'settlement' ? 'min-h-[600px]' : 'bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-gray-700 min-h-[600px]'}>
+                <div className={activeTab === 'info' || activeTab === 'settlement' ? 'min-h-[600px]' : 'bg-card text-foreground p-4 md:p-6 rounded-2xl border border-border min-h-[600px]'}>
                     {activeTab === 'info' && (
                         <CaseInfoTab
                             c={c}

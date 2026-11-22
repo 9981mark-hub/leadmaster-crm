@@ -48,16 +48,16 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
         <SectionCard step={1} title="접수 · 인적사항" meta={`접수 ${c.createdAt ? safeFormat(c.createdAt, 'yy.MM.dd HH:mm') : '-'}`}>
             {/* 사전 고객 정보 (웹 리드 수집): 전화 걸기 전에 읽는 것이라 맨 위에 한 덩어리로 */}
             <div className={`mb-3 rounded-xl border px-3 py-2 text-xs ${preInfo.length
-                ? 'border-indigo-100 bg-indigo-50/60 text-slate-800 dark:bg-indigo-950/30 dark:border-indigo-900/40 dark:text-gray-200'
-                : 'border-slate-200 bg-slate-50 text-slate-500 dark:text-slate-400 dark:bg-gray-900/30 dark:border-gray-700'}`}>
+                ? 'border-border bg-muted/40 text-foreground'
+                : 'border-border bg-muted/20 text-muted-foreground'}`}>
                 <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                    <span className="flex items-center gap-1 font-semibold text-blue-700 dark:text-blue-300 shrink-0">
+                    <span className="flex items-center gap-1 font-semibold text-primary shrink-0">
                         <AlertCircle size={12} aria-hidden /> 사전 고객 정보
                     </span>
                     {preInfo.length > 0 ? preInfo.map((p, i) => (
                         <span key={i} className="inline-flex gap-1 min-w-0">
-                            {p.k && <span className="font-semibold text-blue-700 dark:text-blue-400 whitespace-nowrap">{p.k}:</span>}
-                            <span className="break-words">{p.v}</span>
+                            {p.k && <span className="font-semibold text-foreground whitespace-nowrap">{p.k}:</span>}
+                            <span className="break-words text-muted-foreground">{p.v}</span>
                         </span>
                     )) : <span>없음 (웹 리드 수집 정보가 없는 리드)</span>}
                 </div>
@@ -69,18 +69,18 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                         <select
                             id={partnerId}
                             className={`${CONTROL} pl-8 font-semibold ${partnerKnown
-                                ? 'border-blue-200 bg-blue-50/50 text-blue-950 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
-                                : 'border-red-400 bg-red-50 text-red-900'}`}
+                                ? 'border-border bg-card text-foreground'
+                                : 'border-destructive bg-destructive/10 text-destructive'}`}
                             value={c.partnerId}
                             onChange={e => onUpdate('partnerId', e.target.value)}
                         >
                             <option value="">거래처를 선택하세요</option>
                             {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
                         </select>
-                        <Building className="absolute left-2.5 top-1/2 -translate-y-1/2 text-blue-500 pointer-events-none" size={15} aria-hidden />
+                        <Building className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={15} aria-hidden />
                     </div>
                     {!partnerKnown && c.partnerId && (
-                        <p className="text-xs text-red-500 mt-1">⚠️ 등록되지 않은 거래처({c.partnerId})입니다.</p>
+                        <p className="text-xs text-destructive mt-1">⚠️ 등록되지 않은 거래처({c.partnerId})입니다.</p>
                     )}
                 </Field>
 
