@@ -8,9 +8,9 @@ import { cn } from './cn';
  * ──────────────────────────────────────────────────────── */
 
 const LAYOUT_WIDTH = {
-  wide: 'max-w-[1600px]',      // 데이터 중심: 케이스, 팀관리, 자동통화
-  standard: 'max-w-7xl',       // 대시보드, 통계, 정산, 일정
-  compact: 'max-w-5xl',        // 폼/설정: 마이페이지, 설정, 간편등록, TG연동, 회사관리
+  wide: 'max-w-[1600px]',      // 데이터/운영 전사 표준 1600px
+  standard: 'max-w-[1600px]',  // 대시보드, 통계, 정산, 일정 전사 1600px 통일
+  compact: 'max-w-[1600px]',   // 마이페이지, 설정 등도 1600px 와이드 콕핏 일치
 } as const;
 
 export type LayoutWidth = keyof typeof LAYOUT_WIDTH;

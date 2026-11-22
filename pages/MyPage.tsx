@@ -319,9 +319,9 @@ export default function MyPage() {
     };
 
     return (
-        <PageShell title="마이페이지" icon={User} layout="compact">
+        <PageShell title="마이페이지" icon={User} layout="wide">
             {/* 2-Column 대칭형 레이아웃: 좌측(계정/근태/보안) + 우측(통화환경/알림/권한) */}
-            <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] xl:grid-cols-[400px_1fr] gap-6">
 
                 {/* ═══════════════════════════════════════════════════════════ */}
                 {/* ── 좌측 컬럼: 계정 프로필, 근태, 계정 보안 ── */}
