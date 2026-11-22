@@ -21,12 +21,12 @@ interface Props {
 }
 
 const STATUS_LABEL: Record<CallRecording['status'], { text: string; cls: string }> = {
-  uploaded: { text: 'AI 정리 전', cls: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' },
-  queued: { text: '대기 중', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' },
-  processing: { text: 'AI 정리 중…', cls: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' },
-  done: { text: 'AI 정리 완료', cls: 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300' },
-  failed: { text: '실패', cls: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300' },
-  skipped: { text: '건너뜀', cls: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400' },
+  uploaded: { text: 'AI 정리 전', cls: 'bg-muted text-muted-foreground border border-border' },
+  queued: { text: '대기 중', cls: 'bg-amber-500/10 text-amber-500 border border-amber-500/20' },
+  processing: { text: 'AI 정리 중…', cls: 'bg-primary/10 text-primary border border-primary/20' },
+  done: { text: 'AI 정리 완료', cls: 'bg-primary/15 text-primary border border-primary/25 font-semibold' },
+  failed: { text: '실패', cls: 'bg-destructive/10 text-destructive border border-destructive/20' },
+  skipped: { text: '건너뜀', cls: 'bg-muted text-muted-foreground border border-border' },
 };
 
 const fmtWhen = (iso: string) => {
@@ -80,54 +80,54 @@ function StructuredDataCards({ e }: { e: ExtractedInfo }) {
       {/* 2-Column Grid for Debt & Income/Assets */}
       <div className="grid md:grid-cols-2 gap-3">
         {/* CARD 1: 채무 정보 */}
-        <div className="bg-red-50/40 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 rounded-xl p-3.5 flex flex-col gap-2">
-          <div className="flex items-center justify-between border-b border-red-100 dark:border-red-900/40 pb-2">
-            <span className="text-xs font-bold text-red-700 dark:text-red-300 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-500"></span> 채무 정보
+        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col gap-2 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary"></span> 채무 정보
             </span>
             {e.debt.total_manwon !== null && (
-              <span className="text-sm font-extrabold text-red-600 dark:text-red-400">
+              <span className="text-sm font-semibold font-mono tabular-nums text-foreground">
                 총 {fmtManwon(e.debt.total_manwon)}
               </span>
             )}
           </div>
 
-          <div className="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
+          <div className="space-y-1.5 text-xs text-muted-foreground">
             {e.debt.monthly_payment_manwon !== null && (
               <div className="flex justify-between">
-                <span className="text-gray-500">월 상환액</span>
-                <span className="font-semibold">{fmtManwon(e.debt.monthly_payment_manwon)}</span>
+                <span>월 상환액</span>
+                <span className="font-semibold font-mono text-foreground">{fmtManwon(e.debt.monthly_payment_manwon)}</span>
               </div>
             )}
             {e.debt.overdue && (
               <div className="flex justify-between">
-                <span className="text-gray-500">연체 여부</span>
-                <span className="font-semibold text-red-600 dark:text-red-400">{e.debt.overdue}</span>
+                <span>연체 여부</span>
+                <span className="font-semibold text-destructive">{e.debt.overdue}</span>
               </div>
             )}
             {e.credit_card.use && (
               <div className="flex justify-between">
-                <span className="text-gray-500">신용카드</span>
-                <span>{e.credit_card.use}{e.credit_card.amount_manwon ? ` (${fmtManwon(e.credit_card.amount_manwon)})` : ''}</span>
+                <span>신용카드</span>
+                <span className="text-foreground">{e.credit_card.use}{e.credit_card.amount_manwon ? ` (${fmtManwon(e.credit_card.amount_manwon)})` : ''}</span>
               </div>
             )}
             {e.history && (
               <div className="flex justify-between">
-                <span className="text-gray-500">회생·파산 이력</span>
-                <span className="font-medium">{e.history}</span>
+                <span>회생·파산 이력</span>
+                <span className="font-medium text-foreground">{e.history}</span>
               </div>
             )}
 
             {e.debt.creditors.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-red-100/60 dark:border-red-900/30">
-                <div className="text-xs font-semibold text-gray-500 mb-1">채권사별 내역 ({e.debt.creditors.length}곳)</div>
+              <div className="mt-2 pt-2 border-t border-border">
+                <div className="text-xs font-medium text-muted-foreground mb-1">채권사별 내역 ({e.debt.creditors.length}곳)</div>
                 <div className="space-y-1">
                   {e.debt.creditors.map((cr, i) => (
-                    <div key={i} className="flex justify-between items-center text-xs bg-white/70 dark:bg-gray-800/60 px-2 py-1 rounded">
-                      <span className="font-medium text-gray-800 dark:text-gray-200">
-                        {cr.name || cr.kind} <span className="text-gray-500 dark:text-gray-400 font-normal">({cr.kind})</span>
+                    <div key={i} className="flex justify-between items-center text-xs bg-muted/40 px-2 py-1 rounded-md">
+                      <span className="font-medium text-foreground">
+                        {cr.name || cr.kind} <span className="text-muted-foreground font-normal">({cr.kind})</span>
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100">
+                      <span className="font-semibold font-mono text-foreground">
                         {fmtManwon(cr.amount_manwon)}
                       </span>
                     </div>
@@ -139,58 +139,58 @@ function StructuredDataCards({ e }: { e: ExtractedInfo }) {
         </div>
 
         {/* CARD 2: 소득 · 주거 · 재산 */}
-        <div className="bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-3.5 flex flex-col gap-2">
-          <div className="flex items-center justify-between border-b border-emerald-100 dark:border-emerald-900/40 pb-2">
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> 소득 · 재산 · 주거
+        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col gap-2 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary"></span> 소득 · 재산 · 주거
             </span>
             {e.income.net_monthly_manwon !== null && (
-              <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="text-sm font-semibold font-mono tabular-nums text-foreground">
                 월 {fmtManwon(e.income.net_monthly_manwon)}
               </span>
             )}
           </div>
 
-          <div className="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
+          <div className="space-y-1.5 text-xs text-muted-foreground">
             {job && (
               <div className="flex justify-between">
-                <span className="text-gray-500">직업</span>
-                <span className="font-medium">{job} {e.income.insurance4 ? `(4대보험: ${e.income.insurance4})` : ''}</span>
+                <span>직업</span>
+                <span className="font-medium text-foreground">{job} {e.income.insurance4 ? `(4대보험: ${e.income.insurance4})` : ''}</span>
               </div>
             )}
             {det && (
               <div className="flex justify-between">
-                <span className="text-gray-500">소득 세부</span>
-                <span>{det}</span>
+                <span>소득 세부</span>
+                <span className="text-foreground">{det}</span>
               </div>
             )}
             {housingParts && (
               <div className="flex justify-between gap-2">
-                <span className="text-gray-500 shrink-0">주거 형태</span>
-                <span className="text-right font-medium">{housingParts}</span>
+                <span className="shrink-0">주거 형태</span>
+                <span className="text-right font-medium text-foreground">{housingParts}</span>
               </div>
             )}
             {(e.family.marital_status || e.family.children_count) && (
               <div className="flex justify-between">
-                <span className="text-gray-500">부양가족</span>
-                <span>{[e.family.marital_status, e.family.children_count ? `자녀 ${e.family.children_count}명` : ''].filter(Boolean).join(', ')}</span>
+                <span>부양가족</span>
+                <span className="text-foreground">{[e.family.marital_status, e.family.children_count ? `자녀 ${e.family.children_count}명` : ''].filter(Boolean).join(', ')}</span>
               </div>
             )}
             {e.personal && (e.personal.birth_year || e.personal.region) && (
               <div className="flex justify-between">
-                <span className="text-gray-500">인적사항</span>
-                <span>{[e.personal.birth_year ? `${e.personal.birth_year}년생` : '', e.personal.gender, e.personal.region].filter(Boolean).join(' · ')}</span>
+                <span>인적사항</span>
+                <span className="text-foreground">{[e.personal.birth_year ? `${e.personal.birth_year}년생` : '', e.personal.gender, e.personal.region].filter(Boolean).join(' · ')}</span>
               </div>
             )}
 
             {e.assets.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-emerald-100/60 dark:border-emerald-900/30">
-                <div className="text-xs font-semibold text-gray-500 mb-1">보유 재산 ({e.assets.length}건)</div>
+              <div className="mt-2 pt-2 border-t border-border">
+                <div className="text-xs font-medium text-muted-foreground mb-1">보유 재산 ({e.assets.length}건)</div>
                 <div className="space-y-1">
                   {e.assets.map((a, i) => (
-                    <div key={i} className="flex justify-between items-center text-xs bg-white/70 dark:bg-gray-800/60 px-2 py-1 rounded">
-                      <span>{a.type}{a.owner ? ` (${a.owner})` : ''}</span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100">
+                    <div key={i} className="flex justify-between items-center text-xs bg-muted/40 px-2 py-1 rounded-md">
+                      <span className="text-foreground">{a.type}{a.owner ? ` (${a.owner})` : ''}</span>
+                      <span className="font-semibold font-mono text-foreground">
                         {fmtManwon(a.amount_manwon)}{a.loan_manwon ? ` (대출 ${fmtManwon(a.loan_manwon)})` : ''}
                       </span>
                     </div>
@@ -204,23 +204,23 @@ function StructuredDataCards({ e }: { e: ExtractedInfo }) {
 
       {/* CARD 3: 특이사항, 다음 할 일, 진행 의사 */}
       {(e.special_notes || e.next_action || (e.customer_intent && e.customer_intent !== '알 수 없음')) && (
-        <div className="bg-slate-50 dark:bg-gray-800/60 border border-slate-200 dark:border-gray-700 rounded-xl p-3 text-xs space-y-1.5">
+        <div className="bg-card border border-border rounded-xl p-3 text-xs space-y-1.5 shadow-2xs">
           {e.special_notes && (
             <div className="flex gap-2">
-              <span className="font-bold text-purple-700 dark:text-purple-400 shrink-0 w-16">특이사항</span>
-              <span className="text-gray-800 dark:text-gray-200 leading-relaxed">{e.special_notes}</span>
+              <span className="font-semibold text-primary shrink-0 w-16">특이사항</span>
+              <span className="text-foreground leading-relaxed">{e.special_notes}</span>
             </div>
           )}
           {e.next_action && (
             <div className="flex gap-2">
-              <span className="font-bold text-indigo-700 dark:text-indigo-400 shrink-0 w-16">다음 할 일</span>
-              <span className="text-gray-800 dark:text-gray-200 leading-relaxed">{e.next_action}</span>
+              <span className="font-semibold text-primary shrink-0 w-16">다음 할 일</span>
+              <span className="text-foreground leading-relaxed">{e.next_action}</span>
             </div>
           )}
           {e.customer_intent && e.customer_intent !== '알 수 없음' && (
             <div className="flex gap-2">
-              <span className="font-bold text-gray-600 dark:text-gray-400 shrink-0 w-16">진행 의사</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{e.customer_intent}</span>
+              <span className="font-semibold text-muted-foreground shrink-0 w-16">진행 의사</span>
+              <span className="font-semibold text-foreground">{e.customer_intent}</span>
             </div>
           )}
         </div>
@@ -300,34 +300,34 @@ function RecordingDetailDashboard({
   return (
     <div className="space-y-4 max-w-4xl mx-auto">
       {/* 1. 상단 통화 메타 & 오디오 플레이어 카드 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-3">
+      <div className="bg-card rounded-xl border border-border p-4 shadow-2xs space-y-3 text-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
           <div className="flex items-center gap-2">
-            <span className={`p-1.5 rounded-lg ${rec.direction === 'CALL_IN' ? 'bg-green-100 text-green-700 dark:bg-green-950/50' : 'bg-blue-100 text-blue-700 dark:bg-blue-950/50'}`}>
+            <span className={`p-1.5 rounded-lg ${rec.direction === 'CALL_IN' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
               {rec.direction === 'CALL_IN' ? <PhoneIncoming size={16} /> : <PhoneOutgoing size={16} />}
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-gray-900 dark:text-white text-sm sm:text-base">
-                  {callNumber}차 통화 {isLatest && <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">(최신)</span>}
+                <span className="font-semibold text-foreground text-sm sm:text-base">
+                  {callNumber}차 통화 {isLatest && <span className="text-xs text-primary font-semibold">(최신)</span>}
                 </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${st.cls}`}>
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${st.cls}`}>
                   {st.text}
                 </span>
                 {rec.appliedAt && (
-                  <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-foreground border border-border">
                     반영완료
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono mt-0.5">
                 <span>{fmtWhen(rec.callStartedAt)}</span>
                 <span>·</span>
                 <span>{fmtDuration(rec.durationSec)}</span>
                 <span>·</span>
                 <span>{fmtBytes(rec.sizeBytes)}</span>
                 {rec.storageKind === 'gdrive' && (
-                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 ml-1">
+                  <span className="text-primary flex items-center gap-0.5 ml-1">
                     [구글드라이브]
                   </span>
                 )}
@@ -341,10 +341,10 @@ function RecordingDetailDashboard({
                 type="button"
                 onClick={analyze}
                 disabled={busy}
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 flex items-center gap-1 transition-colors"
+                className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1 transition-colors shadow-2xs"
                 title="AI 분석 재실행"
               >
-                {busy ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                {busy ? <Loader2 size={13} className="animate-spin text-primary" /> : <Sparkles size={13} className="text-primary" />}
                 <span>AI 재정리</span>
               </button>
             )}
@@ -680,23 +680,23 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
   return (
     <div className="space-y-4 pb-12 md:pb-0">
       {/* 1. 탭 상단 헤더 영역 */}
-      <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between pb-3 border-b border-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
             <Mic size={18} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base">
+              <h3 className="font-bold text-foreground text-sm sm:text-base">
                 통화 녹음 · AI 채무 정리
               </h3>
               {list.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                   총 {list.length}건
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               앱이 이 고객과의 통화 녹음을 자동으로 올리고 AI로 정리합니다
             </p>
           </div>
@@ -706,7 +706,7 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
           type="button"
           onClick={load}
           disabled={loading}
-          className="text-xs text-gray-600 dark:text-gray-300 hover:text-gray-900 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-1.5 transition-colors"
+          className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted flex items-center gap-1.5 transition-colors shadow-2xs"
         >
           <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           <span className="hidden sm:inline">새로고침</span>
@@ -728,25 +728,25 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
                   onClick={() => setSelectedId(r.id)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs whitespace-nowrap shrink-0 transition-all ${
                     isSelected
-                      ? 'bg-purple-600 text-white font-bold shadow-sm shadow-purple-500/20'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
+                      : 'bg-card text-muted-foreground hover:text-foreground border border-border hover:bg-muted'
                   }`}
                 >
                   {r.direction === 'CALL_IN' ? (
-                    <PhoneIncoming size={13} className={isSelected ? 'text-purple-200' : 'text-green-600'} />
+                    <PhoneIncoming size={13} className={isSelected ? 'text-primary-foreground' : 'text-primary'} />
                   ) : (
-                    <PhoneOutgoing size={13} className={isSelected ? 'text-purple-200' : 'text-blue-600'} />
+                    <PhoneOutgoing size={13} className={isSelected ? 'text-primary-foreground' : 'text-muted-foreground'} />
                   )}
                   <span>{isFirst ? `⭐ ${num}차(최신)` : `${num}차`}</span>
-                  <span className={isSelected ? 'text-purple-200 font-normal' : 'text-gray-500 dark:text-gray-400'}>
+                  <span className={isSelected ? 'text-primary-foreground/80 font-normal font-mono' : 'text-muted-foreground font-mono'}>
                     {fmtWhen(r.callStartedAt)}
                   </span>
-                  <span className={isSelected ? 'text-purple-100 font-medium' : 'text-gray-500'}>
+                  <span className={isSelected ? 'text-primary-foreground/80 font-mono' : 'text-muted-foreground font-mono'}>
                     ({fmtDuration(r.durationSec)})
                   </span>
                   {r.appliedAt && (
-                    <span className={`text-xs px-1 py-0.5 rounded font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                    <span className={`text-[11px] px-1 py-0.5 rounded font-semibold ${
+                      isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-foreground border border-border'
                     }`}>
                       반영됨
                     </span>
@@ -763,8 +763,8 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
         <div className={`flex flex-col ${list.length > 1 ? 'xl:flex-row' : ''} gap-5 items-start`}>
           {/* PC용 좌측 타임라인 목록 (통화 2건 이상일 때만 표시) */}
           {list.length > 1 && (
-            <div className="hidden xl:flex flex-col w-72 shrink-0 border-r border-gray-200 dark:border-gray-700 pr-4 space-y-2 max-h-[750px] overflow-y-auto no-scrollbar">
-              <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 mb-1">
+            <div className="hidden xl:flex flex-col w-72 shrink-0 border-r border-border pr-4 space-y-2 max-h-[750px] overflow-y-auto no-scrollbar">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1 font-mono">
                 통화 이력 ({list.length}건)
               </div>
               {list.map((r, idx) => {
@@ -779,27 +779,27 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
                     onClick={() => setSelectedId(r.id)}
                     className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex flex-col gap-1.5 ${
                       isSelected
-                        ? 'bg-purple-50/80 dark:bg-purple-950/40 border-purple-300 dark:border-purple-600 ring-2 ring-purple-400/80 shadow-xs'
-                        : 'bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        ? 'bg-card border-primary/50 ring-1 ring-primary/30 shadow-2xs text-foreground'
+                        : 'bg-card border-border hover:bg-muted/50 text-foreground'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 font-bold">
+                      <div className="flex items-center gap-1.5 font-semibold">
                         {r.direction === 'CALL_IN' ? (
-                          <PhoneIncoming size={14} className="text-green-600 shrink-0" />
+                          <PhoneIncoming size={14} className="text-primary shrink-0" />
                         ) : (
-                          <PhoneOutgoing size={14} className="text-blue-600 shrink-0" />
+                          <PhoneOutgoing size={14} className="text-muted-foreground shrink-0" />
                         )}
-                        <span className={isSelected ? 'text-purple-950 dark:text-purple-200 font-extrabold' : 'text-gray-800 dark:text-gray-200'}>
+                        <span className={isSelected ? 'text-primary font-bold' : 'text-foreground'}>
                           {isFirst ? `${num}차 통화 (최신)` : `${num}차 통화`}
                         </span>
                       </div>
-                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${st.cls}`}>
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded font-medium ${st.cls}`}>
                         {st.text}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-xs">
+                    <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-mono">
                       <span>{fmtWhen(r.callStartedAt)}</span>
                       <span>·</span>
                       <span>{fmtDuration(r.durationSec)}</span>
@@ -807,19 +807,19 @@ export function CallRecordingsTab({ c, onApply, showToast }: Props) {
 
                     <div className="flex items-center gap-1 flex-wrap pt-0.5">
                       {r.appliedAt && (
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 font-medium">
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-muted text-foreground border border-border font-medium">
                           반영완료
                         </span>
                       )}
                       {r.storageKind === 'gdrive' && (
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                           드라이브
                         </span>
                       )}
                     </div>
 
                     {(r.summary || r.extracted?.special_notes) && (
-                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed bg-gray-50 dark:bg-gray-900/40 p-1.5 rounded-lg border border-gray-100 dark:border-gray-800">
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed bg-muted/20 p-2 rounded-lg border border-border">
                         {r.summary || r.extracted?.special_notes}
                       </p>
                     )}

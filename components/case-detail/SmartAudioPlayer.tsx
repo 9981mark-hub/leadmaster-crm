@@ -181,18 +181,18 @@ export default function SmartAudioPlayer({
 
   if (rec.audioDeletedAt) {
     return (
-      <div className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-800/80 p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl border border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
+          <Clock size={15} className="text-muted-foreground shrink-0" />
           <span>보관 기간(1년)이 만료되어 오디오 파일이 자동 정리되었습니다. (대화록/요약은 영구 보존)</span>
         </div>
-        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">삭제됨</span>
+        <span className="text-xs text-muted-foreground font-mono">삭제됨</span>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-50/90 dark:bg-gray-900/60 p-3.5 rounded-2xl border border-slate-200/90 dark:border-gray-800 shadow-xs space-y-2.5 transition-all">
+    <div className="bg-card p-3.5 rounded-xl border border-border shadow-2xs space-y-2.5 transition-all text-foreground">
       {/* 상단 컨트롤 바: 재생 버튼 + 타임라인 + 시간 표시 + 다운로드 */}
       <div className="flex items-center gap-2.5">
         {url ? (
@@ -230,7 +230,7 @@ export default function SmartAudioPlayer({
             <button
               type="button"
               onClick={togglePlay}
-              className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white flex items-center justify-center shrink-0 shadow-sm transition-all focus:outline-hidden"
+              className="w-10 h-10 rounded-full bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground flex items-center justify-center shrink-0 shadow-2xs transition-all focus:outline-hidden"
               title={isPlaying ? '일시정지 (Space)' : '재생 (Space)'}
             >
               {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
@@ -240,7 +240,7 @@ export default function SmartAudioPlayer({
             <button
               type="button"
               onClick={() => skip(-5)}
-              className="p-1.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors shrink-0"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               title="5초 뒤로 (J 또는 ←)"
             >
               <RotateCcw size={16} />
@@ -248,7 +248,7 @@ export default function SmartAudioPlayer({
             <button
               type="button"
               onClick={() => skip(5)}
-              className="p-1.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors shrink-0"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               title="5초 앞으로 (L 또는 →)"
             >
               <RotateCw size={16} />
@@ -259,11 +259,11 @@ export default function SmartAudioPlayer({
               <div
                 ref={progressRef}
                 onClick={handleSeek}
-                className="h-2.5 bg-slate-200 dark:bg-gray-800 rounded-full overflow-hidden cursor-pointer relative group"
+                className="h-2.5 bg-muted rounded-full overflow-hidden cursor-pointer relative group"
               >
                 {/* 진행 바 */}
                 <div
-                  className="h-full bg-blue-600 group-hover:bg-blue-500 rounded-full transition-all"
+                  className="h-full bg-primary group-hover:bg-primary/90 rounded-full transition-all"
                   style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
                 />
                 {/* A-B 구간 표시 */}
@@ -282,7 +282,7 @@ export default function SmartAudioPlayer({
                   />
                 )}
               </div>
-              <div className="flex items-center justify-between text-xs font-mono text-gray-500 dark:text-gray-400 px-0.5">
+              <div className="flex items-center justify-between text-xs font-mono text-muted-foreground px-0.5">
                 <span>{fmtTime(currentTime)}</span>
                 <span>{fmtTime(duration)}</span>
               </div>
@@ -297,10 +297,10 @@ export default function SmartAudioPlayer({
                   setIsMuted(!isMuted);
                 }
               }}
-              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors shrink-0"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors shrink-0"
               title={isMuted ? '음소거 해제' : '음소거'}
             >
-              {isMuted ? <VolumeX size={16} className="text-red-500" /> : <Volume2 size={16} />}
+              {isMuted ? <VolumeX size={16} className="text-destructive" /> : <Volume2 size={16} />}
             </button>
 
             {/* 다운로드 버튼 */}
@@ -308,10 +308,10 @@ export default function SmartAudioPlayer({
               type="button"
               onClick={handleDownload}
               disabled={downloading}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 transition-all shrink-0"
+              className="p-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition-all shrink-0"
               title="녹음 원본 다운로드"
             >
-              {downloading ? <Loader2 size={16} className="animate-spin text-blue-600" /> : <Download size={16} />}
+              {downloading ? <Loader2 size={16} className="animate-spin text-primary" /> : <Download size={16} />}
             </button>
           </>
         ) : (
@@ -319,9 +319,9 @@ export default function SmartAudioPlayer({
             type="button"
             onClick={loadUrl}
             disabled={loadingUrl}
-            className="flex-1 py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+            className="flex-1 py-2 px-3 rounded-lg bg-card border border-border text-foreground text-xs font-medium flex items-center justify-center gap-2 hover:bg-muted transition-colors shadow-2xs"
           >
-            {loadingUrl ? <Loader2 size={15} className="animate-spin" /> : <Mic size={15} />}
+            {loadingUrl ? <Loader2 size={15} className="animate-spin text-primary" /> : <Mic size={15} className="text-primary" />}
             <span>{loadingUrl ? '0.1초 고속 스트리밍 연결 중…' : '녹음 듣기'}</span>
           </button>
         )}
@@ -329,19 +329,19 @@ export default function SmartAudioPlayer({
 
       {/* 하단 유틸리티 바: 배속 선택, A-B 구간반복, 1년 보관 만료 안내 */}
       {url && (
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-gray-800/60 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border text-xs">
           {/* 배속 버튼 그룹 */}
           <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">배속:</span>
+            <span className="text-xs text-muted-foreground mr-1">배속:</span>
             {SPEED_OPTIONS.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => changeSpeed(s)}
-                className={`px-1.5 py-0.5 rounded text-xs font-medium transition-all ${
+                className={`px-1.5 py-0.5 rounded text-xs font-mono transition-all ${
                   speed === s
-                    ? 'bg-blue-600 text-white font-bold'
-                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
+                    : 'bg-card text-muted-foreground hover:text-foreground border border-border hover:bg-muted'
                 }`}
               >
                 {s}x
@@ -356,8 +356,8 @@ export default function SmartAudioPlayer({
               onClick={toggleLoopA}
               className={`px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1 border transition-all ${
                 loopA !== null
-                  ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+                  ? 'bg-primary/10 text-primary border-primary/20'
+                  : 'bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted'
               }`}
               title="현재 시점을 구간반복 시작/종료점으로 지정"
             >

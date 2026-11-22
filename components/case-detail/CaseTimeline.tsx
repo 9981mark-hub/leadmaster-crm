@@ -27,7 +27,7 @@ interface CaseTimelineProps {
     onConfirmTelegram?: (feedback: TelegramFeedback) => void;
 }
 
-// 유형별 스타일 설정
+// 유형별 스타일 설정 (shadcn School Dark 표준 - 무광 차콜 카드 기반)
 const EVENT_CONFIG: Record<TimelineEventType, {
     icon: React.FC<any>;
     label: string;
@@ -40,64 +40,64 @@ const EVENT_CONFIG: Record<TimelineEventType, {
     status: {
         icon: ArrowRightLeft,
         label: '상태 변경',
-        bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-        dotColor: 'bg-purple-500',
-        textColor: 'text-purple-700 dark:text-purple-300',
-        borderColor: 'border-purple-200 dark:border-purple-700',
+        bgColor: 'bg-card',
+        dotColor: 'bg-primary',
+        textColor: 'text-primary',
+        borderColor: 'border-border',
         emoji: '🔄'
     },
     memo: {
         icon: MessageSquare,
         label: '메모',
-        bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-        dotColor: 'bg-blue-500',
-        textColor: 'text-blue-700 dark:text-blue-300',
-        borderColor: 'border-blue-200 dark:border-blue-700',
+        bgColor: 'bg-card',
+        dotColor: 'bg-primary',
+        textColor: 'text-primary',
+        borderColor: 'border-border',
         emoji: '💬'
     },
     deposit: {
         icon: Banknote,
         label: '입금',
-        bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
-        dotColor: 'bg-emerald-500',
-        textColor: 'text-emerald-700 dark:text-emerald-300',
-        borderColor: 'border-emerald-200 dark:border-emerald-700',
+        bgColor: 'bg-card',
+        dotColor: 'bg-primary',
+        textColor: 'text-primary',
+        borderColor: 'border-border',
         emoji: '💵'
     },
     reminder: {
         icon: Phone,
         label: '리마인더',
-        bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-        dotColor: 'bg-orange-500',
-        textColor: 'text-orange-700 dark:text-orange-300',
-        borderColor: 'border-orange-200 dark:border-orange-700',
+        bgColor: 'bg-card',
+        dotColor: 'bg-amber-500',
+        textColor: 'text-amber-500',
+        borderColor: 'border-border',
         emoji: '📞'
     },
     recording: {
         icon: Mic,
         label: '녹취',
-        bgColor: 'bg-gray-50 dark:bg-gray-700/30',
-        dotColor: 'bg-gray-500',
-        textColor: 'text-gray-700 dark:text-gray-300',
-        borderColor: 'border-gray-200 dark:border-gray-600',
+        bgColor: 'bg-card',
+        dotColor: 'bg-muted-foreground',
+        textColor: 'text-muted-foreground',
+        borderColor: 'border-border',
         emoji: '🎙️'
     },
     telegram: {
         icon: Smartphone,
         label: 'TG 피드백',
-        bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
-        dotColor: 'bg-indigo-500',
-        textColor: 'text-indigo-700 dark:text-indigo-300',
-        borderColor: 'border-indigo-200 dark:border-indigo-700',
+        bgColor: 'bg-card',
+        dotColor: 'bg-primary',
+        textColor: 'text-primary',
+        borderColor: 'border-border',
         emoji: '📱'
     },
     telegram_pending: {
         icon: AlertTriangle,
         label: '승인 대기',
-        bgColor: 'bg-rose-50 dark:bg-rose-900/20',
-        dotColor: 'bg-rose-500',
-        textColor: 'text-rose-700 dark:text-rose-300',
-        borderColor: 'border-rose-200 dark:border-rose-700',
+        bgColor: 'bg-destructive/10',
+        dotColor: 'bg-destructive',
+        textColor: 'text-destructive',
+        borderColor: 'border-destructive/20',
         emoji: '⚠️'
     }
 };
@@ -292,38 +292,38 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 sm:gap-3">
                     <div className="flex-shrink-0">
-                        <Calendar size={20} className="text-gray-500" />
+                        <Calendar size={20} className="text-primary" />
                     </div>
-                    <h3 className="font-bold text-gray-700 dark:text-gray-200 leading-tight">
+                    <h3 className="font-semibold text-foreground leading-tight">
                         커뮤니케이션<br className="block sm:hidden" /><span className="hidden sm:inline"> </span>타임라인
                     </h3>
                     <div className="flex-shrink-0">
-                        <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 px-2 py-0.5 rounded-full whitespace-nowrap">
+                        <span className="text-xs bg-muted border border-border text-muted-foreground px-2 py-0.5 rounded-full whitespace-nowrap font-mono">
                             {filteredEvents.length}/{allEvents.length}건
                         </span>
                     </div>
                 </div>
                 <button
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isFilterOpen
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border shadow-2xs ${isFilterOpen
+                            ? 'bg-primary/10 border-primary/20 text-primary'
+                            : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted'
                         }`}
                 >
-                    <Filter size={14} className="flex-shrink-0" />
+                    <Filter size={13} className="flex-shrink-0" />
                     <span className="whitespace-nowrap">필터</span>
-                    {isFilterOpen ? <ChevronUp size={14} className="flex-shrink-0" /> : <ChevronDown size={14} className="flex-shrink-0" />}
+                    {isFilterOpen ? <ChevronUp size={13} className="flex-shrink-0" /> : <ChevronDown size={13} className="flex-shrink-0" />}
                 </button>
             </div>
 
             {/* Filter Panel */}
             {isFilterOpen && (
-                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap gap-2 p-3 bg-muted/20 rounded-xl border border-border shadow-2xs">
                     <button
                         onClick={toggleAll}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilters.size === 7
-                                ? 'bg-gray-800 text-white dark:bg-white dark:text-gray-800'
-                                : 'bg-white text-gray-500 border border-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeFilters.size === 7
+                                ? 'bg-primary text-primary-foreground shadow-2xs'
+                                : 'bg-card text-muted-foreground border border-border hover:bg-muted hover:text-foreground'
                             }`}
                     >
                         전체
@@ -336,14 +336,14 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                             <button
                                 key={type}
                                 onClick={() => toggleFilter(type)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${isActive
-                                        ? `${config.bgColor} ${config.textColor} ring-1 ring-current`
-                                        : 'bg-white text-gray-500 dark:text-gray-400 border border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600'
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border shadow-2xs ${isActive
+                                        ? 'bg-primary/15 text-primary border-primary/30 font-semibold'
+                                        : 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground'
                                     }`}
                             >
                                 <span>{config.emoji}</span>
                                 {config.label}
-                                <span className="opacity-60">({count})</span>
+                                <span className="opacity-70 font-mono">({count})</span>
                             </button>
                         );
                     })}
@@ -352,8 +352,8 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
 
             {/* Timeline */}
             {filteredEvents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
-                    <Calendar size={40} className="mb-3 opacity-50" />
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Calendar size={40} className="mb-3 opacity-30" />
                     <p className="text-sm">표시할 활동이 없습니다.</p>
                 </div>
             ) : (
@@ -362,17 +362,17 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                         <div key={`${group.label}-${groupIdx}`} className="mb-6">
                             {/* Date Group Header */}
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                <div className="h-px flex-1 bg-border" />
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
                                     {group.label}
                                 </span>
-                                <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+                                <div className="h-px flex-1 bg-border" />
                             </div>
 
                             {/* Events in group */}
                             <div className="relative pl-8">
                                 {/* Vertical line */}
-                                <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-gray-700" />
+                                <div className="absolute left-3 top-2 bottom-2 w-px bg-border" />
 
                                 {group.events.map((event, eventIdx) => {
                                     const config = EVENT_CONFIG[event.type];
@@ -383,11 +383,11 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                     return (
                                         <div key={event.id} className="relative mb-3 last:mb-0">
                                             {/* Dot */}
-                                            <div className={`absolute -left-5 top-3 w-3 h-3 rounded-full ${config.dotColor} ring-2 ring-white dark:ring-gray-900 z-10`} />
+                                            <div className={`absolute -left-5 top-3 w-3 h-3 rounded-full ${config.dotColor} ring-2 ring-background z-10`} />
 
                                             {/* Card */}
                                             <div
-                                                className={`${config.bgColor} border ${config.borderColor} rounded-lg p-3 transition-all hover:shadow-sm cursor-default`}
+                                                className={`bg-card border border-border rounded-xl p-3.5 transition-all hover:bg-muted/30 shadow-2xs cursor-default text-foreground`}
                                                 onClick={() => hasExpandableContent && toggleExpand(event.id)}
                                             >
                                                 <div className="flex items-start justify-between gap-2">
@@ -397,24 +397,20 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                         </div>
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className={`text-xs font-bold ${config.textColor}`}>
+                                                                <span className={`text-xs font-semibold ${config.textColor}`}>
                                                                     {config.emoji} {config.label}
                                                                 </span>
                                                                 {event.meta?.result && (
-                                                                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${event.meta.result === '완료' ? 'bg-green-100 text-green-700' :
-                                                                            event.meta.result === '미연결' ? 'bg-red-100 text-red-700' :
-                                                                                event.meta.result === '재예약' ? 'bg-blue-100 text-blue-700' :
-                                                                                    'bg-gray-100 text-gray-600'
-                                                                        }`}>
+                                                                    <span className="text-[11px] px-1.5 py-0.5 rounded-md font-medium border border-border bg-muted text-foreground font-mono">
                                                                         {event.meta.result}
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <p className="text-sm text-gray-800 dark:text-gray-200 mt-0.5 font-medium">
+                                                            <p className="text-sm text-foreground mt-0.5 font-medium leading-snug">
                                                                 {event.title}
                                                             </p>
                                                             {event.description && (
-                                                                <p className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${hasExpandableContent && !isExpanded ? 'line-clamp-2' : ''
+                                                                <p className={`text-xs text-muted-foreground mt-1 leading-relaxed ${hasExpandableContent && !isExpanded ? 'line-clamp-2' : ''
                                                                     }`}>
                                                                     {event.description}
                                                                 </p>
@@ -422,7 +418,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                             {hasExpandableContent && (
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); toggleExpand(event.id); }}
-                                                                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 mt-0.5"
+                                                                    className="text-xs text-primary hover:underline mt-0.5"
                                                                 >
                                                                     {isExpanded ? '접기 ↑' : '더보기 ↓'}
                                                                 </button>
@@ -437,7 +433,7 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                                                 onConfirmTelegram(JSON.parse(event.meta.originalData));
                                                                             }
                                                                         }}
-                                                                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-md shadow-sm transition-colors"
+                                                                        className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg shadow-2xs transition-colors"
                                                                     >
                                                                         선택하여 승인 처리
                                                                     </button>
@@ -446,14 +442,14 @@ export const CaseTimeline: React.FC<CaseTimelineProps> = ({ c, statusLogs, teleg
                                                         </div>
                                                     </div>
                                                     <div className="flex flex-col items-end flex-shrink-0">
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                        <span className="text-xs text-muted-foreground whitespace-nowrap font-mono">
                                                             {formatDate(event.datetime)}
                                                         </span>
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                                        <span className="text-[11px] text-muted-foreground font-mono">
                                                             {formatTime(event.datetime)}
                                                         </span>
                                                         {event.amount !== undefined && (
-                                                            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                                                            <span className="text-sm font-semibold text-primary font-mono tabular-nums mt-1">
                                                                 {event.amount.toLocaleString()}만원
                                                             </span>
                                                         )}

@@ -99,7 +99,7 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
             type="button"
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors shadow-xs disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors shadow-2xs disabled:opacity-50"
           >
             {uploading ? (
               <>
@@ -121,16 +121,16 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
   return (
     <div className={`space-y-2.5 ${className}`}>
       {/* 1. Header Bar: Title + Call Count + Upload Button */}
-      <div className="bg-slate-50 dark:bg-gray-800/80 p-3 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-200/70 dark:border-gray-700/60">
+      <div className="bg-card p-3 rounded-xl border border-border shadow-2xs text-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-border">
           <div className="flex items-center gap-2">
-            <span className="p-1 rounded-md bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
+            <span className="p-1 rounded-md bg-primary/10 border border-primary/20 text-primary">
               <History size={15} />
             </span>
-            <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100">
+            <span className="text-xs sm:text-sm font-semibold text-foreground">
               통화 히스토리
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-semibold border border-purple-200 dark:border-purple-800">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold font-mono border border-border">
               총 {calls.length}회 통화
             </span>
           </div>
@@ -147,7 +147,7 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
               type="button"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors shadow-2xs disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors shadow-2xs disabled:opacity-50"
               title="컴퓨터에 저장된 통화 녹음 파일을 직접 올려 AI 요약을 생성합니다"
             >
               {uploading ? (
@@ -176,28 +176,28 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
                 onClick={() => onSelectCall(call.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
                   isSelected
-                    ? 'bg-purple-600 text-white shadow-sm ring-2 ring-purple-300 dark:ring-purple-900 font-bold'
-                    : 'bg-white dark:bg-gray-700/80 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50/50 dark:hover:bg-gray-700'
+                    ? 'bg-primary text-primary-foreground shadow-2xs font-semibold'
+                    : 'bg-card text-muted-foreground hover:text-foreground border border-border hover:bg-muted'
                 }`}
               >
                 {/* Direction Icon */}
                 {call.direction === 'CALL_IN' ? (
-                  <PhoneIncoming size={12} className={isSelected ? 'text-green-300' : 'text-green-600 dark:text-green-400'} />
+                  <PhoneIncoming size={12} className={isSelected ? 'text-primary-foreground' : 'text-primary'} />
                 ) : (
-                  <PhoneOutgoing size={12} className={isSelected ? 'text-blue-200' : 'text-blue-500 dark:text-blue-400'} />
+                  <PhoneOutgoing size={12} className={isSelected ? 'text-primary-foreground' : 'text-muted-foreground'} />
                 )}
 
                 {/* Call Number */}
                 <span>{call.callNumber}차 통화</span>
 
                 {/* Call Date / Time */}
-                <span className={`text-xs ${isSelected ? 'text-purple-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                <span className={`text-xs font-mono ${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                   {call.formattedDate}
                 </span>
 
                 {/* Duration if available */}
                 {call.durationLabel && (
-                  <span className={`text-xs ${isSelected ? 'text-purple-200' : 'text-gray-500 dark:text-gray-400'}`}>
+                  <span className={`text-xs font-mono ${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                     ({call.durationLabel})
                   </span>
                 )}
@@ -205,10 +205,10 @@ export const CallHistoryTimeline: React.FC<CallHistoryTimelineProps> = ({
                 {/* Latest Badge */}
                 {call.isLatest && (
                   <span
-                    className={`ml-0.5 px-1.5 py-0.2 rounded-full text-xs font-bold ${
+                    className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[11px] font-semibold ${
                       isSelected
-                        ? 'bg-white text-purple-700'
-                        : 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-200'
+                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                        : 'bg-primary/10 text-primary border border-primary/20'
                     }`}
                   >
                     최신

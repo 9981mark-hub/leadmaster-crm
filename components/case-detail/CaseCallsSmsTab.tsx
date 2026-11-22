@@ -53,25 +53,25 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full text-foreground">
       {/* 왼쪽: 통화 및 문자 타임라인 */}
-      <div className="flex flex-col bg-gray-50/50 rounded-xl p-5 border border-gray-200/60 shadow-sm" style={{ maxHeight: '600px' }}>
-        <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 shrink-0">
-          <MessageSquare className="w-5 h-5 text-blue-500" />
+      <div className="flex flex-col bg-card rounded-xl p-5 border border-border shadow-2xs" style={{ maxHeight: '600px' }}>
+        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 shrink-0">
+          <MessageSquare className="w-5 h-5 text-primary" />
           통화 및 문자 기록
         </h3>
         
-        <div className="flex-1 overflow-y-auto pr-3 space-y-6 custom-scrollbar" style={{ minHeight: 0 }}>
+        <div className="flex-1 overflow-y-auto pr-3 space-y-5 custom-scrollbar" style={{ minHeight: 0 }}>
           {logsLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
               기록을 불러오는 중...
             </div>
           ) : logs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
-              <MessageSquare className="w-8 h-8 text-gray-600 dark:text-gray-300 mb-2" />
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border">
+              <MessageSquare className="w-8 h-8 text-muted-foreground/60 mb-2" />
               해당 고객과의 통화 및 문자 기록이 없습니다.
-              <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">(스마트폰 앱에서 자동으로 동기화됩니다)</span>
+              <span className="text-xs mt-1 text-muted-foreground/80">(스마트폰 앱에서 자동으로 동기화됩니다)</span>
             </div>
           ) : (
             <>
@@ -97,8 +97,8 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
               return (
                 <React.Fragment key={log.id}>
                   {showDateSeparator && (
-                    <div className="flex justify-center my-6">
-                      <div className="bg-gray-200/70 text-gray-600 text-xs font-semibold px-4 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
+                    <div className="flex justify-center my-4">
+                      <div className="bg-muted text-muted-foreground border border-border text-xs font-mono px-3.5 py-1 rounded-full shadow-2xs">
                         {dateStr}
                       </div>
                     </div>
@@ -108,16 +108,14 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                     {isCall ? (
                       /* 통화 기록 UI */
                       <div className="flex flex-col mb-1 w-full max-w-[85%]">
-                        <div className={`flex items-center gap-3 p-3.5 rounded-2xl shadow-sm border ${
+                        <div className={`flex items-center gap-3 p-3.5 rounded-xl shadow-2xs border ${
                           isMissed 
-                            ? 'bg-red-50/80 border-red-100 text-red-900' 
-                            : isInbound
-                              ? 'bg-white border-gray-200 text-gray-800'
-                              : 'bg-white border-gray-200 text-gray-800 flex-row-reverse'
+                            ? 'bg-destructive/10 border-destructive/20 text-destructive' 
+                            : 'bg-muted/40 border-border text-foreground'
                         }`}>
                           <div className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 ${
-                            isMissed ? 'bg-red-100 text-red-600' :
-                            isInbound ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
+                            isMissed ? 'bg-destructive/20 text-destructive' :
+                            isInbound ? 'bg-primary/15 text-primary' : 'bg-muted text-foreground border border-border'
                           }`}>
                             {isMissed ? <PhoneMissed className="w-5 h-5" /> : 
                              isInbound ? <PhoneIncoming className="w-5 h-5" /> : <PhoneOutgoing className="w-5 h-5" />}
@@ -125,25 +123,25 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                           
                           <div className={`flex flex-col flex-1 ${!isInbound && !isMissed ? 'items-end' : 'items-start'}`}>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm">
+                              <span className="font-semibold text-sm">
                                 {isMissed ? '부재중 전화' : isInbound ? '수신 통화' : '발신 통화'}
                               </span>
                               {log.lineInfo === '투넘버' ? (
-                                <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">투넘버</span>
+                                <span className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-mono">투넘버</span>
                               ) : (
-                                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">기본</span>
+                                <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded font-mono">기본</span>
                               )}
                               {!isMissed && log.duration > 0 && (
-                                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-md text-gray-600 font-medium">
+                                <span className="text-[11px] bg-muted px-2 py-0.5 rounded-md text-foreground font-mono">
                                   {formatDuration(log.duration)}
                                 </span>
                               )}
                             </div>
-                            <span className="text-xs opacity-60 mt-0.5">
+                            <span className="text-[11px] text-muted-foreground font-mono mt-0.5">
                               {format(date, 'a h:mm', { locale: ko })}
                             </span>
                             {log.content && (
-                              <div className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100 w-full text-left">
+                              <div className="mt-2 text-sm text-foreground bg-card p-2.5 rounded-lg border border-border w-full text-left leading-relaxed">
                                 {log.content}
                               </div>
                             )}
@@ -156,19 +154,19 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                         {/* 라인 정보 및 시간 (말풍선 바깥쪽 아래) */}
                         <div className={`flex flex-col mb-1 ${isInbound ? 'items-start' : 'items-end'}`}>
                           {log.lineInfo === '투넘버' ? (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">투넘버</span>
+                            <span className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-mono">투넘버</span>
                           ) : (
-                            <span className="text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">기본</span>
+                            <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-mono">기본</span>
                           )}
-                          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                          <span className="text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                             {format(date, 'a h:mm', { locale: ko })}
                           </span>
                         </div>
                         
-                        <div className={`px-4 py-3 rounded-2xl shadow-sm text-sm break-words whitespace-pre-wrap ${
+                        <div className={`px-4 py-3 rounded-2xl shadow-2xs text-sm break-words whitespace-pre-wrap leading-relaxed ${
                           isInbound 
-                            ? 'bg-white border border-gray-200 text-gray-800 rounded-bl-sm' 
-                            : 'bg-blue-500 text-white rounded-br-sm'
+                            ? 'bg-muted/40 border border-border text-foreground rounded-bl-xs' 
+                            : 'bg-primary text-primary-foreground rounded-br-xs font-medium'
                         }`}>
                           {log.content === '(사진/첨부파일)' ? (
                             <div className="flex items-center gap-2 italic opacity-80">
@@ -191,21 +189,19 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
       </div>
 
       {/* 오른쪽: 문자 발송 및 템플릿 관리 */}
-      <div className="flex flex-col h-full bg-white rounded-lg p-4 border border-gray-100">
+      <div className="flex flex-col h-full bg-card rounded-xl p-5 border border-border shadow-2xs text-foreground">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-gray-800 flex items-center gap-2">
-            <Send className="w-5 h-5 text-blue-500 shrink-0" />
-            <span>
-              문자 템플릿 <span className="block sm:inline">및 발송</span>
-            </span>
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <Send className="w-5 h-5 text-primary shrink-0" />
+            <span>문자 템플릿 및 발송</span>
           </h3>
-          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+          <span className="text-xs text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md font-mono">
             스마트폰 연동 발송
           </span>
         </div>
 
         {templatesLoading ? (
-          <div className="text-center text-gray-500 py-10">템플릿을 불러오는 중...</div>
+          <div className="text-center text-muted-foreground py-10">템플릿을 불러오는 중...</div>
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -214,22 +210,22 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                   setActiveTemplateId('custom');
                   setEditingTemplate(null);
                 }}
-                className={`p-2 text-sm rounded border text-center transition-colors flex items-center justify-center gap-1 ${
+                className={`p-2.5 text-xs rounded-lg border text-center transition-colors flex items-center justify-center gap-1.5 shadow-2xs ${
                   activeTemplateId === 'custom' 
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' 
-                    : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                    ? 'border-primary bg-primary/10 text-primary font-semibold' 
+                    : 'border-border bg-card hover:bg-muted text-foreground'
                 }`}
               >
-                <MessageSquare className="w-4 h-4" /> 직접 입력
+                <MessageSquare className="w-3.5 h-3.5" /> 직접 입력
               </button>
               {templates.map(template => (
                 <button
                   key={template.id}
                   onClick={() => setActiveTemplateId(template.id)}
-                  className={`p-2 text-sm rounded border text-left truncate transition-colors ${
+                  className={`p-2.5 text-xs rounded-lg border text-left truncate transition-colors shadow-2xs ${
                     activeTemplateId === template.id 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold' 
-                      : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                      ? 'border-primary bg-primary/10 text-primary font-semibold' 
+                      : 'border-border bg-card hover:bg-muted text-foreground'
                   }`}
                 >
                   {template.title}
@@ -241,55 +237,55 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                     setEditingTemplate({ title: '', content: '' });
                     setActiveTemplateId(null);
                   }}
-                  className="p-2 text-sm rounded border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1"
+                  className="p-2.5 text-xs rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  <Plus className="w-4 h-4" /> 템플릿 추가
+                  <Plus className="w-3.5 h-3.5" /> 템플릿 추가
                 </button>
               )}
             </div>
 
             {editingTemplate !== null && (
-              <div className="border rounded-lg p-3 bg-gray-50">
+              <div className="border border-border rounded-xl p-3 bg-muted/20">
                 <input
                   type="text"
                   placeholder="템플릿 제목 (예: 방문 안내)"
-                  className="w-full p-2 text-sm border rounded mb-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full p-2.5 text-sm border border-border rounded-lg mb-2 bg-card text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                   value={editingTemplate.title}
                   onChange={e => setEditingTemplate({...editingTemplate, title: e.target.value})}
                 />
                 <textarea
                   placeholder="문자 내용"
-                  className="w-full p-2 text-sm border rounded resize-none h-32 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full p-2.5 text-sm border border-border rounded-lg resize-none h-32 bg-card text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                   value={editingTemplate.content}
                   onChange={e => setEditingTemplate({...editingTemplate, content: e.target.value})}
                 />
                 <div className="flex justify-end gap-2 mt-2">
                   <button
                     onClick={() => setEditingTemplate(null)}
-                    className="px-3 py-1.5 text-sm bg-gray-200 rounded hover:bg-gray-300"
+                    className="px-3 py-1.5 text-xs bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors border border-border"
                   >
                     취소
                   </button>
                   <button
                     onClick={handleSaveTemplate}
                     disabled={saveTemplateMutation.isPending}
-                    className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"
+                    className="px-3.5 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg shadow-2xs flex items-center gap-1 transition-colors"
                   >
-                    <Save className="w-4 h-4" /> 저장
+                    <Save className="w-3.5 h-3.5" /> 저장
                   </button>
                 </div>
               </div>
             )}
 
             {activeTemplateId === 'custom' && !editingTemplate && (
-              <div className="border border-blue-100 rounded-lg p-4 bg-blue-50 flex flex-col h-full min-h-[300px]">
+              <div className="border border-border rounded-xl p-4 bg-muted/20 flex flex-col h-full min-h-[300px]">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-blue-900">
+                  <span className="font-semibold text-foreground text-sm">
                     직접 입력하여 발송
                   </span>
                 </div>
                 <textarea
-                  className="flex-1 bg-white p-3 rounded border border-blue-100 whitespace-pre-wrap text-sm text-gray-700 overflow-y-auto resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="flex-1 bg-card p-3 rounded-lg border border-border whitespace-pre-wrap text-sm text-foreground overflow-y-auto resize-none focus:ring-1 focus:ring-primary focus:border-primary outline-none placeholder:text-muted-foreground leading-relaxed"
                   placeholder="발송할 문자 내용을 입력하세요."
                   value={customMessage}
                   onChange={(e) => setCustomMessage(e.target.value)}
@@ -300,7 +296,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                     setCustomMessage('');
                   }}
                   disabled={enqueueSmsMutation.isPending || !customMessage.trim()}
-                  className="mt-4 w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="mt-4 w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs text-sm"
                 >
                   <Send className="w-4 h-4" />
                   스마트폰으로 발송 요청
@@ -309,25 +305,25 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
             )}
 
             {activeTemplateId && activeTemplateId !== 'custom' && !editingTemplate && (
-              <div className="border border-blue-100 rounded-lg p-4 bg-blue-50 flex flex-col h-full min-h-[300px]">
+              <div className="border border-border rounded-xl p-4 bg-muted/20 flex flex-col h-full min-h-[300px]">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-blue-900">
+                  <span className="font-semibold text-foreground text-sm">
                     {templates.find(t => t.id === activeTemplateId)?.title}
                   </span>
                   <button
                     onClick={() => setEditingTemplate(templates.find(t => t.id === activeTemplateId)!)}
-                    className="text-xs text-blue-600 underline"
+                    className="text-xs text-primary hover:underline"
                   >
                     수정
                   </button>
                 </div>
-                <div className="flex-1 bg-white p-3 rounded border border-blue-100 whitespace-pre-wrap text-sm text-gray-700 h-48 overflow-y-auto">
+                <div className="flex-1 bg-card p-3 rounded-lg border border-border whitespace-pre-wrap text-sm text-foreground h-48 overflow-y-auto leading-relaxed">
                   {templates.find(t => t.id === activeTemplateId)?.content}
                 </div>
                 <button
                   onClick={() => handleSendSms(templates.find(t => t.id === activeTemplateId)?.content || '')}
                   disabled={enqueueSmsMutation.isPending}
-                  className="mt-4 w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                  className="mt-4 w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-2xs text-sm"
                 >
                   <Send className="w-4 h-4" />
                   스마트폰으로 발송 요청
