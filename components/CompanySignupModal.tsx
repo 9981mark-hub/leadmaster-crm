@@ -450,7 +450,7 @@ export default function CompanySignupModal({
                         전자 이용계약 및 4대 필수 약관에 전체 동의합니다
                       </span>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">전자서명법 제3조 준수</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">전자서명법 제3조 준수</span>
                   </label>
 
                   {/* 4대 개별 필수 약관 리스트 */}

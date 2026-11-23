@@ -143,10 +143,10 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 tracking-tight">
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 tracking-tight">
                 TM 대표 전용 · 경영 & 자금 전용 뷰
               </span>
-              <span className="text-2xs text-muted-foreground font-medium">{todayFormatted}</span>
+              <span className="text-xs text-muted-foreground font-medium">{todayFormatted}</span>
             </div>
             <h3 className="text-sm font-semibold text-foreground mt-1">
               제휴 로펌 수임료 청구, 상담원 인센티브, DB 원가 및 고정비 거시 캘린더

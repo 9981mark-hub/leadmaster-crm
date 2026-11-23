@@ -38,6 +38,7 @@ import {
     Sliders,
     MessageCircle,
     Shield,
+    ShieldCheck,
     Search,
     AlertTriangle,
     Save,
@@ -697,11 +698,12 @@ export default function SettingsPage() {
                                 시스템 설정
                             </h1>
                             {isOwner ? (
-                                <span className="px-2 py-0.5 text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/25 rounded">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold tracking-tight rounded-md bg-primary/10 text-primary border border-primary/25 shadow-2xs">
+                                    <ShieldCheck size={12} className="stroke-[2.25]" />
                                     대표 최고 관리자
                                 </span>
                             ) : (
-                                <span className="px-2 py-0.5 text-2xs font-mono font-medium bg-muted text-muted-foreground border border-border rounded">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium tracking-tight rounded-md bg-muted text-muted-foreground border border-border shadow-2xs">
                                     권한 위임 관리자
                                 </span>
                             )}
@@ -756,7 +758,7 @@ export default function SettingsPage() {
                                 {orgName}
                             </h2>
                         </div>
-                        <p className="text-2xs text-muted-foreground mt-0.5 truncate">
+                        <p className="text-xs text-muted-foreground font-normal leading-relaxed mt-0.5 truncate">
                             사이드바, 글로벌 헤더, 통화 스크립트에 공통 적용되는 우리 회사 공식 상호 및 대표 로고입니다.
                         </p>
                     </div>
@@ -796,7 +798,7 @@ export default function SettingsPage() {
                     >
                         <Building size={14} strokeWidth={1.75} />
                         <span>1. 거래처 맞춤 관리</span>
-                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground tabular-nums">
+                        <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-muted text-muted-foreground font-mono tabular-nums">
                             {partners.length}개
                         </span>
                     </button>
@@ -813,7 +815,7 @@ export default function SettingsPage() {
                     >
                         <Sliders size={14} strokeWidth={1.75} />
                         <span>2. 공통 업무 설정</span>
-                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground">
+                        <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-muted text-muted-foreground">
                             {isOwner || settingsPerms.allowOperations ? '편집 가능' : '안전 열람'}
                         </span>
                     </button>
@@ -830,7 +832,7 @@ export default function SettingsPage() {
                     >
                         <MessageCircle size={14} strokeWidth={1.75} />
                         <span>3. 외부 연동 & AI</span>
-                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-primary/10 text-primary">
+                        <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-primary/10 text-primary border border-primary/20">
                             텔레그램/AI
                         </span>
                     </button>
@@ -847,7 +849,7 @@ export default function SettingsPage() {
                     >
                         <Shield size={14} strokeWidth={1.75} />
                         <span>4. 데이터 & 보안</span>
-                        <span className="px-1.5 py-0.2 rounded text-2xs font-mono bg-muted text-muted-foreground">
+                        <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-muted text-muted-foreground">
                             {isOwner ? '전권 관리' : '백업 다운로드'}
                         </span>
                     </button>

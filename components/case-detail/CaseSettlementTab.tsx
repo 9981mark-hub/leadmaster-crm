@@ -30,7 +30,7 @@ const DepositRow: React.FC<{ idx: number; d: Deposit; removable: boolean; onSave
         <div className="rounded-xl border border-border bg-card px-3 py-2.5 shadow-2xs">
             <div className="flex justify-between items-center mb-1.5">
                 <h4 className="font-semibold text-foreground text-xs">
-                    {idx + 1}차 입금 {future && <span className="ml-1 font-normal text-muted-foreground font-mono">입금 예정</span>}
+                    {idx + 1}차 입금 {future && <span className="ml-1 font-normal text-muted-foreground text-2xs">입금 예정</span>}
                 </h4>
                 {removable && <button onClick={onRemove} className="text-muted-foreground hover:text-destructive transition-colors" aria-label={`${idx + 1}차 입금 줄 삭제`}><X size={14} /></button>}
             </div>

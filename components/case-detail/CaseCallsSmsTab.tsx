@@ -127,9 +127,9 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                                 {isMissed ? '부재중 전화' : isInbound ? '수신 통화' : '발신 통화'}
                               </span>
                               {log.lineInfo === '투넘버' ? (
-                                <span className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-mono">투넘버</span>
+                                <span className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-medium">투넘버</span>
                               ) : (
-                                <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded font-mono">기본</span>
+                                <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded font-medium">기본</span>
                               )}
                               {!isMissed && log.duration > 0 && (
                                 <span className="text-[11px] bg-muted px-2 py-0.5 rounded-md text-foreground font-mono">
@@ -154,9 +154,9 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
                         {/* 라인 정보 및 시간 (말풍선 바깥쪽 아래) */}
                         <div className={`flex flex-col mb-1 ${isInbound ? 'items-start' : 'items-end'}`}>
                           {log.lineInfo === '투넘버' ? (
-                            <span className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-mono">투넘버</span>
+                            <span className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">투넘버</span>
                           ) : (
-                            <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-mono">기본</span>
+                            <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1 py-0.5 rounded mb-0.5 whitespace-nowrap font-medium">기본</span>
                           )}
                           <span className="text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                             {format(date, 'a h:mm', { locale: ko })}

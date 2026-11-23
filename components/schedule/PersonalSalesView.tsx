@@ -482,7 +482,7 @@ export const PersonalSalesView: React.FC<PersonalSalesViewProps> = ({
         <div className={`p-4 rounded-xl shadow-xs flex flex-col justify-between border ${
           selectedDateStats.overdue > 0 ? 'bg-destructive/5 border-destructive/20' : 'bg-card border-border'
         }`}>
-          <span className={`text-2xs font-mono font-medium uppercase ${selectedDateStats.overdue > 0 ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>미처리 지연</span>
+          <span className={`text-xs font-semibold uppercase ${selectedDateStats.overdue > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>미처리 지연</span>
           <span className={`text-2xl font-semibold tracking-tight font-mono tabular-nums mt-1 ${selectedDateStats.overdue > 0 ? 'text-destructive' : 'text-foreground'}`}>{selectedDateStats.overdue}건</span>
         </div>
       </div>

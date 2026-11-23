@@ -48,12 +48,14 @@
 }
 
 /* Base Body & Global Typography Setup */
-body {
+html, body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif !important;
   font-feature-settings: "rlig" 1, "calt" 1, "tnum" 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  letter-spacing: -0.015em;
 }
 
 /* 숫자/금액/시간/전화번호 고정폭 클래스 */
@@ -62,11 +64,19 @@ body {
   font-feature-settings: "tnum";
 }
 
-/* 고정폭 폰트(mono) 사용 시 한글 비트맵(굴림체) 폴백 원천 차단 및 부드러운 안티앨리어싱 강제 */
+/* 고정폭 폰트(mono) 사용 시 한글 비트맵(굴림체) 폴백 원천 차단 및 부드러운 안티앨리어싱 강제
+   Consolas/Courier 등 한글 미탑재 윈도우 영문 폰트를 배제하여 굴림체 치환 원천 차단 */
 .font-mono, code, kbd, samp, pre {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", "Pretendard Variable", Pretendard, monospace !important;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Pretendard Variable", Pretendard, monospace !important;
   -webkit-font-smoothing: antialiased !important;
   -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* 미세 텍스트 가독성 및 안티앨리어싱 보정 */
+.text-2xs {
+  font-size: 0.6875rem !important; /* 11px로 미세 상향하여 윈도우 비트맵 깨짐 방지 */
+  line-height: 1.125rem !important;
+  letter-spacing: -0.01em !important;
 }
 
 /* ========================================================
