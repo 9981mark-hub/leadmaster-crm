@@ -113,15 +113,15 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-blue-500 selection:text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground">
       {/* 상단 내비게이션 바 */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to="/login" className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-white text-xs font-semibold transition-colors">
+          <Link to="/login" className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-xs font-semibold transition-colors">
             <ArrowLeft size={16} />
             <span>로그인으로 돌아가기</span>
           </Link>
-          <span className="text-slate-700">|</span>
+          <span className="text-border">|</span>
           <img 
             src={`${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png`} 
             alt="LeadMaster CRM" 
@@ -131,7 +131,7 @@ export default function PricingPage() {
         <button
           type="button"
           onClick={() => handleStartPlan('business')}
-          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20"
+          className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-xs cursor-pointer"
         >
           7일 무료 체험 신청
         </button>
@@ -141,49 +141,56 @@ export default function PricingPage() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-8 py-10 sm:py-14 space-y-12">
         {/* 히어로 헤더 */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-semibold text-blue-600 dark:text-blue-400">
-            <Sparkles size={13} />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
+            <Sparkles size={13} strokeWidth={1.75} />
             <span>리드마스터 CRM 공식 프로그램 사용료 안내</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
             합리적인 월 구독료로 시작하는<br />
-            <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">
+            <span className="text-primary">
               올인원 TM CRM 시스템
             </span>
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             추가 모듈 비용 0원 • 다이얼러, 1년 녹음 스토리지, AI 채무분석, 정산센터까지 전 플랜 기본 포함
           </p>
         </div>
 
         {/* 인터랙티브 비용 시뮬레이터 카드 */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-white dark:from-slate-900 via-slate-900 to-blue-950/40 border border-blue-500/30 space-y-5 shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-xl bg-card border border-border space-y-5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-base font-bold text-white">
-              <Calculator size={20} className="text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center gap-2 text-base font-bold text-foreground">
+              <Calculator size={20} className="text-primary" strokeWidth={1.75} />
               <span>실시간 월 도입 비용 시뮬레이터</span>
             </div>
             {/* 연간 결제 스위치 */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
-              <span className={!isAnnual ? 'text-white font-bold' : 'text-slate-500 dark:text-slate-400'}>월간 청구</span>
+            <div className="inline-flex items-center bg-muted/60 p-0.5 rounded-lg border border-border text-xs">
               <button
                 type="button"
-                onClick={() => setIsAnnual(!isAnnual)}
-                className={`w-10 h-5 rounded-full transition-colors relative p-0.5 cursor-pointer ${isAnnual ? 'bg-blue-600' : 'bg-slate-700'}`}
+                onClick={() => setIsAnnual(false)}
+                className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                  !isAnnual ? 'bg-card text-foreground font-bold shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${isAnnual ? 'translate-x-5' : 'translate-x-0'}`} />
+                월간 청구
               </button>
-              <span className={isAnnual ? 'text-blue-300 font-bold' : 'text-slate-500 dark:text-slate-400'}>
+              <button
+                type="button"
+                onClick={() => setIsAnnual(true)}
+                className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                  isAnnual ? 'bg-primary text-primary-foreground font-bold shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
                 연간 결제 (2개월 무료 · 17% 추가 할인)
-              </span>
+              </button>
             </div>
           </div>
 
           {/* 슬라이더 컨트롤 */}
           <div className="space-y-2 pt-2">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-600 dark:text-slate-300 font-medium">우리 사무실 상담원 인원수:</span>
-              <span className="text-2xl sm:text-3xl font-black font-mono text-blue-600 dark:text-blue-400">
+              <span className="text-muted-foreground font-medium">우리 사무실 상담원 인원수:</span>
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-primary tabular-nums">
                 {seatCount}명
               </span>
             </div>
@@ -193,9 +200,9 @@ export default function PricingPage() {
               max="120"
               value={seatCount}
               onChange={e => setSeatCount(Number(e.target.value))}
-              className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
             />
-            <div className="flex justify-between text-xs text-slate-500 font-mono">
+            <div className="flex justify-between text-2xs text-muted-foreground font-mono">
               <span>1명 (스타터)</span>
               <span>10명</span>
               <span>25명</span>
@@ -206,31 +213,31 @@ export default function PricingPage() {
 
           {/* 시뮬레이션 결과 3-Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
-              <div className="text-xs text-slate-500 dark:text-slate-400">적용 볼륨 티어</div>
-              <div className="text-base font-bold text-white flex items-center gap-1.5">
-                <Award size={16} className="text-amber-600 dark:text-amber-400" />
+            <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-1 shadow-2xs">
+              <div className="text-xs text-muted-foreground font-medium">적용 볼륨 티어</div>
+              <div className="text-base font-bold text-foreground flex items-center gap-1.5">
+                <Award size={16} className="text-primary" strokeWidth={1.75} />
                 <span>{bill.tierName}</span>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
-              <div className="text-xs text-slate-500 dark:text-slate-400">1인당 월 단가 (VAT 별도)</div>
-              <div className="text-base font-bold font-mono text-white">
-                ₩ {effectiveUnitPrice.toLocaleString()} <span className="text-xs text-slate-500 dark:text-slate-400">/ 석</span>
+            <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-1 shadow-2xs">
+              <div className="text-xs text-muted-foreground font-medium">1인당 월 단가 (VAT 별도)</div>
+              <div className="text-base font-bold font-mono text-foreground tabular-nums">
+                ₩ {effectiveUnitPrice.toLocaleString()} <span className="text-xs text-muted-foreground font-normal">/ 석</span>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-blue-100/50 dark:bg-blue-950/50 border border-blue-500/50 space-y-1">
-              <div className="text-xs text-blue-300 font-semibold">월 총 청구 금액 (VAT 별도)</div>
-              <div className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
+            <div className="p-4 rounded-xl bg-primary/10 border border-primary/30 space-y-1 shadow-2xs">
+              <div className="text-xs text-primary font-semibold">월 총 청구 금액 (VAT 별도)</div>
+              <div className="text-2xl font-bold font-mono text-primary tabular-nums">
                 ₩ {effectiveMonthlyTotal.toLocaleString()}
               </div>
             </div>
           </div>
 
           {monthlySavings > 0 && (
-            <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-3 rounded-2xl border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div className="text-xs text-emerald-400 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span>💡 개별 솔루션(다이얼러 + 녹음 서버 + AI 분석) 분리 도입 대비:</span>
               <span className="font-mono font-bold">월 약 ₩ {monthlySavings.toLocaleString()}원 이상 절감 효과!</span>
             </div>
@@ -244,37 +251,37 @@ export default function PricingPage() {
             return (
               <div 
                 key={tier.id}
-                className={`rounded-3xl p-6 flex flex-col justify-between transition-all ${
+                className={`rounded-xl p-6 flex flex-col justify-between transition-all ${
                   tier.highlight
-                    ? 'bg-white dark:bg-gray-900 border-2 border-blue-500 shadow-xl shadow-blue-500/15 relative scale-[1.02]'
-                    : 'bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 hover:border-slate-200 dark:border-slate-700'
+                    ? 'bg-card border-2 border-primary/60 shadow-lg shadow-primary/10 relative'
+                    : 'bg-card border border-border hover:border-primary/30 shadow-2xs'
                 }`}
               >
                 <div className="space-y-5">
                   <div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                    <span className={`text-2xs font-semibold px-2 py-0.5 rounded-md border ${
                       tier.highlight 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                        ? 'bg-primary/15 text-primary border-primary/30 font-bold' 
+                        : 'bg-muted text-muted-foreground border-border'
                     }`}>
                       {tier.badge}
                     </span>
-                    <h3 className="text-lg font-bold text-white mt-2.5">{tier.name}</h3>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{tier.seats}</div>
+                    <h3 className="text-lg font-bold text-foreground mt-2.5">{tier.name}</h3>
+                    <div className="text-xs text-muted-foreground">{tier.seats}</div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-                    <div className="text-2xl sm:text-3xl font-black font-mono text-white">
+                  <div className="pt-2 border-t border-border">
+                    <div className={`text-2xl sm:text-3xl font-bold font-mono tabular-nums ${tier.highlight ? 'text-primary' : 'text-foreground'}`}>
                       ₩ {displayPrice.toLocaleString()}
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-normal"> /월/석</span>
+                      <span className="text-xs text-muted-foreground font-normal"> /월/석</span>
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5">부가세(VAT) 별도 • 청구서 발행</div>
+                    <div className="text-2xs text-muted-foreground mt-0.5">부가세(VAT) 별도 • 청구서 발행</div>
                   </div>
 
-                  <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-200/80 dark:border-slate-800/80">
+                  <ul className="space-y-2 text-xs text-muted-foreground pt-2 border-t border-border">
                     {tier.features.map((feat, idx) => (
                       <li key={idx} className="flex items-start gap-1.5 leading-snug">
-                        <Check size={13} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                        <Check size={13} className="text-primary shrink-0 mt-0.5" strokeWidth={2} />
                         <span>{feat}</span>
                       </li>
                     ))}
@@ -285,10 +292,10 @@ export default function PricingPage() {
                   <button
                     type="button"
                     onClick={() => handleStartPlan(tier.id)}
-                    className={`w-full py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`w-full py-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       tier.highlight
-                        ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25'
-                        : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-200'
+                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs'
+                        : 'bg-muted hover:bg-muted/80 text-foreground border border-border'
                     }`}
                   >
                     <span>이 플랜으로 시작하기</span>
@@ -301,12 +308,12 @@ export default function PricingPage() {
         </div>
 
         {/* 10대 기본 포함 기능 배너 */}
-        <div className="p-6 rounded-3xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-            <ShieldCheck size={18} className="text-emerald-600 dark:text-emerald-400" />
+        <div className="p-6 rounded-xl bg-card border border-border space-y-3 shadow-2xs">
+          <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+            <ShieldCheck size={18} className="text-primary" strokeWidth={1.75} />
             <span>모든 플랜에 기본 포함되는 리드마스터 10대 핵심 기능</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs text-slate-600 dark:text-slate-300 pt-1">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs text-muted-foreground pt-1">
             <span className="flex items-center gap-1.5">⚡ 1초 1콜 자동 다이얼러</span>
             <span className="flex items-center gap-1.5">💾 통화녹음 1년 암호화 보관</span>
             <span className="flex items-center gap-1.5">🗜️ 32kbps H/W 가속 압축</span>
@@ -322,8 +329,8 @@ export default function PricingPage() {
 
         {/* FAQ 아코디언 */}
         <div className="space-y-4 pt-4">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <HelpCircle size={18} className="text-blue-600 dark:text-blue-400" />
+          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <HelpCircle size={18} className="text-primary" strokeWidth={1.75} />
             <span>자주 묻는 질문 (FAQ)</span>
           </h3>
           <div className="space-y-2">
@@ -332,18 +339,18 @@ export default function PricingPage() {
               return (
                 <div 
                   key={idx}
-                  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 overflow-hidden"
+                  className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs"
                 >
                   <button
                     type="button"
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full p-4 text-left text-xs sm:text-sm font-bold text-slate-200 flex items-center justify-between hover:bg-slate-850 transition-colors cursor-pointer"
+                    className="w-full p-4 text-left text-xs sm:text-sm font-semibold text-foreground flex items-center justify-between hover:bg-muted/40 transition-colors cursor-pointer"
                   >
                     <span>Q. {faq.q}</span>
-                    {isOpen ? <ChevronUp size={16} className="text-slate-500 dark:text-slate-400" /> : <ChevronDown size={16} className="text-slate-500 dark:text-slate-400" />}
+                    {isOpen ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                   </button>
                   {isOpen && (
-                    <div className="p-4 pt-0 text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60">
+                    <div className="p-4 pt-0 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border bg-muted/15">
                       {faq.a}
                     </div>
                   )}
