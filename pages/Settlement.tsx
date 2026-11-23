@@ -1691,7 +1691,12 @@ export default function Settlement() {
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="name" />
                             <YAxis />
-                            <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '']} />
+                            <Tooltip
+                                formatter={(value: number) => [`${value.toLocaleString()}만원`, '']}
+                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
+                                itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                            />
                             <Legend />
                             <Bar dataKey="actualDeposit" fill="#10b981" name="실제입금" radius={[4, 4, 0, 0]} />
                             <Bar dataKey="paidCommission" fill="#ef4444" name="지급수수료" radius={[4, 4, 0, 0]} />
@@ -2578,7 +2583,12 @@ export default function Settlement() {
                                                 <Cell key={`cell-${index}`} fill={entry.color} />
                                             ))}
                                         </Pie>
-                                        <Tooltip formatter={(value: any) => [`${Number(value).toLocaleString()}만원`, '']} />
+                                        <Tooltip
+                                            formatter={(value: any) => [`${Number(value).toLocaleString()}만원`, '']}
+                                            contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
+                                            itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                            labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                                        />
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div className="flex-1 space-y-2">
@@ -2610,7 +2620,12 @@ export default function Settlement() {
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
                                 <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                                 <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
-                                <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '지출']} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }} />
+                                <Tooltip
+                                    formatter={(value: number) => [`${value.toLocaleString()}만원`, '지출']}
+                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
+                                    itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                                />
                                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -3375,7 +3390,9 @@ export default function Settlement() {
                                                 <YAxis tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                                                 <Tooltip
                                                     formatter={(v: number) => [`${v.toLocaleString()}원`, '']}
-                                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
+                                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
+                                                    itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
                                                 />
                                                 <Legend wrapperStyle={{ paddingTop: 8, fontSize: 11 }} />
                                                 <Bar dataKey="income" name="수입" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
@@ -3481,7 +3498,9 @@ export default function Settlement() {
                                                     </Pie>
                                                     <Tooltip
                                                         formatter={(v: number) => [`${v.toLocaleString()}만원`, '수수료']}
-                                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
+                                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
+                                                        itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                                        labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
                                                     />
                                                 </PieChart>
                                             </ResponsiveContainer>

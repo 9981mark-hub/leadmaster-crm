@@ -358,7 +358,9 @@ export default function IntegratedPnLTab({
                   </Pie>
                   <Tooltip
                     formatter={(val: number) => `₩ ${val.toLocaleString()} 원`}
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
+                    itemStyle={{ color: 'hsl(var(--foreground))' }}
+                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
                   />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                 </PieChart>
@@ -389,7 +391,9 @@ export default function IntegratedPnLTab({
                 />
                 <Tooltip
                   formatter={(val: number) => `₩ ${val.toLocaleString()} 원`}
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="총매출" fill="hsl(var(--foreground))" radius={[3, 3, 0, 0]} />

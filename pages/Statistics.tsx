@@ -19,26 +19,40 @@ import { AD_METRICS_SPEC } from '../services/orgData';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
 
-// Custom Glassmorphic Tooltip for Recharts
+// Custom Glassmorphic Tooltip for Recharts (다크모드 고대비 완벽 지원)
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="glass-panel p-3 rounded-lg border border-gray-200/50 dark:border-gray-700/50 shadow-lg text-xs">
-                <p className="font-bold text-gray-800 dark:text-gray-100 mb-1">{label}</p>
-                {payload.map((pld: any, index: number) => {
-                    const value = typeof pld.value === 'number'
-                        ? (pld.name.includes('금액') || pld.name.includes('수임료') || pld.name.includes('수수료') || pld.name.includes('광고비')
-                            ? `${pld.value.toLocaleString()}만원`
-                            : pld.name.includes('율') || pld.name.includes('ROAS')
-                                ? `${pld.value}%`
-                                : `${pld.value}건`)
-                        : pld.value;
-                    return (
-                        <p key={index} style={{ color: pld.color || pld.fill }} className="font-medium">
-                            {pld.name}: <span className="font-bold">{value}</span>
-                        </p>
-                    );
-                })}
+            <div className="bg-card/95 backdrop-blur-md p-3 rounded-xl border border-border shadow-xl text-xs min-w-[140px]">
+                {label && <p className="font-bold text-foreground mb-2 pb-1.5 border-b border-border/60">{label}</p>}
+                <div className="flex flex-col gap-1.5">
+                    {payload.map((pld: any, index: number) => {
+                        const rawVal = pld.value;
+                        const nameStr = String(pld.name || '');
+                        let displayValue = rawVal;
+                        if (typeof rawVal === 'number') {
+                            if (nameStr.includes('금액') || nameStr.includes('수임료') || nameStr.includes('수수료') || nameStr.includes('광고비') || nameStr.includes('비용')) {
+                                displayValue = `${rawVal.toLocaleString()}만원`;
+                            } else if (nameStr.includes('율') || nameStr.includes('ROAS') || nameStr.includes('비율')) {
+                                displayValue = `${rawVal}%`;
+                            } else {
+                                displayValue = `${rawVal.toLocaleString()}건`;
+                            }
+                        }
+                        const indicatorColor = pld.color || pld.fill || 'hsl(var(--primary))';
+                        return (
+                            <div key={index} className="flex items-center justify-between gap-3 text-xs">
+                                <span className="flex items-center gap-1.5 text-muted-foreground truncate max-w-[140px]">
+                                    <span className="w-2 h-2 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: indicatorColor }} />
+                                    <span>{pld.name || '값'}:</span>
+                                </span>
+                                <span className="font-bold font-mono text-foreground tabular-nums shrink-0">
+                                    {displayValue}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         );
     }
@@ -1595,7 +1609,7 @@ export default function Statistics() {
                                                             <Cell key={i} fill={entry.fill} />
                                                         ))}
                                                     </Pie>
-                                                    <Tooltip />
+                                                    <Tooltip content={<CustomTooltip />} />
                                                     <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: '11px' }} />
                                                 </RechartsPie>
                                             </ResponsiveContainer>
@@ -1754,7 +1768,7 @@ export default function Statistics() {
                                                                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
                                                             ))}
                                                         </Pie>
-                                                        <Tooltip />
+                                                        <Tooltip content={<CustomTooltip />} />
                                                     </RechartsPie>
                                                 </ResponsiveContainer>
                                             </div>
@@ -1773,7 +1787,7 @@ export default function Statistics() {
                                                         <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
                                                         <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
                                                         <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} stroke={isDark ? '#9CA3AF' : '#6B7280'} />
-                                                        <Tooltip formatter={(v: any) => `${v}%`} />
+                                                        <Tooltip content={<CustomTooltip />} />
                                                         <Bar dataKey="전환율" fill="url(#colorConv)" radius={[0, 4, 4, 0]}>
                                                             <LabelList dataKey="전환율" position="right" formatter={(v: any) => `${v}%`} style={{ fontSize: 10 }} />
                                                         </Bar>
@@ -1902,7 +1916,7 @@ export default function Statistics() {
                                                                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
                                                                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                                                                 <YAxis tick={{ fontSize: 11 }} />
-                                                                <Tooltip formatter={(value: any) => `${value}%`} />
+                                                                <Tooltip content={<CustomTooltip />} />
                                                                 <Bar dataKey="ROAS" radius={[4, 4, 0, 0]}>
                                                                     {roiData.filter(d => d.광고비 > 0).map((entry, i) => (
                                                                         <Cell
@@ -2367,7 +2381,7 @@ export default function Statistics() {
                                                                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
                                                                     ))}
                                                                 </Pie>
-                                                                <Tooltip />
+                                                                <Tooltip content={<CustomTooltip />} />
                                                                 <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: '11px' }} />
                                                             </RechartsPie>
                                                         </ResponsiveContainer>
@@ -2394,7 +2408,7 @@ export default function Statistics() {
                                                                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
                                                                 <XAxis type="number" tick={{ fontSize: 11 }} />
                                                                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={80} />
-                                                                <Tooltip />
+                                                                <Tooltip content={<CustomTooltip />} />
                                                                 <Bar dataKey="value" fill="url(#dropStageGrad)" radius={[0, 4, 4, 0]} name="이탈 건수" />
                                                             </BarChart>
                                                         </ResponsiveContainer>

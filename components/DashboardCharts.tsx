@@ -78,13 +78,15 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                         <YAxis stroke={isDark ? '#94A3B8' : '#64748B'} tick={{ fontSize: 12 }} />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: isDark ? 'rgba(18, 18, 21, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                                backgroundColor: isDark ? 'rgba(18, 18, 21, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                                 borderColor: isDark ? '#27272A' : '#E2E8F0',
                                 color: isDark ? '#F8FAFC' : '#0F172A',
                                 borderRadius: '12px',
-                                boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.15)',
+                                boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.25)',
                                 backdropFilter: 'blur(8px)',
                             }}
+                            itemStyle={{ color: isDark ? '#F8FAFC' : '#0F172A' }}
+                            labelStyle={{ color: isDark ? '#FFFFFF' : '#0F172A', fontWeight: 'bold' }}
                         />
                         <Bar
                             dataKey="건수"
@@ -140,13 +142,15 @@ export const StatusPieChart: React.FC<ChartProps> = ({ cases, isDark }) => {
                         </Pie>
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: isDark ? 'rgba(18, 18, 21, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                                backgroundColor: isDark ? 'rgba(18, 18, 21, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                                 borderColor: isDark ? '#27272A' : '#E2E8F0',
                                 color: isDark ? '#F8FAFC' : '#0F172A',
                                 borderRadius: '12px',
-                                boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.15)',
+                                boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.25)',
                                 backdropFilter: 'blur(8px)',
                             }}
+                            itemStyle={{ color: isDark ? '#F8FAFC' : '#0F172A' }}
+                            labelStyle={{ color: isDark ? '#FFFFFF' : '#0F172A', fontWeight: 'bold' }}
                         />
                         <Legend
                             layout="vertical"

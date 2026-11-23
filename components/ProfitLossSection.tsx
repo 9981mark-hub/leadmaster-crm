@@ -242,6 +242,15 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                             <Tooltip
                                 formatter={(value: number) => `${value.toLocaleString()}원`}
                                 labelFormatter={(label) => `${label}`}
+                                contentStyle={{
+                                    backgroundColor: 'hsl(var(--card))',
+                                    borderColor: 'hsl(var(--border))',
+                                    borderRadius: '0.75rem',
+                                    color: 'hsl(var(--foreground))',
+                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+                                }}
+                                itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
                             />
                             <Legend />
                             <Bar dataKey="revenue" name="수익" fill="#3b82f6" />
@@ -252,13 +261,24 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
 
                 {/* 순이익 추이 라인 차트 */}
                 <div className="h-40">
-                    <p className="text-sm text-gray-600 mb-2">순이익 추이</p>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">순이익 추이</p>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={displayData}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" fontSize={12} />
                             <YAxis fontSize={10} tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
-                            <Tooltip formatter={(value: number) => `${value.toLocaleString()}원`} />
+                            <Tooltip
+                                formatter={(value: number) => `${value.toLocaleString()}원`}
+                                contentStyle={{
+                                    backgroundColor: 'hsl(var(--card))',
+                                    borderColor: 'hsl(var(--border))',
+                                    borderRadius: '0.75rem',
+                                    color: 'hsl(var(--foreground))',
+                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+                                }}
+                                itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                            />
                             <Line
                                 type="monotone"
                                 dataKey="profit"

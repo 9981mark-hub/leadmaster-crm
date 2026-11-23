@@ -585,11 +585,15 @@ export const PartnerB2BHub: React.FC<PartnerB2BHubProps> = ({
                                 <YAxis yAxisId="right" orientation="right" domain={[0, 100]} stroke="#10B981" tick={{ fontSize: 11 }} unit="%" />
                                 <Tooltip 
                                     contentStyle={{ 
-                                        backgroundColor: isDark ? '#1F2937' : '#FFFFFF', 
-                                        borderColor: isDark ? '#374151' : '#E5E7EB',
+                                        backgroundColor: isDark ? 'hsl(var(--card))' : '#FFFFFF', 
+                                        borderColor: isDark ? 'hsl(var(--border))' : '#E5E7EB',
                                         borderRadius: '12px',
-                                        fontSize: '12px'
-                                    }} 
+                                        fontSize: '12px',
+                                        color: isDark ? '#FFFFFF' : '#0F172A',
+                                        boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.25)',
+                                    }}
+                                    itemStyle={{ color: isDark ? '#F8FAFC' : '#0F172A' }}
+                                    labelStyle={{ color: isDark ? '#FFFFFF' : '#0F172A', fontWeight: 'bold' }}
                                 />
                                 <Legend wrapperStyle={{ fontSize: '11px' }} />
                                 <Bar yAxisId="left" dataKey="인계건" fill="#93C5FD" name="인계 건수" radius={[4, 4, 0, 0]} />
