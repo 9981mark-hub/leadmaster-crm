@@ -25,6 +25,15 @@ export interface MemberHrProfile {
   emergencyContactPhone?: string;     // 비상연락처
   notes?: string;                     // 인사 특이사항 및 관리자 메모
   updatedAt?: string;
+
+  // 🤝 급여 및 성과급 인센티브 연동 체계
+  salaryType?: 'pure_incentive' | 'base_plus_incentive' | 'tiered'; // 성과급 유형
+  baseSalary?: number;                // 기본급 (원)
+  unitIncentive?: number;             // 건당 고정 인센티브 (원)
+  incentiveRate?: number;             // 수임료 비율 (%)
+  dailyAllowance?: number;            // 일비/식대 (원/일)
+  bonusAllowance?: number;            // 만근 보너스 (원/월)
+  taxType?: 'freelancer_3_3' | 'four_insurances' | 'none'; // 세금 공제 방식
 }
 
 const STORAGE_PREFIX = 'leadmaster_member_hr_';
@@ -106,24 +115,56 @@ export const fetchMemberHrProfile = async (
     console.warn('[MemberHR] Failed to read from localStorage:', err);
   }
 
-  // Supabase agent_payroll_profiles 에서 계좌정보 조회
+  // Supabase agent_payroll_profiles 에서 계좌 및 인센티브 정보 조회
   let dbBankName = '';
   let dbAccountNumber = '';
   let dbAccountHolder = '';
+  let dbSalaryType: MemberHrProfile['salaryType'] = undefined;
+  let dbBaseSalary: number | undefined = undefined;
+  let dbUnitIncentive: number | undefined = undefined;
+  let dbIncentiveRate: number | undefined = undefined;
+  let dbDailyAllowance: number | undefined = undefined;
+  let dbBonusAllowance: number | undefined = undefined;
+  let dbTaxType: MemberHrProfile['taxType'] = undefined;
+
+  // 로컬 payroll 캐시도 확인
+  try {
+    const rawPayroll = localStorage.getItem(`leadmaster_payroll_${userId}`);
+    if (rawPayroll) {
+      const p = JSON.parse(rawPayroll);
+      dbBankName = p.bankName || '';
+      dbAccountNumber = p.accountNumber || '';
+      dbAccountHolder = p.accountHolder || '';
+      dbSalaryType = p.salaryType;
+      dbBaseSalary = p.baseSalary;
+      dbUnitIncentive = p.unitIncentive;
+      dbIncentiveRate = p.incentiveRate;
+      dbDailyAllowance = p.dailyAllowance;
+      dbBonusAllowance = p.bonusAllowance;
+      dbTaxType = p.taxType;
+    }
+  } catch {}
 
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('agent_payroll_profiles')
-        .select('bank_name, account_number, account_holder')
+        .select('*')
         .eq('org_id', orgId)
         .eq('user_id', userId)
         .maybeSingle();
 
       if (!error && data) {
-        dbBankName = data.bank_name || '';
-        dbAccountNumber = data.account_number || '';
-        dbAccountHolder = data.account_holder || '';
+        if (data.bank_name) dbBankName = data.bank_name;
+        if (data.account_number) dbAccountNumber = data.account_number;
+        if (data.account_holder) dbAccountHolder = data.account_holder;
+        if (data.salary_type) dbSalaryType = data.salary_type;
+        if (data.base_salary !== undefined) dbBaseSalary = Number(data.base_salary);
+        if (data.unit_incentive !== undefined) dbUnitIncentive = Number(data.unit_incentive);
+        if (data.incentive_rate !== undefined) dbIncentiveRate = Number(data.incentive_rate);
+        if (data.daily_allowance !== undefined) dbDailyAllowance = Number(data.daily_allowance);
+        if (data.bonus_allowance !== undefined) dbBonusAllowance = Number(data.bonus_allowance);
+        if (data.tax_type) dbTaxType = data.tax_type;
       }
     } catch (err) {
       console.warn('[MemberHR] Failed to load payroll profile from DB:', err);
@@ -141,7 +182,7 @@ export const fetchMemberHrProfile = async (
     address: localData.address || '',
     addressDetail: localData.addressDetail || '',
     jobTitle: localData.jobTitle || '',
-    employmentType: localData.employmentType || 'regular',
+    employmentType: localData.employmentType || (dbTaxType === 'freelancer_3_3' ? 'freelancer' : 'regular'),
     hireDate: localData.hireDate || '',
     bankName: dbBankName || localData.bankName || '',
     accountNumber: dbAccountNumber || localData.accountNumber || '',
@@ -150,12 +191,21 @@ export const fetchMemberHrProfile = async (
     emergencyContactRelation: localData.emergencyContactRelation || '',
     emergencyContactPhone: localData.emergencyContactPhone || '',
     notes: localData.notes || '',
-    updatedAt: localData.updatedAt || new Date().toISOString()
+    updatedAt: localData.updatedAt || new Date().toISOString(),
+
+    // 인센티브 및 급여 체계 연동 값
+    salaryType: dbSalaryType || localData.salaryType || 'pure_incentive',
+    baseSalary: dbBaseSalary !== undefined ? dbBaseSalary : (localData.baseSalary || 0),
+    unitIncentive: dbUnitIncentive !== undefined ? dbUnitIncentive : (localData.unitIncentive ?? 150000),
+    incentiveRate: dbIncentiveRate !== undefined ? dbIncentiveRate : (localData.incentiveRate || 0),
+    dailyAllowance: dbDailyAllowance !== undefined ? dbDailyAllowance : (localData.dailyAllowance || 0),
+    bonusAllowance: dbBonusAllowance !== undefined ? dbBonusAllowance : (localData.bonusAllowance || 0),
+    taxType: dbTaxType || localData.taxType || (localData.employmentType === 'freelancer' ? 'freelancer_3_3' : 'four_insurances')
   };
 };
 
 /**
- * 멤버 인사(HR) 프로필 저장
+ * 멤버 인사(HR) 프로필 저장 (인센티브 프로필과 양방향 연동)
  */
 export const saveMemberHrProfile = async (
   orgId: string,
@@ -175,22 +225,54 @@ export const saveMemberHrProfile = async (
     console.warn('[MemberHR] Failed to save to localStorage:', err);
   }
 
-  // 2. Supabase agent_payroll_profiles에 급여 계좌 정보 동기화
-  if (supabase && (profile.bankName || profile.accountNumber || profile.accountHolder)) {
+  // 2. 인센티브/급여 체계(agent_payroll_profiles) 로컬 및 DB 상호 동기화
+  const payrollCacheKey = `leadmaster_payroll_${profile.userId}`;
+  try {
+    const existingRaw = localStorage.getItem(payrollCacheKey);
+    const existing = existingRaw ? JSON.parse(existingRaw) : {};
+    const updatedPayroll = {
+      ...existing,
+      userId: profile.userId,
+      bankName: profile.bankName || existing.bankName || '',
+      accountNumber: profile.accountNumber || existing.accountNumber || '',
+      accountHolder: profile.accountHolder || existing.accountHolder || profile.displayName || '',
+      salaryType: profile.salaryType || existing.salaryType || 'pure_incentive',
+      baseSalary: profile.baseSalary !== undefined ? profile.baseSalary : (existing.baseSalary || 0),
+      unitIncentive: profile.unitIncentive !== undefined ? profile.unitIncentive : (existing.unitIncentive ?? 150000),
+      incentiveRate: profile.incentiveRate !== undefined ? profile.incentiveRate : (existing.incentiveRate || 0),
+      dailyAllowance: profile.dailyAllowance !== undefined ? profile.dailyAllowance : (existing.dailyAllowance || 0),
+      bonusAllowance: profile.bonusAllowance !== undefined ? profile.bonusAllowance : (existing.bonusAllowance || 0),
+      taxType: profile.taxType || (profile.employmentType === 'freelancer' ? 'freelancer_3_3' : existing.taxType || 'four_insurances'),
+      updated_at: now
+    };
+    localStorage.setItem(payrollCacheKey, JSON.stringify(updatedPayroll));
+  } catch {}
+
+  // 3. Supabase agent_payroll_profiles에 급여 계좌 및 인센티브 연동 정보 일괄 upsert
+  if (supabase) {
     try {
+      const payrollPayload: any = {
+        org_id: orgId,
+        user_id: profile.userId,
+        updated_at: now
+      };
+      if (profile.bankName !== undefined) payrollPayload.bank_name = profile.bankName || null;
+      if (profile.accountNumber !== undefined) payrollPayload.account_number = profile.accountNumber || null;
+      if (profile.accountHolder !== undefined) payrollPayload.account_holder = profile.accountHolder || null;
+      if (profile.salaryType) payrollPayload.salary_type = profile.salaryType;
+      if (profile.baseSalary !== undefined) payrollPayload.base_salary = profile.baseSalary;
+      if (profile.unitIncentive !== undefined) payrollPayload.unit_incentive = profile.unitIncentive;
+      if (profile.incentiveRate !== undefined) payrollPayload.incentive_rate = profile.incentiveRate;
+      if (profile.dailyAllowance !== undefined) payrollPayload.daily_allowance = profile.dailyAllowance;
+      if (profile.bonusAllowance !== undefined) payrollPayload.bonus_allowance = profile.bonusAllowance;
+      if (profile.taxType) payrollPayload.tax_type = profile.taxType;
+
       const { error } = await supabase
         .from('agent_payroll_profiles')
-        .upsert({
-          org_id: orgId,
-          user_id: profile.userId,
-          bank_name: profile.bankName || null,
-          account_number: profile.accountNumber || null,
-          account_holder: profile.accountHolder || null,
-          updated_at: now
-        }, { onConflict: 'org_id, user_id' });
+        .upsert(payrollPayload, { onConflict: 'org_id, user_id' });
 
       if (error) {
-        console.warn('[MemberHR] Payroll account sync warning:', error);
+        console.warn('[MemberHR] Payroll account & incentive sync warning:', error);
       }
     } catch (err) {
       console.warn('[MemberHR] Failed to sync account to Supabase:', err);

@@ -296,12 +296,36 @@ export const fetchAllPayrollProfiles = async (): Promise<Record<string, AgentPay
   }
 };
 
+/** 단일 상담원 급여 프로필 조회 */
+export const fetchAgentPayrollProfile = async (
+  userId: string
+): Promise<AgentPayrollProfile> => {
+  const all = await fetchAllPayrollProfiles();
+  if (all[userId]) return all[userId];
+
+  // 로컬 캐시 조회
+  try {
+    const raw = localStorage.getItem(`leadmaster_payroll_${userId}`);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+
+  return {
+    ...DEFAULT_PAYROLL_PROFILE,
+    userId
+  };
+};
+
 /** 상담원별 급여 프로필 저장 */
 export const saveAgentPayrollProfile = async (
   profile: AgentPayrollProfile
 ): Promise<void> => {
   const org = loadCachedOrg();
   if (!org?.orgId) throw new Error('조직 정보가 없습니다.');
+
+  // 로컬 캐시 저장
+  try {
+    localStorage.setItem(`leadmaster_payroll_${profile.userId}`, JSON.stringify(profile));
+  } catch {}
 
   const payload = {
     org_id: org.orgId,

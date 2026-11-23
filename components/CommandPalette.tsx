@@ -115,10 +115,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)}>
                     <motion.div
                         onClick={e => e.stopPropagation()}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                        initial={{ opacity: 0, scale: 0.96, y: -8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow-2xl border border-border overflow-hidden"
                     >
                         <Command
                             className="w-full"
@@ -130,23 +131,23 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                 }
                             }}
                         >
-                            <div className="flex items-center border-b border-gray-100 dark:border-gray-700 px-4">
+                            <div className="flex items-center border-b border-border px-4 py-0.5 bg-card">
                                 {page !== 'root' && (
                                     <button
                                         onClick={() => {
                                             if (page === 'status-select') setPage('status-case-select');
                                             else setPage('root');
                                         }}
-                                        className="mr-2 p-1 hover:bg-gray-100 rounded text-gray-500"
+                                        className="mr-2 p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
                                     >
                                         <ChevronLeftIcon />
                                     </button>
                                 )}
-                                <Search className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
+                                <Search className="w-5 h-5 text-muted-foreground mr-3 shrink-0" />
                                 <Command.Input
                                     value={search}
                                     onValueChange={setSearch}
-                                    className="w-full p-4 bg-transparent outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400"
+                                    className="w-full py-4 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-sans"
                                     placeholder={
                                         page === 'root' ? "검색할 내용을 입력하세요 (고객명, 전화번호, 기능)..." :
                                             page === 'status-case-select' ? "상태를 변경할 고객을 검색..." :
@@ -154,63 +155,73 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                     }
                                 />
                             </div>
-                            <Command.List className="max-h-[60vh] overflow-y-auto p-2 scrollbar-hide">
-                                <Command.Empty className="p-4 text-center text-gray-500">검색 결과가 없습니다.</Command.Empty>
+                            <Command.List className="max-h-[60vh] overflow-y-auto p-2.5 scrollbar-hide space-y-1">
+                                <Command.Empty className="py-12 text-center text-xs font-mono text-muted-foreground">검색 결과가 없습니다.</Command.Empty>
 
                                 {page === 'root' && (
                                     <>
-                                        <Command.Group heading="빠른 실행" className="text-xs font-semibold text-gray-500 mb-2 px-2">
+                                        <Command.Group heading="빠른 실행" className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 px-2 font-mono">
                                             <Command.Item
                                                 onSelect={() => {
                                                     setPage('status-case-select');
                                                     setSearch('');
                                                 }}
-                                                className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 data-[selected=true]:text-blue-600"
+                                                className="group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors text-foreground hover:bg-muted/50 data-[selected=true]:bg-primary/15 data-[selected=true]:text-primary border border-transparent data-[selected=true]:border-primary/25"
                                             >
-                                                <div className="bg-orange-100 p-1.5 rounded mr-3 text-orange-600"><Zap size={16} /></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-medium">상태 빠른 변경</span>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400">검색 없이 즉시 사건 상태 업데이트</span>
+                                                <div className="w-7 h-7 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                                    <Zap size={15} />
                                                 </div>
-                                                <ChevronRight className="ml-auto w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-sm font-medium">상태 빠른 변경</span>
+                                                    <span className="text-xs text-muted-foreground font-mono">검색 없이 즉시 사건 상태 업데이트</span>
+                                                </div>
+                                                <ChevronRight className="ml-auto w-4 h-4 text-muted-foreground" />
                                             </Command.Item>
                                         </Command.Group>
 
-                                        <Command.Group heading="페이지 이동" className="text-xs font-semibold text-gray-500 mb-2 px-2">
+                                        <Command.Group heading="페이지 이동" className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 px-2 font-mono mt-2">
                                             <Command.Item
                                                 onSelect={() => runCommand(() => navigate('/'))}
-                                                className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 data-[selected=true]:text-blue-600"
+                                                className="group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors text-foreground hover:bg-muted/50 data-[selected=true]:bg-primary/15 data-[selected=true]:text-primary border border-transparent data-[selected=true]:border-primary/25"
                                             >
-                                                <div className="bg-blue-100 p-1.5 rounded mr-3 text-blue-600"><Calculator size={16} /></div>
+                                                <div className="w-7 h-7 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                                                    <Calculator size={15} />
+                                                </div>
                                                 <span className="text-sm font-medium">대시보드</span>
                                             </Command.Item>
                                             <Command.Item
                                                 onSelect={() => runCommand(() => navigate('/cases'))}
-                                                className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 data-[selected=true]:text-blue-600"
+                                                className="group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors text-foreground hover:bg-muted/50 data-[selected=true]:bg-primary/15 data-[selected=true]:text-primary border border-transparent data-[selected=true]:border-primary/25"
                                             >
-                                                <div className="bg-purple-100 p-1.5 rounded mr-3 text-purple-600"><FileText size={16} /></div>
+                                                <div className="w-7 h-7 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                                                    <FileText size={15} />
+                                                </div>
                                                 <span className="text-sm font-medium">케이스 관리</span>
                                             </Command.Item>
                                             <Command.Item
                                                 onSelect={() => runCommand(() => navigate('/new'))}
-                                                className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 data-[selected=true]:text-blue-600"
+                                                className="group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors text-foreground hover:bg-muted/50 data-[selected=true]:bg-primary/15 data-[selected=true]:text-primary border border-transparent data-[selected=true]:border-primary/25"
                                             >
-                                                <div className="bg-green-100 p-1.5 rounded mr-3 text-green-600"><User size={16} /></div>
+                                                <div className="w-7 h-7 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                                    <User size={15} />
+                                                </div>
                                                 <span className="text-sm font-medium">신규 접수 등록</span>
                                             </Command.Item>
                                         </Command.Group>
 
-                                        <Command.Group heading="최근 고객" className="text-xs font-semibold text-gray-500 mb-2 px-2 mt-2">
+                                        <Command.Group heading="최근 고객" className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 px-2 font-mono mt-2">
                                             {cases.slice(0, 5).map(c => (
                                                 <Command.Item
                                                     key={c.caseId}
                                                     onSelect={() => runCommand(() => navigate(`/case/${c.caseId}`))}
-                                                    className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 data-[selected=true]:text-blue-600"
+                                                    className="group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors text-foreground hover:bg-muted/50 data-[selected=true]:bg-primary/15 data-[selected=true]:text-primary border border-transparent data-[selected=true]:border-primary/25"
                                                 >
-                                                    <div className="bg-gray-100 dark:bg-gray-700 p-1.5 rounded mr-3 text-gray-600 dark:text-gray-300"><User size={16} /></div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{c.customerName}</span>
-                                                        <span className="text-xs text-gray-500">{c.phone} | {c.status}</span>
+                                                    <div className="w-7 h-7 rounded-md bg-muted text-muted-foreground border border-border flex items-center justify-center shrink-0">
+                                                        <User size={15} />
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-sm font-medium">{c.customerName}</span>
+                                                        <span className="text-xs text-muted-foreground font-mono">{c.phone} · {c.status}</span>
                                                     </div>
                                                 </Command.Item>
                                             ))}
@@ -219,7 +230,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                 )}
 
                                 {page === 'status-case-select' && (
-                                    <Command.Group heading="고객 선택 (상태 변경)" className="text-xs font-semibold text-gray-500 mb-2 px-2">
+                                    <Command.Group heading="고객 선택 (상태 변경)" className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 px-2 font-mono">
                                         {filteredCases.slice(0, 20).map(c => (
                                             <Command.Item
                                                 key={'status-' + c.caseId}
@@ -228,40 +239,44 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                     setPage('status-select');
                                                     setSearch('');
                                                 }}
-                                                className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 data-[selected=true]:text-blue-600"
+                                                className="group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors text-foreground hover:bg-muted/50 data-[selected=true]:bg-primary/15 data-[selected=true]:text-primary border border-transparent data-[selected=true]:border-primary/25"
                                             >
-                                                <div className="bg-gray-100 dark:bg-gray-700 p-1.5 rounded mr-3 text-gray-600 dark:text-gray-300"><User size={16} /></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{c.customerName}</span>
-                                                    <span className="text-xs text-gray-500">{c.phone} | 현재: {c.status}</span>
+                                                <div className="w-7 h-7 rounded-md bg-muted text-muted-foreground border border-border flex items-center justify-center shrink-0">
+                                                    <User size={15} />
                                                 </div>
-                                                <ChevronRight className="ml-auto w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-sm font-medium">{c.customerName}</span>
+                                                    <span className="text-xs text-muted-foreground font-mono">{c.phone} · 현재: {c.status}</span>
+                                                </div>
+                                                <ChevronRight className="ml-auto w-4 h-4 text-muted-foreground" />
                                             </Command.Item>
                                         ))}
                                     </Command.Group>
                                 )}
 
                                 {page === 'status-select' && (
-                                    <Command.Group heading="변경할 상태 선택" className="text-xs font-semibold text-gray-500 mb-2 px-2">
+                                    <Command.Group heading="변경할 상태 선택" className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 px-2 font-mono">
                                         {statuses.filter(s => s !== '휴지통').map(status => (
                                             <Command.Item
                                                 key={status}
                                                 onSelect={() => handleStatusUpdate(status)}
-                                                className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 data-[selected=true]:text-blue-600"
+                                                className="group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors text-foreground hover:bg-muted/50 data-[selected=true]:bg-primary/15 data-[selected=true]:text-primary border border-transparent data-[selected=true]:border-primary/25"
                                             >
-                                                <div className="bg-gray-100 p-1.5 rounded mr-3 text-gray-600"><CheckCircle size={16} /></div>
-                                                <span className="text-sm font-medium text-gray-800">{status}</span>
+                                                <div className="w-7 h-7 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                                                    <CheckCircle size={15} />
+                                                </div>
+                                                <span className="text-sm font-medium">{status}</span>
                                             </Command.Item>
                                         ))}
                                     </Command.Group>
                                 )}
 
                             </Command.List>
-                            <div className="border-t border-gray-100 dark:border-gray-700 p-2 px-4 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
-                                <span>선택: ↵</span>
-                                <span>이동: ↑↓</span>
-                                <span>뒤로: Bksp</span>
-                                <span>닫기: ESC</span>
+                            <div className="border-t border-border p-2.5 px-4 flex justify-between items-center text-xs text-muted-foreground bg-muted/30 font-mono">
+                                <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-2xs font-semibold">↵</kbd> 선택</span>
+                                <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-2xs font-semibold">↑↓</kbd> 이동</span>
+                                <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-2xs font-semibold">Bksp</kbd> 뒤로</span>
+                                <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-2xs font-semibold">ESC</kbd> 닫기</span>
                             </div>
                         </Command>
                     </motion.div>
