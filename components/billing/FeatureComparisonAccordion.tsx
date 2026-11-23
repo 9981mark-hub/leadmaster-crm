@@ -20,7 +20,7 @@ interface FeatureCategory {
 const COMPARISON_DATA: FeatureCategory[] = [
   {
     categoryName: 'CTI & 모바일 다이얼러',
-    icon: <Headphones size={16} className="text-blue-500" />,
+    icon: <Headphones size={16} className="text-primary" />,
     features: [
       {
         name: '안드로이드 1초 1콜 초고속 자동 다이얼러',
@@ -66,7 +66,7 @@ const COMPARISON_DATA: FeatureCategory[] = [
   },
   {
     categoryName: 'AI 채무진단 & 트레이닝',
-    icon: <Cpu size={16} className="text-indigo-500" />,
+    icon: <Cpu size={16} className="text-primary" />,
     features: [
       {
         name: 'Gemini AI 실시간 통화 대화록 & 채무진단',
@@ -96,7 +96,7 @@ const COMPARISON_DATA: FeatureCategory[] = [
   },
   {
     categoryName: '조직 관리 & 보안 & 배분',
-    icon: <Users size={16} className="text-emerald-500" />,
+    icon: <Users size={16} className="text-primary" />,
     features: [
       {
         name: '팀별 실적 대시보드 & 팀장 권한 분리',
@@ -142,7 +142,7 @@ const COMPARISON_DATA: FeatureCategory[] = [
   },
   {
     categoryName: '인프라 & 전담 고객 지원',
-    icon: <Shield size={16} className="text-amber-500" />,
+    icon: <Shield size={16} className="text-primary" />,
     features: [
       {
         name: '기본 기술 지원 (이메일 & 채널톡)',
@@ -192,34 +192,34 @@ export const FeatureComparisonAccordion: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+    <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs overflow-hidden transition-colors">
       {/* Accordion Trigger Header */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors cursor-pointer"
+        className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-muted/40 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-            <Layers size={20} />
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-2xs">
+            <Layers size={20} strokeWidth={1.75} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+              <span className="text-xs font-semibold text-primary">
                 1:1 스펙 대조
               </span>
-              <span className="text-xs text-slate-400 dark:text-slate-500">•</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                Notion/Stripe 스타일 전체 기능 비교
+              <span className="text-xs text-muted-foreground">•</span>
+              <span className="text-xs text-muted-foreground">
+                전체 기능 상세 매트릭스
               </span>
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+            <h3 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
               모든 플랜별 전체 기능 상세 비교 매트릭스
             </h3>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground">
           <span>{isOpen ? '비교표 접기' : '모든 기능 자세히 비교하기'}</span>
           {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </div>
@@ -227,25 +227,25 @@ export const FeatureComparisonAccordion: React.FC = () => {
 
       {/* Accordion Content Table */}
       {isOpen && (
-        <div className="border-t border-slate-200 dark:border-slate-800 overflow-x-auto animate-fadeIn">
+        <div className="border-t border-border overflow-x-auto animate-fadeIn">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-850/80 border-b border-slate-200 dark:border-slate-800">
-                <th className="p-4 font-bold text-slate-700 dark:text-slate-300 w-2/5">기능 명세</th>
-                <th className="p-4 font-bold text-center text-slate-700 dark:text-slate-300 w-[15%]">스타터</th>
-                <th className="p-4 font-bold text-center text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20 w-[15%]">
+              <tr className="bg-muted/40 border-b border-border">
+                <th className="p-4 font-bold text-foreground w-2/5">기능 명세</th>
+                <th className="p-4 font-bold text-center text-muted-foreground w-[15%]">스타터</th>
+                <th className="p-4 font-bold text-center text-primary bg-primary/10 border-x border-primary/20 w-[15%]">
                   비즈니스 ★
                 </th>
-                <th className="p-4 font-bold text-center text-slate-700 dark:text-slate-300 w-[15%]">프로</th>
-                <th className="p-4 font-bold text-center text-slate-700 dark:text-slate-300 w-[15%]">엔터프라이즈</th>
+                <th className="p-4 font-bold text-center text-muted-foreground w-[15%]">프로</th>
+                <th className="p-4 font-bold text-center text-muted-foreground w-[15%]">엔터프라이즈</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-border/60">
               {COMPARISON_DATA.map((cat, catIdx) => (
                 <React.Fragment key={catIdx}>
                   {/* Category Header Row */}
-                  <tr className="bg-slate-100/60 dark:bg-slate-800/60 font-bold text-slate-800 dark:text-slate-200">
-                    <td colSpan={5} className="py-2.5 px-4 flex items-center gap-2 text-xs font-extrabold">
+                  <tr className="bg-muted/60 font-bold text-foreground border-y border-border">
+                    <td colSpan={5} className="py-2.5 px-4 flex items-center gap-2 text-xs font-extrabold text-foreground">
                       {cat.icon}
                       <span>{cat.categoryName}</span>
                     </td>
@@ -253,12 +253,12 @@ export const FeatureComparisonAccordion: React.FC = () => {
 
                   {/* Feature Rows */}
                   {cat.features.map((item, fIdx) => (
-                    <tr key={fIdx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                    <tr key={fIdx} className="hover:bg-muted/30 transition-colors">
                       <td className="p-4">
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">
+                        <div className="font-semibold text-foreground">
                           {item.name}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
                           {item.description}
                         </div>
                       </td>
@@ -266,44 +266,44 @@ export const FeatureComparisonAccordion: React.FC = () => {
                       {/* Starter */}
                       <td className="p-4 text-center">
                         {typeof item.starter === 'string' ? (
-                          <span className="font-bold text-slate-700 dark:text-slate-300">{item.starter}</span>
+                          <span className="font-bold text-foreground font-mono">{item.starter}</span>
                         ) : item.starter ? (
-                          <Check size={16} className="text-blue-600 dark:text-blue-400 mx-auto" />
+                          <Check size={16} className="text-primary mx-auto" strokeWidth={2.5} />
                         ) : (
-                          <X size={16} className="text-slate-300 dark:text-slate-600 mx-auto" />
+                          <X size={16} className="text-muted-foreground/30 mx-auto" />
                         )}
                       </td>
 
-                      {/* Business */}
-                      <td className="p-4 text-center bg-blue-50/30 dark:bg-blue-950/10">
+                      {/* Business (추천 열 강조) */}
+                      <td className="p-4 text-center bg-primary/5 border-x border-primary/20">
                         {typeof item.business === 'string' ? (
-                          <span className="font-bold text-blue-700 dark:text-blue-300">{item.business}</span>
+                          <span className="font-bold text-primary font-mono">{item.business}</span>
                         ) : item.business ? (
-                          <Check size={16} className="text-blue-600 dark:text-blue-400 mx-auto" />
+                          <Check size={16} className="text-primary mx-auto" strokeWidth={2.5} />
                         ) : (
-                          <X size={16} className="text-slate-300 dark:text-slate-600 mx-auto" />
+                          <X size={16} className="text-muted-foreground/30 mx-auto" />
                         )}
                       </td>
 
                       {/* Pro */}
                       <td className="p-4 text-center">
                         {typeof item.pro === 'string' ? (
-                          <span className="font-bold text-slate-700 dark:text-slate-300">{item.pro}</span>
+                          <span className="font-bold text-foreground font-mono">{item.pro}</span>
                         ) : item.pro ? (
-                          <Check size={16} className="text-blue-600 dark:text-blue-400 mx-auto" />
+                          <Check size={16} className="text-primary mx-auto" strokeWidth={2.5} />
                         ) : (
-                          <X size={16} className="text-slate-300 dark:text-slate-600 mx-auto" />
+                          <X size={16} className="text-muted-foreground/30 mx-auto" />
                         )}
                       </td>
 
                       {/* Enterprise */}
                       <td className="p-4 text-center">
                         {typeof item.enterprise === 'string' ? (
-                          <span className="font-bold text-indigo-700 dark:text-indigo-300">{item.enterprise}</span>
+                          <span className="font-bold text-foreground font-mono">{item.enterprise}</span>
                         ) : item.enterprise ? (
-                          <Check size={16} className="text-indigo-600 dark:text-indigo-400 mx-auto" />
+                          <Check size={16} className="text-primary mx-auto" strokeWidth={2.5} />
                         ) : (
-                          <X size={16} className="text-slate-300 dark:text-slate-600 mx-auto" />
+                          <X size={16} className="text-muted-foreground/30 mx-auto" />
                         )}
                       </td>
                     </tr>
