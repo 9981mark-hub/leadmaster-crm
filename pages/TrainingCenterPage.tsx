@@ -1546,37 +1546,41 @@ export default function TrainingCenterPage() {
           </div>
         ) : (
           /* 👔 관리자(대표·총괄·팀장) 전용 코칭 대시보드 뷰 */
-          <div className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-700">
-              <div>
-                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-amber-500" />
-                  {canViewAll ? '👔 [전사 총괄 관제] 상담원 모의 훈련 평가 & 코칭 허브' : `👔 [${myTeam} 전용] 소속 상담원 훈련 평가 & 코칭 허브`}
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {canViewAll
-                    ? '전사 모든 팀 상담원들의 실전 모의 통화 녹취록과 인계 채점표를 모니터링하고 피드백을 총괄합니다.'
-                    : `${myTeam} 팀원들이 수행한 실전 모의 통화 녹취록과 채점표를 열람하고 팀장 피드백 및 평가 등급(S/A/B/C/F)을 부여합니다.`}
-                </p>
+          <div className="p-5 sm:p-6 rounded-xl bg-card border border-border shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                  <UserCheck className="w-5 h-5" strokeWidth={1.75} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-foreground">
+                    {canViewAll ? '[전사 총괄 관제] 상담원 모의 훈련 평가 & 코칭 허브' : `[${myTeam} 전용] 소속 상담원 훈련 평가 & 코칭 허브`}
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {canViewAll
+                      ? '전사 모든 팀 상담원들의 실전 모의 통화 녹취록과 인계 채점표를 모니터링하고 피드백을 총괄합니다.'
+                      : `${myTeam} 팀원들이 수행한 실전 모의 통화 녹취록과 채점표를 열람하고 팀장 피드백 및 평가 등급(S/A/B/C/F)을 부여합니다.`}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2.5 shrink-0">
                 {(isOwner || trainingPerms.canManageConfig) && (
                   <button
                     onClick={() => setShowConfigModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-card border border-border hover:bg-muted text-foreground hover:border-primary/40 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                   >
-                    <Settings className="w-4 h-4" />
+                    <Settings className="w-4 h-4 text-primary" strokeWidth={1.75} />
                     <span>훈련 정책 & 첫인사 설정</span>
                   </button>
                 )}
-                <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border px-3 py-2 rounded-xl">
+                <span className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-3 py-2 rounded-xl font-mono tabular-nums">
                   총 {adminSessions.length}건 기록
                 </span>
               </div>
             </div>
 
             {/* 필터 툴바 */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-muted/30 rounded-xl border border-border">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-muted/40 rounded-xl border border-border">
               <div className="flex items-center gap-3">
                 {canViewAll ? (
                   <div className="flex items-center gap-1.5">
@@ -1585,7 +1589,7 @@ export default function TrainingCenterPage() {
                     <select
                       value={selectedTeamFilter}
                       onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                      className="text-xs px-2.5 py-1.5 rounded-lg border border-input bg-background text-foreground outline-none focus:ring-1 focus:ring-primary"
+                      className="text-xs px-2.5 py-1.5 rounded-lg border border-input bg-background text-foreground outline-none focus:ring-1 focus:ring-primary cursor-pointer font-medium"
                     >
                       <option value="all">전체 팀 (전사)</option>
                       <option value="1팀">1팀</option>
@@ -1609,14 +1613,14 @@ export default function TrainingCenterPage() {
                   placeholder="상담원명 또는 고객명 검색..."
                   value={searchAgentName}
                   onChange={(e) => setSearchAgentName(e.target.value)}
-                  className="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-56 sm:w-64"
                 />
               </div>
             </div>
 
             {adminSessions.length === 0 ? (
               <div className="py-16 text-center text-muted-foreground space-y-2">
-                <UserCheck className="w-12 h-12 mx-auto stroke-1 text-muted-foreground" />
+                <UserCheck className="w-12 h-12 mx-auto stroke-1 text-muted-foreground/40" />
                 <p className="text-sm font-semibold text-foreground">조건에 맞는 모의 훈련 세션이 없습니다.</p>
                 <p className="text-xs text-muted-foreground">상담원이 모의 통화를 완료하면 자동으로 이곳에 시험 결과가 축적됩니다.</p>
               </div>
@@ -1624,7 +1628,7 @@ export default function TrainingCenterPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-muted/40 border-b border-border text-muted-foreground font-semibold">
+                    <tr className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
                       <th className="py-3 px-4">훈련 일시</th>
                       <th className="py-3 px-4">소속 팀</th>
                       <th className="py-3 px-4">상담원</th>
@@ -1639,35 +1643,53 @@ export default function TrainingCenterPage() {
                   <tbody className="divide-y divide-border">
                     {adminSessions.map(record => (
                       <tr key={record.sessionId} className="hover:bg-muted/30 transition-colors">
-                        <td className="py-3 px-4 text-muted-foreground font-mono">
+                        <td className="py-3 px-4 text-muted-foreground font-mono text-2xs tabular-nums whitespace-nowrap">
                           {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-muted text-foreground border border-border">
+                          <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground border border-border font-mono">
                             {record.teamName || '1팀'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-foreground">
+                        <td className="py-3 px-4 font-semibold text-foreground whitespace-nowrap">
                           {record.agentName || '신입 상담원'}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="font-semibold text-foreground">
-                            {record.personaName || '가상 고객'}
-                          </span>
-                          <span className="ml-1.5 px-2 py-0.5 rounded text-2xs bg-primary/10 text-primary border border-primary/20 font-semibold">
-                            {record.categoryTitle || '모의'}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-foreground">
+                              {record.personaName || '가상 고객'}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-2xs bg-muted text-muted-foreground border border-border font-medium">
+                              {record.categoryTitle || '모의'}
+                            </span>
+                          </div>
                         </td>
-                        <td className="py-3 px-4 text-muted-foreground font-mono tabular-nums">
+                        <td className="py-3 px-4 text-muted-foreground font-mono tabular-nums text-2xs whitespace-nowrap">
                           {Math.floor(record.durationSeconds / 60)}분 {record.durationSeconds % 60}초 ({record.totalTurns}턴)
                         </td>
-                        <td className="py-3 px-4 font-bold font-mono text-primary tabular-nums">
-                          {record.report.totalScore}점
+                        <td className="py-3 px-4 font-mono tabular-nums whitespace-nowrap">
+                          {record.report.totalScore >= 70 ? (
+                            <span className="font-bold text-primary">{record.report.totalScore}점</span>
+                          ) : record.report.totalScore > 0 ? (
+                            <span className="font-medium text-foreground">{record.report.totalScore}점</span>
+                          ) : (
+                            <span className="text-muted-foreground">0점</span>
+                          )}
                         </td>
-                        <td className="py-3 px-4 font-semibold font-mono text-primary tabular-nums">
-                          {record.report.paralegalCard ? `${record.report.paralegalCard.handoffScore}점` : '-'}
+                        <td className="py-3 px-4 font-mono tabular-nums whitespace-nowrap">
+                          {record.report.paralegalCard ? (
+                            record.report.paralegalCard.handoffScore >= 50 ? (
+                              <span className="font-bold text-primary">{record.report.paralegalCard.handoffScore}점</span>
+                            ) : record.report.paralegalCard.handoffScore > 0 ? (
+                              <span className="font-medium text-foreground">{record.report.paralegalCard.handoffScore}점</span>
+                            ) : (
+                              <span className="text-muted-foreground">0점</span>
+                            )
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 whitespace-nowrap">
                           {record.adminFeedback ? (
                             <span className={`px-2 py-0.5 rounded font-black text-xs ${
                               record.adminFeedback.grade === 'S' ? 'bg-primary/20 text-primary border border-primary/30' :
@@ -1679,10 +1701,10 @@ export default function TrainingCenterPage() {
                               {record.adminFeedback.grade}등급
                             </span>
                           ) : (
-                            <span className="text-muted-foreground text-xs">미평가</span>
+                            <span className="text-muted-foreground text-2xs font-medium px-2 py-0.5 rounded bg-muted/60 border border-border/80">미평가</span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
                           <button
                             onClick={() => {
                               setSelectedAdminSession(record);
@@ -1690,13 +1712,13 @@ export default function TrainingCenterPage() {
                               setCurrentSessionRecord(record);
                               setShowModal(true);
                             }}
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-2xs ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-2xs ${
                               record.adminFeedback
-                                ? 'bg-muted hover:bg-muted/80 text-foreground border border-border'
-                                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                ? 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border'
+                                : 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25'
                             }`}
                           >
-                            {record.adminFeedback ? '코칭 리포트 열람' : '피드백 작성'}
+                            {record.adminFeedback ? '코칭 리포트 열람' : '✍️ 피드백 작성'}
                           </button>
                         </td>
                       </tr>
@@ -2151,22 +2173,22 @@ export default function TrainingCenterPage() {
                         }}
                         className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 dark:border-blue-500 shadow-sm ring-1 ring-blue-500'
-                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                            ? 'bg-primary/10 border-primary shadow-2xs ring-1 ring-primary/40'
+                            : 'bg-card border-border hover:border-primary/40'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                          <span className="font-bold text-foreground flex items-center gap-1.5">
                             {persona.badge}
                           </span>
-                          <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                          <span className="text-2xs font-mono text-muted-foreground">
                             {persona.speechOptions.gender === 'female' ? '여성 성우' : '남성 성우'}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">
+                        <p className="text-xs font-medium text-foreground mb-1">
                           {persona.title}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug line-clamp-2">
+                        <p className="text-2xs text-muted-foreground leading-relaxed line-clamp-2">
                           {persona.scenarioDescription}
                         </p>
                       </div>
@@ -2682,19 +2704,19 @@ export default function TrainingCenterPage() {
                 </div>
 
                 {/* Bottom Input & Speech Controls */}
-                <div className="p-2.5 bg-gray-50 dark:bg-gray-900/80 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
+                <div className="p-2.5 bg-muted/40 border-t border-border flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => toggleMicrophone()}
                     disabled={callState === 'calling'}
-                    className={`p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 ${
+                    className={`p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer ${
                       callState === 'connected'
                         ? isMicActive
-                          ? 'bg-red-500 text-white shadow-md shadow-red-500/30 animate-pulse'
-                          : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20'
+                          ? 'bg-destructive text-destructive-foreground shadow-md shadow-destructive/30 animate-pulse'
+                          : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs'
                         : isMicTesting
                         ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 animate-pulse'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-100/40 dark:bg-blue-950/40 hover:text-blue-600 hover:border-blue-400'
+                        : 'bg-card text-foreground border border-border hover:bg-muted hover:border-primary/40'
                     } disabled:opacity-40 disabled:cursor-not-allowed`}
                     title={
                       callState === 'connected'
@@ -2735,13 +2757,13 @@ export default function TrainingCenterPage() {
                         : '통화 시작 후 자동으로 실시간 대화가 진행됩니다'
                     }
                     disabled={callState !== 'connected' || isAiReplying}
-                    className="flex-1 px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-900"
+                    className="flex-1 px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
                   />
 
                   <button
                     onClick={() => handleSendAgentMessage(inputText)}
                     disabled={!inputText.trim() || callState !== 'connected' || isAiReplying}
-                    className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -2749,12 +2771,12 @@ export default function TrainingCenterPage() {
               </div>
 
               {/* Right Panel (5 Cols): Live Paralegal Checklist & Sandbox Memo */}
-              <div className="md:col-span-5 flex flex-col h-[520px] rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs overflow-hidden">
-                <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-400">
-                    <ShieldCheck className="w-4 h-4" /> {trainingMode === 'inbound_lead' ? '광고신청건 7대 심층 문진' : '사무장 인계 7대 문진'}
+              <div className="md:col-span-5 flex flex-col h-[520px] rounded-xl bg-card border border-border shadow-xs overflow-hidden">
+                <div className="px-4 py-2.5 bg-muted/40 border-b border-border text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-bold text-primary">
+                    <ShieldCheck className="w-4 h-4" strokeWidth={1.75} /> {trainingMode === 'inbound_lead' ? '광고신청건 7대 심층 문진' : '사무장 인계 7대 문진'}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-2xs font-mono text-muted-foreground font-semibold">
                     획득: {trainingMode === 'inbound_lead'
                       ? `${Object.values(inboundLiveChecklist).filter(Boolean).length}/7`
                       : `${Object.values(liveChecklist).filter(Boolean).length}/7`}
@@ -2763,8 +2785,8 @@ export default function TrainingCenterPage() {
 
                 <div className="flex-1 p-3.5 overflow-y-auto space-y-3 text-xs">
                   {/* Live 7 Checkpoints Checklist */}
-                  <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
-                    <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 block mb-1">
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border space-y-1.5">
+                    <span className="text-2xs font-bold text-foreground block mb-1">
                       {trainingMode === 'inbound_lead'
                         ? '온라인 신청내역 검증 및 문진 완료 시 체크:'
                         : '통화 중 문진 완료 시 체크하세요:'}
@@ -2785,34 +2807,24 @@ export default function TrainingCenterPage() {
                         ? (inboundLiveChecklist as any)[item.key]
                         : (liveChecklist as any)[item.key];
                       return (
-                        <div
-                          key={item.key}
-                          onClick={() => {
-                            if (trainingMode === 'inbound_lead') {
-                              setInboundLiveChecklist(prev => ({ ...prev, [item.key]: !checked }));
-                            } else {
-                              setLiveChecklist(prev => ({ ...prev, [item.key]: !checked }));
-                            }
-                          }}
-                          className={`flex items-start gap-2 p-1.5 rounded-lg cursor-pointer transition-colors text-xs ${
-                            checked
-                              ? 'bg-emerald-100/70 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold'
-                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          {checked ? (
-                            <CheckSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                          ) : (
-                            <Square className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
-                          )}
-                          <div className="flex-1">
-                            <div>{item.label}</div>
-                            {item.desc && (
-                              <div className="text-[9.5px] font-normal text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-0.5">
-                                {item.desc}
-                              </div>
-                            )}
-                          </div>
+                        <div key={item.key} className="flex items-center justify-between py-0.5">
+                          <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
+                            <input
+                              type="checkbox"
+                              checked={!!checked}
+                              onChange={e => {
+                                if (trainingMode === 'inbound_lead') {
+                                  setInboundLiveChecklist(prev => ({ ...prev, [item.key]: e.target.checked }));
+                                } else {
+                                  setLiveChecklist(prev => ({ ...prev, [item.key]: e.target.checked }));
+                                }
+                              }}
+                              className="accent-primary"
+                            />
+                            <span className={checked ? 'line-through text-muted-foreground' : 'text-foreground'}>
+                              {item.label}
+                            </span>
+                          </label>
                         </div>
                       );
                     })}
@@ -2820,12 +2832,12 @@ export default function TrainingCenterPage() {
 
                   {/* 🤝 7대 문진 완료 후 사무장 인계 브릿지 추천 멘트 */}
                   {trainingMode === 'cold_call' && trainingConfig.outbound?.closingHandoverScript && (
-                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-1">
-                      <div className="flex items-center gap-1.5 font-bold text-emerald-900 dark:text-emerald-200 text-xs">
-                        <PhoneForwarded className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-primary text-xs">
+                        <PhoneForwarded className="w-3.5 h-3.5" />
                         <span>사무장 직통 인계 추천 클로징 화법</span>
                       </div>
-                      <p className="text-xs text-emerald-950 dark:text-emerald-100 font-medium leading-relaxed bg-white/70 dark:bg-gray-900/60 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
+                      <p className="text-2xs text-foreground font-medium leading-relaxed bg-background/80 p-2 rounded-lg border border-border">
                         💬 "{interpolateOpeningScript(trainingConfig.outbound.closingHandoverScript, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName, 'cold_call')}"
                       </p>
                     </div>
@@ -2833,7 +2845,7 @@ export default function TrainingCenterPage() {
 
                   {/* Real-time Memo Textarea */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-2xs font-bold text-foreground mb-1">
                       사무장 전달용 실시간 메모
                     </label>
                     <textarea
@@ -2841,19 +2853,46 @@ export default function TrainingCenterPage() {
                       value={agentMemo}
                       onChange={e => setAgentMemo(e.target.value)}
                       placeholder="고객 핵심 문진 내용 (소득, 빚 원인, 보증금 등)을 적으세요."
-                      className="w-full p-2.5 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:ring-1 focus:ring-primary outline-none leading-relaxed"
+                    />
+                  </div>
+
+                  {/* 🤝 7대 문진 완료 후 사무장 인계 브릿지 추천 멘트 */}
+                  {trainingMode === 'cold_call' && trainingConfig.outbound?.closingHandoverScript && (
+                    <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-primary text-xs">
+                        <PhoneForwarded className="w-3.5 h-3.5" />
+                        <span>사무장 직통 인계 추천 클로징 화법</span>
+                      </div>
+                      <p className="text-2xs text-foreground font-medium leading-relaxed bg-background/80 p-2 rounded-lg border border-border">
+                        💬 "{interpolateOpeningScript(trainingConfig.outbound.closingHandoverScript, trainingConfig, (user as any)?.name || '상담원', selectedPersona.customerName, 'cold_call')}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Real-time Memo Textarea */}
+                  <div>
+                    <label className="block text-2xs font-bold text-foreground mb-1">
+                      사무장 전달용 실시간 메모
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={agentMemo}
+                      onChange={e => setAgentMemo(e.target.value)}
+                      placeholder="고객 핵심 문진 내용 (소득, 빚 원인, 보증금 등)을 적으세요."
+                      className="w-full p-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:ring-1 focus:ring-primary outline-none leading-relaxed"
                     />
                   </div>
 
                   {/* Consultation Result Select */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-2xs font-bold text-foreground mb-1">
                       상담 처리 결과 (실습)
                     </label>
                     <select
                       value={consultationResult}
                       onChange={e => setConsultationResult(e.target.value)}
-                      className="w-full h-8 px-2.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-medium"
+                      className="w-full h-8 px-2.5 text-xs rounded-lg border border-input bg-background text-foreground font-medium outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                     >
                       <option value="사무장인계">🤝 사무장(전문가) 즉시 인계</option>
                       <option value="재통화예정">📞 재통화예정 (리마인더)</option>
@@ -2870,9 +2909,9 @@ export default function TrainingCenterPage() {
                       showToast('사무장 인계 메모가 임시 저장되었습니다.', 'success');
                       setTimeout(() => setIsMemoSaved(false), 2000);
                     }}
-                    className="w-full py-2 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-1.5 transition-colors"
+                    className="w-full py-2 rounded-xl text-xs font-semibold text-foreground bg-card hover:bg-muted border border-border flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                   >
-                    {isMemoSaved ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Save className="w-3.5 h-3.5" />}
+                    {isMemoSaved ? <Check className="w-3.5 h-3.5 text-primary" /> : <Save className="w-3.5 h-3.5" />}
                     {isMemoSaved ? '저장 완료' : '문진 메모 저장'}
                   </button>
                 </div>
