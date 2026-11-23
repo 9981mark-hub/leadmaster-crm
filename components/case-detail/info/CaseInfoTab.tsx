@@ -89,21 +89,37 @@ export const CaseInfoTab: React.FC<CaseInfoTabProps> = ({
         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_380px] gap-4 items-start">
             {/* 상담 메모 · 일정 (모바일은 먼저, PC는 오른쪽 고정 폭) */}
             <aside className="min-w-0 xl:order-2 space-y-3 xl:sticky xl:top-28">
-                <div className="bg-white dark:bg-gray-800 p-1 rounded-xl flex gap-1 border border-slate-200 dark:border-gray-700">
+                <div className="bg-card p-1 rounded-xl flex gap-1 border border-border shadow-2xs">
                     <button
                         type="button"
                         onClick={() => setRightPanelTab('reminders')}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'reminders' ? 'bg-white dark:bg-gray-900 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                            rightPanelTab === 'reminders' 
+                                ? 'bg-primary text-primary-foreground shadow-2xs' 
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                        }`}
                     >
-                        <CalendarClock size={13} /> 상담 메모 · 일정
-                        {reminders.length > 0 && <span className={`text-xs px-1.5 rounded-full ${rightPanelTab === 'reminders' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>{reminders.length}</span>}
+                        <CalendarClock size={13} strokeWidth={1.75} /> 
+                        <span>상담 메모 · 일정</span>
+                        {reminders.length > 0 && (
+                            <span className={`text-2xs font-mono px-1.5 py-0.2 rounded-full tabular-nums ${
+                                rightPanelTab === 'reminders' ? 'bg-black/20 text-white' : 'bg-muted text-foreground'
+                            }`}>
+                                {reminders.length}
+                            </span>
+                        )}
                     </button>
                     <button
                         type="button"
                         onClick={() => setRightPanelTab('ai')}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${rightPanelTab === 'ai' ? 'bg-white dark:bg-gray-900 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'}`}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                            rightPanelTab === 'ai' 
+                                ? 'bg-primary text-primary-foreground shadow-2xs' 
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                        }`}
                     >
-                        <Sparkles size={13} /> 녹음 직접 올려 요약
+                        <Sparkles size={13} strokeWidth={1.75} /> 
+                        <span>녹음 직접 올려 요약</span>
                     </button>
                 </div>
                 {rightPanelTab === 'reminders' ? (

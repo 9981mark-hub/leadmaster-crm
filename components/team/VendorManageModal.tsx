@@ -9,6 +9,7 @@ import {
   updateLeadVendor, deleteLeadVendor 
 } from '../../services/vendor';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 
 interface VendorManageModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
   onUpdated,
 }) => {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [vendors, setVendors] = useState<LeadVendor[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -132,7 +134,14 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`정말 거래처 '${name}'을(를) 삭제(비활성화)하시겠습니까?`)) return;
+    const ok = await confirm({
+      title: '거래처 삭제',
+      message: `정말 거래처 '${name}'을(를) 삭제(비활성화)하시겠습니까?`,
+      confirmText: '삭제',
+      cancelText: '취소',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await deleteLeadVendor(id);
       showToast(`거래처 '${name}'이(가) 삭제되었습니다.`, 'success');

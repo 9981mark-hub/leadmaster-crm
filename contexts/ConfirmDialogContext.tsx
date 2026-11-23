@@ -5,6 +5,7 @@ export interface ConfirmDialogOptions {
   title: string;
   message?: string | ReactNode;
   type?: AlertType;
+  variant?: 'default' | 'destructive' | 'danger';
   confirmText?: string;
   cancelText?: string;
 }
@@ -50,11 +51,18 @@ export const ConfirmDialogProvider: React.FC<{ children: ReactNode }> = ({ child
           resolve
         });
       } else {
+        const resolvedType: AlertType = options.type || (
+          options.variant === 'destructive' || options.variant === 'danger'
+            ? 'error'
+            : options.variant === 'default'
+            ? 'info'
+            : 'warning'
+        );
         setDialogState({
           isOpen: true,
           title: options.title,
           message: options.message,
-          type: options.type || 'warning',
+          type: resolvedType,
           confirmText: options.confirmText || '확인',
           cancelText: options.cancelText !== undefined ? options.cancelText : '취소',
           resolve

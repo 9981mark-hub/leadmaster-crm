@@ -191,14 +191,14 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
     };
 
     return (
-        <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-            <div className="flex justify-between items-center mb-3 gap-2">
-                <h3 className="font-bold text-purple-800 flex items-center gap-1.5 text-sm md:text-base whitespace-nowrap">
-                    <Sparkles size={16} className="flex-shrink-0 text-purple-600" />
+        <div className="bg-card text-card-foreground p-4 sm:p-5 rounded-2xl border border-border shadow-xs space-y-4">
+            <div className="flex justify-between items-center gap-2">
+                <h3 className="font-bold text-foreground flex items-center gap-2 text-sm sm:text-base whitespace-nowrap">
+                    <Sparkles size={16} className="shrink-0 text-primary" strokeWidth={2} />
                     <span>AI 상담 요약</span>
                 </h3>
 
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                     <input
                         type="file"
                         ref={audioInputRef}
@@ -207,33 +207,38 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                         onChange={onAudioFileSelect}
                     />
                     <button
+                        type="button"
                         onClick={triggerInput}
                         disabled={isFileUploading}
-                        className={"flex items-center gap-1 text-xs px-2.5 py-1.5 rounded border whitespace-nowrap " + (currentAudioFile ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-600 border-gray-300') + (isFileUploading ? ' opacity-50 cursor-not-allowed' : '')}
+                        className={"flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border whitespace-nowrap font-medium transition-colors shadow-2xs cursor-pointer " + 
+                            (currentAudioFile ? 'bg-primary/10 text-primary border-primary/30 font-bold' : 'bg-muted hover:bg-muted/80 text-foreground border-border') + 
+                            (isFileUploading ? ' opacity-50 cursor-not-allowed' : '')
+                        }
                     >
-                        <Mic size={13} className="flex-shrink-0" />
-                        <span>{isFileUploading ? '업로드중' : (currentAudioFile ? '파일 변경' : '녹음 업로드')}</span>
+                        <Mic size={13} className="shrink-0" />
+                        <span>{isFileUploading ? '업로드 중…' : (currentAudioFile ? '파일 변경' : '녹음 업로드')}</span>
                     </button>
 
                     <button
+                        type="button"
                         onClick={onGenerateAiSummary}
                         disabled={isAiLoading}
-                        className="flex items-center gap-1 text-xs bg-purple-600 text-white px-3 py-1.5 rounded font-bold hover:bg-purple-700 disabled:opacity-50 transition-colors shadow-sm whitespace-nowrap"
+                        className="flex items-center gap-1.5 text-xs bg-primary text-primary-foreground px-3.5 py-1.5 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-40 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
                     >
-                        {isAiLoading ? '분석 중...' : 'AI 분석'}
+                        {isAiLoading ? '분석 중…' : 'AI 분석'}
                     </button>
                 </div>
             </div>
 
             {/* Audio Player for Current or Selected with Ref seeking */}
             {(activeAudioUrl || currentAudioFile) && (
-                <div className="mb-4">
+                <div>
                     {isTempBlob ? (
-                        <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div className="text-xs text-muted-foreground bg-muted/40 border border-border rounded-xl p-3">
                             이 녹음은 예전에 브라우저 임시 주소로만 저장되어 서버에 원본이 없습니다. 원본 파일이 있으면 다시 올려 주세요.
                         </div>
                     ) : (activeAudioUrl && activeAudioUrl.includes('drive.google.com') && !playSrc) ? (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 p-3">녹음 여는 중…</div>
+                        <div className="text-xs text-muted-foreground p-3">녹음 여는 중…</div>
                     ) : (
                         <CustomAudioPlayer
                             ref={playerRef}
@@ -248,30 +253,43 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* Recording List (Archive) */}
             {archive.length > 0 && (
-                <div className="mb-4">
-                    <h4 className="text-xs font-bold text-gray-600 mb-2 flex items-center"><Archive size={12} className="mr-1" /> 녹음 아카이브</h4>
-                    <div className="space-y-1 max-h-32 overflow-y-auto no-scrollbar">
+                <div className="space-y-1.5">
+                    <h4 className="text-2xs font-mono font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Archive size={12} className="text-primary" /> 
+                        <span>녹음 아카이브</span>
+                    </h4>
+                    <div className="space-y-1 max-h-36 overflow-y-auto no-scrollbar">
                         {archive.map(rec => {
                             const isSelected = rec.url === activeAudioUrl;
                             return (
                                 <div
                                     key={rec.id}
-                                    className={`flex justify-between items-center p-2 rounded border text-xs transition-colors ${
-                                        isSelected ? 'bg-purple-100/70 border-purple-300 font-bold' : 'bg-white border-gray-200'
+                                    className={`flex justify-between items-center p-2 rounded-xl border text-xs transition-colors ${
+                                        isSelected 
+                                            ? 'bg-primary/10 border-primary/30 font-bold text-primary shadow-2xs' 
+                                            : 'bg-muted/30 border-border text-foreground hover:border-border/80'
                                     }`}
                                 >
                                     <div className="flex items-center gap-2 overflow-hidden cursor-pointer flex-1" onClick={() => onPlayRecording(rec)}>
                                         <PlayCircle
-                                            size={16}
-                                            className={isSelected ? "text-purple-600 flex-shrink-0" : "text-blue-500 flex-shrink-0"}
+                                            size={15}
+                                            className={isSelected ? "text-primary shrink-0" : "text-muted-foreground shrink-0"}
                                         />
-                                        <div className="truncate">
-                                            <span className={isSelected ? "text-purple-900" : "font-medium text-gray-800"}>{rec.filename}</span>
-                                            <span className="text-gray-500 dark:text-gray-400 text-xs ml-1">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
-                                            {(rec.aiCurrent || rec.aiSummary) && <span className="ml-1 text-xs px-1 rounded bg-purple-100 text-purple-700">요약{rec.aiCurrent ? ' 최근' : ''}</span>}
+                                        <div className="truncate flex items-center gap-1.5">
+                                            <span className={isSelected ? "text-primary" : "text-foreground font-medium"}>{rec.filename}</span>
+                                            <span className="text-2xs font-mono text-muted-foreground tabular-nums">{safeFormat(rec.uploadDate, 'yy.MM.dd HH:mm')}</span>
+                                            {(rec.aiCurrent || rec.aiSummary) && (
+                                                <span className="text-2xs px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20 font-semibold">
+                                                    요약{rec.aiCurrent ? ' 최근' : ''}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
-                                    <button onClick={() => onDeleteRecording(rec.id)} className="text-gray-500 dark:text-gray-400 hover:text-red-500 ml-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => onDeleteRecording(rec.id)}
+                                        className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors cursor-pointer"
+                                    >
                                         <X size={14} />
                                     </button>
                                 </div>
@@ -283,8 +301,8 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* 통화별 AI 요약 (지난 통화 요약이 있을 때만) */}
             {history.length > 1 && (
-                <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className="text-gray-500 font-semibold">통화별 요약</span>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="text-2xs font-mono font-semibold text-muted-foreground">통화별 요약:</span>
                     {history.map(h => {
                         const active = h.current ? !viewing : viewing?.id === h.id;
                         return (
@@ -292,40 +310,48 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                 key={h.id}
                                 type="button"
                                 onClick={() => setViewingId(h.current ? null : h.id)}
-                                className={`px-2 py-0.5 rounded-full border ${active ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'}`}
+                                className={`px-2.5 py-0.5 rounded-full text-2xs font-mono transition-colors cursor-pointer ${
+                                    active 
+                                        ? 'bg-primary text-primary-foreground font-bold shadow-2xs' 
+                                        : 'bg-muted text-muted-foreground border border-border hover:text-foreground'
+                                }`}
                             >
                                 {safeFormat(h.at, 'MM/dd HH:mm')}{h.current ? ' 최근' : ''}
                             </button>
                         );
                     })}
-                    {viewing && <span className="text-amber-700">지난 통화 요약을 보는 중 (수정 불가)</span>}
+                    {viewing && <span className="text-2xs text-amber-500 font-semibold">지난 통화 요약 열람 중 (수정 불가)</span>}
                 </div>
             )}
 
             {/* Sub Tabs: Summary vs Transcript */}
-            <div className="flex items-center justify-between border-b border-purple-200 mb-2 gap-1">
-                <div className="flex gap-1.5">
+            <div className="flex items-center justify-between border-b border-border pb-2 gap-1">
+                <div className="inline-flex rounded-lg border border-border p-0.5 bg-muted/60 text-xs">
                     <button
+                        type="button"
                         onClick={() => setActiveSubTab('summary')}
-                        className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold whitespace-nowrap rounded-t-lg transition-colors ${
+                        className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-colors cursor-pointer ${
                             activeSubTab === 'summary'
-                                ? 'bg-white text-purple-700 border-t border-l border-r border-purple-200 shadow-sm'
-                                : 'text-gray-500 hover:text-purple-600'
+                                ? 'bg-primary text-primary-foreground shadow-2xs'
+                                : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <FileText size={13} /> 요약문
+                        <FileText size={12} strokeWidth={2} />
+                        <span>요약문</span>
                     </button>
                     <button
+                        type="button"
                         onClick={() => setActiveSubTab('transcript')}
-                        className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold whitespace-nowrap rounded-t-lg transition-colors ${
+                        className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-colors cursor-pointer ${
                             activeSubTab === 'transcript'
-                                ? 'bg-white text-purple-700 border-t border-l border-r border-purple-200 shadow-sm'
-                                : 'text-gray-500 hover:text-purple-600'
+                                ? 'bg-primary text-primary-foreground shadow-2xs'
+                                : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <ListOrdered size={13} /> 대화록
+                        <ListOrdered size={12} strokeWidth={2} />
+                        <span>대화록</span>
                         {transcriptLines.length > 0 && (
-                            <span className="ml-1 px-1.5 py-0.2 bg-purple-100 text-purple-700 rounded-full text-xs">
+                            <span className="ml-1 px-1.5 py-0.2 bg-black/20 text-white rounded-full text-2xs font-mono">
                                 {transcriptLines.length}
                             </span>
                         )}
@@ -334,11 +360,12 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
                 {activeSubTab === 'transcript' && transcriptLines.length > 0 && (
                     <button
+                        type="button"
                         onClick={handleCopyTranscript}
-                        className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 px-2 py-1 rounded hover:bg-purple-100 transition-colors whitespace-nowrap shrink-0"
+                        className="flex items-center gap-1 text-2xs text-primary hover:text-primary/80 px-2.5 py-1 rounded-lg border border-primary/20 bg-primary/10 transition-colors cursor-pointer shrink-0"
                         title="전체 대화록 복사"
                     >
-                        {copiedTranscript ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                        {copiedTranscript ? <Check size={12} className="text-primary" /> : <Copy size={12} />}
                         <span>{copiedTranscript ? '복사됨' : '복사'}</span>
                     </button>
                 )}
@@ -346,31 +373,31 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* Tab 1: AI Summary Text */}
             {activeSubTab === 'summary' && (
-                <div className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm relative min-h-[80px]">
+                <div className="bg-muted/20 p-3.5 rounded-xl border border-border shadow-2xs relative min-h-[90px]">
                     {aiSummaryEditMode ? (
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                             <textarea
-                                className="w-full h-36 p-2 text-sm border border-purple-200 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 font-sans"
+                                className="w-full h-36 p-3 text-xs font-mono border border-input rounded-xl bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed resize-y"
                                 value={aiSummaryText || ''}
                                 onChange={e => setAiSummaryText(e.target.value)}
                             />
                             <div className="flex justify-end gap-2">
-                                <button onClick={handleUpdateAiSummaryText} className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">저장</button>
-                                <button onClick={() => setAiSummaryEditMode(false)} className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">취소</button>
+                                <button type="button" onClick={handleUpdateAiSummaryText} className="text-xs font-semibold bg-primary text-primary-foreground px-3.5 py-1.5 rounded-lg hover:bg-primary/90 shadow-2xs cursor-pointer">저장</button>
+                                <button type="button" onClick={() => setAiSummaryEditMode(false)} className="text-xs bg-muted text-foreground border border-border px-3.5 py-1.5 rounded-lg hover:bg-muted/80 shadow-2xs cursor-pointer">취소</button>
                             </div>
                         </div>
                     ) : (
                         <div className="group">
-                            <div className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewing ? 'hidden' : ''}`}>
-                                <button onClick={() => setAiSummaryEditMode(true)} className="p-1 text-blue-500 hover:bg-blue-50 rounded" title="수정">
-                                    <Edit2 size={14} />
+                            <div className={`absolute top-2.5 right-2.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewing ? 'hidden' : ''}`}>
+                                <button type="button" onClick={() => setAiSummaryEditMode(true)} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer" title="수정">
+                                    <Edit2 size={13} />
                                 </button>
-                                <button onClick={handleDeleteAiSummary} className="p-1 text-red-500 hover:bg-red-50 rounded" title="삭제">
-                                    <Trash2 size={14} />
+                                <button type="button" onClick={handleDeleteAiSummary} className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer" title="삭제">
+                                    <Trash2 size={13} />
                                 </button>
                             </div>
-                            <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed pr-10">
-                                {summaryText || <span className="text-gray-500 dark:text-gray-400">요약된 상담 내용이 없습니다. 통화 파일을 업로드하고 [AI 분석 실행]을 클릭해보세요.</span>}
+                            <div className="text-xs text-foreground font-mono whitespace-pre-wrap leading-relaxed pr-10">
+                                {summaryText || <span className="text-muted-foreground">요약된 상담 내용이 없습니다. 통화 파일을 업로드하고 [AI 분석 실행]을 클릭해보세요.</span>}
                             </div>
                         </div>
                     )}
@@ -379,7 +406,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* Tab 2: Full Transcript with Speakers & Timestamps */}
             {activeSubTab === 'transcript' && (
-                <div className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm min-h-[120px]">
+                <div className="bg-muted/20 p-3.5 rounded-xl border border-border shadow-2xs min-h-[120px]">
                     {transcriptLines.length > 0 ? (
                         <div className="space-y-2.5">
                             {transcriptLines.length > 5 && (
@@ -389,44 +416,45 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                         placeholder="대화 내용 또는 화자 검색..."
                                         value={transcriptSearch}
                                         onChange={e => setTranscriptSearch(e.target.value)}
-                                        className="w-full text-xs p-2 border border-gray-200 rounded focus:ring-1 focus:ring-purple-400 outline-none"
+                                        className="w-full text-xs p-2.5 border border-input rounded-lg bg-background text-foreground focus:ring-1 focus:ring-primary outline-none"
                                     />
                                 </div>
                             )}
-                            <div className="max-h-72 overflow-y-auto space-y-2 pr-1 no-scrollbar">
+                            <div className="max-h-80 overflow-y-auto space-y-2 pr-1 no-scrollbar">
                                 {filteredTranscriptLines.map(line => {
                                     const myName = localStorage.getItem('managerName') || '';
                                     const isAgent = line.speaker.includes('상담원') || line.speaker.includes('담당자') || line.speaker.includes('사무장') || line.speaker.includes('진성훈') || (!!myName && line.speaker.includes(myName));
                                     return (
                                         <div
                                             key={line.id}
-                                            className={`p-2.5 rounded-lg border text-xs leading-relaxed transition-all ${
+                                            className={`p-2.5 rounded-xl border text-xs leading-relaxed transition-all ${
                                                 isAgent 
-                                                    ? 'bg-blue-50 border-blue-100 text-blue-950' 
-                                                    : 'bg-purple-50/60 border-purple-100 text-gray-900'
+                                                    ? 'bg-primary/10 border-primary/20 text-foreground' 
+                                                    : 'bg-muted/40 border-border text-foreground'
                                             }`}
                                         >
-                                            <div className="flex items-center justify-between mb-1">
+                                            <div className="flex items-center justify-between mb-1.5">
                                                 <div className="flex items-center gap-1.5 font-bold">
-                                                    <span className={`px-1.5 py-0.5 rounded text-xs ${
-                                                        isAgent ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
+                                                    <span className={`px-2 py-0.5 rounded text-2xs font-semibold ${
+                                                        isAgent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground border border-border'
                                                     }`}>
                                                         {isAgent ? '👤 상담원' : '🧑 고객'}
                                                     </span>
                                                     {line.speaker !== '상담원' && line.speaker !== '고객' && (
-                                                        <span className="text-gray-500 font-normal text-xs">({line.speaker})</span>
+                                                        <span className="text-muted-foreground font-normal text-2xs font-mono">({line.speaker})</span>
                                                     )}
                                                 </div>
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleSeekToTimestamp(line.seconds)}
-                                                    className="flex items-center gap-1 px-1.5 py-0.5 bg-white border border-purple-200 hover:border-purple-400 text-purple-700 hover:bg-purple-50 rounded text-xs font-mono transition-colors shadow-2xs cursor-pointer"
+                                                    className="flex items-center gap-1 px-2 py-0.5 bg-card border border-border hover:border-primary/40 text-foreground hover:text-primary rounded text-2xs font-mono transition-colors shadow-2xs cursor-pointer"
                                                     title="이 발언 시점으로 이동 재생"
                                                 >
-                                                    <PlayCircle size={11} className="text-purple-600" />
+                                                    <PlayCircle size={11} className="text-primary" />
                                                     <span>{line.time}</span>
                                                 </button>
                                             </div>
-                                            <div className="pl-1 text-gray-800 whitespace-pre-wrap">
+                                            <div className="pl-1 text-foreground whitespace-pre-wrap font-mono leading-relaxed">
                                                 {line.text}
                                             </div>
                                         </div>
@@ -435,15 +463,15 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-6 text-gray-500 dark:text-gray-400 text-xs">
+                        <div className="text-center py-6 text-muted-foreground text-xs space-y-1">
                             {rawTranscript ? (
-                                <div className="text-left text-gray-700 whitespace-pre-wrap text-xs">
+                                <div className="text-left text-foreground whitespace-pre-wrap text-xs font-mono leading-relaxed">
                                     {rawTranscript}
                                 </div>
                             ) : (
                                 <div>
-                                    <p className="mb-1">분석된 대화록이 없습니다.</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">통화 녹음 파일을 업로드하고 [AI 분석 실행]을 누르면 화자분리 대화록이 자동 생성됩니다.</p>
+                                    <p className="font-semibold text-foreground">분석된 대화록이 없습니다.</p>
+                                    <p className="text-2xs text-muted-foreground mt-0.5">통화 녹음 파일을 업로드하고 [AI 분석 실행]을 누르면 화자분리 대화록이 자동 생성됩니다.</p>
                                 </div>
                             )}
                         </div>
@@ -453,18 +481,22 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* Action Buttons (최근 요약을 볼 때만) */}
             {aiSummaryText && !aiSummaryEditMode && !viewing && (
-                <div className="mt-3 flex justify-end">
+                <div className="pt-2 flex justify-end gap-2">
                     <button
+                        type="button"
                         onClick={handleSaveSummaryToMemo}
-                        className="flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 px-3 py-2 rounded font-bold hover:bg-indigo-100 border border-indigo-200 transition-colors"
+                        className="flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2 rounded-lg font-semibold border border-border transition-colors shadow-2xs cursor-pointer"
                     >
-                        <Send size={14} /> 상담 내용으로 보내기 (특이사항 추가)
+                        <Send size={13} className="text-primary" />
+                        <span>상담 내용으로 보내기 (특이사항 추가)</span>
                     </button>
                     <button
+                        type="button"
                         onClick={handleTelegramSendClick}
-                        className="flex items-center gap-1 text-xs bg-indigo-600 text-white px-3 py-2 rounded font-bold hover:bg-indigo-700 transition-colors ml-2 shadow-sm"
+                        className="flex items-center gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-bold transition-colors shadow-2xs cursor-pointer"
                     >
-                        <MessageCircle size={14} /> 텔레그램 전송
+                        <MessageCircle size={13} />
+                        <span>텔레그램 전송</span>
                     </button>
                 </div>
             )}
@@ -481,18 +513,23 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* Telegram Room Selection Modal */}
             {isTelegramModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-xl w-80 overflow-hidden transform scale-100 transition-transform">
-                        <div className="bg-indigo-600 p-4 shrink-0 flex justify-between items-center text-white">
-                            <h3 className="font-bold flex items-center gap-2">
-                                <MessageCircle size={18} /> 전송할 방 선택
+                <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 space-y-4">
+                        <div className="flex justify-between items-center border-b border-border pb-3">
+                            <h3 className="font-bold flex items-center gap-2 text-foreground text-sm sm:text-base">
+                                <MessageCircle size={18} className="text-primary" /> 
+                                <span>전송할 텔레그램 방 선택</span>
                             </h3>
-                            <button onClick={() => setIsTelegramModalOpen(false)} className="text-indigo-200 hover:text-white transition-colors">
-                                <X size={18} />
+                            <button
+                                type="button"
+                                onClick={() => setIsTelegramModalOpen(false)}
+                                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                            >
+                                <X size={16} />
                             </button>
                         </div>
-                        <div className="p-4 space-y-2">
-                            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+                        <div className="space-y-3">
+                            <p className="text-2xs text-muted-foreground leading-relaxed">
                                 요약문이 클립보드에 자동 복사되었습니다.<br/>
                                 전송할 방을 선택하시고 화면이 열리면 붙여넣기 해 주세요.
                             </p>
@@ -500,14 +537,15 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                                 {telegramRooms.map(room => (
                                     <button
                                         key={room.id}
+                                        type="button"
                                         onClick={() => handleRoomSelect(room.url)}
-                                        className="w-full text-left p-3 border border-indigo-100 flex items-center justify-between rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors group"
+                                        className="w-full text-left p-3 border border-border flex items-center justify-between rounded-xl bg-muted/30 hover:bg-muted transition-colors group cursor-pointer"
                                     >
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-sm text-indigo-900 group-hover:text-indigo-700">{room.name}</span>
-                                            <span className="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5 truncate max-w-[200px]">{room.url}</span>
+                                            <span className="font-bold text-xs text-foreground group-hover:text-primary">{room.name}</span>
+                                            <span className="text-2xs text-muted-foreground font-mono mt-0.5 truncate max-w-[200px]">{room.url}</span>
                                         </div>
-                                        <Send size={14} className="text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-600" />
+                                        <Send size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
                                     </button>
                                 ))}
                             </div>

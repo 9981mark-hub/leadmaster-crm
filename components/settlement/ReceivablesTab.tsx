@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Wallet, Plus, Trash2, Copy, Download, Landmark, AlertTriangle, ChevronRight, X, Loader2 } from 'lucide-react';
 import { Case, Partner } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import {
   Collection, PartnerLedger, buildPartnerLedger, todayKST, fmtMan, statementText, vatModeOf, VAT_LABEL, daysBetween,
 } from '../../utils/settlement';
@@ -24,6 +25,7 @@ const num = 'tabular-nums font-mono';
 /** 정산 → 받을 돈: 변호사 사무실별 청구·받은 돈·미수금·연체 + 받은 돈 기록 + 월 정산서 */
 export default function ReceivablesTab({ cases, partners }: Props) {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string>('');
@@ -133,6 +135,7 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
   lg: PartnerLedger; today: string; collections: Collection[]; onCollectionsChange: (c: Collection[]) => void; onClose: () => void;
 }) {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [form, setForm] = useState({ date: today, amount: '', memo: '' });
   const [saving, setSaving] = useState(false);
   const [month, setMonth] = useState(today.slice(0, 7));
@@ -334,7 +337,14 @@ function PartnerDetail({ lg, today, collections, onCollectionsChange, onClose }:
                     <span className={`ml-auto font-semibold text-foreground ${num}`}>{fmtMan(c.amount)}</span>
                     <button
                       onClick={async () => {
-                        if (!window.confirm(`${c.date} ${fmtMan(c.amount)} 기록을 지울까요?`)) return;
+                        const ok = await confirm({
+                          title: '입금 기록 삭제',
+                          message: `${c.date} ${fmtMan(c.amount)} 기록을 지울까요?`,
+                          confirmText: '삭제',
+                          cancelText: '취소',
+                          variant: 'destructive',
+                        });
+                        if (!ok) return;
                         try { onCollectionsChange(await deleteCollection(c.id)); } catch (e: any) { showToast(e.message, 'error'); }
                       }}
                       className="text-muted-foreground hover:text-red-500 transition-colors p-1"

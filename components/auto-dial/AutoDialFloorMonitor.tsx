@@ -9,6 +9,7 @@ import {
   Moon, CheckCircle2, ChevronRight, Eye
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import {
   AutoDialCampaign,
   AutoDialAgentAllocation,
@@ -30,6 +31,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
   onClose,
 }) => {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [campaign, setCampaign] = useState<AutoDialCampaign | null>(null);
   const [allocations, setAllocations] = useState<AutoDialAgentAllocation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -97,7 +99,14 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
   // 골든타임 부재 재투입
   const handleRecycleMissed = async () => {
     if (!campaign) return;
-    if (!window.confirm('당일 부재 건을 상담원 큐로 다시 재투입하시겠습니까? (유심 자동 교차 발신 적용)')) return;
+    const ok = await confirm({
+      title: '골든타임 부재 재투입',
+      message: '당일 부재 건을 상담원 큐로 다시 재투입하시겠습니까?\n(유심 자동 교차 발신 적용)',
+      confirmText: '재투입 실행',
+      cancelText: '취소',
+      variant: 'default',
+    });
+    if (!ok) return;
 
     setIsRecycling(true);
     try {

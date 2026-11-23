@@ -85,40 +85,59 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2" onClick={onClose}>
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[92vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-5 py-3 border-b">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                        <Send size={18} className="text-sky-500" /> 텔레그램으로 전달
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-card text-card-foreground border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+                {/* 헤더 */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/40">
+                    <h3 className="font-bold text-foreground flex items-center gap-2 text-base">
+                        <Send size={18} className="text-primary" strokeWidth={2} />
+                        <span>텔레그램으로 전달</span>
                     </h3>
-                    <button onClick={onClose} className="p-1 rounded hover:bg-gray-100" aria-label="닫기"><X size={18} /></button>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        aria-label="닫기"
+                    >
+                        <X size={18} />
+                    </button>
                 </div>
 
-                <div className="px-5 py-3 space-y-3 overflow-y-auto">
-                    <div className="text-sm text-gray-600">
-                        받는 곳: <span className="font-bold text-gray-900">{partner?.name || '거래처 미정'}</span>
-                        {chatId && <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">방 ID {chatId}</span>}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">회사 봇이 이 내용을 그 방에 올립니다. 사무실에서 이 메시지에 <b>답장</b>하면 피드백이 이 리드에 자동으로 연결됩니다.</p>
+                <div className="p-6 space-y-4 overflow-y-auto">
+                    {/* 수신처 정보 */}
+                    <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-1">
+                        <div className="text-xs text-muted-foreground">
+                            받는 곳: <span className="font-bold text-foreground text-sm">{partner?.name || '거래처 미정'}</span>
+                            {chatId && <span className="text-2xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 ml-2">방 ID {chatId}</span>}
+                        </div>
+                        <p className="text-2xs text-muted-foreground leading-relaxed">
+                            회사 봇이 이 내용을 지정된 텔레그램 방에 올립니다. 사무실에서 이 메시지에 <strong>답장</strong>하면 피드백이 이 리드에 자동으로 연결됩니다.
+                        </p>
                     </div>
 
                     {blocker && (
-                        <div className="flex items-start gap-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded p-3">
-                            <AlertTriangle size={16} className="mt-0.5 shrink-0" /> {blocker}
+                        <div className="flex items-start gap-2 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3.5 leading-relaxed">
+                            <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-500" />
+                            <span>{blocker}</span>
                         </div>
                     )}
 
-                    <div>
-                        <div className="flex justify-between items-end mb-1">
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                                <label className="text-xs font-medium text-gray-500">보낼 내용 (수정 가능)</label>
+                                <label className="text-xs font-semibold text-foreground">보낼 내용 (수정 가능)</label>
                                 {(aiText || callText) && (
-                                    <div className="flex text-xs border rounded overflow-hidden">
+                                    <div className="inline-flex rounded-lg border border-border p-0.5 bg-muted/60 text-xs">
                                         {(['template', 'call', 'ai'] as const).filter(s => s === 'template' || (s === 'ai' ? !!aiText : !!callText)).map(s => (
                                             <button
                                                 key={s}
                                                 type="button"
                                                 onClick={() => { setSource(s); setText(s === 'ai' ? aiText : s === 'call' ? callText : templateText); setNeedForce(false); }}
-                                                className={`px-2 py-0.5 ${source === s ? 'bg-sky-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                                className={`px-2.5 py-1 text-2xs font-medium rounded-md transition-colors cursor-pointer ${
+                                                    source === s 
+                                                        ? 'bg-primary text-primary-foreground shadow-2xs' 
+                                                        : 'text-muted-foreground hover:text-foreground'
+                                                }`}
                                             >
                                                 {s === 'template' ? '입력한 정보로' : s === 'call' ? '통화 녹음 AI 정리' : '예전 AI 요약'}
                                             </button>
@@ -128,60 +147,88 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                             </div>
                             <div className="flex items-center gap-2">
                                 {text !== initialText && (
-                                    <button type="button" className="text-xs text-gray-500 underline" onClick={() => setText(initialText)}>처음 요약문으로</button>
+                                    <button
+                                        type="button"
+                                        className="text-2xs text-muted-foreground hover:text-foreground underline cursor-pointer"
+                                        onClick={() => setText(initialText)}
+                                    >
+                                        처음 요약문으로
+                                    </button>
                                 )}
-                                <span className="text-xs text-gray-500 dark:text-gray-400">{text.length.toLocaleString()}자</span>
+                                <span className="text-2xs font-mono text-muted-foreground tabular-nums">{text.length.toLocaleString()}자</span>
                             </div>
                         </div>
                         <textarea
-                            className="w-full h-72 p-3 border border-gray-300 rounded-lg text-sm leading-relaxed outline-none focus:ring-2 focus:ring-sky-200 resize-y"
+                            className="w-full h-72 p-3.5 border border-input rounded-xl text-xs font-mono leading-relaxed bg-background text-foreground outline-none focus:ring-1 focus:ring-primary resize-y shadow-2xs"
                             value={text}
                             onChange={e => { setText(e.target.value); setNeedForce(false); }}
                         />
                     </div>
 
-                    {/* 거래처 필수 확인 항목 중 입력 안 된 것 (보내는 것은 막지 않음) */}
+                    {/* 거래처 필수 확인 항목 중 입력 안 된 것 */}
                     {progress.missing.length > 0 && (
-                        <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2.5">
-                            <span className="font-semibold">{partner?.name || '사무실'} 필수 확인 항목 중 입력 안 된 것 ({progress.missing.length}/{progress.total}):</span>{' '}
+                        <div className="text-2xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 leading-relaxed">
+                            <span className="font-bold">{partner?.name || '사무실'} 필수 확인 항목 중 입력 안 된 것 ({progress.missing.length}/{progress.total}):</span>{' '}
                             {progress.missing.join(', ')}
                         </div>
                     )}
 
                     {canChangeStatus && (
-                        <label className="flex items-center gap-2 text-sm text-gray-700">
-                            <input type="checkbox" checked={changeStatus} onChange={e => setChangeStatus(e.target.checked)} />
-                            보낸 뒤 상태를 <b>{RECEIVED_STATUS}</b>(으)로 바꾸기 <span className="text-xs text-gray-500 dark:text-gray-400">(지금: {c.status})</span>
+                        <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer pt-1">
+                            <input
+                                type="checkbox"
+                                checked={changeStatus}
+                                onChange={e => setChangeStatus(e.target.checked)}
+                                className="accent-primary rounded"
+                            />
+                            <span>보낸 뒤 상태를 <strong className="text-primary">{RECEIVED_STATUS}</strong>(으)로 바꾸기</span>
+                            <span className="text-2xs text-muted-foreground font-mono">(현재: {c.status})</span>
                         </label>
                     )}
 
                     {error && (
-                        <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">
-                            <AlertTriangle size={16} className="mt-0.5 shrink-0" /> {error}
+                        <div className="flex items-start gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl p-3.5">
+                            <AlertTriangle size={16} className="mt-0.5 shrink-0 text-destructive" />
+                            <span>{error}</span>
                         </div>
                     )}
 
                     {sends.length > 0 && (
-                        <div className="text-xs text-gray-500 border-t pt-2">
-                            <div className="font-medium text-gray-600 mb-1 flex items-center gap-1"><CheckCircle2 size={13} className="text-green-500" /> 이전 전달 {sends.length}회</div>
-                            <ul className="space-y-0.5">
+                        <div className="text-2xs text-muted-foreground border-t border-border pt-3 space-y-1.5">
+                            <div className="font-semibold text-foreground flex items-center gap-1.5">
+                                <CheckCircle2 size={13} className="text-primary" />
+                                <span>이전 전달 이력 ({sends.length}회)</span>
+                            </div>
+                            <ul className="space-y-1 font-mono">
                                 {sends.slice(0, 5).map(h => (
-                                    <li key={h.id}>{fmt(h.sentAt)} · {h.chatTitle || h.chatId}{h.sentByEmail ? ` · ${h.sentByEmail}` : ''}</li>
+                                    <li key={h.id} className="flex items-center gap-2 text-muted-foreground">
+                                        <span>• {fmt(h.sentAt)}</span>
+                                        <span>{h.chatTitle || h.chatId}</span>
+                                        {h.sentByEmail && <span className="text-primary/70">({h.sentByEmail})</span>}
+                                    </li>
                                 ))}
                             </ul>
                         </div>
                     )}
                 </div>
 
-                <div className="flex justify-end gap-2 px-5 py-3 border-t bg-gray-50 rounded-b-xl">
-                    <button onClick={onClose} className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm">취소</button>
+                {/* 푸터 */}
+                <div className="flex justify-end gap-2.5 px-6 py-4 border-t border-border bg-muted/40">
                     <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                    >
+                        취소
+                    </button>
+                    <button
+                        type="button"
                         onClick={handleSend}
                         disabled={sending || !!blocker}
-                        className="px-4 py-2 rounded bg-sky-600 text-white font-bold text-sm hover:bg-sky-700 disabled:opacity-50 flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 disabled:opacity-40 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                     >
-                        {sending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-                        {needForce ? '그래도 다시 보내기' : '보내기'}
+                        {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                        <span>{needForce ? '그래도 다시 보내기' : '보내기'}</span>
                     </button>
                 </div>
             </div>

@@ -60,6 +60,7 @@ import { EmergencyPurgeModal } from '../components/settings/EmergencyPurgeModal'
 import { CompanyProfileModal } from '../components/navigation/CompanyProfileModal';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import { fetchAiUsage, AiUsage } from '../services/aiProxy';
 import { SettingsAdminPermissions } from '../services/org';
 
@@ -78,6 +79,7 @@ export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<SettingsMainTab>('partners');
     const [searchQuery, setSearchQuery] = useState('');
     const { showToast } = useToast();
+    const { confirm } = useConfirmDialog();
     const { isAdmin, isPlatformAdmin, org, user, updateOrgProfile } = useAuth();
     const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
     const orgName = org?.orgName || '리드마스터 CRM';
@@ -624,14 +626,21 @@ export default function SettingsPage() {
         const file = e.target.files?.[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (evt) => {
+        reader.onload = async (evt) => {
             try {
                 const data = JSON.parse(evt.target?.result as string);
                 if (!data.version || !data.cases) {
                     showToast('유효하지 않은 백업 파일입니다.', 'error');
                     return;
                 }
-                if (!window.confirm(`백업 파일 정보:\n- 내보낸 날짜: ${data.exportedAt || '알 수 없음'}\n\n이 백업으로 시스템 로컬 데이터를 복원하시겠습니까?`)) return;
+                const ok = await confirm({
+                    title: '시스템 백업 복원',
+                    message: `백업 파일 정보:\n- 내보낸 날짜: ${data.exportedAt || '알 수 없음'}\n\n이 백업으로 시스템 로컬 데이터를 복원하시겠습니까?`,
+                    confirmText: '복원 실행',
+                    cancelText: '취소',
+                    variant: 'destructive',
+                });
+                if (!ok) return;
                 if (data.cases) localStorage.setItem('lm_cases', data.cases);
                 if (data.partners) localStorage.setItem('lm_partners', data.partners);
                 if (data.paths) localStorage.setItem('lm_paths', data.paths);
@@ -647,8 +656,15 @@ export default function SettingsPage() {
         e.target.value = '';
     };
 
-    const handleForceSync = () => {
-        if (!window.confirm('로컬 캐시를 삭제하고 서버에서 데이터를 다시 불러올까요?\n\n💡 먼저 상단의 "백업 다운로드" 버튼으로 백업해두세요!')) return;
+    const handleForceSync = async () => {
+        const ok = await confirm({
+            title: '로컬 캐시 초기화 및 재동기화',
+            message: '로컬 캐시를 삭제하고 서버에서 데이터를 다시 불러올까요?\n\n💡 먼저 상단의 "백업 다운로드" 버튼으로 백업해두세요!',
+            confirmText: '캐시 삭제 및 동기화',
+            cancelText: '취소',
+            variant: 'destructive',
+        });
+        if (!ok) return;
         localStorage.removeItem('lm_cases');
         localStorage.removeItem('lm_partners');
         localStorage.removeItem('lm_paths');

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import { fetchBatches, deleteBatch, updateBatchStatus, AutoDialBatch } from '../../services/autoDialService';
 import {
   fetchAutoDialCampaigns,
@@ -38,6 +39,7 @@ type MainTab = 'campaigns_v4' | 'batches_v1';
 const AutoDialDashboard: React.FC = () => {
   const { user, isAdmin, org } = useAuth();
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
 
   const [mainTab, setMainTab] = useState<MainTab>('campaigns_v4');
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
@@ -107,7 +109,14 @@ const AutoDialDashboard: React.FC = () => {
   }, [loading, batches, viewMode]);
 
   const handleDeleteCampaign = async (campaignId: string, name: string) => {
-    if (!window.confirm(`'${name}' 캠페인을 삭제하시겠습니까? 관련 통화 이력과 배정이 해제됩니다.`)) return;
+    const ok = await confirm({
+      title: '캠페인 삭제',
+      message: `'${name}' 캠페인을 삭제하시겠습니까?\n관련 통화 이력과 배정이 해제됩니다.`,
+      confirmText: '삭제',
+      cancelText: '취소',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     try {
       await deleteCampaign(campaignId);
       showToast('캠페인이 삭제되었습니다.', 'success');
@@ -121,7 +130,14 @@ const AutoDialDashboard: React.FC = () => {
   };
 
   const handleDeleteBatch = async (id: string) => {
-    if (!window.confirm('정말 이 배치를 삭제하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '배치 삭제',
+      message: '정말 이 배치를 삭제하시겠습니까?',
+      confirmText: '삭제',
+      cancelText: '취소',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     try {
       await deleteBatch(id);
       showToast('배치가 삭제되었습니다.', 'success');

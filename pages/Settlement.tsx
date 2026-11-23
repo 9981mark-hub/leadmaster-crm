@@ -21,6 +21,7 @@ import BudgetManagementSection from '../components/BudgetManagementSection';
 import FixedCostSection from '../components/FixedCostSection';
 import { exportToExcel, formatDateForExcel, formatCurrencyForExcel } from '../utils/xlsxExport';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import * as XLSX from 'xlsx';
 import ReceivablesTab from '../components/settlement/ReceivablesTab';
 import PartnerSettlementOverviewTab from '../components/settlement/PartnerSettlementOverviewTab';
@@ -78,6 +79,7 @@ const SettlementLockedView: React.FC<{ title: string; desc: string }> = ({ title
 
 export default function Settlement() {
     const { showToast } = useToast();
+    const { confirm } = useConfirmDialog();
     const { org, isPlatformAdmin } = useAuth();
     // [HOST 격리] 플랫폼 최고관리자 전용 세무 도구 열람 토글 (일반 TM 고객사 대표/관리자는 영구 비노출)
     const [showHostTaxTools, setShowHostTaxTools] = useState(false);
@@ -386,8 +388,15 @@ export default function Settlement() {
         }
     };
 
-    const handleBankTransactionDelete = (id: string) => {
-        if (!confirm('해당 거래내역을 정말 삭제하시겠습니까?')) return;
+    const handleBankTransactionDelete = async (id: string) => {
+        const ok = await confirm({
+            title: '거래내역 삭제',
+            message: '해당 거래내역을 정말 삭제하시겠습니까?',
+            confirmText: '삭제',
+            cancelText: '취소',
+            variant: 'destructive',
+        });
+        if (!ok) return;
         const success = deleteBankTransaction(id);
         if (success) {
             setBankTransactions(prev => prev.filter(tx => tx.id !== id));
@@ -451,8 +460,14 @@ export default function Settlement() {
             return;
         }
 
-        const confirm = window.confirm(`이번 주(${tossAdsWeeklySummary.weekLabel}) 토스 애즈 광고비 ${tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원을 시스템 지출에 일괄 등록하시겠습니까? (소진비용 기준)`);
-        if (!confirm) return;
+        const ok = await confirm({
+            title: '토스 애즈 광고비 일괄 등록',
+            message: `이번 주(${tossAdsWeeklySummary.weekLabel}) 토스 애즈 광고비 ${tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원을 시스템 지출에 일괄 등록하시겠습니까? (소진비용 기준)`,
+            confirmText: '일괄 등록',
+            cancelText: '취소',
+            variant: 'default',
+        });
+        if (!ok) return;
 
         try {
             // 만원 단위로 환산 (반올림)
@@ -2383,7 +2398,14 @@ export default function Settlement() {
     };
 
     const handleDeleteExpense = async (id: string) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return;
+        const ok = await confirm({
+            title: '지출 항목 삭제',
+            message: '해당 지출 항목을 정말 삭제하시겠습니까?',
+            confirmText: '삭제',
+            cancelText: '취소',
+            variant: 'destructive',
+        });
+        if (!ok) return;
         try { await deleteExpense(id); } catch (e: any) { showToast(`삭제 실패: ${e?.message || '알 수 없는 오류'}`, 'error'); return; }
         showToast('지출이 삭제되었습니다.', 'success');
         const [expenseList, stats] = await Promise.all([

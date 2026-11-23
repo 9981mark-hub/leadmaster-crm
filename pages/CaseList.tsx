@@ -7,6 +7,7 @@ import { exportToExcel } from '../utils/xlsxExport';
 import { parseReminder } from '../utils';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import { ListSkeleton } from '../components/Skeleton';
 import { KanbanBoard } from '../components/KanbanBoard';
 import StatusVisibilityModal from '../components/StatusVisibilityModal';
@@ -36,6 +37,7 @@ import { FilterChipsBar } from '../components/case-list/FilterChipsBar';
 export default function CaseList() {
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { confirm } = useConfirmDialog();
 
     // Data Fetching with React Query
     const { data: cases = [], isLoading: loadingCases, refetch: refetchCases } = useCases();
@@ -554,12 +556,26 @@ export default function CaseList() {
     const handleDelete = async (caseId: string, e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (viewMode === 'active' || viewMode === 'archived') {
-            if (!window.confirm('휴지통으로 이동하시겠습니까?')) return;
+            const ok = await confirm({
+                title: '휴지통 이동',
+                message: '해당 리드를 휴지통으로 이동하시겠습니까?',
+                confirmText: '이동',
+                cancelText: '취소',
+                variant: 'danger',
+            });
+            if (!ok) return;
             // Soft delete
             // [Fix] Don't set deletedAt to ensure it remains visible to RLS-restricted queries
             updateCaseMutation.mutate({ id: caseId, updates: { status: '휴지통' } });
         } else {
-            if (!window.confirm('⚠️ 영구 삭제하시겠습니까?')) return;
+            const ok = await confirm({
+                title: '영구 삭제 경고',
+                message: '해당 리드를 영구 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.',
+                confirmText: '영구 삭제',
+                cancelText: '취소',
+                variant: 'danger',
+            });
+            if (!ok) return;
             deleteCaseMutation.mutate(caseId);
         }
     };
@@ -567,7 +583,14 @@ export default function CaseList() {
     const handleRestore = async (caseId: string, e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (viewMode === 'archived') {
-            if (!window.confirm('활성 리드로 복원하시겠습니까?\n(상담원에게 다시 공개됩니다)')) return;
+            const ok = await confirm({
+                title: '활성 리드 복원',
+                message: '활성 리드로 복원하시겠습니까?\n(상담원에게 다시 공개됩니다)',
+                confirmText: '복원',
+                cancelText: '취소',
+                variant: 'default',
+            });
+            if (!ok) return;
             try {
                 await restoreArchivedCases([caseId]);
                 refetchCases();
@@ -576,7 +599,14 @@ export default function CaseList() {
                 showToast(e.message || '복원 실패', 'error');
             }
         } else {
-            if (!window.confirm('복구하시겠습니까?')) return;
+            const ok = await confirm({
+                title: '리드 복구',
+                message: '휴지통에서 복구하시겠습니까?',
+                confirmText: '복구',
+                cancelText: '취소',
+                variant: 'default',
+            });
+            if (!ok) return;
             try {
                 await restoreCase(caseId);
                 refetchCases();
@@ -589,7 +619,14 @@ export default function CaseList() {
 
     const handleArchive = async (caseId: string, e?: React.MouseEvent) => {
         e?.stopPropagation();
-        if (!window.confirm('보관함으로 이동하시겠습니까?\n(상담원 화면에서 숨김 처리됩니다)')) return;
+        const ok = await confirm({
+            title: '보관함 이동',
+            message: '보관함으로 이동하시겠습니까?\n(상담원 화면에서 숨김 처리됩니다)',
+            confirmText: '보관함 이동',
+            cancelText: '취소',
+            variant: 'default',
+        });
+        if (!ok) return;
         try {
             await archiveCases([caseId], '수동 개별 보관');
             refetchCases();
@@ -602,7 +639,14 @@ export default function CaseList() {
     const bulkArchive = async () => {
         const ids: string[] = Array.from(selected);
         if (ids.length === 0) return;
-        if (!window.confirm(`${ids.length}건을 보관함으로 이동하시겠습니까?\n(상담원 화면에서 즉시 숨김 처리됩니다)`)) return;
+        const ok = await confirm({
+            title: '선택 리드 일괄 보관',
+            message: `${ids.length}건을 보관함으로 이동하시겠습니까?\n(상담원 화면에서 즉시 숨김 처리됩니다)`,
+            confirmText: '보관함 이동',
+            cancelText: '취소',
+            variant: 'default',
+        });
+        if (!ok) return;
         setBulkBusy(true);
         try {
             const count = await archiveCases(ids, '수동 일괄 보관');
@@ -619,7 +663,14 @@ export default function CaseList() {
     const bulkRestoreFromArchive = async () => {
         const ids: string[] = Array.from(selected);
         if (ids.length === 0) return;
-        if (!window.confirm(`${ids.length}건을 활성 리드로 복원하시겠습니까?\n(상담원 화면에 다시 공개됩니다)`)) return;
+        const ok = await confirm({
+            title: '선택 리드 활성 복원',
+            message: `${ids.length}건을 활성 리드로 복원하시겠습니까?\n(상담원 화면에 다시 공개됩니다)`,
+            confirmText: '복원',
+            cancelText: '취소',
+            variant: 'default',
+        });
+        if (!ok) return;
         setBulkBusy(true);
         try {
             const count = await restoreArchivedCases(ids);
@@ -733,7 +784,14 @@ export default function CaseList() {
     const bulkStatus = async (newStatus: string) => {
         const list = selectedCases().filter(c => c.status !== newStatus);
         if (list.length === 0) return;
-        if (!window.confirm(`${list.length}건의 상태를 "${newStatus}"(으)로 바꿀까요?`)) return;
+        const ok = await confirm({
+            title: '선택 리드 일괄 상태 변경',
+            message: `${list.length}건의 상태를 "${newStatus}"(으)로 바꿀까요?`,
+            confirmText: '변경',
+            cancelText: '취소',
+            variant: 'default',
+        });
+        if (!ok) return;
         const now = new Date().toISOString();
         const who = localStorage.getItem('managerName') || '상담원';
         list.forEach(c => updateCaseMutation.mutate({
@@ -747,9 +805,17 @@ export default function CaseList() {
         setSelected(new Set());
     };
 
-    const bulkTrash = () => {
+    const bulkTrash = async () => {
         const list = selectedCases();
-        if (list.length === 0 || !window.confirm(`${list.length}건을 휴지통으로 옮길까요?`)) return;
+        if (list.length === 0) return;
+        const ok = await confirm({
+            title: '선택 리드 휴지통 이동',
+            message: `${list.length}건을 휴지통으로 옮길까요?`,
+            confirmText: '휴지통 이동',
+            cancelText: '취소',
+            variant: 'danger',
+        });
+        if (!ok) return;
         list.forEach(c => updateCaseMutation.mutate({ id: c.caseId, updates: { status: '휴지통' }, silent: true }));
         showToast(`${list.length}건을 휴지통으로 옮겼습니다.`);
         setSelected(new Set());
@@ -784,9 +850,14 @@ export default function CaseList() {
             return;
         }
 
-        if (!window.confirm(`선택한 리드 ${ids.length}건을 활성 상담원 ${activeAgents.length}명에게 균등 순번 배분하시겠습니까?`)) {
-            return;
-        }
+        const ok = await confirm({
+            title: '선택 리드 균등 순번 배분',
+            message: `선택한 리드 ${ids.length}건을 활성 상담원 ${activeAgents.length}명에게 균등 순번 배분하시겠습니까?`,
+            confirmText: '균등 배분 실행',
+            cancelText: '취소',
+            variant: 'default',
+        });
+        if (!ok) return;
 
         setBulkBusy(true);
         try {

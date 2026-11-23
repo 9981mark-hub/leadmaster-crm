@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Shuffle, Zap, Users, CheckCircle2, AlertCircle, ArrowRight, Loader2, Filter, Layers } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import { distributeUnassignedBulk, DistributeMode, ImportBatch } from '../../services/distribution';
 import { TeamMember } from '../../services/team';
 
@@ -20,6 +21,7 @@ export default function BulkDistributionSection({
   onDistributed,
 }: Props) {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
 
   const activeAgents = useMemo(() => {
     return members.filter(m => m.status === 'active' && m.role === 'agent');
@@ -76,13 +78,15 @@ export default function BulkDistributionSection({
       ? `1인당 ${quotaPerAgent}건 쿼터 채우기` 
       : '진행 중 리드 적은 사람 우선(균형)';
 
-    const confirmMessage = `[대량 자동 배분 실행]\n\n` +
-      `• 대상 리드: 약 ${effectiveTotal.toLocaleString()}건\n` +
-      `• 대상 상담원: ${targetUserCount}명\n` +
-      `• 배분 방식: ${modeText}\n\n` +
-      `지금 대량 배분을 시작하시겠습니까?`;
+    const ok = await confirm({
+      title: '대량 자동 배분 실행',
+      message: `• 대상 리드: 약 ${effectiveTotal.toLocaleString()}건\n• 대상 상담원: ${targetUserCount}명\n• 배분 방식: ${modeText}\n\n지금 대량 배분을 시작하시겠습니까?`,
+      confirmText: '대량 배분 시작',
+      cancelText: '취소',
+      variant: 'default',
+    });
 
-    if (!window.confirm(confirmMessage)) return;
+    if (!ok) return;
 
     setDistributing(true);
     setResultSummary(null);

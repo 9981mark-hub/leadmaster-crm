@@ -4,6 +4,7 @@ import {
   AlertTriangle, Save, RefreshCw, Zap, Layers, Sparkles, Filter, ChevronRight
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Case } from '../../types';
 import {
@@ -19,6 +20,7 @@ interface LifecyclePolicyPanelProps {
 
 export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePolicyPanelProps) {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const queryClient = useQueryClient();
 
   // 정책 및 통계 상태
@@ -72,7 +74,14 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
   };
 
   const handleRunCleanupNow = async () => {
-    if (!window.confirm('설정된 수명주기 규칙에 따라 조건에 부합하는 리드들을 지금 즉시 자동 정리하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '수명주기 자동 정리 즉시 실행',
+      message: '설정된 수명주기 규칙에 따라 조건에 부합하는 리드들을 지금 즉시 자동 정리하시겠습니까?',
+      confirmText: '즉시 정리',
+      cancelText: '취소',
+      variant: 'default',
+    });
+    if (!ok) return;
     setCleaning(true);
     try {
       const res = await runAutoLifecycleCleanup();
@@ -106,9 +115,14 @@ export default function LifecyclePolicyPanel({ cases, onChanged }: LifecyclePoli
       showToast('조건에 일치하는 대상 리드가 없습니다.');
       return;
     }
-    if (!window.confirm(`선택된 조건(${filterStaleDays}일 이상 경과)의 활성 리드 ${targetStaleCases.length}건을 상담원 시야에서 숨기고 보관함으로 이동하시겠습니까?`)) {
-      return;
-    }
+    const ok = await confirm({
+      title: '장기 미활동 리드 일괄 보관',
+      message: `선택된 조건(${filterStaleDays}일 이상 경과)의 활성 리드 ${targetStaleCases.length}건을 상담원 시야에서 숨기고 보관함으로 이동하시겠습니까?`,
+      confirmText: '보관함 이동',
+      cancelText: '취소',
+      variant: 'default',
+    });
+    if (!ok) return;
 
     setBatchActionRunning(true);
     try {

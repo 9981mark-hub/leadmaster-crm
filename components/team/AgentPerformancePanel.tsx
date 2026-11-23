@@ -638,30 +638,30 @@ export default function AgentPerformancePanel() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
           <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-blue-600 text-white shadow-sm">
-                  <Settings size={18} />
+            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/40">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-2xs">
+                  <Settings size={18} strokeWidth={1.75} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-gray-800 dark:text-white">
+                  <h3 className="font-bold text-base text-foreground">
                     인센티브 다원화 및 정산 지급일 설정
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-2xs text-muted-foreground mt-0.5">
                     계약 종류별 금액/비율(최대 10개)과 회사 맞춤 정산 주기를 지정합니다.
                   </p>
                 </div>
               </div>
 
               {/* Tab Selector (4개 탭) */}
-              <div className="flex bg-gray-100 dark:bg-gray-750 p-1 rounded-xl text-xs font-bold gap-1 flex-wrap">
+              <div className="flex bg-muted/60 border border-border p-0.5 rounded-lg text-xs font-semibold gap-1 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('types')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
                     activeModalTab === 'types'
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                      ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   1. 계약별 기본 인센티브
@@ -669,10 +669,10 @@ export default function AgentPerformancePanel() {
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('overriding')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
                     activeModalTab === 'overriding'
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                      ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   2. 👔 관리자 오버라이딩
@@ -680,10 +680,10 @@ export default function AgentPerformancePanel() {
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('sliding')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
                     activeModalTab === 'sliding'
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                      ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   3. 🚀 성과구간 추가보너스
@@ -691,10 +691,10 @@ export default function AgentPerformancePanel() {
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('schedule')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
                     activeModalTab === 'schedule'
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                      ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   4. 📅 정산일 & 지급주기
@@ -703,16 +703,17 @@ export default function AgentPerformancePanel() {
             </div>
 
             {/* Modal Body */}
-            <form onSubmit={handleSaveSettings} className="p-5 overflow-y-auto space-y-5 flex-1">
+            <form onSubmit={handleSaveSettings} className="p-6 overflow-y-auto space-y-5 flex-1">
               {/* TAB 1: 계약 종류별 인센티브 (최대 10개) */}
               {activeModalTab === 'types' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
-                        <Layers size={16} className="text-indigo-600" /> 계약 종류 등록 및 금액 설정
+                      <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                        <Layers size={16} className="text-primary" /> 
+                        <span>계약 종류 등록 및 금액 설정</span>
                       </h4>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-2xs text-muted-foreground mt-0.5">
                         계약 종류마다 고정 성과급(원) 또는 수임료 비율(%)을 다르게 책정할 수 있습니다.
                       </p>
                     </div>
@@ -720,7 +721,7 @@ export default function AgentPerformancePanel() {
                       type="button"
                       onClick={handleAddContractType}
                       disabled={draftSettings.contractTypes.length >= 10}
-                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 flex items-center gap-1 shadow-xs"
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                     >
                       <Plus size={14} /> 새 종류 추가 ({draftSettings.contractTypes.length}/10)
                     </button>
@@ -730,15 +731,15 @@ export default function AgentPerformancePanel() {
                     {draftSettings.contractTypes.map((type, idx) => (
                       <div
                         key={type.id}
-                        className={`p-3.5 rounded-xl border transition-all ${
+                        className={`p-4 rounded-xl border transition-all ${
                           type.isDefault
-                            ? 'border-blue-400 bg-blue-50/30 dark:bg-blue-950/20'
-                            : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750'
+                            ? 'border-primary/40 bg-primary/5 shadow-2xs'
+                            : 'border-border bg-card shadow-2xs'
                         }`}
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
                           <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                            <span className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-bold flex items-center justify-center">
+                            <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground border border-border text-2xs font-mono font-bold flex items-center justify-center">
                               {idx + 1}
                             </span>
                             <input
@@ -746,27 +747,27 @@ export default function AgentPerformancePanel() {
                               value={type.name}
                               onChange={e => handleUpdateTypeField(type.id, 'name', e.target.value)}
                               placeholder="계약 종류 이름 (예: 개인회생 계약)"
-                              className="font-bold text-sm px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg flex-1 dark:bg-gray-700 dark:text-white"
+                              className="font-bold text-xs px-3 py-1.5 border border-input rounded-lg flex-1 bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                             />
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <label className="flex items-center gap-1 text-xs cursor-pointer text-gray-600 dark:text-gray-300">
+                          <div className="flex items-center gap-3">
+                            <label className="flex items-center gap-1.5 text-xs cursor-pointer text-muted-foreground hover:text-foreground">
                               <input
                                 type="radio"
                                 name="defaultContractType"
                                 checked={!!type.isDefault}
                                 onChange={() => handleSetDefaultType(type.id)}
-                                className="text-blue-600"
+                                className="accent-primary"
                               />
-                              <span>기본 계약</span>
+                              <span className="text-2xs font-medium">기본 계약</span>
                             </label>
 
                             <button
                               type="button"
                               onClick={() => handleRemoveContractType(type.id)}
                               disabled={draftSettings.contractTypes.length <= 1}
-                              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 disabled:opacity-30 rounded"
+                              className="p-1.5 text-muted-foreground hover:text-destructive disabled:opacity-30 rounded-lg transition-colors cursor-pointer"
                               title="삭제"
                             >
                               <Trash2 size={15} />
@@ -775,15 +776,15 @@ export default function AgentPerformancePanel() {
                         </div>
 
                         {/* 산정 방식 및 금액 */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-200/60 dark:border-gray-700/60">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border">
                           <div>
-                            <label className="block text-xs font-semibold text-gray-500 mb-1">
+                            <label className="block text-2xs font-mono font-semibold text-muted-foreground mb-1">
                               인센티브 지급 방식
                             </label>
                             <select
                               value={type.calcType}
                               onChange={e => handleUpdateTypeField(type.id, 'calcType', e.target.value as any)}
-                              className="w-full text-xs p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                              className="w-full text-xs p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-2xs"
                             >
                               <option value="fixed">건당 고정 금액 지급 (원)</option>
                               <option value="percent">수임료 대비 일정 비율 지급 (%)</option>
@@ -793,7 +794,7 @@ export default function AgentPerformancePanel() {
                           <div>
                             {type.calcType === 'fixed' ? (
                               <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                                <label className="block text-2xs font-mono font-semibold text-muted-foreground mb-1">
                                   건당 인센티브 금액 (원)
                                 </label>
                                 <div className="relative">
@@ -803,14 +804,14 @@ export default function AgentPerformancePanel() {
                                     step={5000}
                                     value={type.amount}
                                     onChange={e => handleUpdateTypeField(type.id, 'amount', parseInt(e.target.value, 10) || 0)}
-                                    className="w-full text-xs p-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg font-bold dark:bg-gray-700 dark:text-white"
+                                    className="w-full text-xs p-2 pr-8 border border-input rounded-lg font-mono font-bold bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                                   />
-                                  <span className="absolute right-2.5 top-2 text-xs text-gray-500 dark:text-gray-400">원</span>
+                                  <span className="absolute right-2.5 top-2 text-2xs text-muted-foreground">원</span>
                                 </div>
                               </div>
                             ) : (
                               <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                                <label className="block text-2xs font-mono font-semibold text-muted-foreground mb-1">
                                   수임료 지급 비율 (%)
                                 </label>
                                 <div className="relative">
@@ -821,9 +822,9 @@ export default function AgentPerformancePanel() {
                                     step={0.5}
                                     value={type.rate}
                                     onChange={e => handleUpdateTypeField(type.id, 'rate', parseFloat(e.target.value) || 0)}
-                                    className="w-full text-xs p-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg font-bold dark:bg-gray-700 dark:text-white"
+                                    className="w-full text-xs p-2 pr-8 border border-input rounded-lg font-mono font-bold bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                                   />
-                                  <span className="absolute right-2.5 top-2 text-xs text-gray-500 dark:text-gray-400">%</span>
+                                  <span className="absolute right-2.5 top-2 text-2xs text-muted-foreground">%</span>
                                 </div>
                               </div>
                             )}
@@ -838,18 +839,18 @@ export default function AgentPerformancePanel() {
               {/* TAB 2: 👔 관리자(팀장) 오버라이딩 수당 설정 */}
               {activeModalTab === 'overriding' && (
                 <div className="space-y-5 text-xs animate-fadeIn">
-                  <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-between pb-3 border-b border-border">
                     <div>
-                      <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
-                        <Award size={16} className="text-blue-600" /> 관리자(팀장) 오버라이딩(Overriding) 수당 체계
+                      <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                        <Award size={16} className="text-primary" /> 관리자(팀장) 오버라이딩(Overriding) 수당 체계
                       </h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <p className="text-2xs text-muted-foreground mt-0.5">
                         소속 팀원이 계약을 1건 성사시킬 때마다 담당 관리자(팀장)에게 지급할 관리 수당을 설정합니다.
                       </p>
                     </div>
 
                     <label className="flex items-center gap-2 cursor-pointer font-bold">
-                      <span className="text-xs text-gray-700 dark:text-gray-300">오버라이딩 활성화</span>
+                      <span className="text-xs text-foreground">오버라이딩 활성화</span>
                       <input
                         type="checkbox"
                         checked={draftSettings.managerOverriding?.enabled ?? true}
@@ -860,7 +861,7 @@ export default function AgentPerformancePanel() {
                             enabled: e.target.checked,
                           },
                         })}
-                        className="w-4 h-4 text-blue-600 rounded-sm"
+                        className="w-4 h-4 text-primary rounded-sm border-input focus:ring-primary accent-emerald-500"
                       />
                     </label>
                   </div>
@@ -868,16 +869,16 @@ export default function AgentPerformancePanel() {
                   {draftSettings.managerOverriding?.enabled && (
                     <div className="space-y-4">
                       {/* 방식 선택 */}
-                      <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-3">
-                        <label className="font-bold text-gray-800 dark:text-white block">
+                      <div className="p-4 rounded-xl border border-border bg-card/60 space-y-3">
+                        <label className="font-bold text-foreground block text-xs">
                           팀원 1건당 관리 수당 산정 방식
                         </label>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <label className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
                             draftSettings.managerOverriding.type === 'fixed_per_case'
-                              ? 'border-blue-500 bg-white dark:bg-gray-800 ring-2 ring-blue-500/20'
-                              : 'border-gray-200 dark:border-gray-700 bg-gray-100/50 dark:bg-gray-700/50'
+                              ? 'border-primary bg-primary/10 ring-1 ring-primary/40'
+                              : 'border-border bg-muted/30 hover:border-border/80'
                           }`}>
                             <input
                               type="radio"
@@ -887,11 +888,11 @@ export default function AgentPerformancePanel() {
                                 ...draftSettings,
                                 managerOverriding: { ...draftSettings.managerOverriding, type: 'fixed_per_case' },
                               })}
-                              className="mt-0.5 text-blue-600"
+                              className="mt-0.5 text-primary accent-emerald-500"
                             />
                             <div>
-                              <div className="font-bold text-gray-900 dark:text-white">건당 고정 관리수당 (추천)</div>
-                              <div className="text-[11px] text-gray-500 mt-0.5">
+                              <div className="font-bold text-foreground">건당 고정 관리수당 (추천)</div>
+                              <div className="text-2xs text-muted-foreground mt-0.5">
                                 팀원이 계약할 때마다 정액 건당 수당을 팀장에게 자동 적립합니다.
                               </div>
                             </div>
@@ -899,8 +900,8 @@ export default function AgentPerformancePanel() {
 
                           <label className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
                             draftSettings.managerOverriding.type === 'percent_of_fee'
-                              ? 'border-blue-500 bg-white dark:bg-gray-800 ring-2 ring-blue-500/20'
-                              : 'border-gray-200 dark:border-gray-700 bg-gray-100/50 dark:bg-gray-700/50'
+                              ? 'border-primary bg-primary/10 ring-1 ring-primary/40'
+                              : 'border-border bg-muted/30 hover:border-border/80'
                           }`}>
                             <input
                               type="radio"
@@ -910,11 +911,11 @@ export default function AgentPerformancePanel() {
                                 ...draftSettings,
                                 managerOverriding: { ...draftSettings.managerOverriding, type: 'percent_of_fee' },
                               })}
-                              className="mt-0.5 text-blue-600"
+                              className="mt-0.5 text-primary accent-emerald-500"
                             />
                             <div>
-                              <div className="font-bold text-gray-900 dark:text-white">팀원 수임료의 N% 비례</div>
-                              <div className="text-[11px] text-gray-500 mt-0.5">
+                              <div className="font-bold text-foreground">팀원 수임료의 N% 비례</div>
+                              <div className="text-2xs text-muted-foreground mt-0.5">
                                 팀원이 유치한 계약 수임료 매출의 일정 비율을 팀장에게 적립합니다.
                               </div>
                             </div>
@@ -925,7 +926,7 @@ export default function AgentPerformancePanel() {
                         <div className="pt-2">
                           {draftSettings.managerOverriding.type === 'fixed_per_case' ? (
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-700 dark:text-gray-300">소속 팀원 계약 1건당 지급액:</span>
+                              <span className="font-semibold text-muted-foreground">소속 팀원 계약 1건당 지급액:</span>
                               <input
                                 type="number"
                                 step="1000"
@@ -937,13 +938,13 @@ export default function AgentPerformancePanel() {
                                     amountPerCase: Math.max(0, parseInt(e.target.value, 10) || 0),
                                   },
                                 })}
-                                className="w-32 px-3 py-1.5 font-bold font-mono text-right border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                                className="w-32 px-3 py-1.5 font-bold font-mono text-right border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                               />
-                              <span className="font-bold text-gray-600 dark:text-gray-400">원 / 건</span>
+                              <span className="font-bold text-muted-foreground">원 / 건</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-700 dark:text-gray-300">소속 팀원 수임료 매출의:</span>
+                              <span className="font-semibold text-muted-foreground">소속 팀원 수임료 매출의:</span>
                               <input
                                 type="number"
                                 step="0.5"
@@ -955,16 +956,16 @@ export default function AgentPerformancePanel() {
                                     feeRatePercent: Math.max(0, parseFloat(e.target.value) || 0),
                                   },
                                 })}
-                                className="w-24 px-3 py-1.5 font-bold font-mono text-right border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                                className="w-24 px-3 py-1.5 font-bold font-mono text-right border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                               />
-                              <span className="font-bold text-gray-600 dark:text-gray-400">%</span>
+                              <span className="font-bold text-muted-foreground">%</span>
                             </div>
                           )}
                         </div>
                       </div>
 
                       {/* 팀 목표 달성 팀장 보너스 */}
-                      <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-2">
+                      <div className="p-4 rounded-xl border border-border bg-card/60 space-y-2">
                         <div className="font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
                           <Trophy size={14} className="text-amber-500" /> 팀 목표 초과 달성 보너스 (Team Target Bonus)
                         </div>
@@ -991,34 +992,34 @@ export default function AgentPerformancePanel() {
               {/* TAB 3: 🚀 성과 우수 상담원 구간별 추가 인센티브 (슬라이딩 스케일) */}
               {activeModalTab === 'sliding' && (
                 <div className="space-y-5 text-xs animate-fadeIn">
-                  <div className="pb-3 border-b border-gray-100 dark:border-gray-700">
-                    <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
-                      <Sparkles size={16} className="text-indigo-600" /> 고성과 상담원 슬라이딩 스케일 & 마일스톤
+                  <div className="pb-3 border-b border-border">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                      <Sparkles size={16} className="text-primary" /> 고성과 상담원 슬라이딩 스케일 & 마일스톤
                     </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p className="text-2xs text-muted-foreground mt-0.5">
                       계약 건수가 많아질수록 건당 성과급이 계단식으로 상승하여 에이스 상담원의 동기부여를 극대화합니다.
                     </p>
                   </div>
 
                   {/* 구간별 계단식 단가 인상 테이블 */}
-                  <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
-                    <div className="p-3 bg-gray-50 dark:bg-gray-750 border-b border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-gray-200">
+                  <div className="border border-border rounded-xl overflow-hidden bg-card">
+                    <div className="p-3 bg-muted/40 border-b border-border font-bold text-foreground text-xs">
                       월간 계약 건수별 건당 추가 지급액 (Sliding Scale)
                     </div>
-                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                    <div className="divide-y divide-border">
                       {(draftSettings.slidingTiers || DEFAULT_SLIDING_TIERS).map((tier, tIdx) => (
-                        <div key={tIdx} className="p-3 flex items-center justify-between gap-3 hover:bg-gray-50/50 dark:hover:bg-gray-750">
+                        <div key={tIdx} className="p-3 flex items-center justify-between gap-3 hover:bg-muted/20">
                           <div>
-                            <div className="font-bold text-gray-900 dark:text-white">
+                            <div className="font-bold text-foreground">
                               {tier.tierName}
                             </div>
-                            <div className="text-[11px] text-gray-400">
+                            <div className="text-2xs text-muted-foreground">
                               기준: 당월 {tier.minCases}건 {tier.maxCases ? `~ ${tier.maxCases}건` : '이상'}
                             </div>
                           </div>
 
                           <div className="flex items-center gap-1.5">
-                            <span className="text-gray-500">건당 추가:</span>
+                            <span className="text-muted-foreground text-2xs">건당 추가:</span>
                             <input
                               type="number"
                               step="5000"
@@ -1029,9 +1030,9 @@ export default function AgentPerformancePanel() {
                                 updated[tIdx] = { ...updated[tIdx], extraAmountPerCase: val };
                                 setDraftSettings({ ...draftSettings, slidingTiers: updated });
                               }}
-                              className="w-28 px-2.5 py-1 text-right font-mono font-bold border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                              className="w-28 px-2.5 py-1 text-right font-mono font-bold border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                             />
-                            <span className="font-bold text-gray-700 dark:text-gray-300">원</span>
+                            <span className="font-bold text-foreground text-2xs">원</span>
                           </div>
                         </div>
                       ))}
@@ -1039,7 +1040,7 @@ export default function AgentPerformancePanel() {
                   </div>
 
                   {/* 마일스톤 달성 축하금 */}
-                  <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-2">
+                  <div className="p-4 rounded-xl border border-border bg-card/60 space-y-2">
                     <div className="font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
                       <Trophy size={14} className="text-amber-500" /> 마일스톤 달성 일시 축하금
                     </div>
@@ -1047,13 +1048,13 @@ export default function AgentPerformancePanel() {
                       특정 계약 건수를 달성할 때마다 일시금 보너스를 추가 지급합니다.
                     </p>
                     <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                      <div className="p-3 bg-background rounded-lg border border-border flex justify-between items-center shadow-2xs">
                         <span className="font-semibold text-gray-700 dark:text-gray-300">당월 10건 최초 돌파:</span>
-                        <strong className="text-blue-600 dark:text-blue-400 font-mono">+ ₩ 200,000 원</strong>
+                        <strong className="text-primary font-mono">+ ₩ 200,000 원</strong>
                       </div>
-                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                      <div className="p-3 bg-background rounded-lg border border-border flex justify-between items-center shadow-2xs">
                         <span className="font-semibold text-gray-700 dark:text-gray-300">당월 20건 최초 돌파:</span>
-                        <strong className="text-indigo-600 dark:text-indigo-400 font-mono">+ ₩ 500,000 원</strong>
+                        <strong className="text-primary font-mono">+ ₩ 500,000 원</strong>
                       </div>
                     </div>
                   </div>
@@ -1064,8 +1065,8 @@ export default function AgentPerformancePanel() {
               {activeModalTab === 'schedule' && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
-                      <Calendar size={16} className="text-blue-600" /> 인센티브 정산 주기 및 지급일 지정
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                      <Calendar size={16} className="text-primary" /> 인센티브 정산 주기 및 지급일 지정
                     </h4>
                     <p className="text-xs text-gray-500 mt-0.5">
                       "매월 언제부터 언제까지 발생한 인센티브는 다음 달 언제 지급한다" 등의 지급 주기를 설정합니다.
@@ -1073,11 +1074,11 @@ export default function AgentPerformancePanel() {
                   </div>
 
                   {/* 주기 선택 */}
-                  <div className="grid grid-cols-3 gap-2 p-1 bg-gray-100 dark:bg-gray-750 rounded-xl">
+                  <div className="grid grid-cols-3 gap-2 p-1 bg-muted/60 border border-border rounded-xl">
                     <label className={`flex items-center justify-center gap-1.5 p-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
                       draftSettings.payoutSchedule.cycle === 'monthly'
-                        ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                        : 'text-gray-600 dark:text-gray-400'
+                        ? 'bg-primary text-primary-foreground shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}>
                       <input
                         type="radio"
@@ -1094,8 +1095,8 @@ export default function AgentPerformancePanel() {
 
                     <label className={`flex items-center justify-center gap-1.5 p-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
                       draftSettings.payoutSchedule.cycle === 'weekly'
-                        ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                        : 'text-gray-600 dark:text-gray-400'
+                        ? 'bg-primary text-primary-foreground shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}>
                       <input
                         type="radio"
@@ -1112,8 +1113,8 @@ export default function AgentPerformancePanel() {
 
                     <label className={`flex items-center justify-center gap-1.5 p-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
                       draftSettings.payoutSchedule.cycle === 'instant'
-                        ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
-                        : 'text-gray-600 dark:text-gray-400'
+                        ? 'bg-primary text-primary-foreground shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}>
                       <input
                         type="radio"
@@ -1131,7 +1132,7 @@ export default function AgentPerformancePanel() {
 
                   {/* 월간 정산 상세 옵션 */}
                   {draftSettings.payoutSchedule.cycle === 'monthly' && (
-                    <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-4">
+                    <div className="p-4 rounded-xl border border-border bg-card/60 space-y-4">
                       <div className="text-xs font-bold text-gray-700 dark:text-gray-200">
                         월간 정산 상세 규칙
                       </div>
@@ -1148,7 +1149,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, monthlyStartDay: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
                               <option key={d} value={d}>매월 {d}일</option>
@@ -1166,7 +1167,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, monthlyEndDay: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             <option value={0}>매월 말일</option>
                             {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
@@ -1186,7 +1187,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, monthlyPayoutOffset: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             <option value={0}>당월 (이번 달)</option>
                             <option value={1}>익월 (다음 달)</option>
@@ -1204,7 +1205,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, monthlyPayoutDay: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             <option value={5}>5일</option>
                             <option value={10}>10일 (권장)</option>
@@ -1223,7 +1224,7 @@ export default function AgentPerformancePanel() {
 
                   {/* 주간 정산 상세 옵션 */}
                   {draftSettings.payoutSchedule.cycle === 'weekly' && (
-                    <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 space-y-4">
+                    <div className="p-4 rounded-xl border border-border bg-card/60 space-y-4">
                       <div className="text-xs font-bold text-gray-700 dark:text-gray-200">
                         주간 정산 상세 규칙
                       </div>
@@ -1239,7 +1240,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, weeklyStartDay: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             {WEEKDAYS.map(w => (
                               <option key={w.val} value={w.val}>매주 {w.label}</option>
@@ -1257,7 +1258,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, weeklyEndDay: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             {WEEKDAYS.map(w => (
                               <option key={w.val} value={w.val}>매주 {w.label}</option>
@@ -1275,7 +1276,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, weeklyPayoutOffset: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             <option value={0}>당주 (이번 주)</option>
                             <option value={1}>차주 (다음 주 - 권장)</option>
@@ -1292,7 +1293,7 @@ export default function AgentPerformancePanel() {
                               ...draftSettings,
                               payoutSchedule: { ...draftSettings.payoutSchedule, weeklyPayoutDay: parseInt(e.target.value, 10) },
                             })}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full p-2 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                           >
                             {WEEKDAYS.map(w => (
                               <option key={w.val} value={w.val}>{w.label}</option>
@@ -1304,11 +1305,11 @@ export default function AgentPerformancePanel() {
                   )}
 
                   {/* 실시간 규칙 프리뷰 배너 */}
-                  <div className="p-4 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2.5">
-                    <Info size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                  <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-xs text-foreground flex items-start gap-2.5">
+                    <Info size={18} className="text-primary shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold">설정된 지급 규칙 미리보기:</div>
-                      <div className="text-sm font-extrabold text-blue-700 dark:text-blue-300 mt-1">
+                      <div className="font-bold text-primary">설정된 지급 규칙 미리보기:</div>
+                      <div className="text-sm font-extrabold text-foreground mt-1">
                         "{formatPayoutSchedule(draftSettings.payoutSchedule)}"
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -1333,13 +1334,13 @@ export default function AgentPerformancePanel() {
                   <button
                     type="button"
                     onClick={() => setShowSettingsModal(false)}
-                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl"
+                    className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted border border-border rounded-xl transition-colors cursor-pointer"
                   >
                     취소
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 text-sm font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-sm"
+                    className="px-5 py-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-2xs transition-colors cursor-pointer"
                   >
                     규칙 저장
                   </button>
@@ -1372,7 +1373,7 @@ export default function AgentPerformancePanel() {
                 <span>계약 종류</span>
                 <span>체결 건수 / 인센티브</span>
               </div>
-              <div className="divide-y divide-gray-100 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              <div className="divide-y divide-border border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                 {selectedAgentBreakdown.contractBreakdown.map(b => (
                   <div key={b.typeId} className="p-3 flex justify-between items-center bg-gray-50/50 dark:bg-gray-750">
                     <div>

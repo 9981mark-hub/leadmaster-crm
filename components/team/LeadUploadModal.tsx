@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { X, Upload, FileSpreadsheet, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import { formatPhone } from '../../constants';
 import { Partner, Case } from '../../types';
 import { importCasesToBatch, refreshLocalAssignments } from '../../services/api';
@@ -31,6 +32,7 @@ const guess = (headers: string[], re: RegExp) => headers.findIndex(h => re.test(
 /** 팀 관리 → 수신동의 DB 업로드: 열 고르기 → 중복 확인(파일 안 + 회사 전체) → 묶음으로 저장 → 배분 */
 export default function LeadUploadModal({ agents, partners, onClose, onDone }: Props) {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [fileName, setFileName] = useState('');
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<any[][]>([]);
@@ -133,7 +135,14 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
     if (!existing) return;
     if (toInsert.length === 0) return showToast('넣을 새 번호가 없습니다', 'error');
     if (['round_robin', 'balanced', 'quantity'].includes(mode) && picked.length === 0) return showToast('나눠줄 상담원을 고르세요', 'error');
-    if (!window.confirm(`새 리드 ${toInsert.length}건을 '${batchName}' 묶음으로 넣을까요?\n(중복 ${existingCount + fileDupCount}건, 번호 오류 ${invalidCount}건은 제외)`)) return;
+    const ok = await confirm({
+      title: '새 리드 일괄 등록',
+      message: `새 리드 ${toInsert.length}건을 '${batchName}' 묶음으로 넣을까요?\n(중복 ${existingCount + fileDupCount}건, 번호 오류 ${invalidCount}건은 제외)`,
+      confirmText: '등록 및 배분 실행',
+      cancelText: '취소',
+      variant: 'default',
+    });
+    if (!ok) return;
     setRunning(true);
     setProgress('묶음 만드는 중…');
     try {

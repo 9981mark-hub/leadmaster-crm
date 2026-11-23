@@ -237,31 +237,32 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-2xl bg-card text-card-foreground border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-            <FileSpreadsheet className="w-5 h-5 mr-2 text-indigo-500" />
-            엑셀/CSV 일괄 업로드
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/40">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-primary" strokeWidth={1.75} />
+            <span>엑셀/CSV 일괄 업로드</span>
           </h2>
           <button
+            type="button"
             onClick={handleClose}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {!fileName ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-              <Upload className="w-12 h-12 text-gray-500 dark:text-gray-400 mb-4" />
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
+            <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-border rounded-xl bg-muted/20">
+              <Upload className="w-12 h-12 text-muted-foreground mb-4" strokeWidth={1.5} />
+              <p className="text-xs text-muted-foreground mb-4 text-center leading-relaxed">
                 엑셀 또는 CSV 파일을 선택해주세요.<br />
-                (이름, 전화번호 열 자동 인식)
+                <span className="text-2xs text-muted-foreground/80">(이름, 전화번호 열 자동 인식)</span>
               </p>
               <input
                 type="file"
@@ -271,14 +272,15 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
                 className="hidden"
               />
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="px-6 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm disabled:opacity-50 flex items-center"
+                className="px-5 py-2.5 bg-card border border-border text-foreground rounded-lg hover:bg-muted transition-colors shadow-2xs disabled:opacity-50 flex items-center text-xs font-semibold cursor-pointer"
               >
                 {isUploading ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    처리 중...
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-primary" />
+                    파일 분석 중…
                   </>
                 ) : (
                   '파일 선택하기'
@@ -297,13 +299,13 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
                     type="text"
                     value={batchName}
                     onChange={(e) => setBatchName(e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-white"
-                    placeholder="예: 2024년 5월 프로모션"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-lg focus:ring-1 focus:ring-primary text-foreground text-xs outline-none"
+                    placeholder="예: 2026년 11월 프로모션"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                    <Phone className="w-4 h-4 mr-1" /> 발신 대기 (초)
+                  <label className="block text-2xs font-mono font-semibold text-muted-foreground uppercase mb-1.5 flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-primary" /> 발신 대기 (초)
                   </label>
                   <input
                     type="number"
@@ -311,12 +313,12 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
                     max="120"
                     value={ringTimeout}
                     onChange={(e) => setRingTimeout(Number(e.target.value))}
-                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-lg focus:ring-1 focus:ring-primary text-foreground text-xs font-mono outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                    <Clock className="w-4 h-4 mr-1" /> 통화 간격 (초)
+                  <label className="block text-2xs font-mono font-semibold text-muted-foreground uppercase mb-1.5 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-primary" /> 통화 간격 (초)
                   </label>
                   <input
                     type="number"
@@ -324,7 +326,7 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
                     max="60"
                     value={gapSeconds}
                     onChange={(e) => setGapSeconds(Number(e.target.value))}
-                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-lg focus:ring-1 focus:ring-primary text-foreground text-xs font-mono outline-none"
                   />
                 </div>
               </div>
@@ -332,52 +334,53 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
               {/* Data Preview */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    데이터 미리보기 ({fileName})
+                  <h3 className="text-xs font-bold text-foreground">
+                    데이터 미리보기 <span className="text-muted-foreground font-normal">({fileName})</span>
                   </h3>
-                  <div className="flex space-x-3 text-xs">
-                    <span className="text-green-600 dark:text-green-400">유효: {validCount}</span>
-                    <span className="text-red-600 dark:text-red-400">형식 오류: {invalidCount}</span>
-                    <span className="text-indigo-600 dark:text-indigo-400">선택됨: {selectedCount}</span>
+                  <div className="flex space-x-3 text-2xs font-mono">
+                    <span className="text-primary font-semibold">유효: {validCount}</span>
+                    <span className="text-destructive font-semibold">형식 오류: {invalidCount}</span>
+                    <span className="text-muted-foreground">선택됨: {selectedCount}</span>
                   </div>
                 </div>
 
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                <div className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs">
                   <div className="overflow-x-auto max-h-60">
-                    <table className="w-full text-sm text-left">
-                      <thead className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 sticky top-0 z-10 shadow-sm">
+                    <table className="w-full text-xs text-left">
+                      <thead className="text-2xs text-muted-foreground bg-muted/40 sticky top-0 z-10 border-b border-border font-mono uppercase">
                         <tr>
-                          <th className="p-3 w-12">
-                            <button onClick={toggleAll} className="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400">
-                              {allValidSelected ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                          <th className="p-3 w-12 text-center">
+                            <button type="button" onClick={toggleAll} className="text-muted-foreground hover:text-foreground cursor-pointer">
+                              {allValidSelected ? <CheckSquare className="w-4 h-4 text-primary" /> : <Square className="w-4 h-4" />}
                             </button>
                           </th>
-                          <th className="p-3 font-medium">이름</th>
-                          <th className="p-3 font-medium">전화번호</th>
-                          <th className="p-3 font-medium">상태</th>
+                          <th className="p-3 font-semibold">이름</th>
+                          <th className="p-3 font-semibold">전화번호</th>
+                          <th className="p-3 font-semibold">상태</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                      <tbody className="divide-y divide-border">
                         {parsedData.map((row) => (
-                          <tr key={row.id} className={`${row.selected ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''} ${!row.isValid ? 'opacity-60' : ''} hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors`}>
-                            <td className="p-3">
+                          <tr key={row.id} className={`${row.selected ? 'bg-primary/5' : ''} ${!row.isValid ? 'opacity-60' : ''} hover:bg-muted/30 transition-colors`}>
+                            <td className="p-3 text-center">
                               <button 
+                                type="button"
                                 onClick={() => row.isValid && toggleRow(row.id)}
                                 disabled={!row.isValid}
-                                className={`${row.selected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 dark:text-gray-600'} disabled:opacity-50`}
+                                className={`${row.selected ? 'text-primary' : 'text-muted-foreground'} disabled:opacity-40 cursor-pointer`}
                               >
-                                {row.selected ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                                {row.selected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
                               </button>
                             </td>
-                            <td className="p-3 text-gray-900 dark:text-gray-200">{row.originalName}</td>
-                            <td className="p-3 text-gray-900 dark:text-gray-200 font-mono text-sm">{row.formattedPhone || row.originalPhone}</td>
+                            <td className="p-3 text-foreground font-medium">{row.originalName}</td>
+                            <td className="p-3 text-foreground font-mono">{row.formattedPhone || row.originalPhone}</td>
                             <td className="p-3">
                               {row.isValid ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-primary/10 text-primary border border-primary/20">
                                   정상
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" title="올바른 전화번호 형식이 아닙니다">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-destructive/10 text-destructive border border-destructive/20" title="올바른 전화번호 형식이 아닙니다">
                                   <AlertCircle className="w-3 h-3 mr-1" />
                                   오류
                                 </span>
@@ -395,22 +398,24 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex justify-end space-x-3">
+        <div className="px-6 py-4 border-t border-border bg-muted/40 flex justify-end space-x-2.5">
           <button
+            type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors shadow-2xs cursor-pointer"
           >
             취소
           </button>
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={!fileName || isSubmitting || selectedCount === 0}
-            className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-5 py-2 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed flex items-center cursor-pointer"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                생성 중...
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                생성 중…
               </>
             ) : (
               `오토다이얼 배치 생성 (${selectedCount}건)`

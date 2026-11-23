@@ -21,6 +21,7 @@ import { CallRecordingsTab } from '../components/case-detail/CallRecordingsTab';
 import { logCaseView } from '../services/accessLog';
 import { registerDnc } from '../services/dnc';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 
 export default function CaseDetail() {
     const { caseId } = useParams();
@@ -41,6 +42,7 @@ export default function CaseDetail() {
     const updateCaseMutation = useUpdateCaseMutation();
     // [KIRO 2026-11-13] 수임료/정산 탭은 회사 관리자만 (상담원 권한 격리)
     const { isAdmin, org } = useAuth();
+    const { confirm } = useConfirmDialog();
 
     // UI State
     const [activeTab, setActiveTab] = useState<'info' | 'summary' | 'settlement' | 'timeline' | 'calls_sms' | 'recordings'>('info');
@@ -493,7 +495,16 @@ export default function CaseDetail() {
                     : (item ? await m.findRecordingByDriveFile(c.caseId, m.driveFileIdFromUrl(item.url)) : null);
             } catch { serverRec = null; }
             if (serverRec && !serverRec.audioDeletedAt) {
-                if (serverRec.status === 'done' && !window.confirm('이 녹음은 이미 AI 정리가 끝났습니다. 다시 정리할까요?\n(다시 정리하면 AI 사용량이 한 번 더 듭니다)')) return;
+                if (serverRec.status === 'done') {
+                    const ok = await confirm({
+                        title: 'AI 재정리 확인',
+                        message: '이 녹음은 이미 AI 정리가 끝났습니다. 다시 정리할까요?\n(다시 정리하면 AI 사용량이 한 번 더 듭니다)',
+                        confirmText: '다시 정리',
+                        cancelText: '취소',
+                        variant: 'default',
+                    });
+                    if (!ok) return;
+                }
                 if (serverRec.status !== 'processing') await m.requestAnalyze(serverRec.id);
                 showToast('AI가 녹음을 정리하는 중입니다. 1분 정도 걸립니다.');
                 const done = await m.waitAnalyzed(serverRec.id);
@@ -619,8 +630,15 @@ export default function CaseDetail() {
         }
     };
 
-    const handleDeleteAiSummary = () => {
-        if (window.confirm('AI 요약본을 삭제하시겠습니까?')) {
+    const handleDeleteAiSummary = async () => {
+        const ok = await confirm({
+            title: 'AI 요약 삭제',
+            message: 'AI 요약본을 삭제하시겠습니까?',
+            confirmText: '삭제',
+            cancelText: '취소',
+            variant: 'danger',
+        });
+        if (ok) {
             setAiSummaryText(null);
             handleUpdate('aiSummary', null);
             showToast('삭제되었습니다.');
@@ -656,8 +674,15 @@ export default function CaseDetail() {
         setCurrentAudioFile(null); // Clear manual file if playing from list
     };
 
-    const handleDeleteRecording = (id: string) => {
-        if (window.confirm('녹음 파일을 삭제하시겠습니까?')) {
+    const handleDeleteRecording = async (id: string) => {
+        const ok = await confirm({
+            title: '녹음 파일 삭제',
+            message: '녹음 파일을 삭제하시겠습니까?',
+            confirmText: '삭제',
+            cancelText: '취소',
+            variant: 'danger',
+        });
+        if (ok) {
             const rec = (c?.recordings || []).find(r => r.id === id);
             // 지난 통화 AI 요약이 붙어 있으면 지우지 않고 상담 메모로 옮긴다
             if (c && rec?.aiSummary && rec.aiSummary.trim()) {

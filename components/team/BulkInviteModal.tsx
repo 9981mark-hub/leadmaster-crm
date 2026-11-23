@@ -167,23 +167,24 @@ export default function BulkInviteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-3xl bg-card text-card-foreground rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/70 dark:bg-gray-800/70">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/40 rounded-xl text-blue-600 dark:text-blue-400">
-              <Users size={20} />
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/40">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-primary/10 border border-primary/20 rounded-xl text-primary shadow-2xs">
+              <Users size={18} strokeWidth={1.75} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 dark:text-white text-lg">상담원 대량 초대 (10~50명)</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <h3 className="font-bold text-foreground text-base">상담원 대량 초대 (10~50명)</h3>
+              <p className="text-2xs text-muted-foreground mt-0.5">
                 엑셀이나 명단에서 [이름, 구글 이메일]을 한 번에 복사-붙여넣기하여 즉시 초대합니다.
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -192,15 +193,15 @@ export default function BulkInviteModal({
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-5">
           {/* Default Role Selection */}
-          <div className="flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl p-3">
-            <div className="flex items-center gap-2 text-xs text-blue-800 dark:text-blue-300">
-              <Shield size={16} />
+          <div className="flex items-center justify-between bg-muted/30 border border-border rounded-xl p-3.5 shadow-2xs">
+            <div className="flex items-center gap-2 text-xs text-foreground font-medium">
+              <Shield size={16} className="text-primary" strokeWidth={1.75} />
               <span>기본 부여 권한:</span>
             </div>
             <select
               value={defaultRole}
               onChange={e => setDefaultRole(e.target.value as OrgRole)}
-              className="text-xs font-semibold px-3 py-1.5 border border-blue-200 dark:border-blue-800 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+              className="text-xs font-semibold px-3 py-1.5 border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-2xs"
             >
               <option value="agent">상담원 (본인 리드 및 통화 전용)</option>
               <option value="admin">관리자 (사무장/팀장 전용)</option>
@@ -210,13 +211,14 @@ export default function BulkInviteModal({
           {/* Paste Input Area */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <label className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                <Upload size={14} /> 엑셀/텍스트 데이터 붙여넣기
+              <label className="font-semibold text-foreground flex items-center gap-1.5">
+                <Upload size={14} className="text-primary" /> 
+                <span>엑셀/텍스트 데이터 붙여넣기</span>
               </label>
               <button
                 type="button"
                 onClick={() => setRawText(sampleTemplate)}
-                className="text-blue-600 hover:underline"
+                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
               >
                 예시 템플릿 채우기
               </button>
@@ -226,19 +228,19 @@ export default function BulkInviteModal({
               value={rawText}
               onChange={e => setRawText(e.target.value)}
               placeholder={`엑셀에서 복사하여 그대로 붙여넣으세요:\n홍길동\thong@gmail.com\n이순신\tlee@gmail.com\n강감찬\tkang@gmail.com`}
-              className="w-full font-mono text-xs p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full font-mono text-xs p-3.5 border border-input rounded-xl bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed resize-y shadow-2xs"
             />
           </div>
 
           {/* Real-time Validation Summary Badge */}
           {parsedEntries.length > 0 && (
-            <div className="flex items-center gap-4 text-xs font-medium">
-              <span className="text-gray-500">감지: {parsedEntries.length}명</span>
-              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <div className="flex items-center gap-4 text-xs font-mono">
+              <span className="text-muted-foreground">감지: {parsedEntries.length}명</span>
+              <span className="text-primary flex items-center gap-1 font-semibold">
                 <CheckCircle2 size={13} /> 유효 초대 가능: {validEntries.length}명
               </span>
               {invalidEntries.length > 0 && (
-                <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                <span className="text-destructive flex items-center gap-1 font-semibold">
                   <AlertCircle size={13} /> 제외/오류: {invalidEntries.length}명
                 </span>
               )}
@@ -247,9 +249,9 @@ export default function BulkInviteModal({
 
           {/* Parsed Preview Table */}
           {parsedEntries.length > 0 && (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
+            <div className="border border-border rounded-xl overflow-hidden max-h-56 overflow-y-auto bg-card shadow-2xs">
               <table className="w-full text-xs text-left">
-                <thead className="bg-gray-100 dark:bg-gray-700 text-gray-500 font-semibold sticky top-0">
+                <thead className="bg-muted/40 text-muted-foreground font-mono text-2xs uppercase sticky top-0 border-b border-border">
                   <tr>
                     <th className="p-2.5">상태</th>
                     <th className="p-2.5">이름</th>
@@ -258,24 +260,24 @@ export default function BulkInviteModal({
                     <th className="p-2.5">사유</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                <tbody className="divide-y divide-border bg-card">
                   {parsedEntries.map((item, idx) => (
-                    <tr key={idx} className={item.isValid ? '' : 'bg-red-50/40 dark:bg-red-950/20'}>
+                    <tr key={idx} className={item.isValid ? 'hover:bg-muted/30' : 'bg-destructive/5'}>
                       <td className="p-2.5">
                         {item.isValid ? (
-                          <span className="inline-flex items-center text-emerald-600 font-bold">
+                          <span className="inline-flex items-center text-primary font-bold">
                             <CheckCircle2 size={13} className="mr-1" /> 정상
                           </span>
                         ) : (
-                          <span className="inline-flex items-center text-red-500 font-bold">
+                          <span className="inline-flex items-center text-destructive font-bold">
                             <AlertCircle size={13} className="mr-1" /> 제외
                           </span>
                         )}
                       </td>
-                      <td className="p-2.5 font-medium text-gray-800 dark:text-gray-200">{item.displayName}</td>
-                      <td className="p-2.5 font-mono text-gray-600 dark:text-gray-300">{item.email}</td>
-                      <td className="p-2.5 text-gray-500">{ROLE_LABEL[item.role || 'agent']}</td>
-                      <td className="p-2.5 text-red-500 font-medium">{item.errorReason || '-'}</td>
+                      <td className="p-2.5 font-medium text-foreground">{item.displayName}</td>
+                      <td className="p-2.5 font-mono text-muted-foreground">{item.email}</td>
+                      <td className="p-2.5 text-muted-foreground">{ROLE_LABEL[item.role || 'agent']}</td>
+                      <td className="p-2.5 text-destructive font-medium">{item.errorReason || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -286,10 +288,10 @@ export default function BulkInviteModal({
           {/* Status Feedback Banner */}
           {resultMsg && (
             <div
-              className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+              className={`p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
                 resultMsg.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                  : 'bg-red-50 text-red-800 border border-red-200 dark:bg-red-950/40 dark:text-red-300'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-destructive/10 text-destructive border border-destructive/20'
               }`}
             >
               {resultMsg.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -299,11 +301,11 @@ export default function BulkInviteModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/70 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-border bg-muted/40 flex items-center justify-between">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-700 rounded-xl transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors shadow-2xs cursor-pointer"
           >
             닫기
           </button>
@@ -311,10 +313,10 @@ export default function BulkInviteModal({
             type="button"
             onClick={handleBulkSubmit}
             disabled={validEntries.length === 0 || busy}
-            className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition-all"
+            className="px-5 py-2 text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-40 rounded-lg shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <UserPlus size={14} />
-            {busy ? '일괄 초대 발송 중...' : `${validEntries.length}명 일괄 초대 발송`}
+            <span>{busy ? '일괄 초대 발송 중…' : `${validEntries.length}명 일괄 초대 발송`}</span>
           </button>
         </div>
       </div>
