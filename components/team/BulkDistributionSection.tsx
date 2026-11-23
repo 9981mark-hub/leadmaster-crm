@@ -176,73 +176,73 @@ export default function BulkDistributionSection({
       </div>
 
       {/* Main Form Body */}
-      <div className="p-5 space-y-5">
+      <div className="p-4 space-y-4">
         {/* Step 1: 배분 방식 선택 */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2.5">
+          <label className="block text-xs font-mono font-medium text-foreground mb-2">
             1. 배분 방식 선택
           </label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div
               onClick={() => setMode('round_robin')}
-              className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
                 mode === 'round_robin'
-                  ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-xs'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                  ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20 shadow-2xs'
+                  : 'border-border bg-card hover:bg-muted/40 text-muted-foreground'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-gray-800 dark:text-white">1/N 완전 균등 분배</span>
-                <input type="radio" checked={mode === 'round_robin'} readOnly className="text-blue-600" />
+                <span className="font-medium text-sm text-foreground">1/N 완전 균등 분배</span>
+                <input type="radio" checked={mode === 'round_robin'} readOnly className="accent-primary" />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                 미배정 리드 전체를 상담원 {targetUserCount}명에게 공평하게 정확히 N개씩 차례대로 나눠줍니다.
               </p>
             </div>
 
             <div
               onClick={() => setMode('quota')}
-              className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
                 mode === 'quota'
-                  ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-xs'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                  ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20 shadow-2xs'
+                  : 'border-border bg-card hover:bg-muted/40 text-muted-foreground'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-gray-800 dark:text-white">1인당 쿼터 지정 (채우기)</span>
-                <input type="radio" checked={mode === 'quota'} readOnly className="text-blue-600" />
+                <span className="font-medium text-sm text-foreground">1인당 쿼터 지정 (채우기)</span>
+                <input type="radio" checked={mode === 'quota'} readOnly className="accent-primary" />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                 상담원 1인당 정확히 지정한 건수(예: 300건)만큼 순차 배분합니다.
               </p>
               {mode === 'quota' && (
                 <div className="mt-2.5 flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">1인당 배정:</span>
+                  <span className="text-xs font-mono text-muted-foreground">1인당 배정:</span>
                   <input
                     type="number"
                     min={1}
                     value={quotaPerAgent}
                     onChange={e => setQuotaPerAgent(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    className="w-24 px-2.5 py-1 text-sm font-bold border border-blue-400 rounded-lg text-right dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-24 px-2.5 py-1 text-sm font-mono font-medium border border-border rounded-md text-right bg-card text-foreground outline-none focus:ring-1 focus:ring-primary"
                   />
-                  <span className="text-xs text-gray-500">건 (총 {((quotaPerAgent || 0) * targetUserCount).toLocaleString()}건)</span>
+                  <span className="text-xs font-mono text-muted-foreground">건 (총 {((quotaPerAgent || 0) * targetUserCount).toLocaleString()}건)</span>
                 </div>
               )}
             </div>
 
             <div
               onClick={() => setMode('balanced')}
-              className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
                 mode === 'balanced'
-                  ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-xs'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                  ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20 shadow-2xs'
+                  : 'border-border bg-card hover:bg-muted/40 text-muted-foreground'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-gray-800 dark:text-white">보유량 균형 분배</span>
-                <input type="radio" checked={mode === 'balanced'} readOnly className="text-blue-600" />
+                <span className="font-medium text-sm text-foreground">보유량 균형 분배</span>
+                <input type="radio" checked={mode === 'balanced'} readOnly className="accent-primary" />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                 현재 진행 중인 리드를 적게 가지고 있는 상담원에게 우선적으로 배분하여 업무 부하를 맞춥니다.
               </p>
             </div>
@@ -251,14 +251,14 @@ export default function BulkDistributionSection({
 
         {/* Step 2: 조건부 상세 필터 (펼치기/접기) */}
         {showFilters && (
-          <div className="p-4 bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-200 dark:border-gray-600 space-y-4 animate-fade-in">
-            <div className="font-bold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
-              <Filter size={14} className="text-blue-600" /> 세부 분배 필터 설정
+          <div className="p-4 bg-muted/30 rounded-lg border border-border space-y-4 animate-fade-in">
+            <div className="font-mono text-xs font-medium text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Filter size={13} className="text-primary" /> 세부 분배 필터 설정
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-mono text-muted-foreground mb-1">
                   배분할 총 수량 제한 (선택)
                 </label>
                 <input
@@ -267,19 +267,19 @@ export default function BulkDistributionSection({
                   placeholder={`전체 (${unassignedCount.toLocaleString()}건)`}
                   value={limitCount}
                   onChange={e => setLimitCount(e.target.value)}
-                  className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-2 text-sm font-mono border border-border rounded-md bg-card text-foreground outline-none focus:ring-1 focus:ring-primary"
                 />
-                <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">비워두면 미배정 리드 전체를 배분합니다</span>
+                <span className="text-2xs text-muted-foreground mt-1 block">비워두면 미배정 리드 전체를 배분합니다</span>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-mono text-muted-foreground mb-1">
                   특정 엑셀 업로드 회차만 배분
                 </label>
                 <select
                   value={selectedBatchId}
                   onChange={e => setSelectedBatchId(e.target.value)}
-                  className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-2 text-sm font-mono border border-border rounded-md bg-card text-foreground outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="">모든 회차 / 전체 미배정</option>
                   {importBatches.map(b => (
@@ -291,13 +291,13 @@ export default function BulkDistributionSection({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-mono text-muted-foreground mb-1">
                   특정 유입경로만 배분
                 </label>
                 <select
                   value={selectedInbound}
                   onChange={e => setSelectedInbound(e.target.value)}
-                  className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-2 text-sm font-mono border border-border rounded-md bg-card text-foreground outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="">모든 유입경로</option>
                   {inboundPaths.map(p => (
@@ -312,30 +312,30 @@ export default function BulkDistributionSection({
             {/* 상담원 개별 선택 목록 */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                <span className="text-xs font-mono text-muted-foreground">
                   배분 대상 상담원 선택 ({targetUserCount}/{activeAgents.length}명)
                 </span>
-                <div className="flex gap-2 text-xs">
-                  <button onClick={selectAllUsers} className="text-blue-600 hover:underline">
+                <div className="flex gap-2 text-2xs font-mono">
+                  <button onClick={selectAllUsers} className="text-primary hover:underline">
                     전원 선택
                   </button>
-                  <span className="text-gray-600 dark:text-gray-300">|</span>
-                  <button onClick={clearAllUsers} className="text-gray-500 hover:underline">
+                  <span className="text-border">|</span>
+                  <button onClick={clearAllUsers} className="text-muted-foreground hover:underline">
                     선택 해제
                   </button>
                 </div>
               </div>
-              <div className="max-h-36 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-800 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
+              <div className="max-h-36 overflow-y-auto border border-border rounded-md p-2 bg-card grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
                 {activeAgents.map(a => (
                   <label
                     key={a.userId}
-                    className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-200 cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground cursor-pointer p-1 rounded hover:bg-muted/40 hover:text-foreground"
                   >
                     <input
                       type="checkbox"
                       checked={selectedUserIds.has(a.userId)}
                       onChange={() => toggleUser(a.userId)}
-                      className="rounded text-blue-600"
+                      className="rounded accent-primary"
                     />
                     <span className="truncate" title={a.displayName}>
                       {a.displayName}
@@ -348,30 +348,30 @@ export default function BulkDistributionSection({
         )}
 
         {/* Action Button & Execution State */}
-        <div className="pt-2">
+        <div className="pt-1">
           <button
             onClick={handleRunBulkDistribute}
             disabled={distributing || unassignedCount <= 0 || targetUserCount === 0}
-            className={`w-full py-3.5 px-6 rounded-xl font-semibold text-primary-foreground shadow-xs transition-all flex items-center justify-center gap-2.5 text-sm ${
+            className={`w-full py-3 px-5 rounded-lg font-mono text-sm font-medium transition-colors flex items-center justify-center gap-2 shadow-2xs ${
               distributing || unassignedCount <= 0 || targetUserCount === 0
                 ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'
-                : 'bg-primary hover:bg-primary/90 active:scale-[0.99]'
+                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
             }`}
           >
             {distributing ? (
               <>
-                <Loader2 className="animate-spin" size={18} />
+                <Loader2 className="animate-spin" size={16} />
                 <span>서버에서 대량 리드 배분을 고속 처리하고 있습니다...</span>
               </>
             ) : (
               <>
-                <Zap size={18} className="fill-primary-foreground text-primary-foreground" />
+                <Zap size={16} />
                 <span>
                   {mode === 'round_robin' && `[원클릭 배분] 활동 상담원 ${targetUserCount}명에게 각 약 ${estimatedPerAgent}건씩 균등 분배 실행`}
                   {mode === 'quota' && `[원클릭 배분] 활동 상담원 ${targetUserCount}명에게 각 ${quotaPerAgent}건씩 채우기 실행`}
                   {mode === 'balanced' && `[원클릭 배분] 진행 중 리드 적은 상담원 우선 균형 배분 실행`}
                 </span>
-                <ArrowRight size={16} />
+                <ArrowRight size={15} />
               </>
             )}
           </button>
@@ -379,19 +379,19 @@ export default function BulkDistributionSection({
 
         {/* Result Summary Modal / Panel */}
         {resultSummary && (
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-3 animate-fade-in">
-            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
-              <CheckCircle2 size={18} className="text-emerald-600" />
+          <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg space-y-3 animate-fade-in">
+            <div className="flex items-center gap-2 text-primary font-medium text-sm font-mono">
+              <CheckCircle2 size={16} className="text-primary" />
               대량 배분이 성공적으로 완료되었습니다! (총 {resultSummary.total.toLocaleString()}건)
             </div>
-            <div className="max-h-40 overflow-y-auto border border-emerald-200/60 dark:border-emerald-800 rounded-lg bg-white dark:bg-gray-800 p-2.5">
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 text-xs">
+            <div className="max-h-40 overflow-y-auto border border-border rounded-md bg-card p-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 text-xs font-mono">
                 {Object.entries(resultSummary.summary).map(([uid, cnt]) => {
                   const m = members.find(x => x.userId === uid);
                   return (
-                    <div key={uid} className="flex justify-between items-center p-1.5 bg-gray-50 dark:bg-gray-700/50 rounded">
-                      <span className="text-gray-700 dark:text-gray-200 font-medium truncate">{m?.displayName || '상담원'}</span>
-                      <span className="font-bold text-blue-600 dark:text-blue-400 ml-1">{cnt}건</span>
+                    <div key={uid} className="flex justify-between items-center p-1.5 bg-muted/40 rounded border border-border/40">
+                      <span className="text-muted-foreground font-medium truncate">{m?.displayName || '상담원'}</span>
+                      <span className="font-semibold text-primary ml-1 tabular-nums">{cnt}건</span>
                     </div>
                   );
                 })}

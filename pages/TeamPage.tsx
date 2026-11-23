@@ -502,18 +502,18 @@ export default function TeamPage() {
           )}
 
           {/* 세부 선택 배정 (소규모/개별 지정) */}
-          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
-              <Shuffle size={18} className="text-blue-600" />
-              <h2 className="font-bold text-gray-800 dark:text-white">정밀 개별/필터 배정</h2>
-              <span className="text-xs text-gray-500 dark:text-gray-400">직접 체크박스로 특정 리드를 골라 배정하거나 해제할 수 있습니다</span>
+          <section className="bg-card rounded-xl border border-border shadow-2xs">
+            <div className="px-5 py-4 border-b border-border flex flex-wrap items-center gap-2">
+              <Shuffle size={18} className="text-primary" />
+              <h2 className="font-bold text-foreground">정밀 개별/필터 배정</h2>
+              <span className="text-xs text-muted-foreground">직접 체크박스로 특정 리드를 골라 배정하거나 해제할 수 있습니다</span>
             </div>
 
-            <div className="px-5 py-3 flex flex-wrap gap-2 items-center border-b border-gray-100 dark:border-gray-700">
+            <div className="px-5 py-3 flex flex-wrap gap-2 items-center border-b border-border bg-card">
               <select
                 value={assignFilter}
                 onChange={e => setAssignFilter(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm dark:bg-gray-700 dark:text-white"
+                className="border border-border rounded-lg px-3 py-1.5 text-xs bg-muted/40 text-foreground font-mono"
               >
                 <option value="unassigned">미배정 리드만</option>
                 <option value="all">전체 리드</option>
@@ -525,7 +525,7 @@ export default function TeamPage() {
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm dark:bg-gray-700 dark:text-white"
+                className="border border-border rounded-lg px-3 py-1.5 text-xs bg-muted/40 text-foreground"
               >
                 <option value="">모든 상태</option>
                 {statuses.map(s => <option key={s} value={s}>{s}</option>)}
@@ -535,21 +535,21 @@ export default function TeamPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="이름·번호·유입경로 검색"
-                className="flex-1 min-w-[180px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm dark:bg-gray-700 dark:text-white"
+                className="flex-1 min-w-[180px] border border-border rounded-lg px-3 py-1.5 text-xs bg-muted/40 text-foreground font-mono placeholder:text-muted-foreground"
               />
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground font-mono">
                 {filteredCases.length.toLocaleString()}건 중 {selected.size.toLocaleString()}건 선택
               </span>
             </div>
 
             {/* 개별 배정 실행 바 */}
-            <div className="px-5 py-3 grid md:grid-cols-2 gap-3 border-b border-gray-100 dark:border-gray-700 bg-blue-50/40 dark:bg-blue-900/10">
+            <div className="px-5 py-3 grid md:grid-cols-2 gap-3 border-b border-border bg-muted/30">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">선택한 리드를</span>
+                <span className="text-xs font-semibold text-foreground">선택한 리드를</span>
                 <select
                   value={targetUser}
                   onChange={e => setTargetUser(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm dark:bg-gray-700 dark:text-white"
+                  className="border border-border rounded-lg px-3 py-1.5 text-xs bg-card text-foreground"
                 >
                   <option value="">— 담당자 선택 —</option>
                   {activeMembers.map(m => (
@@ -560,7 +560,7 @@ export default function TeamPage() {
                 <button
                   onClick={handleAssign}
                   disabled={busy || selected.size === 0 || !targetUser}
-                  className="px-3 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1 shadow-sm"
+                  className="px-3.5 py-1.5 text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg disabled:opacity-50 flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                 >
                   <Check size={14} /> 배정 적용
                 </button>
@@ -923,7 +923,7 @@ export default function TeamPage() {
                                 showToast(`팀 변경 실패: ${err.message}`, 'error');
                               }
                             }}
-                            className="text-xs font-bold border border-indigo-200 dark:border-indigo-800 rounded px-2 py-1 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 cursor-pointer"
+                            className="text-xs font-semibold border border-border rounded px-2 py-1 bg-muted/50 text-foreground font-mono cursor-pointer"
                           >
                             <option value="1팀">1팀</option>
                             <option value="2팀">2팀</option>
@@ -931,7 +931,7 @@ export default function TeamPage() {
                             <option value="본부">본부</option>
                           </select>
                         ) : (
-                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-muted/50 text-foreground border border-border font-mono">
                             {m.teamName || '1팀'}
                           </span>
                         )}
@@ -997,14 +997,10 @@ export default function TeamPage() {
                             <button
                               type="button"
                               onClick={() => setPermissionTargetMember(m)}
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors shrink-0 cursor-pointer shadow-2xs ${
-                                m.adminPermissions?.tier === 3
-                                  ? 'bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
-                                  : 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
-                              }`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors shrink-0 cursor-pointer shadow-2xs bg-card hover:bg-muted text-foreground border-border font-mono"
                               title={m.adminPermissions?.tier === 3 ? "총괄 관리자 전사 권한 세부 설정" : "팀장 스코프 권한 세부 설정"}
                             >
-                              <ShieldCheck size={12} />
+                              <ShieldCheck size={12} className="text-primary" />
                               <span>{m.adminPermissions?.tier === 3 ? 'Tier 3 (총괄 권한)' : `Tier ${m.adminPermissions?.tier || 1} 설정`}</span>
                             </button>
                           )}
@@ -1018,8 +1014,8 @@ export default function TeamPage() {
                             onChange={e => handleMemberChange(m, { uiMode: e.target.value as 'standard' | 'lite_only' })}
                             className={`text-xs font-semibold rounded-lg px-2 py-1 border transition-colors ${
                               m.uiMode === 'lite_only'
-                                ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700'
-                                : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600'
+                                ? 'bg-primary/10 text-primary border-primary/20'
+                                : 'bg-muted/50 text-foreground border-border'
                             }`}
                           >
                             <option value="standard">일반 모드</option>
@@ -1028,8 +1024,8 @@ export default function TeamPage() {
                         ) : (
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
                             m.uiMode === 'lite_only'
-                              ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300'
-                              : 'text-gray-500 dark:text-gray-400'
+                              ? 'bg-primary/10 text-primary border border-primary/20'
+                              : 'text-muted-foreground'
                           }`}>
                             {m.uiMode === 'lite_only' ? '⚡ 간편콜 전용' : '일반'}
                           </span>
@@ -1040,19 +1036,15 @@ export default function TeamPage() {
                           <button
                             type="button"
                             onClick={() => setSecurityTargetMember(m)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:shadow-xs cursor-pointer bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 whitespace-nowrap shrink-0"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:bg-muted cursor-pointer bg-card border-border text-foreground shadow-2xs whitespace-nowrap shrink-0"
                           >
-                            <Shield size={13} className={
-                              !m.securityProfile?.watermark && !m.securityProfile?.appCaptureBlock && !m.securityProfile?.masking && !m.securityProfile?.anomalyAlert
-                                ? 'text-amber-500 shrink-0'
-                                : 'text-blue-500 shrink-0'
-                            } />
-                            <span className="whitespace-nowrap">
+                            <Shield size={13} className="text-primary shrink-0" />
+                            <span className="whitespace-nowrap font-mono">
                               {!m.securityProfile?.watermark && !m.securityProfile?.appCaptureBlock && !m.securityProfile?.masking && !m.securityProfile?.anomalyAlert
-                                ? '🌟 팀장급 (해제)'
+                                ? '팀장급 (해제)'
                                 : m.securityProfile?.watermark && m.securityProfile?.appCaptureBlock && m.securityProfile?.masking && m.securityProfile?.anomalyAlert
-                                  ? '🛡️ 표준 보안'
-                                  : '⚙️ 맞춤 보안'}
+                                  ? '표준 보안'
+                                  : '맞춤 보안'}
                             </span>
                           </button>
                         ) : (
@@ -1095,31 +1087,31 @@ export default function TeamPage() {
             </div>
 
             {/* 초대 및 라이선스 좌석 현황 */}
-            <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/60 rounded-b-xl space-y-3">
+            <div className="px-5 py-4 border-t border-border bg-muted/30 rounded-b-xl space-y-3">
               {/* 좌석 하드 리밋(Hard Seat Limit) 현황 게이지 바 */}
               {seatStatus && seatStatus.maxSeats < 999999 && (
-                <div className="p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl space-y-2">
+                <div className="p-3 bg-card border border-border rounded-xl space-y-2 shadow-2xs">
                   <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200">
-                      <ShieldCheck size={14} className="text-blue-600 dark:text-blue-400" />
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                      <ShieldCheck size={14} className="text-primary" />
                       <span>라이선스 좌석 현황 (Seat Limit)</span>
                     </div>
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="text-gray-500 dark:text-gray-400">사용 중: <strong className="text-gray-900 dark:text-white">{seatStatus.totalOccupied}석</strong> / 최대 {seatStatus.maxSeats}석</span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${seatStatus.isLimitReached ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'}`}>
+                      <span className="text-muted-foreground">사용 중: <strong className="text-foreground">{seatStatus.totalOccupied}석</strong> / 최대 {seatStatus.maxSeats}석</span>
+                      <span className={`px-2 py-0.5 rounded text-2xs font-semibold border ${seatStatus.isLimitReached ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
                         {seatStatus.isLimitReached ? '한도 소진' : `잔여 ${seatStatus.remainingSeats}석`}
                       </span>
                     </div>
                   </div>
                   {/* 진행률 바 */}
-                  <div className="w-full bg-gray-150 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border/40">
                     <div 
-                      className={`h-full transition-all duration-300 rounded-full ${seatStatus.isLimitReached ? 'bg-rose-500' : seatStatus.remainingSeats <= 2 ? 'bg-amber-500' : 'bg-blue-600'}`}
+                      className={`h-full transition-all duration-300 rounded-full ${seatStatus.isLimitReached ? 'bg-destructive' : seatStatus.remainingSeats <= 2 ? 'bg-amber-500' : 'bg-primary'}`}
                       style={{ width: `${Math.min(100, Math.round((seatStatus.totalOccupied / seatStatus.maxSeats) * 100))}%` }}
                     />
                   </div>
                   {seatStatus.isLimitReached && (
-                    <div className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1 pt-0.5">
+                    <div className="text-xs text-destructive flex items-center gap-1 pt-0.5 font-mono">
                       <ShieldAlert size={12} className="shrink-0" />
                       <span>보유 라이선스 좌석을 모두 소진하여 추가 초대가 차단되었습니다. 추가 등록을 원하시면 플랫폼 관리자에게 좌석 확장을 요청하세요.</span>
                     </div>
@@ -1128,8 +1120,8 @@ export default function TeamPage() {
               )}
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200">
-                  <UserPlus size={16} /> 새 멤버 초대
+                <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                  <UserPlus size={15} className="text-primary" /> 새 멤버 초대
                 </div>
                 {(isOwner || myTeamPerms.canInviteMembers) && (
                   <button
@@ -1142,19 +1134,19 @@ export default function TeamPage() {
                       setShowBulkInvite(true);
                     }}
                     disabled={seatStatus?.isLimitReached}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors border shadow-sm ${
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors border shadow-2xs cursor-pointer ${
                       seatStatus?.isLimitReached 
-                        ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700' 
-                        : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border-blue-200 dark:border-blue-800'
+                        ? 'opacity-50 cursor-not-allowed bg-muted text-muted-foreground border-border' 
+                        : 'text-primary bg-primary/10 hover:bg-primary/20 border-primary/20'
                     }`}
                   >
-                    <Users size={14} /> 상담원 대량 초대 (10~50명)
+                    <Users size={13} /> 상담원 대량 초대 (10~50명)
                   </button>
                 )}
               </div>
               {!isOwner && !myTeamPerms.canInviteMembers ? (
-                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 font-medium">
-                  <Lock size={14} className="shrink-0" />
+                <div className="p-3 bg-muted/40 border border-border rounded-lg flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                  <Lock size={14} className="shrink-0 text-muted-foreground" />
                   <span>새 멤버 초대 권한은 Tier 2(수석 팀장) 이상 또는 대표이사에게만 부여되어 있습니다.</span>
                 </div>
               ) : (
@@ -1165,20 +1157,20 @@ export default function TeamPage() {
                       onChange={e => setInviteEmail(e.target.value)}
                       placeholder="구글 계정 이메일"
                       disabled={seatStatus?.isLimitReached}
-                      className="flex-1 min-w-[220px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                      className="flex-1 min-w-[220px] border border-border rounded-lg px-3 py-1.5 text-xs bg-muted/40 text-foreground font-mono disabled:opacity-50 placeholder:text-muted-foreground"
                     />
                     <input
                       value={inviteName}
                       onChange={e => setInviteName(e.target.value)}
                       placeholder="표시 이름 (선택)"
                       disabled={seatStatus?.isLimitReached}
-                      className="w-40 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                      className="w-40 border border-border rounded-lg px-3 py-1.5 text-xs bg-muted/40 text-foreground disabled:opacity-50 placeholder:text-muted-foreground"
                     />
                     <select
                       value={inviteRole}
                       onChange={e => setInviteRole(e.target.value as OrgRole)}
                       disabled={seatStatus?.isLimitReached}
-                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                      className="border border-border rounded-lg px-3 py-1.5 text-xs bg-muted/40 text-foreground disabled:opacity-50"
                     >
                       <option value="agent">상담원</option>
                       {isOwner && <option value="admin">관리자</option>}
@@ -1187,23 +1179,23 @@ export default function TeamPage() {
                     <button
                       onClick={handleInvite}
                       disabled={busy || !inviteEmail.trim() || seatStatus?.isLimitReached}
-                      className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                      className="px-4 py-1.5 text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg disabled:opacity-50 shadow-2xs transition-colors cursor-pointer"
                     >
                       초대 만들기
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-2xs text-muted-foreground">
                     초대받은 사람이 이 사이트에서 <b>같은 구글 계정</b>으로 로그인하면 자동으로 팀에 들어옵니다. 초대는 14일 동안 유효합니다.
                   </p>
                 </>
               )}
               {invites.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-xs font-semibold text-gray-500">수락 대기 {invites.length}건</div>
+                  <div className="text-xs font-semibold text-muted-foreground font-mono">수락 대기 {invites.length}건</div>
                   {invites.map(inv => (
-                    <div key={inv.id} className="flex items-center justify-between text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5">
-                      <span className="text-gray-700 dark:text-gray-200">
-                        {inv.email} <span className="text-xs text-gray-500 dark:text-gray-400">· {ROLE_LABEL[inv.role]}{inv.displayName ? ` · ${inv.displayName}` : ''} · {fmtDate(inv.expiresAt)}까지</span>
+                    <div key={inv.id} className="flex items-center justify-between text-xs bg-card border border-border rounded-lg px-3 py-1.5 font-mono shadow-2xs">
+                      <span className="text-foreground">
+                        {inv.email} <span className="text-muted-foreground">· {ROLE_LABEL[inv.role]}{inv.displayName ? ` · ${inv.displayName}` : ''} · {fmtDate(inv.expiresAt)}까지</span>
                       </span>
                       <button
                         disabled={busy}
@@ -1211,9 +1203,9 @@ export default function TeamPage() {
                           await cancelInvite(inv.id).catch(e => showToast(e.message, 'error'));
                           reload();
                         }}
-                        className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-0.5"
+                        className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-0.5 transition-colors cursor-pointer"
                       >
-                        <X size={14} /> 취소
+                        <X size={13} /> 취소
                       </button>
                     </div>
                   ))}

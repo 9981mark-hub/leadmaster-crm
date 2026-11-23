@@ -89,17 +89,17 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+            <div className="bg-card text-foreground rounded-2xl shadow-2xl border border-border w-full max-w-2xl flex flex-col max-h-[90vh]">
                 
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <Download size={20} className="text-blue-600" />
+                <div className="flex items-center justify-between p-5 border-b border-border bg-muted/30">
+                    <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                        <Download size={18} className="text-primary" />
                         데이터 내보내기 (Excel)
                     </h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300">
-                        <X size={24} />
+                    <button onClick={onClose} className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        <X size={20} />
                     </button>
                 </div>
 
@@ -108,34 +108,34 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
                     
                     {/* 1. 추출 대상 */}
                     <div className="space-y-3">
-                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <Filter size={16} /> 1. 내보낼 데이터 대상
+                        <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
+                            <Filter size={14} className="text-primary" /> 1. 내보낼 데이터 대상
                         </h3>
-                        <div className="flex flex-wrap gap-3">
-                            <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${targetScope === 'all' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-750'}`}>
-                                <input type="radio" name="targetScope" checked={targetScope === 'all'} onChange={() => setTargetScope('all')} className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm font-medium dark:text-gray-200">전체 케이스</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <label className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${targetScope === 'all' ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20' : 'border-border bg-card hover:bg-muted/50 text-muted-foreground'}`}>
+                                <input type="radio" name="targetScope" checked={targetScope === 'all'} onChange={() => setTargetScope('all')} className="w-4 h-4 accent-primary" />
+                                <span className="text-xs font-medium">전체 케이스</span>
                             </label>
-                            <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${targetScope === 'special' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-750'}`}>
-                                <input type="radio" name="targetScope" checked={targetScope === 'special'} onChange={() => setTargetScope('special')} className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm font-medium dark:text-gray-200">특수 케이스 (부재/불가/취소)</span>
+                            <label className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${targetScope === 'special' ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20' : 'border-border bg-card hover:bg-muted/50 text-muted-foreground'}`}>
+                                <input type="radio" name="targetScope" checked={targetScope === 'special'} onChange={() => setTargetScope('special')} className="w-4 h-4 accent-primary" />
+                                <span className="text-xs font-medium">특수 케이스 (부재/불가/취소)</span>
                             </label>
-                            <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${targetScope === 'current' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-750'}`}>
-                                <input type="radio" name="targetScope" checked={targetScope === 'current'} onChange={() => setTargetScope('current')} className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm font-medium dark:text-gray-200">현재 목록 (검색/필터 결과)</span>
+                            <label className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${targetScope === 'current' ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20' : 'border-border bg-card hover:bg-muted/50 text-muted-foreground'}`}>
+                                <input type="radio" name="targetScope" checked={targetScope === 'current'} onChange={() => setTargetScope('current')} className="w-4 h-4 accent-primary" />
+                                <span className="text-xs font-medium">현재 목록 (검색/필터 결과)</span>
                             </label>
                         </div>
                     </div>
 
                     {/* 2. 상태 필터 */}
                     <div className="space-y-3">
-                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <Filter size={16} /> 2. 진행 상태 (1차 상태)
+                        <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
+                            <Filter size={14} className="text-primary" /> 2. 진행 상태 (1차 상태)
                         </h3>
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={handleSelectAllStatuses}
-                                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${isAllStatuses ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'}`}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${isAllStatuses ? 'bg-primary text-primary-foreground border-primary shadow-2xs' : 'bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted'}`}
                             >
                                 전체 상태
                             </button>
@@ -143,7 +143,7 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
                                 <button
                                     key={status}
                                     onClick={() => handleToggleStatus(status)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${!isAllStatuses && selectedStatuses.includes(status) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'}`}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!isAllStatuses && selectedStatuses.includes(status) ? 'bg-primary text-primary-foreground border-primary shadow-2xs' : 'bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted'}`}
                                 >
                                     {status}
                                 </button>
@@ -154,13 +154,13 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
                     {/* 3. 기간 필터 */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <Calendar size={16} /> 3. 기간 설정
+                            <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
+                                <Calendar size={14} className="text-primary" /> 3. 기간 설정
                             </h3>
                             <select 
                                 value={dateType} 
                                 onChange={(e) => setDateType(e.target.value as ExportDateType)}
-                                className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                className="text-xs border border-border rounded-lg py-1 px-2 bg-card text-foreground font-mono"
                             >
                                 <option value="createdAt">등록일 기준</option>
                                 <option value="statusChangedAt">상태변경일 기준</option>
@@ -169,41 +169,41 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
                         </div>
                         
                         <div className="space-y-2">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="dateRange" checked={dateRangeType === 'all'} onChange={() => setDateRangeType('all')} className="text-blue-600" />
-                                <span className="text-sm dark:text-gray-200">전체 기간</span>
+                            <label className="flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                                <input type="radio" name="dateRange" checked={dateRangeType === 'all'} onChange={() => setDateRangeType('all')} className="accent-primary" />
+                                <span>전체 기간</span>
                             </label>
                             
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="dateRange" checked={dateRangeType === 'month'} onChange={() => setDateRangeType('month')} className="text-blue-600" />
-                                <span className="text-sm dark:text-gray-200">월별 선택</span>
+                            <label className="flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                                <input type="radio" name="dateRange" checked={dateRangeType === 'month'} onChange={() => setDateRangeType('month')} className="accent-primary" />
+                                <span>월별 선택</span>
                                 {dateRangeType === 'month' && (
                                     <input 
                                         type="month" 
                                         value={selectedMonth}
                                         onChange={(e) => setSelectedMonth(e.target.value)}
-                                        className="ml-2 text-sm border-gray-300 rounded-md py-1 px-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        className="ml-2 text-xs border border-border rounded-lg py-1 px-2 bg-card text-foreground font-mono"
                                     />
                                 )}
                             </label>
 
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="dateRange" checked={dateRangeType === 'custom'} onChange={() => setDateRangeType('custom')} className="text-blue-600" />
-                                <span className="text-sm dark:text-gray-200">직접 지정</span>
+                            <label className="flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                                <input type="radio" name="dateRange" checked={dateRangeType === 'custom'} onChange={() => setDateRangeType('custom')} className="accent-primary" />
+                                <span>직접 지정</span>
                                 {dateRangeType === 'custom' && (
                                     <div className="flex items-center gap-2 ml-2">
                                         <input 
                                             type="date" 
                                             value={customStartDate}
                                             onChange={(e) => setCustomStartDate(e.target.value)}
-                                            className="text-sm border-gray-300 rounded-md py-1 px-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                            className="text-xs border border-border rounded-lg py-1 px-2 bg-card text-foreground font-mono"
                                         />
-                                        <span className="text-gray-500 dark:text-gray-400">~</span>
+                                        <span className="text-muted-foreground font-mono">~</span>
                                         <input 
                                             type="date" 
                                             value={customEndDate}
                                             onChange={(e) => setCustomEndDate(e.target.value)}
-                                            className="text-sm border-gray-300 rounded-md py-1 px-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                            className="text-xs border border-border rounded-lg py-1 px-2 bg-card text-foreground font-mono"
                                         />
                                     </div>
                                 )}
@@ -213,18 +213,18 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t dark:border-gray-700 flex justify-end gap-2 bg-gray-50 dark:bg-gray-800 rounded-b-xl">
+                <div className="p-4 border-t border-border flex justify-end gap-2.5 bg-muted/30 rounded-b-2xl">
                     <button 
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+                        className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
                     >
                         취소
                     </button>
                     <button 
                         onClick={handleExport}
-                        className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-sm"
+                        className="px-4 py-2 text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                     >
-                        <Download size={16} />
+                        <Download size={14} />
                         다운로드 실행
                     </button>
                 </div>

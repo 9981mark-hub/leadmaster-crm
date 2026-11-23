@@ -323,7 +323,7 @@ export const getStandardRoleInfo = (role?: OrgRole | null, tier?: number | null)
       label: '대표이사',
       badgeText: '👑 대표이사',
       role: 'owner',
-      colorClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800',
+      colorClass: 'bg-primary/15 text-primary border border-primary/30',
     };
   }
   if (role === 'admin') {
@@ -334,7 +334,7 @@ export const getStandardRoleInfo = (role?: OrgRole | null, tier?: number | null)
         badgeText: '🎖️ 총괄 관리자',
         role: 'admin',
         tier: 3,
-        colorClass: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+        colorClass: 'bg-primary/10 text-primary border border-primary/20',
       };
     }
     return {
@@ -343,7 +343,7 @@ export const getStandardRoleInfo = (role?: OrgRole | null, tier?: number | null)
       badgeText: '🛡️ 팀장',
       role: 'admin',
       tier: (tier as AdminTier) || 1,
-      colorClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
+      colorClass: 'bg-muted text-foreground border border-border',
     };
   }
   return {
@@ -351,7 +351,7 @@ export const getStandardRoleInfo = (role?: OrgRole | null, tier?: number | null)
     label: '상담원',
     badgeText: '🎧 상담원',
     role: 'agent',
-    colorClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+    colorClass: 'bg-muted/50 text-muted-foreground border border-border',
   };
 };
 

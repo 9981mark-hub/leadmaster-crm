@@ -727,7 +727,7 @@ export default function MyPage() {
                             <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
                                 <div>
                                     <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                                        <Bell size={16} className="text-amber-500" /> 개인 알림 및 사운드
+                                        <Bell size={16} className="text-primary" /> 개인 알림 및 사운드
                                     </h3>
                                     <p className="text-xs text-muted-foreground mt-0.5">
                                         신규 리드 배정 벨소리와 맞춤 관제 알림을 설정합니다.
@@ -735,18 +735,18 @@ export default function MyPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-3.5">
+                            <div className="space-y-3">
                                 {/* 벨소리 선택 및 미리듣기 */}
-                                <div className="p-3 bg-muted/50 border border-border rounded-xl">
+                                <div className="p-3 bg-muted/40 border border-border rounded-xl">
                                     <div className="mb-2">
-                                        <span className="text-xs font-bold text-foreground">
+                                        <span className="text-xs font-semibold text-foreground">
                                             신규 고객 배정 벨소리
                                         </span>
-                                        <p className="text-xs text-muted-foreground">새로운 리드가 배정되었을 때 울릴 사운드입니다.</p>
+                                        <p className="text-2xs text-muted-foreground font-mono">새로운 리드가 배정되었을 때 울릴 사운드입니다.</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <select
-                                            className="flex-1 p-2 text-xs bg-card border border-border text-foreground rounded-xl font-bold outline-none"
+                                            className="flex-1 p-2 text-xs bg-card border border-border text-foreground rounded-lg font-mono outline-none focus:ring-1 focus:ring-primary"
                                             value={prefs.soundType}
                                             onChange={(e) => updatePref({ soundType: e.target.value as SoundType })}
                                         >
@@ -758,7 +758,7 @@ export default function MyPage() {
                                         <button
                                             type="button"
                                             onClick={handlePlayTestSound}
-                                            className="btn-tactile flex items-center gap-1 px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold transition-colors shadow-2xs"
+                                            className="flex items-center gap-1 px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-mono font-medium transition-colors shadow-2xs cursor-pointer"
                                         >
                                             <Play size={12} /> 재생
                                         </button>
@@ -766,8 +766,8 @@ export default function MyPage() {
                                 </div>
 
                                 {/* 알림 볼륨 조절 */}
-                                <div className="p-3 bg-muted/50 border border-border rounded-xl flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                                <div className="p-3 bg-muted/40 border border-border rounded-xl flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2 text-xs font-medium text-foreground font-mono">
                                         <Volume2 size={16} className="text-muted-foreground" />
                                         <span>볼륨 ({prefs.soundVolume}%)</span>
                                     </div>
@@ -782,20 +782,20 @@ export default function MyPage() {
                                 </div>
 
                                 {/* 데스크톱 푸시 알림 토글 */}
-                                <div className="flex items-center justify-between p-3 bg-muted/50 border border-border rounded-xl">
+                                <div className="flex items-center justify-between p-3 bg-muted/40 border border-border rounded-xl">
                                     <div className="pr-2">
-                                        <span className="text-xs font-bold text-foreground block">
+                                        <span className="text-xs font-semibold text-foreground block">
                                             바탕화면 푸시 알림
                                         </span>
-                                        <p className="text-xs text-muted-foreground">다른 작업 중에도 팝업 알림을 수신합니다.</p>
+                                        <p className="text-2xs text-muted-foreground font-mono">다른 작업 중에도 팝업 알림을 수신합니다.</p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={handleRequestDesktopNotification}
-                                        className={`btn-tactile px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors shrink-0 cursor-pointer shadow-2xs ${
                                             prefs.desktopNotification
-                                                ? 'bg-emerald-600 text-white shadow-2xs'
-                                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-card border border-border text-muted-foreground hover:text-foreground'
                                         }`}
                                     >
                                         {prefs.desktopNotification ? '작동 중 ✓' : '알림 켜기'}
@@ -907,8 +907,8 @@ export default function MyPage() {
                         <Card className="card-interactive">
                             <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
                                 <div>
-                                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                                        <ShieldCheck size={16} className="text-indigo-600 dark:text-indigo-400" /> 나의 시스템 권한 인스펙터
+                                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                        <ShieldCheck size={16} className="text-primary" /> 나의 시스템 권한 인스펙터
                                     </h3>
                                     <p className="text-xs text-muted-foreground mt-0.5">
                                         현재 내 계정에 부여된 전사 권한 범위를 투명하게 확인합니다.
@@ -919,125 +919,125 @@ export default function MyPage() {
                             <div className="space-y-2">
                                 {isOwner ? (
                                     <>
-                                        <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-amber-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">전사 7대 시스템 완전 통제권</p>
-                                                <p className="text-xs text-muted-foreground">조직 소유자(Owner) 전권 보유</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">전사 7대 시스템 완전 통제권</p>
+                                                <p className="text-2xs text-muted-foreground">조직 소유자(Owner) 전권 보유</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-amber-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">거래처 수수료율 및 정산 손익</p>
-                                                <p className="text-xs text-muted-foreground">최고 경영 기밀 완전 열람</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">거래처 수수료율 및 정산 손익</p>
+                                                <p className="text-2xs text-muted-foreground">최고 경영 기밀 완전 열람</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-amber-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">긴급 데이터 즉시 파기 및 복원</p>
-                                                <p className="text-xs text-muted-foreground">소유자 전용 최고 보안 권한</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">긴급 데이터 즉시 파기 및 복원</p>
+                                                <p className="text-2xs text-muted-foreground">소유자 전용 최고 보안 권한</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-amber-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">관리자 권한 위임 및 회수</p>
-                                                <p className="text-xs text-muted-foreground">전사 관리자 4대 티어 통제</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">관리자 권한 위임 및 회수</p>
+                                                <p className="text-2xs text-muted-foreground">전사 관리자 4대 티어 통제</p>
                                             </div>
                                         </div>
                                     </>
                                 ) : isExecutive ? (
                                     <>
-                                        <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-purple-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">전사 팀원 관리 및 인원 초대</p>
-                                                <p className="text-xs text-muted-foreground">총괄 실장 전사 관제 권한</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">전사 팀원 관리 및 인원 초대</p>
+                                                <p className="text-2xs text-muted-foreground">총괄 실장 전사 관제 권한</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-purple-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">AI 트레이닝 전사 훈련 관제</p>
-                                                <p className="text-xs text-muted-foreground">모의훈련 평가 및 정책 설정</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">AI 트레이닝 전사 훈련 관제</p>
+                                                <p className="text-2xs text-muted-foreground">모의훈련 평가 및 정책 설정</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-purple-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">데이터 백업 파일 다운로드</p>
-                                                <p className="text-xs text-muted-foreground">정기 백업 파일 안전 추출 가능</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">데이터 백업 파일 다운로드</p>
+                                                <p className="text-2xs text-muted-foreground">정기 백업 파일 안전 추출 가능</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-muted/60 border border-border rounded-xl flex items-center gap-2.5 opacity-70">
+                                        <div className="p-2.5 bg-muted/40 border border-border/60 rounded-lg flex items-center gap-2.5 opacity-60">
                                             <Lock size={15} className="text-muted-foreground shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-muted-foreground">긴급 데이터 영구 파기</p>
-                                                <p className="text-xs text-muted-foreground">조직 대표(Owner) 전용 제한</p>
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-medium text-muted-foreground">긴급 데이터 영구 파기</p>
+                                                <p className="text-2xs text-muted-foreground">조직 대표(Owner) 전용 제한</p>
                                             </div>
                                         </div>
                                     </>
                                 ) : isTeamLeader ? (
                                     <>
-                                        <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-blue-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">소속 팀원 통화 녹취 청취</p>
-                                                <p className="text-xs text-muted-foreground">{myTeamName} 소속 상담원 한정</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">소속 팀원 통화 녹취 청취</p>
+                                                <p className="text-2xs text-muted-foreground">{myTeamName} 소속 상담원 한정</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-blue-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">AI 트레이닝 코칭 피드백</p>
-                                                <p className="text-xs text-muted-foreground">등급(S~F) 및 코멘트 작성</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">AI 트레이닝 코칭 피드백</p>
+                                                <p className="text-2xs text-muted-foreground">등급(S~F) 및 코멘트 작성</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-blue-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">공통 업무 설정 안전 열람</p>
-                                                <p className="text-xs text-muted-foreground">뷰어 모드 접근 허용</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">공통 업무 설정 안전 열람</p>
+                                                <p className="text-2xs text-muted-foreground">뷰어 모드 접근 허용</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-muted/60 border border-border rounded-xl flex items-center gap-2.5 opacity-70">
+                                        <div className="p-2.5 bg-muted/40 border border-border/60 rounded-lg flex items-center gap-2.5 opacity-60">
                                             <Lock size={15} className="text-muted-foreground shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-muted-foreground">거래처 수수료율 및 경영 손익</p>
-                                                <p className="text-xs text-muted-foreground">경영 기밀 보호 (대표 전용)</p>
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-medium text-muted-foreground">거래처 수수료율 및 경영 손익</p>
+                                                <p className="text-2xs text-muted-foreground">경영 기밀 보호 (대표 전용)</p>
                                             </div>
                                         </div>
                                     </>
                                 ) : (
                                     <>
-                                        <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-emerald-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">내 배정 고객 상담 및 콜 관리</p>
-                                                <p className="text-xs text-muted-foreground">배정 리드 100% 접근 및 CTI 발신</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">내 배정 고객 상담 및 콜 관리</p>
+                                                <p className="text-2xs text-muted-foreground">배정 리드 100% 접근 및 CTI 발신</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2.5">
-                                            <CheckCircle size={15} className="text-emerald-600 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-foreground">AI 트레이닝 모의 훈련 참여</p>
-                                                <p className="text-xs text-muted-foreground">6대 취약점 훈련 및 내 피드백</p>
+                                        <div className="p-2.5 bg-card border border-border shadow-2xs rounded-lg flex items-center gap-2.5 hover:border-primary/40 transition-colors">
+                                            <CheckCircle size={15} className="text-primary shrink-0" />
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-semibold text-foreground">AI 트레이닝 모의 훈련 참여</p>
+                                                <p className="text-2xs text-muted-foreground">6대 취약점 훈련 및 내 피드백</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-muted/60 border border-border rounded-xl flex items-center gap-2.5 opacity-70">
+                                        <div className="p-2.5 bg-muted/40 border border-border/60 rounded-lg flex items-center gap-2.5 opacity-60">
                                             <Lock size={15} className="text-muted-foreground shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-muted-foreground">타 팀원 리드 및 녹취 열람</p>
-                                                <p className="text-xs text-muted-foreground">개인정보 보호를 위한 접근 차단</p>
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-medium text-muted-foreground">타 팀원 리드 및 녹취 열람</p>
+                                                <p className="text-2xs text-muted-foreground">개인정보 보호를 위한 접근 차단</p>
                                             </div>
                                         </div>
-                                        <div className="p-2.5 bg-muted/60 border border-border rounded-xl flex items-center gap-2.5 opacity-70">
+                                        <div className="p-2.5 bg-muted/40 border border-border/60 rounded-lg flex items-center gap-2.5 opacity-60">
                                             <Lock size={15} className="text-muted-foreground shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-muted-foreground">정산 손익 및 시스템 설정</p>
-                                                <p className="text-xs text-muted-foreground">관리자 전용 메뉴 은닉</p>
+                                            <div className="min-w-0 font-mono">
+                                                <p className="text-xs font-medium text-muted-foreground">정산 손익 및 시스템 설정</p>
+                                                <p className="text-2xs text-muted-foreground">관리자 전용 메뉴 은닉</p>
                                             </div>
                                         </div>
                                     </>

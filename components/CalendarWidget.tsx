@@ -487,16 +487,16 @@ export default function CalendarWidget({
 
   const getColorClass = (color: string, type: 'bg' | 'text' | 'border' = 'bg') => {
     const colors: Record<string, Record<string, string>> = {
-      blue: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-800' },
-      green: { bg: 'bg-green-100 dark:bg-green-900/40', text: 'text-green-700 dark:text-green-300', border: 'border-green-300 dark:border-green-800' },
-      orange: { bg: 'bg-orange-100 dark:bg-orange-900/40', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-300 dark:border-orange-800' },
-      red: { bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-300', border: 'border-red-300 dark:border-red-800' },
-      purple: { bg: 'bg-purple-100 dark:bg-purple-900/40', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-300 dark:border-purple-800' },
-      teal: { bg: 'bg-teal-100 dark:bg-teal-900/40', text: 'text-teal-700 dark:text-teal-300', border: 'border-teal-300 dark:border-teal-800' },
-      gray: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-gray-300 dark:border-gray-700' },
-      cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/40', text: 'text-cyan-700 dark:text-cyan-300', border: 'border-cyan-300 dark:border-cyan-800' },
-      lime: { bg: 'bg-lime-100 dark:bg-lime-900/40', text: 'text-lime-700 dark:text-lime-300', border: 'border-lime-300 dark:border-lime-800' },
-      emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-800' },
+      blue: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' },
+      green: { bg: 'bg-primary/15', text: 'text-primary', border: 'border-primary/25' },
+      orange: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+      red: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' },
+      purple: { bg: 'bg-muted/70', text: 'text-foreground', border: 'border-border' },
+      teal: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' },
+      gray: { bg: 'bg-muted/50', text: 'text-foreground', border: 'border-border' },
+      cyan: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' },
+      lime: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' },
+      emerald: { bg: 'bg-primary/15', text: 'text-primary', border: 'border-primary/25' },
     };
     return colors[color]?.[type] || colors.gray[type];
   };
@@ -575,12 +575,12 @@ export default function CalendarWidget({
   }, [unifiedEvents]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-150 dark:border-gray-700">
+    <div className="bg-card rounded-xl shadow-2xs border border-border text-foreground">
       {/* Header */}
-      <div className="p-4 border-b border-gray-150 dark:border-gray-700">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <span className="text-xl">
+          <h3 className="font-bold text-foreground flex items-center gap-2">
+            <span className="text-xl font-mono">
               {viewMode === 'week'
                 ? `${format(startDate, 'M/d', { locale: ko })} ~ ${format(endDate, 'M/d', { locale: ko })}`
                 : format(currentDate, 'yyyy년 M월')
@@ -589,39 +589,39 @@ export default function CalendarWidget({
           </h3>
           <div className="flex items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="flex bg-gray-100 dark:bg-gray-700/80 rounded-lg p-0.5">
+            <div className="flex bg-muted/50 rounded-lg p-0.5 border border-border">
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'month' ? 'bg-white dark:bg-gray-800 shadow-xs text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'month' ? 'bg-card shadow-2xs text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
                 title="월간"
               >
                 <Calendar size={14} />
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'week' ? 'bg-white dark:bg-gray-800 shadow-xs text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'week' ? 'bg-card shadow-2xs text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
                 title="주간"
               >
                 <Clock size={14} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-gray-800 shadow-xs text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                className={`px-2 py-1 text-xs rounded transition-colors ${viewMode === 'list' ? 'bg-card shadow-2xs text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
                 title="리스트"
               >
                 <List size={14} />
               </button>
             </div>
 
-            <button onClick={goToday} className="px-3 py-1 text-xs font-semibold bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded transition-colors">
+            <button onClick={goToday} className="px-3 py-1 text-xs font-semibold bg-muted/50 border border-border hover:bg-muted text-foreground rounded transition-colors font-mono">
               오늘
             </button>
-            <div className="flex rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-              <button onClick={prevMonth} className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 transition-colors">
-                <ChevronLeft size={20} />
+            <div className="flex rounded-md border border-border bg-card">
+              <button onClick={prevMonth} className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground border-r border-border transition-colors">
+                <ChevronLeft size={18} />
               </button>
-              <button onClick={nextMonth} className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors">
-                <ChevronRight size={20} />
+              <button onClick={nextMonth} className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>
@@ -737,16 +737,16 @@ export default function CalendarWidget({
       {viewMode !== 'list' && (
         <>
           {/* Days Header */}
-          <div className="grid grid-cols-7 border-b border-gray-150 dark:border-gray-700 bg-gray-50 dark:bg-gray-850">
+          <div className="grid grid-cols-7 border-b border-border bg-muted/40 font-mono">
             {['일', '월', '화', '수', '목', '금', '토'].map((day, idx) => (
-              <div key={day} className={`text-center py-2 text-xs font-bold ${idx === 0 ? 'text-red-500 dark:text-red-400' : idx === 6 ? 'text-blue-500 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+              <div key={day} className={`text-center py-2 text-xs font-semibold ${idx === 0 ? 'text-destructive' : idx === 6 ? 'text-muted-foreground' : 'text-foreground'}`}>
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 bg-gray-200 dark:bg-gray-700 gap-px">
+          <div className="grid grid-cols-7 bg-border gap-px">
             {calendarDays.map((day) => {
               const dayEvents = getEventsForDay(day);
               const isCurrentMonth = isSameMonth(day, monthStart);
@@ -759,61 +759,61 @@ export default function CalendarWidget({
                   onClick={() => onDateSelect && onDateSelect(day)}
                   onMouseEnter={() => dayEvents.length > 0 && setHoveredDate(day.toISOString())}
                   onMouseLeave={() => setHoveredDate(null)}
-                  className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors ${viewMode === 'week' ? 'h-[260px]' : 'h-[104px] md:h-[156px]'} border border-gray-100 dark:border-gray-700/60 relative
+                  className={`p-1 md:p-2 flex flex-col gap-1 cursor-pointer transition-colors ${viewMode === 'week' ? 'h-[260px]' : 'h-[104px] md:h-[156px]'} border border-border/40 relative
                     ${isSelected 
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 ring-2 ring-blue-500 ring-inset z-10' 
+                      ? 'bg-primary/5 ring-1 ring-primary/40 ring-inset z-10' 
                       : (!isCurrentMonth && viewMode === 'month' 
-                          ? 'bg-gray-50/70 dark:bg-gray-900/60 hover:bg-gray-100 dark:hover:bg-gray-850' 
-                          : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750')
+                          ? 'bg-card/40 opacity-50 hover:bg-card/70' 
+                          : 'bg-card hover:bg-muted/40')
                     }
                   `}
                 >
                   {/* Tooltip */}
                   {hoveredDate === day.toISOString() && dayEvents.length > 0 && (
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-64 bg-gray-900 text-white rounded-lg shadow-xl p-3 animate-fade-in"
+                      className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-64 bg-card text-foreground border border-border rounded-lg shadow-xl p-3 animate-fade-in"
                     >
-                      <div className="text-xs font-bold text-blue-300 mb-2 border-b border-gray-700 pb-1">
+                      <div className="text-xs font-semibold text-primary mb-2 border-b border-border pb-1 font-mono">
                         {format(day, 'M월 d일')} 일정 ({dayEvents.length}건)
                       </div>
                       <div className="space-y-2 max-h-48 overflow-y-auto">
                         {dayEvents.map((ev) => (
                           <div key={ev.id} className={`text-xs border-l-2 ${getColorClass(ev.color, 'border')} pl-2`}>
                             <div className="flex items-center gap-1">
-                              {ev.time && <span className="font-mono font-bold text-yellow-300">{ev.time}</span>}
-                              <span className="font-medium text-white">{ev.title}</span>
+                              {ev.time && <span className="font-mono font-semibold text-primary">{ev.time}</span>}
+                              <span className="font-medium text-foreground">{ev.title}</span>
                             </div>
-                            {ev.subtitle && <div className="text-gray-500 dark:text-gray-400">{ev.subtitle}</div>}
+                            {ev.subtitle && <div className="text-muted-foreground">{ev.subtitle}</div>}
                           </div>
                         ))}
                       </div>
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-gray-900" />
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-border" />
                     </div>
                   )}
 
                   <div className="flex justify-between items-start">
                     <span
-                      className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full
+                      className={`text-xs font-mono w-6 h-6 flex items-center justify-center rounded-full
                         ${isTodayDate 
-                          ? 'bg-blue-600 text-white shadow-xs' 
+                          ? 'bg-primary text-primary-foreground font-semibold shadow-2xs' 
                           : (isSelected 
-                              ? 'text-blue-700 dark:text-blue-300 font-extrabold' 
+                              ? 'text-primary font-bold' 
                               : (isCurrentMonth || viewMode === 'week' 
-                                  ? 'text-gray-800 dark:text-gray-200 font-bold' 
-                                  : 'text-gray-400 dark:text-gray-500')
+                                  ? 'text-foreground font-medium' 
+                                  : 'text-muted-foreground/60')
                             )}`}
                     >
                       {format(day, 'd')}
                     </span>
                     <div className="flex items-center gap-1">
                       {dayEvents.length > 0 && (
-                        <span className="text-xs bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 px-1.5 rounded font-bold">
+                        <span className="text-2xs bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.2 rounded font-mono font-semibold">
                           {dayEvents.length}
                         </span>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleAddMemo(day); }}
-                        className="opacity-0 hover:opacity-100 p-0.5 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded text-blue-500 dark:text-blue-400 transition-colors"
+                        className="opacity-0 hover:opacity-100 p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Plus size={12} />
                       </button>
@@ -825,7 +825,7 @@ export default function CalendarWidget({
                     {dayEvents.slice(0, 5).map((ev, i) => (
                       <div key={i} className={`w-1.5 h-1.5 rounded-full ${getColorClass(ev.color, 'bg').replace('100', '500')}`} />
                     ))}
-                    {dayEvents.length > 5 && <span className="text-[8px] text-gray-500 dark:text-gray-400">+</span>}
+                    {dayEvents.length > 5 && <span className="text-[8px] text-muted-foreground">+</span>}
                   </div>
 
                   {/* Desktop: Event List */}
@@ -860,27 +860,27 @@ export default function CalendarWidget({
                               handleEditMemo(memoId);
                             }
                           }}
-                          className={`text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1
+                          className={`text-2xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1 font-mono
                             ${isSettlement
                               ? (ev.title.includes('예정')
-                                ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-dashed border-emerald-300 dark:border-emerald-700'
-                                : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium border border-emerald-200 dark:border-emerald-800')
+                                ? 'bg-primary/10 text-primary border border-dashed border-primary/30'
+                                : 'bg-primary/15 text-primary font-medium border border-primary/30')
                               : isHoliday
-                                ? 'bg-red-100 dark:bg-rose-950/60 text-red-700 dark:text-rose-300 font-medium border border-rose-200 dark:border-rose-800'
-                                : `${getColorClass(ev.color, 'bg')} ${getColorClass(ev.color, 'text')}`
+                                ? 'bg-destructive/10 text-destructive font-medium border border-destructive/20'
+                                : `${getColorClass(ev.color, 'bg')} ${getColorClass(ev.color, 'text')} border ${getColorClass(ev.color, 'border')}`
                             }`}
                           title={`${ev.time || ''} ${ev.title} - ${ev.subtitle || ''}`}
                         >
                           {(isSettlement || isHoliday || isTax) && (
                             <span className="flex-shrink-0">{getEventIcon()}</span>
                           )}
-                          {ev.time && <span className="font-mono">{ev.time}</span>}
+                          {ev.time && <span className="font-mono text-muted-foreground">{ev.time}</span>}
                           <span className="truncate">{ev.title}</span>
                         </div>
                       );
                     })}
                     {dayEvents.length > (viewMode === 'week' ? 8 : 3) && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                      <div className="text-2xs text-muted-foreground text-center font-mono">
                         +{dayEvents.length - (viewMode === 'week' ? 8 : 3)}개 더
                       </div>
                     )}
