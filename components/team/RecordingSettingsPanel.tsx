@@ -43,11 +43,11 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
     } finally { setBusy(false); }
   };
 
-  const input = 'border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 text-sm dark:bg-gray-700 dark:text-white';
+  const input = 'border border-input rounded-lg px-2.5 py-1 text-xs bg-background text-foreground focus:ring-1 focus:ring-primary outline-none shadow-2xs';
   if (notReady) {
     return (
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm px-5 py-4 flex items-center gap-2 text-sm text-gray-500">
-        <Mic size={18} className="text-gray-500 dark:text-gray-400" /><b className="text-gray-700 dark:text-gray-200">통화 녹음·AI 정리</b> 서버 업데이트 후 사용할 수 있습니다.
+      <section className="bg-card text-card-foreground rounded-xl border border-border shadow-xs px-5 py-4 flex items-center gap-2 text-sm text-muted-foreground">
+        <Mic size={18} className="text-muted-foreground" /><b className="text-foreground">통화 녹음·AI 정리</b> 서버 업데이트 후 사용할 수 있습니다.
       </section>
     );
   }

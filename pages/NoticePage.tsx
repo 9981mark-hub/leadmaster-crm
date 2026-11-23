@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import {
   fetchNotices,
   createNotice,
@@ -56,6 +57,7 @@ import { PlatformOrg, fetchOrganizations } from '../services/platform';
 export const NoticePage: React.FC = () => {
   const { isAdmin, isPlatformAdmin, org, user } = useAuth();
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const navigate = useNavigate();
 
   // 4대 직급 및 권한 판별
@@ -257,7 +259,14 @@ export const NoticePage: React.FC = () => {
   };
 
   const handleDeleteNotice = async (id: string) => {
-    if (!confirm('이 공지사항을 삭제하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '공지사항 삭제',
+      message: '이 공지사항을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.',
+      confirmText: '삭제',
+      cancelText: '취소',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await deleteNotice(id);
       showToast('공지가 삭제되었습니다.', 'info');

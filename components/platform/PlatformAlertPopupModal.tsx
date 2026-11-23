@@ -77,14 +77,22 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow-2xl border border-destructive/30 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className={`w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border ${
+        totalPending > 0 ? 'border-destructive/40' : 'border-border'
+      }`}>
         
         {/* Header with High-Priority Alert Styling */}
-        <div className="px-6 py-4.5 bg-destructive/10 border-b border-destructive/20 flex items-center justify-between">
+        <div className={`px-6 py-4.5 flex items-center justify-between border-b ${
+          totalPending > 0 ? 'bg-destructive/10 border-destructive/20' : 'bg-muted/40 border-border'
+        }`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-destructive/20 border border-destructive/40 text-destructive flex items-center justify-center shrink-0 animate-pulse">
-              <AlertTriangle size={20} strokeWidth={2.25} />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+              totalPending > 0 
+                ? 'bg-destructive/20 border border-destructive/40 text-destructive animate-pulse' 
+                : 'bg-primary/10 border border-primary/20 text-primary'
+            }`}>
+              {totalPending > 0 ? <AlertTriangle size={20} strokeWidth={2.25} /> : <CheckCircle2 size={20} strokeWidth={2.25} />}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -92,16 +100,16 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
                   플랫폼 총괄 긴급/중요 알림 센터
                 </h3>
                 {totalPending > 0 ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-2xs font-extrabold bg-destructive text-white shadow-xs animate-bounce">
+                  <span className="px-2.5 py-0.5 rounded-full text-2xs font-extrabold bg-destructive text-white shadow-2xs animate-bounce font-mono">
                     대기 {totalPending}건
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold bg-primary/20 text-primary border border-primary/30">
+                  <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold font-mono bg-primary/10 text-primary border border-primary/20">
                     처리 완료
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5 font-mono">
                 고객사의 라이선스 좌석 증설 요청 및 신규 회사 가입 신청을 즉시 검토·승인합니다.
               </p>
             </div>
@@ -329,7 +337,7 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
                               onApproveApp(app);
                               onClose();
                             }}
-                            className="px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                            className="px-4 py-1.5 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <Mail size={13} />
                             신청 검토 및 승인 이메일 발송

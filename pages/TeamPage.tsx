@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import { fetchCases, applyLocalAssignment, refreshLocalAssignments } from '../services/api';
 import {
   ROLE_LABEL,
@@ -64,18 +65,18 @@ const maskPhone = (p?: string) => {
 };
 
 const TeamLockedView: React.FC<{ title: string; desc: string }> = ({ title, desc }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center border border-slate-200 dark:border-gray-700 shadow-sm max-w-lg mx-auto my-12 animate-scale-in">
-    <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
-      <Lock size={26} />
+  <div className="bg-card text-card-foreground rounded-2xl p-8 sm:p-10 text-center border border-border shadow-xs max-w-lg mx-auto my-12 animate-scale-in">
+    <div className="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xs">
+      <Lock size={26} strokeWidth={1.75} />
     </div>
-    <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">
+    <h3 className="text-base font-bold text-foreground mb-2">
       {title}
     </h3>
-    <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+    <p className="text-xs text-muted-foreground leading-relaxed mb-4">
       {desc}<br />
       작업 권한이 필요한 경우 대표이사에게 <strong>[관리자 권한 승급(Tier 2/3)]</strong>을 요청하세요.
     </p>
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs font-semibold">
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border text-xs font-semibold">
       🔒 권한 제한 (상위 티어 승인 필요)
     </span>
   </div>
@@ -84,6 +85,7 @@ const TeamLockedView: React.FC<{ title: string; desc: string }> = ({ title, desc
 export default function TeamPage() {
   const { org, user, isPlatformAdmin } = useAuth();
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const queryClient = useQueryClient();
 
   const isOwner = org?.role === 'owner';
@@ -222,7 +224,14 @@ export default function TeamPage() {
     const counts = distMode === 'quantity' ? users.map(u => distCounts[u] || 0) : undefined;
     if (counts && counts.reduce((a, b) => a + b, 0) === 0) return showToast('상담원마다 건수를 입력하세요', 'error');
     const label = distMode === 'round_robin' ? '차례대로' : distMode === 'balanced' ? '진행 중 리드가 적은 사람부터' : '정한 건수만큼';
-    if (!window.confirm(`${ids.length}건을 상담원 ${users.length}명에게 ${label} 나눠줄까요?`)) return;
+    const ok = await confirm({
+      title: '리드 자동 나눠주기',
+      message: `${ids.length}건을 상담원 ${users.length}명에게 ${label} 나눠줄까요?`,
+      confirmText: '나눠주기 실행',
+      cancelText: '취소',
+      variant: 'default',
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       const result = await distributeCases(ids, distMode, users, counts);
@@ -253,7 +262,16 @@ export default function TeamPage() {
   };
 
   const handleMemberChange = async (m: TeamMember, changes: Parameters<typeof updateTeamMember>[1], confirmMsg?: string) => {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    if (confirmMsg) {
+      const ok = await confirm({
+        title: '팀원 정보 변경',
+        message: confirmMsg,
+        confirmText: '확인',
+        cancelText: '취소',
+        variant: 'default',
+      });
+      if (!ok) return;
+    }
     setBusy(true);
     try {
       await updateTeamMember(m.userId, changes);
@@ -628,18 +646,18 @@ export default function TeamPage() {
 
             {/* 테이블 */}
             <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs sticky top-0">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/50 border-b border-border text-muted-foreground sticky top-0 z-10 font-mono">
                   <tr>
-                    <th className="px-5 py-2 w-10">
-                      <input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} />
+                    <th className="px-4 py-2.5 w-10 text-center">
+                      <input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} className="rounded border-input text-primary focus:ring-primary cursor-pointer" />
                     </th>
-                    <th className="text-left px-3 py-2">고객</th>
-                    <th className="text-left px-3 py-2">연락처</th>
-                    <th className="text-left px-3 py-2">상태</th>
-                    <th className="text-left px-3 py-2">유입경로</th>
-                    <th className="text-left px-3 py-2">등록일</th>
-                    <th className="text-left px-3 py-2">담당</th>
+                    <th className="text-left px-3 py-2.5 font-semibold">고객명</th>
+                    <th className="text-left px-3 py-2.5 font-semibold">연락처</th>
+                    <th className="text-left px-3 py-2.5 font-semibold">상태</th>
+                    <th className="text-left px-3 py-2.5 font-semibold">유입경로</th>
+                    <th className="text-left px-3 py-2.5 font-semibold">등록일</th>
+                    <th className="text-left px-3 py-2.5 font-semibold">담당자</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -647,34 +665,34 @@ export default function TeamPage() {
                     <tr
                       key={c.caseId}
                       onClick={() => toggle(c.caseId)}
-                      className={`cursor-pointer ${
+                      className={`cursor-pointer transition-colors ${
                         selected.has(c.caseId)
-                          ? 'bg-blue-50 dark:bg-blue-900/20'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/40'
+                          ? 'bg-primary/10 text-primary'
+                          : 'hover:bg-muted/40'
                       }`}
                     >
-                      <td className="px-5 py-2" onClick={e => e.stopPropagation()}>
-                        <input type="checkbox" checked={selected.has(c.caseId)} onChange={() => toggle(c.caseId)} />
+                      <td className="px-4 py-2.5 text-center" onClick={e => e.stopPropagation()}>
+                        <input type="checkbox" checked={selected.has(c.caseId)} onChange={() => toggle(c.caseId)} className="rounded border-input text-primary focus:ring-primary cursor-pointer" />
                       </td>
-                      <td className="px-3 py-2 font-medium text-gray-800 dark:text-gray-100">{c.customerName}</td>
-                      <td className="px-3 py-2 text-gray-500 tabular-nums">{maskPhone(c.phone)}</td>
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{c.status}</td>
-                      <td className="px-3 py-2 text-gray-500">{c.inboundPath}</td>
-                      <td className="px-3 py-2 text-gray-500">{fmtDate(c.createdAt)}</td>
-                      <td className={`px-3 py-2 ${c.assignedUserId ? 'text-gray-700 dark:text-gray-200' : 'text-orange-500 font-semibold'}`}>
+                      <td className="px-3 py-2.5 font-medium text-foreground">{c.customerName}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground font-mono tabular-nums">{maskPhone(c.phone)}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{c.status}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{c.inboundPath}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground font-mono">{fmtDate(c.createdAt)}</td>
+                      <td className={`px-3 py-2.5 ${c.assignedUserId ? 'text-foreground font-medium' : 'text-amber-500 font-semibold'}`}>
                         {memberName(c.assignedUserId)}
                       </td>
                     </tr>
                   ))}
                   {filteredCases.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">조건에 맞는 리드가 없습니다.</td>
+                      <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground font-mono">조건에 맞는 리드가 없습니다.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
               {filteredCases.length > 500 && (
-                <div className="px-5 py-2 text-xs text-gray-500 border-t border-gray-100 dark:border-gray-700">
+                <div className="px-5 py-2.5 text-xs text-muted-foreground border-t border-border bg-muted/20 font-mono">
                   화면에는 500건까지만 보입니다. "모두 선택"은 보이는 500건만 고릅니다. 필터로 범위를 좁히거나 상단 대용량 배분을 이용하세요.
                 </div>
               )}
@@ -682,20 +700,29 @@ export default function TeamPage() {
           </section>
 
           {/* 최근 배정 기록 */}
-          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
-              <History size={16} className="text-gray-500" />
-              <h2 className="font-bold text-gray-800 dark:text-white text-sm">최근 배정 기록</h2>
-              <span className="text-xs text-gray-500 dark:text-gray-400">최근 50건 · 배정 이력 추적</span>
+          <section className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
+            <div className="px-5 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
+              <History size={16} className="text-primary" />
+              <h2 className="font-bold text-foreground text-sm">최근 배정 기록</h2>
+              <span className="text-xs text-muted-foreground font-mono">최근 50건 · 배정 이력 추적</span>
             </div>
             <div className="max-h-72 overflow-y-auto">
               <table className="w-full text-xs">
+                <thead className="bg-muted/50 border-b border-border text-muted-foreground sticky top-0 z-10 font-mono">
+                  <tr>
+                    <th className="text-left px-4 py-2 font-semibold whitespace-nowrap">일시</th>
+                    <th className="text-left px-3 py-2 font-semibold">대상 고객</th>
+                    <th className="text-left px-3 py-2 font-semibold whitespace-nowrap">배정 경로</th>
+                    <th className="text-left px-3 py-2 font-semibold">사유</th>
+                    <th className="text-left px-4 py-2 font-semibold">처리자 · 메모</th>
+                  </tr>
+                </thead>
                 <tbody className="divide-y divide-border">
                   {logs.map(l => {
                     const cs = liveCases.find(c => c.caseId === l.caseId);
                     return (
-                      <tr key={l.id}>
-                        <td className="px-5 py-1.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <tr key={l.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="px-4 py-2 text-muted-foreground font-mono whitespace-nowrap">
                           {new Date(l.createdAt).toLocaleString('ko-KR', {
                             month: 'numeric',
                             day: 'numeric',
@@ -703,25 +730,25 @@ export default function TeamPage() {
                             minute: '2-digit'
                           })}
                         </td>
-                        <td className="px-2 py-1.5 font-medium text-gray-700 dark:text-gray-200">
+                        <td className="px-3 py-2 font-medium text-foreground">
                           {cs?.customerName || l.caseId}
                         </td>
-                        <td className="px-2 py-1.5 text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                          {l.fromUser ? memberName(l.fromUser) : '미배정'} → {l.toUser ? memberName(l.toUser) : '미배정'}
+                        <td className="px-3 py-2 text-muted-foreground whitespace-nowrap font-mono">
+                          {l.fromUser ? memberName(l.fromUser) : '미배정'} → <span className="text-primary font-semibold">{l.toUser ? memberName(l.toUser) : '미배정'}</span>
                         </td>
-                        <td className="px-2 py-1.5">
-                          <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                        <td className="px-3 py-2">
+                          <span className="px-2 py-0.5 rounded-md text-2xs font-mono font-medium bg-muted text-foreground border border-border">
                             {REASON_LABEL[l.reason] || l.reason}
                           </span>
                         </td>
-                        <td className="px-2 py-1.5 text-gray-500 dark:text-gray-400">
-                          {l.byUser ? memberName(l.byUser) : '시스템'}{l.note ? ` · ${l.note}` : ''}
+                        <td className="px-4 py-2 text-muted-foreground font-mono">
+                          <span className="text-foreground">{l.byUser ? memberName(l.byUser) : '시스템'}</span>{l.note ? ` · ${l.note}` : ''}
                         </td>
                       </tr>
                     );
                   })}
                   {logs.length === 0 && (
-                    <tr><td className="px-5 py-4 text-center text-gray-500 dark:text-gray-400">아직 배정 기록이 없습니다.</td></tr>
+                    <tr><td colSpan={5} className="px-5 py-8 text-center text-muted-foreground font-mono">아직 배정 기록이 없습니다.</td></tr>
                   )}
                 </tbody>
               </table>

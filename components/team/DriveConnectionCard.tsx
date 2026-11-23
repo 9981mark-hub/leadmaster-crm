@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { HardDrive, Link2, FolderPlus, FolderOpen, FlaskConical, Unlink, RefreshCw, Check, X, FileAudio, Download } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import {
   DriveStatus, fetchDriveStatus, startDriveConnect, createDriveFolder, setDriveFolder, testDrive, disconnectDrive,
   openDrivePicker, PICKER_API_KEY, takeDriveReturnFlag, DRIVE_RETURN_MESSAGES, importLegacyRecordings, LegacyImportStats,
@@ -16,6 +17,7 @@ const fmt = (iso?: string | null) => {
 /** 팀 관리 → 녹음 설정 안: 회사 구글 드라이브 연결 (녹음 장기 보관) */
 export default function DriveConnectionCard() {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [st, setSt] = useState<DriveStatus | null | undefined>(undefined); // undefined = 불러오는 중, null = 서버 준비 전
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -66,14 +68,21 @@ export default function DriveConnectionCard() {
     const r = await testDrive();
     showToast(r.test.ok ? '연결 시험 성공: 드라이브에 올리고 지우기까지 됐습니다.' : '연결 시험 중 실패한 단계가 있습니다. 아래 결과를 보세요.', r.test.ok ? 'success' : 'error');
   });
-  const disconnect = () => {
-    if (!window.confirm('구글 드라이브 연결을 해제할까요?\n\n드라이브에 있는 녹음 파일은 지워지지 않습니다. 해제하는 동안 새 녹음은 드라이브에 올라가지 않습니다.')) return;
+  const disconnect = async () => {
+    const ok = await confirm({
+      title: '구글 드라이브 연결 해제',
+      message: '구글 드라이브 연결을 해제할까요?\n\n드라이브에 있는 녹음 파일은 지워지지 않습니다. 해제하는 동안 새 녹음은 드라이브에 올라가지 않습니다.',
+      confirmText: '연결 해제',
+      cancelText: '취소',
+      variant: 'danger',
+    });
+    if (!ok) return;
     run('disconnect', disconnectDrive, '구글 드라이브 연결을 해제했습니다.');
   };
 
   const btn = 'px-3 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1 disabled:opacity-40';
-  if (st === undefined) return <div className="text-xs text-gray-500 dark:text-gray-400 px-1 py-2">드라이브 연결 상태 확인 중…</div>;
-  if (st === null) return <div className="text-xs text-gray-500 dark:text-gray-400 px-1 py-2 flex items-center gap-1"><HardDrive size={13} /> 구글 드라이브 보관은 서버 업데이트 후 사용할 수 있습니다.</div>;
+  if (st === undefined) return <div className="text-xs text-muted-foreground px-1 py-2">드라이브 연결 상태 확인 중…</div>;
+  if (st === null) return <div className="text-xs text-muted-foreground px-1 py-2 flex items-center gap-1"><HardDrive size={13} /> 구글 드라이브 보관은 서버 업데이트 후 사용할 수 있습니다.</div>;
 
   const ready = st.connected && !!st.rootFolderId;
   return (
@@ -121,7 +130,7 @@ export default function DriveConnectionCard() {
           </>
         )}
       </div>
-      {st.connected && !PICKER_API_KEY && <p className="text-xs text-gray-500 dark:text-gray-400">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
+      {st.connected && !PICKER_API_KEY && <p className="text-xs text-muted-foreground">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
 
       {imp && (
         <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground grid grid-cols-[12rem_1fr] gap-y-0.5">

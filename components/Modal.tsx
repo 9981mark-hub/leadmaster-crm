@@ -13,23 +13,27 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
   return (
     <div 
-      className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 backdrop-blur-xs"
+      className="fixed inset-0 bg-background/80 z-50 flex justify-center items-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div 
-        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 dark:border-gray-700 overflow-hidden"
+        className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-md border border-border overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700">
-          <h3 id="modal-title" className="text-lg font-bold text-gray-800 dark:text-white">{title}</h3>
-          <button onClick={onClose} className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg transition-colors" aria-label="Close">
-            <X size={20} />
+        <div className="flex justify-between items-center px-6 py-4 border-b border-border bg-muted/40">
+          <h3 id="modal-title" className="text-base font-bold text-foreground">{title}</h3>
+          <button 
+            onClick={onClose} 
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer" 
+            aria-label="Close"
+          >
+            <X size={18} />
           </button>
         </div>
-        <div className="p-6">
+        <div className="p-6 text-foreground">
           {children}
         </div>
       </div>

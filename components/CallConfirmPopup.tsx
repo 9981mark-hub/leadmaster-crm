@@ -3,6 +3,7 @@ import { Phone, X, Smartphone, Monitor, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { enqueuePendingCall } from '../services/supabase';
 import { useActiveCall } from '../contexts/ActiveCallContext';
+import { useToast } from '../contexts/ToastContext';
 
 interface CallConfirmPopupProps {
     isOpen: boolean;
@@ -25,6 +26,7 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const { startCall } = useActiveCall();
+    const { showToast } = useToast();
 
     // Reset state when popup opens
     useEffect(() => {
@@ -76,12 +78,12 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                     onConfirm();
                 }, 1000);
             } else {
-                alert('전화 요청 전송에 실패했습니다.');
+                showToast('전화 요청 전송에 실패했습니다.', 'error');
                 setSending(false);
             }
         } catch (e) {
             console.error('Failed to enqueue pending call:', e);
-            alert('전화 요청 전송에 실패했습니다.');
+            showToast('전화 요청 전송에 실패했습니다.', 'error');
             setSending(false);
         }
     };
@@ -96,40 +98,40 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="fixed inset-0 bg-black/40 z-[9998]"
+                        className="fixed inset-0 bg-background/80 backdrop-blur-xs z-[9998]"
                         onClick={onCancel}
                     />
                     {/* Popup */}
                     <motion.div
                         ref={popupRef}
-                        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                        initial={{ opacity: 0, scale: 0.94, y: 8 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[320px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                        exit={{ opacity: 0, scale: 0.94, y: 8 }}
+                        transition={{ duration: 0.15, ease: 'easeOut' }}
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[340px] bg-card text-card-foreground rounded-2xl shadow-2xl border border-border overflow-hidden"
                     >
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-4 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-                                    <Phone size={18} className="text-white" />
+                        <div className="bg-primary/10 border-b border-primary/20 px-5 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 bg-primary/20 text-primary border border-primary/30 rounded-lg flex items-center justify-center shrink-0">
+                                    <Phone size={16} />
                                 </div>
-                                <span className="text-white font-bold text-sm">전화 걸기</span>
+                                <span className="text-foreground font-bold text-sm">전화 발신 확인</span>
                             </div>
                             <button
                                 onClick={onCancel}
-                                className="text-white/70 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+                                className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors p-1.5 rounded-lg cursor-pointer"
                             >
-                                <X size={18} />
+                                <X size={16} />
                             </button>
                         </div>
 
                         {/* Body */}
-                        <div className="px-5 py-5 text-center">
-                            <p className="text-gray-800 dark:text-gray-200 font-bold text-lg mb-1">
+                        <div className="px-6 py-6 text-center space-y-1.5">
+                            <p className="text-foreground font-bold text-lg">
                                 {customerName}
                             </p>
-                            <p className="text-green-600 dark:text-green-400 font-mono text-xl font-bold tracking-wide">
+                            <p className="text-primary font-mono text-2xl font-black tracking-wider tabular-nums">
                                 {formatPhone(phoneNumber)}
                             </p>
 
@@ -138,39 +140,39 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                                 <motion.div
                                     initial={{ opacity: 0, y: 5 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="mt-3 flex items-center justify-center gap-1.5 text-green-600"
+                                    className="mt-4 flex items-center justify-center gap-1.5 text-primary font-semibold text-xs font-mono"
                                 >
-                                    <Check size={16} />
-                                    <span className="text-sm font-medium">핸드폰으로 전송 완료!</span>
+                                    <Check size={15} />
+                                    <span>핸드폰 앱으로 1초 전송 완료!</span>
                                 </motion.div>
                             )}
 
                             {!sent && (
-                                <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-xs mt-3">
+                                <p className="text-muted-foreground text-xs font-mono mt-3">
                                     {isMobile
                                         ? '이 고객에게 전화를 거시겠습니까?'
-                                        : '핸드폰으로 전화 요청을 보냅니다'}
+                                        : '등록된 안드로이드 단말로 발신 신호를 전송합니다'}
                                 </p>
                             )}
                         </div>
 
                         {/* Buttons */}
                         {!sent && (
-                            <div className="flex border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex border-t border-border bg-muted/30">
                                 <button
                                     onClick={onCancel}
-                                    className="flex-1 py-3.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                    className="flex-1 py-3 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                                 >
                                     취소
                                 </button>
-                                <div className="w-px bg-gray-100 dark:bg-gray-700" />
+                                <div className="w-px bg-border" />
 
                                 {isMobile ? (
                                     /* 모바일: 직접 tel: 링크로 전화앱 실행 */
                                     <a
                                         href={`tel:${cleanPhone}`}
                                         onClick={() => setTimeout(onConfirm, 300)}
-                                        className="flex-1 py-3.5 text-sm font-bold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center justify-center gap-1.5 no-underline"
+                                        className="flex-1 py-3 text-xs font-bold text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 no-underline cursor-pointer"
                                     >
                                         <Phone size={14} />
                                         전화 걸기
@@ -180,17 +182,17 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                                     <button
                                         onClick={handleSendToMobile}
                                         disabled={sending}
-                                        className="flex-1 py-3.5 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                        className="flex-1 py-3 text-xs font-bold text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
                                     >
                                         {sending ? (
                                             <>
-                                                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                                                <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                                 전송 중...
                                             </>
                                         ) : (
                                             <>
                                                 <Smartphone size={14} />
-                                                핸드폰으로 전화
+                                                핸드폰으로 발신
                                             </>
                                         )}
                                     </button>

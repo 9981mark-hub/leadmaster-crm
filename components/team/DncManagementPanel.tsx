@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Ban, Plus, Trash2, Search, RefreshCw, AlertTriangle, ShieldCheck, PhoneOff, ArrowRightLeft } from 'lucide-react';
+import { Ban, Plus, Trash2, Search, RefreshCw, AlertTriangle, ShieldCheck, PhoneOff, ArrowRightLeft, X } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import { fetchDncList, registerDnc, removeDnc, DncRecord, DNC_REASON_LABEL, runSmartRotation } from '../../services/dnc';
 
 export default function DncManagementPanel() {
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [list, setList] = useState<DncRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -50,7 +52,13 @@ export default function DncManagementPanel() {
   };
 
   const handleDelete = async (item: DncRecord) => {
-    if (!window.confirm(`${item.phoneNumber} 번호의 수신거부(DNC) 차단을 해제하시겠습니까?`)) return;
+    const ok = await confirm({
+      title: '수신거부(DNC) 차단 해제',
+      message: `${item.phoneNumber} 번호의 수신거부 차단을 해제하시겠습니까?\n해제 시 상담원들이 다시 발신 및 배정할 수 있게 됩니다.`,
+      confirmText: '차단 해제',
+      type: 'warning'
+    });
+    if (!ok) return;
     try {
       await removeDnc(item.id);
       showToast('차단이 해제되었습니다.', 'success');
@@ -61,7 +69,13 @@ export default function DncManagementPanel() {
   };
 
   const handleRunRotation = async () => {
-    if (!window.confirm('상태가 [부재]이고 48시간 이상 경과한 리드를 다른 활동 상담원에게 자동 교체(로테이션)하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '장기 부재 리드 자동 교체(로테이션)',
+      message: '상태가 [부재]이고 48시간 이상 경과한 리드를 다른 활동 상담원에게 자동 교체(로테이션)하시겠습니까?',
+      confirmText: '로테이션 실행',
+      type: 'info'
+    });
+    if (!ok) return;
     setRotating(true);
     try {
       const res = await runSmartRotation(3, 48, 200);
@@ -218,14 +232,26 @@ export default function DncManagementPanel() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-5 shadow-xl space-y-4">
-            <h3 className="font-bold text-base text-gray-800 dark:text-white flex items-center gap-2">
-              <PhoneOff size={18} className="text-red-600" /> 수신거부(DNC) 번호 직접 등록
-            </h3>
-            <form onSubmit={handleAdd} className="space-y-3">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-card text-foreground rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border space-y-4">
+            <div className="flex items-center justify-between pb-3.5 border-b border-border">
+              <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-destructive/10 text-destructive border border-destructive/20">
+                  <PhoneOff size={16} />
+                </div>
+                <span>수신거부(DNC) 번호 직접 등록</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleAdd} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-2xs font-mono font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                   전화번호
                 </label>
                 <input
@@ -233,19 +259,19 @@ export default function DncManagementPanel() {
                   placeholder="예: 01012345678"
                   value={newPhone}
                   onChange={e => setNewPhone(e.target.value)}
-                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full p-2.5 text-xs font-mono border border-input rounded-lg bg-background text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-2xs font-mono font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                   차단 사유
                 </label>
                 <select
                   value={newReason}
                   onChange={e => setNewReason(e.target.value as any)}
-                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full p-2.5 text-xs font-mono border border-input rounded-lg bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer"
                 >
                   <option value="refusal">수신 거부 (통화 원치 않음)</option>
                   <option value="wrong_number">신청 안 함 (오신청/타인)</option>
@@ -255,7 +281,7 @@ export default function DncManagementPanel() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-2xs font-mono font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                   메모 (선택)
                 </label>
                 <textarea
@@ -263,21 +289,21 @@ export default function DncManagementPanel() {
                   value={newNote}
                   onChange={e => setNewNote(e.target.value)}
                   rows={2}
-                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full p-2.5 text-xs font-mono border border-input rounded-lg bg-background text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors cursor-pointer"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  className="px-5 py-2 text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl shadow-2xs transition-colors cursor-pointer"
                 >
                   차단 등록
                 </button>

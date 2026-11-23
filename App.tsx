@@ -37,6 +37,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 // Contexts & Providers
 import { ToastProvider, useToast } from './contexts/ToastContext';
+import { ConfirmDialogProvider } from './contexts/ConfirmDialogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { ReminderProvider } from './contexts/ReminderContext';
@@ -376,6 +377,22 @@ function HashRedirect() {
   return null;
 }
 
+/**
+ * 브라우저 기본 시스템 alert 창을 가로채어 리드마스터 커스텀 UI 토스트 알림으로 자동 라우팅
+ */
+function SystemAlertInterceptor() {
+  const { showToast } = useToast();
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.alert = (message?: any) => {
+        const text = typeof message === 'string' ? message : String(message ?? '');
+        showToast(text, 'error');
+      };
+    }
+  }, [showToast]);
+  return null;
+}
+
 export default function App() {
   const RouterComponent = isGitHubPages ? HashRouter : BrowserRouter;
 
@@ -385,29 +402,32 @@ export default function App() {
         <RouterComponent>
           {!isGitHubPages && <HashRedirect />}
           <ToastProvider>
-            <ThemeProvider>
-              <AuthProvider>
-                <ReminderProvider>
-                  <ActiveCallProvider>
-                    <Suspense fallback={
-                      <div className="flex h-screen items-center justify-center bg-background">
-                        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                      </div>
-                    }>
-                      <Routes>
-                        <Route path="/login" element={<ErrorBoundary><LoginPage /></ErrorBoundary>} />
-                        <Route path="/pricing" element={<ErrorBoundary><PricingPage /></ErrorBoundary>} />
-                        <Route path="/*" element={<ProtectedRoutes />} />
-                      </Routes>
-                      <ReminderNotificationContainer />
-                      <ActiveCallPopup />
-                      <NewCasePopup />
-                      <SecurityWatermark />
-                    </Suspense>
-                  </ActiveCallProvider>
-                </ReminderProvider>
-              </AuthProvider>
-            </ThemeProvider>
+            <SystemAlertInterceptor />
+            <ConfirmDialogProvider>
+              <ThemeProvider>
+                <AuthProvider>
+                  <ReminderProvider>
+                    <ActiveCallProvider>
+                      <Suspense fallback={
+                        <div className="flex h-screen items-center justify-center bg-background">
+                          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                        </div>
+                      }>
+                        <Routes>
+                          <Route path="/login" element={<ErrorBoundary><LoginPage /></ErrorBoundary>} />
+                          <Route path="/pricing" element={<ErrorBoundary><PricingPage /></ErrorBoundary>} />
+                          <Route path="/*" element={<ProtectedRoutes />} />
+                        </Routes>
+                        <ReminderNotificationContainer />
+                        <ActiveCallPopup />
+                        <NewCasePopup />
+                        <SecurityWatermark />
+                      </Suspense>
+                    </ActiveCallProvider>
+                  </ReminderProvider>
+                </AuthProvider>
+              </ThemeProvider>
+            </ConfirmDialogProvider>
           </ToastProvider>
         </RouterComponent>
         <ReactQueryDevtools initialIsOpen={false} />

@@ -75,27 +75,27 @@ export default function CustomAlertModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-md bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-slate-100"
+        className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4 text-foreground"
         onClick={e => e.stopPropagation()}
       >
         {/* 헤더 & 아이콘 */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3.5">
-            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 ${getIconBg()}`}>
+            <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${getIconBg()}`}>
               {getIcon()}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight leading-snug">
+              <h3 className="text-base font-bold text-foreground tracking-tight leading-snug">
                 {title}
               </h3>
               {email && (
-                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                  <span className="font-mono text-slate-600 dark:text-slate-300">{email}</span>
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="font-mono text-muted-foreground">{email}</span>
                 </div>
               )}
             </div>
@@ -103,19 +103,19 @@ export default function CustomAlertModal({
           <button 
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* 본문 메시지 */}
-        <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50/40 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+        <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed whitespace-pre-line bg-muted/30 p-4 rounded-xl border border-border">
           {message}
         </div>
 
         {/* 버튼 영역 */}
-        <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+        <div className="flex flex-col sm:flex-row gap-2 pt-1">
           {type === 'uninvited' && onApplyClick && (
             <button
               type="button"
@@ -123,7 +123,7 @@ export default function CustomAlertModal({
                 onClose();
                 onApplyClick();
               }}
-              className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all cursor-pointer"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer"
             >
               <Building2 size={16} />
               <span>TM 회사 가입 신청하기</span>
@@ -135,7 +135,7 @@ export default function CustomAlertModal({
             <button
               type="button"
               onClick={onClose}
-              className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
             >
               {cancelText}
             </button>
@@ -146,8 +146,8 @@ export default function CustomAlertModal({
             onClick={handleConfirm}
             className={`py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm transition-colors cursor-pointer ${
               type === 'uninvited' 
-                ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300'
-                : 'bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white flex-1 text-center shadow-md'
+                ? 'bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground'
+                : 'bg-primary hover:bg-primary/90 text-primary-foreground flex-1 text-center shadow-2xs'
             }`}
           >
             {confirmText}
