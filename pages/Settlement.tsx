@@ -1635,45 +1635,45 @@ export default function Settlement() {
                 if (overdueCases.length === 0) return null;
 
                 return (
-                    <div className="bg-red-50 rounded-xl shadow-sm border border-red-100 p-6">
+                    <div className="bg-destructive/10 rounded-2xl shadow-2xs border border-destructive/30 p-5">
                         <div className="flex justify-between items-center mb-4">
-                            <div className="flex items-center gap-2">
-                                <span className="p-1.5 bg-red-100 text-red-600 rounded-lg">🚨</span>
+                            <div className="flex items-center gap-2.5">
+                                <span className="p-1.5 bg-destructive/15 text-destructive border border-destructive/20 rounded-lg text-sm">🚨</span>
                                 <div>
-                                    <h3 className="font-bold text-red-800">장기 미수금 현황</h3>
-                                    <p className="text-xs text-red-600">최근 30일 이상 미입금 고객 ({overdueCases.length}명)</p>
+                                    <h3 className="font-bold text-foreground text-sm">장기 미수금 현황</h3>
+                                    <p className="text-2xs text-muted-foreground">최근 30일 이상 미입금 고객 ({overdueCases.length}명)</p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-xs text-red-500">총 미수금</p>
-                                <p className="font-bold text-red-700 text-lg">
+                                <p className="text-2xs text-muted-foreground font-medium">총 미수금</p>
+                                <p className="font-bold text-destructive text-base font-mono tabular-nums">
                                     {overdueCases.reduce((sum, c) => sum + c.unpaidAmount, 0).toLocaleString()}만원
                                 </p>
                             </div>
                         </div>
 
                         {/* Horizontal Scroll for Overdue Cards */}
-                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                             {overdueCases.map(c => (
-                                <div key={c.caseId} className="min-w-[240px] bg-white dark:bg-gray-800 p-4 rounded-lg border border-red-200 dark:border-red-800 shadow-sm flex-shrink-0">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-bold text-gray-800">{c.customerName}</span>
-                                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-bold">
+                                <div key={c.caseId} className="min-w-[230px] bg-card text-card-foreground p-3.5 rounded-xl border border-border shadow-2xs flex-shrink-0 space-y-2">
+                                    <div className="flex justify-between items-start">
+                                        <span className="font-bold text-xs text-foreground">{c.customerName}</span>
+                                        <span className="px-2 py-0.5 bg-destructive/15 text-destructive border border-destructive/20 text-2xs rounded-md font-semibold font-mono">
                                             +{c.overdueDays}일째
                                         </span>
                                     </div>
-                                    <div className="space-y-1 text-sm">
+                                    <div className="space-y-1 text-xs">
                                         <div className="flex justify-between">
-                                            <span className="text-gray-500">미납액</span>
-                                            <span className="font-bold text-red-600">{c.unpaidAmount.toLocaleString()}만원</span>
+                                            <span className="text-muted-foreground text-2xs">미납액</span>
+                                            <span className="font-bold text-destructive font-mono tabular-nums">{c.unpaidAmount.toLocaleString()}만원</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-gray-500">진행상태</span>
-                                            <span className="text-gray-700">{c.status}</span>
+                                            <span className="text-muted-foreground text-2xs">진행상태</span>
+                                            <span className="text-foreground text-2xs font-medium">{c.status}</span>
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">마지막: {c.depositHistory?.length ? '입금' : '계약'}일 기준</p>
+                                    <div className="pt-2 border-t border-border flex justify-between items-center">
+                                        <p className="text-2xs text-muted-foreground">마지막: {c.depositHistory?.length ? '입금' : '계약'}일 기준</p>
                                     </div>
                                 </div>
                             ))}

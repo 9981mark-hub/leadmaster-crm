@@ -639,281 +639,305 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div className={`bg-white rounded-xl shadow-2xl w-full ${activeTab === 'sheet' ? 'max-w-5xl' : 'max-w-3xl'} max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300`}>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className={`bg-card text-card-foreground rounded-2xl shadow-2xl border border-border w-full ${activeTab === 'sheet' ? 'max-w-5xl' : 'max-w-3xl'} max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300`}>
                 {/* Header */}
-                <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-                    <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                        <Upload size={20} className="text-blue-600" />
-                        케이스 일괄/간편 등록
+                <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-card">
+                    <h2 className="text-base font-bold text-foreground flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                            <Upload size={17} strokeWidth={1.75} />
+                        </div>
+                        <span>케이스 일괄/간편 등록</span>
                     </h2>
-                    <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-600 transition-colors">
-                        <X size={24} />
+                    <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer">
+                        <X size={20} />
                     </button>
                 </div>
 
                 {/* [030] DB 거래처(공급사) & 회차 매입 비용 관제 헤더 바 */}
-                <div className="bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-indigo-50/80 dark:from-indigo-950/40 dark:via-gray-850 dark:to-indigo-950/40 border-b border-indigo-100 dark:border-indigo-900/50 p-4">
-                    <div className="space-y-3">
-                        {/* 1행: 거래처 타이틀 & 빠른 거래처 관리 버튼 */}
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
-                                    <Building2 size={14} />
-                                </div>
-                                <span className="text-xs font-bold text-gray-900 dark:text-white">
-                                    DB 거래처(공급사) 선택
-                                </span>
-                                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                                    * 회차 품질·전환율 및 ROI 관제 집계의 기준이 됩니다.
-                                </span>
+                <div className="bg-muted/30 border-b border-border p-4.5 space-y-3">
+                    {/* 1행: 거래처 타이틀 & 빠른 거래처 관리 버튼 */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-xs font-bold shadow-2xs">
+                                <Building2 size={13} strokeWidth={1.75} />
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsVendorManageOpen(true)}
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-md border border-indigo-200 dark:border-indigo-800 shadow-2xs hover:bg-indigo-50 transition-colors"
-                            >
-                                <Plus size={12} /> 거래처 추가/관리
-                            </button>
+                            <span className="text-xs font-bold text-foreground">
+                                DB 거래처(공급사) 선택
+                            </span>
+                            <span className="text-2xs text-muted-foreground font-medium">
+                                * 회차 품질·전환율 및 ROI 관제 집계의 기준이 됩니다.
+                            </span>
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsVendorManageOpen(true)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:text-primary bg-card hover:bg-muted px-2.5 py-1 rounded-md border border-border shadow-2xs transition-colors cursor-pointer"
+                        >
+                            <Plus size={12} /> 거래처 추가/관리
+                        </button>
+                    </div>
 
-                        {/* 2행: 거래처 선택 드롭다운 + 인기/최근 거래처 칩 */}
-                        <div className="flex flex-wrap items-center gap-2">
-                            <select
-                                value={selectedVendor}
-                                onChange={(e) => handleSelectVendor(e.target.value)}
-                                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 min-w-[200px]"
-                            >
-                                {vendors.map((v) => (
-                                    <option key={v.id} value={v.name}>
-                                        {v.name} (단가: ₩ {v.defaultUnitCost.toLocaleString()}원)
-                                    </option>
-                                ))}
-                                <option value="직접 등록/미지정">직접 등록/미지정</option>
-                            </select>
+                    {/* 2행: 거래처 선택 드롭다운 + 인기/최근 거래처 칩 */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <select
+                            value={selectedVendor}
+                            onChange={(e) => handleSelectVendor(e.target.value)}
+                            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary min-w-[200px]"
+                        >
+                            {vendors.map((v) => (
+                                <option key={v.id} value={v.name}>
+                                    {v.name} (단가: ₩ {v.defaultUnitCost.toLocaleString()}원)
+                                </option>
+                            ))}
+                            <option value="직접 등록/미지정">직접 등록/미지정</option>
+                        </select>
 
-                            {/* 빠른 선택 칩 */}
-                            <div className="flex flex-wrap items-center gap-1.5">
-                                {vendors.slice(0, 4).map((v) => (
+                        {/* 빠른 선택 칩 */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            {vendors.slice(0, 4).map((v) => (
+                                <button
+                                    key={v.id}
+                                    type="button"
+                                    onClick={() => handleSelectVendor(v.name)}
+                                    className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
+                                        selectedVendor === v.name
+                                            ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
+                                            : 'bg-card text-muted-foreground border border-border hover:bg-muted hover:text-foreground'
+                                    }`}
+                                >
+                                    {v.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 3행: 회차명 & 매입 정산 방식(CPL vs 3000건에 50만원 패키지) 스마트 계산기 */}
+                    <div className="pt-2 border-t border-border/60">
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+                            <div className="sm:col-span-5">
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                                    회차명 (Batch Name)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={batchName}
+                                    onChange={(e) => setBatchName(e.target.value)}
+                                    placeholder="예: 2026. 11. 23. 1차 (메타)"
+                                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-input bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:border-primary"
+                                />
+                            </div>
+
+                            {/* 정산 방식 토글 (건당 CPL vs 대량 패키지) */}
+                            <div className="sm:col-span-3">
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                                    정산 방식
+                                </label>
+                                <div className="grid grid-cols-2 gap-1 p-0.5 bg-muted rounded-lg border border-border text-xs">
                                     <button
-                                        key={v.id}
                                         type="button"
-                                        onClick={() => handleSelectVendor(v.name)}
-                                        className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${
-                                            selectedVendor === v.name
-                                                ? 'bg-indigo-600 text-white shadow-2xs font-bold'
-                                                : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100/60'
+                                        onClick={() => {
+                                            setPricingMode('cpl');
+                                            const match = vendors.find(v => v.name === selectedVendor);
+                                            setUnitCost(match?.defaultUnitCost || 25000);
+                                            setTotalCost(0);
+                                        }}
+                                        className={`py-1 text-2xs rounded-md font-semibold transition-all cursor-pointer ${
+                                            pricingMode === 'cpl'
+                                                ? 'bg-background text-primary font-bold shadow-2xs'
+                                                : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                     >
-                                        {v.name}
+                                        건당 CPL
                                     </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* 3행: 회차명 & 매입 정산 방식(CPL vs 3000건에 50만원 패키지) 스마트 계산기 */}
-                        <div className="space-y-2 pt-1 border-t border-indigo-100/60 dark:border-indigo-900/30">
-                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-                                <div className="sm:col-span-5">
-                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                        회차명 (Batch Name)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={batchName}
-                                        onChange={(e) => setBatchName(e.target.value)}
-                                        placeholder="예: 2026.11.11 1차 (패스트애드)"
-                                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setPricingMode('package');
+                                            const u = pkgLeads > 0 && pkgPrice > 0 ? Math.round(pkgPrice / pkgLeads) : 0;
+                                            setUnitCost(u);
+                                            setTotalCost(pkgPrice);
+                                        }}
+                                        className={`py-1 text-2xs rounded-md font-semibold transition-all cursor-pointer ${
+                                            pricingMode === 'package'
+                                                ? 'bg-background text-primary font-bold shadow-2xs'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        📦 패키지
+                                    </button>
                                 </div>
+                            </div>
 
-                                {/* 정산 방식 토글 (건당 CPL vs 대량 패키지) */}
-                                <div className="sm:col-span-3">
-                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                        정산 방식
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-1 p-0.5 bg-gray-200 dark:bg-gray-700 rounded-lg text-xs">
-                                        <button
-                                            type="button"
-                                            onClick={() => setPricingMode('cpl')}
-                                            className={`py-1 rounded-md font-semibold transition-all ${
-                                                pricingMode === 'cpl'
-                                                    ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                                                    : 'text-gray-600 dark:text-gray-300'
-                                            }`}
-                                        >
-                                            건당 CPL
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setPricingMode('package');
-                                                const u = pkgLeads > 0 && pkgPrice > 0 ? Math.round(pkgPrice / pkgLeads) : 0;
+                            {pricingMode === 'cpl' ? (
+                                <>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                                            건당 단가 (CPL)
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                value={unitCost}
+                                                onChange={(e) => {
+                                                    const val = Number(e.target.value);
+                                                    setUnitCost(val);
+                                                    setTotalCost(0);
+                                                }}
+                                                className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-input bg-background text-foreground font-semibold tabular-nums"
+                                            />
+                                            <span className="absolute left-1.5 top-1.5 text-xs text-muted-foreground">₩</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                                            총 매입 결제액
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                value={totalCost > 0 ? totalCost : (unitCost > 0 && (
+                                                    activeTab === 'excel' ? excelPreview.filter(c => !c.duplicateInfo).length :
+                                                    activeTab === 'sheet' ? getSheetFilledRows().length :
+                                                    activeTab === 'ocr' ? (ocrPreview ? 1 : 0) : 1
+                                                ) * unitCost || 0)}
+                                                onChange={(e) => setTotalCost(Number(e.target.value))}
+                                                placeholder="자동 계산"
+                                                className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-input bg-background text-foreground font-semibold tabular-nums"
+                                            />
+                                            <span className="absolute left-1.5 top-1.5 text-xs text-muted-foreground">₩</span>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                                            공급 수량 (건)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            step="1"
+                                            value={pkgLeads}
+                                            onChange={(e) => {
+                                                const l = Math.max(1, Number(e.target.value));
+                                                setPkgLeads(l);
+                                                const u = Math.round(pkgPrice / l);
                                                 setUnitCost(u);
                                                 setTotalCost(pkgPrice);
                                             }}
-                                            className={`py-1 rounded-md font-semibold transition-all ${
-                                                pricingMode === 'package'
-                                                    ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                                                    : 'text-gray-600 dark:text-gray-300'
-                                            }`}
-                                        >
-                                            📦 패키지
-                                        </button>
+                                            className="w-full px-2 py-1.5 text-xs rounded-lg border border-input bg-background text-foreground font-bold tabular-nums"
+                                        />
                                     </div>
-                                </div>
 
-                                {pricingMode === 'cpl' ? (
-                                    <>
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                                건당 단가 (CPL)
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="1"
-                                                    value={unitCost}
-                                                    onChange={(e) => {
-                                                        const val = Number(e.target.value);
-                                                        setUnitCost(val);
-                                                        setTotalCost(0);
-                                                    }}
-                                                    className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold"
-                                                />
-                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                                총 매입 결제액
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="1"
-                                                    value={totalCost > 0 ? totalCost : (unitCost > 0 && (
-                                                        activeTab === 'excel' ? excelPreview.filter(c => !c.duplicateInfo).length :
-                                                        activeTab === 'sheet' ? getSheetFilledRows().length :
-                                                        activeTab === 'ocr' ? (ocrPreview ? 1 : 0) : 1
-                                                    ) * unitCost || 0)}
-                                                    onChange={(e) => setTotalCost(Number(e.target.value))}
-                                                    placeholder="자동 계산"
-                                                    className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold"
-                                                />
-                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                                공급 수량 (건)
-                                            </label>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                                            패키지 총액 (원)
+                                        </label>
+                                        <div className="relative">
                                             <input
                                                 type="number"
-                                                min="1"
+                                                min="0"
                                                 step="1"
-                                                value={pkgLeads}
+                                                value={pkgPrice}
                                                 onChange={(e) => {
-                                                    const l = Math.max(1, Number(e.target.value));
-                                                    setPkgLeads(l);
-                                                    const u = Math.round(pkgPrice / l);
+                                                    const p = Math.max(0, Number(e.target.value));
+                                                    setPkgPrice(p);
+                                                    const u = pkgLeads > 0 ? Math.round(p / pkgLeads) : 0;
                                                     setUnitCost(u);
-                                                    setTotalCost(pkgPrice);
+                                                    setTotalCost(p);
                                                 }}
-                                                className="w-full px-2 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
+                                                className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-input bg-background text-foreground font-bold tabular-nums"
                                             />
+                                            <span className="absolute left-1.5 top-1.5 text-xs text-muted-foreground">₩</span>
                                         </div>
-
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                                                패키지 총액 (원)
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="1"
-                                                    value={pkgPrice}
-                                                    onChange={(e) => {
-                                                        const p = Math.max(0, Number(e.target.value));
-                                                        setPkgPrice(p);
-                                                        const u = pkgLeads > 0 ? Math.round(p / pkgLeads) : 0;
-                                                        setUnitCost(u);
-                                                        setTotalCost(p);
-                                                    }}
-                                                    className="w-full pl-5 pr-1.5 py-1.5 text-xs rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
-                                                />
-                                                <span className="absolute left-1.5 top-1.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
-                            {/* 패키지 모드 환산 안내 배너 */}
-                            {pricingMode === 'package' && (
-                                <div className="flex items-center justify-between text-xs px-2.5 py-1 rounded-md bg-indigo-100/70 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200 font-medium">
-                                    <span>
-                                        📦 대량 패키지 적용: <strong>{pkgLeads.toLocaleString()}건</strong>에 <strong>₩ {pkgPrice.toLocaleString()}원</strong>
-                                    </span>
-                                    <span className="font-bold text-indigo-700 dark:text-indigo-300">
-                                        👉 1건당 환산 단가: ₩ {(pkgLeads > 0 ? Math.round(pkgPrice / pkgLeads) : 0).toLocaleString()}원
-                                    </span>
-                                </div>
+                                    </div>
+                                </>
                             )}
                         </div>
+
+                        {/* 패키지 모드 환산 안내 배너 */}
+                        {pricingMode === 'package' && (
+                            <div className="mt-2 flex items-center justify-between text-2xs px-3 py-1.5 rounded-md bg-primary/5 border border-primary/20 text-foreground font-medium">
+                                <span>
+                                    📦 대량 패키지 적용: <strong>{pkgLeads.toLocaleString()}건</strong>에 <strong>₩ {pkgPrice.toLocaleString()}원</strong>
+                                </span>
+                                <span className="font-bold text-primary tabular-nums">
+                                    👉 1건당 환산 단가: ₩ {(pkgLeads > 0 ? Math.round(pkgPrice / pkgLeads) : 0).toLocaleString()}원
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b">
+                <div className="flex border-b border-border bg-card">
                     <button
                         onClick={() => setActiveTab('excel')}
-                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'excel' ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:bg-gray-50'}`}
+                        className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+                            activeTab === 'excel'
+                                ? 'border-primary text-primary bg-primary/5'
+                                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}
                     >
                         <div className="flex items-center justify-center gap-2">
-                            <FileText size={16} /> 엑셀 대량 업로드
+                            <FileText size={15} /> 엑셀 대량 업로드
                         </div>
                     </button>
                     <button
                         onClick={() => setActiveTab('ocr')}
-                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'ocr' ? 'border-pink-600 text-pink-600 bg-pink-50/50' : 'border-transparent text-gray-500 hover:bg-gray-50'}`}
+                        className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+                            activeTab === 'ocr'
+                                ? 'border-primary text-primary bg-primary/5'
+                                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}
                     >
                         <div className="flex items-center justify-center gap-2">
-                            <ImageIcon size={16} /> 이미지/PDF 인식 (AI)
+                            <ImageIcon size={15} /> 이미지/PDF 인식 (AI)
                         </div>
                     </button>
                     <button
                         onClick={() => setActiveTab('sheet')}
-                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sheet' ? 'border-purple-600 text-purple-600 bg-purple-50/50' : 'border-transparent text-gray-500 hover:bg-gray-50'}`}
+                        className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+                            activeTab === 'sheet'
+                                ? 'border-primary text-primary bg-primary/5'
+                                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}
                     >
                         <div className="flex items-center justify-center gap-2">
-                            <Grid size={16} /> 시트 입력
+                            <Grid size={15} /> 시트 입력
                         </div>
                     </button>
                     <button
                         onClick={() => setActiveTab('manual')}
-                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'manual' ? 'border-green-600 text-green-600 bg-green-50/50' : 'border-transparent text-gray-500 hover:bg-gray-50'}`}
+                        className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+                            activeTab === 'manual'
+                                ? 'border-primary text-primary bg-primary/5'
+                                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}
                     >
                         <div className="flex items-center justify-center gap-2">
-                            <List size={16} /> 간편 수기 등록
+                            <List size={15} /> 간편 수기 등록
                         </div>
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto flex-1">
+                <div className="p-6 overflow-y-auto flex-1 text-xs">
                     {activeTab === 'excel' && (
-                        <div className="space-y-6">
-                            <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 border border-blue-100 dark:bg-blue-900/20 dark:text-blue-200 dark:border-blue-800">
-                                <h4 className="font-bold mb-2 flex items-center gap-2"><AlertCircle size={16} /> 사용 가이드</h4>
-                                <ol className="list-decimal list-inside space-y-1 ml-1 opacity-90">
+                        <div className="space-y-5">
+                            {/* 고대비 사용 가이드 박스 */}
+                            <div className="bg-muted/40 p-4 rounded-xl text-xs text-foreground border border-border space-y-2">
+                                <h4 className="font-bold flex items-center gap-2 text-primary">
+                                    <AlertCircle size={15} /> 사용 가이드
+                                </h4>
+                                <ol className="list-decimal list-inside space-y-1 text-muted-foreground font-medium leading-relaxed">
                                     <li>템플릿 양식을 다운로드합니다.</li>
                                     <li>양식에 맞춰 고객 정보를 입력합니다. (헤더 수정 금지)</li>
                                     <li>작성된 엑셀 파일을 업로드하면 자동으로 목록이 미리보기에 나타납니다.</li>
@@ -921,12 +945,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 </ol>
                             </div>
 
-                            <div className="flex gap-4">
+                            <div className="flex gap-3">
                                 <button
                                     onClick={handleDownloadTemplate}
-                                    className="flex-1 py-3 border border-gray-300 rounded-lg flex items-center justify-center gap-2 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                                    className="flex-1 py-2.5 border border-border bg-card hover:bg-muted rounded-xl flex items-center justify-center gap-2 text-foreground font-semibold transition-colors cursor-pointer text-xs"
                                 >
-                                    <Download size={18} /> 양식 다운로드
+                                    <Download size={15} /> 양식 다운로드
                                 </button>
                                 <div className="flex-1 relative">
                                     <input
@@ -935,45 +959,45 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                         onChange={handleExcelUpload}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
-                                    <button className="w-full h-full py-3 bg-blue-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 font-bold shadow-md transition-colors">
-                                        <Upload size={18} /> 엑셀 파일 업로드
+                                    <button className="w-full h-full py-2.5 bg-primary text-primary-foreground rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 font-semibold shadow-2xs transition-colors cursor-pointer text-xs">
+                                        <Upload size={15} /> 엑셀 파일 업로드
                                     </button>
                                 </div>
                             </div>
 
                             {excelPreview.length > 0 && (
-                                <div className="border rounded-lg overflow-hidden">
-                                    <div className="bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 border-b flex justify-between">
+                                <div className="border border-border rounded-xl overflow-hidden bg-card">
+                                    <div className="bg-muted/50 px-4 py-2 text-xs font-bold text-foreground border-b border-border flex justify-between items-center">
                                         <span>미리보기 ({excelPreview.length}건)</span>
-                                        <button onClick={() => setExcelPreview([])} className="text-red-500 text-xs hover:underline">초기화</button>
+                                        <button onClick={() => setExcelPreview([])} className="text-destructive text-xs hover:underline cursor-pointer">초기화</button>
                                     </div>
                                     <div className="max-h-48 overflow-y-auto">
-                                        <table className="w-full text-sm text-left">
-                                            <thead className="bg-gray-50 sticky top-0">
+                                        <table className="w-full text-xs text-left">
+                                            <thead className="bg-muted/30 sticky top-0 border-b border-border text-muted-foreground">
                                                 <tr>
-                                                    <th className="p-2">고객명</th>
-                                                    <th className="p-2">연락처</th>
-                                                    <th className="p-2">유형</th>
+                                                    <th className="p-2 font-semibold">고객명</th>
+                                                    <th className="p-2 font-semibold">연락처</th>
+                                                    <th className="p-2 font-semibold">유형</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y">
+                                            <tbody className="divide-y divide-border">
                                                 {excelPreview.map((item, idx) => (
-                                                    <tr key={idx} className={item.duplicateInfo ? 'bg-red-50' : ''}>
-                                                        <td className="p-2">
+                                                    <tr key={idx} className={item.duplicateInfo ? 'bg-destructive/10' : 'hover:bg-muted/30'}>
+                                                        <td className="p-2 text-foreground font-medium">
                                                             {item.customerName}
-                                                            {item.duplicateInfo && <span className="text-red-600 text-xs ml-1 font-bold">(중복)</span>}
+                                                            {item.duplicateInfo && <span className="text-destructive text-2xs ml-1 font-bold">(중복)</span>}
                                                         </td>
-                                                        <td className="p-2 text-gray-500">
+                                                        <td className="p-2 text-muted-foreground font-mono">
                                                             <div className="flex flex-col">
                                                                 <span>{item.phone}</span>
                                                                 {item.duplicateInfo && (
-                                                                    <span className="text-xs text-red-500">
+                                                                    <span className="text-2xs text-destructive">
                                                                         기존: {item.duplicateInfo.managerName} ({item.duplicateInfo.status})
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="p-2 text-xs">{item.caseType}</td>
+                                                        <td className="p-2 text-xs text-muted-foreground">{item.caseType}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -986,9 +1010,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 <button
                                     onClick={submitExcel}
                                     disabled={isLoading}
-                                    className="w-full py-3 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm shadow-2xs flex items-center justify-center gap-2 disabled:opacity-50 transition-colors cursor-pointer"
                                 >
-                                    {isLoading ? <Loader2 className="animate-spin" /> : <Check size={20} />}
+                                    {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
                                     {excelPreview.length}건 일괄 등록하기
                                 </button>
                             )}
@@ -996,18 +1020,20 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     )}
 
                     {activeTab === 'ocr' && (
-                        <div className="space-y-6">
-                            <div className="bg-pink-50 p-4 rounded-lg text-sm text-pink-800 border border-pink-100">
-                                <h4 className="font-bold mb-2 flex items-center gap-2"><Sparkles size={16} /> AI 자동 인식</h4>
-                                <p className="opacity-90">
+                        <div className="space-y-5">
+                            <div className="bg-muted/40 p-4 rounded-xl text-xs text-foreground border border-border space-y-1.5">
+                                <h4 className="font-bold flex items-center gap-2 text-primary">
+                                    <Sparkles size={15} /> AI 자동 인식
+                                </h4>
+                                <p className="text-muted-foreground font-medium leading-relaxed">
                                     상담 신청서 이미지나 PDF 파일을 업로드하면, Gemini AI가 내용을 분석하여 자동으로 입력해줍니다.
                                 </p>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-1">적용할 거래처 (OCR 설정)</label>
+                                <label className="block text-xs font-semibold text-foreground mb-1.5">적용할 거래처 (OCR 설정)</label>
                                 <select
-                                    className="w-full p-2 border rounded-md text-sm"
+                                    className="w-full px-3 py-2 border border-input rounded-lg text-xs bg-background text-foreground"
                                     value={ocrPartnerId}
                                     onChange={e => setOcrPartnerId(e.target.value)}
                                 >
@@ -1015,65 +1041,65 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 </select>
                             </div>
 
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center transition-colors hover:border-pink-400 hover:bg-pink-50 group cursor-pointer relative">
+                            <div className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/20 rounded-xl p-8 text-center transition-colors group cursor-pointer relative">
                                 <input
                                     type="file"
                                     accept="image/*, application/pdf"
                                     onChange={handleOcrFileChange}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
-                                <div className="flex flex-col items-center gap-3 text-gray-500 group-hover:text-pink-600">
-                                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-pink-100 transition-colors">
-                                        <ImageIcon size={24} />
+                                <div className="flex flex-col items-center gap-2.5 text-muted-foreground group-hover:text-primary transition-colors">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center transition-colors">
+                                        <ImageIcon size={22} />
                                     </div>
-                                    <p className="font-medium text-lg">파일을 드래그하거나 클릭하여 업로드</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">지원 형식: JPG, PNG, PDF</p>
+                                    <p className="font-semibold text-sm text-foreground">파일을 드래그하거나 클릭하여 업로드</p>
+                                    <p className="text-2xs text-muted-foreground">지원 형식: JPG, PNG, PDF</p>
                                 </div>
                             </div>
 
                             {ocrFile && (
-                                <div className="flex items-center justify-between bg-white border p-3 rounded-lg shadow-sm">
-                                    <span className="text-sm font-medium truncat max-w-[200px]">{ocrFile.name}</span>
+                                <div className="flex items-center justify-between bg-card border border-border p-3 rounded-xl shadow-2xs">
+                                    <span className="text-xs font-medium text-foreground truncate max-w-[200px]">{ocrFile.name}</span>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={processOcr}
                                             disabled={isLoading}
-                                            className="px-4 py-1.5 bg-pink-600 text-white rounded text-sm font-bold hover:bg-pink-700 disabled:opacity-50 flex items-center gap-2"
+                                            className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 transition-colors cursor-pointer"
                                         >
-                                            {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                                            {isLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                                             분석 시작
                                         </button>
-                                        <button onClick={() => { setOcrFile(null); setOcrPreview(null); }} className="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 rounded">
-                                            <X size={16} />
+                                        <button onClick={() => { setOcrFile(null); setOcrPreview(null); }} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer">
+                                            <X size={15} />
                                         </button>
                                     </div>
                                 </div>
                             )}
 
                             {ocrPreview && (
-                                <div className="bg-white border rounded-lg p-4 space-y-3 shadow-sm animate-in slide-in-from-bottom-2">
-                                    <h4 className="font-bold text-gray-800 border-b pb-2">분석 결과 확인</h4>
-                                    <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-card border border-border rounded-xl p-4 space-y-3 shadow-2xs animate-in slide-in-from-bottom-2">
+                                    <h4 className="font-bold text-foreground border-b border-border pb-2 text-xs">분석 결과 확인</h4>
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="text-xs text-gray-500">고객명</label>
+                                            <label className="text-2xs text-muted-foreground font-semibold">고객명</label>
                                             <input
-                                                className="w-full p-2 border rounded text-sm font-bold text-gray-800 bg-gray-50"
+                                                className="w-full px-2.5 py-1.5 border border-input rounded-lg text-xs font-bold text-foreground bg-background"
                                                 value={ocrPreview.customerName}
                                                 onChange={e => setOcrPreview({ ...ocrPreview, customerName: e.target.value })}
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500">연락처</label>
+                                            <label className="text-2xs text-muted-foreground font-semibold">연락처</label>
                                             <input
-                                                className="w-full p-2 border rounded text-sm font-bold text-gray-800 bg-gray-50"
+                                                className="w-full px-2.5 py-1.5 border border-input rounded-lg text-xs font-bold text-foreground bg-background font-mono"
                                                 value={ocrPreview.phone}
                                                 onChange={e => setOcrPreview({ ...ocrPreview, phone: e.target.value })}
                                             />
                                         </div>
                                         <div className="col-span-2">
-                                            <label className="text-xs text-gray-500">추출 정보 (사전정보)</label>
+                                            <label className="text-2xs text-muted-foreground font-semibold">추출 정보 (사전정보)</label>
                                             <textarea
-                                                className="w-full p-2 border rounded text-sm bg-gray-50 h-20"
+                                                className="w-full px-2.5 py-1.5 border border-input rounded-lg text-xs bg-background text-foreground h-20 resize-none"
                                                 value={ocrPreview.preInfo}
                                                 onChange={e => setOcrPreview({ ...ocrPreview, preInfo: e.target.value })}
                                             />
@@ -1082,9 +1108,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                     <button
                                         onClick={submitOcr}
                                         disabled={isLoading}
-                                        className="w-full py-3 bg-pink-600 text-white rounded-lg font-bold hover:bg-pink-700 shadow-md flex items-center justify-center gap-2"
+                                        className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                                     >
-                                        <Check size={18} /> 이 정보로 등록하기
+                                        <Check size={16} /> 이 정보로 등록하기
                                     </button>
                                 </div>
                             )}
@@ -1093,61 +1119,63 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
                     {activeTab === 'sheet' && (
                         <div className="space-y-4">
-                            <div className="bg-purple-50 p-3 rounded-lg text-sm text-purple-800 border border-purple-100">
-                                <h4 className="font-bold mb-1 flex items-center gap-2"><Grid size={14} /> 시트 빠른 입력</h4>
-                                <p className="opacity-80 text-xs">표에 직접 입력하거나, 엑셀에서 복사(Ctrl+C)한 데이터를 셀에 붙여넣기(Ctrl+V) 하세요.</p>
+                            <div className="bg-muted/40 p-3.5 rounded-xl text-xs text-foreground border border-border space-y-1">
+                                <h4 className="font-bold flex items-center gap-2 text-primary">
+                                    <Grid size={14} /> 시트 빠른 입력
+                                </h4>
+                                <p className="text-muted-foreground font-medium text-2xs">표에 직접 입력하거나, 엑셀에서 복사(Ctrl+C)한 데이터를 셀에 붙여넣기(Ctrl+V) 하세요.</p>
                             </div>
 
-                            <div className="border rounded-lg overflow-hidden">
+                            <div className="border border-border rounded-xl overflow-hidden bg-card">
                                 <div className="overflow-x-auto">
-                                    <table ref={sheetRef} className="w-full text-sm border-collapse">
+                                    <table ref={sheetRef} className="w-full text-xs border-collapse">
                                         <thead>
-                                            <tr className="bg-gray-100">
-                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r w-8">#</th>
-                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[100px]">고객명 <span className="text-red-500">*</span></th>
-                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[130px]">연락처 <span className="text-red-500">*</span></th>
-                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[100px]">유형</th>
-                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[100px]">유입경로</th>
-                                                <th className="p-2 text-left text-xs font-bold text-gray-600 border-r min-w-[140px]">사전정보</th>
+                                            <tr className="bg-muted/50 text-muted-foreground border-b border-border">
+                                                <th className="p-2 text-left font-semibold border-r border-border w-8">#</th>
+                                                <th className="p-2 text-left font-semibold border-r border-border min-w-[100px]">고객명 <span className="text-destructive">*</span></th>
+                                                <th className="p-2 text-left font-semibold border-r border-border min-w-[130px]">연락처 <span className="text-destructive">*</span></th>
+                                                <th className="p-2 text-left font-semibold border-r border-border min-w-[100px]">유형</th>
+                                                <th className="p-2 text-left font-semibold border-r border-border min-w-[100px]">유입경로</th>
+                                                <th className="p-2 text-left font-semibold border-r border-border min-w-[140px]">사전정보</th>
                                                 <th className="p-2 w-8"></th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody className="divide-y divide-border">
                                             {sheetRows.map((row, rowIdx) => {
                                                 const isDup = row.phone.trim() && checkIsDuplicate(formatPhone(row.phone), existingCases);
                                                 return (
-                                                    <tr key={rowIdx} className={`border-t ${isDup ? 'bg-red-50' : 'hover:bg-gray-50'} transition-colors`}>
-                                                        <td className="p-1 text-center text-xs text-gray-500 dark:text-gray-400 border-r">{rowIdx + 1}</td>
-                                                        <td className="p-0.5 border-r">
+                                                    <tr key={rowIdx} className={`border-t border-border ${isDup ? 'bg-destructive/10' : 'hover:bg-muted/30'} transition-colors`}>
+                                                        <td className="p-1 text-center text-2xs text-muted-foreground border-r border-border">{rowIdx + 1}</td>
+                                                        <td className="p-0.5 border-r border-border">
                                                             <input
-                                                                className="w-full px-2 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded"
+                                                                className="w-full px-2 py-1 text-xs border-0 outline-none bg-transparent focus:bg-background focus:ring-1 focus:ring-primary rounded text-foreground font-medium"
                                                                 placeholder="이름"
                                                                 value={row.customerName}
                                                                 onChange={e => handleSheetCellChange(rowIdx, 'customerName', e.target.value)}
                                                                 onPaste={e => handleSheetPaste(e, rowIdx, 0)}
                                                             />
                                                         </td>
-                                                        <td className="p-0.5 border-r">
+                                                        <td className="p-0.5 border-r border-border">
                                                             <input
-                                                                className={`w-full px-2 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded ${isDup ? 'text-red-600 font-bold' : ''}`}
+                                                                className={`w-full px-2 py-1 text-xs border-0 outline-none bg-transparent focus:bg-background focus:ring-1 focus:ring-primary rounded font-mono ${isDup ? 'text-destructive font-bold' : 'text-foreground'}`}
                                                                 placeholder="010-0000-0000"
                                                                 value={row.phone}
                                                                 onChange={e => handleSheetCellChange(rowIdx, 'phone', e.target.value)}
                                                                 onPaste={e => handleSheetPaste(e, rowIdx, 1)}
                                                             />
                                                         </td>
-                                                        <td className="p-0.5 border-r">
+                                                        <td className="p-0.5 border-r border-border">
                                                             <select
-                                                                className="w-full px-1 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded cursor-pointer"
+                                                                className="w-full px-1 py-1 text-xs border-0 outline-none bg-transparent focus:bg-background focus:ring-1 focus:ring-primary rounded cursor-pointer text-foreground"
                                                                 value={row.caseType}
                                                                 onChange={e => handleSheetCellChange(rowIdx, 'caseType', e.target.value)}
                                                             >
                                                                 {CASE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                                             </select>
                                                         </td>
-                                                        <td className="p-0.5 border-r">
+                                                        <td className="p-0.5 border-r border-border">
                                                             <select
-                                                                className="w-full px-1 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded cursor-pointer"
+                                                                className="w-full px-1 py-1 text-xs border-0 outline-none bg-transparent focus:bg-background focus:ring-1 focus:ring-primary rounded cursor-pointer text-foreground"
                                                                 value={row.inboundPath}
                                                                 onChange={e => handleSheetCellChange(rowIdx, 'inboundPath', e.target.value)}
                                                             >
@@ -1155,9 +1183,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                                 {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
                                                             </select>
                                                         </td>
-                                                        <td className="p-0.5 border-r">
+                                                        <td className="p-0.5 border-r border-border">
                                                             <input
-                                                                className="w-full px-2 py-1.5 text-sm border-0 outline-none bg-transparent focus:bg-white focus:ring-1 focus:ring-purple-400 rounded"
+                                                                className="w-full px-2 py-1 text-xs border-0 outline-none bg-transparent focus:bg-background focus:ring-1 focus:ring-primary rounded text-foreground"
                                                                 placeholder="메모"
                                                                 value={row.preInfo}
                                                                 onChange={e => handleSheetCellChange(rowIdx, 'preInfo', e.target.value)}
@@ -1167,10 +1195,10 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                                         <td className="p-0.5 text-center">
                                                             <button
                                                                 onClick={() => removeSheetRow(rowIdx)}
-                                                                className="p-1 text-gray-600 dark:text-gray-300 hover:text-red-500 transition-colors rounded hover:bg-red-50"
+                                                                className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded hover:bg-muted cursor-pointer"
                                                                 title="행 삭제"
                                                             >
-                                                                <Trash2 size={14} />
+                                                                <Trash2 size={13} />
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -1184,14 +1212,14 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                             <div className="flex items-center justify-between">
                                 <button
                                     onClick={addSheetRow}
-                                    className="text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1 hover:bg-purple-50 px-3 py-1.5 rounded-lg transition-colors"
+                                    className="text-xs text-foreground hover:text-primary font-semibold flex items-center gap-1 bg-card hover:bg-muted px-3 py-1.5 rounded-lg border border-border shadow-2xs transition-colors cursor-pointer"
                                 >
-                                    <Plus size={14} /> 행 추가
+                                    <Plus size={13} /> 행 추가
                                 </button>
-                                <div className="text-xs text-gray-500">
+                                <div className="text-2xs text-muted-foreground font-medium">
                                     {getSheetFilledRows().length}건 입력됨
                                     {getSheetDuplicates().length > 0 && (
-                                        <span className="text-red-500 ml-2 font-bold">⚠️ 중복 {getSheetDuplicates().length}건</span>
+                                        <span className="text-destructive ml-2 font-bold">⚠️ 중복 {getSheetDuplicates().length}건</span>
                                     )}
                                 </div>
                             </div>
@@ -1200,9 +1228,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 <button
                                     onClick={submitSheet}
                                     disabled={isLoading}
-                                    className="w-full py-3 bg-purple-600 text-white rounded-lg font-bold text-lg hover:bg-purple-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                                    className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-xs shadow-2xs flex items-center justify-center gap-2 disabled:opacity-50 transition-colors cursor-pointer"
                                 >
-                                    {isLoading ? <Loader2 className="animate-spin" /> : <Check size={20} />}
+                                    {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
                                     {getSheetFilledRows().length - getSheetDuplicates().length}건 일괄 등록하기
                                 </button>
                             )}
@@ -1210,12 +1238,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     )}
 
                     {activeTab === 'manual' && (
-                        <div className="space-y-5">
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">거래처</label>
+                                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">거래처</label>
                                     <select
-                                        className="w-full p-2 border rounded-md text-sm"
+                                        className="w-full px-3 py-2 border border-input rounded-lg text-xs bg-background text-foreground"
                                         value={manualForm.partnerId}
                                         onChange={e => handleManualChange('partnerId', e.target.value)}
                                     >
@@ -1223,9 +1251,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">유입경로</label>
+                                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">유입경로</label>
                                     <select
-                                        className="w-full p-2 border rounded-md text-sm"
+                                        className="w-full px-3 py-2 border border-input rounded-lg text-xs bg-background text-foreground"
                                         value={manualForm.inboundPath}
                                         onChange={e => handleManualChange('inboundPath', e.target.value)}
                                     >
@@ -1234,20 +1262,20 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">고객명 <span className="text-red-500">*</span></label>
+                                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">고객명 <span className="text-destructive">*</span></label>
                                     <input
-                                        className="w-full p-2 border rounded-md text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                                        className="w-full px-3 py-2 border border-input rounded-lg text-xs bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none font-medium"
                                         placeholder="이름 입력"
                                         value={manualForm.customerName}
                                         onChange={e => handleManualChange('customerName', e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">연락처 <span className="text-red-500">*</span></label>
+                                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">연락처 <span className="text-destructive">*</span></label>
                                     <input
-                                        className="w-full p-2 border rounded-md text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                                        className="w-full px-3 py-2 border border-input rounded-lg text-xs bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none font-mono"
                                         placeholder="010-0000-0000"
                                         value={manualForm.phone}
                                         onChange={e => handleManualChange('phone', e.target.value)}
@@ -1255,26 +1283,26 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                 </div>
                             </div>
 
-                            {/* [Enhanced] Duplicate Warning - Matches NewCase.tsx style */}
+                            {/* [Enhanced] Duplicate Warning */}
                             {manualDuplicate && (
-                                <div className="mb-2 animate-pulse">
-                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm flex flex-col gap-1">
-                                        <div className="flex items-center gap-2 text-red-700 font-bold">
-                                            <span className="text-lg">⚠️</span> 이미 등록된 연락처입니다!
+                                <div className="animate-pulse">
+                                    <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 text-xs flex flex-col gap-1 text-destructive">
+                                        <div className="flex items-center gap-1.5 font-bold">
+                                            <span>⚠️</span> 이미 등록된 연락처입니다!
                                         </div>
-                                        <div className="text-gray-600 pl-7 text-xs">
-                                            <p>등록된 고객명: <b>{manualDuplicate.customerName}</b></p>
-                                            <p>담당자: <b>{manualDuplicate.managerName}</b></p>
-                                            <p>현재 상태: <span className="font-medium text-red-600">{manualDuplicate.status}</span></p>
+                                        <div className="text-muted-foreground pl-5 text-2xs space-y-0.5">
+                                            <p>등록된 고객명: <strong className="text-foreground">{manualDuplicate.customerName}</strong></p>
+                                            <p>담당자: <strong className="text-foreground">{manualDuplicate.managerName}</strong></p>
+                                            <p>현재 상태: <span className="font-semibold text-destructive">{manualDuplicate.status}</span></p>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-1">사전 정보 (메모)</label>
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">사전 정보 (메모)</label>
                                 <textarea
-                                    className="w-full p-2 border rounded-md text-sm h-24 focus:ring-2 focus:ring-green-500 outline-none"
+                                    className="w-full px-3 py-2 border border-input rounded-lg text-xs bg-background text-foreground h-20 focus:ring-1 focus:ring-primary focus:border-primary outline-none resize-none"
                                     placeholder="상담 전 참고할 내용 입력..."
                                     value={manualForm.preInfo}
                                     onChange={e => handleManualChange('preInfo', e.target.value)}
@@ -1284,9 +1312,9 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                             <button
                                 onClick={submitManual}
                                 disabled={isLoading}
-                                className="w-full py-3 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 shadow-md flex items-center justify-center gap-2 mt-4"
+                                className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-xs shadow-2xs flex items-center justify-center gap-2 mt-2 transition-colors cursor-pointer"
                             >
-                                {isLoading ? <Loader2 className="animate-spin" /> : <Plus size={20} />}
+                                {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
                                 바로 등록하기
                             </button>
                         </div>

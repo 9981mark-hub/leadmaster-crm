@@ -147,49 +147,49 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="bg-card text-card-foreground rounded-2xl w-full max-w-4xl shadow-2xl border border-border flex flex-col max-h-[92vh] overflow-hidden">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/50">
+        <div className="flex items-center justify-between p-5 border-b border-border bg-card">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-              <Building2 size={22} />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+              <Building2 size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                DB 거래처(공급사) 마스터 관리
-                <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-medium">
+              <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                <span>DB 거래처(공급사) 마스터 관리</span>
+                <span className="text-2xs px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 font-semibold">
                   {vendors.length}개 등록됨
                 </span>
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 건당 CPL 방식 및 <strong>대량 패키지 구매(3,000건에 50만원 등)</strong> 정산 방식을 자유롭게 등록하고 관리합니다.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs">
           
           {/* Left/Form: 등록/수정 패널 (5 cols) */}
-          <div className="lg:col-span-5 bg-gray-50 dark:bg-gray-900/50 p-5 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col">
+          <div className="lg:col-span-5 bg-muted/30 p-5 rounded-xl border border-border flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                {editingId ? <Edit2 size={15} className="text-blue-500" /> : <Plus size={15} className="text-emerald-500" />}
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                {editingId ? <Edit2 size={14} className="text-primary" /> : <Plus size={14} className="text-primary" />}
                 {editingId ? '거래처 정보 수정' : '신규 거래처 등록'}
               </h3>
               {editingId && (
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   수정 취소
                 </button>
@@ -199,8 +199,8 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
             <form onSubmit={handleSubmit} className="space-y-3.5 flex-1 flex flex-col justify-between">
               <div className="space-y-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    거래처(공급사) 이름 <span className="text-rose-500">*</span>
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                    거래처(공급사) 이름 <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
@@ -208,23 +208,23 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     placeholder="예: 패스트애드, 메타 1팀, 네이버 파워링크, 대량DB센터"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary font-medium"
                   />
                 </div>
 
                 {/* 매입 정산 방식 선택 (CPL vs 대량 패키지) */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                     매입 비용 정산 방식 선택
                   </label>
-                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-200/80 dark:bg-gray-700/80 rounded-lg text-xs">
+                  <div className="grid grid-cols-2 gap-1 p-0.5 bg-muted rounded-lg border border-border text-xs">
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, pricingType: 'cpl' })}
-                      className={`py-1.5 rounded-md font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      className={`py-1.5 rounded-md font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         formData.pricingType === 'cpl'
-                          ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          ? 'bg-background text-primary font-bold shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <Tag size={13} /> 건당 단가 (CPL)
@@ -232,10 +232,10 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, pricingType: 'package' })}
-                      className={`py-1.5 rounded-md font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      className={`py-1.5 rounded-md font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         formData.pricingType === 'package'
-                          ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          ? 'bg-background text-primary font-bold shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <Package size={13} /> 📦 대량 패키지 (N건에 N원)
@@ -247,7 +247,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                 {formData.pricingType === 'cpl' ? (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                         기본 매입 단가 (CPL)
                       </label>
                       <div className="relative">
@@ -258,20 +258,20 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                           placeholder="25000"
                           value={formData.defaultUnitCost}
                           onChange={(e) => setFormData({ ...formData, defaultUnitCost: Number(e.target.value) })}
-                          className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 font-semibold"
+                          className="w-full pl-6 pr-3 py-2 text-xs rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary font-semibold tabular-nums"
                         />
-                        <span className="absolute left-2.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
+                        <span className="absolute left-2 top-2 text-xs text-muted-foreground">₩</span>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                         취급 DB 유형
                       </label>
                       <select
                         value={formData.leadType}
                         onChange={(e) => setFormData({ ...formData, leadType: e.target.value })}
-                        className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary"
                       >
                         <option value="개인회생">개인회생</option>
                         <option value="파산">파산</option>
@@ -283,34 +283,32 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                   </div>
                 ) : (
                   /* 방식 2: 대량 패키지 (예: 3000건에 50만원) */
-                  <div className="space-y-2 p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
-                    <div className="flex items-center justify-between text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                  <div className="space-y-2.5 p-3.5 rounded-xl bg-muted/40 border border-border">
+                    <div className="flex items-center justify-between text-2xs font-bold text-foreground">
                       <span>대량 패키지 계약 조건</span>
-                      <span className="text-xs font-normal text-indigo-600 dark:text-indigo-400">
+                      <span className="text-2xs font-normal text-muted-foreground">
                         예: 3,000건에 50만원
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2.5">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                           공급 수량 (건수)
                         </label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            placeholder="3000"
-                            value={formData.packageLeads}
-                            onChange={(e) => setFormData({ ...formData, packageLeads: Math.max(0, Number(e.target.value)) })}
-                            className="w-full px-3 py-2 text-sm rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
-                          />
-                        </div>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          placeholder="3000"
+                          value={formData.packageLeads}
+                          onChange={(e) => setFormData({ ...formData, packageLeads: Math.max(0, Number(e.target.value)) })}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-input bg-background text-foreground font-bold tabular-nums"
+                        />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                           패키지 총 매입금액 (원)
                         </label>
                         <div className="relative">
@@ -321,19 +319,19 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                             placeholder="500000"
                             value={formData.packagePrice}
                             onChange={(e) => setFormData({ ...formData, packagePrice: Math.max(0, Number(e.target.value)) })}
-                            className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold"
+                            className="w-full pl-6 pr-3 py-1.5 text-xs rounded-lg border border-input bg-background text-foreground font-bold tabular-nums"
                           />
-                          <span className="absolute left-2.5 top-2.5 text-xs text-gray-500 dark:text-gray-400">₩</span>
+                          <span className="absolute left-2 top-1.5 text-xs text-muted-foreground">₩</span>
                         </div>
                       </div>
                     </div>
 
                     {/* 실시간 단가 환산 표시 배너 */}
-                    <div className="flex items-center justify-between pt-2 border-t border-indigo-200/60 dark:border-indigo-800/60 text-xs">
-                      <span className="text-gray-600 dark:text-gray-300 text-xs">
+                    <div className="flex items-center justify-between pt-2 border-t border-border text-2xs">
+                      <span className="text-muted-foreground">
                         💡 <strong>{formData.packageLeads.toLocaleString()}건</strong>에 <strong>₩ {formData.packagePrice.toLocaleString()}원</strong>
                       </span>
-                      <span className="font-extrabold text-indigo-700 dark:text-indigo-300 font-mono">
+                      <span className="font-bold text-primary tabular-nums">
                         건당 환산 단가: ₩ {computedUnitCost.toLocaleString()}원
                       </span>
                     </div>
@@ -341,7 +339,7 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                     불량 DB A/S 환불·교환 기준
                   </label>
                   <input
@@ -349,12 +347,12 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     placeholder="예: 결번/중복 7일 이내 100% 무상 교환 또는 차감"
                     value={formData.asPolicy}
                     onChange={(e) => setFormData({ ...formData, asPolicy: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                     담당자 연락처 / 소통 채널
                   </label>
                   <input
@@ -362,12 +360,12 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     placeholder="예: 김영수 팀장 010-1234-5678 (카톡 fastad_kim)"
                     value={formData.contactPerson}
                     onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
                     특이사항 메모
                   </label>
                   <textarea
@@ -375,25 +373,25 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     placeholder="정산일, 세금계산서 발행 조건 등 메모"
                     value={formData.memo}
                     onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary resize-none"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+              <div className="pt-3 border-t border-border flex gap-2">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition-colors"
+                  className="flex-1 py-2 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                 >
-                  {loading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                  {loading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                   {editingId ? '수정 내용 저장' : '거래처 등록하기'}
                 </button>
                 {editingId && (
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="py-2 px-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs text-gray-600 dark:text-gray-300"
+                    className="py-2 px-3 rounded-lg border border-border hover:bg-muted text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     취소
                   </button>
@@ -404,20 +402,20 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
 
           {/* Right/List: 거래처 목록 (7 cols) */}
           <div className="lg:col-span-7 flex flex-col space-y-3">
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pb-1">
+            <div className="flex items-center justify-between text-2xs text-muted-foreground pb-1">
               <span>등록된 거래처 목록</span>
               <button
                 type="button"
                 onClick={loadVendors}
-                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400"
+                className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
               >
-                <RefreshCw size={12} /> 새로고침
+                <RefreshCw size={11} /> 새로고침
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[490px] pr-1">
               {vendors.length === 0 ? (
-                <div className="text-center py-16 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 text-xs">
+                <div className="text-center py-16 border border-dashed border-border rounded-xl text-muted-foreground text-xs">
                   등록된 거래처가 없습니다. 좌측에서 신규 거래처를 등록하세요.
                 </div>
               ) : (
@@ -426,28 +424,28 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                     key={v.id}
                     className={`p-4 rounded-xl border transition-all ${
                       editingId === v.id
-                        ? 'border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/20'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 shadow-sm'
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+                        : 'border-border bg-card hover:border-primary/40 shadow-2xs'
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-sm text-gray-900 dark:text-white">
+                          <span className="font-bold text-sm text-foreground">
                             {v.name}
                           </span>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
+                          <span className="text-2xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold border border-border">
                             {v.leadType}
                           </span>
                           
                           {/* 가격 모델 뱃지 */}
                           {v.pricingType === 'package' ? (
-                            <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                               <Package size={11} />
                               {(v.packageLeads || 0).toLocaleString()}건 ₩ {(v.packagePrice || 0).toLocaleString()}원 (건당 ₩ {v.defaultUnitCost.toLocaleString()}원)
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+                            <span className="inline-flex items-center gap-1 text-2xs font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 font-mono">
                               <Tag size={11} />
                               건당 CPL ₩ {v.defaultUnitCost.toLocaleString()}원
                             </span>
@@ -455,34 +453,34 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
                         </div>
 
                         {v.asPolicy && (
-                          <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                             <ShieldAlert size={12} className="text-amber-500 shrink-0" />
                             <span>A/S: {v.asPolicy}</span>
                           </div>
                         )}
 
                         {v.contactPerson && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                            <Phone size={12} className="shrink-0" />
+                          <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-mono">
+                            <Phone size={12} className="shrink-0 text-muted-foreground" />
                             <span>{v.contactPerson}</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      <div className="flex items-center gap-1 shrink-0 ml-2">
                         <button
                           onClick={() => startEdit(v)}
-                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                           title="수정"
                         >
-                          <Edit2 size={15} />
+                          <Edit2 size={14} />
                         </button>
                         <button
                           onClick={() => handleDelete(v.id, v.name)}
-                          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                           title="삭제"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
@@ -491,8 +489,8 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
               )}
             </div>
 
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
-              <Sparkles size={16} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+            <div className="p-3 bg-muted/40 rounded-xl border border-border text-2xs text-muted-foreground flex items-start gap-2">
+              <Sparkles size={14} className="shrink-0 mt-0.5 text-primary" />
               <span>
                 <strong>팁:</strong> <strong>"3,000건에 50만원"</strong> 같은 대량 구매 거래처는 <strong>[대량 패키지]</strong> 방식을 선택하시면 건당 환산 단가(약 ₩ 167원)가 자동 산출되어 회차 등록 시 그대로 적용됩니다.
               </span>
@@ -502,10 +500,10 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/50 flex justify-end">
+        <div className="p-4 border-t border-border bg-card flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-xs font-semibold"
+            className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border text-xs font-semibold transition-colors cursor-pointer"
           >
             닫기
           </button>
