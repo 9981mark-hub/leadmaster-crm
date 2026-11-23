@@ -58,19 +58,19 @@ type TabType =
 
 // 직급별 비허용 지표 잠금 뷰 컴포넌트
 const SettlementLockedView: React.FC<{ title: string; desc: string }> = ({ title, desc }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center border border-slate-200 dark:border-gray-700 shadow-sm max-w-lg mx-auto my-12 animate-scale-in">
-        <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
-            <Lock size={26} />
+    <div className="bg-card text-card-foreground rounded-xl p-8 sm:p-10 text-center border border-border shadow-xs max-w-lg mx-auto my-12 animate-scale-in">
+        <div className="w-12 h-12 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-2xs">
+            <Lock size={22} strokeWidth={1.75} />
         </div>
-        <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">
+        <h3 className="text-base font-bold text-foreground mb-2">
             {title}
         </h3>
-        <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+        <p className="text-xs text-muted-foreground leading-relaxed mb-4">
             {desc}<br />
             해당 정보는 회사의 민감한 영업 비밀로 보호되고 있습니다.<br />
             열람 권한이 필요한 경우 대표이사에게 <strong>[정산 권한 오픈]</strong>을 요청하세요.
         </p>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs font-semibold">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-semibold">
             🔒 접근 제한 (대표이사 전용 기밀)
         </span>
     </div>
@@ -1483,103 +1483,103 @@ export default function Settlement() {
     const renderReportTab = () => (
         <div className="space-y-6">
             {/* Row 1: Main KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
                 <div
                     onClick={() => setActiveModalType('contract')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-gray-500">📋 계약 건수</p>
-                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">📋 계약 건수</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white mt-1">{totalCount}건</p>
-                    <p className="text-xs text-blue-500 mt-1 hidden md:block">상세 보기 →</p>
+                    <p className="text-xl md:text-2xl font-bold text-foreground font-mono tabular-nums mt-1">{totalCount}건</p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">상세 내역 확인 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('revenue')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-gray-500">💰 총 매출</p>
-                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">💰 총 매출 (수임료)</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1">{totalRevenue.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">수임료 합계 · 상세 보기 →</p>
+                    <p className="text-xl md:text-2xl font-bold text-foreground font-mono tabular-nums mt-1">₩ {totalRevenue.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">만원</span></p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">수임료 합계 · 상세 보기 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('actualDeposit')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-gray-500">✅ 실제 입금액</p>
-                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">✅ 실제 입금액</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalActualDeposit.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">오늘까지 확정 · 상세 보기 →</p>
+                    <p className="text-xl md:text-2xl font-bold text-primary font-mono tabular-nums mt-1">₩ {totalActualDeposit.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">만원</span></p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">오늘까지 확정 · 상세 보기 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('expectedDeposit')}
-                    className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-blue-300 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-gray-500">📅 예상 입금액</p>
-                        <Search size={14} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">📅 예상 입금액</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-orange-500 mt-1">{monthlyExpectedAmount.toLocaleString()}만원</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 hidden md:block group-hover:text-blue-500">{monthlyExpectedCount}건 입금 예정 · 상세 보기 →</p>
+                    <p className="text-xl md:text-2xl font-bold text-amber-500 font-mono tabular-nums mt-1">₩ {monthlyExpectedAmount.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">만원</span></p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">{monthlyExpectedCount}건 입금 예정 · 상세 보기 →</p>
                 </div>
             </div>
 
             {/* Row 2: Commission KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
                 <div
                     onClick={() => setActiveModalType('paidCommission')}
-                    className="bg-gradient-to-br from-green-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-green-200 cursor-pointer hover:bg-green-50 hover:border-green-300 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-green-700">💵 지급된 수수료</p>
-                        <Search size={14} className="text-green-300 group-hover:text-green-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">💵 지급된 수수료</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">{totalPaidCommission.toLocaleString()}만원</p>
-                    <p className="text-xs text-green-500 mt-1 hidden md:block group-hover:text-green-600">입금 확정 기준 · 상세 보기 →</p>
+                    <p className="text-xl md:text-2xl font-bold text-primary font-mono tabular-nums mt-1">₩ {totalPaidCommission.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">만원</span></p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">입금 확정 기준 · 상세 보기 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('expectedCommission')}
-                    className="bg-gradient-to-br from-emerald-50 to-white p-3 md:p-5 rounded-xl shadow-sm border-2 border-dashed border-emerald-300 cursor-pointer hover:bg-emerald-50 hover:border-emerald-400 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-emerald-700">📅 예상 수령 수수료</p>
-                        <Search size={14} className="text-emerald-300 group-hover:text-emerald-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">📅 예상 수령 수수료</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-emerald-600 mt-1">{monthlyExpectedCommission.toLocaleString()}만원</p>
-                    <p className="text-xs text-emerald-500 mt-1 hidden md:block group-hover:text-emerald-600">
+                    <p className="text-xl md:text-2xl font-bold text-foreground font-mono tabular-nums mt-1">₩ {monthlyExpectedCommission.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">만원</span></p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">
                         {nextPayoutDate ? `${nextPayoutDate.slice(5).replace('-', '/')} 지급 예정` : '지급 예정 없음'} · 상세 보기 →
                     </p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('installment')}
-                    className="bg-gradient-to-br from-indigo-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-indigo-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-indigo-700">📊 분납 진행중</p>
-                        <Search size={14} className="text-indigo-300 group-hover:text-indigo-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">📊 분납 진행중</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-indigo-600 mt-1">{installmentInProgress}건</p>
-                    <p className="text-xs text-indigo-500 mt-1 hidden md:block group-hover:text-indigo-600">추가 입금 대기 · 상세 보기 →</p>
+                    <p className="text-xl md:text-2xl font-bold text-foreground font-mono tabular-nums mt-1">{installmentInProgress}건</p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">추가 입금 대기 · 상세 보기 →</p>
                 </div>
                 <div
                     onClick={() => setActiveModalType('depositRate')}
-                    className="bg-gradient-to-br from-blue-50 to-white p-3 md:p-5 rounded-xl shadow-sm border border-blue-200 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all group"
+                    className="bg-card text-card-foreground p-4 md:p-5 rounded-xl shadow-xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between"
                 >
                     <div className="flex justify-between items-start">
-                        <p className="text-xs md:text-sm text-blue-700">📈 입금 완료율</p>
-                        <Search size={14} className="text-blue-300 group-hover:text-blue-500 hidden md:block" />
+                        <span className="text-xs text-muted-foreground font-medium">📈 입금 완료율</span>
+                        <Search size={14} className="text-muted-foreground group-hover:text-primary hidden md:block" />
                     </div>
-                    <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1">{depositRate}%</p>
-                    <div className="mt-1 md:mt-2 h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${depositRate}%` }} />
+                    <p className="text-xl md:text-2xl font-bold text-primary font-mono tabular-nums mt-1">{depositRate}%</p>
+                    <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full meter-smooth" style={{ width: `${depositRate}%` }} />
                     </div>
-                    <p className="text-xs text-blue-500 mt-1 hidden md:block group-hover:text-blue-600">상세 보기 →</p>
+                    <p className="text-2xs text-muted-foreground mt-1 hidden md:block">상세 보기 →</p>
                 </div>
             </div>
 
@@ -1683,14 +1683,17 @@ export default function Settlement() {
             })()}
 
             {/* Chart */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-80 flex flex-col">
-                <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4 flex-shrink-0">📊 월별 수익 현황</h3>
+            <div className="bg-card text-card-foreground p-5 sm:p-6 rounded-xl border border-border shadow-xs h-80 flex flex-col">
+                <h3 className="text-xs font-bold text-foreground mb-4 flex-shrink-0 flex items-center gap-2">
+                    <span>📊</span>
+                    <span>월별 수익 현황</span>
+                </h3>
                 <div className="flex-1 min-h-0 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={monthlyStats}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" />
-                            <YAxis />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
                             <Tooltip
                                 formatter={(value: number) => [`${value.toLocaleString()}만원`, '']}
                                 contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.75rem', color: 'hsl(var(--foreground))' }}
@@ -1707,44 +1710,47 @@ export default function Settlement() {
             </div>
 
             {/* Monthly Summary Table (Enhanced) */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    <h3 className="font-bold text-gray-700 dark:text-gray-200">📅 월별 상세 요약</h3>
+            <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs overflow-hidden">
+                <div className="p-4 border-b border-border bg-muted/30">
+                    <h3 className="font-bold text-xs text-foreground flex items-center gap-2">
+                        <span>📅</span>
+                        <span>월별 상세 요약</span>
+                    </h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
+                        <thead className="bg-muted/50 border-b border-border text-muted-foreground font-mono text-xs">
                             <tr>
-                                <th className="py-3 px-3 text-center">월</th>
-                                <th className="py-3 px-3 text-center">건수</th>
-                                <th className="py-3 px-3 text-right">매출</th>
-                                <th className="py-3 px-3 text-right text-green-600">입금액</th>
-                                <th className="py-3 px-3 text-right text-blue-600">총수수료</th>
-                                <th className="py-3 px-3 text-right text-green-600">지급완료</th>
-                                <th className="py-3 px-3 text-right text-orange-600">미지급</th>
+                                <th className="py-2.5 px-3 text-center font-semibold">월</th>
+                                <th className="py-2.5 px-3 text-center font-semibold">건수</th>
+                                <th className="py-2.5 px-3 text-right font-semibold">매출</th>
+                                <th className="py-2.5 px-3 text-right text-primary font-semibold">입금액</th>
+                                <th className="py-2.5 px-3 text-right font-semibold">총수수료</th>
+                                <th className="py-2.5 px-3 text-right text-primary font-semibold">지급완료</th>
+                                <th className="py-2.5 px-3 text-right text-amber-500 font-semibold">미지급</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-border/60">
                             {monthlyStats.map((m, i) => (
-                                <tr key={i} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${month === (i + 1) ? 'bg-blue-50' : ''}`}>
-                                    <td className="py-3 px-3 font-medium text-center">{m.name}</td>
-                                    <td className="py-3 px-3 text-center text-gray-500">{m.count}</td>
-                                    <td className="py-3 px-3 text-right text-gray-700">{m.revenue.toLocaleString()}만원</td>
-                                    <td className="py-3 px-3 text-right text-green-600 font-medium">{m.actualDeposit.toLocaleString()}만원</td>
-                                    <td className="py-3 px-3 text-right text-blue-600">{m.commission.toLocaleString()}만원</td>
-                                    <td className="py-3 px-3 text-right text-green-600 font-bold">{m.paidCommission.toLocaleString()}만원</td>
-                                    <td className="py-3 px-3 text-right text-orange-600">{m.unpaidCommission.toLocaleString()}만원</td>
+                                <tr key={i} className={`hover:bg-muted/30 transition-colors ${month === (i + 1) ? 'bg-primary/10' : ''}`}>
+                                    <td className="py-3 px-3 font-medium text-center text-foreground">{m.name}</td>
+                                    <td className="py-3 px-3 text-center text-muted-foreground font-mono tabular-nums">{m.count}</td>
+                                    <td className="py-3 px-3 text-right text-foreground font-mono tabular-nums">{m.revenue.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-primary font-semibold font-mono tabular-nums">{m.actualDeposit.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-foreground font-mono tabular-nums">{m.commission.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-primary font-bold font-mono tabular-nums">{m.paidCommission.toLocaleString()}만원</td>
+                                    <td className="py-3 px-3 text-right text-amber-500 font-mono tabular-nums">{m.unpaidCommission.toLocaleString()}만원</td>
                                 </tr>
                             ))}
                             {/* Total Row */}
-                            <tr className="bg-gray-100 font-bold border-t-2 border-gray-300">
+                            <tr className="bg-muted/60 font-bold border-t-2 border-border text-foreground">
                                 <td className="py-3 px-3 text-center">합계</td>
-                                <td className="py-3 px-3 text-center">{totalCount}</td>
-                                <td className="py-3 px-3 text-right text-gray-700">{totalRevenue.toLocaleString()}만원</td>
-                                <td className="py-3 px-3 text-right text-green-600">{totalActualDeposit.toLocaleString()}만원</td>
-                                <td className="py-3 px-3 text-right text-blue-600">{totalCommission.toLocaleString()}만원</td>
-                                <td className="py-3 px-3 text-right text-green-600">{totalPaidCommission.toLocaleString()}만원</td>
-                                <td className="py-3 px-3 text-right text-orange-600">{totalUnpaidCommission.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-center font-mono tabular-nums">{totalCount}</td>
+                                <td className="py-3 px-3 text-right font-mono tabular-nums">{totalRevenue.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-primary font-mono tabular-nums">{totalActualDeposit.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right font-mono tabular-nums">{totalCommission.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-primary font-mono tabular-nums">{totalPaidCommission.toLocaleString()}만원</td>
+                                <td className="py-3 px-3 text-right text-amber-500 font-mono tabular-nums">{totalUnpaidCommission.toLocaleString()}만원</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1753,24 +1759,27 @@ export default function Settlement() {
 
             {/* Partner Stats Section (Only visible when viewing all) */}
             {isAll && (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
-                    <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
-                        <h3 className="font-bold text-gray-700 dark:text-gray-200">🤝 파트너별 성과 분석</h3>
-                        <p className="text-xs text-gray-500 mt-1">파트너별 수임 건수 및 수수료 지급 현황</p>
+                <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs overflow-hidden mb-6">
+                    <div className="p-4 border-b border-border bg-muted/30">
+                        <h3 className="font-bold text-xs text-foreground flex items-center gap-2">
+                            <span>🤝</span>
+                            <span>파트너별 성과 분석</span>
+                        </h3>
+                        <p className="text-2xs text-muted-foreground mt-0.5">파트너별 수임 건수 및 수수료 지급 현황</p>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
+                            <thead className="bg-muted/50 border-b border-border text-muted-foreground font-mono text-xs">
                                 <tr>
-                                    <th className="py-3 px-3 text-left">파트너명</th>
-                                    <th className="py-3 px-3 text-center">건수</th>
-                                    <th className="py-3 px-3 text-right">총 수임료</th>
-                                    <th className="py-3 px-3 text-right text-blue-600">지급 완료</th>
-                                    <th className="py-3 px-3 text-right text-orange-600">미지급</th>
-                                    <th className="py-3 px-3 text-right">지급률</th>
+                                    <th className="py-2.5 px-3 text-left font-semibold">파트너명</th>
+                                    <th className="py-2.5 px-3 text-center font-semibold">건수</th>
+                                    <th className="py-2.5 px-3 text-right font-semibold">총 수임료</th>
+                                    <th className="py-2.5 px-3 text-right text-primary font-semibold">지급 완료</th>
+                                    <th className="py-2.5 px-3 text-right text-amber-500 font-semibold">미지급</th>
+                                    <th className="py-2.5 px-3 text-right font-semibold">지급률</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-border/60">
                                 {partners.map(p => {
                                     const pCases = safeCases.filter(c => c.partnerId === p.partnerId);
                                     if (pCases.length === 0) return null;
@@ -1787,15 +1796,15 @@ export default function Settlement() {
                                     .filter(item => item !== null)
                                     .sort((a, b) => (b?.revenue || 0) - (a?.revenue || 0))
                                     .map((item, idx) => (
-                                        <tr key={item!.p.partnerId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                            <td className="py-3 px-3 font-medium text-gray-800">
+                                        <tr key={item!.p.partnerId} className="hover:bg-muted/30 transition-colors">
+                                            <td className="py-3 px-3 font-medium text-foreground">
                                                 {idx + 1}. {item!.p.name}
                                             </td>
-                                            <td className="py-3 px-3 text-center">{item!.count}건</td>
-                                            <td className="py-3 px-3 text-right font-bold">{item!.revenue.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-right text-blue-600">{item!.paid.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-right text-orange-600">{item!.unpaid.toLocaleString()}만원</td>
-                                            <td className="py-3 px-3 text-right text-gray-500">{item!.rate}%</td>
+                                            <td className="py-3 px-3 text-center text-muted-foreground font-mono tabular-nums">{item!.count}건</td>
+                                            <td className="py-3 px-3 text-right font-bold text-foreground font-mono tabular-nums">{item!.revenue.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-primary font-semibold font-mono tabular-nums">{item!.paid.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-amber-500 font-mono tabular-nums">{item!.unpaid.toLocaleString()}만원</td>
+                                            <td className="py-3 px-3 text-right text-muted-foreground font-mono tabular-nums">{item!.rate}%</td>
                                         </tr>
                                     ))}
                             </tbody>
@@ -1889,35 +1898,35 @@ export default function Settlement() {
 
                 if (nearFutureDeposits.length === 0) {
                     return (
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs p-6">
                             <div className="flex items-center gap-2 mb-2">
-                                <span className="text-2xl">🔮</span>
-                                <h3 className="font-bold text-gray-700 dark:text-gray-200">미래 입금/지급 예측</h3>
+                                <span className="text-xl">🔮</span>
+                                <h3 className="font-bold text-xs text-foreground">미래 입금/지급 예측</h3>
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">향후 60일 내 예정된 입금이 없습니다.</p>
+                            <p className="text-muted-foreground text-xs">향후 60일 내 예정된 입금이 없습니다.</p>
                         </div>
                     );
                 }
 
                 return (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-white">
+                    <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs overflow-hidden">
+                        <div className="p-4 border-b border-border bg-muted/30">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-2xl">🔮</span>
+                                    <span className="text-xl">🔮</span>
                                     <div>
-                                        <h3 className="font-bold text-gray-700 dark:text-gray-200">미래 입금/지급 예측</h3>
-                                        <p className="text-xs text-gray-500">향후 60일 내 예정된 입금과 수수료 지급 일정</p>
+                                        <h3 className="font-bold text-xs text-foreground">미래 입금/지급 예측</h3>
+                                        <p className="text-2xs text-muted-foreground">향후 60일 내 예정된 입금과 수수료 지급 일정</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 text-sm">
+                                <div className="flex gap-4 text-xs font-mono tabular-nums">
                                     <div className="text-right">
-                                        <p className="text-xs text-gray-500">예상 입금</p>
-                                        <p className="font-bold text-green-600">{totalFutureDeposit.toLocaleString()}만원</p>
+                                        <p className="text-2xs text-muted-foreground">예상 입금</p>
+                                        <p className="font-bold text-primary">{totalFutureDeposit.toLocaleString()}만원</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs text-gray-500">예상 지급</p>
-                                        <p className="font-bold text-orange-600">{totalFuturePayout.toLocaleString()}만원</p>
+                                        <p className="text-2xs text-muted-foreground">예상 지급</p>
+                                        <p className="font-bold text-amber-500">{totalFuturePayout.toLocaleString()}만원</p>
                                     </div>
                                 </div>
                             </div>
@@ -1927,29 +1936,29 @@ export default function Settlement() {
                         <div className="p-4">
                             <div className="space-y-3">
                                 {nearFutureDeposits.map((dep, idx) => (
-                                    <div key={`${dep.caseId}-${dep.depositNumber}`} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <div key={`${dep.caseId}-${dep.depositNumber}`} className="p-4 bg-muted/30 border border-border/60 rounded-xl hover:bg-muted/50 transition-colors">
                                         {/* Mobile: Vertical Stack Layout */}
                                         <div className="md:hidden">
                                             <div className="flex items-center justify-between mb-2">
-                                                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
+                                                <div className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-lg font-bold font-mono text-xs">
                                                     {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                                                 </div>
-                                                <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                                                <span className="text-2xs bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded-full font-medium">
                                                     {dep.depositNumber}차 입금
                                                 </span>
                                             </div>
                                             <div className="mb-2">
-                                                <span className="font-medium text-gray-800">{dep.customerName}</span>
+                                                <span className="font-medium text-foreground text-sm">{dep.customerName}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <p className="text-xs text-gray-500">
+                                                <p className="text-xs text-muted-foreground">
                                                     수임료 {dep.contractFee}만원 중 {dep.totalDeposited}만원
                                                 </p>
-                                                <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
+                                                <p className="font-bold text-primary text-base font-mono tabular-nums">+{dep.amount.toLocaleString()}만원</p>
                                             </div>
                                             {dep.expectedPayout > 0 && (
-                                                <div className="mt-2 pt-2 border-t border-gray-200">
-                                                    <span className="text-orange-600 text-xs">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
+                                                <div className="mt-2 pt-2 border-t border-border/60">
+                                                    <span className="text-amber-500 text-xs font-mono">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
                                                 </div>
                                             )}
                                         </div>
@@ -1958,31 +1967,31 @@ export default function Settlement() {
                                         <div className="hidden md:flex items-start gap-4">
                                             {/* Date Badge */}
                                             <div className="flex-shrink-0 text-center">
-                                                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm">
+                                                <div className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-lg font-bold font-mono text-xs">
                                                     {new Date(dep.depositDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                                                 </div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">입금예정</p>
+                                                <p className="text-2xs text-muted-foreground mt-1">입금예정</p>
                                             </div>
 
                                             {/* Customer Info */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium text-gray-800">{dep.customerName}</span>
-                                                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                                                    <span className="font-semibold text-foreground text-sm">{dep.customerName}</span>
+                                                    <span className="text-2xs bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded-full">
                                                         {dep.depositNumber}차 입금
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-500 mt-1">
+                                                <p className="text-xs text-muted-foreground mt-1">
                                                     수임료 {dep.contractFee}만원 중 누적 {dep.totalDeposited}만원 입금
                                                 </p>
                                             </div>
 
                                             {/* Amount */}
-                                            <div className="text-right flex-shrink-0">
-                                                <p className="font-bold text-green-600 text-lg">+{dep.amount.toLocaleString()}만원</p>
+                                            <div className="text-right flex-shrink-0 font-mono tabular-nums">
+                                                <p className="font-bold text-primary text-base">+{dep.amount.toLocaleString()}만원</p>
                                                 {dep.expectedPayout > 0 && (
                                                     <div className="mt-1 text-xs">
-                                                        <span className="text-orange-600">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
+                                                        <span className="text-amber-500">→ {dep.payoutDate.slice(5).replace('-', '/')} 수수료 {dep.expectedPayout}만원</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -2042,11 +2051,14 @@ export default function Settlement() {
             )}
 
             {/* Weekly Batch Status Overview */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white flex justify-between items-center">
+            <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs overflow-hidden">
+                <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
                     <div>
-                        <h3 className="font-bold text-gray-700 dark:text-gray-200">📋 주간 정산 배치 현황</h3>
-                        <p className="text-xs text-gray-500 mt-1">최근 정산 배치별 수금/지급/세금계산서 상태</p>
+                        <h3 className="font-bold text-xs text-foreground flex items-center gap-2">
+                            <span>📋</span>
+                            <span>주간 정산 배치 현황</span>
+                        </h3>
+                        <p className="text-2xs text-muted-foreground mt-0.5">최근 정산 배치별 수금/지급/세금계산서 상태</p>
                     </div>
                     <button
                         onClick={() => {
@@ -2069,9 +2081,9 @@ export default function Settlement() {
                             exportToExcel(`정산내역_${todayKST()}`, excelData);
                             showToast('엑셀 파일이 다운로드되었습니다.', 'success');
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
                     >
-                        <Download size={16} />
+                        <Download size={14} strokeWidth={1.75} />
                         엑셀 다운로드
                     </button>
                 </div>
@@ -2083,51 +2095,51 @@ export default function Settlement() {
                         const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
                         const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
                         return (
-                            <div key={b.batchId} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div key={b.batchId} className="bg-muted/30 rounded-xl p-4 border border-border">
                                 {/* Header: Week + Status */}
                                 <div className="flex items-center justify-between mb-3">
-                                    <span className="font-bold text-gray-800 text-base">{b.weekLabel}</span>
-                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium
-                                        ${b.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                            b.status === 'paid' ? 'bg-blue-100 text-blue-700' :
-                                                b.status === 'collected' ? 'bg-teal-100 text-teal-700' :
-                                                    'bg-gray-100 text-gray-600'}`}>
+                                    <span className="font-bold text-foreground text-sm">{b.weekLabel}</span>
+                                    <span className={`px-2 py-0.5 rounded-md text-2xs font-semibold
+                                        ${b.status === 'completed' ? 'bg-primary/10 text-primary border border-primary/20' :
+                                            b.status === 'paid' ? 'bg-primary/10 text-primary border border-primary/20' :
+                                                b.status === 'collected' ? 'bg-muted text-foreground border border-border' :
+                                                    'bg-muted text-muted-foreground border border-border'}`}>
                                         {getSettlementStatusLabel(b.status)}
                                     </span>
                                 </div>
 
                                 {/* Commission Amount */}
-                                <div className="mb-3 pb-3 border-b border-gray-200">
-                                    <p className="text-xs text-gray-500">수수료</p>
-                                    <p className="text-xl font-bold text-blue-600">{b.totalCommission.toLocaleString()}만원</p>
+                                <div className="mb-3 pb-3 border-b border-border/60 font-mono tabular-nums">
+                                    <p className="text-2xs text-muted-foreground">수수료</p>
+                                    <p className="text-lg font-bold text-foreground">{b.totalCommission.toLocaleString()}만원</p>
                                 </div>
 
                                 {/* Status Grid */}
-                                <div className="grid grid-cols-3 gap-2 text-center">
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">수금</p>
+                                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                                    <div className="bg-card border border-border rounded-lg p-2">
+                                        <p className="text-2xs text-muted-foreground mb-1">수금</p>
                                         {b.collectionInfo?.collectedAt ? (
-                                            <span className="text-green-600 text-xs font-medium">✓ 완료</span>
+                                            <span className="text-primary text-2xs font-semibold">✓ 완료</span>
                                         ) : (
-                                            <span className="text-gray-500 dark:text-gray-400 text-xs">대기</span>
+                                            <span className="text-muted-foreground text-2xs">대기</span>
                                         )}
                                     </div>
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">파트너 지급</p>
+                                    <div className="bg-card border border-border rounded-lg p-2">
+                                        <p className="text-2xs text-muted-foreground mb-1">파트너 지급</p>
                                         {payoutCount > 0 ? (
-                                            <span className={`text-xs font-medium ${paidPayoutCount === payoutCount ? 'text-green-600' : 'text-yellow-600'}`}>
+                                            <span className={`text-2xs font-semibold ${paidPayoutCount === payoutCount ? 'text-primary' : 'text-amber-500'}`}>
                                                 {paidPayoutCount}/{payoutCount}건
                                             </span>
                                         ) : (
-                                            <span className="text-gray-500 dark:text-gray-400 text-xs">없음</span>
+                                            <span className="text-muted-foreground text-2xs">없음</span>
                                         )}
                                     </div>
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">세금계산서</p>
+                                    <div className="bg-card border border-border rounded-lg p-2">
+                                        <p className="text-2xs text-muted-foreground mb-1">세금계산서</p>
                                         {b.purchaseInvoice?.receivedAt ? (
-                                            <span className="text-purple-600 text-xs font-medium">✓ 수취</span>
+                                            <span className="text-primary text-2xs font-semibold">✓ 수취</span>
                                         ) : (
-                                            <span className="text-gray-500 dark:text-gray-400 text-xs">미수취</span>
+                                            <span className="text-muted-foreground text-2xs">미수취</span>
                                         )}
                                     </div>
                                 </div>
@@ -2139,54 +2151,54 @@ export default function Settlement() {
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 font-medium">
+                        <thead className="bg-muted/50 border-b border-border text-muted-foreground font-mono text-xs">
                             <tr>
-                                <th className="py-3 px-3 text-left">주차</th>
-                                <th className="py-3 px-3 text-right">수수료</th>
-                                <th className="py-3 px-3 text-center">수금</th>
-                                <th className="py-3 px-3 text-center">파트너 지급</th>
-                                <th className="py-3 px-3 text-center">매입세금계산서</th>
-                                <th className="py-3 px-3 text-center">상태</th>
+                                <th className="py-2.5 px-3 text-left font-semibold">주차</th>
+                                <th className="py-2.5 px-3 text-right font-semibold">수수료</th>
+                                <th className="py-2.5 px-3 text-center font-semibold">수금</th>
+                                <th className="py-2.5 px-3 text-center font-semibold">파트너 지급</th>
+                                <th className="py-2.5 px-3 text-center font-semibold">매입세금계산서</th>
+                                <th className="py-2.5 px-3 text-center font-semibold">상태</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-border/60">
                             {(Array.isArray(batches) ? batches : []).slice(0, 8).map((b) => {
                                 const payoutCount = (b.payoutItems || []).length;
                                 const paidPayoutCount = (b.payoutItems || []).filter(p => p.paidAt).length;
                                 const totalPayoutAmount = (b.payoutItems || []).reduce((sum, p) => sum + (p.amount || 0), 0);
                                 return (
-                                    <tr key={b.batchId} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <td className="py-3 px-3 font-medium">{b.weekLabel}</td>
-                                        <td className="py-3 px-3 text-right font-bold text-blue-600">{b.totalCommission.toLocaleString()}만원</td>
+                                    <tr key={b.batchId} className="hover:bg-muted/30 transition-colors">
+                                        <td className="py-3 px-3 font-medium text-foreground">{b.weekLabel}</td>
+                                        <td className="py-3 px-3 text-right font-bold text-foreground font-mono tabular-nums">{b.totalCommission.toLocaleString()}만원</td>
                                         <td className="py-3 px-3 text-center">
                                             {b.collectionInfo?.collectedAt ? (
-                                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">✓ {b.collectionInfo.amount?.toLocaleString()}만원</span>
+                                                <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-2xs font-semibold font-mono">✓ {b.collectionInfo.amount?.toLocaleString()}만원</span>
                                             ) : (
-                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">대기</span>
+                                                <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-md text-2xs">대기</span>
                                             )}
                                         </td>
-                                        <td className="py-3 px-3 text-center">
+                                        <td className="py-3 px-3 text-center font-mono">
                                             {payoutCount > 0 ? (
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${paidPayoutCount === payoutCount ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                <span className={`px-2 py-0.5 rounded-md text-2xs font-semibold ${paidPayoutCount === payoutCount ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
                                                     {paidPayoutCount}/{payoutCount}건 ({totalPayoutAmount}만원)
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 dark:text-gray-400 rounded-full text-xs">없음</span>
+                                                <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-md text-2xs">없음</span>
                                             )}
                                         </td>
                                         <td className="py-3 px-3 text-center">
                                             {b.purchaseInvoice?.receivedAt ? (
-                                                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">✓ 수취완료</span>
+                                                <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-2xs font-semibold">✓ 수취완료</span>
                                             ) : (
-                                                <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">미수취</span>
+                                                <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-md text-2xs">미수취</span>
                                             )}
                                         </td>
                                         <td className="py-3 px-3 text-center">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium
-                                                ${b.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                    b.status === 'paid' ? 'bg-blue-100 text-blue-700' :
-                                                        b.status === 'collected' ? 'bg-teal-100 text-teal-700' :
-                                                            'bg-gray-100 text-gray-600'}`}>
+                                            <span className={`px-2 py-0.5 rounded-md text-2xs font-semibold
+                                                ${b.status === 'completed' ? 'bg-primary/10 text-primary border border-primary/20' :
+                                                    b.status === 'paid' ? 'bg-primary/10 text-primary border border-primary/20' :
+                                                        b.status === 'collected' ? 'bg-muted text-foreground border border-border' :
+                                                            'bg-muted text-muted-foreground border border-border'}`}>
                                                 {getSettlementStatusLabel(b.status)}
                                             </span>
                                         </td>
@@ -2218,25 +2230,28 @@ export default function Settlement() {
                 if (partnerList.length === 0) return null;
 
                 return (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
-                            <h3 className="font-bold text-gray-700 dark:text-gray-200">💳 파트너별 지급 현황</h3>
-                            <p className="text-xs text-gray-500 mt-1">전체 정산 기간 파트너 지급 누계</p>
+                    <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs overflow-hidden">
+                        <div className="p-4 border-b border-border bg-muted/30">
+                            <h3 className="font-bold text-xs text-foreground flex items-center gap-2">
+                                <span>💳</span>
+                                <span>파트너별 지급 현황</span>
+                            </h3>
+                            <p className="text-2xs text-muted-foreground mt-0.5">전체 정산 기간 파트너 지급 누계</p>
                         </div>
-                        <div className="p-4 grid gap-3">
+                        <div className="p-4 grid gap-2.5">
                             {partnerList.map(([name, data]) => (
-                                <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div key={name} className="flex items-center justify-between p-3 bg-muted/30 border border-border/60 rounded-xl hover:bg-muted/50 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <span className="text-2xl">🏢</span>
+                                        <span className="text-xl">🏢</span>
                                         <div>
-                                            <p className="font-medium text-gray-800">{name}</p>
-                                            <p className="text-xs text-gray-500">{data.count}건</p>
+                                            <p className="font-semibold text-foreground text-sm">{name}</p>
+                                            <p className="text-2xs text-muted-foreground">{data.count}건</p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-green-600">{data.paid.toLocaleString()}만원 <span className="text-gray-500 dark:text-gray-400 font-normal">지급</span></p>
+                                    <div className="text-right font-mono tabular-nums">
+                                        <p className="font-bold text-primary">{data.paid.toLocaleString()}만원 <span className="text-muted-foreground font-normal text-xs">지급</span></p>
                                         {data.total > data.paid && (
-                                            <p className="text-xs text-orange-600">{(data.total - data.paid).toLocaleString()}만원 미지급</p>
+                                            <p className="text-2xs text-amber-500 font-semibold">{(data.total - data.paid).toLocaleString()}만원 미지급</p>
                                         )}
                                     </div>
                                 </div>
@@ -2248,11 +2263,11 @@ export default function Settlement() {
 
             {/* Warning for missing dates */}
             {missingDateCount > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-                    <span className="text-2xl">⚠️</span>
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3 text-foreground">
+                    <span className="text-xl">⚠️</span>
                     <div>
-                        <p className="font-bold text-red-700">계약일 누락: {missingDateCount}건</p>
-                        <p className="text-sm text-red-600">계약일이 없는 건은 정산 집계에서 제외됩니다.</p>
+                        <p className="font-bold text-red-500 text-sm">계약일 누락: {missingDateCount}건</p>
+                        <p className="text-xs text-muted-foreground">계약일이 없는 건은 정산 집계에서 제외됩니다.</p>
                     </div>
                 </div>
             )}

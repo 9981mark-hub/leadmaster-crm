@@ -124,26 +124,26 @@ export default function DriveConnectionCard() {
       {st.connected && !PICKER_API_KEY && <p className="text-xs text-gray-500 dark:text-gray-400">기존 폴더 고르기·기존 파일 허용은 구글 파일 선택 창 설정 후 열립니다.</p>}
 
       {imp && (
-        <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs text-gray-600 dark:text-gray-300 grid grid-cols-[12rem_1fr] gap-y-0.5">
+        <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground grid grid-cols-[12rem_1fr] gap-y-0.5">
           <span>녹음이 있는 리드 / 녹음 링크</span><b>{imp.cases}건 / {imp.items}개</b>
-          <span>이번에 등록</span><b className="text-emerald-700">{imp.imported}개</b>
+          <span>이번에 등록</span><b className="text-primary font-bold">{imp.imported}개</b>
           <span>이미 등록됨</span><span>{imp.already}개</span>
-          <span>허용 필요 (기존 파일 허용 후 다시)</span><span className={imp.need_allow ? 'text-amber-700 font-semibold' : ''}>{imp.need_allow}개</span>
+          <span>허용 필요 (기존 파일 허용 후 다시)</span><span className={imp.need_allow ? 'text-amber-500 font-semibold' : ''}>{imp.need_allow}개</span>
           <span>드라이브 링크 아님 (임시 주소 등)</span><span>{imp.not_drive}개</span>
           {imp.trashed > 0 && <><span>드라이브 휴지통에 있음</span><span>{imp.trashed}개</span></>}
-          {imp.errors > 0 && <><span className="text-red-600">오류</span><span className="text-red-600">{imp.errors}개</span></>}
-          {imp.more && <span className="col-span-2 text-amber-700">시간 제한으로 일부만 처리했습니다. 한 번 더 누르세요.</span>}
+          {imp.errors > 0 && <><span className="text-destructive">오류</span><span className="text-destructive">{imp.errors}개</span></>}
+          {imp.more && <span className="col-span-2 text-amber-500">시간 제한으로 일부만 처리했습니다. 한 번 더 누르세요.</span>}
         </div>
       )}
 
       {st.lastTest && (
-        <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs space-y-1">
-          <div className="font-semibold text-gray-700 dark:text-gray-200">마지막 연결 시험 {fmt(st.lastTest.at)} · {st.lastTest.ok ? '성공' : '실패'}</div>
+        <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs space-y-1">
+          <div className="font-semibold text-foreground">마지막 연결 시험 {fmt(st.lastTest.at)} · {st.lastTest.ok ? '성공' : '실패'}</div>
           {st.lastTest.steps.map((s, i) => (
             <div key={i} className="flex items-start gap-1.5">
-              {s.ok ? <Check size={12} className="text-emerald-600 mt-0.5" /> : <X size={12} className="text-red-600 mt-0.5" />}
-              <span className="text-gray-700 dark:text-gray-300">{s.step}</span>
-              {s.detail && <span className="text-gray-500 dark:text-gray-400">· {s.detail}</span>}
+              {s.ok ? <Check size={12} className="text-primary mt-0.5" /> : <X size={12} className="text-destructive mt-0.5" />}
+              <span className="text-foreground">{s.step}</span>
+              {s.detail && <span className="text-muted-foreground">· {s.detail}</span>}
             </div>
           ))}
         </div>

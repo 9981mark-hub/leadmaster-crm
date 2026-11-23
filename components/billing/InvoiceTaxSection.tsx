@@ -110,21 +110,21 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
                 <Hash size={13} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">사업자번호:</span>
                 <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
-                  {taxInfo.businessNumber || '미등록 (수정 필요)'}
+                  {taxInfo?.businessNumber || '미등록 (수정 필요)'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Building2 size={13} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">상호 (법인명):</span>
                 <span className="font-bold text-slate-900 dark:text-slate-100">
-                  {taxInfo.companyName}
+                  {taxInfo?.companyName || '미등록'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={13} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400 w-20">대표자명:</span>
                 <span className="text-slate-800 dark:text-slate-200">
-                  {taxInfo.representativeName}
+                  {taxInfo?.representativeName || '대표자'}
                 </span>
               </div>
               <div className="flex items-center gap-2">

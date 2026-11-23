@@ -214,15 +214,15 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
         <div className="p-5 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">조회 기간:</span>
-              <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-0.5 text-xs">
+              <span className="text-xs font-semibold text-muted-foreground">조회 기간:</span>
+              <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 text-xs">
                 <button
                   type="button"
                   onClick={() => setSelectedPeriod('all')}
-                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                  className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     selectedPeriod === 'all'
-                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold shadow-2xs'
-                      : 'text-slate-600 dark:text-slate-400'
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   전체
@@ -230,10 +230,10 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedPeriod('3m')}
-                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                  className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     selectedPeriod === '3m'
-                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold shadow-2xs'
-                      : 'text-slate-600 dark:text-slate-400'
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   최근 3개월
@@ -241,10 +241,10 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedPeriod('6m')}
-                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                  className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     selectedPeriod === '6m'
-                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold shadow-2xs'
-                      : 'text-slate-600 dark:text-slate-400'
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   최근 6개월
@@ -404,73 +404,73 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
 
       {/* 5. 신용카드 매출전표 영수증 모달 (Receipt Modal) */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-md bg-card text-card-foreground rounded-2xl border border-border shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <Receipt size={18} className="text-blue-600 dark:text-blue-400" />
-                <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
+                <Receipt size={18} className="text-primary" />
+                <h4 className="font-bold text-foreground text-base">
                   신용카드 매출전표 (영수증)
                 </h4>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedReceipt(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 font-mono space-y-1.5 text-slate-700 dark:text-slate-300">
+              <div className="p-3 rounded-xl bg-muted/40 border border-border font-mono space-y-1.5 text-foreground">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">가맹점명:</span>
+                  <span className="text-muted-foreground">가맹점명:</span>
                   <span className="font-bold">리드마스터 (LeadMaster CRM)</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">사업자등록번호:</span>
+                  <span className="text-muted-foreground">사업자등록번호:</span>
                   <span>214-12-89201</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">승인일시:</span>
+                  <span className="text-muted-foreground">승인일시:</span>
                   <span>{selectedReceipt.transactionDate}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">승인번호:</span>
-                  <span className="font-bold text-blue-600">{selectedReceipt.approvalNumber}</span>
+                  <span className="text-muted-foreground">승인번호:</span>
+                  <span className="font-bold text-primary">{selectedReceipt.approvalNumber}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">카드종류:</span>
+                  <span className="text-muted-foreground">카드종류:</span>
                   <span>신한 법인카드 (9410-****-****-4242)</span>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1 text-slate-700 dark:text-slate-300">
+              <div className="pt-2 border-t border-border space-y-1 text-foreground">
                 <div className="flex justify-between">
-                  <span>공급가액:</span>
+                  <span className="text-muted-foreground">공급가액:</span>
                   <span className="font-mono">₩ {selectedReceipt.supplyPrice.toLocaleString()} 원</span>
                 </div>
-                <div className="flex justify-between text-slate-500">
+                <div className="flex justify-between text-muted-foreground">
                   <span>부가가치세 (VAT 10%):</span>
                   <span className="font-mono">₩ {selectedReceipt.vat.toLocaleString()} 원</span>
                 </div>
-                <div className="flex justify-between font-black text-sm text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between font-bold text-sm text-foreground pt-2 border-t border-border">
                   <span>총 결제금액:</span>
-                  <span className="font-mono text-base text-blue-600 dark:text-blue-400">
+                  <span className="font-mono text-base text-primary">
                     ₩ {selectedReceipt.totalPrice.toLocaleString()} 원
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <div className="pt-3 border-t border-border flex justify-end">
               <button
                 type="button"
                 onClick={() => {
                   window.print();
                 }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
+                className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-colors"
               >
                 영수증 인쇄
               </button>

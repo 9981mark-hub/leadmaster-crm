@@ -125,25 +125,25 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
     const totalInactive = fixedCosts.filter(c => !c.isActive).reduce((sum, c) => sum + c.amount, 0);
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-teal-100 dark:border-gray-700 overflow-hidden">
-            <div className="p-3 md:p-4 border-b border-teal-100 bg-gradient-to-r from-teal-50 to-cyan-50">
+        <div className="bg-card text-card-foreground rounded-xl shadow-xs border border-border overflow-hidden">
+            <div className="p-4 border-b border-border bg-muted/30">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
-                        <h3 className="font-bold text-teal-700 flex items-center gap-2 text-sm md:text-base">
-                            📌 고정비용 관리
+                        <h3 className="font-bold text-foreground flex items-center gap-2 text-xs sm:text-sm">
+                            <span>📌 고정비용 관리</span>
                         </h3>
-                        <p className="text-xs text-teal-500 mt-0.5">매월 반복되는 지출 항목</p>
+                        <p className="text-2xs text-muted-foreground mt-0.5">매월 반복되는 지출 항목</p>
                     </div>
                     <div className="flex gap-2">
                         <button
                             onClick={registerAsExpenses}
-                            className="px-2 md:px-3 py-1 md:py-1.5 bg-teal-100 text-teal-700 text-xs md:text-sm rounded-lg hover:bg-teal-200"
+                            className="px-3 py-1.5 bg-muted/40 hover:bg-muted text-foreground border border-border text-xs font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
                         >
                             📥 <span className="hidden md:inline">{month}월 지출</span><span className="md:hidden">등록</span>
                         </button>
                         <button
                             onClick={() => setIsAddModalOpen(true)}
-                            className="px-2 md:px-3 py-1 md:py-1.5 bg-teal-600 text-white text-xs md:text-sm rounded-lg hover:bg-teal-700"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
                         >
                             + <span className="hidden md:inline">고정비 추가</span><span className="md:hidden">추가</span>
                         </button>
@@ -151,52 +151,52 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                 </div>
             </div>
 
-            <div className="p-3 md:p-4">
+            <div className="p-4 sm:p-5">
                 {/* 요약 */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="bg-teal-50 p-3 rounded-lg border border-teal-200">
-                        <p className="text-xs text-teal-600">월 고정비 (활성)</p>
-                        <p className="text-lg font-bold text-teal-700">{totalActive.toLocaleString()}원</p>
-                        <p className="text-xs text-teal-500">{fixedCosts.filter(c => c.isActive).length}개 항목</p>
+                    <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                        <p className="text-2xs text-muted-foreground font-medium mb-1">월 고정비 (활성)</p>
+                        <p className="text-lg font-bold text-foreground font-mono tabular-nums">{totalActive.toLocaleString()}원</p>
+                        <p className="text-2xs text-muted-foreground">{fixedCosts.filter(c => c.isActive).length}개 항목</p>
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <p className="text-xs text-gray-600">비활성 항목</p>
-                        <p className="text-lg font-bold text-gray-700 dark:text-gray-200">{totalInactive.toLocaleString()}원</p>
-                        <p className="text-xs text-gray-500">{fixedCosts.filter(c => !c.isActive).length}개 항목</p>
+                    <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                        <p className="text-2xs text-muted-foreground font-medium mb-1">비활성 항목</p>
+                        <p className="text-lg font-bold text-muted-foreground font-mono tabular-nums">{totalInactive.toLocaleString()}원</p>
+                        <p className="text-2xs text-muted-foreground">{fixedCosts.filter(c => !c.isActive).length}개 항목</p>
                     </div>
                 </div>
 
                 {/* 고정비 목록 */}
                 {fixedCosts.length > 0 ? (
-                    <div className="space-y-2 max-h-60 overflow-y-auto" style={{ overscrollBehavior: 'auto' }}>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
                         {fixedCosts.map(cost => (
                             <div
                                 key={cost.id}
-                                className={`flex items-center justify-between p-3 rounded-lg border ${cost.isActive ? 'bg-white border-teal-200' : 'bg-gray-50 border-gray-200 opacity-60'
+                                className={`flex items-center justify-between p-3.5 rounded-xl border transition-colors ${cost.isActive ? 'bg-muted/20 border-border/60' : 'bg-muted/10 border-border/30 opacity-60'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => toggleActive(cost.id)}
-                                        className={`w-5 h-5 rounded border flex items-center justify-center ${cost.isActive
-                                            ? 'bg-teal-500 border-teal-500 text-white'
-                                            : 'bg-white dark:bg-gray-800/80 border-gray-300 dark:border-gray-700'
+                                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors cursor-pointer ${cost.isActive
+                                            ? 'bg-primary border-primary text-primary-foreground'
+                                            : 'bg-muted border-border'
                                             }`}
                                     >
-                                        {cost.isActive && '✓'}
+                                        {cost.isActive && <span className="text-xs font-bold">✓</span>}
                                     </button>
                                     <div>
-                                        <p className="font-medium text-gray-800 dark:text-gray-100">{cost.name}</p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="font-semibold text-xs text-foreground">{cost.name}</p>
+                                        <p className="text-2xs text-muted-foreground">
                                             {cost.category} | 매월 {cost.dueDay}일
                                         </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <p className="font-bold text-teal-700">{cost.amount.toLocaleString()}원</p>
+                                    <p className="font-bold text-xs text-foreground font-mono tabular-nums">{cost.amount.toLocaleString()}원</p>
                                     <button
                                         onClick={() => handleDelete(cost.id)}
-                                        className="text-gray-500 dark:text-gray-400 hover:text-red-500"
+                                        className="text-muted-foreground hover:text-red-500 transition-colors p-1"
                                     >
                                         ×
                                     </button>
@@ -205,7 +205,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <div className="text-center py-8 text-muted-foreground text-xs">
                         등록된 고정비용이 없습니다.
                     </div>
                 )}
@@ -213,77 +213,77 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
 
             {/* 추가 모달 */}
             {isAddModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-transparent dark:border-gray-700">
-                        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/40 dark:to-cyan-950/40">
-                            <h3 className="font-bold text-teal-700">📌 고정비 추가</h3>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4" onClick={() => setIsAddModalOpen(false)}>
+                    <div className="bg-card text-card-foreground rounded-xl shadow-2xl max-w-md w-full border border-border animate-scale-in" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-border bg-muted/30">
+                            <h3 className="font-bold text-xs text-foreground">📌 고정비 추가</h3>
                         </div>
-                        <div className="p-4 space-y-4">
+                        <div className="p-4 space-y-3.5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">항목명 *</label>
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">항목명 *</label>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
+                                    className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                     placeholder="예: 사무실 임대료"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액 *</label>
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">금액 *</label>
                                 <input
                                     type="number"
                                     value={formData.amount || ''}
                                     onChange={e => setFormData(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
-                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
+                                    className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
                                     placeholder="0"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">카테고리</label>
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">카테고리</label>
                                 <select
                                     value={formData.category}
                                     onChange={e => setFormData(prev => ({ ...prev, category: e.target.value as ExpenseCategory }))}
-                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
+                                    className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                                 >
                                     {EXPENSE_CATEGORIES.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
+                                        <option key={cat} value={cat} className="bg-popover text-popover-foreground">{cat}</option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">매월 결제일</label>
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">매월 결제일</label>
                                 <select
                                     value={formData.dueDay}
                                     onChange={e => setFormData(prev => ({ ...prev, dueDay: parseInt(e.target.value) }))}
-                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
+                                    className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                                 >
                                     {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                                        <option key={day} value={day}>{day}일</option>
+                                        <option key={day} value={day} className="bg-popover text-popover-foreground">{day}일</option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모</label>
+                                <label className="block text-2xs font-semibold text-muted-foreground mb-1">메모</label>
                                 <input
                                     type="text"
                                     value={formData.description}
                                     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 outline-none"
+                                    className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                     placeholder="선택사항"
                                 />
                             </div>
                         </div>
-                        <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+                        <div className="p-4 border-t border-border flex gap-2">
                             <button
                                 onClick={() => setIsAddModalOpen(false)}
-                                className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                className="flex-1 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg text-xs font-medium transition-colors cursor-pointer"
                             >
                                 취소
                             </button>
                             <button
                                 onClick={handleAdd}
-                                className="flex-1 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                                className="flex-1 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
                             >
                                 추가
                             </button>

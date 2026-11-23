@@ -476,9 +476,10 @@ export const generateRecentInvoices = (
 /** 공식 청구서 마크다운 생성기 */
 export const generateOfficialInvoiceMarkdown = (
   invoice: MonthlyInvoiceRecord,
-  taxInfo: OrgTaxInfo,
+  taxInfo?: Partial<OrgTaxInfo>,
   ownerEmail?: string
 ): string => {
+  const safeTax = taxInfo || {};
   return `# 리드마스터 CRM 월간 서비스 이용료 청구서
 
 문서 번호: ${invoice.invoiceNumber}
@@ -497,11 +498,11 @@ export const generateOfficialInvoiceMarkdown = (
 - 고객센터: 1544-7890
 
 [공급받는 자 (고객사)]
-- 상호/회사명: ${taxInfo.companyName}
-- 대표자: ${taxInfo.representativeName}
-- 사업자번호: ${taxInfo.businessNumber || '미등록'}
-- 사업장소재지: ${taxInfo.businessAddress || '미등록'}
-- 수신 이메일: ${taxInfo.taxInvoiceEmail || ownerEmail || '등록 계정'}
+- 상호/회사명: ${safeTax.companyName || '리드마스터 파트너스'}
+- 대표자: ${safeTax.representativeName || '대표자'}
+- 사업자번호: ${safeTax.businessNumber || '미등록'}
+- 사업장소재지: ${safeTax.businessAddress || '미등록'}
+- 수신 이메일: ${safeTax.taxInvoiceEmail || ownerEmail || '등록 계정'}
 
 ============================================================
 2. 당월 이용 내역 및 청구 금액 산출

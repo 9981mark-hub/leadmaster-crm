@@ -293,14 +293,14 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
 
     const renderHeader = () => (
         <div className="flex items-center justify-between mb-4">
-            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full">
-                <ChevronLeft size={20} />
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer">
+                <ChevronLeft size={18} strokeWidth={1.75} />
             </button>
-            <h3 className="text-lg font-bold text-gray-700 dark:text-white">
+            <h3 className="text-sm font-bold text-foreground font-mono">
                 {format(currentMonth, 'yyyy년 M월', { locale: ko })}
             </h3>
-            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full">
-                <ChevronRight size={20} />
+            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer">
+                <ChevronRight size={18} strokeWidth={1.75} />
             </button>
         </div>
     );
@@ -310,7 +310,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
         return (
             <div className="grid grid-cols-7 mb-2">
                 {days.map(day => (
-                    <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">{day}</div>
+                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground font-mono py-1.5">{day}</div>
                 ))}
             </div>
         );
@@ -343,36 +343,36 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                             }
                         }}
                         className={`
-              min-h-[60px] p-1 border border-gray-100 cursor-pointer transition-all
-              ${!isCurrentMonth ? 'bg-gray-50 text-gray-600 dark:text-gray-300' : 'hover:bg-blue-50'}
-              ${isToday(day) ? 'bg-blue-50 border-blue-300' : ''}
-              ${isSelected ? 'ring-2 ring-blue-500' : ''}
+              min-h-[64px] p-1.5 border border-border/50 cursor-pointer transition-colors rounded-sm
+              ${!isCurrentMonth ? 'bg-muted/15 text-muted-foreground/50' : 'bg-card text-foreground hover:bg-muted/30'}
+              ${isToday(day) ? 'bg-primary/10 border-primary font-bold' : ''}
+              ${isSelected ? 'ring-1 ring-primary' : ''}
             `}
                     >
-                        <span className={`text-sm ${isToday(day) ? 'font-bold text-blue-600' : ''}`}>
+                        <span className={`text-xs font-mono tabular-nums ${isToday(day) ? 'font-bold text-primary' : ''}`}>
                             {format(day, 'd')}
                         </span>
                         {hasEvents && (
                             <div className="mt-1 space-y-0.5">
                                 {dayEvents.slice(0, 2).map((e, idx) => {
                                     const getEventStyle = () => {
-                                        const baseStyle = e.isExpected ? 'border border-dashed ' : '';
+                                        const baseStyle = e.isExpected ? 'border border-dashed ' : 'border ';
                                         switch (e.type) {
-                                            case 'deposit': return baseStyle + 'bg-blue-100 text-blue-700';
-                                            case 'expected_deposit': return 'bg-blue-50 text-blue-600 border border-dashed border-blue-300';
-                                            case 'commission_received': return baseStyle + 'bg-emerald-100 text-emerald-700';
-                                            case 'expected_commission': return 'bg-emerald-50 text-emerald-600 border border-dashed border-emerald-300';
-                                            case 'collection': return baseStyle + 'bg-green-100 text-green-700';
-                                            case 'payout': return baseStyle + 'bg-orange-100 text-orange-700';
-                                            default: return baseStyle + 'bg-purple-100 text-purple-700';
+                                            case 'deposit': return baseStyle + 'bg-primary/15 text-primary border-primary/20';
+                                            case 'expected_deposit': return 'bg-primary/5 text-primary border border-dashed border-primary/30';
+                                            case 'commission_received': return baseStyle + 'bg-primary/15 text-primary border-primary/20';
+                                            case 'expected_commission': return 'bg-primary/5 text-primary border border-dashed border-primary/30';
+                                            case 'collection': return baseStyle + 'bg-primary/15 text-primary border-primary/20';
+                                            case 'payout': return baseStyle + 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+                                            default: return baseStyle + 'bg-muted text-muted-foreground border-border';
                                         }
                                     };
                                     const getIcon = () => {
                                         switch (e.type) {
                                             case 'deposit': return '💵';
-                                            case 'expected_deposit': return '📅💵';
+                                            case 'expected_deposit': return '📅';
                                             case 'commission_received': return '💸';
-                                            case 'expected_commission': return '📅💸';
+                                            case 'expected_commission': return '📅';
                                             case 'collection': return '💰';
                                             case 'payout': return '💳';
                                             default: return '📥';
@@ -381,14 +381,14 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                                     return (
                                         <div
                                             key={idx}
-                                            className={`text-xs px-1 py-0.5 rounded truncate ${getEventStyle()}`}
+                                            className={`text-[10px] px-1 py-0.5 rounded truncate font-mono tabular-nums ${getEventStyle()}`}
                                         >
-                                            {getIcon()} {e.amount ? `${e.amount}만원` : e.label}
+                                            {getIcon()} {e.amount ? `${e.amount}만` : e.label}
                                         </div>
                                     );
                                 })}
                                 {dayEvents.length > 2 && (
-                                    <div className="text-xs text-gray-500">+{dayEvents.length - 2}건 더</div>
+                                    <div className="text-[10px] text-muted-foreground font-mono">+{dayEvents.length - 2}건 더</div>
                                 )}
                             </div>
                         )}
@@ -399,7 +399,7 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
             rows.push(<div key={day.toString()} className="grid grid-cols-7">{days}</div>);
             days = [];
         }
-        return <div>{rows}</div>;
+        return <div className="border border-border/60 rounded-lg overflow-hidden">{rows}</div>;
     };
 
     const renderModal = () => {
@@ -407,37 +407,37 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
         const dayEvents = getEventsForDay(selectedDate);
 
         return (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setIsModalOpen(false)}>
-                <div className="bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
+                <div className="bg-card text-card-foreground border border-border rounded-xl shadow-2xl w-full max-w-md p-5 animate-scale-in" onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-between items-center mb-4 pb-3 border-b border-border">
+                        <h3 className="text-sm font-bold text-foreground">
                             📅 {format(selectedDate, 'yyyy년 M월 d일 (EEEE)', { locale: ko })}
                         </h3>
-                        <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded-full">
-                            <X size={20} />
+                        <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer">
+                            <X size={18} strokeWidth={1.75} />
                         </button>
                     </div>
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto" style={{ overscrollBehavior: 'auto' }}>
+                    <div className="space-y-2.5 max-h-[380px] overflow-y-auto">
                         {dayEvents.map((e, idx) => {
                             const getModalStyle = () => {
                                 const baseBorder = e.isExpected ? 'border-dashed ' : '';
                                 switch (e.type) {
-                                    case 'deposit': return 'bg-blue-50 border-blue-200 ' + baseBorder;
-                                    case 'expected_deposit': return 'bg-blue-50/50 border-dashed border-blue-300';
-                                    case 'commission_received': return 'bg-emerald-50 border-emerald-200 ' + baseBorder;
-                                    case 'expected_commission': return 'bg-emerald-50/50 border-dashed border-emerald-300';
-                                    case 'collection': return 'bg-green-50 border-green-200 ' + baseBorder;
-                                    case 'payout': return 'bg-orange-50 border-orange-200 ' + baseBorder;
-                                    default: return 'bg-purple-50 border-purple-200 ' + baseBorder;
+                                    case 'deposit': return 'bg-primary/10 border-primary/20 ' + baseBorder;
+                                    case 'expected_deposit': return 'bg-primary/5 border-dashed border-primary/30';
+                                    case 'commission_received': return 'bg-primary/10 border-primary/20 ' + baseBorder;
+                                    case 'expected_commission': return 'bg-primary/5 border-dashed border-primary/30';
+                                    case 'collection': return 'bg-primary/10 border-primary/20 ' + baseBorder;
+                                    case 'payout': return 'bg-amber-500/10 border-amber-500/20 ' + baseBorder;
+                                    default: return 'bg-muted/40 border-border ' + baseBorder;
                                 }
                             };
                             const getModalTextColor = () => {
                                 switch (e.type) {
-                                    case 'deposit': case 'expected_deposit': return 'text-blue-700';
-                                    case 'commission_received': case 'expected_commission': return 'text-emerald-700';
-                                    case 'collection': return 'text-green-700';
-                                    case 'payout': return 'text-orange-700';
-                                    default: return 'text-purple-700';
+                                    case 'deposit': case 'expected_deposit': return 'text-primary';
+                                    case 'commission_received': case 'expected_commission': return 'text-primary';
+                                    case 'collection': return 'text-primary';
+                                    case 'payout': return 'text-amber-500';
+                                    default: return 'text-muted-foreground';
                                 }
                             };
                             const getModalIcon = () => {
@@ -454,18 +454,18 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
                             return (
                                 <div
                                     key={idx}
-                                    className={`p-4 rounded-lg border ${getModalStyle()}`}
+                                    className={`p-3.5 rounded-xl border ${getModalStyle()}`}
                                 >
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <span className={`text-sm font-bold ${getModalTextColor()}`}>
+                                            <span className={`text-xs font-bold ${getModalTextColor()}`}>
                                                 {getModalIcon()}
                                             </span>
-                                            <p className="text-gray-600 text-sm mt-1">{e.customerName ? `${e.customerName} - ${e.label}` : e.label}</p>
-                                            {e.weekLabel && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{e.weekLabel}</p>}
+                                            <p className="text-foreground text-xs font-medium mt-1">{e.customerName ? `${e.customerName} - ${e.label}` : e.label}</p>
+                                            {e.weekLabel && <p className="text-2xs text-muted-foreground mt-0.5">{e.weekLabel}</p>}
                                         </div>
                                         {e.amount && (
-                                            <span className="text-lg font-bold text-gray-800 dark:text-white">{e.amount.toLocaleString()}만원</span>
+                                            <span className="text-base font-bold text-foreground font-mono tabular-nums">{e.amount.toLocaleString()}만원</span>
                                         )}
                                     </div>
                                 </div>
@@ -478,17 +478,20 @@ export default function SettlementCalendar({ batches, cases = [], partners = [] 
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
+        <div className="bg-card text-card-foreground rounded-xl border border-border shadow-xs p-5 sm:p-6">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-700">📆 정산 히스토리 캘린더</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">총 {events.length}개의 이벤트 / {safeBatches.length}개 배치</p>
+                    <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <span>📆</span>
+                        <span>정산 히스토리 캘린더</span>
+                    </h3>
+                    <p className="text-2xs text-muted-foreground mt-0.5">총 {events.length}개의 이벤트 / {safeBatches.length}개 배치</p>
                 </div>
-                <div className="flex gap-1.5 text-xs flex-wrap">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">💵 입금</span>
-                    <span className="px-2 py-1 bg-blue-50 text-blue-600 border border-dashed border-blue-300 rounded-full">📅 예정입금</span>
-                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full">💸 수수료</span>
-                    <span className="px-2 py-1 bg-emerald-50 text-emerald-600 border border-dashed border-emerald-300 rounded-full">📅 예정수수료</span>
+                <div className="flex gap-1.5 text-2xs flex-wrap">
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md font-medium">💵 입금</span>
+                    <span className="px-2 py-0.5 bg-primary/5 text-primary border border-dashed border-primary/30 rounded-md font-medium">📅 예정입금</span>
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md font-medium">💸 수수료</span>
+                    <span className="px-2 py-0.5 bg-primary/5 text-primary border border-dashed border-primary/30 rounded-md font-medium">📅 예정수수료</span>
                 </div>
             </div>
             {renderHeader()}

@@ -96,51 +96,48 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
     const totalUsage = totalBudget > 0 ? Math.round(totalSpending / totalBudget * 100) : 0;
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700 overflow-hidden">
-            <div className="p-3 md:p-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-blue-50">
+        <div className="bg-card text-card-foreground rounded-xl shadow-xs border border-border overflow-hidden">
+            <div className="p-4 border-b border-border bg-muted/30">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
-                        <h3 className="font-bold text-indigo-700 flex items-center gap-2 text-sm md:text-base">
-                            💰 예산 관리
+                        <h3 className="font-bold text-foreground flex items-center gap-2 text-xs sm:text-sm">
+                            <span>💰 예산 관리</span>
                         </h3>
-                        <p className="text-xs text-indigo-500 mt-0.5">{year}년 {month}월 카테고리별 예산</p>
+                        <p className="text-2xs text-muted-foreground mt-0.5">{year}년 {month}월 카테고리별 예산</p>
                     </div>
                     <button
                         onClick={() => isEditMode ? saveBudgets() : setIsEditMode(true)}
-                        className={`px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded-lg ${isEditMode
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                            }`}
+                        className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
                     >
                         {isEditMode ? '저장' : '예산 설정'}
                     </button>
                 </div>
             </div>
 
-            <div className="p-3 md:p-4">
+            <div className="p-4 sm:p-5">
                 {/* 전체 요약 */}
-                <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-indigo-100 to-blue-100">
+                <div className="mb-4 p-4 rounded-xl bg-muted/40 border border-border">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-indigo-700 font-medium">전체 예산 사용률</span>
-                        <span className={`text-lg font-bold ${totalUsage > 100 ? 'text-red-600' : totalUsage > 80 ? 'text-amber-600' : 'text-indigo-700'}`}>
+                        <span className="text-xs text-muted-foreground font-medium">전체 예산 사용률</span>
+                        <span className={`text-base font-bold font-mono tabular-nums ${totalUsage > 100 ? 'text-red-500' : totalUsage > 80 ? 'text-amber-500' : 'text-primary'}`}>
                             {totalUsage}%
                         </span>
                     </div>
-                    <div className="w-full bg-white rounded-full h-3">
+                    <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
                         <div
-                            className={`h-3 rounded-full transition-all ${totalUsage > 100 ? 'bg-red-500' : totalUsage > 80 ? 'bg-amber-500' : 'bg-indigo-500'
+                            className={`h-2.5 rounded-full transition-all ${totalUsage > 100 ? 'bg-red-500' : totalUsage > 80 ? 'bg-amber-500' : 'bg-primary'
                                 }`}
                             style={{ width: `${Math.min(totalUsage, 100)}%` }}
                         />
                     </div>
-                    <div className="flex justify-between mt-1 text-xs text-indigo-600">
+                    <div className="flex justify-between mt-2 text-2xs text-muted-foreground font-mono tabular-nums">
                         <span>사용: {totalSpending.toLocaleString()}원</span>
                         <span>예산: {totalBudget.toLocaleString()}원</span>
                     </div>
                 </div>
 
                 {/* 카테고리별 예산 */}
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                     {EXPENSE_CATEGORIES.map(category => {
                         const budget = budgets.find(b => b.category === category);
                         const spent = spending[category] || 0;
@@ -150,9 +147,9 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                         const isWarning = usage > 80;
 
                         return (
-                            <div key={category} className="border border-gray-100 rounded-lg p-3">
+                            <div key={category} className="border border-border/60 bg-muted/20 rounded-xl p-3.5">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{category}</span>
+                                    <span className="text-xs font-semibold text-foreground">{category}</span>
                                     {isEditMode ? (
                                         <input
                                             type="number"
@@ -161,11 +158,11 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                                                 ...prev,
                                                 [category]: parseInt(e.target.value) || 0
                                             }))}
-                                            className="w-32 text-right border border-gray-300 rounded px-2 py-1 text-sm"
+                                            className="w-32 text-right bg-muted/40 border border-border rounded-lg px-2.5 py-1 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
                                             placeholder="예산 (원)"
                                         />
                                     ) : (
-                                        <span className={`text-sm font-bold ${isOver ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-gray-700'}`}>
+                                        <span className={`text-xs font-bold font-mono tabular-nums ${isOver ? 'text-red-500' : isWarning ? 'text-amber-500' : 'text-foreground'}`}>
                                             {limit > 0 ? `${usage}%` : '-'}
                                         </span>
                                     )}
@@ -173,19 +170,19 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
 
                                 {!isEditMode && limit > 0 && (
                                     <>
-                                        <div className="w-full bg-gray-100 rounded-full h-2">
+                                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                                             <div
-                                                className={`h-2 rounded-full transition-all ${isOver ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-indigo-500'
+                                                className={`h-2 rounded-full transition-all ${isOver ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-primary'
                                                     }`}
                                                 style={{ width: `${Math.min(usage, 100)}%` }}
                                             />
                                         </div>
-                                        <div className="flex justify-between mt-1 text-xs text-gray-500">
+                                        <div className="flex justify-between mt-1 text-2xs text-muted-foreground font-mono tabular-nums">
                                             <span>{spent.toLocaleString()}원</span>
                                             <span>{limit.toLocaleString()}원</span>
                                         </div>
                                         {isOver && (
-                                            <div className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                                            <div className="mt-1 text-2xs text-red-500 flex items-center gap-1 font-medium">
                                                 ⚠️ 예산 초과! (+{(spent - limit).toLocaleString()}원)
                                             </div>
                                         )}
@@ -193,7 +190,7 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                                 )}
 
                                 {!isEditMode && limit === 0 && (
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="text-2xs text-muted-foreground font-mono">
                                         예산 미설정 | 지출: {spent.toLocaleString()}원
                                     </div>
                                 )}
@@ -209,7 +206,7 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
                                 setIsEditMode(false);
                                 loadBudgets();
                             }}
-                            className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            className="flex-1 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg text-xs font-medium transition-colors cursor-pointer"
                         >
                             취소
                         </button>

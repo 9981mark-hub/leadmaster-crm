@@ -26,6 +26,14 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
   const triggerToast = propShowToast || ctxShowToast;
   const [copied, setCopied] = useState(false);
 
+  const safeTaxInfo = taxInfo || {
+    businessNumber: '',
+    companyName: '리드마스터 파트너스',
+    representativeName: '대표자',
+    businessAddress: '',
+    taxInvoiceEmail: ownerEmail || '',
+  };
+
   if (!invoice) return null;
 
   const handlePrint = () => {
@@ -33,7 +41,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
   };
 
   const handleCopyMarkdown = () => {
-    const md = generateOfficialInvoiceMarkdown(invoice, taxInfo, ownerEmail);
+    const md = generateOfficialInvoiceMarkdown(invoice, safeTaxInfo, ownerEmail);
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);
       triggerToast('청구서 마크다운이 클립보드에 복사되었습니다.', 'success');
@@ -42,7 +50,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
   };
 
   const handleDownloadTxt = () => {
-    const md = generateOfficialInvoiceMarkdown(invoice, taxInfo, ownerEmail);
+    const md = generateOfficialInvoiceMarkdown(invoice, safeTaxInfo, ownerEmail);
     const blob = new Blob([md], { type: 'text/plain;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -154,19 +162,19 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">상호 / 회사명</span>
-                <span className="font-bold text-foreground">{taxInfo.companyName}</span>
+                <span className="font-bold text-foreground">{safeTaxInfo.companyName || '미등록'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">대표자명</span>
-                <span className="text-foreground">{taxInfo.representativeName}</span>
+                <span className="text-foreground">{safeTaxInfo.representativeName || '대표자'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">사업자등록번호</span>
-                <span className="font-mono text-foreground">{taxInfo.businessNumber || '미등록'}</span>
+                <span className="font-mono text-foreground">{safeTaxInfo.businessNumber || '미등록'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">계산서 수신처</span>
-                <span className="font-mono text-primary">{taxInfo.taxInvoiceEmail || ownerEmail || '등록 계정'}</span>
+                <span className="font-mono text-primary">{safeTaxInfo.taxInvoiceEmail || ownerEmail || '등록 계정'}</span>
               </div>
             </div>
           </div>

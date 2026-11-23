@@ -169,64 +169,64 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
     const displayData = viewMode === 'quarterly' ? getQuarterlyData() : monthlyData;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden">
-            <div className="p-3 md:p-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div className="bg-card text-card-foreground rounded-xl shadow-xs border border-border overflow-hidden">
+            <div className="p-4 border-b border-border bg-muted/30">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
-                        <h3 className="font-bold text-emerald-700 flex items-center gap-2 text-sm md:text-base">
-                            📊 손익계산서 (P&L)
+                        <h3 className="font-bold text-foreground flex items-center gap-2 text-xs sm:text-sm">
+                            <span>📊 손익계산서 (P&L)</span>
                             {dataSource === 'invoice' && (
-                                <span className="px-1.5 py-0.5 bg-green-100 text-green-600 text-xs rounded-full font-normal">실제 세금계산서 기반</span>
+                                <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 text-2xs rounded-md font-semibold">실제 세금계산서 기반</span>
                             )}
                             {dataSource === 'settlement' && (
-                                <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-xs rounded-full font-normal">CRM 추정치</span>
+                                <span className="px-2 py-0.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-2xs rounded-md font-semibold">CRM 추정치</span>
                             )}
                         </h3>
-                        <p className="text-xs text-emerald-500 mt-0.5">{year}년 수익/비용/순이익 현황</p>
+                        <p className="text-2xs text-muted-foreground mt-0.5">{year}년 수익/비용/순이익 현황</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                         <select
                             value={viewMode}
                             onChange={e => setViewMode(e.target.value as typeof viewMode)}
-                            className="text-xs md:text-sm border border-emerald-300 rounded-lg px-2 py-1"
+                            className="text-xs bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                         >
-                            <option value="monthly">월별</option>
-                            <option value="quarterly">분기별</option>
+                            <option value="monthly" className="bg-popover text-popover-foreground">월별</option>
+                            <option value="quarterly" className="bg-popover text-popover-foreground">분기별</option>
                         </select>
                         <button
                             onClick={exportToExcel}
-                            className="px-2 md:px-3 py-1 md:py-1.5 bg-emerald-600 text-white text-xs md:text-sm rounded-lg hover:bg-emerald-700 flex items-center gap-1"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
                         >
-                            📥 <span className="hidden md:inline">Excel</span>
+                            📥 <span>Excel</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="p-4">
+            <div className="p-4 sm:p-5">
                 {/* 요약 카드 */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <p className="text-xs text-blue-600">총 수익</p>
-                        <p className="text-lg font-bold text-blue-700">
+                    <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                        <p className="text-2xs text-muted-foreground font-medium mb-1">총 수익</p>
+                        <p className="text-lg font-bold text-foreground font-mono tabular-nums">
                             {summary.totalRevenue.toLocaleString()}원
                         </p>
                     </div>
-                    <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                        <p className="text-xs text-red-600">총 비용</p>
-                        <p className="text-lg font-bold text-red-700">
+                    <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                        <p className="text-2xs text-muted-foreground font-medium mb-1">총 비용</p>
+                        <p className="text-lg font-bold text-foreground font-mono tabular-nums">
                             {summary.totalExpenses.toLocaleString()}원
                         </p>
                     </div>
-                    <div className={`p-3 rounded-lg border ${summary.netProfit >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                        <p className={`text-xs ${summary.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>순이익</p>
-                        <p className={`text-lg font-bold ${summary.netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                    <div className={`p-3.5 rounded-xl border ${summary.netProfit >= 0 ? 'bg-primary/10 border-primary/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <p className={`text-2xs font-medium mb-1 ${summary.netProfit >= 0 ? 'text-primary' : 'text-red-500'}`}>순이익</p>
+                        <p className={`text-lg font-bold font-mono tabular-nums ${summary.netProfit >= 0 ? 'text-primary' : 'text-red-500'}`}>
                             {summary.netProfit >= 0 ? '+' : ''}{summary.netProfit.toLocaleString()}원
                         </p>
                     </div>
-                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                        <p className="text-xs text-purple-600">이익률</p>
-                        <p className="text-lg font-bold text-purple-700">
+                    <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                        <p className="text-2xs text-muted-foreground font-medium mb-1">이익률</p>
+                        <p className="text-lg font-bold text-foreground font-mono tabular-nums">
                             {summary.profitMargin.toFixed(1)}%
                         </p>
                     </div>
@@ -236,9 +236,9 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                 <div className="h-64 mb-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={displayData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" fontSize={12} />
-                            <YAxis fontSize={10} tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
                             <Tooltip
                                 formatter={(value: number) => `${value.toLocaleString()}원`}
                                 labelFormatter={(label) => `${label}`}
@@ -253,20 +253,20 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                                 labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
                             />
                             <Legend />
-                            <Bar dataKey="revenue" name="수익" fill="#3b82f6" />
-                            <Bar dataKey="expenses" name="비용" fill="#ef4444" />
+                            <Bar dataKey="revenue" name="수익" fill="#10b981" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="expenses" name="비용" fill="#ef4444" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
                 {/* 순이익 추이 라인 차트 */}
-                <div className="h-40">
+                <div className="h-44">
                     <p className="text-xs font-semibold text-muted-foreground mb-2">순이익 추이</p>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={displayData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" fontSize={12} />
-                            <YAxis fontSize={10} tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} />
                             <Tooltip
                                 formatter={(value: number) => `${value.toLocaleString()}원`}
                                 contentStyle={{
@@ -285,51 +285,51 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                                 name="순이익"
                                 stroke="#10b981"
                                 strokeWidth={2}
-                                dot={{ fill: '#10b981' }}
+                                dot={{ fill: '#10b981', r: 3 }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
 
                 {/* 상세 테이블 */}
-                <details className="mt-4">
-                    <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+                <details className="mt-4 group">
+                    <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground font-medium py-1">
                         📋 상세 내역 보기
                     </summary>
-                    <div className="mt-2 overflow-x-auto" style={{ overscrollBehavior: 'auto' }}>
+                    <div className="mt-2 overflow-x-auto rounded-lg border border-border">
                         <table className="w-full text-sm">
-                            <thead className="bg-emerald-50 text-emerald-700">
+                            <thead className="bg-muted/50 border-b border-border text-muted-foreground font-mono text-xs">
                                 <tr>
-                                    <th className="py-2 px-3 text-left">기간</th>
-                                    <th className="py-2 px-3 text-right">수익</th>
-                                    <th className="py-2 px-3 text-right">비용</th>
-                                    <th className="py-2 px-3 text-right">순이익</th>
+                                    <th className="py-2.5 px-3 text-left font-semibold">기간</th>
+                                    <th className="py-2.5 px-3 text-right font-semibold">수익</th>
+                                    <th className="py-2.5 px-3 text-right font-semibold">비용</th>
+                                    <th className="py-2.5 px-3 text-right font-semibold">순이익</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-border/60">
                                 {displayData.map((d, idx) => (
-                                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                                        <td className="py-2 px-3">{d.month}</td>
-                                        <td className="py-2 px-3 text-right text-blue-600">
+                                    <tr key={idx} className="hover:bg-muted/30 transition-colors">
+                                        <td className="py-2.5 px-3 text-foreground font-medium">{d.month}</td>
+                                        <td className="py-2.5 px-3 text-right text-foreground font-mono tabular-nums">
                                             {d.revenue.toLocaleString()}
                                         </td>
-                                        <td className="py-2 px-3 text-right text-red-600">
+                                        <td className="py-2.5 px-3 text-right text-foreground font-mono tabular-nums">
                                             {d.expenses.toLocaleString()}
                                         </td>
-                                        <td className={`py-2 px-3 text-right font-medium ${d.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        <td className={`py-2.5 px-3 text-right font-medium font-mono tabular-nums ${d.profit >= 0 ? 'text-primary' : 'text-red-500'}`}>
                                             {d.profit >= 0 ? '+' : ''}{d.profit.toLocaleString()}
                                         </td>
                                     </tr>
                                 ))}
-                                <tr className="bg-gray-50 font-bold">
-                                    <td className="py-2 px-3">합계</td>
-                                    <td className="py-2 px-3 text-right text-blue-700">
+                                <tr className="bg-muted/60 font-bold border-t-2 border-border text-foreground">
+                                    <td className="py-2.5 px-3">합계</td>
+                                    <td className="py-2.5 px-3 text-right font-mono tabular-nums">
                                         {summary.totalRevenue.toLocaleString()}
                                     </td>
-                                    <td className="py-2 px-3 text-right text-red-700">
+                                    <td className="py-2.5 px-3 text-right font-mono tabular-nums">
                                         {summary.totalExpenses.toLocaleString()}
                                     </td>
-                                    <td className={`py-2 px-3 text-right ${summary.netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                    <td className={`py-2.5 px-3 text-right font-mono tabular-nums ${summary.netProfit >= 0 ? 'text-primary' : 'text-red-500'}`}>
                                         {summary.netProfit >= 0 ? '+' : ''}{summary.netProfit.toLocaleString()}
                                     </td>
                                 </tr>
