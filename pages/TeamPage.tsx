@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
   FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap, Shield,
-  Lock, ShieldCheck
+  Lock, ShieldCheck, UserCheck
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -38,6 +38,7 @@ import LifecyclePolicyPanel from '../components/team/LifecyclePolicyPanel';
 import BulkInviteModal from '../components/team/BulkInviteModal';
 import MemberSecurityModal from '../components/team/MemberSecurityModal';
 import AdminPermissionModal from '../components/team/AdminPermissionModal';
+import MemberHrModal from '../components/team/MemberHrModal';
 import { AgentHRHub } from '../components/hr/AgentHRHub';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
@@ -116,6 +117,7 @@ export default function TeamPage() {
   const [showBulkInvite, setShowBulkInvite] = useState(false);
   const [securityTargetMember, setSecurityTargetMember] = useState<TeamMember | null>(null);
   const [permissionTargetMember, setPermissionTargetMember] = useState<TeamMember | null>(null);
+  const [hrTargetMember, setHrTargetMember] = useState<TeamMember | null>(null);
   const [logs, setLogs] = useState<AssignmentLog[]>([]);
   const [panelKey, setPanelKey] = useState(0);
   const [seatStatus, setSeatStatus] = useState<OrgSeatStatus | null>(null);
@@ -805,57 +807,73 @@ export default function TeamPage() {
               </div>
             </div>
             {/* Mobile card list */}
-            <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="md:hidden divide-y divide-border">
               {members.map(m => {
                 const roleInfo = getStandardRoleInfo(m.role, m.adminPermissions?.tier);
                 return (
                 <div key={m.userId} className={`px-4 py-3 space-y-2 ${m.status === 'disabled' ? 'opacity-50' : ''}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-medium text-gray-800 dark:text-gray-100">{m.displayName}</span>
-                      {m.userId === org.userId && <span className="ml-1 text-xs text-blue-500 font-bold">(나)</span>}
-                      {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500 font-semibold">사용 중지</span>}
+                      <button
+                        type="button"
+                        onClick={() => setHrTargetMember(m)}
+                        className="font-medium text-foreground hover:text-primary hover:underline text-left cursor-pointer inline-flex items-center gap-1"
+                      >
+                        <span>{m.displayName}</span>
+                        <UserCheck size={13} className="text-muted-foreground" />
+                      </button>
+                      {m.userId === org.userId && <span className="ml-1 text-xs text-primary font-mono font-semibold">(나)</span>}
+                      {m.status === 'disabled' && <span className="ml-2 text-2xs font-mono text-destructive px-1.5 py-0.2 rounded bg-destructive/10 border border-destructive/20 font-medium">사용 중지</span>}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
+                    <div className="flex items-center gap-1.5 font-mono">
+                      <span className="text-2xs px-2 py-0.5 rounded bg-muted/50 text-foreground border border-border">
                         {m.teamName || '1팀'}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${roleInfo.colorClass}`}>
+                      <span className={`text-2xs px-2 py-0.5 rounded font-medium border ${roleInfo.colorClass}`}>
                         {roleInfo.badgeText}
                       </span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{m.email}</p>
-                  <div className="flex items-center justify-between text-xs">
+                  <p className="text-xs text-muted-foreground font-mono truncate">{m.email}</p>
+                  <div className="flex items-center justify-between text-xs font-mono">
                     <div className="flex gap-3">
-                      <span className="text-gray-500 dark:text-gray-400">담당 <span className="font-semibold text-gray-700 dark:text-gray-200">{m.assignedCases.toLocaleString()}</span>건</span>
-                      <span className="text-gray-500 dark:text-gray-400">로그인 {fmtDate(m.lastSignInAt)}</span>
+                      <span className="text-muted-foreground">담당 <strong className="text-foreground">{m.assignedCases.toLocaleString()}</strong>건</span>
+                      <span className="text-muted-foreground">로그인 {fmtDate(m.lastSignInAt)}</span>
                     </div>
-                    {canEditRole(m) && (isOwner || myTeamPerms.canDisableMembers) && (m.status === 'active' ? (
+                    <div className="flex items-center gap-2">
                       <button
-                        disabled={busy}
-                        onClick={() => handleMemberChange(m, { status: 'disabled' },
-                          `${m.displayName}님을 사용 중지할까요?\n바로 로그인과 데이터 접근이 막힙니다. 담당 리드 ${m.assignedCases}건은 그대로 남으니 다른 상담원에게 다시 배정하세요.`)}
-                        className="inline-flex items-center gap-1 text-red-600 hover:underline disabled:opacity-50"
+                        type="button"
+                        onClick={() => setHrTargetMember(m)}
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer"
                       >
-                        <Ban size={14} /> 중지
+                        <UserCheck size={13} /> 인사 정보
                       </button>
-                    ) : (
-                      <button
-                        disabled={busy}
-                        onClick={() => handleMemberChange(m, { status: 'active' })}
-                        className="inline-flex items-center gap-1 text-green-600 hover:underline disabled:opacity-50"
-                      >
-                        <RotateCcw size={14} /> 복원
-                      </button>
-                    ))}
+                      {canEditRole(m) && (isOwner || myTeamPerms.canDisableMembers) && (m.status === 'active' ? (
+                        <button
+                          disabled={busy}
+                          onClick={() => handleMemberChange(m, { status: 'disabled' },
+                            `${m.displayName}님을 사용 중지할까요?\n바로 로그인과 데이터 접근이 막힙니다. 담당 리드 ${m.assignedCases}건은 그대로 남으니 다른 상담원에게 다시 배정하세요.`)}
+                          className="inline-flex items-center gap-1 text-destructive hover:underline disabled:opacity-50 cursor-pointer"
+                        >
+                          <Ban size={13} /> 중지
+                        </button>
+                      ) : (
+                        <button
+                          disabled={busy}
+                          onClick={() => handleMemberChange(m, { status: 'active' })}
+                          className="inline-flex items-center gap-1 text-primary hover:underline disabled:opacity-50 cursor-pointer"
+                        >
+                          <RotateCcw size={13} /> 복원
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   {canEditRole(m) && (isOwner || myTeamPerms.canManageSecurity) && (
-                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700/50">
+                    <div className="flex items-center justify-between pt-1 border-t border-border">
                       <button
                         type="button"
                         onClick={() => setSecurityTargetMember(m)}
-                        className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                        className="inline-flex items-center gap-1 text-xs text-primary font-mono hover:underline cursor-pointer"
                       >
                         <Shield size={13} />
                         <span>보안 설정 ({
@@ -905,9 +923,18 @@ export default function TeamPage() {
                 <tbody className="divide-y divide-border">
                   {members.map(m => (
                     <tr key={m.userId} className={m.status === 'disabled' ? 'opacity-50' : ''}>
-                      <td className="px-5 py-2.5 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">
-                        {m.displayName}{m.userId === org.userId && <span className="ml-1 text-xs text-blue-500 font-bold">(나)</span>}
-                        {m.status === 'disabled' && <span className="ml-2 text-xs text-red-500 font-semibold whitespace-nowrap">사용 중지</span>}
+                      <td className="px-5 py-2.5 font-medium whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => setHrTargetMember(m)}
+                          className="font-medium text-foreground hover:text-primary hover:underline transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                          title="직원 인사 상세 정보 관리 열기"
+                        >
+                          <span>{m.displayName}</span>
+                          <UserCheck size={13} className="text-muted-foreground hover:text-primary transition-colors" />
+                        </button>
+                        {m.userId === org.userId && <span className="ml-1 text-xs text-primary font-mono font-semibold">(나)</span>}
+                        {m.status === 'disabled' && <span className="ml-2 text-2xs font-mono text-destructive px-1.5 py-0.2 rounded bg-destructive/10 border border-destructive/20 font-medium whitespace-nowrap">사용 중지</span>}
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
                         {canEditRole(m) && (isOwner || myTeamPerms.canModifyRules) ? (
@@ -1054,7 +1081,16 @@ export default function TeamPage() {
                       <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">{m.assignedCases.toLocaleString()}건</td>
                       <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{fmtDate(m.lastSignInAt)}</td>
                       <td className="px-5 py-2.5 text-right whitespace-nowrap">
-                        {canEditRole(m) && (isOwner || myTeamPerms.canDisableMembers) ? (
+                        <div className="inline-flex items-center gap-2.5 justify-end">
+                          <button
+                            type="button"
+                            onClick={() => setHrTargetMember(m)}
+                            className="inline-flex items-center gap-1 text-xs font-mono text-primary hover:underline whitespace-nowrap cursor-pointer"
+                            title="직원 인사 상세 정보 관리 (전화번호, 주소, 입사일, 생일, 급여계좌, 비상연락망 등)"
+                          >
+                            <UserCheck size={13} /> 인사 정보
+                          </button>
+                          {canEditRole(m) && (isOwner || myTeamPerms.canDisableMembers) ? (
                           m.status === 'active' ? (
                             <button
                               disabled={busy}
@@ -1074,8 +1110,9 @@ export default function TeamPage() {
                             </button>
                           )
                         ) : (
-                          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">권한 제한</span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap font-mono">권한 제한</span>
                         )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1270,6 +1307,19 @@ export default function TeamPage() {
         isOpen={permissionTargetMember !== null}
         onClose={() => setPermissionTargetMember(null)}
         onSuccess={() => {
+          reload();
+          queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
+        }}
+      />
+
+      {/* 직원 인사(HR) 정보 관리 모달 (전화번호, 주소, 입사일, 생일, 급여계좌, 비상연락망, 특이사항) */}
+      <MemberHrModal
+        isOpen={hrTargetMember !== null}
+        onClose={() => setHrTargetMember(null)}
+        member={hrTargetMember}
+        orgId={org.orgId}
+        canEdit={isOwner || myTeamPerms.canModifyRules || myTeamPerms.canManageSecurity}
+        onSaved={() => {
           reload();
           queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
         }}
