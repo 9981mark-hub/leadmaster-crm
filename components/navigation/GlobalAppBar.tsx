@@ -9,6 +9,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ROLE_LABEL, getStandardRoleInfo } from '../../services/org';
 import { AttendanceHeaderWidget } from '../hr/AttendanceHeaderWidget';
+import { fetchOrgApplications } from '../../services/orgApplicationService';
+import { fetchSeatExpansionRequests, subscribeToPlatformAlerts } from '../../services/seatExpansionService';
 
 interface GlobalAppBarProps {
   onOpenSearch: () => void;
@@ -47,9 +49,32 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [platformPendingCount, setPlatformPendingCount] = useState(0);
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // 플랫폼 관리자용 미처리 중요 요청(좌석 증설/가입 신청) 실시간 카운트
+  useEffect(() => {
+    if (!isPlatformAdmin) return;
+    const checkPending = async () => {
+      try {
+        const [apps, seats] = await Promise.all([
+          fetchOrgApplications(),
+          fetchSeatExpansionRequests(),
+        ]);
+        const pCount = (apps || []).filter(a => a.status === 'pending').length +
+                       (seats || []).filter(s => s.status === 'pending').length;
+        setPlatformPendingCount(pCount);
+      } catch {}
+    };
+    checkPending();
+
+    const unsubscribe = subscribeToPlatformAlerts(() => {
+      checkPending();
+    });
+    return unsubscribe;
+  }, [isPlatformAdmin]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -273,6 +298,11 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                 <>
                   <Crown size={14} strokeWidth={1.75} className="text-amber-300" />
                   <span>HOST 관리국</span>
+                  {platformPendingCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-2xs font-extrabold bg-destructive text-white shadow-xs animate-pulse">
+                      {platformPendingCount}
+                    </span>
+                  )}
                 </>
               )}
             </button>

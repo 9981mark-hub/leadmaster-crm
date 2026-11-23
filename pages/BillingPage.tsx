@@ -301,7 +301,9 @@ export const BillingPage: React.FC = () => {
         <SeatExpansionModal
           isOpen={isSeatModalOpen}
           onClose={() => setIsSeatModalOpen(false)}
+          orgId={orgId}
           orgName={orgName}
+          requesterEmail={ownerEmail}
           activeSeats={activeSeats}
           currentMaxSeats={permissions?.maxSeats || 20}
           onSuccess={loadData}

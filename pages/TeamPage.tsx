@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
   FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap, Shield,
-  Lock, ShieldCheck, UserCheck
+  Lock, ShieldCheck, UserCheck, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -39,6 +39,7 @@ import BulkInviteModal from '../components/team/BulkInviteModal';
 import MemberSecurityModal from '../components/team/MemberSecurityModal';
 import AdminPermissionModal from '../components/team/AdminPermissionModal';
 import MemberHrModal from '../components/team/MemberHrModal';
+import { SeatExpansionModal } from '../components/billing/SeatExpansionModal';
 import { AgentHRHub } from '../components/hr/AgentHRHub';
 import {
   AssignmentLog, DistributeMode, REASON_LABEL, distributeCases,
@@ -81,7 +82,7 @@ const TeamLockedView: React.FC<{ title: string; desc: string }> = ({ title, desc
 );
 
 export default function TeamPage() {
-  const { org } = useAuth();
+  const { org, user, isPlatformAdmin } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
@@ -115,6 +116,7 @@ export default function TeamPage() {
   const [distCounts, setDistCounts] = useState<Record<string, number>>({});
   const [showUpload, setShowUpload] = useState(false);
   const [showBulkInvite, setShowBulkInvite] = useState(false);
+  const [showSeatExpansion, setShowSeatExpansion] = useState(false);
   const [securityTargetMember, setSecurityTargetMember] = useState<TeamMember | null>(null);
   const [permissionTargetMember, setPermissionTargetMember] = useState<TeamMember | null>(null);
   const [hrTargetMember, setHrTargetMember] = useState<TeamMember | null>(null);
@@ -1138,6 +1140,15 @@ export default function TeamPage() {
                       <span className={`px-2 py-0.5 rounded text-2xs font-semibold border ${seatStatus.isLimitReached ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
                         {seatStatus.isLimitReached ? '한도 소진' : `잔여 ${seatStatus.remainingSeats}석`}
                       </span>
+                      {(isOwner || isPlatformAdmin) && (
+                        <button
+                          type="button"
+                          onClick={() => setShowSeatExpansion(true)}
+                          className="ml-1 px-2.5 py-1 text-2xs font-semibold rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Sparkles size={11} /> 좌석 증설 요청
+                        </button>
+                      )}
                     </div>
                   </div>
                   {/* 진행률 바 */}
@@ -1320,6 +1331,22 @@ export default function TeamPage() {
         orgId={org.orgId}
         canEdit={isOwner || myTeamPerms.canModifyRules || myTeamPerms.canManageSecurity}
         onSaved={() => {
+          reload();
+          queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
+        }}
+      />
+
+      {/* 라이선스 좌석(Seat) 증설 요청 모달 */}
+      <SeatExpansionModal
+        isOpen={showSeatExpansion}
+        onClose={() => setShowSeatExpansion(false)}
+        orgId={org.orgId}
+        orgName={org.orgName}
+        requesterEmail={user?.email}
+        requesterName={user?.name}
+        activeSeats={seatStatus?.totalOccupied || members.length}
+        currentMaxSeats={seatStatus?.maxSeats || 20}
+        onSuccess={() => {
           reload();
           queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
         }}

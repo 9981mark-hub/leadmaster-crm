@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Building2, Plus, RefreshCw, Ban, RotateCcw, Copy,
-  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles, ShieldCheck, Settings, Shield, Mail
+  DollarSign, Users, TrendingUp, Server, FileText, CheckCircle2, Sparkles, ShieldCheck, Settings, Shield, Mail,
+  AlertTriangle, ArrowRight, Clock
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -13,10 +14,15 @@ import {
 import {
   fetchOrgApplications, approveOrgApplication, rejectOrgApplication, markApplicationPaid, OrgApplication
 } from '../services/orgApplicationService';
+import {
+  fetchSeatExpansionRequests, approveSeatExpansionRequest, rejectSeatExpansionRequest,
+  subscribeToPlatformAlerts, SeatExpansionRequest
+} from '../services/seatExpansionService';
 import { HQ_ORG_ID } from '../services/org';
 import { useCountUp } from '../utils/useCountUp';
 import { TenantPermissionModal } from '../components/platform/TenantPermissionModal';
 import { ApprovalEmailModal } from '../components/platform/ApprovalEmailModal';
+import { PlatformAlertPopupModal } from '../components/platform/PlatformAlertPopupModal';
 
 const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('ko-KR') : '-');
 
@@ -26,8 +32,14 @@ export default function PlatformPage() {
   const { showToast } = useToast();
   const [orgs, setOrgs] = useState<PlatformOrg[]>([]);
   const [applications, setApplications] = useState<OrgApplication[]>([]);
+  const [seatRequests, setSeatRequests] = useState<SeatExpansionRequest[]>([]);
   const [permissionsMap, setPermissionsMap] = useState<Record<string, OrgFeaturePermissions>>({});
   const [selectedOrgForPerm, setSelectedOrgForPerm] = useState<PlatformOrg | null>(null);
+
+  // 긴급 알림 팝업 모달 상태
+  const [isAlertPopupOpen, setIsAlertPopupOpen] = useState(false);
+  const [hasAutoOpenedAlert, setHasAutoOpenedAlert] = useState(false);
+  const [seatFilter, setSeatFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   // 이메일 검토 및 자동 발송 모달 상태
   const [emailModalApp, setEmailModalApp] = useState<OrgApplication | null>(null);
@@ -43,25 +55,55 @@ export default function PlatformPage() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [fetchedOrgs, fetchedApps] = await Promise.all([
+      const [fetchedOrgs, fetchedApps, fetchedSeatReqs] = await Promise.all([
         fetchOrganizations(),
         fetchOrgApplications(),
+        fetchSeatExpansionRequests(),
       ]);
       setOrgs(fetchedOrgs);
       setApplications(fetchedApps);
+      setSeatRequests(fetchedSeatReqs);
 
       // 테넌트 권한 일괄 로드
       const orgIds = fetchedOrgs.map(o => o.id);
       const perms = await fetchAllOrgPermissions(orgIds);
       setPermissionsMap(perms);
     } catch (e: any) {
-      showToast(`회사 목록을 불러오지 못했습니다: ${e.message}`, 'error');
+      showToast(`데이터를 불러오지 못했습니다: ${e.message}`, 'error');
     } finally {
       setLoading(false);
     }
   }, [showToast]);
 
   useEffect(() => { reload(); }, [reload]);
+
+  // 실시간 웹훅 및 브로드캐스트 알림 수신 구독
+  useEffect(() => {
+    const unsubscribe = subscribeToPlatformAlerts((event) => {
+      if (event.type === 'seat_request') {
+        showToast(`🚨 [긴급 좌석 증설 요청] '${event.data.orgName}'에서 ${event.data.requestedSeats}석 증설을 요청했습니다!`, 'info');
+        setIsAlertPopupOpen(true);
+        reload();
+      } else if (event.type === 'seat_approved') {
+        reload();
+      } else if (event.type === 'seat_rejected') {
+        reload();
+      }
+    });
+    return unsubscribe;
+  }, [reload, showToast]);
+
+  // 첫 진입 시 미처리 중요 요청(좌석 증설 / 가입 신청)이 존재하면 팝업 모달 자동 오픈
+  useEffect(() => {
+    if (!loading && !hasAutoOpenedAlert) {
+      const pendingSeatsCount = seatRequests.filter(r => r.status === 'pending').length;
+      const pendingAppsCount = applications.filter(a => a.status === 'pending').length;
+      if (pendingSeatsCount > 0 || pendingAppsCount > 0) {
+        setIsAlertPopupOpen(true);
+        setHasAutoOpenedAlert(true);
+      }
+    }
+  }, [loading, seatRequests, applications, hasAutoOpenedAlert]);
 
   const billingSummary = useMemo(() => computeBillingSummary(orgs), [orgs]);
 
@@ -129,6 +171,34 @@ export default function PlatformPage() {
     }
   };
 
+  const handleApproveSeat = async (req: SeatExpansionRequest) => {
+    setBusy(true);
+    try {
+      await approveSeatExpansionRequest(req.id, req.orgId, req.requestedSeats);
+      showToast(`'${req.orgName}' 라이선스 좌석이 ${req.requestedSeats}석으로 즉시 확장 승인되었습니다.`, 'success');
+      await reload();
+    } catch (err: any) {
+      showToast(`좌석 승인 실패: ${err.message || err}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRejectSeat = async (req: SeatExpansionRequest) => {
+    const reason = window.prompt(`'${req.orgName}'의 좌석 증설 요청 반려 사유를 입력하세요:`, '운영 정책상 불가');
+    if (reason === null) return;
+    setBusy(true);
+    try {
+      await rejectSeatExpansionRequest(req.id, reason);
+      showToast(`'${req.orgName}' 좌석 증설 요청을 반려했습니다.`, 'info');
+      await reload();
+    } catch (err: any) {
+      showToast(`반려 처리 실패: ${err.message || err}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const toggleStatus = async (o: PlatformOrg) => {
     const next = o.status === 'active' ? 'suspended' : 'active';
     const msg = next === 'suspended'
@@ -176,13 +246,62 @@ export default function PlatformPage() {
             고객사별 활성 상담원 과금(₩ 48,000/인) 현황, 서버 원가 마진율 및 테넌트 라이프사이클을 총괄합니다.
           </p>
         </div>
-        <button
-          onClick={reload}
-          className="px-3.5 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-xs"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> 새로고침
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsAlertPopupOpen(true)}
+            className={`px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-xs cursor-pointer ${
+              (seatRequests.filter(r => r.status === 'pending').length + applications.filter(a => a.status === 'pending').length) > 0
+                ? 'bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/20 animate-pulse'
+                : 'bg-card border border-border text-foreground hover:bg-muted'
+            }`}
+          >
+            <AlertTriangle size={15} />
+            <span>중요 알림 센터</span>
+            {(seatRequests.filter(r => r.status === 'pending').length + applications.filter(a => a.status === 'pending').length) > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-2xs bg-destructive text-white font-mono">
+                {seatRequests.filter(r => r.status === 'pending').length + applications.filter(a => a.status === 'pending').length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={reload}
+            className="px-3.5 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-xs cursor-pointer"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> 새로고침
+          </button>
+        </div>
       </div>
+
+      {/* 🚨 긴급 미처리 중요 요청 알림 배너 */}
+      {(seatRequests.filter(r => r.status === 'pending').length > 0 || applications.filter(a => a.status === 'pending').length > 0) && (
+        <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-destructive/20 border border-destructive/40 text-destructive flex items-center justify-center shrink-0 animate-pulse">
+              <AlertTriangle size={18} strokeWidth={2.25} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-foreground">
+                  확인이 필요한 플랫폼 긴급 관제 요청이 {seatRequests.filter(r => r.status === 'pending').length + applications.filter(a => a.status === 'pending').length}건 있습니다!
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-2xs font-extrabold bg-destructive text-white animate-bounce">
+                  긴급 처리 요망
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                라이선스 좌석 증설 요청 {seatRequests.filter(r => r.status === 'pending').length}건 · 신규 회사 가입 신청 {applications.filter(a => a.status === 'pending').length}건
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsAlertPopupOpen(true)}
+            className="px-4 py-2 rounded-lg text-xs font-bold bg-destructive hover:bg-destructive/90 text-white shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+          >
+            <Sparkles size={13} /> 팝업 알림 관제 센터 열기
+          </button>
+        </div>
+      )}
 
       {/* 4대 핵심 재무 & 인프라 KPI 카드 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -264,7 +383,152 @@ export default function PlatformPage() {
         </div>
       </div>
 
-      {/* 🏢 1. 신규 TM 회사 가입 신청 대기열 (옵션 A 실시간 승인 체계) */}
+      {/* ⚡ 1. 라이선스 좌석(Seat) 증설 신청 대기열 */}
+      <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-bold text-foreground flex items-center gap-2 text-base">
+              <Users size={18} className="text-amber-500" />
+              <span>라이선스 좌석(Seat) 증설 신청 관제 대기열</span>
+            </h2>
+            {seatRequests.filter(r => r.status === 'pending').length > 0 ? (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse">
+                대기 {seatRequests.filter(r => r.status === 'pending').length}건
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                대기 0건
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-muted/60 p-0.5 rounded-lg text-2xs font-medium border border-border">
+              {(['all', 'pending', 'approved', 'rejected'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setSeatFilter(tab)}
+                  className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                    seatFilter === tab
+                      ? 'bg-card text-foreground font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {tab === 'all' ? '전체' : tab === 'pending' ? '대기' : tab === 'approved' ? '승인' : '반려'}
+                  {' '}({tab === 'all' ? seatRequests.length : seatRequests.filter(r => r.status === tab).length})
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={reload}
+              disabled={loading}
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer"
+            >
+              <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침
+            </button>
+          </div>
+        </div>
+
+        {seatRequests.length === 0 ? (
+          <div className="p-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
+            접수된 좌석 증설 신청이 없습니다. 팀 대표가 [멤버 & 설정] 또는 [정산 & 빌링]에서 좌석 증설을 요청하면 여기에 실시간 표시됩니다.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {seatRequests
+              .filter(r => seatFilter === 'all' || r.status === seatFilter)
+              .map(req => {
+                const diff = req.requestedSeats - req.currentSeats;
+                return (
+                  <div
+                    key={req.id}
+                    className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                      req.status === 'pending'
+                        ? 'bg-amber-500/5 border-amber-500/30 shadow-xs'
+                        : req.status === 'approved'
+                        ? 'bg-emerald-500/5 border-emerald-500/20 opacity-85'
+                        : 'bg-muted/20 border-border opacity-60'
+                    }`}
+                  >
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-sm text-foreground">{req.orgName}</span>
+                        <span className="text-xs font-medium text-muted-foreground">
+                          (신청: {req.requesterName || '대표'} / <span className="font-mono text-primary">{req.requesterEmail}</span>)
+                        </span>
+                        <span className="text-2xs text-muted-foreground font-mono flex items-center gap-1">
+                          <Clock size={11} /> {fmtDate(req.createdAt)}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
+                          req.status === 'pending'
+                            ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30'
+                            : req.status === 'approved'
+                            ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-rose-500/15 text-rose-500 border border-rose-500/30'
+                        }`}>
+                          {req.status === 'pending' ? '승인 대기' : req.status === 'approved' ? '승인 완료' : '반려'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-0.5 font-mono text-xs">
+                        <span className="px-2 py-0.5 rounded bg-muted border border-border text-muted-foreground">
+                          기존 {req.currentSeats}석
+                        </span>
+                        <ArrowRight size={13} className="text-amber-500" />
+                        <span className="px-2 py-0.5 rounded bg-primary/20 border border-primary/30 text-primary font-bold">
+                          희망 {req.requestedSeats}석
+                        </span>
+                        <span className="text-xs font-semibold text-emerald-400">
+                          (+{diff}석 증설)
+                        </span>
+                        {req.approvedAt && (
+                          <span className="text-2xs text-muted-foreground font-sans">
+                            · 승인일: {fmtDate(req.approvedAt)} ({req.approvedBy || '관리자'})
+                          </span>
+                        )}
+                        {req.rejectionReason && (
+                          <span className="text-2xs text-destructive font-sans">
+                            · 반려 사유: {req.rejectionReason}
+                          </span>
+                        )}
+                      </div>
+
+                      {req.memo && (
+                        <div className="text-xs text-muted-foreground bg-black/20 dark:bg-muted/40 p-2.5 rounded-lg mt-1 border border-border/50">
+                          <span className="font-semibold text-foreground">증원 사유: </span>
+                          {req.memo}
+                        </div>
+                      )}
+                    </div>
+
+                    {req.status === 'pending' && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleRejectSeat(req)}
+                          disabled={busy}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                        >
+                          반려
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApproveSeat(req)}
+                          disabled={busy}
+                          className="px-4 py-1.5 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          <Sparkles size={13} />
+                          즉시 승인 ({req.requestedSeats}석 한도 적용)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        )}
+      </section>
+
+      {/* 🏢 2. 신규 TM 회사 가입 신청 대기열 (옵션 A 실시간 승인 체계) */}
       <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -712,6 +976,18 @@ export default function PlatformPage() {
         onSuccess={() => {
           reload();
         }}
+      />
+
+      {/* 🚨 플랫폼 총괄 긴급/중요 알림 관제 팝업 모달 */}
+      <PlatformAlertPopupModal
+        isOpen={isAlertPopupOpen}
+        onClose={() => setIsAlertPopupOpen(false)}
+        seatRequests={seatRequests}
+        orgApplications={applications}
+        onApproveSeat={handleApproveSeat}
+        onRejectSeat={handleRejectSeat}
+        onApproveApp={handleApproveApp}
+        onRejectApp={handleRejectApp}
       />
     </div>
   );

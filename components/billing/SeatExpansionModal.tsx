@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { X, Users, Send, ShieldAlert, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { submitSeatExpansionRequest } from '../../services/seatExpansionService';
 
 interface SeatExpansionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  orgId?: string;
+  orgName?: string;
+  requesterEmail?: string;
+  requesterName?: string;
   currentSeats?: number;
   maxSeats?: number;
   activeSeats?: number;
   currentMaxSeats?: number;
-  orgName?: string;
   showToast?: (msg: string, type?: 'success' | 'error' | 'info') => void;
   onSuccess?: () => void;
 }
@@ -17,16 +22,25 @@ interface SeatExpansionModalProps {
 export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
   isOpen,
   onClose,
+  orgId: propOrgId,
+  orgName: propOrgName,
+  requesterEmail: propRequesterEmail,
+  requesterName: propRequesterName,
   currentSeats,
   maxSeats,
   activeSeats,
   currentMaxSeats,
-  orgName = '우리 조직',
   showToast: propShowToast,
   onSuccess,
 }) => {
+  const { org, user } = useAuth();
   const { showToast: ctxShowToast } = useToast();
   const triggerToast = propShowToast || ctxShowToast;
+
+  const resolvedOrgId = propOrgId || org?.orgId || '00000000-0000-0000-0000-000000000001';
+  const resolvedOrgName = propOrgName || org?.orgName || '우리 조직';
+  const resolvedEmail = propRequesterEmail || user?.email || (org as any)?.ownerEmail || '';
+  const resolvedName = propRequesterName || user?.name || '';
 
   const safeCurrent = Number(currentSeats ?? activeSeats ?? 0) || 0;
   const safeMax = Number(maxSeats ?? currentMaxSeats ?? 20) || 20;
@@ -38,14 +52,33 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSendRequest = () => {
+  const handleSendRequest = async () => {
+    const seatsNum = Number(requestedSeats);
+    if (!seatsNum || seatsNum <= safeMax) {
+      triggerToast(`현재 최대 좌석(${safeMax}석)보다 큰 좌석 수를 입력해주세요.`, 'error');
+      return;
+    }
+
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      triggerToast(`'${orgName}' ${requestedSeats}석 증설 신청이 플랫폼 운영팀에 접수되었습니다. (담당자 검토 후 즉시 승인됩니다)`, 'success');
+    try {
+      await submitSeatExpansionRequest({
+        orgId: resolvedOrgId,
+        orgName: resolvedOrgName,
+        requesterEmail: resolvedEmail,
+        requesterName: resolvedName,
+        currentSeats: safeCurrent,
+        requestedSeats: seatsNum,
+        memo: requestMemo,
+      });
+
+      triggerToast(`'${resolvedOrgName}' ${seatsNum}석 증설 신청이 플랫폼 총괄 운영팀에 접수되었습니다. (실시간 알림 발송됨)`, 'success');
       if (onSuccess) onSuccess();
       onClose();
-    }, 600);
+    } catch (err: any) {
+      triggerToast(`증설 신청 실패: ${err.message || err}`, 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
