@@ -157,7 +157,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
         <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between card-interactive hover:border-primary/40 transition-all">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
             <span>입금 확인 (완료)</span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
               <CheckCircle2 size={12} strokeWidth={1.75} /> 완료
             </span>
           </div>
@@ -169,7 +169,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
           </div>
           <div className="w-full bg-muted h-1.5 rounded-full mt-2.5 overflow-hidden">
             <div
-              className="bg-emerald-500 h-1.5 rounded-full meter-smooth"
+              className="bg-primary h-1.5 rounded-full meter-smooth"
               style={{ width: `${collectionRate}%` }}
             />
           </div>
@@ -179,7 +179,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
         <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between card-interactive hover:border-primary/40 transition-all">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
             <span>남은 미수금 (받을 돈)</span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border flex items-center gap-1">
               <Clock size={12} strokeWidth={1.75} /> 미수
             </span>
           </div>
@@ -198,7 +198,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
         <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between card-interactive hover:border-primary/40 transition-all">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
             <span>입금 기한 지난 연체</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 ${totals.overdueWon > 0 ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-muted text-muted-foreground border border-border'}`}>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 ${totals.overdueWon > 0 ? 'bg-destructive/10 text-destructive border border-destructive/20' : 'bg-muted text-muted-foreground border border-border'}`}>
               <AlertTriangle size={12} strokeWidth={1.75} /> {totals.overdueWon > 0 ? '연체' : '정상'}
             </span>
           </div>
@@ -232,27 +232,27 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
       </div>
 
       {/* 2. 검색 & 필터 & 엑셀 액션 바 */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-4 rounded-xl border border-border shadow-2xs">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           {/* 검색창 */}
           <div className="relative flex-1 sm:w-64">
-            <Search size={14} className="absolute left-3 top-3 text-gray-500 dark:text-gray-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" strokeWidth={1.75} />
             <input
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="거래처명 검색..."
-              className="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-9 pr-3 py-2 bg-muted/40 border border-border rounded-lg text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           {/* 주기 필터 */}
-          <div className="flex items-center bg-gray-100 dark:bg-gray-800 p-1 rounded-xl text-xs">
+          <div className="flex items-center bg-muted/70 p-1 rounded-lg border border-border/60 text-xs">
             <button
               type="button"
               onClick={() => setCycleFilter('all')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                cycleFilter === 'all' ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-sm' : 'text-gray-500'
+              className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
+                cycleFilter === 'all' ? 'bg-background text-foreground shadow-2xs border border-border font-semibold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               전체
@@ -260,8 +260,8 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             <button
               type="button"
               onClick={() => setCycleFilter('weekly')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                cycleFilter === 'weekly' ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-sm' : 'text-gray-500'
+              className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
+                cycleFilter === 'weekly' ? 'bg-background text-foreground shadow-2xs border border-border font-semibold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               주간 정산
@@ -269,8 +269,8 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
             <button
               type="button"
               onClick={() => setCycleFilter('monthly')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                cycleFilter === 'monthly' ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-sm' : 'text-gray-500'
+              className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
+                cycleFilter === 'monthly' ? 'bg-background text-foreground shadow-2xs border border-border font-semibold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               월말/월간 정산
@@ -281,9 +281,9 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
         <button
           type="button"
           onClick={handleExportExcel}
-          className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5 shadow-sm transition-colors"
+          className="px-3.5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
         >
-          <Download size={14} />
+          <Download size={14} strokeWidth={1.75} />
           정산 현황 엑셀 다운로드
         </button>
       </div>
@@ -299,84 +299,84 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
           return (
             <div
               key={card.partnerId}
-              className={`bg-white dark:bg-gray-800 rounded-2xl border p-5 shadow-sm flex flex-col justify-between transition-all hover:shadow-md card-interactive ${
+              className={`bg-card text-card-foreground rounded-xl border p-5 shadow-2xs flex flex-col justify-between transition-all hover:border-primary/40 card-interactive ${
                 card.isOverdue
-                  ? 'border-rose-300 dark:border-rose-800/80 ring-1 ring-rose-500/20'
-                  : 'border-gray-200 dark:border-gray-700'
+                  ? 'border-destructive/40 ring-1 ring-destructive/20'
+                  : 'border-border'
               }`}
             >
               <div>
                 {/* 상단 거래처명 & 정산 주기 뱃지 */}
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div>
-                    <h3 className="font-black text-base text-gray-900 dark:text-white flex items-center gap-2">
-                      <Building size={16} className="text-indigo-600 shrink-0" />
+                    <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+                      <Building size={16} className="text-primary shrink-0" strokeWidth={1.75} />
                       {card.partnerName}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs px-2 py-0.5 rounded-md font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="text-2xs px-2 py-0.5 rounded font-mono font-medium bg-muted text-muted-foreground border border-border">
                         {card.settlementCycleDisplay}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-md font-bold font-mono ${
+                      <span className={`text-2xs px-2 py-0.5 rounded font-mono font-medium border ${
                         card.dDay < 0
-                          ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                          ? 'bg-destructive/10 text-destructive border-destructive/20'
                           : card.dDay === 0
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 animate-pulse'
-                          : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                          ? 'bg-primary/15 text-primary border border-primary/30'
+                          : 'bg-muted/60 text-muted-foreground border border-border'
                       }`}>
                         {card.dDay === 0 ? '오늘 입금 예정' : card.dDay > 0 ? `D-${card.dDay}` : `연체 ${Math.abs(card.dDay)}일`}
                       </span>
                     </div>
                   </div>
 
-                  <span className="text-xs font-mono font-bold px-2 py-1 bg-gray-50 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 rounded-lg">
+                  <span className="text-2xs font-mono font-medium px-2 py-0.5 bg-muted/60 text-muted-foreground rounded border border-border">
                     {card.caseCount}건 수임
                   </span>
                 </div>
 
                 {/* 금액 상세 */}
-                <div className="space-y-2 py-3 border-y border-gray-100 dark:border-gray-700/60 text-xs">
+                <div className="space-y-2 py-3 border-y border-border/60 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">총 수임료 규모:</span>
-                    <span className="font-mono font-bold text-gray-900 dark:text-white">
+                    <span className="text-muted-foreground">총 수임료 규모:</span>
+                    <span className="font-mono text-muted-foreground">
                       ₩ {(card.totalContractFeeWon / 10000).toLocaleString()} 만원
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500 font-semibold">청구 수수료액:</span>
-                    <span className="font-mono font-black text-indigo-600 dark:text-indigo-400 text-sm">
+                    <span className="text-foreground font-semibold">청구 수수료액:</span>
+                    <span className="font-mono font-bold text-foreground text-sm tabular-nums">
                       ₩ {(card.billedCommissionWon / 10000).toLocaleString()} 만원
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <div className="flex justify-between items-center text-muted-foreground">
                     <span>입금 확인액:</span>
-                    <span className="font-mono font-bold">
+                    <span className="font-mono tabular-nums text-foreground">
                       ₩ {(card.collectedCommissionWon / 10000).toLocaleString()} 만원 ({progress}%)
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center text-amber-600 dark:text-amber-400 font-semibold">
+                  <div className="flex justify-between items-center text-muted-foreground">
                     <span>미수 잔액:</span>
-                    <span className="font-mono font-bold">
+                    <span className="font-mono tabular-nums text-foreground">
                       ₩ {(card.outstandingWon / 10000).toLocaleString()} 만원
                     </span>
                   </div>
 
                   {card.overdueWon > 0 && (
-                    <div className="flex justify-between items-center text-rose-600 font-bold bg-rose-50 dark:bg-rose-950/40 p-1.5 rounded-lg">
+                    <div className="flex justify-between items-center text-destructive font-semibold bg-destructive/10 border border-destructive/20 p-2 rounded-lg text-xs font-mono">
                       <span>연체 경고:</span>
-                      <span className="font-mono">
+                      <span>
                         ₩ {(card.overdueWon / 10000).toLocaleString()} 만원 연체중
                       </span>
                     </div>
                   )}
 
                   {/* 수금 진척도 바 */}
-                  <div className="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden mt-1">
+                  <div className="w-full bg-muted h-1 rounded-full overflow-hidden mt-1">
                     <div
-                      className="bg-indigo-600 h-1.5 rounded-full meter-smooth"
+                      className="bg-primary h-1 rounded-full meter-smooth"
                       style={{ width: `${Math.min(100, progress)}%` }}
                     />
                   </div>
@@ -396,9 +396,9 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                     } as unknown as Partner);
                     setPipelinePartner(matched);
                   }}
-                  className="w-full py-2.5 px-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  className="w-full py-2 px-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                 >
-                  <PlayCircle size={14} className="shrink-0" />
+                  <PlayCircle size={14} className="shrink-0" strokeWidth={1.75} />
                   정산 마감 파이프라인 (대사·청구·지급)
                 </button>
 
@@ -409,7 +409,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                     onClick={() => handleCopyStatement(card)}
                     className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                       isCopied
-                        ? 'bg-primary text-primary-foreground border-transparent'
+                        ? 'bg-primary/10 text-primary border-primary/20'
                         : 'bg-card border-border hover:bg-muted text-foreground'
                     }`}
                     title="텔레그램/카톡에 붙여넣을 수 있는 정산서 텍스트를 복사합니다."
@@ -422,7 +422,7 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                     <button
                       type="button"
                       onClick={() => onSelectPartner(card.partnerId)}
-                      className="px-3 py-1.5 text-gray-600 dark:text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-xl text-xs font-medium border border-gray-200 dark:border-gray-700 transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg text-xs font-medium border border-border transition-colors flex items-center gap-1 cursor-pointer"
                       title="상세 정산 원장 보기"
                     >
                       <span>원장</span>

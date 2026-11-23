@@ -104,214 +104,218 @@ export default function IntegratedPnLTab({
   return (
     <div className="space-y-6">
       {/* 1. 상단 경영 손익 하이라이트 전광판 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 총 매출 */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden card-interactive">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              <Building className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-              총 수수료 매출
-            </span>
-            <span className="text-xs bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full font-medium">
-              공급가 기준
-            </span>
+        <div className="bg-card text-card-foreground border border-border rounded-xl p-5 shadow-2xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
+          <div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
+              <span className="flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                총 수수료 매출
+              </span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary border border-primary/20 font-mono">
+                공급가 기준
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-foreground tracking-tight font-mono tabular-nums">
+                ₩ {(s.totalRevenueWon || 0).toLocaleString()}
+              </span>
+              <span className="text-xs font-semibold text-muted-foreground">원</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight font-mono tabular-nums">
-              ₩ {(s.totalRevenueWon || 0).toLocaleString()}
-            </span>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
-          </div>
-          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between font-mono">
+          <div className="mt-2.5 text-2xs text-muted-foreground flex flex-col gap-0.5 font-mono">
             <span>입금: ₩ {(s.collectedRevenueWon || 0).toLocaleString()}원{(s.totalVatWon || 0) > 0 ? ` · 부가세 ₩ ${(s.totalVatWon || 0).toLocaleString()}원 별도` : ''}</span>
-            <span className="text-amber-600 dark:text-amber-400 font-semibold">미수: ₩ {(s.outstandingRevenueWon || 0).toLocaleString()}원</span>
+            <span>미수: ₩ {(s.outstandingRevenueWon || 0).toLocaleString()}원</span>
           </div>
         </div>
 
         {/* 총 지출 */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg card-interactive">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              <CreditCard className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-              총 비용 지출 합계
-            </span>
-            <span className="text-xs bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded-full font-medium">
-              원가+수당+고정비
-            </span>
+        <div className="bg-card text-card-foreground border border-border rounded-xl p-5 shadow-2xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
+          <div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
+              <span className="flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                총 비용 지출 합계
+              </span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border font-mono">
+                원가+수당+고정비
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-foreground tracking-tight font-mono tabular-nums">
+                ₩ {(s.totalExpensesWon || 0).toLocaleString()}
+              </span>
+              <span className="text-xs font-semibold text-muted-foreground">원</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight font-mono tabular-nums">
-              ₩ {(s.totalExpensesWon || 0).toLocaleString()}
-            </span>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
-          </div>
-          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between font-mono">
+          <div className="mt-2.5 text-2xs text-muted-foreground flex flex-col gap-0.5 font-mono">
             <span>DB원가: ₩ {(s.totalDbCostWon || 0).toLocaleString()}원</span>
             <span>상담원: ₩ {(s.totalAgentCommissionWon || 0).toLocaleString()}원</span>
           </div>
         </div>
 
         {/* 최종 영업 순이익 */}
-        <div className="bg-gradient-to-br from-emerald-950/70 to-slate-900 border border-emerald-700/50 rounded-xl p-5 shadow-lg relative overflow-hidden card-interactive">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              최종 영업 순이익
-            </span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-              (s.netProfitWon || 0) >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
-            }`}>
-              {s.profitMarginRate || 0}% 이익률
-            </span>
+        <div className="bg-card text-card-foreground border border-border rounded-xl p-5 shadow-2xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
+          <div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
+              <span className="flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
+                최종 영업 순이익
+              </span>
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold font-mono border ${
+                (s.netProfitWon || 0) >= 0 ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'
+              }`}>
+                {s.profitMarginRate || 0}% 이익률
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className={`text-2xl font-bold tracking-tight font-mono tabular-nums ${
+                (s.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-destructive'
+              }`}>
+                {(s.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs(s.netProfitWon || 0).toLocaleString()}
+              </span>
+              <span className="text-xs font-semibold text-muted-foreground">원</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className={`text-2xl font-black tracking-tight font-mono tabular-nums ${
-              (s.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
-            }`}>
-              {(s.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs(s.netProfitWon || 0).toLocaleString()}
-            </span>
-            <span className="text-xs font-semibold text-emerald-200/80">원</span>
-          </div>
-          <div className="mt-2 text-xs text-emerald-200/80 font-mono">
+          <div className="mt-2.5 text-xs text-muted-foreground font-mono">
             {periodLabel} 실영업 결산
           </div>
         </div>
 
         {/* 실제 현금 흐름 (통장 입출금) */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between card-interactive">
+        <div className="bg-card text-card-foreground border border-border rounded-xl p-5 shadow-2xs flex flex-col justify-between hover:border-primary/40 transition-all card-interactive">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <DollarSign className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
+              <span className="flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
                 실현금 흐름 (Cash Flow)
               </span>
-              <span className="text-xs bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border font-mono">
                 통장 기준
               </span>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className={`text-2xl font-black tracking-tight font-mono tabular-nums ${
-                (s.netCashFlowWon || 0) >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
-              }`}>
+              <span className="text-2xl font-bold tracking-tight font-mono tabular-nums text-foreground">
                 {(s.netCashFlowWon || 0) < 0 ? '-' : ''}₩ {Math.abs(s.netCashFlowWon || 0).toLocaleString()}
               </span>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">원</span>
+              <span className="text-xs font-semibold text-muted-foreground">원</span>
             </div>
-            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 font-mono">
-              실입금 ₩ {(s.cashInflowWon || 0).toLocaleString()}원 - 실출금 ₩ {(s.cashOutflowWon || 0).toLocaleString()}원
-            </div>
+          </div>
+          <div className="mt-2.5 text-2xs text-muted-foreground font-mono">
+            실입금 ₩ {(s.cashInflowWon || 0).toLocaleString()}원 - 실출금 ₩ {(s.cashOutflowWon || 0).toLocaleString()}원
           </div>
         </div>
       </div>
 
       {/* 2. 상세 손익 계산서 워터폴 (5단계 P&L Waterfall) */}
-      <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-slate-800 pb-4">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-2xs text-card-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-border pb-4">
           <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" strokeWidth={1.75} />
               {periodLabel} 표준 경영 손익계산서 (P&L Waterfall)
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1 font-mono">
               거래처 수수료 매출에서 DB 구매 원가, 상담원 인센티브, 판매관리비를 단계별로 차감한 최종 손익 대장입니다.
             </p>
           </div>
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg transition-all shadow-2xs cursor-pointer self-start sm:self-auto"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5" strokeWidth={1.75} />
             손익계산서 엑셀 다운로드
           </button>
         </div>
 
-        <div className="space-y-3 font-mono text-sm">
+        <div className="space-y-2.5 font-mono text-xs">
           {/* 1단계: 총 매출 */}
-          <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 rounded-lg">
+          <div className="flex items-center justify-between p-3.5 bg-muted/40 border border-border rounded-lg">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xs font-bold font-sans">
+              <span className="w-6 h-6 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-xs font-bold font-sans">
                 1
               </span>
               <div>
-                <div className="font-bold text-white font-sans">총 수수료 매출 (Gross Revenue)</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">이 기간에 지급 사유가 생긴 거래처 수수료 공급가 (부가세 ₩ {(s.totalVatWon || 0).toLocaleString()}원 별도 · 청구액 ₩ {(s.totalBilledWon || 0).toLocaleString()}원 · 이 기간 입금 ₩ {(s.collectedRevenueWon || 0).toLocaleString()}원 · 미수 ₩ {(s.outstandingRevenueWon || 0).toLocaleString()}원)</div>
+                <div className="font-semibold text-foreground font-sans text-xs">총 수수료 매출 (Gross Revenue)</div>
+                <div className="text-2xs text-muted-foreground font-sans mt-0.5">이 기간에 지급 사유가 생긴 거래처 수수료 공급가 (부가세 ₩ {(s.totalVatWon || 0).toLocaleString()}원 별도 · 청구액 ₩ {(s.totalBilledWon || 0).toLocaleString()}원 · 이 기간 입금 ₩ {(s.collectedRevenueWon || 0).toLocaleString()}원 · 미수 ₩ {(s.outstandingRevenueWon || 0).toLocaleString()}원)</div>
               </div>
             </div>
-            <div className="text-base font-black text-sky-600 dark:text-sky-400 font-mono tabular-nums">
+            <div className="text-sm font-bold text-foreground font-mono tabular-nums shrink-0 ml-2">
               + ₩ {(s.totalRevenueWon || 0).toLocaleString()} 원
             </div>
           </div>
 
           {/* 2단계: DB 구매 원가 */}
-          <div className="flex items-center justify-between p-3.5 bg-slate-50/40 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800/80 rounded-lg ml-4">
+          <div className="flex items-center justify-between p-3.5 bg-muted/20 border border-border/80 rounded-lg ml-4">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs font-bold font-sans">
+              <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground border border-border flex items-center justify-center text-xs font-bold font-sans">
                 2
               </span>
               <div>
-                <div className="font-bold text-slate-200 font-sans">(-) DB 구매 매입 원가 (COGS)</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">팀 관리 회차/공급사 매입액과 100% 실시간 연동</div>
+                <div className="font-medium text-foreground font-sans text-xs">(-) DB 구매 매입 원가 (COGS)</div>
+                <div className="text-2xs text-muted-foreground font-sans mt-0.5">팀 관리 회차/공급사 매입액과 100% 실시간 연동</div>
               </div>
             </div>
-            <div className="text-base font-bold text-rose-600 dark:text-rose-400 font-mono tabular-nums">
+            <div className="text-sm font-medium text-muted-foreground font-mono tabular-nums shrink-0 ml-2">
               - ₩ {(s.totalDbCostWon || 0).toLocaleString()} 원
             </div>
           </div>
 
           {/* 3단계: 상담원 수당 */}
-          <div className="flex items-center justify-between p-3.5 bg-slate-50/40 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800/80 rounded-lg ml-4">
+          <div className="flex items-center justify-between p-3.5 bg-muted/20 border border-border/80 rounded-lg ml-4">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold font-sans">
+              <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground border border-border flex items-center justify-center text-xs font-bold font-sans">
                 3
               </span>
               <div>
-                <div className="font-bold text-slate-200 font-sans">(-) 상담원 실지급 수당 (Sales Commission)</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">
+                <div className="font-medium text-foreground font-sans text-xs">(-) 상담원 실지급 수당 (Sales Commission)</div>
+                <div className="text-2xs text-muted-foreground font-sans mt-0.5">
                   {policyLabel(policy)} 적용 후 지급액{policyIsDefault ? ' · 기본값(저장 안 됨)' : ''}
                 </div>
               </div>
             </div>
-            <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+            <div className="text-sm font-medium text-muted-foreground font-mono tabular-nums shrink-0 ml-2">
               - ₩ {(s.totalAgentCommissionWon || 0).toLocaleString()} 원
             </div>
           </div>
 
           {/* 4단계: 판매관리비 및 고정비 */}
-          <div className="flex items-center justify-between p-3.5 bg-slate-50/40 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800/80 rounded-lg ml-4">
+          <div className="flex items-center justify-between p-3.5 bg-muted/20 border border-border/80 rounded-lg ml-4">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold font-sans">
+              <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground border border-border flex items-center justify-center text-xs font-bold font-sans">
                 4
               </span>
               <div>
-                <div className="font-bold text-slate-200 font-sans">(-) 일반 판매관리비 및 운영비 (SG&A / Expenses)</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">임대료, 통신비, 솔루션비, 식대, 기타 지출 합계</div>
+                <div className="font-medium text-foreground font-sans text-xs">(-) 일반 판매관리비 및 운영비 (SG&A / Expenses)</div>
+                <div className="text-2xs text-muted-foreground font-sans mt-0.5">임대료, 통신비, 솔루션비, 식대, 기타 지출 합계</div>
               </div>
             </div>
-            <div className="text-base font-bold text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+            <div className="text-sm font-medium text-muted-foreground font-mono tabular-nums shrink-0 ml-2">
               - ₩ {(s.totalFixedCostWon || 0).toLocaleString()} 원
             </div>
           </div>
 
           {/* 5단계: 최종 영업 순이익 */}
-          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border-2 border-emerald-600/70 rounded-xl shadow-lg mt-4">
+          <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/30 rounded-xl shadow-2xs mt-3">
             <div className="flex items-center gap-3">
-              <span className="w-7 h-7 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-sm font-black font-sans shadow-md">
+              <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold font-sans shadow-2xs">
                 5
               </span>
               <div>
-                <div className="text-base font-black text-white font-sans flex items-center gap-2">
+                <div className="text-sm font-bold text-foreground font-sans flex items-center gap-2">
                   (=) 최종 영업 순이익 (Net Operating Profit)
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold font-sans border border-emerald-500/30">
+                  <span className="text-2xs px-2 py-0.5 rounded font-mono font-medium bg-primary/15 text-primary border border-primary/30">
                     순이익률 {s.profitMarginRate || 0}%
                   </span>
                 </div>
-                <div className="text-xs text-emerald-300/80 font-sans mt-0.5">
+                <div className="text-2xs text-muted-foreground font-sans mt-0.5">
                   총 매출 ₩ {(s.totalRevenueWon || 0).toLocaleString()} 원 - 총 지출 ₩ {(s.totalExpensesWon || 0).toLocaleString()} 원
                 </div>
               </div>
             </div>
-            <div className={`text-2xl font-black font-mono tabular-nums ${
-              (s.netProfitWon || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
+            <div className={`text-xl font-bold font-mono tabular-nums shrink-0 ml-2 ${
+              (s.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-destructive'
             }`}>
               {(s.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs(s.netProfitWon || 0).toLocaleString()} 원
             </div>
@@ -320,35 +324,33 @@ export default function IntegratedPnLTab({
       </div>
 
       {/* 3. 시각화 섹션: 비용 구조 파이 차트 & 매출/비용/순이익 바 차트 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 비용 구성 비율 (도넛 차트) */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
-          <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <PieIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs flex flex-col text-card-foreground">
+          <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-2">
+              <PieIcon className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
               지출 비용 구조 분해 (원가 vs 인건비 vs 운영비)
             </h4>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">총 ₩ {(s.totalExpensesWon || 0).toLocaleString()} 원</span>
+            <span className="text-2xs text-muted-foreground font-mono">총 ₩ {(s.totalExpensesWon || 0).toLocaleString()} 원</span>
           </div>
 
           {costBreakdownData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-slate-500 text-xs">
+            <div className="h-60 flex items-center justify-center text-muted-foreground text-xs font-mono">
               등록된 지출 데이터가 없습니다.
             </div>
           ) : (
-            <div className="h-64">
+            <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={costBreakdownData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={4}
+                    innerRadius={55}
+                    outerRadius={80}
+                    paddingAngle={3}
                     dataKey="value"
-                    animationDuration={750}
-                    animationEasing="ease-out"
                   >
                     {costBreakdownData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -356,9 +358,9 @@ export default function IntegratedPnLTab({
                   </Pie>
                   <Tooltip
                     formatter={(val: number) => `₩ ${val.toLocaleString()} 원`}
-                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)', borderColor: 'rgba(51, 65, 85, 0.8)', borderRadius: '12px', color: '#fff', boxShadow: '0 8px 24px -4px rgba(0,0,0,0.3)' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
                   />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -366,32 +368,33 @@ export default function IntegratedPnLTab({
         </div>
 
         {/* 매출 대 지출 대 순이익 바 차트 */}
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col card-interactive">
-          <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs flex flex-col card-interactive text-card-foreground">
+          <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-2">
+              <BarChart3 className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
               매출액 / 총비용 / 순이익 비교 분석
             </h4>
-            <span className="text-xs text-slate-500 dark:text-slate-400">{periodLabel}</span>
+            <span className="text-2xs text-muted-foreground font-mono">{periodLabel}</span>
           </div>
 
-          <div className="h-64">
+          <div className="h-60">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={comparisonData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="name" stroke="#64748b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} vertical={false} />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                 <YAxis
-                  stroke="#64748b"
-                  tickFormatter={(val) => `₩ ${Math.round(val / 10000).toLocaleString()} 만원`}
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                  tickFormatter={(val) => `₩ ${Math.round(val / 10000).toLocaleString()} 만`}
                 />
                 <Tooltip
                   formatter={(val: number) => `₩ ${val.toLocaleString()} 원`}
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)', borderColor: 'rgba(51, 65, 85, 0.8)', borderRadius: '12px', color: '#fff', boxShadow: '0 8px 24px -4px rgba(0,0,0,0.3)' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
                 />
-                <Legend />
-                <Bar dataKey="총매출" fill="#38bdf8" radius={[6, 6, 0, 0]} animationDuration={750} animationEasing="ease-out" />
-                <Bar dataKey="총비용" fill="#f43f5e" radius={[6, 6, 0, 0]} animationDuration={750} animationEasing="ease-out" />
-                <Bar dataKey="영업순이익" fill="#10b981" radius={[6, 6, 0, 0]} animationDuration={750} animationEasing="ease-out" />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="총매출" fill="hsl(var(--foreground))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="총비용" fill="#64748b" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="영업순이익" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

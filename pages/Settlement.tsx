@@ -2408,21 +2408,21 @@ export default function Settlement() {
         return (
             <div className="space-y-6">
                 {/* TM대표 전용 빌링 & 광고비 관제 센터 바로가기 배너 */}
-                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div className="p-4 rounded-xl bg-card border border-border text-card-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                            <CreditCard size={18} className="text-white" />
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                            <CreditCard size={18} strokeWidth={1.75} />
                         </div>
                         <div>
-                            <div className="text-xs font-bold text-blue-200">TM대표 전용 신설 메뉴</div>
-                            <div className="text-sm font-bold text-white mt-0.5">
+                            <div className="text-2xs font-mono font-medium text-primary">TM대표 전용 관제 메뉴</div>
+                            <div className="text-sm font-semibold text-foreground mt-0.5">
                                 빌링 & 광고비 종합 관제 센터에서 누적 광고비와 CRM 구독료를 통합 확인하세요.
                             </div>
                         </div>
                     </div>
                     <Link
                         to="/billing"
-                        className="px-3.5 py-1.5 rounded-lg bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs transition-colors self-start sm:self-auto shrink-0 shadow-xs"
+                        className="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs transition-colors self-start sm:self-auto shrink-0 shadow-2xs"
                     >
                         빌링 & 광고비 센터 바로가기 →
                     </Link>
@@ -2430,39 +2430,61 @@ export default function Settlement() {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div onClick={() => setActiveExpenseKpiModal('commission')} className="bg-gradient-to-br from-green-50 to-white dark:from-green-950/30 dark:to-gray-800 p-5 rounded-2xl shadow-sm border border-green-200 dark:border-green-800/60 cursor-pointer hover:shadow-md transition-all active:scale-95">
-                        <p className="text-sm font-bold text-green-700 dark:text-green-300">💵 받은 수수료</p>
-                        <p className="text-2xl font-black text-green-600 dark:text-green-400 font-mono mt-1">{totalPaidCommission.toLocaleString()}만원</p>
-                        <p className="text-xs text-green-600 dark:text-green-400/80 mt-1">{year}년 누적</p>
+                    <div onClick={() => setActiveExpenseKpiModal('commission')} className="bg-card text-card-foreground p-5 rounded-xl shadow-2xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between">
+                        <div>
+                            <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
+                                <span>받은 수수료</span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary border border-primary/20 font-mono">누적</span>
+                            </div>
+                            <p className="text-2xl font-bold text-foreground font-mono tabular-nums tracking-tight">{totalPaidCommission.toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span></p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 font-normal">{year}년 전체 누적 실현 수수료</p>
                     </div>
-                    <div onClick={() => setActiveExpenseKpiModal('expense')} className="bg-gradient-to-br from-red-50 to-white dark:from-red-950/30 dark:to-gray-800 p-5 rounded-2xl shadow-sm border border-red-200 dark:border-red-800/60 cursor-pointer hover:shadow-md transition-all active:scale-95">
-                        <p className="text-sm font-bold text-red-700 dark:text-red-300">💸 총 지출</p>
-                        <p className="text-2xl font-black text-red-600 dark:text-red-400 font-mono mt-1">{expenseStats.total.toLocaleString()}만원</p>
-                        <p className="text-xs text-red-600 dark:text-red-400/80 mt-1">{month === 'all' ? '전체 월' : `${month}월`}: {thisMonthExpenses.toLocaleString()}만원</p>
+                    <div onClick={() => setActiveExpenseKpiModal('expense')} className="bg-card text-card-foreground p-5 rounded-xl shadow-2xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between">
+                        <div>
+                            <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
+                                <span>총 지출</span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border font-mono">경비</span>
+                            </div>
+                            <p className="text-2xl font-bold text-foreground font-mono tabular-nums tracking-tight">{expenseStats.total.toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span></p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 font-normal">{month === 'all' ? '전체 월' : `${month}월`}: {thisMonthExpenses.toLocaleString()}만원</p>
                     </div>
-                    <div onClick={() => setActiveExpenseKpiModal('ad_ratio')} className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-gray-800 p-5 rounded-2xl shadow-sm border border-blue-200 dark:border-blue-800/60 cursor-pointer hover:shadow-md transition-all active:scale-95">
-                        <p className="text-sm font-bold text-blue-700 dark:text-blue-300">📊 광고비 비중</p>
-                        <p className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono mt-1">
-                            {expenseStats.total > 0 ? Math.round((expenseStats.byCategory['광고비'] / expenseStats.total) * 100) : 0}%
-                        </p>
-                        <p className="text-xs text-blue-600 dark:text-blue-400/80 mt-1">{expenseStats.byCategory['광고비'].toLocaleString()}만원</p>
+                    <div onClick={() => setActiveExpenseKpiModal('ad_ratio')} className="bg-card text-card-foreground p-5 rounded-xl shadow-2xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between">
+                        <div>
+                            <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
+                                <span>광고비 비중</span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border font-mono">마케팅</span>
+                            </div>
+                            <p className="text-2xl font-bold text-foreground font-mono tabular-nums tracking-tight">
+                                {expenseStats.total > 0 ? Math.round((expenseStats.byCategory['광고비'] / expenseStats.total) * 100) : 0}%
+                            </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 font-normal">광고 집행 {expenseStats.byCategory['광고비'].toLocaleString()}만원</p>
                     </div>
-                    <div onClick={() => setActiveExpenseKpiModal('net_profit')} className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-white dark:from-emerald-950/30 dark:to-gray-800 border-green-200 dark:border-emerald-800/60' : 'from-red-50 to-white dark:from-rose-950/30 dark:to-gray-800 border-red-200 dark:border-rose-800/60'} p-5 rounded-2xl shadow-sm border cursor-pointer hover:shadow-md transition-all active:scale-95`}>
-                        <p className={`text-sm font-bold ${netProfit >= 0 ? 'text-green-700 dark:text-emerald-300' : 'text-red-700 dark:text-rose-300'}`}>💰 순이익</p>
-                        <p className={`text-2xl font-black font-mono mt-1 ${netProfit >= 0 ? 'text-green-600 dark:text-emerald-400' : 'text-red-600 dark:text-rose-400'}`}>{netProfit.toLocaleString()}만원</p>
-                        <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-green-600 dark:text-emerald-400/80' : 'text-red-600 dark:text-rose-400/80'}`}>수수료수익 - 지출</p>
+                    <div onClick={() => setActiveExpenseKpiModal('net_profit')} className="bg-card text-card-foreground p-5 rounded-xl shadow-2xs border border-border cursor-pointer hover:border-primary/40 transition-all card-interactive flex flex-col justify-between">
+                        <div>
+                            <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
+                                <span>순이익</span>
+                                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold font-mono ${netProfit >= 0 ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-destructive/10 text-destructive border border-destructive/20'}`}>손익</span>
+                            </div>
+                            <p className={`text-2xl font-bold font-mono tabular-nums tracking-tight ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                                {netProfit < 0 ? '-' : ''}{Math.abs(netProfit).toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span>
+                            </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 font-normal">수수료수익 - 지출 총액</p>
                     </div>
                 </div>
 
                 {/* [HOST 격리] Toss Ads Dashboard Section */}
                 {canViewTaxTools && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-blue-100 dark:border-gray-700 overflow-hidden">
-                        <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="bg-card text-card-foreground rounded-xl shadow-2xs border border-border overflow-hidden">
+                        <div className="p-4 border-b border-border bg-muted/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h3 className="font-bold text-blue-800 flex items-center gap-2">
-                                    <span className="text-xl">📢</span> 토스 애즈 광고비 연동
+                                <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
+                                    <span className="text-base">📢</span> 토스 애즈 광고비 연동
                                 </h3>
-                                <p className="text-xs text-blue-600 mt-1">토스 애즈 성과보고서(CSV)를 업로드하여 시스템에 쉽게 반영하세요.</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 font-mono">토스 애즈 성과보고서(CSV)를 업로드하여 시스템에 쉽게 반영하세요.</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <input
@@ -2475,7 +2497,7 @@ export default function Settlement() {
                                 <button
                                     onClick={() => tossAdsFileInputRef.current?.click()}
                                     disabled={uploadingTossAds}
-                                    className="px-4 py-2 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-800 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    className="px-3.5 py-1.5 bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                                 >
                                     {uploadingTossAds ? '업로드 중...' : 'CSV 업로드'}
                                 </button>
@@ -2483,32 +2505,32 @@ export default function Settlement() {
                         </div>
                         
                         {tossAdsWeeklySummary && tossAdsWeeklySummary.totalSpendExVat > 0 && (
-                            <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                            <div className="p-4 bg-card border-b border-border">
                                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                                     <div>
-                                        <h4 className="font-bold text-gray-800 dark:text-white text-sm">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
+                                        <h4 className="font-semibold text-foreground text-xs font-mono">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
                                         <div className="flex gap-4 mt-2">
-                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
-                                                <p className="text-xs text-gray-500">소진비용 (VAT별도)</p>
-                                                <p className="font-bold text-blue-600">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
+                                            <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center">
+                                                <p className="text-2xs font-mono text-muted-foreground">소진비용 (VAT별도)</p>
+                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
                                             </div>
-                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center">
-                                                <p className="text-xs text-gray-500">잠재고객</p>
-                                                <p className="font-bold text-indigo-600">{tossAdsWeeklySummary.totalLeads}명</p>
+                                            <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center">
+                                                <p className="text-2xs font-mono text-muted-foreground">잠재고객</p>
+                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.totalLeads}명</p>
                                             </div>
-                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden sm:block">
-                                                <p className="text-xs text-gray-500">평균 CPL</p>
-                                                <p className="font-bold text-purple-600">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
+                                            <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center hidden sm:block">
+                                                <p className="text-2xs font-mono text-muted-foreground">평균 CPL</p>
+                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
                                             </div>
-                                            <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-700 text-center hidden md:block">
-                                                <p className="text-xs text-gray-500">총 노출</p>
-                                                <p className="font-bold text-gray-700">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
+                                            <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center hidden md:block">
+                                                <p className="text-2xs font-mono text-muted-foreground">총 노출</p>
+                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={handleRegisterTossAdsExpense}
-                                        className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold shadow hover:bg-blue-700 transition-colors"
+                                        className="w-full md:w-auto px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
                                     >
                                         주간 광고비 지출 등록
                                     </button>
@@ -2526,17 +2548,19 @@ export default function Settlement() {
                             setExpenseForm({ category: '광고비', amount: 0, description: '', date: todayKST() });
                             setIsExpenseModalOpen(true);
                         }}
-                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 flex items-center gap-2 shadow-sm transition-colors"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                     >
-                        <Plus size={18} /> 지출 등록
+                        <Plus size={15} strokeWidth={1.75} /> 지출 등록
                     </button>
                 </div>
 
                 {/* Charts Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Pie Chart - Category Breakdown */}
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4">📊 카테고리별 지출</h3>
+                    <div className="bg-card text-card-foreground p-5 rounded-xl shadow-2xs border border-border">
+                        <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                            <span>카테고리별 지출</span>
+                        </h3>
                         {pieData.length > 0 ? (
                             <div className="flex items-center">
                                 <ResponsiveContainer width="50%" height={200}>
@@ -2545,7 +2569,7 @@ export default function Settlement() {
                                             data={pieData}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={40}
+                                            innerRadius={45}
                                             outerRadius={80}
                                             paddingAngle={2}
                                             dataKey="value"
@@ -2559,52 +2583,54 @@ export default function Settlement() {
                                 </ResponsiveContainer>
                                 <div className="flex-1 space-y-2">
                                     {pieData.map((entry, idx) => (
-                                        <div key={idx} className="flex items-center justify-between text-sm">
+                                        <div key={idx} className="flex items-center justify-between text-xs">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
-                                                <span className="text-gray-700 dark:text-gray-200 font-medium">{entry.name}</span>
+                                                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+                                                <span className="text-muted-foreground font-medium">{entry.name}</span>
                                             </div>
-                                            <span className="font-mono font-bold text-gray-900 dark:text-white">{entry.value.toLocaleString()}만원</span>
+                                            <span className="font-mono font-bold text-foreground">{entry.value.toLocaleString()}만원</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                            <div className="h-48 flex items-center justify-center text-muted-foreground text-xs font-mono">
                                 지출 데이터가 없습니다
                             </div>
                         )}
                     </div>
 
                     {/* Bar Chart - Monthly Trend */}
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-700 dark:text-white mb-4">📈 월별 지출 추이</h3>
+                    <div className="bg-card text-card-foreground p-5 rounded-xl shadow-2xs border border-border">
+                        <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                            <span>월별 지출 추이</span>
+                        </h3>
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={expenseStats.byMonth}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="month" />
-                                <YAxis />
-                                <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '지출']} />
-                                <Bar dataKey="amount" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
+                                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                                <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                                <Tooltip formatter={(value: number) => [`${value.toLocaleString()}만원`, '지출']} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }} />
+                                <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Expense List Table */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-750 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                            <FileText size={18} className="text-red-500" />
-                            📋 지출 내역
+                <div className="bg-card border border-border rounded-xl shadow-2xs overflow-hidden">
+                    <div className="p-4 border-b border-border bg-muted/40 flex justify-between items-center">
+                        <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
+                            <FileText size={16} className="text-primary" strokeWidth={1.75} />
+                            지출 내역
                         </h3>
-                        <span className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold font-mono">
+                        <span className="text-2xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono font-medium border border-border">
                             총 {expenses.length}건
                         </span>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-50 dark:bg-gray-750 text-gray-600 dark:text-gray-300 font-medium border-b border-gray-100 dark:border-gray-750">
+                        <table className="w-full text-xs">
+                            <thead className="bg-muted/40 text-muted-foreground font-mono font-medium border-b border-border">
                                 <tr>
                                     <th className="py-3 px-4 text-left">날짜</th>
                                     <th className="py-3 px-3 text-left">카테고리</th>
@@ -2613,47 +2639,44 @@ export default function Settlement() {
                                     <th className="py-3 px-4 text-center">관리</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                            <tbody className="divide-y divide-border/60 text-foreground">
                                 {loadingExpenses ? (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">로딩중...</td>
+                                        <td colSpan={5} className="py-8 text-center text-muted-foreground font-mono">로딩중...</td>
                                     </tr>
                                 ) : expenses.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">등록된 지출이 없습니다</td>
+                                        <td colSpan={5} className="py-8 text-center text-muted-foreground font-mono">등록된 지출이 없습니다</td>
                                     </tr>
                                 ) : (
                                     expenses.slice(0, 20).map(exp => (
-                                        <tr key={exp.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-700/50 transition-colors">
-                                            <td className="py-3.5 px-4 font-mono font-medium text-gray-700 dark:text-gray-200">{exp.date}</td>
-                                            <td className="py-3.5 px-3">
-                                                <span
-                                                    className="px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-xs inline-block"
-                                                    style={{ backgroundColor: CATEGORY_COLORS[exp.category] }}
-                                                >
+                                        <tr key={exp.id} className="hover:bg-muted/40 transition-colors">
+                                            <td className="py-3 px-4 font-mono text-muted-foreground">{exp.date}</td>
+                                            <td className="py-3 px-3">
+                                                <span className="px-2 py-0.5 rounded font-mono text-2xs font-medium bg-muted text-foreground border border-border">
                                                     {exp.category}
                                                 </span>
                                             </td>
-                                            <td className="py-3.5 px-3 text-gray-900 dark:text-gray-100 font-medium">
+                                            <td className="py-3 px-3 text-foreground font-medium">
                                                 {exp.description}
-                                                {exp.memo && <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs font-normal">({exp.memo})</span>}
+                                                {exp.memo && <span className="text-muted-foreground ml-2 text-2xs font-normal">({exp.memo})</span>}
                                             </td>
-                                            <td className="py-3.5 px-4 text-right font-mono font-black text-red-600 dark:text-red-400 text-sm">
+                                            <td className="py-3 px-4 text-right font-mono font-bold text-foreground text-sm tabular-nums">
                                                 {exp.amount.toLocaleString()}만원
                                             </td>
-                                            <td className="py-3.5 px-4 text-center">
+                                            <td className="py-3 px-4 text-center">
                                                 <button
                                                     onClick={() => openEditExpense(exp)}
-                                                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-bold text-xs mr-3 transition-colors"
+                                                    className="text-muted-foreground hover:text-foreground font-mono text-xs mr-3 transition-colors cursor-pointer"
                                                 >
                                                     수정
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteExpense(exp.id)}
-                                                    className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors inline-flex items-center"
+                                                    className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors inline-flex items-center cursor-pointer"
                                                     title="지출 삭제"
                                                 >
-                                                    <Trash2 size={15} />
+                                                    <Trash2 size={14} />
                                                 </button>
                                             </td>
                                         </tr>
@@ -3254,12 +3277,13 @@ export default function Settlement() {
         )}
 
                 {/* Monthly/Quarterly Income Statement (손익계산서) */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-indigo-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-4 border-b border-indigo-100 dark:border-gray-750 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/40">
-                        <h3 className="font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
-                            📈 월별 손익계산서
+                <div className="bg-card text-card-foreground rounded-xl shadow-2xs border border-border overflow-hidden">
+                    <div className="p-4 border-b border-border bg-muted/40">
+                        <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
+                            <TrendingUp size={16} className="text-primary" strokeWidth={1.75} />
+                            월별 손익계산서
                         </h3>
-                        <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1">{year}년 월별 수입/지출/순이익 분석</p>
+                        <p className="text-2xs text-muted-foreground font-mono mt-0.5">{year}년 월별 수입/지출/순이익 분석</p>
                     </div>
                     <div className="p-4">
                         {(() => {
@@ -3308,8 +3332,8 @@ export default function Settlement() {
                             return (
                                 <>
                                     <div className="overflow-x-auto">
-                                        <table className="w-full text-sm">
-                                            <thead className="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-b border-indigo-100 dark:border-indigo-900/60 font-semibold">
+                                        <table className="w-full text-xs">
+                                            <thead className="bg-muted/40 text-muted-foreground border-b border-border font-mono font-medium">
                                                 <tr>
                                                     <th className="py-2.5 px-3 text-left">월</th>
                                                     <th className="py-2.5 px-3 text-right">수입</th>
@@ -3317,24 +3341,24 @@ export default function Settlement() {
                                                     <th className="py-2.5 px-3 text-right">순이익</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                                            <tbody className="divide-y divide-border/60 text-foreground font-mono tabular-nums">
                                                 {monthlyData.filter(m => m.income > 0 || m.expense > 0).map(m => (
-                                                    <tr key={m.month} className="hover:bg-gray-50/70 dark:hover:bg-gray-750 transition-colors">
-                                                        <td className="py-2.5 px-3 font-medium text-gray-900 dark:text-gray-100">{m.month}월</td>
-                                                        <td className="py-2.5 px-3 text-right text-emerald-600 dark:text-emerald-400 font-mono font-bold">+{m.income.toLocaleString()}</td>
-                                                        <td className="py-2.5 px-3 text-right text-rose-600 dark:text-rose-400 font-mono font-bold">-{m.expense.toLocaleString()}</td>
-                                                        <td className={`py-2.5 px-3 text-right font-mono font-black ${m.profit >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                                    <tr key={m.month} className="hover:bg-muted/40 transition-colors">
+                                                        <td className="py-2.5 px-3 font-medium text-foreground">{m.month}월</td>
+                                                        <td className="py-2.5 px-3 text-right text-primary font-bold">+{m.income.toLocaleString()}</td>
+                                                        <td className="py-2.5 px-3 text-right text-muted-foreground font-medium">-{m.expense.toLocaleString()}</td>
+                                                        <td className={`py-2.5 px-3 text-right font-bold ${m.profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
                                                             {m.profit >= 0 ? '+' : ''}{m.profit.toLocaleString()}
                                                         </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
-                                            <tfoot className="bg-indigo-100/80 dark:bg-indigo-950/80 font-bold border-t border-indigo-200 dark:border-indigo-800">
+                                            <tfoot className="bg-muted/60 font-mono font-bold border-t border-border">
                                                 <tr>
-                                                    <td className="py-2.5 px-3 text-gray-900 dark:text-white">연간 합계</td>
-                                                    <td className="py-2.5 px-3 text-right text-emerald-700 dark:text-emerald-300 font-mono font-black">+{yearTotal.income.toLocaleString()}</td>
-                                                    <td className="py-2.5 px-3 text-right text-rose-700 dark:text-rose-300 font-mono font-black">-{yearTotal.expense.toLocaleString()}</td>
-                                                    <td className={`py-2.5 px-3 text-right font-mono font-black ${yearTotal.profit >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                                                    <td className="py-2.5 px-3 text-foreground">연간 합계</td>
+                                                    <td className="py-2.5 px-3 text-right text-primary font-extrabold">+{yearTotal.income.toLocaleString()}</td>
+                                                    <td className="py-2.5 px-3 text-right text-muted-foreground font-bold">-{yearTotal.expense.toLocaleString()}</td>
+                                                    <td className={`py-2.5 px-3 text-right font-extrabold ${yearTotal.profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
                                                         {yearTotal.profit >= 0 ? '+' : ''}{yearTotal.profit.toLocaleString()}
                                                     </td>
                                                 </tr>
@@ -3346,17 +3370,17 @@ export default function Settlement() {
                                     <div className="mt-4 h-48">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={monthlyData.filter(m => m.income > 0 || m.expense > 0)}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#475569" opacity={0.3} vertical={false} />
-                                                <XAxis dataKey="month" tickFormatter={(v) => `${v}월`} stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                                                <YAxis tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} vertical={false} />
+                                                <XAxis dataKey="month" tickFormatter={(v) => `${v}월`} stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                                                <YAxis tickFormatter={(v) => `${(v / 10000).toFixed(0)}만`} stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                                                 <Tooltip
                                                     formatter={(v: number) => [`${v.toLocaleString()}원`, '']}
-                                                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.75rem', color: '#fff' }}
+                                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
                                                 />
-                                                <Legend wrapperStyle={{ paddingTop: 8 }} />
-                                                <Bar dataKey="income" name="수입" fill="#10b981" radius={[3, 3, 0, 0]} />
-                                                <Bar dataKey="expense" name="지출" fill="#f43f5e" radius={[3, 3, 0, 0]} />
-                                                <Bar dataKey="profit" name="순이익" fill="#3b82f6" radius={[3, 3, 0, 0]} />
+                                                <Legend wrapperStyle={{ paddingTop: 8, fontSize: 11 }} />
+                                                <Bar dataKey="income" name="수입" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
+                                                <Bar dataKey="expense" name="지출" fill="#64748b" radius={[3, 3, 0, 0]} />
+                                                <Bar dataKey="profit" name="순이익" fill="hsl(var(--primary) / 0.6)" radius={[3, 3, 0, 0]} />
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </div>
@@ -3367,12 +3391,13 @@ export default function Settlement() {
                 </div>
 
                 {/* Partner Revenue Analysis (거래처별 수익 분석) */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-emerald-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-4 border-b border-emerald-100 dark:border-gray-750 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/40 dark:to-green-950/40">
-                        <h3 className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-                            🏢 거래처별 수익 분석
+                <div className="bg-card text-card-foreground rounded-xl shadow-2xs border border-border overflow-hidden">
+                    <div className="p-4 border-b border-border bg-muted/40">
+                        <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
+                            <Building size={16} className="text-primary" strokeWidth={1.75} />
+                            거래처별 수익 분석
                         </h3>
-                        <p className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">{year}년 파트너별 발생 수수료</p>
+                        <p className="text-2xs text-muted-foreground font-mono mt-0.5">{year}년 파트너별 발생 수수료</p>
                     </div>
                     <div className="p-4">
                         {(() => {
@@ -3398,16 +3423,16 @@ export default function Settlement() {
 
                             const totalRevenue = partnerRevenue.reduce((sum, p) => sum + p.totalCommission, 0);
 
-                            // 색상 배열
-                            const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+                            // 차분한 팔레트 (에메랄드, 슬레이트, 징크 계열)
+                            const COLORS = ['#10b981', '#059669', '#34d399', '#64748b', '#94a3b8', '#475569', '#0d9488', '#14b8a6'];
 
                             return (
                                 <>
                                     <div className="grid md:grid-cols-2 gap-4">
                                         {/* 테이블 */}
                                         <div className="overflow-x-auto">
-                                            <table className="w-full text-sm">
-                                                <thead className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-b border-emerald-100 dark:border-emerald-900/60 font-semibold">
+                                            <table className="w-full text-xs">
+                                                <thead className="bg-muted/40 text-muted-foreground border-b border-border font-mono font-medium">
                                                     <tr>
                                                         <th className="py-2.5 px-3 text-left">거래처</th>
                                                         <th className="py-2.5 px-3 text-right">건수</th>
@@ -3415,16 +3440,16 @@ export default function Settlement() {
                                                         <th className="py-2.5 px-3 text-right">비중</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                                                <tbody className="divide-y divide-border/60 text-foreground font-mono tabular-nums">
                                                     {partnerRevenue.map((p, idx) => (
-                                                        <tr key={p.partner.partnerId} className="hover:bg-gray-50/70 dark:hover:bg-gray-750 transition-colors">
-                                                            <td className="py-2.5 px-3 flex items-center gap-2 text-gray-900 dark:text-gray-100 font-medium">
-                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                                                        <tr key={p.partner.partnerId} className="hover:bg-muted/40 transition-colors">
+                                                            <td className="py-2.5 px-3 flex items-center gap-2 text-foreground font-medium">
+                                                                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                                                                 {p.partner.name}
                                                             </td>
-                                                            <td className="py-2.5 px-3 text-right font-mono text-gray-700 dark:text-gray-300">{p.caseCount}건</td>
-                                                            <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{p.totalCommission.toLocaleString()}만원</td>
-                                                            <td className="py-2.5 px-3 text-right font-mono text-gray-500 dark:text-gray-400">
+                                                            <td className="py-2.5 px-3 text-right text-muted-foreground">{p.caseCount}건</td>
+                                                            <td className="py-2.5 px-3 text-right font-bold text-foreground">{p.totalCommission.toLocaleString()}만원</td>
+                                                            <td className="py-2.5 px-3 text-right text-muted-foreground">
                                                                 {totalRevenue > 0 ? Math.round((p.totalCommission / totalRevenue) * 100) : 0}%
                                                             </td>
                                                         </tr>
@@ -3447,7 +3472,7 @@ export default function Settlement() {
                                                         nameKey="name"
                                                         cx="50%"
                                                         cy="50%"
-                                                        outerRadius={60}
+                                                        outerRadius={65}
                                                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                                                     >
                                                         {partnerRevenue.map((_, idx) => (
@@ -3456,7 +3481,7 @@ export default function Settlement() {
                                                     </Pie>
                                                     <Tooltip
                                                         formatter={(v: number) => [`${v.toLocaleString()}만원`, '수수료']}
-                                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.75rem', color: '#fff' }}
+                                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '0.5rem', color: 'hsl(var(--foreground))' }}
                                                     />
                                                 </PieChart>
                                             </ResponsiveContainer>
@@ -4492,13 +4517,13 @@ export default function Settlement() {
 
             {/* Year/Month Filter (for report and expenses tabs) */}
             {(activeTab === 'report' || activeTab === 'expenses') && (
-                <div className="flex flex-wrap gap-2.5 items-center p-3 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs">
-                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5 ml-1">
-                        <Calendar size={14} className="text-indigo-500" />
+                <div className="flex flex-wrap gap-2.5 items-center p-3 bg-card rounded-xl border border-border shadow-2xs">
+                    <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 ml-1">
+                        <Calendar size={14} className="text-primary" strokeWidth={1.75} />
                         조회 기간:
                     </span>
                     <select
-                        className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-650 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="bg-muted/40 border border-border px-3 py-1.5 rounded-lg text-xs font-mono font-medium cursor-pointer text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         value={year}
                         onChange={e => setYear(Number(e.target.value))}
                     >
@@ -4507,7 +4532,7 @@ export default function Settlement() {
                         ))}
                     </select>
                     <select
-                        className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-650 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="bg-muted/40 border border-border px-3 py-1.5 rounded-lg text-xs font-mono font-medium cursor-pointer text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         value={month}
                         onChange={e => setMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                     >
