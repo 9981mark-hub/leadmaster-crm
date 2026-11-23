@@ -4,13 +4,15 @@ import {
   FileText, ShieldCheck, Building2, CheckCircle2 
 } from 'lucide-react';
 import { MonthlyInvoiceRecord, OrgTaxInfo, generateOfficialInvoiceMarkdown } from '../../services/billingService';
+import { useToast } from '../../contexts/ToastContext';
 
 interface OrgInvoiceModalProps {
   invoice: MonthlyInvoiceRecord | null;
   taxInfo: OrgTaxInfo;
   ownerEmail?: string;
+  isOpen?: boolean;
   onClose: () => void;
-  showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
+  showToast?: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }
 
 export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
@@ -18,8 +20,10 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
   taxInfo,
   ownerEmail,
   onClose,
-  showToast,
+  showToast: propShowToast,
 }) => {
+  const { showToast: ctxShowToast } = useToast();
+  const triggerToast = propShowToast || ctxShowToast;
   const [copied, setCopied] = useState(false);
 
   if (!invoice) return null;
@@ -32,7 +36,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
     const md = generateOfficialInvoiceMarkdown(invoice, taxInfo, ownerEmail);
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);
-      showToast('청구서 마크다운이 클립보드에 복사되었습니다.', 'success');
+      triggerToast('청구서 마크다운이 클립보드에 복사되었습니다.', 'success');
       setTimeout(() => setCopied(false), 2000);
     });
   };

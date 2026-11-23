@@ -292,6 +292,7 @@ export const BillingPage: React.FC = () => {
           isOpen={isTaxInfoModalOpen}
           onClose={() => setIsTaxInfoModalOpen(false)}
           currentInfo={taxInfo}
+          taxInfo={taxInfo}
           onSave={handleSaveTaxInfo}
         />
       )}
